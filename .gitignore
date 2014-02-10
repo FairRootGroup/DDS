@@ -28,7 +28,17 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 
-# build directory & data directory
-
+# misc
 build/
-example/Tutorial3/macro/data/
+Doxyfile
+src/version.h
+tests/xpd.cf
+.DS_Store
+*.swp
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+*.xcodeproj
