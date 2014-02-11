@@ -1,4 +1,4 @@
-project( dds-topology  )
+project( dds-topology )
 
 #
 # Where to lookup modules
@@ -9,6 +9,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # configure files
 # 
 configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
+
 #
 # API Docs
 #
@@ -21,33 +22,34 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 #
 # Source files
 #
-#set( SOURCE_FILES
-#    ./src/main.cpp
-#    ./src/config.cpp
-#    ./src/worker.cpp
-#)
-#set( SRC_HDRS
-#     ./src/config.h
-#     ./src/local_types.h
-#     ./src/threadPool.h
-#     ./src/worker.h
-#)
+set( SOURCE_FILES
+    ./src/main.cpp
+)
 
+#
+# Header files
+#
+set( HEADER_FILES
+    ./src/DDSTopology.h
+    ./src/DDSTask.h
+    ./src/DDSTaskCollection.h
+    ./src/DDSTaskGroup.h
+)
 
-#include_directories(
+include_directories(
 #    ${PROJECT_BINARY_DIR}/src
 #    ${MiscCommon_LOCATION}
 #    ${MiscCommon_LOCATION}/pipe_log_engine
-#    ${Boost_INCLUDE_DIRS} )
+    ${Boost_INCLUDE_DIRS} )
 
 #
 # dds-topology executable
 #
-#if (CMAKE_GENERATOR STREQUAL "Xcode")
-#    add_executable(pod-ssh ${SOURCE_FILES} ${SRC_HDRS})
-#else (CMAKE_GENERATOR STREQUAL "Xcode")
-#    add_executable(pod-ssh ${SOURCE_FILES})
-#endif (CMAKE_GENERATOR STREQUAL "Xcode")
+if (CMAKE_GENERATOR STREQUAL "Xcode")
+    add_executable(dds-topology ${SOURCE_FILES} ${HEADER_FILES})
+else (CMAKE_GENERATOR STREQUAL "Xcode")
+    add_executable(dds-topology ${SOURCE_FILES})
+endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 #target_link_libraries (
 #    pod-ssh
@@ -57,15 +59,15 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 #    ${Boost_THREAD_LIBRARY}
 #)
 
-#install(TARGETS pod-ssh DESTINATION bin)
+install(TARGETS dds-topology DESTINATION bin)
 
 #
 # Unit tests
 #
-#if (BUILD_TESTS)
-#    message (STATUS "Build pod-ssh unit tests - YES")
-#    add_subdirectory ( ${pod-ssh_SOURCE_DIR}/tests ) 
-#else (BUILD_TESTS)
-#    message (STATUS "Build pod-ssh unit tests - NO")
-#endif (BUILD_TESTS)
+if (BUILD_TESTS)
+    message (STATUS "Build dds-topology unit tests - YES")
+    add_subdirectory ( ${dds-topology_SOURCE_DIR}/tests ) 
+else (BUILD_TESTS)
+    message (STATUS "Build dds-topology unit tests - NO")
+endif (BUILD_TESTS)
 

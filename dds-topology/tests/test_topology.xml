@@ -1,0 +1,34 @@
+<topology name="testProject" default="group1">
+    <description>
+        Description of the topology.
+    </description>
+  
+	<socket name="sock1" min="20000" max="22000"/>
+	<socket name="sock2" min="20000" max="22000"/>
+	<socket name="sock3" min="20000" max="22000"/>
+	<socket name="sock4" min="20000" max="22000"/>
+	<socket name="sock5" min="20000" max="22000"/>
+	
+  	<task name="task1" exec="app1" socket="sock1"/>
+	<task name="task2" exec="app2" socket="sock1,sock2"/>
+	<task name="task3" exec="app3" socket="sock2,sock3"/>
+	<task name="task4" exec="app4" socket="sock3,sock4"/>
+	<task name="task5" exec="app5" socket="sock4,sock5"/>
+
+  	<collection name="collection1">
+   		<task name="task1" n="1"/>
+		<task name="task2" n="2"/>
+		<task name="task3" n="1"/>
+  	</collection>
+	
+  	<collection name="collection2">
+   		<task name="task4" n="2"/>
+		<task name="task5" n="1"/>
+  	</collection>
+	
+	<group name="group1">
+		<collection name="collection1" n="1"/>
+		<collection name="collection2" n="2"/>
+	</group>
+	
+</topology>

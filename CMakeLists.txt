@@ -6,7 +6,6 @@ project( DDS )
 # we need cmake v. < v2.6.2 in order to use VERSION_EQUAL and other VERSION_*
 cmake_minimum_required( VERSION 2.6.2 FATAL_ERROR )
 
-
 # Version
 #
 # take the version string from git and write it to a version file
@@ -29,19 +28,31 @@ else( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
 endif( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
-
 # modules
 option(BUILD_dds_topology "Build dds-topology" ON)
 
+# additional compiler flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -03")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -03")
 
 # Search for BOOST
 find_package(Boost 1.55 REQUIRED)
+if(Boost_FOUND)
+  set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+
+  set(Boost_Components thread program_options filesystem system)  
+  if( BUILD_TESTS)
+    set(Boost_Components ${Boost_Components} unit_test_framework)
+  endif( BUILD_TESTS)
+  
+  find_package( Boost 1.55 REQUIRED COMPONENTS  ${Boost_Components} )  
+endif(Boost_FOUND)
 
 
 if(BUILD_dds_topology)
     message(STATUS "Build dds-topology - YES")
     add_subdirectory ( dds-topology )
-endif
+endif(BUILD_dds_topology)
 
 #
 # Package

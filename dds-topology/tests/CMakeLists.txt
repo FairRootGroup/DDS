@@ -12,26 +12,16 @@
 #
 #        Copyright (c) 2009-2010 GSI GridTeam. All rights reserved.
 #*************************************************************************
-project( pod-ssh-tests )
+project( dds-topology-tests )
 
-include_directories(${pod-ssh_SOURCE_DIR}/src)
+include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 #=============================================================================
-add_executable(pod-ssh_test_config test_config.cpp ${pod-ssh_SOURCE_DIR}/src/config.cpp)
+add_executable(dds-topology_tests Test.cpp )
 
 target_link_libraries (
-    pod-ssh_test_config
+    dds-topology_tests
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
 
-install(TARGETS pod-ssh_test_config DESTINATION tests)
-#=============================================================================
-add_executable(pod-ssh_test_threadpool test_threadpool.cpp )
-
-target_link_libraries (
-    pod-ssh_test_threadpool
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
-)
-
-install(TARGETS pod-ssh_test_threadpool DESTINATION tests)
+install(TARGETS dds-topology_tests DESTINATION tests)
 
