@@ -16,7 +16,14 @@ project( dds-topology-tests )
 
 include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 #=============================================================================
-add_executable(dds-topology_tests Test.cpp )
+set( SOURCE_FILES
+    Test.cpp
+    ${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp
+    ${dds-topology_SOURCE_DIR}/src/DDSTask.cpp
+    ${dds-topology_SOURCE_DIR}/src/DDSTaskCollection.cpp
+    ${dds-topology_SOURCE_DIR}/src/DDSTaskGroup.cpp
+)
+add_executable(dds-topology_tests ${SOURCE_FILES} )
 
 target_link_libraries (
     dds-topology_tests

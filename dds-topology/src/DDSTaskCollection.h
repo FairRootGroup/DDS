@@ -8,21 +8,14 @@
 
 #ifndef __DDS__DDSTaskCollection__
 #define __DDS__DDSTaskCollection__
-// DDS
-#include "DDSTask.h"
+
 // STD
-#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <algorithm>
-
-using std::string;
-using std::stringstream;
-using std::endl;
-using std::ostream;
-using std::vector;
-using std::for_each;
+#include <stdexcept>
 
 class DDSTaskCollection
 {
@@ -41,24 +34,35 @@ public:
      */
     virtual ~DDSTaskCollection() {}
     
-    size_t getNofTasks() const { m_tasks.size(); }
+    std::string getName() const { return m_name; }
+    size_t getNofTasks() const { return m_tasks.size(); }
     
-    const DDSTask& getTask(size_t i) const {
-        asset(i < getNofTasks()) // OR use exceptions?
+    /**
+     * \brief Return task by index.
+     * \return Task collection by index.
+     * \throw std::out_of_range
+     */
+    const std::string& getTask(size_t i) const {
+        if (i >= getNofTasks()) throw std::out_of_range("Out of range exception");
         return m_tasks[i];
     }
     
-    const vector<DDSTask>& getTasks() const { return m_tasks; }
+    const std::vector<std::string>& getTasks() const {
+        return m_tasks;
+    }
+    
+    void setName(const std::string& name) { m_name = name; }
+    void setTasks(const std::vector<std::string>& tasks) { m_tasks = tasks; }
     
     /**
      * \brief Returns string representation of an object.
      * \return String representation of an object.
      */
-    string toString() const {
-        stringstream ss;
-        ss << "DDSTaskCollection: m_name=" << m_name << " m_depends=" << m_depends << endl
-            << "   nof tasks=" << m_tasks.size() << " tasks:" << endl;
-        for_each(m_tasks.begin(), m_tasks.end(), [&ss](const DDSTask& _v) mutable { ss << _v << " ";});
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "DDSTaskCollection: m_name=" << m_name << " nofTasks=" << m_tasks.size() << " tasks=|";
+        std::for_each(m_tasks.begin(), m_tasks.end(), [&ss](const std::string& _v) mutable { ss << _v << " ";});
+        ss << "|";
         return ss.str();
     }
     
@@ -66,14 +70,14 @@ public:
      * \brief Operator << for convenient output to ostream.
      * \return Insertion stream in order to be able to call a succession of insertion operations.
      */
-    friend ostream& operator<<(ostream& strm, const DDSTaskCollection& taskCollection) {
-        strm << taskCollection.toString();
-        return strm;
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskCollection& _taskCollection) {
+        _strm << _taskCollection.toString();
+        return _strm;
     }
 
 private:
-    string m_name; ///> Name of task collection.
-    vector<DDSTask> m_tasks; ///> Vector of tasks in collection.
+    std::string m_name; ///> Name of task collection.
+    std::vector<std::string> m_tasks; ///> Vector of tasks in collection.
 };
 
 #endif /* defined(__DDS__DDSTopology__) */

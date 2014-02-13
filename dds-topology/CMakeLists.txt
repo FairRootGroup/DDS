@@ -24,6 +24,10 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 #
 set( SOURCE_FILES
     ./src/main.cpp
+    ./src/DDSTopology.cpp
+    ./src/DDSTask.cpp
+    ./src/DDSTaskCollection.cpp
+    ./src/DDSTaskGroup.cpp
 )
 
 #

@@ -31,9 +31,10 @@ endif( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 # modules
 option(BUILD_dds_topology "Build dds-topology" ON)
 
-# additional compiler flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -03")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -03")
+# additional compiler flags for C++11
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+# additional linker flags for C++11
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 
 # Search for BOOST
 find_package(Boost 1.55 REQUIRED)

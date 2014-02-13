@@ -14,12 +14,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::stringstream;
-using std::endl;
-using std::ostream;
-using std::vector;
-
 class DDSTask
 {
 public:
@@ -29,7 +23,7 @@ public:
     DDSTask():
     m_name(""),
     m_exec(""),
-    m_sockets(""){
+    m_sockets(){
         
     }
     
@@ -38,15 +32,23 @@ public:
      */
     virtual ~DDSTask() {}
     
+    void setName(const std::string& name) { m_name = name; }
+    void setExec(const std::string& exec) { m_exec = exec; }
+    void setSockets(const std::vector<std::string>& sockets) { m_sockets = sockets; }
+    
+    std::string getName() const { return m_name; }
+    std::string getExec() const { return m_exec; }
+    const std::vector<std::string>& getSockets() const { return m_sockets; }
+    
     /**
      * \brief Returns string representation of an object.
      * \return String representation of an object.
      */
-    string toString() const {
-        stringstream ss;
+    std::string toString() const {
+        std::stringstream ss;
         ss << "DDSTask: m_name=" << m_name << " m_exec=" << m_exec << " m_sockets=| ";
-        for_each(m_sockets.begin(), m_sockets.end, [$ss](const string& _v) mutable { ss << _v << " ";})
-        ss << "|" << endl;
+        std::for_each(m_sockets.begin(), m_sockets.end(), [&ss](const std::string& _v) mutable { ss << _v << " ";});
+        ss << "|";
         return ss.str();
     }
     
@@ -54,15 +56,15 @@ public:
      * \brief Operator << for convenient output to ostream.
      * \return Insertion stream in order to be able to call a succession of insertion operations.
      */
-    friend ostream& operator<<(ostream& strm, const DDSTask& task) {
-        strm << task.toString();
-        return strm;
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTask& _task) {
+        _strm << _task.toString();
+        return _strm;
     }
 
 private:
-    string m_name; ///> Name of task.
-    string m_exec; ///> Path to executable.
-    vector<string> m_sockets; ///> Name of sockets this task connects to.
+    std::string m_name; ///> Name of task.
+    std::string m_exec; ///> Path to executable.
+    std::vector<std::string> m_sockets; ///> Name of sockets this task connects to.
 };
 
 #endif /* defined(__DDS__DDSTask__) */
