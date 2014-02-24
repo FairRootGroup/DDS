@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+
+<xs:simpleType name="stringType">
+  <xs:restriction base="xs:string"/>
+</xs:simpleType>
+
+
+<xs:simpleType name="unsignedShortType">
+  <xs:restriction base="xs:unsignedShort"/>
+</xs:simpleType>
+
+
+<xs:complexType name="socketType">
+  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="minPort" type="unsignedShortType" use="required"/>
+  <xs:attribute name="maxPort" type="unsignedShortType" use="required"/>
+</xs:complexType>
+
+
+<xs:complexType name="taskType">
+  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="exec" type="stringType" use="required"/>
+  <xs:sequence>
+  	<xs:element name="socket" maxOccurs="unbounded" minOccurs="0">
+	  <xs:complexType>
+	    <xs:attribute name="name" type="stringType" use="required"/>
+	  </xs:complexType>
+	</xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="collectionType">
+  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:sequence>
+    <xs:element name="task" maxOccurs="unbounded" minOccurs="1">
+	  <xs:complexType>
+	    <xs:attribute name="name" type="stringtype" use="required"/>
+	  </xs:complexType>
+    </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="groupType">
+  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:sequence>
+    <xs:element name="collection" maxOccurs="unbounded" minOccurs="1">
+  	  <xs:complexType>
+  	    <xs:attribute name="name" type="stringtype" use="required"/>
+  	  </xs:complexType>
+	</xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="topologyType">
+  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:sequence>
+    <xs:element name="collection" maxOccurs="unbounded" minOccurs="1">
+  	  <xs:complexType>
+  	    <xs:attribute name="name" type="stringtype" use="required"/>
+  	  </xs:complexType>
+	</xs:element>
+    <xs:element name="task" maxOccurs="unbounded" minOccurs="1">
+  	  <xs:complexType>
+  	    <xs:attribute name="name" type="stringtype" use="required"/>
+  	  </xs:complexType>
+	</xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:element name="topology" type="topologyType"/>
+
+</xs:schema>
