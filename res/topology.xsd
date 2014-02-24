@@ -7,70 +7,93 @@
 </xs:simpleType>
 
 
-<xs:simpleType name="unsignedShortType">
-  <xs:restriction base="xs:unsignedShort"/>
+<xs:simpleType name="stringNameType">
+	<xs:restriction base="xs:string">
+		<xs:maxLength value="128"/>
+    	<xs:pattern value="([a-zA-Z0-9])+"/>
+	</xs:restriction>
 </xs:simpleType>
 
 
-<xs:complexType name="socketType">
+<xs:simpleType name="portNumberType">
+  <xs:restriction base="xs:unsignedShort">
+    <xs:minInclusive value="10000"/>
+    <xs:maxInclusive value="60000"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:complexType name="namedType">
+	<xs:attribute name="name" type="stringNameType" use="required"/>
+</xs:complexType>
+
+
+<xs:simpleType name="sizeType">
+  <xs:restriction base="xs:unsignedShort">
+    <xs:minInclusive value="1"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:complexType name="mainGroupType">
+	<xs:attribute name="name" type="stringNameType" use="required"/>
+	<xs:attribute name="n" type="sizeType" use="required"/>
+	<xs:attribute name="minRequired" type="xs:unsignedShort" use="required"/>
+</xs:complexType>
+
+
+<xs:complexType name="portType">
   <xs:attribute name="name" type="stringType" use="required"/>
-  <xs:attribute name="minPort" type="unsignedShortType" use="required"/>
-  <xs:attribute name="maxPort" type="unsignedShortType" use="required"/>
+  <xs:attribute name="min" type="portNumberType" use="required"/>
+  <xs:attribute name="max" type="portNumberType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="taskType">
+  <xs:sequence>
+  	<xs:element name="port" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+  </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="exec" type="stringType" use="required"/>
-  <xs:sequence>
-  	<xs:element name="socket" maxOccurs="unbounded" minOccurs="0">
-	  <xs:complexType>
-	    <xs:attribute name="name" type="stringType" use="required"/>
-	  </xs:complexType>
-	</xs:element>
-  </xs:sequence>
 </xs:complexType>
 
 
 <xs:complexType name="collectionType">
-  <xs:attribute name="name" type="stringType" use="required"/>
   <xs:sequence>
-    <xs:element name="task" maxOccurs="unbounded" minOccurs="1">
-	  <xs:complexType>
-	    <xs:attribute name="name" type="stringtype" use="required"/>
-	  </xs:complexType>
-    </xs:element>
+    <xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="1"/>
   </xs:sequence>
+  <xs:attribute name="name" type="stringType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="groupType">
-  <xs:attribute name="name" type="stringType" use="required"/>
   <xs:sequence>
-    <xs:element name="collection" maxOccurs="unbounded" minOccurs="1">
-  	  <xs:complexType>
-  	    <xs:attribute name="name" type="stringtype" use="required"/>
-  	  </xs:complexType>
-	</xs:element>
+    <xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="collection" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
+  <xs:attribute name="name" type="stringType" use="required"/>
+</xs:complexType>
+
+
+<xs:complexType name="mainType">
+  <xs:sequence>
+    <xs:element name="group" type="mainGroupType" maxOccurs="unbounded" minOccurs="1"/>
+  </xs:sequence>
+  <xs:attribute name="n" type="sizeType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="topologyType">
-  <xs:attribute name="name" type="stringType" use="required"/>
   <xs:sequence>
-    <xs:element name="collection" maxOccurs="unbounded" minOccurs="1">
-  	  <xs:complexType>
-  	    <xs:attribute name="name" type="stringtype" use="required"/>
-  	  </xs:complexType>
-	</xs:element>
-    <xs:element name="task" maxOccurs="unbounded" minOccurs="1">
-  	  <xs:complexType>
-  	    <xs:attribute name="name" type="stringtype" use="required"/>
-  	  </xs:complexType>
-	</xs:element>
+    <xs:element name="port" type="portType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="task" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
+    <xs:element name="collection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="group" type="groupType" maxOccurs="unbounded" minOccurs="1"/>
+	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
+  <xs:attribute name="name" type="stringType" use="required"/>
 </xs:complexType>
+
 
 <xs:element name="topology" type="topologyType"/>
 

@@ -9,6 +9,8 @@
 #ifndef __DDS__DDSTaskCollection__
 #define __DDS__DDSTaskCollection__
 
+// DDS
+#include "DDSTask.h"
 // STD
 #include <ostream>
 #include <sstream>
@@ -16,6 +18,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <memory>
 
 class DDSTaskCollection
 {
@@ -50,14 +53,14 @@ public:
      * \return Task collection by index.
      * \throw std::out_of_range
      */
-    const std::string& getTask(size_t i) const
+    DDSTaskPtr_t getTask(size_t i) const
     {
         if (i >= getNofTasks())
             throw std::out_of_range("Out of range exception");
         return m_tasks[i];
     }
 
-    const std::vector<std::string>& getTasks() const
+    const DDSTaskPtrVector_t& getTasks() const
     {
         return m_tasks;
     }
@@ -66,9 +69,13 @@ public:
     {
         m_name = name;
     }
-    void setTasks(const std::vector<std::string>& tasks)
+    void setTasks(const DDSTaskPtrVector_t& tasks)
     {
         m_tasks = tasks;
+    }
+    void addTask(DDSTaskPtr_t task)
+    {
+        m_tasks.push_back(task);
     }
 
     /**
@@ -78,12 +85,11 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTaskCollection: m_name=" << m_name << " nofTasks=" << m_tasks.size() << " tasks=|";
-        std::for_each(m_tasks.begin(),
-                      m_tasks.end(),
-                      [&ss](const std::string& _v) mutable
-                      { ss << _v << " "; });
-        ss << "|";
+        ss << "DDSTaskCollection: m_name=" << m_name << " nofTasks=" << m_tasks.size() << " tasks:";
+        for (const auto& task : m_tasks)
+        {
+            ss << " - " << task->toString() << std::endl;
+        }
         return ss.str();
     }
 
@@ -99,8 +105,11 @@ public:
     }
 
 private:
-    std::string m_name;               ///> Name of task collection.
-    std::vector<std::string> m_tasks; ///> Vector of tasks in collection.
+    std::string m_name;         ///> Name of task collection.
+    DDSTaskPtrVector_t m_tasks; ///> Vector of tasks in collection.
 };
+
+typedef std::shared_ptr<DDSTaskCollection> DDSTaskCollectionPtr_t;
+typedef std::vector<DDSTaskCollectionPtr_t> DDSTaskCollectionPtrVector_t;
 
 #endif /* defined(__DDS__DDSTopology__) */

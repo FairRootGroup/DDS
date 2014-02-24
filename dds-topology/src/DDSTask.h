@@ -9,10 +9,14 @@
 #ifndef __DDS__DDSTask__
 #define __DDS__DDSTask__
 
+// DDS
+#include "DDSPort.h"
+// STD
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
 
 class DDSTask
 {
@@ -23,7 +27,7 @@ public:
     DDSTask()
         : m_name("")
         , m_exec("")
-        , m_sockets()
+        , m_ports()
     {
     }
 
@@ -34,30 +38,53 @@ public:
     {
     }
 
-    void setName(const std::string& name)
+    /// Modifiers
+    void setName(const std::string& _name)
     {
-        m_name = name;
-    }
-    void setExec(const std::string& exec)
-    {
-        m_exec = exec;
-    }
-    void setSockets(const std::vector<std::string>& sockets)
-    {
-        m_sockets = sockets;
+        m_name = _name;
     }
 
+    void setExec(const std::string& _exec)
+    {
+        m_exec = _exec;
+    }
+
+    void setPorts(const std::vector<DDSPortPtr_t>& _ports)
+    {
+        m_ports = _ports;
+    }
+
+    void addPort(DDSPortPtr_t _port)
+    {
+        m_ports.push_back(_port);
+    }
+
+    /// Accessors
     std::string getName() const
     {
         return m_name;
     }
+
     std::string getExec() const
     {
         return m_exec;
     }
-    const std::vector<std::string>& getSockets() const
+
+    size_t getNofPorts() const
     {
-        return m_sockets;
+        return m_ports.size();
+    }
+
+    DDSPortPtr_t getPort(size_t _i) const
+    {
+        if (_i >= getNofPorts())
+            throw std::out_of_range("Out of range exception");
+        return m_ports[_i];
+    }
+
+    const std::vector<DDSPortPtr_t>& getPorts() const
+    {
+        return m_ports;
     }
 
     /**
@@ -67,12 +94,11 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTask: m_name=" << m_name << " m_exec=" << m_exec << " m_sockets=| ";
-        std::for_each(m_sockets.begin(),
-                      m_sockets.end(),
-                      [&ss](const std::string& _v) mutable
-                      { ss << _v << " "; });
-        ss << "|";
+        ss << "DDSTask: m_name=" << m_name << " m_exec=" << m_exec << " m_ports:";
+        for (const auto& port : m_ports)
+        {
+            ss << port << std::endl;
+        }
         return ss.str();
     }
 
@@ -88,9 +114,12 @@ public:
     }
 
 private:
-    std::string m_name;                 ///> Name of task.
-    std::string m_exec;                 ///> Path to executable.
-    std::vector<std::string> m_sockets; ///> Name of sockets this task connects to.
+    std::string m_name;         ///> Name of task
+    std::string m_exec;         ///> Path to executable
+    DDSPortPtrVector_t m_ports; ///> Ports
 };
+
+typedef std::shared_ptr<DDSTask> DDSTaskPtr_t;
+typedef std::vector<DDSTaskPtr_t> DDSTaskPtrVector_t;
 
 #endif /* defined(__DDS__DDSTask__) */

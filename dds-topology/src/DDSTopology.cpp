@@ -20,6 +20,8 @@ using boost::property_tree::ptree_error;
 using boost::property_tree::ptree;
 using boost::property_tree::xml_parser_error;
 
+using namespace std;
+
 DDSTopology::DDSTopology()
     : m_tasks()
     , m_collections()
@@ -31,7 +33,7 @@ DDSTopology::~DDSTopology()
 {
 }
 
-void DDSTopology::init(const std::string& _fileName)
+void DDSTopology::init(const string& _fileName)
 {
     ptree pt;
 
@@ -42,142 +44,183 @@ void DDSTopology::init(const std::string& _fileName)
     catch (xml_parser_error& error)
     {
         // FIXME: What to do in case of fail?
-        std::cout << error.what();
+        cout << error.what();
     }
 
     PrintPropertyTree("", pt);
 
     ParsePropertyTree(pt);
 
-    std::cout << toString();
+    cout << toString();
 }
 
 void DDSTopology::ParsePropertyTree(const ptree& _pt)
 {
-    std::cout << "---ParsePropertyTree---" << std::endl;
     try
     {
         const ptree& pt = _pt.get_child("topology");
 
-        std::string defaultGroup = pt.get<std::string>("<xmlattr>.default");
-
-        for (auto it = pt.begin(); it != pt.end(); it++)
+        for (const auto& v : pt)
         {
-            ptree::value_type v = *it;
-            if (v.first == "task")
-                ParsePropertyTreeTask(v.second);
-            else if (v.first == "socket")
-                ParsePropertyTreeSocket(v.second);
+            if (v.first == "port")
+                ParsePort(v.second);
+            else if (v.first == "task")
+                ParseTask(v.second);
             else if (v.first == "collection")
-                ParsePropertyTreeCollection(v.second);
+                ParseTaskCollection(v.second);
             else if (v.first == "group")
-                ParsePropertyTreeGroup(v.second);
+                ParseTaskGroup(v.second);
+            else if (v.first == "main")
+                ParseMain(v.second);
         }
     }
     catch (ptree_bad_path& error)
     {
-        std::cout << "ptree_bad_path: " << error.what() << std::endl;
+        cout << "ptree_bad_path: " << error.what() << endl;
     }
     catch (ptree_bad_data& error)
     {
-        std::cout << "ptree_bad_data: " << error.what() << std::endl;
+        cout << "ptree_bad_data: " << error.what() << endl;
     }
     catch (ptree_error& error)
     {
-        std::cout << "ptree_error: " << error.what() << std::endl;
+        cout << "ptree_error: " << error.what() << endl;
+    }
+    catch (out_of_range& error)
+    {
+        cout << "out_of_range: " << error.what() << endl;
     }
 }
 
-void DDSTopology::ParsePropertyTreeTask(const ptree& _pt)
+void DDSTopology::ParsePort(const ptree& _pt)
 {
-    std::string name = _pt.get<std::string>("<xmlattr>.name");
-    std::string exec = _pt.get<std::string>("<xmlattr>.exec");
-    std::string socket = _pt.get<std::string>("<xmlattr>.socket");
-
-    std::cout << "task: " << name << " " << exec << " " << socket << std::endl;
-    // FIXME: create task object and add to array of tasks
-    DDSTask task;
-    task.setName(name);
-    task.setExec(exec);
-    task.setSockets({ socket });
-    m_tasks.push_back(task);
-}
-
-void DDSTopology::ParsePropertyTreeSocket(const ptree& _pt)
-{
-    std::string name = _pt.get<std::string>("<xmlattr>.name");
+    string name = _pt.get<string>("<xmlattr>.name");
     unsigned int min = _pt.get<unsigned int>("<xmlattr>.min");
     unsigned int max = _pt.get<unsigned int>("<xmlattr>.max");
 
-    std::cout << "socket: " << name << " " << min << " " << max << std::endl;
-    // FIXME: create socket object and add it to array
+    DDSPortPtr_t newPort = make_shared<DDSPort>();
+    newPort->setName(name);
+    newPort->setRange(min, max);
+
+    m_ports[name] = newPort;
 }
 
-void DDSTopology::ParsePropertyTreeCollection(const ptree& _pt)
+void DDSTopology::ParseTask(const ptree& _pt)
 {
-    std::string name = _pt.get<std::string>("<xmlattr>.name");
-    std::vector<std::string> tasks;
-    for (auto it = _pt.begin(); it != _pt.end(); it++)
+    string name = _pt.get<string>("<xmlattr>.name");
+    string exec = _pt.get<string>("<xmlattr>.exec");
+
+    DDSTaskPtr_t newTask = make_shared<DDSTask>();
+    newTask->setName(name);
+    newTask->setExec(exec);
+
+    for (const auto& v : _pt)
     {
-        ptree::value_type v = *it;
+        if (v.first == "port")
+        {
+            string portName = v.second.get<string>("<xmlattr>.name");
+            // Check if port exists
+            auto port = m_ports.find(name);
+            if (port != m_ports.end())
+            {
+                newTask->addPort(port->second);
+            }
+            else
+            {
+                throw out_of_range(name + " port does not exist.");
+            }
+        }
+    }
+
+    m_tasks[name] = newTask;
+}
+
+void DDSTopology::ParseTaskCollection(const ptree& _pt)
+{
+    string name = _pt.get<string>("<xmlattr>.name");
+
+    DDSTaskCollectionPtr_t newTaskCollection = make_shared<DDSTaskCollection>();
+    newTaskCollection->setName(name);
+
+    for (const auto& v : _pt)
+    {
         if (v.first == "task")
         {
-            std::string name = v.second.get<std::string>("<xmlattr>.name");
-            tasks.push_back(name);
+            string name = v.second.get<string>("<xmlattr>.name");
+            // Check if task exists
+            auto task = m_tasks.find(name);
+            if (task != m_tasks.end())
+            {
+                newTaskCollection->addTask(task->second);
+            }
+            else
+            {
+                throw out_of_range(name + " task does not exist.");
+            }
         }
     }
 
-    std::cout << "collection: " << name << " ";
-    for_each(tasks.begin(),
-             tasks.end(),
-             [](const std::string& _v)
-             { std::cout << _v << " "; });
-    std::cout << std::endl;
-    // FIXME: create collection object and add it to array
-    DDSTaskCollection collection;
-    collection.setName(name);
-    collection.setTasks(tasks);
-    m_collections.push_back(collection);
+    m_collections[name] = newTaskCollection;
 }
 
-void DDSTopology::ParsePropertyTreeGroup(const ptree& _pt)
+void DDSTopology::ParseTaskGroup(const ptree& _pt)
 {
-    std::string name = _pt.get<std::string>("<xmlattr>.name");
-    std::vector<std::string> collections;
-    for (auto it = _pt.begin(); it != _pt.end(); it++)
+    string name = _pt.get<string>("<xmlattr>.name");
+
+    DDSTaskGroupPtr_t newTaskGroup = make_shared<DDSTaskGroup>();
+    newTaskGroup->setName(name);
+
+    for (const auto& v : _pt)
     {
-        ptree::value_type v = *it;
-        if (v.first == "collection")
+        if (v.first == "task")
         {
-            std::string name = v.second.get<std::string>("<xmlattr>.name");
-            collections.push_back(name);
+            string name = v.second.get<string>("<xmlattr>.name");
+            // Check if task exists
+            auto task = m_tasks.find(name);
+            if (task != m_tasks.end())
+            {
+                newTaskGroup->addTask(task->second);
+            }
+            else
+            {
+                throw out_of_range(name + " task does not exist.");
+            }
+        }
+        else if (v.first == "collection")
+        {
+            string name = v.second.get<string>("<xmlattr>.name");
+            // Check if task collection exists
+            auto collection = m_collections.find(name);
+            if (collection != m_collections.end())
+            {
+                newTaskGroup->addTaskCollection(collection->second);
+            }
+            else
+            {
+                throw out_of_range(name + " task collection does not exist.");
+            }
         }
     }
 
-    std::cout << "group: " << name << " ";
-    for_each(collections.begin(),
-             collections.end(),
-             [](const std::string& _v)
-             { std::cout << _v << " "; });
-    std::cout << std::endl;
-    // FIXME: create group object nd add it to array
-    DDSTaskGroup group;
-    group.setName(name);
-    group.setTaskCollections(collections);
-    m_groups.push_back(group);
+    m_groups[name] = newTaskGroup;
 }
 
-void DDSTopology::PrintPropertyTree(const std::string& _path, const ptree& _pt) const
+void DDSTopology::ParseMain(const boost::property_tree::ptree& _pt)
+{
+    //   string name = v.second.get<string>("group.<xmlattr>.name");
+    //   size_t n = v.second.get<size_t>("group.<xmlattr>.n");
+}
+
+void DDSTopology::PrintPropertyTree(const string& _path, const ptree& _pt) const
 {
     if (_pt.size() == 0)
     {
-        std::cout << _path << " " << _pt.get_value("") << std::endl;
+        cout << _path << " " << _pt.get_value("") << endl;
         return;
     }
-    for (auto it = _pt.begin(); it != _pt.end(); it++)
+    for (const auto& v : _pt)
     {
-        boost::property_tree::ptree::value_type v = *it;
-        std::string path = (_path != "") ? (_path + "." + v.first) : v.first;
+        string path = (_path != "") ? (_path + "." + v.first) : v.first;
         PrintPropertyTree(path, v.second);
     }
 }

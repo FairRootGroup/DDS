@@ -8,13 +8,16 @@
 
 #ifndef DDS_DDSTaskGroup_h
 #define DDS_DDSTaskGroup_h
-
+// DDS
+#include "DDSTask.h"
+#include "DDSTaskCollection.h"
 // STD
 #include <ostream>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <memory>
 
 class DDSTaskGroup
 {
@@ -40,13 +43,21 @@ public:
     {
         m_name = _name;
     }
-    void setTaskCollections(const std::vector<std::string>& _taskCollections)
+    void setTaskCollections(const DDSTaskCollectionPtrVector_t& _taskCollections)
     {
         m_taskCollections = _taskCollections;
     }
-    void setTasks(const std::vector<std::string>& _tasks)
+    void addTaskCollection(DDSTaskCollectionPtr_t _taskCollection)
+    {
+        m_taskCollections.push_back(_taskCollection);
+    }
+    void setTasks(const DDSTaskPtrVector_t& _tasks)
     {
         m_tasks = _tasks;
+    }
+    void addTask(DDSTaskPtr_t _task)
+    {
+        m_tasks.push_back(_task);
     }
 
     const std::string& getName() const
@@ -68,14 +79,14 @@ public:
      * \return Task collection by index.
      * \throw std::out_of_range
      */
-    const std::string& getTaskCollection(size_t _i) const
+    DDSTaskCollectionPtr_t getTaskCollection(size_t _i) const
     {
         if (_i >= getNofTaskCollections())
             throw std::out_of_range("Out of range exception");
         return m_taskCollections[_i];
     }
 
-    const std::vector<std::string>& getTaskCollections() const
+    const DDSTaskCollectionPtrVector_t& getTaskCollections() const
     {
         return m_taskCollections;
     }
@@ -85,14 +96,14 @@ public:
         return m_tasks.size();
     }
 
-    const std::string& getTask(size_t _i) const
+    DDSTaskPtr_t getTask(size_t _i) const
     {
         if (_i >= getNofTasks())
             throw std::out_of_range("Out of range exception");
         return m_tasks[_i];
     }
 
-    const std::vector<std::string>& getTasks() const
+    const DDSTaskPtrVector_t& getTasks() const
     {
         return m_tasks;
     }
@@ -100,8 +111,11 @@ public:
     size_t getTotalNofTasks() const
     {
         size_t counter = getNofTasks();
-        // for_each(m_taskCollections.begin(), m_taskCollections.end(),
-        // [&counter] () { counter++; });
+        for (const auto& tc : m_taskCollections)
+        {
+            counter += tc->getNofTasks();
+        }
+        counter += getNofTasks();
         return counter;
     }
 
@@ -112,12 +126,16 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTaskGroup: m_name=" << m_name << " nofCollections=" << m_taskCollections.size() << " collections=|";
-        std::for_each(m_taskCollections.begin(),
-                      m_taskCollections.end(),
-                      [&ss](const std::string& _v) mutable
-                      { ss << _v << " "; });
-        ss << "|";
+        ss << "DDSTaskGroup: m_name=" << m_name << " nofTaskCollections=" << m_taskCollections.size() << " taskCollections:";
+        for (const auto& taskCollection : m_taskCollections)
+        {
+            ss << taskCollection << std::endl;
+        }
+        ss << "nofTasks=" << m_tasks.size() << " tasks:";
+        for (const auto& task : m_tasks)
+        {
+            ss << task << std::endl;
+        }
         return ss.str();
     }
 
@@ -133,9 +151,12 @@ public:
     }
 
 private:
-    std::string m_name;                         ///> Name of task group.
-    std::vector<std::string> m_taskCollections; ///> Vector of task collections.
-    std::vector<std::string> m_tasks;           ///> Vector of tasks
+    std::string m_name;                             ///> Name of task group.
+    DDSTaskCollectionPtrVector_t m_taskCollections; ///> Vector of task collections.
+    DDSTaskPtrVector_t m_tasks;                     ///> Vector of tasks
 };
+
+typedef std::shared_ptr<DDSTaskGroup> DDSTaskGroupPtr_t;
+typedef std::vector<DDSTaskGroupPtr_t> DDSTaskGroupPtrVector_t;
 
 #endif

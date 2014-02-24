@@ -16,6 +16,8 @@ project( dds-topology-tests )
 
 include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 #=============================================================================
+
+
 set( SOURCE_FILES
     Test.cpp
     ${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp
@@ -32,3 +34,10 @@ target_link_libraries (
 
 install(TARGETS dds-topology_tests DESTINATION tests)
 
+
+# Copy schema file and test XML files to the build directory.
+add_custom_target(copy_to_build ALL
+            COMMAND ${CMAKE_COMMAND} -E copy ${TOPOLOGY_SCHEMA_PATH} "${dds-topology-tests_BINARY_DIR}/Debug"
+            COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-tests_SOURCE_DIR}/test_topology.xml "${dds-topology-tests_BINARY_DIR}/Debug"
+            COMMENT "Copying XML Schema file and test topology XML to build directory."
+            VERBATIM)

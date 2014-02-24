@@ -1,28 +1,28 @@
-<topology default="group1">
+<topology name="myTopology">
 
-	<socket name="sock1" min="20000" max="22000"/>
-	<socket name="sock2" min="20000" max="22000"/>
-	<socket name="sock3" min="20000" max="22000"/>
-	<socket name="sock4" min="20000" max="22000"/>
-	<socket name="sock5" min="20000" max="22000"/>
+	<port name="port1" min="20000" max="22000"/>
+	<port name="port2" min="20000" max="22000"/>
+	<port name="port3" min="20000" max="22000"/>
+	<port name="port4" min="20000" max="22000"/>
+	<port name="port5" min="20000" max="22000"/>
 	
   	<task name="task1" exec="app1">
-		<socket name="sock1"/>
+		<port name="port1"/>
 	</task>
 	<task name="task2" exec="app2">
-		<socket name="sock1"/>
-		<socket name="sock2"/>
+		<port name="port1"/>
+		<port name="port2"/>
 	</task>
 	<task name="task3" exec="app3">
-		<socket name="sock2"/>
-		<socket name="sock3"/>
+		<port name="port2"/>
+		<port name="port3"/>
 	</task>
 	<task name="task4" exec="app4">
-		<socket name="sock3"/>
-		<socket name="sock4"/>
+		<port name="port3"/>
+		<port name="port4"/>
 	</task>
 	<task name="task5" exec="app5">
-		<socket name="sock1"/>
+		<port name="port1"/>
 	</task>
 
   	<collection name="collection1">
@@ -39,8 +39,20 @@
   	</collection>
 	
 	<group name="group1">
+		<task name="task1"/>
 		<collection name="collection1"/>
 		<collection name="collection2"/>
 	</group>
+	
+	<group name="group2">
+		<task name="task1"/>
+		<collection name="collection1"/>
+		<collection name="collection2"/>
+	</group>
+	
+	<main n="1">
+		<group name="group1" n="10" minRequired="1"/>
+		<group name="group2" n="2" minRequired="1"/>
+	</main>
 	
 </topology>

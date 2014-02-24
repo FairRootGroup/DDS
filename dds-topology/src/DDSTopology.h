@@ -47,19 +47,23 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTopology:" << std::endl;
-        for_each(m_tasks.begin(),
-                 m_tasks.end(),
-                 [&ss](const DDSTask& _task)
-                 { ss << _task << std::endl; });
-        for_each(m_collections.begin(),
-                 m_collections.end(),
-                 [&ss](const DDSTaskCollection& _taskCollection)
-                 { ss << _taskCollection << std::endl; });
-        for_each(m_groups.begin(),
-                 m_groups.end(),
-                 [&ss](const DDSTaskGroup& _taskGroup)
-                 { ss << _taskGroup << std::endl; });
+        //        ss << "DDSTopology:" << std::endl;
+        //        for (const auto& socket : m_sockets)
+        //        {
+        //            ss << socket << std::endl;
+        //        }
+        //        for (const auto& task : m_tasks)
+        //        {
+        //            ss << task << std::endl;
+        //        }
+        //        for (const auto& collection : m_collections)
+        //        {
+        //            ss << collection << std::endl;
+        //        }
+        //        for (const auto& group : m_groups)
+        //        {
+        //            ss << group << std::endl;
+        //        }
         return ss.str();
     }
 
@@ -77,19 +81,30 @@ public:
 private:
     void ParsePropertyTree(const boost::property_tree::ptree& _pt);
 
-    void ParsePropertyTreeTask(const boost::property_tree::ptree& _pt);
+    void ParseTask(const boost::property_tree::ptree& _pt);
 
-    void ParsePropertyTreeSocket(const boost::property_tree::ptree& _pt);
+    void ParsePort(const boost::property_tree::ptree& _pt);
 
-    void ParsePropertyTreeCollection(const boost::property_tree::ptree& _pt);
+    void ParseTaskCollection(const boost::property_tree::ptree& _pt);
 
-    void ParsePropertyTreeGroup(const boost::property_tree::ptree& _pt);
+    void ParseTaskGroup(const boost::property_tree::ptree& _pt);
+
+    void ParseMain(const boost::property_tree::ptree& _pt);
 
     void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
 
-    std::vector<DDSTask> m_tasks;
-    std::vector<DDSTaskCollection> m_collections;
-    std::vector<DDSTaskGroup> m_groups;
+    typedef std::map<std::string, DDSTaskPtr_t> DDSStringToTaskPtrMap_t;
+    typedef std::map<std::string, DDSTaskCollectionPtr_t> DDSStringToTaskCollectionPtrMap_t;
+    typedef std::map<std::string, DDSTaskGroupPtr_t> DDSStringToTaskGroupPtrMap_t;
+    typedef std::map<std::string, DDSPortPtr_t> DDSStringToPortPtrMap_t;
+
+    DDSStringToTaskPtrMap_t m_tasks;                 ///> Temporary storage for all tasks
+    DDSStringToTaskCollectionPtrMap_t m_collections; ///> Temporary storage for all task collections
+    DDSStringToTaskGroupPtrMap_t m_groups;           ///> Temporary storage for all task groups
+    DDSStringToPortPtrMap_t m_ports;                 ///> Temporary storage for all ports
+
+    DDSTaskGroupPtr_t m_mainGroup; ///> Main task group which we run
+    size_t m_nofMainGroups;        ///> Number of requested main groups
 };
 
 #endif /* defined(__DDS__DDSTopology__) */

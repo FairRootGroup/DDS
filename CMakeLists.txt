@@ -36,6 +36,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
 # additional linker flags for C++11
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 
+# global variables
+set(RESOURCE_DIR "${CMAKE_SOURCE_DIR}/res")
+set(TOPOLOGY_SCHEMA_PATH "${RESOURCE_DIR}/topology.xsd")
+
 # Search for BOOST
 find_package(Boost 1.55 REQUIRED)
 if(Boost_FOUND)
