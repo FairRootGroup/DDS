@@ -19,19 +19,31 @@
 
 class DDSTaskCollection
 {
-   public:
+public:
     /**
      * \brief Constructor.
      */
-    DDSTaskCollection() : m_name(""), m_tasks() {}
+    DDSTaskCollection()
+        : m_name("")
+        , m_tasks()
+    {
+    }
 
     /**
      * \brief Destructor.
      */
-    virtual ~DDSTaskCollection() {}
+    virtual ~DDSTaskCollection()
+    {
+    }
 
-    std::string getName() const { return m_name; }
-    size_t getNofTasks() const { return m_tasks.size(); }
+    std::string getName() const
+    {
+        return m_name;
+    }
+    size_t getNofTasks() const
+    {
+        return m_tasks.size();
+    }
 
     /**
      * \brief Return task by index.
@@ -45,10 +57,19 @@ class DDSTaskCollection
         return m_tasks[i];
     }
 
-    const std::vector<std::string>& getTasks() const { return m_tasks; }
+    const std::vector<std::string>& getTasks() const
+    {
+        return m_tasks;
+    }
 
-    void setName(const std::string& name) { m_name = name; }
-    void setTasks(const std::vector<std::string>& tasks) { m_tasks = tasks; }
+    void setName(const std::string& name)
+    {
+        m_name = name;
+    }
+    void setTasks(const std::vector<std::string>& tasks)
+    {
+        m_tasks = tasks;
+    }
 
     /**
      * \brief Returns string representation of an object.
@@ -57,8 +78,7 @@ class DDSTaskCollection
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTaskCollection: m_name=" << m_name
-           << " nofTasks=" << m_tasks.size() << " tasks=|";
+        ss << "DDSTaskCollection: m_name=" << m_name << " nofTasks=" << m_tasks.size() << " tasks=|";
         std::for_each(m_tasks.begin(),
                       m_tasks.end(),
                       [&ss](const std::string& _v) mutable
@@ -72,16 +92,15 @@ class DDSTaskCollection
      * \return Insertion stream in order to be able to call a succession of
      * insertion operations.
      */
-    friend std::ostream& operator<<(std::ostream& _strm,
-                                    const DDSTaskCollection& _taskCollection)
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskCollection& _taskCollection)
     {
         _strm << _taskCollection.toString();
         return _strm;
     }
 
-   private:
-    std::string m_name;                ///> Name of task collection.
-    std::vector<std::string> m_tasks;  ///> Vector of tasks in collection.
+private:
+    std::string m_name;               ///> Name of task collection.
+    std::vector<std::string> m_tasks; ///> Vector of tasks in collection.
 };
 
 #endif /* defined(__DDS__DDSTopology__) */

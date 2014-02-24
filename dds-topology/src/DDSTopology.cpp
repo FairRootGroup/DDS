@@ -20,7 +20,10 @@ using boost::property_tree::ptree_error;
 using boost::property_tree::ptree;
 using boost::property_tree::xml_parser_error;
 
-DDSTopology::DDSTopology() : m_tasks(), m_collections(), m_groups()
+DDSTopology::DDSTopology()
+    : m_tasks()
+    , m_collections()
+    , m_groups()
 {
 }
 
@@ -96,7 +99,7 @@ void DDSTopology::ParsePropertyTreeTask(const ptree& _pt)
     DDSTask task;
     task.setName(name);
     task.setExec(exec);
-    task.setSockets({socket});
+    task.setSockets({ socket });
     m_tasks.push_back(task);
 }
 
@@ -128,7 +131,7 @@ void DDSTopology::ParsePropertyTreeCollection(const ptree& _pt)
     for_each(tasks.begin(),
              tasks.end(),
              [](const std::string& _v)
-    { std::cout << _v << " "; });
+             { std::cout << _v << " "; });
     std::cout << std::endl;
     // FIXME: create collection object and add it to array
     DDSTaskCollection collection;
@@ -155,7 +158,7 @@ void DDSTopology::ParsePropertyTreeGroup(const ptree& _pt)
     for_each(collections.begin(),
              collections.end(),
              [](const std::string& _v)
-    { std::cout << _v << " "; });
+             { std::cout << _v << " "; });
     std::cout << std::endl;
     // FIXME: create group object nd add it to array
     DDSTaskGroup group;
@@ -164,8 +167,7 @@ void DDSTopology::ParsePropertyTreeGroup(const ptree& _pt)
     m_groups.push_back(group);
 }
 
-void DDSTopology::PrintPropertyTree(const std::string& _path,
-                                    const ptree& _pt) const
+void DDSTopology::PrintPropertyTree(const std::string& _path, const ptree& _pt) const
 {
     if (_pt.size() == 0)
     {

@@ -18,31 +18,50 @@
 
 class DDSTaskGroup
 {
-   public:
+public:
     /**
      * \brief Constructor.
      */
-    DDSTaskGroup() : m_name(""), m_taskCollections(), m_tasks() {}
+    DDSTaskGroup()
+        : m_name("")
+        , m_taskCollections()
+        , m_tasks()
+    {
+    }
 
     /**
      * \brief Destructor.
      */
-    virtual ~DDSTaskGroup() {}
+    virtual ~DDSTaskGroup()
+    {
+    }
 
-    void setName(const std::string& _name) { m_name = _name; }
+    void setName(const std::string& _name)
+    {
+        m_name = _name;
+    }
     void setTaskCollections(const std::vector<std::string>& _taskCollections)
     {
         m_taskCollections = _taskCollections;
     }
-    void setTasks(const std::vector<std::string>& _tasks) { m_tasks = _tasks; }
+    void setTasks(const std::vector<std::string>& _tasks)
+    {
+        m_tasks = _tasks;
+    }
 
-    const std::string& getName() const { return m_name; }
+    const std::string& getName() const
+    {
+        return m_name;
+    }
 
     /**
      * \brief Returns number of task collections.
      * \return Number of task collections.
      */
-    size_t getNofTaskCollections() const { return m_taskCollections.size(); }
+    size_t getNofTaskCollections() const
+    {
+        return m_taskCollections.size();
+    }
 
     /**
      * \brief Returns task collection by index.
@@ -61,7 +80,10 @@ class DDSTaskGroup
         return m_taskCollections;
     }
 
-    size_t getNofTasks() const { return m_tasks.size(); }
+    size_t getNofTasks() const
+    {
+        return m_tasks.size();
+    }
 
     const std::string& getTask(size_t _i) const
     {
@@ -70,7 +92,10 @@ class DDSTaskGroup
         return m_tasks[_i];
     }
 
-    const std::vector<std::string>& getTasks() const { return m_tasks; }
+    const std::vector<std::string>& getTasks() const
+    {
+        return m_tasks;
+    }
 
     size_t getTotalNofTasks() const
     {
@@ -87,9 +112,7 @@ class DDSTaskGroup
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTaskGroup: m_name=" << m_name
-           << " nofCollections=" << m_taskCollections.size()
-           << " collections=|";
+        ss << "DDSTaskGroup: m_name=" << m_name << " nofCollections=" << m_taskCollections.size() << " collections=|";
         std::for_each(m_taskCollections.begin(),
                       m_taskCollections.end(),
                       [&ss](const std::string& _v) mutable
@@ -103,18 +126,16 @@ class DDSTaskGroup
      * \return Insertion stream in order to be able to call a succession of
      * insertion operations.
      */
-    friend std::ostream& operator<<(std::ostream& _strm,
-                                    const DDSTaskGroup& _taskGroup)
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskGroup& _taskGroup)
     {
         _strm << _taskGroup.toString();
         return _strm;
     }
 
-   private:
-    std::string m_name;  ///> Name of task group.
-    std::vector<std::string>
-        m_taskCollections;             ///> Vector of task collections.
-    std::vector<std::string> m_tasks;  ///> Vector of tasks
+private:
+    std::string m_name;                         ///> Name of task group.
+    std::vector<std::string> m_taskCollections; ///> Vector of task collections.
+    std::vector<std::string> m_tasks;           ///> Vector of tasks
 };
 
 #endif

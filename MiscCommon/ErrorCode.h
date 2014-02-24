@@ -39,12 +39,12 @@ namespace MiscCommon
 #define FAILED(er) (!SUCCEEDED(er))
 
     // General Error codes
-    ERRORCODE_C BASE_FOR_GENERAL_ERR(50);  // <<<----- BASE counter
+    ERRORCODE_C BASE_FOR_GENERAL_ERR(50); // <<<----- BASE counter
     ERRORCODE_C erNULLArg(BASE_FOR_GENERAL_ERR + 1);
     ERRORCODE_C erFILE_NOT_FOUND(BASE_FOR_GENERAL_ERR + 2);
 
     // XML Error codes
-    ERRORCODE_C BASE_FOR_XML_ERR(100);  // <<<----- BASE counter
+    ERRORCODE_C BASE_FOR_XML_ERR(100); // <<<----- BASE counter
     ERRORCODE_C erXMLInit(BASE_FOR_XML_ERR + 1);
     ERRORCODE_C erXMLReadConfig(BASE_FOR_XML_ERR + 2);
     ERRORCODE_C erXMLNullNode(BASE_FOR_XML_ERR + 3);
@@ -86,7 +86,7 @@ namespace MiscCommon
      */
     class system_error : public std::exception
     {
-       public:
+    public:
         explicit system_error(const std::string& _ErrorPrefix)
         {
             m_errno = errno;
@@ -97,11 +97,19 @@ namespace MiscCommon
             ss << "System error description [" << m_errno << "]: " << szError;
             m_Msg = ss.str();
         }
-        virtual ~system_error() throw() {}
-        virtual const char* what() const throw() { return m_Msg.c_str(); }
-        int getErrno() const throw() { return m_errno; }
+        virtual ~system_error() throw()
+        {
+        }
+        virtual const char* what() const throw()
+        {
+            return m_Msg.c_str();
+        }
+        int getErrno() const throw()
+        {
+            return m_errno;
+        }
 
-       private:
+    private:
         std::string m_Msg;
         int m_errno;
     };

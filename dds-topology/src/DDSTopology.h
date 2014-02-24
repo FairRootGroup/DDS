@@ -24,7 +24,7 @@
 
 class DDSTopology
 {
-   public:
+public:
     /**
      * \brief Constructor.
      */
@@ -68,14 +68,13 @@ class DDSTopology
      * \return Insertion stream in order to be able to call a succession of
      * insertion operations.
      */
-    friend std::ostream& operator<<(std::ostream& _strm,
-                                    const DDSTopology& _topology)
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTopology& _topology)
     {
         _strm << _topology.toString();
         return _strm;
     }
 
-   private:
+private:
     void ParsePropertyTree(const boost::property_tree::ptree& _pt);
 
     void ParsePropertyTreeTask(const boost::property_tree::ptree& _pt);
@@ -86,8 +85,7 @@ class DDSTopology
 
     void ParsePropertyTreeGroup(const boost::property_tree::ptree& _pt);
 
-    void PrintPropertyTree(const std::string& _path,
-                           const boost::property_tree::ptree& _pt) const;
+    void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
 
     std::vector<DDSTask> m_tasks;
     std::vector<DDSTaskCollection> m_collections;
