@@ -1,17 +1,7 @@
-/************************************************************************/
-/**
- * @file ErrorCode.h
- * @brief error cods collection file
- * @author Anar Manafov A.Manafov@gsi.de
- */ /*
-
-        version number:     $LastChangedRevision$
-        created by:         Anar Manafov
-                            2006-05-11
-        last changed by:    $LastChangedBy$ $LastChangedDate$
-
-        Copyright (c) 2006-2007 GSI GridTeam. All rights reserved.
-************************************************************************/
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+// error cods collection file
+//
 #ifndef ERRORCODE_H
 #define ERRORCODE_H
 

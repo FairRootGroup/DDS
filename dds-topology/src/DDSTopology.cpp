@@ -1,8 +1,5 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
-//  DDSTopology.h
-//  DDS
-//
-//  Created by Andrey Lebedev on 2/12/14.
 //
 //
 

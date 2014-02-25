@@ -1,8 +1,5 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
-//  DDSPort.h
-//  DDS
-//
-//  Created by Andrey Lebedev on 2/24/14.
 //
 //
 

@@ -1,9 +1,5 @@
-//
-//  DDSPort.cpp
-//  DDS
-//
-//  Created by Andrey Lebedev on 2/24/14.
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
 //
-
+//
 #include "DDSPort.h"

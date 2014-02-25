@@ -1,3 +1,5 @@
+# Copyright 2014 GSI, Inc. All rights reserved.
+#
 #
 # to build PoD issue the following commands:
 #  1) mkdir build

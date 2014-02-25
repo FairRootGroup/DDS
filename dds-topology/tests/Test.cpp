@@ -1,18 +1,7 @@
-/************************************************************************/
-/**
- * @file Test_Protocol.cpp
- * @brief Unit tests of Protocol
- * @author Anar Manafov A.Manafov@gsi.de
- */ /*
-
-        version number:     $LastChangedRevision$
-        created by:         Anar Manafov
-                            2009-12-28
-        last changed by:    $LastChangedBy$ $LastChangedDate$
-
-        Copyright (c) 2009 GSI GridTeam. All rights reserved.
-*************************************************************************/
-
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
 // BOOST: tests
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK

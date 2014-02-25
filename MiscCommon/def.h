@@ -1,17 +1,7 @@
-/************************************************************************/
-/**
- * @file def.h
- * @brief Helpers and definitions (typedefs)
- * @author Anar Manafov A.Manafov@gsi.de
- */ /*
-
-        version number:     $LastChangedRevision$
-        created by:         Anar Manafov
-                            2006-03-28
-        last changed by:    $LastChangedBy$ $LastChangedDate$
-
-        Copyright (c) 2006-2014 GSI. All rights reserved.
-************************************************************************/
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+// Helpers and definitions (typedefs)
+//
 #ifndef DEF_H
 #define DEF_H
 
