@@ -38,6 +38,11 @@ public:
     void init(const std::string& _fileName);
 
     /**
+     * \brief Validate provided XML file against XSD using xmllint.
+     */
+    bool isValid(const std::string& _fileName);
+
+    /**
      * \brief Returns string representation of an object.
      * \return String representation of an object.
      */

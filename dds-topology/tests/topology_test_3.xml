@@ -1,0 +1,18 @@
+<topology name="myTopology">
+
+	<port name="port1" min="20000" max="22000"/>
+	
+  	<task name="task1" exec="app1">
+	</task>
+
+  	<collection name="collection1">
+  	</collection>
+	
+	<group name="group1">
+	</group>
+	
+	<main n="1">
+		<group name="group1" n="10" minRequired="1"/>
+	</main>
+	
+</topology>

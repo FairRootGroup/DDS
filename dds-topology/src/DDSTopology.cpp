@@ -7,6 +7,9 @@
 #include "DDSTopology.h"
 // STL
 #include <map>
+// SYSTEM
+#include <unistd.h>
+#include <sys/wait.h>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -49,6 +52,63 @@ void DDSTopology::init(const string& _fileName)
     ParsePropertyTree(pt);
 
     cout << toString();
+}
+
+bool DDSTopology::isValid(const std::string& _fileName)
+{
+    pid_t pid = fork();
+
+    switch (pid)
+    {
+        case -1:
+            // Unable to fork
+            throw runtime_error("Unable to run XML validator.");
+        case 0:
+        {
+            // FIXME: XSD file is hardcoded now -> take it from resource manager
+            // FIXME: Path to xmllint is hardcoded now.
+            execl("/usr/bin/xmllint", "xmllint", "--noout", "--schema", "topology.xsd", _fileName.c_str(), NULL);
+
+            // We shoud never come to this point of execution
+            exit(1);
+        }
+    }
+
+    int status = -1;
+    while (wait(&status) != pid)
+        ;
+
+    //    do
+    //    {
+    //        pid_t w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+    //        if (w == -1)
+    //        {
+    //            perror("waitpid");
+    //            exit(EXIT_FAILURE);
+    //        }
+    //
+    //        if (WIFEXITED(status))
+    //        {
+    //            printf("exited, status=%d\n", WEXITSTATUS(status));
+    //        }
+    //        else if (WIFSIGNALED(status))
+    //        {
+    //            printf("killed by signal %d\n", WTERMSIG(status));
+    //        }
+    //        else if (WIFSTOPPED(status))
+    //        {
+    //            printf("stopped by signal %d\n", WSTOPSIG(status));
+    //        }
+    //        else if (WIFCONTINUED(status))
+    //        {
+    //            printf("continued\n");
+    //        }
+    //    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+    // std::cout << "pid=" << pid << std::endl;
+    // std::cout << "status=" << status << std::endl;
+
+    return (status == 0);
 }
 
 void DDSTopology::ParsePropertyTree(const ptree& _pt)

@@ -2,6 +2,7 @@
 //
 //
 //
+
 // BOOST: tests
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK
@@ -17,19 +18,51 @@ BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_init)
 {
+    // DDSTopology topology;
+    // topology.init("test_topology.xml");
+    // BOOST_CHECK_EQUAL(1, 1);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_validation_1)
+{
     DDSTopology topology;
-    topology.init("test_topology.xml");
-    BOOST_CHECK_EQUAL(1, 1);
+    bool result = topology.isValid("topology_test_1.xml");
+    BOOST_CHECK(result == true);
 }
 
-BOOST_AUTO_TEST_CASE(test_case_on_file_scope)
+BOOST_AUTO_TEST_CASE(test_dds_topology_validation_2)
 {
-    BOOST_CHECK(true);
+    DDSTopology topology;
+    bool result = topology.isValid("topology_test_2.xml");
+    BOOST_CHECK(result == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_case2)
+BOOST_AUTO_TEST_CASE(test_dds_topology_validation_3)
 {
-    BOOST_CHECK_EQUAL(1, 1);
+    DDSTopology topology;
+    bool result = topology.isValid("topology_test_3.xml");
+    BOOST_CHECK(result == false);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_validation_4)
+{
+    DDSTopology topology;
+    bool result = topology.isValid("topology_test_4.xml");
+    BOOST_CHECK(result == false);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_validation_5)
+{
+    DDSTopology topology;
+    bool result = topology.isValid("topology_test_5.xml");
+    BOOST_CHECK(result == false);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_validation_6)
+{
+    DDSTopology topology;
+    bool result = topology.isValid("wrong_file.xml");
+    BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

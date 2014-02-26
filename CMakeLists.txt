@@ -59,6 +59,8 @@ endif(Boost_FOUND)
 
 
 if(BUILD_dds_topology)
+    message(STATUS "Build MiscCommon - YES")
+    add_subdirectory ( MiscCommon )
     message(STATUS "Build dds-topology - YES")
     add_subdirectory ( dds-topology )
 endif(BUILD_dds_topology)
