@@ -17,7 +17,7 @@
 // BOOST: tests
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK
-#define BOOST_AUTO_TEST_MAIN    // Boost 1.33
+#define BOOST_AUTO_TEST_MAIN // Boost 1.33
 #define BOOST_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 // pod-ssh
@@ -27,11 +27,11 @@
 using namespace std;
 using boost::unit_test::test_suite;
 
-BOOST_AUTO_TEST_SUITE( pod_ssh_config );
+BOOST_AUTO_TEST_SUITE(pod_ssh_config);
 //=============================================================================
 
 //=============================================================================
-BOOST_AUTO_TEST_CASE( test_readconfig )
+BOOST_AUTO_TEST_CASE(test_readconfig)
 {
     CConfig config;
 
@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE( test_readconfig )
        << "r2, anar@lxi001.gsi.de,, /tmp/test/fff fff, 2\n"
        << "125, anar@lxg0055.gsi.de, -p22, /tmp/test, 8\n";
 
-    config.readFrom( ss );
+    config.readFrom(ss);
 
-    configRecords_t recs( config.getRecords() );
-    BOOST_REQUIRE( !recs.empty() );
+    configRecords_t recs(config.getRecords());
+    BOOST_REQUIRE(!recs.empty());
 
     // Checking record #1
     SConfigRecord rec;
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( test_readconfig )
     rec.m_sshOptions = "-p24";
     rec.m_wrkDir = "/tmp/test";
     rec.m_nWorkers = 4;
-    BOOST_REQUIRE( *recs[0] == rec );
+    BOOST_REQUIRE(*recs[0] == rec);
 
     rec = SConfigRecord();
     rec.m_id = "r2";
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( test_readconfig )
     rec.m_sshOptions = "";
     rec.m_wrkDir = "/tmp/test/fff fff";
     rec.m_nWorkers = 2;
-    BOOST_REQUIRE( *recs[1] == rec );
+    BOOST_REQUIRE(*recs[1] == rec);
 
     rec = SConfigRecord();
     rec.m_id = "125";
@@ -68,9 +68,9 @@ BOOST_AUTO_TEST_CASE( test_readconfig )
     rec.m_sshOptions = "-p22";
     rec.m_wrkDir = "/tmp/test";
     rec.m_nWorkers = 8;
-    BOOST_REQUIRE( *recs[2] == rec );
+    BOOST_REQUIRE(*recs[2] == rec);
 }
-BOOST_AUTO_TEST_CASE( test_readconfig_bad )
+BOOST_AUTO_TEST_CASE(test_readconfig_bad)
 {
     CConfig config;
 
@@ -79,9 +79,9 @@ BOOST_AUTO_TEST_CASE( test_readconfig_bad )
        << "r2, anar@lxi001.gsi.de,/tmp/test,2\n"
        << "125, anar@lxg0055.gsi.de, -p22, /tmp/test,8\n";
 
-    BOOST_REQUIRE_THROW( config.readFrom( ss ), runtime_error );
+    BOOST_REQUIRE_THROW(config.readFrom(ss), runtime_error);
 }
-BOOST_AUTO_TEST_CASE( test_duplicate_id )
+BOOST_AUTO_TEST_CASE(test_duplicate_id)
 {
     CConfig config;
 
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( test_duplicate_id )
        << "r2, anar@lxi001.gsi.de,,/tmp/test,2\n"
        << "r1, anar@lxg0055.gsi.de, -p22, /tmp/test,8\n";
 
-    BOOST_REQUIRE_THROW( config.readFrom( ss ), runtime_error );
+    BOOST_REQUIRE_THROW(config.readFrom(ss), runtime_error);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

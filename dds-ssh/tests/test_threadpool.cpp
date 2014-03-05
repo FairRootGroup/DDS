@@ -36,25 +36,29 @@ const size_t g_sleeptime = 1; // in secs.
 const size_t g_numTasks = 32;
 const size_t g_numThreads = 4;
 //=============================================================================
-enum EProc {start, clean};
-class CTestTask: public CTaskImp<CTestTask, EProc>
+enum EProc
 {
-    public:
-        bool runTask( EProc _param )
-        {
-            m_tid = MiscCommon::gettid();
-            sleep( g_sleeptime );
-            return true;
-        }
-        unsigned long threadID() const
-        {
-            return m_tid;
-        }
-
-    private:
-        unsigned long m_tid;
+    start,
+    clean
 };
-ostream &operator<< ( ostream &_stream, const CTestTask &_task )
+class CTestTask : public CTaskImp<CTestTask, EProc>
+{
+public:
+    bool runTask(EProc _param)
+    {
+        m_tid = MiscCommon::gettid();
+        sleep(g_sleeptime);
+        return true;
+    }
+    unsigned long threadID() const
+    {
+        return m_tid;
+    }
+
+private:
+    unsigned long m_tid;
+};
+ostream& operator<<(ostream& _stream, const CTestTask& _task)
 {
     _stream << _task.threadID();
     return _stream;
@@ -62,28 +66,28 @@ ostream &operator<< ( ostream &_stream, const CTestTask &_task )
 //=============================================================================
 int main()
 {
-    CThreadPool<CTestTask, EProc> threadPool( 4 );
-    vector <CTestTask> tasksList( g_numTasks );
-    for( size_t i = 0; i < g_numTasks; ++i )
+    CThreadPool<CTestTask, EProc> threadPool(4);
+    vector<CTestTask> tasksList(g_numTasks);
+    for (size_t i = 0; i < g_numTasks; ++i)
     {
-        threadPool.pushTask( tasksList[i], start );
+        threadPool.pushTask(tasksList[i], start);
     }
-    threadPool.stop( true );
+    threadPool.stop(true);
 
-//    ostream_iterator<CTestTask> out_it( cout, "\n" );
-//    copy( tasksList.begin(), tasksList.end(),
-//          out_it );
+    //    ostream_iterator<CTestTask> out_it( cout, "\n" );
+    //    copy( tasksList.begin(), tasksList.end(),
+    //          out_it );
 
     typedef map<unsigned long, size_t> counter_t;
     counter_t counter;
     {
-        vector <CTestTask>::const_iterator iter = tasksList.begin();
-        vector <CTestTask>::const_iterator iter_end = tasksList.end();
-        for( ; iter != iter_end; ++iter )
+        vector<CTestTask>::const_iterator iter = tasksList.begin();
+        vector<CTestTask>::const_iterator iter_end = tasksList.end();
+        for (; iter != iter_end; ++iter)
         {
-            counter_t::iterator found = counter.find( iter->threadID() );
-            if( found == counter.end() )
-                counter.insert( counter_t::value_type( iter->threadID(), 1 ) );
+            counter_t::iterator found = counter.find(iter->threadID());
+            if (found == counter.end())
+                counter.insert(counter_t::value_type(iter->threadID(), 1));
             else
             {
                 found->second = found->second + 1;
@@ -93,12 +97,12 @@ int main()
 
     counter_t::const_iterator iter = counter.begin();
     counter_t::const_iterator iter_end = counter.end();
-    for( ; iter != iter_end; ++iter )
+    for (; iter != iter_end; ++iter)
     {
         cout << iter->first << " was used " << iter->second << " times\n";
         // each thread suppose to be used equal amount of time,
         // exactly (g_numTasks/g_numThreads) times
-        if( iter->second != ( g_numTasks / g_numThreads ) )
+        if (iter->second != (g_numTasks / g_numThreads))
         {
             cerr << "ThreadPool: simple test - Failed" << endl;
             return 1;
