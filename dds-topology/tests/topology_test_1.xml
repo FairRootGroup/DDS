@@ -50,7 +50,9 @@
 		<collection name="collection2"/>
 	</group>
 	
-	<main n="1">
+	<main n="3" minRequired="1">
+	    <task name="task1"/>
+	    <collection name="collection1" n="3" minRequired="1"/>
 		<group name="group1" n="10" minRequired="1"/>
 		<group name="group2" n="2" minRequired="1"/>
 	</main>

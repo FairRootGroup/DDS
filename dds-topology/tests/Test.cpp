@@ -16,11 +16,11 @@
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_init)
+BOOST_AUTO_TEST_CASE(test_dds_topology_init_1)
 {
-    // DDSTopology topology;
-    // topology.init("test_topology.xml");
-    // BOOST_CHECK_EQUAL(1, 1);
+    DDSTopology topology;
+    topology.init("topology_test_1.xml");
+    BOOST_CHECK(true);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_validation_1)

@@ -7,25 +7,25 @@
 #define __DDS__DDSTask__
 
 // DDS
+#include "DDSTopoElement.h"
 #include "DDSPort.h"
 // STD
-#include <iostream>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <memory>
 
-class DDSTask
+class DDSTask : public DDSTopoElement
 {
 public:
     /**
      * \brief Constructor.
      */
     DDSTask()
-        : m_name("")
+        : DDSTopoElement()
         , m_exec("")
         , m_ports()
     {
+        setType(DDSTopoElementType::TASK);
     }
 
     /**
@@ -36,32 +36,30 @@ public:
     }
 
     /// Modifiers
-    void setName(const std::string& _name)
-    {
-        m_name = _name;
-    }
-
     void setExec(const std::string& _exec)
     {
         m_exec = _exec;
     }
 
-    void setPorts(const std::vector<DDSPortPtr_t>& _ports)
+    void setPorts(const DDSPortVector_t& _ports)
     {
         m_ports = _ports;
     }
 
-    void addPort(DDSPortPtr_t _port)
+    void addPort(const DDSPort& _port)
     {
         m_ports.push_back(_port);
     }
 
-    /// Accessors
-    std::string getName() const
+    /**
+     * \brief Inherited from DDSTopoElement.
+     */
+    virtual size_t getNofTasks() const
     {
-        return m_name;
+        return 1;
     }
 
+    /// Accessors
     std::string getExec() const
     {
         return m_exec;
@@ -72,14 +70,14 @@ public:
         return m_ports.size();
     }
 
-    DDSPortPtr_t getPort(size_t _i) const
+    const DDSPort& getPort(size_t _i) const
     {
         if (_i >= getNofPorts())
             throw std::out_of_range("Out of range exception");
         return m_ports[_i];
     }
 
-    const std::vector<DDSPortPtr_t>& getPorts() const
+    const DDSPortVector_t& getPorts() const
     {
         return m_ports;
     }
@@ -91,7 +89,7 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTask: m_name=" << m_name << " m_exec=" << m_exec << " m_ports:";
+        ss << "DDSTask: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:";
         for (const auto& port : m_ports)
         {
             ss << port << std::endl;
@@ -111,9 +109,8 @@ public:
     }
 
 private:
-    std::string m_name;         ///> Name of task
-    std::string m_exec;         ///> Path to executable
-    DDSPortPtrVector_t m_ports; ///> Ports
+    std::string m_exec;      ///> Path to executable
+    DDSPortVector_t m_ports; ///> Ports
 };
 
 typedef std::shared_ptr<DDSTask> DDSTaskPtr_t;

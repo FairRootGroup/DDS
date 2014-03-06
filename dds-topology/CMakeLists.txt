@@ -32,6 +32,8 @@ set( SOURCE_FILES
     ./src/DDSTaskCollection.cpp
     ./src/DDSTaskGroup.cpp
     ./src/DDSPort.cpp
+	./src/DDSTopoElement.cpp
+	./src/DDSTaskContainer.cpp
 )
 
 #
@@ -43,6 +45,8 @@ set( HEADER_FILES
     ./src/DDSTaskCollection.h
     ./src/DDSTaskGroup.h
     ./src/DDSPort.h
+	./src/DDSTopoElement.h
+	./src/DDSTaskContainer.h
 )
 
 include_directories(

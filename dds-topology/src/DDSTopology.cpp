@@ -23,9 +23,11 @@ using boost::property_tree::xml_parser_error;
 using namespace std;
 
 DDSTopology::DDSTopology()
-    : m_tasks()
-    , m_collections()
-    , m_groups()
+    : m_tempPorts()
+    , m_tempTasks()
+    , m_tempCollections()
+    , m_tempGroups()
+    , m_main()
 {
 }
 
@@ -47,11 +49,11 @@ void DDSTopology::init(const string& _fileName)
         cout << error.what();
     }
 
-    PrintPropertyTree("", pt);
+    //    PrintPropertyTree("", pt);
 
     ParsePropertyTree(pt);
 
-    cout << toString();
+    // cout << toString();
 }
 
 bool DDSTopology::isValid(const std::string& _fileName)
@@ -130,6 +132,11 @@ void DDSTopology::ParsePropertyTree(const ptree& _pt)
             else if (v.first == "main")
                 ParseMain(v.second);
         }
+
+        m_tempPorts.clear();
+        m_tempTasks.clear();
+        m_tempCollections.clear();
+        m_tempGroups.clear();
     }
     catch (ptree_bad_path& error)
     {
@@ -159,7 +166,14 @@ void DDSTopology::ParsePort(const ptree& _pt)
     newPort->setName(name);
     newPort->setRange(min, max);
 
-    m_ports[name] = newPort;
+    if (m_tempPorts.find(name) == m_tempPorts.end())
+    {
+        m_tempPorts[name] = newPort;
+    }
+    else
+    {
+        throw logic_error("Port " + name + " already exists");
+    }
 }
 
 void DDSTopology::ParseTask(const ptree& _pt)
@@ -176,20 +190,26 @@ void DDSTopology::ParseTask(const ptree& _pt)
         if (v.first == "port")
         {
             string portName = v.second.get<string>("<xmlattr>.name");
-            // Check if port exists
-            auto port = m_ports.find(name);
-            if (port != m_ports.end())
+            auto port = m_tempPorts.find(portName);
+            if (port != m_tempPorts.end())
             {
-                newTask->addPort(port->second);
+                newTask->addPort(*(port->second.get()));
             }
             else
             {
-                throw out_of_range(name + " port does not exist.");
+                throw out_of_range(portName + " port does not exist.");
             }
         }
     }
 
-    m_tasks[name] = newTask;
+    if (m_tempTasks.find(name) == m_tempTasks.end())
+    {
+        m_tempTasks[name] = newTask;
+    }
+    else
+    {
+        throw logic_error("Task " + name + " already exists");
+    }
 }
 
 void DDSTopology::ParseTaskCollection(const ptree& _pt)
@@ -203,21 +223,27 @@ void DDSTopology::ParseTaskCollection(const ptree& _pt)
     {
         if (v.first == "task")
         {
-            string name = v.second.get<string>("<xmlattr>.name");
-            // Check if task exists
-            auto task = m_tasks.find(name);
-            if (task != m_tasks.end())
+            string taskName = v.second.get<string>("<xmlattr>.name");
+            auto task = m_tempTasks.find(taskName);
+            if (task != m_tempTasks.end())
             {
-                newTaskCollection->addTask(task->second);
+                newTaskCollection->addElement(dynamic_pointer_cast<DDSTopoElement>(task->second));
             }
             else
             {
-                throw out_of_range(name + " task does not exist.");
+                throw out_of_range(taskName + " task does not exist");
             }
         }
     }
 
-    m_collections[name] = newTaskCollection;
+    if (m_tempCollections.find(name) == m_tempCollections.end())
+    {
+        m_tempCollections[name] = newTaskCollection;
+    }
+    else
+    {
+        throw logic_error("Task collection " + name + " already exists");
+    }
 }
 
 void DDSTopology::ParseTaskGroup(const ptree& _pt)
@@ -231,12 +257,59 @@ void DDSTopology::ParseTaskGroup(const ptree& _pt)
     {
         if (v.first == "task")
         {
-            string name = v.second.get<string>("<xmlattr>.name");
-            // Check if task exists
-            auto task = m_tasks.find(name);
-            if (task != m_tasks.end())
+            string taskName = v.second.get<string>("<xmlattr>.name");
+            auto task = m_tempTasks.find(taskName);
+            if (task != m_tempTasks.end())
             {
-                newTaskGroup->addTask(task->second);
+                newTaskGroup->addElement(dynamic_pointer_cast<DDSTopoElement>(task->second));
+            }
+            else
+            {
+                throw out_of_range(taskName + " task does not exist.");
+            }
+        }
+        else if (v.first == "collection")
+        {
+            string collectionName = v.second.get<string>("<xmlattr>.name");
+            auto collection = m_tempCollections.find(collectionName);
+            if (collection != m_tempCollections.end())
+            {
+                newTaskGroup->addElement(dynamic_pointer_cast<DDSTopoElement>(collection->second));
+            }
+            else
+            {
+                throw out_of_range(collectionName + " task collection does not exist.");
+            }
+        }
+    }
+
+    if (m_tempGroups.find(name) == m_tempGroups.end())
+    {
+        m_tempGroups[name] = newTaskGroup;
+    }
+    else
+    {
+        throw logic_error("Task group " + name + " already exists");
+    }
+}
+
+void DDSTopology::ParseMain(const boost::property_tree::ptree& _pt)
+{
+    m_main = make_shared<DDSTaskGroup>();
+
+    m_main->setN(_pt.get<size_t>("<xmlattr>.n"));
+    m_main->setMinimumRequired(_pt.get<size_t>("<xmlattr>.minRequired"));
+
+    for (const auto& v : _pt)
+    {
+        if (v.first == "task")
+        {
+            string name = v.second.get<string>("<xmlattr>.name");
+            auto task = m_tempTasks.find(name);
+            if (task != m_tempTasks.end())
+            {
+                DDSTaskPtr_t newTask = make_shared<DDSTask>();
+                m_main->addElement(newTask);
             }
             else
             {
@@ -246,26 +319,36 @@ void DDSTopology::ParseTaskGroup(const ptree& _pt)
         else if (v.first == "collection")
         {
             string name = v.second.get<string>("<xmlattr>.name");
-            // Check if task collection exists
-            auto collection = m_collections.find(name);
-            if (collection != m_collections.end())
+            auto collection = m_tempCollections.find(name);
+            if (collection != m_tempCollections.end())
             {
-                newTaskGroup->addTaskCollection(collection->second);
+                DDSTaskCollectionPtr_t newCollection = make_shared<DDSTaskCollection>();
+                newCollection->setN(_pt.get<size_t>("<xmlattr>.n"));
+                newCollection->setMinimumRequired(_pt.get<size_t>("<xmlattr>.minRequired"));
+                m_main->addElement(newCollection);
             }
             else
             {
                 throw out_of_range(name + " task collection does not exist.");
             }
         }
+        else if (v.first == "group")
+        {
+            string name = v.second.get<string>("<xmlattr>.name");
+            auto group = m_tempGroups.find(name);
+            if (group != m_tempGroups.end())
+            {
+                DDSTaskGroupPtr_t newGroup = make_shared<DDSTaskGroup>();
+                newGroup->setN(_pt.get<size_t>("<xmlattr>.n"));
+                newGroup->setMinimumRequired(_pt.get<size_t>("<xmlattr>.minRequired"));
+                m_main->addElement(newGroup);
+            }
+            else
+            {
+                throw out_of_range(name + " task group does not exist.");
+            }
+        }
     }
-
-    m_groups[name] = newTaskGroup;
-}
-
-void DDSTopology::ParseMain(const boost::property_tree::ptree& _pt)
-{
-    //   string name = v.second.get<string>("group.<xmlattr>.name");
-    //   size_t n = v.second.get<size_t>("group.<xmlattr>.n");
 }
 
 void DDSTopology::PrintPropertyTree(const string& _path, const ptree& _pt) const

@@ -77,9 +77,12 @@
 
 <xs:complexType name="mainType">
   <xs:sequence>
-    <xs:element name="group" type="mainGroupType" maxOccurs="unbounded" minOccurs="1"/>
+	<xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="collection" type="mainGroupType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="group" type="mainGroupType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="n" type="sizeType" use="required"/>
+  <xs:attribute name="minRequired" type="sizeType" use="required"/>
 </xs:complexType>
 
 

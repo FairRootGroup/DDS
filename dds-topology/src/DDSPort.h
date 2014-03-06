@@ -78,6 +78,7 @@ private:
 };
 
 typedef std::shared_ptr<DDSPort> DDSPortPtr_t;
-typedef std::vector<DDSPortPtr_t> DDSPortPtrVector_t;
+// typedef std::vector<DDSPortPtr_t> DDSPortPtrVector_t;
+typedef std::vector<DDSPort> DDSPortVector_t;
 
 #endif /* defined(__DDS__DDSPort__) */

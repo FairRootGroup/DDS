@@ -14,6 +14,8 @@ set( SOURCE_FILES
     ${dds-topology_SOURCE_DIR}/src/DDSTask.cpp
     ${dds-topology_SOURCE_DIR}/src/DDSTaskCollection.cpp
     ${dds-topology_SOURCE_DIR}/src/DDSTaskGroup.cpp
+     ${dds-topology_SOURCE_DIR}/src/DDSTopoElement.cpp
+    ${dds-topology_SOURCE_DIR}/src/DDSTaskContainer.cpp
 )
 add_executable(dds-topology_tests ${SOURCE_FILES} )
 

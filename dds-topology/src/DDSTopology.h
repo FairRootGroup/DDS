@@ -7,6 +7,7 @@
 #define __DDS__DDSTopology__
 
 // DDS
+#include "DDSTaskContainer.h"
 #include "DDSTask.h"
 #include "DDSTaskCollection.h"
 #include "DDSTaskGroup.h"
@@ -49,23 +50,7 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        //        ss << "DDSTopology:" << std::endl;
-        //        for (const auto& socket : m_sockets)
-        //        {
-        //            ss << socket << std::endl;
-        //        }
-        //        for (const auto& task : m_tasks)
-        //        {
-        //            ss << task << std::endl;
-        //        }
-        //        for (const auto& collection : m_collections)
-        //        {
-        //            ss << collection << std::endl;
-        //        }
-        //        for (const auto& group : m_groups)
-        //        {
-        //            ss << group << std::endl;
-        //        }
+
         return ss.str();
     }
 
@@ -100,13 +85,12 @@ private:
     typedef std::map<std::string, DDSTaskGroupPtr_t> DDSStringToTaskGroupPtrMap_t;
     typedef std::map<std::string, DDSPortPtr_t> DDSStringToPortPtrMap_t;
 
-    DDSStringToTaskPtrMap_t m_tasks;                 ///> Temporary storage for all tasks
-    DDSStringToTaskCollectionPtrMap_t m_collections; ///> Temporary storage for all task collections
-    DDSStringToTaskGroupPtrMap_t m_groups;           ///> Temporary storage for all task groups
-    DDSStringToPortPtrMap_t m_ports;                 ///> Temporary storage for all ports
+    DDSStringToPortPtrMap_t m_tempPorts;                 ///> Temporary storage for all ports
+    DDSStringToTaskPtrMap_t m_tempTasks;                 ///> Temporary storage for all tasks
+    DDSStringToTaskCollectionPtrMap_t m_tempCollections; ///> Temporary storage for all task collections
+    DDSStringToTaskGroupPtrMap_t m_tempGroups;           ///> Temporary storage for all task groups
 
-    DDSTaskGroupPtr_t m_mainGroup; ///> Main task group which we run
-    size_t m_nofMainGroups;        ///> Number of requested main groups
+    DDSTaskGroupPtr_t m_main; ///> Main task group which we run
 };
 
 #endif /* defined(__DDS__DDSTopology__) */
