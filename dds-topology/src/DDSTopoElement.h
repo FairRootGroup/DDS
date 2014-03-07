@@ -51,7 +51,7 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTopoElement: m_name=" << m_name << std::endl;
+        ss << "DDSTopoElement: m_name=" << m_name;
         return ss.str();
     }
 

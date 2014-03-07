@@ -36,12 +36,17 @@ public:
     /**
      * \brief Read topology from specified XML file.
      */
-    void init(const std::string& _fileName);
+    bool init(const std::string& _fileName);
 
     /**
      * \brief Validate provided XML file against XSD using xmllint.
      */
     bool isValid(const std::string& _fileName);
+
+    DDSTaskGroupPtr_t getMainGroup() const
+    {
+        return m_main;
+    }
 
     /**
      * \brief Returns string representation of an object.

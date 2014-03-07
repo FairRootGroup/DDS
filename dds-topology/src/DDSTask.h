@@ -89,10 +89,10 @@ public:
     std::string toString() const
     {
         std::stringstream ss;
-        ss << "DDSTask: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:";
+        ss << "DDSTask: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:\n";
         for (const auto& port : m_ports)
         {
-            ss << port << std::endl;
+            ss << " - " << port << std::endl;
         }
         return ss.str();
     }

@@ -35,8 +35,11 @@ DDSTopology::~DDSTopology()
 {
 }
 
-void DDSTopology::init(const string& _fileName)
+bool DDSTopology::init(const string& _fileName)
 {
+    if (!isValid(_fileName))
+        return false;
+
     ptree pt;
 
     try
@@ -47,13 +50,17 @@ void DDSTopology::init(const string& _fileName)
     {
         // FIXME: What to do in case of fail?
         cout << error.what();
+        return false;
     }
 
     //    PrintPropertyTree("", pt);
 
     ParsePropertyTree(pt);
 
+    std::cout << "DDSTopology::init: nofTasks=" << m_main->getNofTasks() << std::endl;
+
     // cout << toString();
+    return true;
 }
 
 bool DDSTopology::isValid(const std::string& _fileName)
@@ -153,6 +160,10 @@ void DDSTopology::ParsePropertyTree(const ptree& _pt)
     catch (out_of_range& error)
     {
         cout << "out_of_range: " << error.what() << endl;
+    }
+    catch (logic_error& error)
+    {
+        cout << "logic_error: " << error.what() << endl;
     }
 }
 
@@ -308,7 +319,7 @@ void DDSTopology::ParseMain(const boost::property_tree::ptree& _pt)
             auto task = m_tempTasks.find(name);
             if (task != m_tempTasks.end())
             {
-                DDSTaskPtr_t newTask = make_shared<DDSTask>();
+                DDSTaskPtr_t newTask = make_shared<DDSTask>(*(task->second.get()));
                 m_main->addElement(newTask);
             }
             else
@@ -322,9 +333,9 @@ void DDSTopology::ParseMain(const boost::property_tree::ptree& _pt)
             auto collection = m_tempCollections.find(name);
             if (collection != m_tempCollections.end())
             {
-                DDSTaskCollectionPtr_t newCollection = make_shared<DDSTaskCollection>();
-                newCollection->setN(_pt.get<size_t>("<xmlattr>.n"));
-                newCollection->setMinimumRequired(_pt.get<size_t>("<xmlattr>.minRequired"));
+                DDSTaskCollectionPtr_t newCollection = make_shared<DDSTaskCollection>(*(collection->second.get()));
+                newCollection->setN(v.second.get<size_t>("<xmlattr>.n"));
+                newCollection->setMinimumRequired(v.second.get<size_t>("<xmlattr>.minRequired"));
                 m_main->addElement(newCollection);
             }
             else
@@ -338,9 +349,9 @@ void DDSTopology::ParseMain(const boost::property_tree::ptree& _pt)
             auto group = m_tempGroups.find(name);
             if (group != m_tempGroups.end())
             {
-                DDSTaskGroupPtr_t newGroup = make_shared<DDSTaskGroup>();
-                newGroup->setN(_pt.get<size_t>("<xmlattr>.n"));
-                newGroup->setMinimumRequired(_pt.get<size_t>("<xmlattr>.minRequired"));
+                DDSTaskGroupPtr_t newGroup = make_shared<DDSTaskGroup>(*(group->second.get()));
+                newGroup->setN(v.second.get<size_t>("<xmlattr>.n"));
+                newGroup->setMinimumRequired(v.second.get<size_t>("<xmlattr>.minRequired"));
                 m_main->addElement(newGroup);
             }
             else

@@ -44,24 +44,21 @@ void DDSTaskContainer::addElement(DDSTopoElementPtr_t _element)
     {
         case DDSTopoElementType::GROUP:
         {
-            DDSTaskGroupPtr_t p = make_shared<DDSTaskGroup>();
-            *(p.get()) = *(static_cast<DDSTaskGroup*>(_element.get()));
+            DDSTaskGroupPtr_t p = make_shared<DDSTaskGroup>(*(dynamic_pointer_cast<DDSTaskGroup>(_element).get()));
             m_elements.push_back(p);
         }
         break;
 
         case DDSTopoElementType::COLLECTION:
         {
-            DDSTaskCollectionPtr_t p = make_shared<DDSTaskCollection>();
-            *(p.get()) = *(static_cast<DDSTaskCollection*>(_element.get()));
+            DDSTaskCollectionPtr_t p = make_shared<DDSTaskCollection>(*(dynamic_pointer_cast<DDSTaskCollection>(_element).get()));
             m_elements.push_back(p);
         }
         break;
 
         case DDSTopoElementType::TASK:
         {
-            DDSTaskPtr_t p = make_shared<DDSTask>();
-            *(p.get()) = *(static_cast<DDSTask*>(_element.get()));
+            DDSTaskPtr_t p = make_shared<DDSTask>(*(dynamic_pointer_cast<DDSTask>(_element).get()));
             m_elements.push_back(p);
         }
         break;

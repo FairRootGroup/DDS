@@ -9,7 +9,7 @@
 // DDS
 #include "DDSTopoElement.h"
 // STD
-#include <ostream>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -72,7 +72,7 @@ public:
     {
         std::stringstream ss;
         ss << "DDSTaskContainer: m_name=" << getName() << " m_n=" << m_n << " m_minimumRequired=" << m_minimumRequired << " nofElements=" << getNofElements()
-           << " elements:";
+           << " elements:\n";
         for (const auto& element : m_elements)
         {
             ss << " - " << element->toString() << std::endl;
