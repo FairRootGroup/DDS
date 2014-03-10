@@ -1,8 +1,5 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
-//  DDSTaskContainer.cpp
-//  DDS
-//
-//  Created by Andrey Lebedev on 3/5/14.
 //
 //
 

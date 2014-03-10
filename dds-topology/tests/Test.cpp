@@ -9,7 +9,7 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-#include "DDSTopology.h"
+#include "DDSTopologyParserXML.h"
 #include "DDSTask.h"
 #include "DDSTaskCollection.h"
 #include "DDSTaskGroup.h"
@@ -18,14 +18,13 @@ using namespace std;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_init_1)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
-    DDSTopology topology;
+    DDSTopologyParserXML parser;
 
-    topology.init("topology_test_1.xml");
-    BOOST_CHECK(true);
+    DDSTaskGroupPtr_t main = parser.parse("topology_test_1.xml");
+    BOOST_CHECK(main != nullptr);
 
-    DDSTaskGroupPtr_t main = topology.getMainGroup();
     BOOST_CHECK(main->getNofTasks() == 22);
     BOOST_CHECK(main->getN() == 7);
     BOOST_CHECK(main->getMinimumRequired() == 1);
@@ -72,45 +71,45 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_init_1)
     BOOST_CHECK(casted4->getMinimumRequired() == 3);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_validation_1)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)
 {
-    DDSTopology topology;
-    bool result = topology.isValid("topology_test_1.xml");
+    DDSTopologyParserXML parser;
+    bool result = parser.isValid("topology_test_1.xml");
     BOOST_CHECK(result == true);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_validation_2)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_2)
 {
-    DDSTopology topology;
-    bool result = topology.isValid("topology_test_2.xml");
+    DDSTopologyParserXML parser;
+    bool result = parser.isValid("topology_test_2.xml");
     BOOST_CHECK(result == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_validation_3)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_3)
 {
-    DDSTopology topology;
-    bool result = topology.isValid("topology_test_3.xml");
+    DDSTopologyParserXML parser;
+    bool result = parser.isValid("topology_test_3.xml");
     BOOST_CHECK(result == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_validation_4)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_4)
 {
-    DDSTopology topology;
-    bool result = topology.isValid("topology_test_4.xml");
+    DDSTopologyParserXML parser;
+    bool result = parser.isValid("topology_test_4.xml");
     BOOST_CHECK(result == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_validation_5)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_5)
 {
-    DDSTopology topology;
-    bool result = topology.isValid("topology_test_5.xml");
+    DDSTopologyParserXML parser;
+    bool result = parser.isValid("topology_test_5.xml");
     BOOST_CHECK(result == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_validation_6)
+BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_6)
 {
-    DDSTopology topology;
-    bool result = topology.isValid("wrong_file.xml");
+    DDSTopologyParserXML parser;
+    bool result = parser.isValid("wrong_file.xml");
     BOOST_CHECK(result == false);
 }
 
