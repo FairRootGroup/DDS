@@ -20,8 +20,7 @@ public:
      * \brief Constructor.
      */
     DDSPort()
-        : m_name("")
-        , m_range(std::make_pair(10000, 50000))
+        : m_range(std::make_pair(10000, 50000))
     {
     }
 

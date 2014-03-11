@@ -10,9 +10,7 @@
 // STD
 #include <iostream>
 
-using std::cout;
-using std::endl;
-
+using namespace std;
 namespace bpo = boost::program_options;
 
 int main(int argc, char* argv[])

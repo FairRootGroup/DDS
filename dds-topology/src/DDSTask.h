@@ -22,7 +22,6 @@ public:
      */
     DDSTask()
         : DDSTopoElement()
-        , m_exec("")
         , m_ports()
     {
         setType(DDSTopoElementType::TASK);
