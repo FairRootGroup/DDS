@@ -17,7 +17,7 @@
 
 class DDSTaskContainer : public DDSTopoElement
 {
-public:
+  public:
     size_t getNofElements() const
     {
         return m_elements.size();
@@ -91,7 +91,7 @@ public:
         return _strm;
     }
 
-protected:
+  protected:
     /**
      * \brief Constructor.
      */
@@ -131,7 +131,7 @@ protected:
         return counter;
     }
 
-private:
+  private:
     /**
      * \brief Make a deep copy of the object. Used in copy constructor and assignment operator.
      */

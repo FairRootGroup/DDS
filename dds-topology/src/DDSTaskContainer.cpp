@@ -11,7 +11,8 @@
 
 using namespace std;
 
-DDSTaskContainer::DDSTaskContainer(const DDSTaskContainer& rhs) : DDSTopoElement(rhs)
+DDSTaskContainer::DDSTaskContainer(const DDSTaskContainer& rhs)
+    : DDSTopoElement(rhs)
 {
     deepCopy(rhs);
 }

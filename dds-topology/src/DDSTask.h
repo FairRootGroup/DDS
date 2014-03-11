@@ -16,7 +16,7 @@
 
 class DDSTask : public DDSTopoElement
 {
-public:
+  public:
     /**
      * \brief Constructor.
      */
@@ -107,7 +107,7 @@ public:
         return _strm;
     }
 
-private:
+  private:
     std::string m_exec;      ///> Path to executable
     DDSPortVector_t m_ports; ///> Ports
 };

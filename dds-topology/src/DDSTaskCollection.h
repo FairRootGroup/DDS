@@ -17,11 +17,12 @@
 
 class DDSTaskCollection : public DDSTaskContainer
 {
-public:
+  public:
     /**
      * \brief Constructor.
      */
-    DDSTaskCollection() : DDSTaskContainer()
+    DDSTaskCollection()
+        : DDSTaskContainer()
     {
         setType(DDSTopoElementType::COLLECTION);
     }
@@ -64,7 +65,7 @@ public:
     //        return _strm;
     //    }
 
-private:
+  private:
 };
 
 typedef std::shared_ptr<DDSTaskCollection> DDSTaskCollectionPtr_t;

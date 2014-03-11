@@ -15,11 +15,12 @@
 
 class DDSTaskGroup : public DDSTaskContainer
 {
-public:
+  public:
     /**
      * \brief Constructor.
      */
-    DDSTaskGroup() : DDSTaskContainer()
+    DDSTaskGroup()
+        : DDSTaskContainer()
     {
         setType(DDSTopoElementType::GROUP);
     }
@@ -36,7 +37,7 @@ public:
         return getNofTasksDefault();
     }
 
-private:
+  private:
 };
 
 typedef std::shared_ptr<DDSTaskGroup> DDSTaskGroupPtr_t;

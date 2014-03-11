@@ -13,53 +13,28 @@
 
 class DDSPort
 {
-public:
+  public:
     typedef std::pair<unsigned short, unsigned short> DDSPortRange_t;
 
     /**
      * \brief Constructor.
      */
-    DDSPort()
-        : m_range(std::make_pair(10000, 50000))
-    {
-    }
-
+    DDSPort();
     /**
      * \brief Destructor.
      */
-    virtual ~DDSPort()
-    {
-    }
+    virtual ~DDSPort();
 
-    void setName(const std::string& _name)
-    {
-        m_name = _name;
-    }
-    void setRange(unsigned short _min, unsigned short _max)
-    {
-        m_range = std::make_pair(_min, _max);
-    }
-
-    std::string getName() const
-    {
-        return m_name;
-    }
-    const DDSPortRange_t& getRange() const
-    {
-        return m_range;
-    }
-
+  public:
+    void setName(const std::string& _name);
+    void setRange(unsigned short _min, unsigned short _max);
+    std::string getName() const;
+    const DDSPortRange_t& getRange() const;
     /**
      * \brief Returns string representation of an object.
      * \return String representation of an object.
      */
-    std::string toString() const
-    {
-        std::stringstream ss;
-        ss << "DDSPort: m_name=" << m_name << " m_range=(" << m_range.first << ", " << m_range.second << ")";
-        return ss.str();
-    }
-
+    std::string toString() const;
     /**
      * \brief Operator << for convenient output to ostream.
      * \return Insertion stream in order to be able to call a succession of
@@ -71,7 +46,7 @@ public:
         return _strm;
     }
 
-private:
+  private:
     std::string m_name;     ///> Name of port.
     DDSPortRange_t m_range; ///> Requested range of ports.
 };

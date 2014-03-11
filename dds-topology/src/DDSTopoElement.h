@@ -21,7 +21,7 @@ enum class DDSTopoElementType
 
 class DDSTopoElement
 {
-public:
+  public:
     /// Modifiers
     void setName(const std::string& _name)
     {
@@ -66,7 +66,7 @@ public:
         return _strm;
     }
 
-protected:
+  protected:
     /**
      * \brief Constructor.
      */
@@ -88,7 +88,7 @@ protected:
         m_type = _type;
     }
 
-private:
+  private:
     std::string m_name;        ///> Name of topology element
     DDSTopoElementType m_type; ///> Type of the topology element
 

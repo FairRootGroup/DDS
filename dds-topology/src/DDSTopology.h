@@ -14,7 +14,7 @@
 
 class DDSTopology
 {
-public:
+  public:
     /**
      * \brief Constructor.
      */
@@ -53,7 +53,7 @@ public:
         return _strm;
     }
 
-private:
+  private:
     DDSTaskGroupPtr_t m_main; ///> Main task group which we run
 };
 

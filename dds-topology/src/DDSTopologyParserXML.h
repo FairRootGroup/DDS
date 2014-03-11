@@ -22,7 +22,7 @@
 
 class DDSTopologyParserXML
 {
-public:
+  public:
     /**
      * \brief Constructor.
      */
@@ -45,7 +45,7 @@ public:
      */
     bool isValid(const std::string& _fileName);
 
-private:
+  private:
     void ParseTask(const boost::property_tree::ptree& _pt);
 
     void ParsePort(const boost::property_tree::ptree& _pt);
