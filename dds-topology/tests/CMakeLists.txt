@@ -9,13 +9,14 @@ include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 
 set( SOURCE_FILES
-    Test.cpp
-    ${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp
-    ${dds-topology_SOURCE_DIR}/src/DDSTask.cpp
-    ${dds-topology_SOURCE_DIR}/src/DDSTaskCollection.cpp
-    ${dds-topology_SOURCE_DIR}/src/DDSTaskGroup.cpp
-     ${dds-topology_SOURCE_DIR}/src/DDSTopoElement.cpp
-    ${dds-topology_SOURCE_DIR}/src/DDSTaskContainer.cpp
+	Test.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTask.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSPort.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTaskCollection.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTaskGroup.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTopoElement.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTaskContainer.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopologyParserXML.cpp
 )
 add_executable(dds-topology_tests ${SOURCE_FILES} )

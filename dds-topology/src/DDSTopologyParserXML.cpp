@@ -5,6 +5,7 @@
 
 // DDS
 #include "DDSTopologyParserXML.h"
+#include "DDSPort.h"
 // STL
 #include <map>
 // SYSTEM

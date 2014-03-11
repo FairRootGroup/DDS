@@ -23,7 +23,7 @@ class DDSPort
     /**
      * \brief Destructor.
      */
-    virtual ~DDSPort();
+    ~DDSPort();
 
   public:
     void setName(const std::string& _name);
@@ -40,12 +40,8 @@ class DDSPort
      * \return Insertion stream in order to be able to call a succession of
      * insertion operations.
      */
-    friend std::ostream& operator<<(std::ostream& _strm, const DDSPort& _port)
-    {
-        _strm << _port.toString();
-        return _strm;
-    }
-
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSPort& _port);
+    
   private:
     std::string m_name;     ///> Name of port.
     DDSPortRange_t m_range; ///> Requested range of ports.

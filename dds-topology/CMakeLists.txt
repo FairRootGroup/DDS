@@ -26,12 +26,12 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 # Source files
 #
 set( SOURCE_FILES
-    ./src/main.cpp
-    ./src/DDSTopology.cpp
-    ./src/DDSTask.cpp
-    ./src/DDSTaskCollection.cpp
-    ./src/DDSTaskGroup.cpp
-    ./src/DDSPort.cpp
+	./src/main.cpp
+	./src/DDSTopology.cpp
+	./src/DDSTask.cpp
+	./src/DDSTaskCollection.cpp
+	./src/DDSTaskGroup.cpp
+	./src/DDSPort.cpp
 	./src/DDSTopoElement.cpp
 	./src/DDSTaskContainer.cpp
 	./src/DDSTopologyParserXML.cpp
@@ -41,11 +41,11 @@ set( SOURCE_FILES
 # Header files
 #
 set( HEADER_FILES
-    ./src/DDSTopology.h
-    ./src/DDSTask.h
-    ./src/DDSTaskCollection.h
-    ./src/DDSTaskGroup.h
-    ./src/DDSPort.h
+	./src/DDSTopology.h
+	./src/DDSTask.h
+	./src/DDSTaskCollection.h
+	./src/DDSTaskGroup.h
+	./src/DDSPort.h
 	./src/DDSTopoElement.h
 	./src/DDSTaskContainer.h
 	./src/DDSTopologyParserXML.h
@@ -67,11 +67,8 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 #target_link_libraries (
-#    pod-ssh
-#    pipe_log_engine
-#    pod_sys_files
+#    dds-topology
 #    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-#    ${Boost_THREAD_LIBRARY}
 #)
 
 install(TARGETS dds-topology DESTINATION bin)
