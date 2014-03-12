@@ -18,47 +18,22 @@
 class DDSTaskContainer : public DDSTopoElement
 {
   public:
-    size_t getNofElements() const
-    {
-        return m_elements.size();
-    }
+    size_t getNofElements() const;
 
-    size_t getN() const
-    {
-        return m_n;
-    }
+    size_t getN() const;
 
-    size_t getMinimumRequired() const
-    {
-        return m_minimumRequired;
-    }
+    size_t getMinimumRequired() const;
 
-    void setN(size_t _n)
-    {
-        m_n = _n;
-    }
+    void setN(size_t _n);
 
-    void setMinimumRequired(size_t _minimumRequired)
-    {
-        m_minimumRequired = _minimumRequired;
-    }
+    void setMinimumRequired(size_t _minimumRequired);
 
-    /**
-     * \brief Return topology element by index.
-     * \return Topology element by index.
-     * \throw std::out_of_range
-     */
-    DDSTopoElementPtr_t getElement(size_t _i) const
-    {
-        if (_i >= getNofElements())
-            throw std::out_of_range("Out of range exception");
-        return m_elements[_i];
-    }
+    /// \brief Return topology element by index.
+    /// \return Topology element by index.
+    /// \throw std::out_of_range
+    DDSTopoElementPtr_t getElement(size_t _i) const;
 
-    const DDSTopoElementPtrVector_t& getElements() const
-    {
-        return m_elements;
-    }
+    const DDSTopoElementPtrVector_t& getElements() const;
 
     void setElements(const DDSTopoElementPtrVector_t& _elements);
 
@@ -68,75 +43,29 @@ class DDSTaskContainer : public DDSTopoElement
      * \brief Returns string representation of an object.
      * \return String representation of an object.
      */
-    std::string toString() const
-    {
-        std::stringstream ss;
-        ss << "DDSTaskContainer: m_name=" << getName() << " m_n=" << m_n << " m_minimumRequired=" << m_minimumRequired << " nofElements=" << getNofElements()
-           << " elements:\n";
-        for (const auto& element : m_elements)
-        {
-            ss << " - " << element->toString() << std::endl;
-        }
-        return ss.str();
-    }
+    std::string toString() const;
 
     /**
      * \brief Operator << for convenient output to ostream.
      * \return Insertion stream in order to be able to call a succession of
      * insertion operations.
      */
-    friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskContainer& _taskContainer)
-    {
-        _strm << _taskContainer.toString();
-        return _strm;
-    }
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskContainer& _taskContainer);
 
   protected:
-    /**
-     * \brief Constructor.
-     */
-    DDSTaskContainer()
-        : DDSTopoElement()
-        , m_elements()
-        , m_n(0)
-        , m_minimumRequired(0)
-    {
-    }
+    /// \brief Constructor.
+    DDSTaskContainer();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~DDSTaskContainer()
-    {
-    }
+    /// \brief Destructor.
+    virtual ~DDSTaskContainer();
 
-    /**
-     * \brief Copy Constructor
-     **/
-    DDSTaskContainer(const DDSTaskContainer&);
+    /// \brief Default implementation for DDSTopoElement::getNofTasks. Calculate recursively number of tasks in all daughter nodes.
+    size_t getNofTasksDefault() const;
 
-    /**
-     * \brief Assignment Operator
-     **/
-    DDSTaskContainer& operator=(const DDSTaskContainer&);
-
-    size_t getNofTasksDefault() const
-    {
-        const auto& elements = getElements();
-        size_t counter = 0;
-        for (const auto& v : elements)
-        {
-            counter += v->getNofTasks();
-        }
-        return counter;
-    }
+    /// \brief Default implementation for DDSTopoElement::initFromPropertyTree.
+    void initFromPropertyTreeDefault(const std::string& _name, const boost::property_tree::ptree& _pt);
 
   private:
-    /**
-     * \brief Make a deep copy of the object. Used in copy constructor and assignment operator.
-     */
-    void deepCopy(const DDSTaskContainer&);
-
     DDSTopoElementPtrVector_t m_elements; ///> Vector of topology elements in collection.
     size_t m_n;                           ///> Number of times this task has to be executed
     size_t m_minimumRequired;             ///> Minimum required number of tasks to start processing

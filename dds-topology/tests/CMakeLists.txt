@@ -18,6 +18,7 @@ set( SOURCE_FILES
 	${dds-topology_SOURCE_DIR}/src/DDSTopoElement.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTaskContainer.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopologyParserXML.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSPort.cpp
 )
 add_executable(dds-topology_tests ${SOURCE_FILES} )
 

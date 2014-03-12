@@ -10,6 +10,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+// BOOST
+#include <boost/property_tree/ptree.hpp>
 
 enum class DDSTopoElementType
 {
@@ -43,6 +45,13 @@ class DDSTopoElement
      * \brief Has to return number of all tasks including daughter elements.
      */
     virtual size_t getNofTasks() const = 0;
+
+    /**
+     * \brief Initialize object with data from property tree.
+     * \param[in] _name Name of the object as in input file.
+     * \param[in] _pt Property tree starting from root.
+     */
+    virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt) = 0;
 
     /**
      * \brief Returns string representation of an object.

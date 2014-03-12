@@ -5,7 +5,9 @@
 
 // DDS
 #include "DDSTopologyParserXML.h"
-#include "DDSPort.h"
+#include "DDSTask.h"
+#include "DDSTaskGroup.h"
+#include "DDSTaskCollection.h"
 // STL
 #include <map>
 // SYSTEM
@@ -18,12 +20,7 @@
 using namespace boost::property_tree;
 using namespace std;
 
-DDSTopologyParserXML::DDSTopologyParserXML()
-    : m_tempPorts()
-    , m_tempTasks()
-    , m_tempCollections()
-    , m_tempGroups()
-    , m_main()
+DDSTopologyParserXML::DDSTopologyParserXML() : m_main()
 {
 }
 
@@ -90,36 +87,7 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     // Parse property tree
     try
     {
-        const ptree& ptc = pt.get_child("topology");
-
-        for (const auto& v : ptc)
-        {
-            if (v.first == "port")
-                ParsePort(v.second);
-            else if (v.first == "task")
-                ParseTask(v.second);
-            else if (v.first == "collection")
-                ParseTaskCollection(v.second);
-            else if (v.first == "group")
-                ParseTaskGroup(v.second);
-            else if (v.first == "main")
-                ParseMain(v.second);
-        }
-
-        m_tempPorts.clear();
-        m_tempTasks.clear();
-        m_tempCollections.clear();
-        m_tempGroups.clear();
-    }
-    catch (ptree_bad_path& error)
-    {
-        cout << "ptree_bad_path: " << error.what() << endl;
-        return nullptr;
-    }
-    catch (ptree_bad_data& error)
-    {
-        cout << "ptree_bad_data: " << error.what() << endl;
-        return nullptr;
+        ParseMain(pt);
     }
     catch (ptree_error& error)
     {
@@ -140,197 +108,35 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     return m_main;
 }
 
-void DDSTopologyParserXML::ParsePort(const ptree& _pt)
-{
-    string name = _pt.get<string>("<xmlattr>.name");
-    unsigned int min = _pt.get<unsigned int>("<xmlattr>.min");
-    unsigned int max = _pt.get<unsigned int>("<xmlattr>.max");
-
-    DDSPortPtr_t newPort = make_shared<DDSPort>();
-    newPort->setName(name);
-    newPort->setRange(min, max);
-
-    if (m_tempPorts.find(name) == m_tempPorts.end())
-    {
-        m_tempPorts[name] = newPort;
-    }
-    else
-    {
-        throw logic_error("Port " + name + " already exists");
-    }
-}
-
-void DDSTopologyParserXML::ParseTask(const ptree& _pt)
-{
-    string name = _pt.get<string>("<xmlattr>.name");
-    string exec = _pt.get<string>("<xmlattr>.exec");
-
-    DDSTaskPtr_t newTask = make_shared<DDSTask>();
-    newTask->setName(name);
-    newTask->setExec(exec);
-
-    for (const auto& v : _pt)
-    {
-        if (v.first == "port")
-        {
-            string portName = v.second.get<string>("<xmlattr>.name");
-            auto port = m_tempPorts.find(portName);
-            if (port != m_tempPorts.end())
-            {
-                newTask->addPort(*(port->second.get()));
-            }
-            else
-            {
-                throw out_of_range(portName + " port does not exist.");
-            }
-        }
-    }
-
-    if (m_tempTasks.find(name) == m_tempTasks.end())
-    {
-        m_tempTasks[name] = newTask;
-    }
-    else
-    {
-        throw logic_error("Task " + name + " already exists");
-    }
-}
-
-void DDSTopologyParserXML::ParseTaskCollection(const ptree& _pt)
-{
-    string name = _pt.get<string>("<xmlattr>.name");
-
-    DDSTaskCollectionPtr_t newTaskCollection = make_shared<DDSTaskCollection>();
-    newTaskCollection->setName(name);
-
-    for (const auto& v : _pt)
-    {
-        if (v.first == "task")
-        {
-            string taskName = v.second.get<string>("<xmlattr>.name");
-            auto task = m_tempTasks.find(taskName);
-            if (task != m_tempTasks.end())
-            {
-                newTaskCollection->addElement(dynamic_pointer_cast<DDSTopoElement>(task->second));
-            }
-            else
-            {
-                throw out_of_range(taskName + " task does not exist");
-            }
-        }
-    }
-
-    if (m_tempCollections.find(name) == m_tempCollections.end())
-    {
-        m_tempCollections[name] = newTaskCollection;
-    }
-    else
-    {
-        throw logic_error("Task collection " + name + " already exists");
-    }
-}
-
-void DDSTopologyParserXML::ParseTaskGroup(const ptree& _pt)
-{
-    string name = _pt.get<string>("<xmlattr>.name");
-
-    DDSTaskGroupPtr_t newTaskGroup = make_shared<DDSTaskGroup>();
-    newTaskGroup->setName(name);
-
-    for (const auto& v : _pt)
-    {
-        if (v.first == "task")
-        {
-            string taskName = v.second.get<string>("<xmlattr>.name");
-            auto task = m_tempTasks.find(taskName);
-            if (task != m_tempTasks.end())
-            {
-                newTaskGroup->addElement(dynamic_pointer_cast<DDSTopoElement>(task->second));
-            }
-            else
-            {
-                throw out_of_range(taskName + " task does not exist.");
-            }
-        }
-        else if (v.first == "collection")
-        {
-            string collectionName = v.second.get<string>("<xmlattr>.name");
-            auto collection = m_tempCollections.find(collectionName);
-            if (collection != m_tempCollections.end())
-            {
-                newTaskGroup->addElement(dynamic_pointer_cast<DDSTopoElement>(collection->second));
-            }
-            else
-            {
-                throw out_of_range(collectionName + " task collection does not exist.");
-            }
-        }
-    }
-
-    if (m_tempGroups.find(name) == m_tempGroups.end())
-    {
-        m_tempGroups[name] = newTaskGroup;
-    }
-    else
-    {
-        throw logic_error("Task group " + name + " already exists");
-    }
-}
-
 void DDSTopologyParserXML::ParseMain(const boost::property_tree::ptree& _pt)
 {
+
     m_main = make_shared<DDSTaskGroup>();
 
-    m_main->setN(_pt.get<size_t>("<xmlattr>.n"));
-    m_main->setMinimumRequired(_pt.get<size_t>("<xmlattr>.minRequired"));
+    const ptree& mainPT = _pt.get_child("topology.main");
 
-    for (const auto& v : _pt)
+    m_main->setN(mainPT.get<size_t>("<xmlattr>.n"));
+    m_main->setMinimumRequired(mainPT.get<size_t>("<xmlattr>.minRequired"));
+
+    for (const auto& v : mainPT)
     {
         if (v.first == "task")
         {
-            string name = v.second.get<string>("<xmlattr>.name");
-            auto task = m_tempTasks.find(name);
-            if (task != m_tempTasks.end())
-            {
-                DDSTaskPtr_t newTask = make_shared<DDSTask>(*(task->second.get()));
-                m_main->addElement(newTask);
-            }
-            else
-            {
-                throw out_of_range(name + " task does not exist.");
-            }
+            DDSTaskPtr_t newTask = make_shared<DDSTask>();
+            string taskName = v.second.get<string>("<xmlattr>.name");
+            newTask->initFromPropertyTree(taskName, _pt);
+            m_main->addElement(newTask);
         }
-        else if (v.first == "collection")
+        else if (v.first == "collection" || v.first == "group")
         {
-            string name = v.second.get<string>("<xmlattr>.name");
-            auto collection = m_tempCollections.find(name);
-            if (collection != m_tempCollections.end())
-            {
-                DDSTaskCollectionPtr_t newCollection = make_shared<DDSTaskCollection>(*(collection->second.get()));
-                newCollection->setN(v.second.get<size_t>("<xmlattr>.n"));
-                newCollection->setMinimumRequired(v.second.get<size_t>("<xmlattr>.minRequired"));
-                m_main->addElement(newCollection);
-            }
-            else
-            {
-                throw out_of_range(name + " task collection does not exist.");
-            }
-        }
-        else if (v.first == "group")
-        {
-            string name = v.second.get<string>("<xmlattr>.name");
-            auto group = m_tempGroups.find(name);
-            if (group != m_tempGroups.end())
-            {
-                DDSTaskGroupPtr_t newGroup = make_shared<DDSTaskGroup>(*(group->second.get()));
-                newGroup->setN(v.second.get<size_t>("<xmlattr>.n"));
-                newGroup->setMinimumRequired(v.second.get<size_t>("<xmlattr>.minRequired"));
-                m_main->addElement(newGroup);
-            }
-            else
-            {
-                throw out_of_range(name + " task group does not exist.");
-            }
+            DDSTaskContainerPtr_t newContainer = (v.first == "collection") ? dynamic_pointer_cast<DDSTaskContainer>(make_shared<DDSTaskCollection>())
+                                                                           : dynamic_pointer_cast<DDSTaskContainer>(make_shared<DDSTaskGroup>());
+            const auto& containerPT = v.second;
+            string containerName = containerPT.get<string>("<xmlattr>.name");
+            newContainer->initFromPropertyTree(containerName, _pt);
+            newContainer->setN(containerPT.get<size_t>("<xmlattr>.n"));
+            newContainer->setMinimumRequired(containerPT.get<size_t>("<xmlattr>.minRequired"));
+            m_main->addElement(newContainer);
         }
     }
 }

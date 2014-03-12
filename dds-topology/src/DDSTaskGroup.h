@@ -7,35 +7,21 @@
 #define DDS_DDSTaskGroup_h
 // DDS
 #include "DDSTaskContainer.h"
-// STD
-#include <ostream>
-#include <sstream>
-#include <vector>
-#include <memory>
 
 class DDSTaskGroup : public DDSTaskContainer
 {
   public:
-    /**
-     * \brief Constructor.
-     */
-    DDSTaskGroup()
-        : DDSTaskContainer()
-    {
-        setType(DDSTopoElementType::GROUP);
-    }
+    /// \brief Constructor.
+    DDSTaskGroup();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~DDSTaskGroup()
-    {
-    }
+    /// \brief Destructor.
+    virtual ~DDSTaskGroup();
 
-    virtual size_t getNofTasks() const
-    {
-        return getNofTasksDefault();
-    }
+    /// \brief Inherited from DDSTopoElement.
+    virtual size_t getNofTasks() const;
+
+    /// \brief Inherited from DDSTopoElement.
+    void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
   private:
 };
