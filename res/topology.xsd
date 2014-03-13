@@ -72,15 +72,18 @@
     <xs:element name="collection" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="n" type="sizeType" use="required"/>
+  <xs:attribute name="minRequired" type="sizeType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="mainType">
   <xs:sequence>
 	<xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
-    <xs:element name="collection" type="mainGroupType" maxOccurs="unbounded" minOccurs="0"/>
-	<xs:element name="group" type="mainGroupType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="collection" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="group" type="groupType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
+  <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="n" type="sizeType" use="required"/>
   <xs:attribute name="minRequired" type="sizeType" use="required"/>
 </xs:complexType>
@@ -91,7 +94,6 @@
     <xs:element name="port" type="portType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="task" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
     <xs:element name="collection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
-    <xs:element name="group" type="groupType" maxOccurs="unbounded" minOccurs="1"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>

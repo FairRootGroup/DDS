@@ -15,43 +15,23 @@
 class DDSTopology
 {
   public:
-    /**
-     * \brief Constructor.
-     */
+    /// \brief Constructor.
     DDSTopology();
 
-    /**
-     * \brief Destructor.
-     */
+    /// \brief Destructor.
     virtual ~DDSTopology();
 
     /// Accessors
-    DDSTaskGroupPtr_t getMainGroup() const
-    {
-        return m_main;
-    }
+    DDSTaskGroupPtr_t getMainGroup() const;
 
-    /**
-     * \brief Returns string representation of an object.
-     * \return String representation of an object.
-     */
-    std::string toString() const
-    {
-        std::stringstream ss;
+    /// \brief Returns string representation of an object.
+    /// \return String representation of an object.
+    std::string toString() const;
 
-        return ss.str();
-    }
-
-    /**
-     * \brief Operator << for convenient output to ostream.
-     * \return Insertion stream in order to be able to call a succession of
-     * insertion operations.
-     */
-    friend std::ostream& operator<<(std::ostream& _strm, const DDSTopology& _topology)
-    {
-        _strm << _topology.toString();
-        return _strm;
-    }
+    /// \brief Operator << for convenient output to ostream.
+    /// \return Insertion stream in order to be able to call a succession of
+    /// insertion operations.
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTopology& _topology);
 
   private:
     DDSTaskGroupPtr_t m_main; ///> Main task group which we run

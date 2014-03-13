@@ -16,31 +16,22 @@
 class DDSTopologyParserXML
 {
   public:
-    /**
-     * \brief Constructor.
-     */
+    /// \brief Constructor.
     DDSTopologyParserXML();
 
-    /**
-     * \brief Destructor.
-     */
+    /// \brief Destructor.
     virtual ~DDSTopologyParserXML();
 
-    /**
-     * \brief Read topology from specified XML file.
-     * \return Main task group or nullptr in case of error.
-     */
+    /// \brief Read topology from specified XML file.
+    /// \return Main task group or nullptr in case of error.
     DDSTaskGroupPtr_t parse(const std::string& _fileName);
 
-    /**
-     * \brief Validate provided XML file against XSD using xmllint.
-     * \throw runtime_error
-     */
+    /// \brief Validate provided XML file against XSD using xmllint.
+    /// \throw runtime_error
     bool isValid(const std::string& _fileName);
 
   private:
-    void ParseMain(const boost::property_tree::ptree& _pt);
-
+    /// \brief Print recursively property tree to std::cout.
     void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
 
     DDSTaskGroupPtr_t m_main; ///> Main task group which we run

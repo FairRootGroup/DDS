@@ -25,77 +25,47 @@ class DDSTopoElement
 {
   public:
     /// Modifiers
-    void setName(const std::string& _name)
-    {
-        m_name = _name;
-    }
+    void setName(const std::string& _name);
 
     /// Accessors
-    std::string getName() const
-    {
-        return m_name;
-    }
+    std::string getName() const;
 
-    DDSTopoElementType getType() const
-    {
-        return m_type;
-    }
+    DDSTopoElementType getType() const;
 
-    /**
-     * \brief Has to return number of all tasks including daughter elements.
-     */
+    /// \brief Has to return number of all tasks including daughter elements.
     virtual size_t getNofTasks() const = 0;
 
-    /**
-     * \brief Initialize object with data from property tree.
-     * \param[in] _name Name of the object as in input file.
-     * \param[in] _pt Property tree starting from root.
-     */
+    /// \brief Initialize object with data from property tree.
+    /// \param[in] _name Name of the object as in input file.
+    /// \param[in] _pt Property tree starting from root.
     virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt) = 0;
 
-    /**
-     * \brief Returns string representation of an object.
-     * \return String representation of an object.
-     */
-    std::string toString() const
-    {
-        std::stringstream ss;
-        ss << "DDSTopoElement: m_name=" << m_name;
-        return ss.str();
-    }
+    /// \brief Helper function to find element in property tree by type and name.
+    /// \param[in] _tag Name of tag we are looking for.
+    /// \param[in] _name Name of element we are looking for.
+    /// \param[in] _pt Property tree.
+    /// \return Property tree with root node pointing to found element.
+    /// \throw logic_error if element was not found.
+    /// \note This function does not catch exceptions from property tree.
+    static const boost::property_tree::ptree& findElement(const std::string& _tag, const std::string& _name, const boost::property_tree::ptree& _pt);
 
-    /**
-     * \brief Operator << for convenient output to ostream.
-     * \return Insertion stream in order to be able to call a succession of
-     * insertion operations.
-     */
-    friend std::ostream& operator<<(std::ostream& _strm, const DDSTopoElement& _element)
-    {
-        _strm << _element.toString();
-        return _strm;
-    }
+    /// \brief Returns string representation of an object.
+    /// \return String representation of an object.
+    std::string toString() const;
+
+    /// \brief Operator << for convenient output to ostream.
+    /// \return Insertion stream in order to be able to call a succession of
+    /// insertion operations.
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTopoElement& _element);
 
   protected:
-    /**
-     * \brief Constructor.
-     */
-    DDSTopoElement()
-        : m_name("")
-        , m_type(DDSTopoElementType::NONE)
-    {
-    }
+    /// \brief Constructor.
+    DDSTopoElement();
 
-    /**
-     * \brief Destructor.
-     */
-    virtual ~DDSTopoElement()
-    {
-    }
+    /// \brief Destructor.
+    virtual ~DDSTopoElement();
 
-    void setType(DDSTopoElementType _type)
-    {
-        m_type = _type;
-    }
+    void setType(DDSTopoElementType _type);
 
   private:
     std::string m_name;        ///> Name of topology element

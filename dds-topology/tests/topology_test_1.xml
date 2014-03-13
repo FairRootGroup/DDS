@@ -39,24 +39,20 @@
 		<task name="task5"/>
   	</collection>
 	
-	<group name="group1">
-		<task name="task1"/>
-		<collection name="collection1"/>
-		<collection name="collection2"/>
-	</group>
-	
-	<group name="group2">
-		<task name="task3"/>
-		<task name="task4"/>
-		<collection name="collection1"/>
-		<collection name="collection2"/>
-	</group>
-	
-	<main n="7" minRequired="1">
+	<main name="main" n="7" minRequired="1">
 	    <task name="task1"/>
-	    <collection name="collection1" n="11" minRequired="1"/>
-		<group name="group1" n="10" minRequired="1"/>
-		<group name="group2" n="15" minRequired="3"/>
+	    <collection name="collection1"/>
+		<group name="group1" n="10" minRequired="1">
+			<task name="task1"/>
+			<collection name="collection1"/>
+			<collection name="collection2"/>
+		</group>
+		<group name="group2" n="15" minRequired="3">
+			<task name="task3"/>
+			<task name="task4"/>
+			<collection name="collection1"/>
+			<collection name="collection2"/>
+		</group>
 	</main>
 	
 </topology>

@@ -21,8 +21,6 @@ using namespace boost::property_tree;
 DDSTaskContainer::DDSTaskContainer()
     : DDSTopoElement()
     , m_elements()
-    , m_n(0)
-    , m_minimumRequired(0)
 {
 }
 
@@ -33,26 +31,6 @@ DDSTaskContainer::~DDSTaskContainer()
 size_t DDSTaskContainer::getNofElements() const
 {
     return m_elements.size();
-}
-
-size_t DDSTaskContainer::getN() const
-{
-    return m_n;
-}
-
-size_t DDSTaskContainer::getMinimumRequired() const
-{
-    return m_minimumRequired;
-}
-
-void DDSTaskContainer::setN(size_t _n)
-{
-    m_n = _n;
-}
-
-void DDSTaskContainer::setMinimumRequired(size_t _minimumRequired)
-{
-    m_minimumRequired = _minimumRequired;
 }
 
 DDSTopoElementPtr_t DDSTaskContainer::getElement(size_t _i) const
@@ -77,55 +55,6 @@ void DDSTaskContainer::addElement(DDSTopoElementPtr_t _element)
     m_elements.push_back(_element);
 }
 
-void DDSTaskContainer::initFromPropertyTreeDefault(const string& _name, const ptree& _pt)
-{
-    bool initialized = false;
-    try
-    {
-        const ptree& topPT = _pt.get_child("topology");
-        for (const auto& v : topPT)
-        {
-            if (!(v.first == "collection" || v.first == "group"))
-                continue;
-
-            const auto& containerPT = v.second;
-            string containerName = containerPT.get<string>("<xmlattr>.name");
-            if (containerName == _name)
-            {
-                setName(containerName);
-
-                for (const auto& element : containerPT)
-                {
-                    if (element.first == "task")
-                    {
-                        DDSTaskPtr_t newTask = make_shared<DDSTask>();
-                        string taskName = element.second.get<string>("<xmlattr>.name");
-                        newTask->initFromPropertyTree(taskName, _pt);
-                        addElement(newTask);
-                    }
-                    else if (element.first == "collection")
-                    {
-                        DDSTaskCollectionPtr_t newCollection = make_shared<DDSTaskCollection>();
-                        string collectionName = element.second.get<string>("<xmlattr>.name");
-                        newCollection->initFromPropertyTree(collectionName, _pt);
-                        addElement(newCollection);
-                    }
-                }
-
-                initialized = true;
-                break;
-            }
-        }
-    }
-    catch (ptree_error& error)
-    {
-        cout << "ptree_error: " << error.what() << endl;
-    }
-
-    if (!initialized)
-        throw logic_error("Unable to initialize task container " + _name);
-}
-
 size_t DDSTaskContainer::getNofTasksDefault() const
 {
     const auto& elements = getElements();
@@ -140,8 +69,7 @@ size_t DDSTaskContainer::getNofTasksDefault() const
 string DDSTaskContainer::toString() const
 {
     stringstream ss;
-    ss << "DDSTaskContainer: m_name=" << getName() << " m_n=" << m_n << " m_minimumRequired=" << m_minimumRequired << " nofElements=" << getNofElements()
-       << " elements:\n";
+    ss << "DDSTaskContainer: m_name=" << getName() << " nofElements=" << getNofElements() << " elements:\n";
     for (const auto& element : m_elements)
     {
         ss << " - " << element->toString() << std::endl;

@@ -16,14 +16,10 @@
 class DDSTask : public DDSTopoElement
 {
   public:
-    /**
-     * \brief Constructor.
-     */
+    /// \brief Constructor.
     DDSTask();
 
-    /**
-     * \brief Destructor.
-     */
+    /// \brief Destructor.
     virtual ~DDSTask();
 
     /// Accessors
@@ -37,27 +33,19 @@ class DDSTask : public DDSTopoElement
     void setPorts(const DDSPortPtrVector_t& _ports);
     void addPort(DDSPortPtr_t& _port);
 
-    /**
-     * \brief Inherited from DDSTopoElement.
-     */
+    /// \brief Inherited from DDSTopoElement.
     virtual size_t getNofTasks() const;
 
-    /**
-     * \brief Inherited from DDSTopoElement.
-     */
+    /// \brief Inherited from DDSTopoElement.
     virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
-    /**
-     * \brief Returns string representation of an object.
-     * \return String representation of an object.
-     */
+    /// \brief Returns string representation of an object.
+    /// \return String representation of an object.
     std::string toString() const;
 
-    /**
-     * \brief Operator << for convenient output to ostream.
-     * \return Insertion stream in order to be able to call a succession of
-     * insertion operations.
-     */
+    /// \brief Operator << for convenient output to ostream.
+    /// \return Insertion stream in order to be able to call a succession of
+    /// insertion operations.
     friend std::ostream& operator<<(std::ostream& _strm, const DDSTask& _task);
 
   private:

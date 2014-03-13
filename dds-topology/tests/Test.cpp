@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(main->getNofTasks() == 22);
     BOOST_CHECK(main->getN() == 7);
     BOOST_CHECK(main->getMinimumRequired() == 1);
-    BOOST_CHECK(main->getName() == "");
+    BOOST_CHECK(main->getName() == "main");
     BOOST_CHECK(main->getNofElements() == 4);
     BOOST_CHECK_THROW(main->getElement(4), std::out_of_range);
 
@@ -47,8 +47,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     DDSTaskCollectionPtr_t casted2 = dynamic_pointer_cast<DDSTaskCollection>(element2);
     BOOST_CHECK(casted2->getNofElements() == 4);
     BOOST_CHECK_THROW(casted2->getElement(4), std::out_of_range);
-    BOOST_CHECK(casted2->getN() == 11);
-    BOOST_CHECK(casted2->getMinimumRequired() == 1);
+    //  BOOST_CHECK(casted2->getN() == 11);
+    //  BOOST_CHECK(casted2->getMinimumRequired() == 1);
 
     DDSTopoElementPtr_t element3 = main->getElement(2);
     BOOST_CHECK(element3->getName() == "group1");

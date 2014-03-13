@@ -23,7 +23,26 @@ class DDSTaskGroup : public DDSTaskContainer
     /// \brief Inherited from DDSTopoElement.
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
+    size_t getN() const;
+
+    size_t getMinimumRequired() const;
+
+    void setN(size_t _n);
+
+    void setMinimumRequired(size_t _minimumRequired);
+
+    /// \brief Returns string representation of an object.
+    /// \return String representation of an object.
+    std::string toString() const;
+
+    /// \brief Operator << for convenient output to ostream.
+    /// \return Insertion stream in order to be able to call a succession of
+    /// insertion operations.
+    friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskGroup& _taskContainer);
+
   private:
+    size_t m_n;               ///> Number of times this task has to be executed
+    size_t m_minimumRequired; ///> Minimum required number of tasks to start processing
 };
 
 typedef std::shared_ptr<DDSTaskGroup> DDSTaskGroupPtr_t;

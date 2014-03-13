@@ -87,7 +87,8 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     // Parse property tree
     try
     {
-        ParseMain(pt);
+        m_main = make_shared<DDSTaskGroup>();
+        m_main->initFromPropertyTree("main", pt);
     }
     catch (ptree_error& error)
     {
@@ -106,39 +107,6 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     }
 
     return m_main;
-}
-
-void DDSTopologyParserXML::ParseMain(const boost::property_tree::ptree& _pt)
-{
-
-    m_main = make_shared<DDSTaskGroup>();
-
-    const ptree& mainPT = _pt.get_child("topology.main");
-
-    m_main->setN(mainPT.get<size_t>("<xmlattr>.n"));
-    m_main->setMinimumRequired(mainPT.get<size_t>("<xmlattr>.minRequired"));
-
-    for (const auto& v : mainPT)
-    {
-        if (v.first == "task")
-        {
-            DDSTaskPtr_t newTask = make_shared<DDSTask>();
-            string taskName = v.second.get<string>("<xmlattr>.name");
-            newTask->initFromPropertyTree(taskName, _pt);
-            m_main->addElement(newTask);
-        }
-        else if (v.first == "collection" || v.first == "group")
-        {
-            DDSTaskContainerPtr_t newContainer = (v.first == "collection") ? dynamic_pointer_cast<DDSTaskContainer>(make_shared<DDSTaskCollection>())
-                                                                           : dynamic_pointer_cast<DDSTaskContainer>(make_shared<DDSTaskGroup>());
-            const auto& containerPT = v.second;
-            string containerName = containerPT.get<string>("<xmlattr>.name");
-            newContainer->initFromPropertyTree(containerName, _pt);
-            newContainer->setN(containerPT.get<size_t>("<xmlattr>.n"));
-            newContainer->setMinimumRequired(containerPT.get<size_t>("<xmlattr>.minRequired"));
-            m_main->addElement(newContainer);
-        }
-    }
 }
 
 void DDSTopologyParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const

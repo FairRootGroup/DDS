@@ -16,14 +16,10 @@ class DDSPort
   public:
     typedef std::pair<unsigned short, unsigned short> DDSPortRange_t;
 
-    /**
-     * \brief Constructor.
-     */
+    /// \brief Constructor.
     DDSPort();
 
-    /**
-     * \brief Destructor.
-     */
+    /// \brief Destructor.
     virtual ~DDSPort();
 
   public:
@@ -35,24 +31,18 @@ class DDSPort
     std::string getName() const;
     const DDSPortRange_t& getRange() const;
 
-    /**
-     * \brief Initialize object with data from property tree.
-     * \param[in] _name Name of the object as in input file.
-     * \param[in] _pt Property tree starting from root.
-     */
+    /// \brief Initialize object with data from property tree.
+    /// \param[in] _name Name of the object as in input file.
+    /// \param[in] _pt Property tree starting from root.
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
-    /**
-     * \brief Returns string representation of an object.
-     * \return String representation of an object.
-     */
+    /// \brief Returns string representation of an object.
+    /// \return String representation of an object.
     std::string toString() const;
 
-    /**
-     * \brief Operator << for convenient output to ostream.
-     * \return Insertion stream in order to be able to call a succession of
-     * insertion operations.
-     */
+    /// \brief Operator << for convenient output to ostream.
+    /// \return Insertion stream in order to be able to call a succession of
+    /// insertion operations.
     friend std::ostream& operator<<(std::ostream& _strm, const DDSPort& _port);
 
   private:

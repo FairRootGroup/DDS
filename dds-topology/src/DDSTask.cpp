@@ -68,46 +68,32 @@ const DDSPortPtrVector_t& DDSTask::getPorts() const
     return m_ports;
 }
 
-void DDSTask::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void DDSTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
-    bool initialized = false;
     try
     {
-        const ptree& topPT = _pt.get_child("topology");
-        for (const auto& v : topPT)
+        const ptree& taskPT = DDSTopoElement::findElement("task", _name, _pt);
+
+        setName(taskPT.get<string>("<xmlattr>.name"));
+        setExec(taskPT.get<string>("<xmlattr>.exec"));
+        for (const auto& port : taskPT)
         {
-            if (v.first != "task")
-                continue;
-
-            const auto& taskPT = v.second;
-            string taskName = taskPT.get<string>("<xmlattr>.name");
-            if (taskName == _name)
+            if (port.first == "port")
             {
-                setName(taskName);
-                setExec(taskPT.get<string>("<xmlattr>.exec"));
-                for (const auto& port : taskPT)
-                {
-                    if (port.first == "port")
-                    {
-                        DDSPortPtr_t newPort = make_shared<DDSPort>();
-                        string portName = port.second.get<string>("<xmlattr>.name");
-                        newPort->initFromPropertyTree(portName, _pt);
-                        addPort(newPort);
-                    }
-                }
-
-                initialized = true;
-                break;
+                DDSPortPtr_t newPort = make_shared<DDSPort>();
+                newPort->initFromPropertyTree(port.second.get<string>("<xmlattr>.name"), _pt);
+                addPort(newPort);
             }
         }
     }
     catch (ptree_error& error)
     {
-        cout << "ptree_error: " << error.what() << endl;
+        throw logic_error("Unable to initialize task " + _name + " error: " + error.what());
     }
-
-    if (!initialized)
-        throw logic_error("Unable to initialize task " + _name);
+    catch (logic_error& error)
+    {
+        throw logic_error("Unable to initialize task " + _name + " error: " + error.what());
+    }
 }
 
 string DDSTask::toString() const
@@ -116,7 +102,7 @@ string DDSTask::toString() const
     ss << "DDSTask: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:\n";
     for (const auto& port : m_ports)
     {
-        ss << " - " << port->toString() << std::endl;
+        ss << " - " << port->toString() << endl;
     }
     return ss.str();
 }
