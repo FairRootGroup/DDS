@@ -14,10 +14,10 @@ cmake_minimum_required( VERSION 2.6.2 FATAL_ERROR )
 # take the version string from git and write it to a version file
 # or take it from the version file if git is unavailable (a package distribution)
 # Keep the version file in the source directory to satisfy the source package.
-set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}/etc/version )
+set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}version )
 if( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
-  execute_process(COMMAND git describe --abbrev=4 HEAD
+  execute_process(COMMAND git describe --match "[0-9].[0-9].[0-9]" --abbrev=7 HEAD
                   COMMAND sed -e "s/-/./g"
                   OUTPUT_VARIABLE DDS_VERSION
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -30,6 +30,7 @@ else( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 endif( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
+message(STATUS "Building DDS version: ${DDS_VERSION}")
 #
 # Options
 #
