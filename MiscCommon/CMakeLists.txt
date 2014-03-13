@@ -1,17 +1,6 @@
-#************************************************************************
+# Copyright 2014 GSI, Inc. All rights reserved.
 #
-# CMakeLists.txt
-# 
-# Anar Manafov A.Manafov@gsi.de
-# 
 #
-#        version number:    $LastChangedRevision$
-#        created by:        Anar Manafov
-#                           2010-06-08
-#        last changed by:   $LastChangedBy$ $LastChangedDate$
-#
-#        Copyright (c) 2010 GSI, Scientific Computing group. All rights reserved.
-#*************************************************************************
 project( MiscCommon )
 #
 # Version
@@ -34,8 +23,8 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # Build pipe_log_engine
 #
-#message(STATUS "Build the pipe_log_engine lib - YES")
-#add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
+message(STATUS "Build the pipe_log_engine lib - YES")
+add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
 
 #
 # Build pod_protocol
@@ -56,10 +45,10 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #add_subdirectory( ${MiscCommon_SOURCE_DIR}/SSHTunnel )
 
 #
-# Build pod_sys_files
+# Build dds_sys_files
 #
-#message(STATUS "Build the pod_sys_files lib - YES")
-#add_subdirectory( ${MiscCommon_SOURCE_DIR}/pod_sys_files )
+message(STATUS "Build the dds_sys_files lib - YES")
+add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
 
 #
 ## Unit tests
