@@ -1,12 +1,9 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
-//  PoDSysFiles.cpp
-//  PoD
 //
-//  Created by Anar Manafov on 09.06.11.
-//  Copyright 2011 GSI. All rights reserved.
 //
 //=============================================================================
-#include "PoDSysFiles.h"
+#include "DDSSysFiles.h"
 // STD
 #include <sstream>
 #include <stdexcept>

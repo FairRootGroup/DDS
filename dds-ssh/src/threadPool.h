@@ -1,17 +1,7 @@
-/************************************************************************/
-/**
- * @file threadPool.h
- * @brief
- * @author Anar Manafov A.Manafov@gsi.de
- */ /*
-
-        version number:     $LastChangedRevision$
-        created by:         Anar Manafov
-                            2010-06-23
-        last changed by:    $LastChangedBy$ $LastChangedDate$
-
-        Copyright (c) 2010 GSI GridTeam. All rights reserved.
-*************************************************************************/
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
 #ifndef THREADPOOL_H_
 #define THREADPOOL_H_
 // STD

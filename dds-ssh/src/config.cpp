@@ -1,11 +1,7 @@
-/*
- *  config.cpp
- *  pod-ssh
- *
- *  Created by Anar Manafov on 07.06.10.
- *  Copyright 2010 Anar Manafov <Anar.Manafov@gmail.com>. All rights reserved.
- *
- */
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
 //=============================================================================
 // std
 #include <iostream>

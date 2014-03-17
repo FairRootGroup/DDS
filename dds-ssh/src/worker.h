@@ -1,11 +1,7 @@
-/*
- *  worker.h
- *  pod-ssh
- *
- *  Created by Anar Manafov on 16.06.10.
- *  Copyright 2010 Anar Manafov <Anar.Manafov@gmail.com>. All rights reserved.
- *
- */
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
 #ifndef WORKER_H
 #define WORKER_H
 //=============================================================================

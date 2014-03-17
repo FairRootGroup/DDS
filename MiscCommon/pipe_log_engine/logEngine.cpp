@@ -1,11 +1,7 @@
-/*
- *  logEngine.cpp
- *  pod-ssh
- *
- *  Created by Anar Manafov on 31.08.10.
- *  Copyright 2010 Anar Manafov <Anar.Manafov@gmail.com>. All rights reserved.
- *
- */
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
 //=============================================================================
 #include "logEngine.h"
 // BOOST
@@ -77,7 +73,7 @@ void CLogEngine::operator()( const string &_msg, const string &_id,
     if( _msg.empty() && _id.empty() )
     {
         if( write( m_fd, "\0", 1 ) < 0 )
-            throw system_error( "LogEngine: Write error" );
+            throw MiscCommon::system_error( "LogEngine: Write error" );
         return;
     }
 
@@ -132,7 +128,7 @@ void CLogEngine::operator()( const string &_msg, const string &_id,
     while( total < len )
     {
         if(( n = write( m_fd, &buf[total], len - total ) ) < 0 )
-            throw system_error( "LogEngine: Write error" );
+            throw MiscCommon::system_error( "LogEngine: Write error" );
         total += n;
     }
 }

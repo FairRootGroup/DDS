@@ -1,9 +1,6 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
-//  PoDSysFiles.h
-//  PoD
 //
-//  Created by Anar Manafov on 09.06.11.
-//  Copyright 2011 GSI. All rights reserved.
 //
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
