@@ -11,7 +11,7 @@
 #include "CustomIterator.h"
 #include "def.h"
 #include "MiscUtils.h"
-// pod-ssh
+// dds-ssh
 #include "config.h"
 //=============================================================================
 using namespace MiscCommon;
@@ -80,7 +80,7 @@ void CConfig::readFrom(istream& _stream)
         if (res)
         {
             stringstream ss;
-            ss << "pod-ssh configuration: syntax error at line " << i + 1;
+            ss << "dds-ssh configuration: syntax error at line " << i + 1;
             throw runtime_error(ss.str());
         }
         // check for duplicate ids
@@ -98,7 +98,7 @@ void CConfig::readFrom(istream& _stream)
     }
 
     if (bCollectScript)
-        throw runtime_error("pod-ssh configuration: syntax error. "
+        throw runtime_error("dds-ssh configuration: syntax error. "
                             "There is a defined inline script, but the closing tag is missing.");
 }
 //=============================================================================

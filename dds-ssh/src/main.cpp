@@ -16,7 +16,7 @@
 #include "SysHelper.h"
 #include "PoDUserDefaultsOptions.h"
 #include "DDSSysFiles.h"
-// pod-ssh
+// dds-ssh
 #include "version.h"
 #include "config.h"
 #include "worker.h"
@@ -29,7 +29,7 @@ using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
 //=============================================================================
-const LPCSTR g_pipeName = ".pod_ssh_pipe";
+const LPCSTR g_pipeName = ".dds_ssh_pipe";
 typedef list<CWorker> workersList_t;
 typedef CThreadPool<CWorker, ETaskType> threadPool_t;
 //=============================================================================
@@ -69,26 +69,26 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
     visible.add_options()("help,h", "Produce help message")("version,v", "Version information")(
         "command",
         bpo::value<string>(),
-        "The command is a name of pod-ssh command."
+        "The command is a name of dds-ssh command."
         " Can be one of the following: submit, status, clean, fast-clean.\n"
-        "For user's convenience it is allowed to call pod-ssh without \"--command\" option"
-        " by just specifying the command name directly, like:\npod-ssh submit or pod-ssh clean.\n\n"
+        "For user's convenience it is allowed to call dds-ssh without \"--command\" option"
+        " by just specifying the command name directly, like:\ndds-ssh submit or dds-ssh clean.\n\n"
         "Commands:\n"
         "   submit: \tSubmit workers\n"
         "   status: \tRequest status of the workers\n"
         "   clean: \tClean all workers\n"
         "   fast-clean: \tThe fast version of the clean procedure."
         " It shuts worker nodes down. It doesn't actually clean workers' directories.\n\n")(
-        "config,c", bpo::value<string>(), "PoD's ssh plug-in configuration file")(
+        "config,c", bpo::value<string>(), "DDS's ssh plug-in configuration file")(
         "exec,e", bpo::value<string>(), "Execute a local shell script on the remote worker nodes")(
         "logs", "Download all log files from the worker nodes. Can be used only together with the clean option")(
         "for-worker",
         bpo::value<vector<string>>()->multitoken(),
         "Perform an action on defined worker nodes. (arg is a space separated list of WN names)"
         " Can only be used in connection with \"submit\", \"clean\", \"fast-clean\", \"exec\".")(
-        "debug,d", "Verbose mode. Causes pod-ssh to print debugging messages about its progress")("threads,t",
+        "debug,d", "Verbose mode. Causes dds-ssh to print debugging messages about its progress")("threads,t",
                                                                                                   bpo::value<size_t>()->default_value(5),
-                                                                                                  "It defines a number of threads in pod-ssh's thread pool."
+                                                                                                  "It defines a number of threads in dds-ssh's thread pool."
                                                                                                   " Min value is 1, max value is (Core*2)."
                                                                                                   " Default: 5");
 
@@ -143,10 +143,10 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
     try
     {
         // invoking a new bash process can in some case overwrite env. vars
-        // To be shure that our env is there, we call PoD_env.sh
-        string cmd_env("$POD_LOCATION/PoD_env.sh");
+        // To be shure that our env is there, we call DDS_env.sh
+        string cmd_env("$DDS_LOCATION/DDS_env.sh");
         smart_path(&cmd_env);
-        string cmd("$POD_LOCATION/bin/pod-prep-worker");
+        string cmd("$DDS_LOCATION/bin/dds-prep-worker");
         if (_needInlineBashScript)
             cmd += " -i";
         smart_path(&cmd);
@@ -163,7 +163,7 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
     }
     catch (exception& e)
     {
-        string msg("Can't create PoD worker package: ");
+        string msg("Can't create DDS worker package: ");
         msg += out;
         throw runtime_error(msg);
     }
@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
             opt_file.load(env.pod_sshCfgFile());
             configFile = opt_file.m_config;
 #else
-            throw runtime_error("Error: missing argument: PoD SSH config file is not specified.");
+            throw runtime_error("Error: missing argument: DDS SSH config file is not specified.");
 #endif
         }
         else
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
         }
 
         if (!file_exists(configFile))
-            throw runtime_error("PoD SSH config file doesn't exist: " + configFile);
+            throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
 
         ifstream f(configFile.c_str());
         if (!f.is_open())
@@ -232,12 +232,12 @@ int main(int argc, char* argv[])
 
         ECommands command = getCommandByName(vm["command"].as<string>());
 
-        // Check that PoD server is running
+        // Check that DDS server is running
         if (cmd_submit == command)
         {
             try
             {
-                string cmd("$POD_LOCATION/bin/pod-server");
+                string cmd("$DDS_LOCATION/bin/dds-server");
                 smart_path(&cmd);
                 StringVector_t params;
                 params.push_back("status_with_code");
@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
             }
             catch (exception& e)
             {
-                throw runtime_error("PoD server is NOT running. Please, start PoD server first.");
+                throw runtime_error("DDS server is NOT running. Please, start DDS server first.");
             }
 
             // re-pack PoD worker package if needed

@@ -14,7 +14,7 @@ cmake_minimum_required( VERSION 2.6.2 FATAL_ERROR )
 # take the version string from git and write it to a version file
 # or take it from the version file if git is unavailable (a package distribution)
 # Keep the version file in the source directory to satisfy the source package.
-set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}version )
+set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}/etc/version )
 if( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
   execute_process(COMMAND git describe --match "[0-9].[0-9].[0-9]" --abbrev=7 HEAD
@@ -102,6 +102,19 @@ set(RESOURCE_DIR "${CMAKE_SOURCE_DIR}/res")
 set(TOPOLOGY_SCHEMA_PATH "${RESOURCE_DIR}/topology.xsd")
 
 #
+# "additional" files
+#
+SET(DDS_MISC_FILES
+    ${CMAKE_SOURCE_DIR}/LICENSE
+    ${CMAKE_SOURCE_DIR}/ReleaseNotes.md
+)
+#
+# "etc" files
+#
+SET(DDS_ETC_FILES
+     ${DDS_VERSION_FILE}
+)
+#
 #
 # Build DDS modules
 #
@@ -138,6 +151,18 @@ if(BUILD_dds_ssh)
     add_subdirectory ( dds-ssh )
 endif(BUILD_dds_ssh)
 
+
+#
+# Install
+#
+install(FILES ${DDS_MISC_FILES} DESTINATION .)
+#install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/PoD_env.sh DESTINATION .)
+# install etc files
+install(FILES ${DDS_ETC_FILES} DESTINATION etc)
+# tests runner
+if( BUILD_TESTS )
+  install(PROGRAMS run_test.sh DESTINATION tests)
+endif( BUILD_TESTS )
 
 #
 # Package

@@ -27,7 +27,7 @@
 // MiscCommon
 #include "MiscUtils.h"
 //=============================================================================
-/// this class represents a single record of a pod-ssh configuration file
+/// this class represents a single record of a dds-ssh configuration file
 struct SConfigRecord
 {
     SConfigRecord()
