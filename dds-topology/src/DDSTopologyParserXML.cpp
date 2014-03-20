@@ -20,7 +20,7 @@
 using namespace boost::property_tree;
 using namespace std;
 
-DDSTopologyParserXML::DDSTopologyParserXML() : m_main()
+DDSTopologyParserXML::DDSTopologyParserXML()
 {
 }
 
@@ -57,6 +57,9 @@ bool DDSTopologyParserXML::isValid(const std::string& _fileName)
 
 DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
 {
+    // FIXME: Do we really need seperate try{} catch{} blocks?
+    //        Or we have to put everything in one big try{} catch{} block in this function.
+
     // First validate XML against XSD schema
     try
     {
@@ -65,7 +68,7 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     }
     catch (runtime_error& error)
     {
-        cout << error.what();
+        throw runtime_error(string("XML validation failed with the following error: ") + error.what());
         return nullptr;
     }
 
@@ -78,35 +81,26 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     }
     catch (xml_parser_error& error)
     {
-        cout << error.what();
+        throw runtime_error(string("Reading of input XML file failed with the following error: ") + error.what());
         return nullptr;
     }
 
     //    PrintPropertyTree("", pt);
 
-    // Parse property tree
+    // Create main group and parse property tree
+
+    DDSTaskGroupPtr_t main = make_shared<DDSTaskGroup>();
     try
     {
-        m_main = make_shared<DDSTaskGroup>();
-        m_main->initFromPropertyTree("main", pt);
+        main->initFromPropertyTree("main", pt);
     }
-    catch (ptree_error& error)
+    catch (exception& error) // ptree_error, out_of_range, logic_error
     {
-        cout << "ptree_error: " << error.what() << endl;
-        return nullptr;
-    }
-    catch (out_of_range& error)
-    {
-        cout << "out_of_range: " << error.what() << endl;
-        return nullptr;
-    }
-    catch (logic_error& error)
-    {
-        cout << "logic_error: " << error.what() << endl;
+        throw runtime_error(string("Initialization of Main failed with the following error") + error.what());
         return nullptr;
     }
 
-    return m_main;
+    return main;
 }
 
 void DDSTopologyParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const

@@ -9,7 +9,7 @@
 // DDS
 #include "DDSTaskGroup.h"
 // STD
-#include <sstream>
+#include <ostream>
 #include <string>
 
 class DDSTopology
@@ -26,7 +26,7 @@ class DDSTopology
 
     /// \brief Returns string representation of an object.
     /// \return String representation of an object.
-    std::string toString() const;
+    virtual std::string toString() const;
 
     /// \brief Operator << for convenient output to ostream.
     /// \return Insertion stream in order to be able to call a succession of

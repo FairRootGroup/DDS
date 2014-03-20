@@ -4,8 +4,8 @@
 //
 
 #include "DDSTaskGroup.h"
-#include "DDSTask.h"
-#include "DDSTaskCollection.h"
+#include "DDSTopoFactory.h"
+#include "DDSTopoUtils.h"
 
 using namespace std;
 using namespace boost::property_tree;
@@ -15,7 +15,7 @@ DDSTaskGroup::DDSTaskGroup()
     , m_n(0)
     , m_minimumRequired(0)
 {
-    setType(DDSTopoElementType::GROUP);
+    setType(DDSTopoType::GROUP);
 }
 
 DDSTaskGroup::~DDSTaskGroup()
@@ -31,7 +31,8 @@ void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& groupPT = (_name != "main") ? DDSTopoElement::findElement("group", _name, _pt) : DDSTopoElement::findElement("main", _name, _pt);
+        const ptree& mainPT = _pt.get_child("topology.main");
+        const ptree& groupPT = (_name == "main") ? mainPT : DDSTopoElement::findElement(DDSTopoType::GROUP, _name, mainPT);
 
         setName(groupPT.get<string>("<xmlattr>.name"));
         setN(groupPT.get<size_t>("<xmlattr>.n"));
@@ -39,24 +40,16 @@ void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 
         for (const auto& element : groupPT)
         {
-            if (element.first == "task" || element.first == "collection" || element.first == "group")
-            {
-                DDSTopoElementPtr_t newElement = nullptr;
-                if (element.first == "task")
-                    newElement = dynamic_pointer_cast<DDSTopoElement>(make_shared<DDSTask>());
-                else if (element.first == "collection")
-                    newElement = dynamic_pointer_cast<DDSTopoElement>(make_shared<DDSTaskCollection>());
-                else if (element.first == "group")
-                    newElement = dynamic_pointer_cast<DDSTopoElement>(make_shared<DDSTaskGroup>());
-
-                newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
-                addElement(newElement);
-            }
+            if (element.first == "<xmlattr>")
+                continue;
+            DDSTopoElementPtr_t newElement = DDSCreateTopoElement(DDSTagToTopoType(element.first));
+            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
+            addElement(newElement);
         }
     }
-    catch (ptree_error& error)
+    catch (exception& error) // ptree_error, runtime_error
     {
-        throw logic_error("Unable to initialize task group " + _name + " error: " + error.what());
+        throw runtime_error("Unable to initialize task group " + _name + " error: " + error.what());
     }
 }
 

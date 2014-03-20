@@ -10,6 +10,8 @@ include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set( SOURCE_FILES
 	Test.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTopoProperty.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTopoBase.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTask.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSPort.cpp
@@ -19,6 +21,8 @@ set( SOURCE_FILES
 	${dds-topology_SOURCE_DIR}/src/DDSTaskContainer.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopologyParserXML.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSPort.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTopoUtils.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSTopoFactory.cpp
 )
 add_executable(dds-topology_tests ${SOURCE_FILES} )
 
@@ -38,5 +42,6 @@ add_custom_target(copy_to_build ALL
             COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-tests_SOURCE_DIR}/topology_test_3.xml "${dds-topology-tests_BINARY_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-tests_SOURCE_DIR}/topology_test_4.xml "${dds-topology-tests_BINARY_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-tests_SOURCE_DIR}/topology_test_5.xml "${dds-topology-tests_BINARY_DIR}"
+			COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-tests_SOURCE_DIR}/topology_test_6.xml "${dds-topology-tests_BINARY_DIR}"
             COMMENT "Copying XML Schema file and test topology XML to build directory."
             VERBATIM)

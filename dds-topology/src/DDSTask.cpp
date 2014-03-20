@@ -19,7 +19,7 @@ DDSTask::DDSTask()
     , m_exec()
     , m_ports()
 {
-    setType(DDSTopoElementType::TASK);
+    setType(DDSTopoType::TASK);
 }
 
 DDSTask::~DDSTask()
@@ -72,25 +72,20 @@ void DDSTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& taskPT = DDSTopoElement::findElement("task", _name, _pt);
+        const ptree& taskPT = DDSTopoElement::findElement(DDSTopoType::TASK, _name, _pt.get_child("topology"));
 
         setName(taskPT.get<string>("<xmlattr>.name"));
         setExec(taskPT.get<string>("<xmlattr>.exec"));
         for (const auto& port : taskPT)
         {
-            if (port.first == "port")
-            {
-                DDSPortPtr_t newPort = make_shared<DDSPort>();
-                newPort->initFromPropertyTree(port.second.get<string>("<xmlattr>.name"), _pt);
-                addPort(newPort);
-            }
+            if (port.first == "<xmlattr>")
+                continue;
+            DDSPortPtr_t newPort = make_shared<DDSPort>();
+            newPort->initFromPropertyTree(port.second.get<string>("<xmlattr>.name"), _pt);
+            addPort(newPort);
         }
     }
-    catch (ptree_error& error)
-    {
-        throw logic_error("Unable to initialize task " + _name + " error: " + error.what());
-    }
-    catch (logic_error& error)
+    catch (exception& error) // ptree_error, logic_error
     {
         throw logic_error("Unable to initialize task " + _name + " error: " + error.what());
     }

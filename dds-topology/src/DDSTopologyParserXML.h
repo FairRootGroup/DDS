@@ -34,7 +34,7 @@ class DDSTopologyParserXML
     /// \brief Print recursively property tree to std::cout.
     void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
 
-    DDSTaskGroupPtr_t m_main; ///> Main task group which we run
+   // DDSTaskGroupPtr_t m_main; ///> Main task group which we run
 };
 
 #endif /* defined(__DDS__DDSTopologyParserXML__) */

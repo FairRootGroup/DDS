@@ -5,13 +5,15 @@
 
 #ifndef __DDS__DDSPort__
 #define __DDS__DDSPort__
+// DDS
+#include "DDSTopoProperty.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 // STL
 #include <string>
 #include <vector>
 
-class DDSPort
+class DDSPort : public DDSTopoProperty
 {
   public:
     typedef std::pair<unsigned short, unsigned short> DDSPortRange_t;
@@ -24,11 +26,9 @@ class DDSPort
 
   public:
     /// Accessors
-    void setName(const std::string& _name);
     void setRange(unsigned short _min, unsigned short _max);
 
     /// Modifiers
-    std::string getName() const;
     const DDSPortRange_t& getRange() const;
 
     /// \brief Initialize object with data from property tree.
@@ -38,7 +38,7 @@ class DDSPort
 
     /// \brief Returns string representation of an object.
     /// \return String representation of an object.
-    std::string toString() const;
+    virtual std::string toString() const;
 
     /// \brief Operator << for convenient output to ostream.
     /// \return Insertion stream in order to be able to call a succession of
@@ -46,7 +46,6 @@ class DDSPort
     friend std::ostream& operator<<(std::ostream& _strm, const DDSPort& _port);
 
   private:
-    std::string m_name;     ///> Name of port.
     DDSPortRange_t m_range; ///> Requested range of ports.
 };
 

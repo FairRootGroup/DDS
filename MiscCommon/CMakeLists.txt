@@ -23,8 +23,8 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # Build pipe_log_engine
 #
-message(STATUS "Build the pipe_log_engine lib - YES")
-add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
+#message(STATUS "Build the pipe_log_engine lib - YES")
+#add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
 
 #
 # Build pod_protocol
@@ -47,8 +47,8 @@ add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
 #
 # Build dds_sys_files
 #
-message(STATUS "Build the dds_sys_files lib - YES")
-add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
+#message(STATUS "Build the dds_sys_files lib - YES")
+#add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
 
 #
 ## Unit tests

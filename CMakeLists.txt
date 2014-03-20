@@ -146,10 +146,10 @@ if(BUILD_dds_topology)
 endif(BUILD_dds_topology)
 
 # dds_ssh
-if(BUILD_dds_ssh)
-    message(STATUS "Build dds-ssh - YES")
-    add_subdirectory ( dds-ssh )
-endif(BUILD_dds_ssh)
+#if(BUILD_dds_ssh)
+#    message(STATUS "Build dds-ssh - YES")
+#    add_subdirectory ( dds-ssh )
+#endif(BUILD_dds_ssh)
 
 
 #

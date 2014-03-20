@@ -4,18 +4,18 @@
 //
 
 // DDS
-#include "DDSTopoElement.h"
+#include "DDSTopoProperty.h"
 // STD
 #include <iostream>
 
 using namespace std;
 using namespace boost::property_tree;
 
-DDSTopoElement::DDSTopoElement() : DDSTopoBase()
+DDSTopoProperty::DDSTopoProperty() : DDSTopoBase()
 {
-    setType(DDSTopoType::TOPO_ELEMENT);
+    setType(DDSTopoType::TOPO_PROPERTY);
 }
 
-DDSTopoElement::~DDSTopoElement()
+DDSTopoProperty::~DDSTopoProperty()
 {
 }

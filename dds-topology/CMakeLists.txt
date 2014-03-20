@@ -27,6 +27,10 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 #
 set( SOURCE_FILES
 	./src/main.cpp
+	./src/DDSTopoProperty.cpp
+	./src/DDSTopoBase.cpp
+	./src/DDSTopoUtils.cpp
+	./src/DDSTopoFactory.cpp
 	./src/DDSTopology.cpp
 	./src/DDSTask.cpp
 	./src/DDSTaskCollection.cpp
@@ -41,6 +45,10 @@ set( SOURCE_FILES
 # Header files
 #
 set( HEADER_FILES
+	./src/DDSTopoProperty.h
+	./src/DDSTopoBase.h
+	./src/DDSTopoUtils.h
+	./src/DDSTopoFactory.h
 	./src/DDSTopology.h
 	./src/DDSTask.h
 	./src/DDSTaskCollection.h

@@ -16,28 +16,19 @@ using namespace boost::property_tree;
 using namespace std;
 
 DDSPort::DDSPort()
-    : m_name("")
+    : DDSTopoProperty()
     , m_range(std::make_pair(10000, 50000))
 {
+    setType(DDSTopoType::PORT);
 }
 
 DDSPort::~DDSPort()
 {
 }
 
-void DDSPort::setName(const string& _name)
-{
-    m_name = _name;
-}
-
 void DDSPort::setRange(unsigned short _min, unsigned short _max)
 {
     m_range = make_pair(_min, _max);
-}
-
-string DDSPort::getName() const
-{
-    return m_name;
 }
 
 const DDSPort::DDSPortRange_t& DDSPort::getRange() const
@@ -49,7 +40,7 @@ void DDSPort::initFromPropertyTree(const std::string& _name, const boost::proper
 {
     try
     {
-        const ptree& portPT = DDSTopoElement::findElement("port", _name, _pt);
+        const ptree& portPT = DDSTopoElement::findElement(DDSTopoType::PORT, _name, _pt.get_child("topology"));
         setName(portPT.get<string>("<xmlattr>.name"));
         setRange(portPT.get<unsigned int>("<xmlattr>.min"), portPT.get<unsigned int>("<xmlattr>.max"));
     }
@@ -62,7 +53,7 @@ void DDSPort::initFromPropertyTree(const std::string& _name, const boost::proper
 string DDSPort::toString() const
 {
     stringstream ss;
-    ss << "DDSPort: m_name=" << m_name << " m_range=(" << m_range.first << ", " << m_range.second << ")";
+    ss << "DDSPort: m_name=" << getName() << " m_range=(" << m_range.first << ", " << m_range.second << ")";
     return ss.str();
 }
 
