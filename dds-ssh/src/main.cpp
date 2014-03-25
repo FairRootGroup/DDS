@@ -14,7 +14,7 @@
 // MiscCommon
 #include "BOOSTHelper.h"
 #include "SysHelper.h"
-#include "PoDUserDefaultsOptions.h"
+#include "DDSUserDefaultsOptions.h"
 #include "DDSSysFiles.h"
 // dds-ssh
 #include "version.h"
@@ -35,8 +35,7 @@ typedef CThreadPool<CWorker, ETaskType> threadPool_t;
 //=============================================================================
 void printVersion()
 {
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
-         << "Report bugs/comments to A.Manafov@gsi.de" << endl;
+    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << endl;
 }
 //=============================================================================
 enum ECommands
@@ -204,13 +203,9 @@ int main(int argc, char* argv[])
         string configFile;
         if (!vm.count("config"))
         {
-#if defined(BOOST_PROPERTY_TREE)
-            PoD::SPoDSSHOptions opt_file;
+            DDS::SDDSSSHOptions opt_file;
             opt_file.load(env.pod_sshCfgFile());
             configFile = opt_file.m_config;
-#else
-            throw runtime_error("Error: missing argument: DDS SSH config file is not specified.");
-#endif
         }
         else
         {
@@ -300,8 +295,8 @@ int main(int argc, char* argv[])
         // in order to insert a user defined shell script
         if (cmd_submit == command && !inlineShellScripCmds.empty())
         {
-            slog.debug_msg("pod-ssh config contains an inline shell script. It will be injected it into wrk. package\n");
-            string scriptFileName(PoD::showWrkPackageDir());
+            slog.debug_msg("dds-ssh config contains an inline shell script. It will be injected it into wrk. package\n");
+            string scriptFileName(DDS::showWrkPackageDir());
             scriptFileName += "user_worker_env.sh";
             smart_path(&scriptFileName);
 
@@ -326,19 +321,19 @@ int main(int argc, char* argv[])
         }
         else if (cmd_submit == command)
         {
-            stringstream ssWarning;
-            ssWarning << "\n********************************************\n"
-                      << "Warning! There is no inline environment script found in " << configFile << "\n"
-                      << "Be advised, with SSH plug-in it is very often the case,\n"
-                      << "that PoD can't start workers, because xproofd/ROOT is not\n"
-                      << "in the PATH on worker nodes.\n"
-                      << "If your PoD job fails, just after submission it shows DONE status, \n"
-                      << "then you may want use inline environment script in your pod-ssh config file.\n"
-                      << "See http://pod.gsi.de/doc/pro/pod-ssh.html for more information\n"
-                      << "\n"
-                      << "Usage of user_worker_env.sh in pod-ssh is deprecated.\n"
-                      << "********************************************\n";
-            slog(ssWarning.str());
+//            stringstream ssWarning;
+//            ssWarning << "\n********************************************\n"
+//                      << "Warning! There is no inline environment script found in " << configFile << "\n"
+//                      << "Be advised, with SSH plug-in it is very often the case,\n"
+//                      << "that PoD can't start workers, because xproofd/ROOT is not\n"
+//                      << "in the PATH on worker nodes.\n"
+//                      << "If your PoD job fails, just after submission it shows DONE status, \n"
+//                      << "then you may want use inline environment script in your pod-ssh config file.\n"
+//                      << "See http://pod.gsi.de/doc/pro/pod-ssh.html for more information\n"
+//                      << "\n"
+//                      << "Usage of user_worker_env.sh in pod-ssh is deprecated.\n"
+//                      << "********************************************\n";
+//            slog(ssWarning.str());
         }
 
         // a number of threads in the thread-pool
@@ -355,13 +350,13 @@ int main(int argc, char* argv[])
         ss << "There are " << nThreads << " threads in the tread-pool.\n";
         slog.debug_msg(ss.str());
         ss.str("");
-        ss << "Number of PoD workers: " << workers.size() << "\n";
+        ss << "Number of DDS workers: " << workers.size() << "\n";
         slog.debug_msg(ss.str());
         ss.str("");
-        if (dynWrk)
-            ss << "Number of PROOF workers: on some workers is dynamic, according to a number of CPU cores\n";
-        else
-            ss << "Number of PROOF workers: " << wrkCount << "\n";
+//        if (dynWrk)
+//            ss << "Number of PROOF workers: on some workers is dynamic, according to a number of CPU cores\n";
+//        else
+//            ss << "Number of PROOF workers: " << wrkCount << "\n";
         slog.debug_msg(ss.str());
 
         slog.debug_msg("Workers list:\n");
@@ -426,13 +421,11 @@ int main(int argc, char* argv[])
                  " option to print debugging messages.\n");
 
         if (!vm.count("debug") && cmd_submit == command)
-            slog("PoD jobs have been submitted. Use \"pod-ssh status\" to check the status.\n");
+            slog("DDS jobs have been submitted. Use \"dds-ssh status\" to check the status.\n");
 
-#if defined(BOOST_PROPERTY_TREE)
-        PoD::SPoDSSHOptions opt_file;
+        DDS::SDDDSSSHOptions opt_file;
         opt_file.m_config = configFile;
         opt_file.save(env.pod_sshCfgFile());
-#endif
     }
     catch (exception& e)
     {
