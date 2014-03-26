@@ -26,6 +26,16 @@ size_t DDSTaskCollection::getNofTasks() const
     return getNofTasksDefault();
 }
 
+size_t DDSTaskCollection::getTotalNofTasks() const
+{
+    return getNofTasksDefault();
+}
+
+size_t DDSTaskCollection::getMinRequiredNofTasks() const
+{
+    return getNofTasksDefault();
+}
+
 void DDSTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try

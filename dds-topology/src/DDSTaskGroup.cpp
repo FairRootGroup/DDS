@@ -27,6 +27,28 @@ size_t DDSTaskGroup::getNofTasks() const
     return getNofTasksDefault();
 }
 
+size_t DDSTaskGroup::getTotalNofTasks() const
+{
+    const auto& elements = getElements();
+    size_t counter = 0;
+    for (const auto& v : elements)
+    {
+        counter += m_n * v->getTotalNofTasks();
+    }
+    return counter;
+}
+
+size_t DDSTaskGroup::getMinRequiredNofTasks() const
+{
+    const auto& elements = getElements();
+    size_t counter = 0;
+    for (const auto& v : elements)
+    {
+        counter += m_minimumRequired * v->getMinRequiredNofTasks();
+    }
+    return counter;
+}
+
 void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try

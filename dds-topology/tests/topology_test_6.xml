@@ -36,7 +36,7 @@
 		<task name="task3"/>
   	</collection>
 	
-	<main name="main" n="7" minRequired="1">
+	<main name="main" n="1" minRequired="1">
 	    <task name="task1"/>
 	    <collection name="collection1"/>
 		<group name="group1" n="10" minRequired="1">

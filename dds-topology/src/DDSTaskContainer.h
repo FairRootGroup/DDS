@@ -49,7 +49,9 @@ class DDSTaskContainer : public DDSTopoElement
     /// \brief Destructor.
     virtual ~DDSTaskContainer();
 
-    /// \brief Default implementation for DDSTopoElement::getNofTasks. Calculate recursively number of tasks in all daughter elements.
+    /// \brief Default implementation for DDSTopoElement::getNofTasks, DDSTopoElement::getTotalNofTasks, DDSTopoElement::getMinRequiredNofTasks.
+    /// Calculate recursively number of tasks in all daughter elements.
+    /// \param multiplicator Multiplication factor for all daughter nodes.
     size_t getNofTasksDefault() const;
 
   private:

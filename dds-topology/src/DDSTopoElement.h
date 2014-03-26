@@ -18,8 +18,14 @@
 class DDSTopoElement : public DDSTopoBase
 {
   public:
-    /// \brief Has to return number of all tasks including daughter elements.
+    /// \brief Return number of all tasks including daughter elements.
     virtual size_t getNofTasks() const = 0;
+
+    /// \brief Return total number of tasks, i.e. number of tasks multiplied by n.
+    virtual size_t getTotalNofTasks() const = 0;
+
+    /// \brief Return minimum required number of tasks.
+    virtual size_t getMinRequiredNofTasks() const = 0;
 
   protected:
     /// \brief Constructor.

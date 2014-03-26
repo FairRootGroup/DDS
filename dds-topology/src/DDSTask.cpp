@@ -46,6 +46,16 @@ size_t DDSTask::getNofTasks() const
     return 1;
 }
 
+size_t DDSTask::getTotalNofTasks() const
+{
+    return 1;
+}
+
+size_t DDSTask::getMinRequiredNofTasks() const
+{
+    return 1;
+}
+
 string DDSTask::getExec() const
 {
     return m_exec;
