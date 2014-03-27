@@ -69,9 +69,11 @@ include_directories(
 # dds-topology executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-topology ${SOURCE_FILES} ${HEADER_FILES})
+#    add_executable(dds-topology ${SOURCE_FILES} ${HEADER_FILES})
+    add_library(dds-topology SHARED ${SOURCE_FILES} ${HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-topology ${SOURCE_FILES})
+#    add_executable(dds-topology ${SOURCE_FILES})
+    add_library(dds-topology SHARED ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 #target_link_libraries (
