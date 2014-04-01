@@ -22,6 +22,7 @@ on any RMS.
 
 ## System Dependencies
 
+* a C++11 compiler
 * CMake 2.6.2
 * BOOST 1.55
 
@@ -63,6 +64,12 @@ N/A
 ~~~~~~~~~~~~~
 
 ---
+
+### Path
+Each topology element is referenced by a path. At the moment the path is a list the element and all its parents separated by slash. For example to refer to a task T1, which is a part of the collection C2 and a group G3, we will use: "main/G3/C2/T1".
+
+A path is mostly used by other modules of DDS to have a persistent access to the topology elements.
+
 # Developer Testing
 
 
