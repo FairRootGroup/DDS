@@ -42,11 +42,15 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(main->getMinimumRequired() == 1);
     BOOST_CHECK(main->getName() == "main");
     BOOST_CHECK(main->getNofElements() == 4);
+    BOOST_CHECK(main->getParent() == nullptr);
+    BOOST_CHECK(main->getPath() == "main");
     BOOST_CHECK_THROW(main->getElement(4), std::out_of_range);
 
     DDSTopoElementPtr_t element1 = main->getElement(0);
     BOOST_CHECK(element1->getName() == "task1");
     BOOST_CHECK(element1->getType() == DDSTopoType::TASK);
+    BOOST_CHECK(element1->getParent() == main.get());
+    BOOST_CHECK(element1->getPath() == "main/task1");
     BOOST_CHECK(element1->getNofTasks() == 1);
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
     BOOST_CHECK(element1->getMinRequiredNofTasks() == 1);
@@ -57,6 +61,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     DDSTopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getName() == "collection1");
     BOOST_CHECK(element2->getType() == DDSTopoType::COLLECTION);
+    BOOST_CHECK(element2->getParent() == main.get());
+    BOOST_CHECK(element2->getPath() == "main/collection1");
     BOOST_CHECK(element2->getNofTasks() == 4);
     BOOST_CHECK(element2->getTotalNofTasks() == 4);
     BOOST_CHECK(element2->getMinRequiredNofTasks() == 4);
@@ -64,9 +70,17 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted2->getNofElements() == 4);
     BOOST_CHECK_THROW(casted2->getElement(4), std::out_of_range);
 
+    const auto& casted2_elements = casted2->getElements();
+    for (const auto& v : casted2_elements)
+    {
+        BOOST_CHECK(v->getParent() == element2.get());
+    }
+
     DDSTopoElementPtr_t element3 = main->getElement(2);
     BOOST_CHECK(element3->getName() == "group1");
     BOOST_CHECK(element3->getType() == DDSTopoType::GROUP);
+    BOOST_CHECK(element3->getParent() == main.get());
+    BOOST_CHECK(element3->getPath() == "main/group1");
     BOOST_CHECK(element3->getNofTasks() == 8);
     BOOST_CHECK(element3->getTotalNofTasks() == 80);
     BOOST_CHECK(element3->getMinRequiredNofTasks() == 8);
@@ -79,6 +93,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     DDSTopoElementPtr_t element4 = main->getElement(3);
     BOOST_CHECK(element4->getName() == "group2");
     BOOST_CHECK(element4->getType() == DDSTopoType::GROUP);
+    BOOST_CHECK(element4->getParent() == main.get());
+    BOOST_CHECK(element4->getPath() == "main/group2");
     BOOST_CHECK(element4->getNofTasks() == 9);
     BOOST_CHECK(element4->getTotalNofTasks() == 135);
     BOOST_CHECK(element4->getMinRequiredNofTasks() == 27);
@@ -87,6 +103,80 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK_THROW(casted4->getElement(4), std::out_of_range);
     BOOST_CHECK(casted4->getN() == 15);
     BOOST_CHECK(casted4->getMinimumRequired() == 3);
+
+    DDSTaskCollectionPtr_t casted5 = dynamic_pointer_cast<DDSTaskCollection>(casted4->getElement(2));
+    BOOST_CHECK(casted5->getName() == "collection1");
+    BOOST_CHECK(casted5->getType() == DDSTopoType::COLLECTION);
+    BOOST_CHECK(casted5->getParent() == casted4.get());
+    BOOST_CHECK(casted5->getPath() == "main/group2/collection1");
+    BOOST_CHECK(casted5->getNofTasks() == 4);
+    BOOST_CHECK(casted5->getTotalNofTasks() == 4);
+    BOOST_CHECK(casted5->getMinRequiredNofTasks() == 4);
+    BOOST_CHECK(casted5->getNofElements() == 4);
+    BOOST_CHECK_THROW(casted5->getElement(4), std::out_of_range);
+    BOOST_CHECK(casted5->getTotalCounter() == 15);
+
+    DDSTaskPtr_t casted6 = dynamic_pointer_cast<DDSTask>(casted5->getElement(0));
+    BOOST_CHECK(casted6->getName() == "task1");
+    BOOST_CHECK(casted6->getType() == DDSTopoType::TASK);
+    BOOST_CHECK(casted6->getParent() == casted5.get());
+    BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
+    BOOST_CHECK(casted6->getNofTasks() == 1);
+    BOOST_CHECK(casted6->getTotalNofTasks() == 1);
+    BOOST_CHECK(casted6->getMinRequiredNofTasks() == 1);
+    BOOST_CHECK(casted6->getNofPorts() == 2);
+    BOOST_CHECK(casted6->getExec() == "app1");
+
+    // Test getElementsByType and getTotalCounter
+    DDSTopoElementPtrVector_t elements1 = main->getElementsByType(DDSTopoType::TASK);
+    BOOST_CHECK(elements1.size() == 4);
+    for (const auto& v : elements1)
+    {
+        BOOST_CHECK(v->getType() == DDSTopoType::TASK);
+    }
+    DDSTaskPtr_t castedTask = dynamic_pointer_cast<DDSTask>(elements1[0]);
+    BOOST_CHECK(castedTask->getName() == "task1");
+    BOOST_CHECK(castedTask->getPath() == "main/task1");
+    BOOST_CHECK(castedTask->getTotalCounter() == 1);
+    castedTask = dynamic_pointer_cast<DDSTask>(elements1[1]);
+    BOOST_CHECK(castedTask->getName() == "task1");
+    BOOST_CHECK(castedTask->getPath() == "main/group1/task1");
+    BOOST_CHECK(castedTask->getTotalCounter() == 10);
+    castedTask = dynamic_pointer_cast<DDSTask>(elements1[2]);
+    BOOST_CHECK(castedTask->getName() == "task3");
+    BOOST_CHECK(castedTask->getPath() == "main/group2/task3");
+    BOOST_CHECK(castedTask->getTotalCounter() == 15);
+    castedTask = dynamic_pointer_cast<DDSTask>(elements1[3]);
+    BOOST_CHECK(castedTask->getName() == "task4");
+    BOOST_CHECK(castedTask->getPath() == "main/group2/task4");
+    BOOST_CHECK(castedTask->getTotalCounter() == 15);
+
+    DDSTopoElementPtrVector_t elements2 = main->getElementsByType(DDSTopoType::COLLECTION);
+    BOOST_CHECK(elements2.size() == 5);
+    for (const auto& v : elements2)
+    {
+        BOOST_CHECK(v->getType() == DDSTopoType::COLLECTION);
+    }
+    DDSTaskCollectionPtr_t castedCollection = dynamic_pointer_cast<DDSTaskCollection>(elements2[0]);
+    BOOST_CHECK(castedCollection->getName() == "collection1");
+    BOOST_CHECK(castedCollection->getPath() == "main/collection1");
+    BOOST_CHECK(castedCollection->getTotalCounter() == 1);
+    castedCollection = dynamic_pointer_cast<DDSTaskCollection>(elements2[1]);
+    BOOST_CHECK(castedCollection->getName() == "collection1");
+    BOOST_CHECK(castedCollection->getPath() == "main/group1/collection1");
+    BOOST_CHECK(castedCollection->getTotalCounter() == 10);
+    castedCollection = dynamic_pointer_cast<DDSTaskCollection>(elements2[2]);
+    BOOST_CHECK(castedCollection->getName() == "collection2");
+    BOOST_CHECK(castedCollection->getPath() == "main/group1/collection2");
+    BOOST_CHECK(castedCollection->getTotalCounter() == 10);
+    castedCollection = dynamic_pointer_cast<DDSTaskCollection>(elements2[3]);
+    BOOST_CHECK(castedCollection->getName() == "collection1");
+    BOOST_CHECK(castedCollection->getPath() == "main/group2/collection1");
+    BOOST_CHECK(castedCollection->getTotalCounter() == 15);
+    castedCollection = dynamic_pointer_cast<DDSTaskCollection>(elements2[4]);
+    BOOST_CHECK(castedCollection->getName() == "collection2");
+    BOOST_CHECK(castedCollection->getPath() == "main/group2/collection2");
+    BOOST_CHECK(castedCollection->getTotalCounter() == 15);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)

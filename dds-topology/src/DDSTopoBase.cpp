@@ -15,6 +15,7 @@ using namespace boost::property_tree;
 DDSTopoBase::DDSTopoBase()
     : m_name("")
     , m_type(DDSTopoType::TOPO_BASE)
+    , m_parent(nullptr)
 {
 }
 
@@ -32,6 +33,11 @@ void DDSTopoBase::setName(const string& _name)
     m_name = _name;
 }
 
+void DDSTopoBase::setParent(DDSTopoBase* _parent)
+{
+    m_parent = _parent;
+}
+
 string DDSTopoBase::getName() const
 {
     return m_name;
@@ -40,6 +46,23 @@ string DDSTopoBase::getName() const
 DDSTopoType DDSTopoBase::getType() const
 {
     return m_type;
+}
+
+DDSTopoBase* DDSTopoBase::getParent() const
+{
+    return m_parent;
+}
+
+string DDSTopoBase::getPath() const
+{
+    if (getParent() == nullptr)
+    {
+        return getName();
+    }
+    else
+    {
+        return getParent()->getPath() + "/" + getName();
+    }
 }
 
 const ptree& DDSTopoBase::findElement(DDSTopoType _type, const string& _name, const ptree& _pt)

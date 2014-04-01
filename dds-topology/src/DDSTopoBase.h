@@ -29,10 +29,15 @@ class DDSTopoBase
   public:
     /// Modifiers
     void setName(const std::string& _name);
+    void setParent(DDSTopoBase* _parent);
 
     /// Accessors
     std::string getName() const;
     DDSTopoType getType() const;
+    DDSTopoBase* getParent() const;
+
+    /// \brief Return full path to topo element or property.
+    std::string getPath() const;
 
     /// \brief Initialize object with data from property tree.
     /// \param[in] _name Name of the object as in input file.
@@ -67,8 +72,9 @@ class DDSTopoBase
     void setType(DDSTopoType _type);
 
   private:
-    std::string m_name; ///> Name of topology element
-    DDSTopoType m_type; ///> Type of the topology element
+    std::string m_name;    ///> Name of topology element
+    DDSTopoType m_type;    ///> Type of the topology element
+    DDSTopoBase* m_parent; ///> Pointer to parent element
 
     // FIXME: Probably we have to add an ID which will uniquely identifies the object.
 };

@@ -5,17 +5,26 @@
 
 // DDS
 #include "DDSTopoElement.h"
-// STD
-#include <iostream>
+#include "DDSTaskGroup.h"
 
 using namespace std;
-using namespace boost::property_tree;
 
-DDSTopoElement::DDSTopoElement() : DDSTopoBase()
+DDSTopoElement::DDSTopoElement()
+    : DDSTopoBase()
+    , m_path()
 {
     setType(DDSTopoType::TOPO_ELEMENT);
 }
 
 DDSTopoElement::~DDSTopoElement()
 {
+}
+
+size_t DDSTopoElement::getTotalCounterDefault() const
+{
+    if (getParent() != nullptr && getParent()->getType() == DDSTopoType::GROUP)
+    {
+        return static_cast<DDSTaskGroup*>(getParent())->getN();
+    }
+    return 1;
 }

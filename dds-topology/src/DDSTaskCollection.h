@@ -20,20 +20,21 @@ class DDSTaskCollection : public DDSTaskContainer
 
     /// \brief Inherited from DDSTopoElement.
     virtual size_t getNofTasks() const;
-    
+
     /// \brief Inherited from DDSTopoElement.
     virtual size_t getTotalNofTasks() const;
-    
+
     /// \brief Inherited from DDSTopoElement.
     virtual size_t getMinRequiredNofTasks() const;
 
     /// \brief Inherited from DDSTopoElement.
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
-  private:
+    /// \brief If parent is a group than return N, else return 1.
+    size_t getTotalCounter() const;
 };
 
 typedef std::shared_ptr<DDSTaskCollection> DDSTaskCollectionPtr_t;
-// typedef std::vector<DDSTaskCollectionPtr_t> DDSTaskCollectionPtrVector_t;
+typedef std::vector<DDSTaskCollectionPtr_t> DDSTaskCollectionPtrVector_t;
 
 #endif /* defined(__DDS__DDSTopology__) */

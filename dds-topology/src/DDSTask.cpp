@@ -4,10 +4,12 @@
 //
 
 #include "DDSTask.h"
+#include "DDSTaskGroup.h"
 // STD
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <memory>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
@@ -66,6 +68,11 @@ size_t DDSTask::getNofPorts() const
     return m_ports.size();
 }
 
+size_t DDSTask::getTotalCounter() const
+{
+    return getTotalCounterDefault();
+}
+
 DDSPortPtr_t DDSTask::getPort(size_t _i) const
 {
     if (_i >= getNofPorts())
@@ -91,6 +98,7 @@ void DDSTask::initFromPropertyTree(const string& _name, const ptree& _pt)
             if (port.first == "<xmlattr>")
                 continue;
             DDSPortPtr_t newPort = make_shared<DDSPort>();
+            newPort->setParent(this);
             newPort->initFromPropertyTree(port.second.get<string>("<xmlattr>.name"), _pt);
             addPort(newPort);
         }

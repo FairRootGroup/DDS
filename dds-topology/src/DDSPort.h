@@ -31,9 +31,7 @@ class DDSPort : public DDSTopoProperty
     /// Modifiers
     const DDSPortRange_t& getRange() const;
 
-    /// \brief Initialize object with data from property tree.
-    /// \param[in] _name Name of the object as in input file.
-    /// \param[in] _pt Property tree starting from root.
+    /// \brief Inherited from DDSTopoBase
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
     /// \brief Returns string representation of an object.

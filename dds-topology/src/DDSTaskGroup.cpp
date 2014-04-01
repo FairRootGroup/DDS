@@ -3,9 +3,12 @@
 //
 //
 
+// DDS
 #include "DDSTaskGroup.h"
 #include "DDSTopoFactory.h"
 #include "DDSTopoUtils.h"
+// STD
+#include <memory>
 
 using namespace std;
 using namespace boost::property_tree;
@@ -65,6 +68,7 @@ void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
             if (element.first == "<xmlattr>")
                 continue;
             DDSTopoElementPtr_t newElement = DDSCreateTopoElement(DDSTagToTopoType(element.first));
+            newElement->setParent(this);
             newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
             addElement(newElement);
         }
@@ -93,6 +97,25 @@ void DDSTaskGroup::setN(size_t _n)
 void DDSTaskGroup::setMinimumRequired(size_t _minimumRequired)
 {
     m_minimumRequired = _minimumRequired;
+}
+
+DDSTopoElementPtrVector_t DDSTaskGroup::getElementsByType(DDSTopoType _type) const
+{
+    const auto& elements = getElements();
+    DDSTopoElementPtrVector_t result;
+    for (const auto& v : elements)
+    {
+        if (v->getType() == _type)
+        {
+            result.push_back(v);
+        }
+        else if (v->getType() == DDSTopoType::GROUP)
+        {
+            DDSTopoElementPtrVector_t groupElements = dynamic_pointer_cast<DDSTaskGroup>(v)->getElementsByType(_type);
+            result.insert(result.end(), groupElements.begin(), groupElements.end());
+        }
+    }
+    return result;
 }
 
 string DDSTaskGroup::toString() const

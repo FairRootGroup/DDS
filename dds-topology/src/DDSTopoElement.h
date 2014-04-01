@@ -9,11 +9,7 @@
 // DDS
 #include "DDSTopoBase.h"
 // STD
-#include <sstream>
 #include <string>
-#include <vector>
-// BOOST
-#include <boost/property_tree/ptree.hpp>
 
 class DDSTopoElement : public DDSTopoBase
 {
@@ -33,6 +29,13 @@ class DDSTopoElement : public DDSTopoBase
 
     /// \brief Destructor.
     virtual ~DDSTopoElement();
+
+    /// \brief If parent is a group than return N, else return 1.
+    /// Default implementation for DDSTask::getTotalCounter and DDSTaskCollection::getTotalCounter.
+    size_t getTotalCounterDefault() const;
+
+  private:
+    std::string m_path; // Full path to element, including element name
 };
 
 typedef std::shared_ptr<DDSTopoElement> DDSTopoElementPtr_t;

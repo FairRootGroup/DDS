@@ -36,6 +36,11 @@ size_t DDSTaskCollection::getMinRequiredNofTasks() const
     return getNofTasksDefault();
 }
 
+size_t DDSTaskCollection::getTotalCounter() const
+{
+    return getTotalCounterDefault();
+}
+
 void DDSTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
@@ -49,6 +54,7 @@ void DDSTaskCollection::initFromPropertyTree(const string& _name, const ptree& _
             if (element.first == "<xmlattr>")
                 continue;
             DDSTopoElementPtr_t newElement = DDSCreateTopoElement(DDSTagToTopoType(element.first));
+            newElement->setParent(this);
             newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
             addElement(newElement);
         }
