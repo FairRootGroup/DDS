@@ -10,6 +10,7 @@
 #include <boost/test/unit_test.hpp>
 
 // DDS
+#include "DDSTopology.h"
 #include "DDSTopologyParserXML.h"
 #include "DDSTopoBase.h"
 #include "DDSTopoElement.h"
@@ -28,11 +29,39 @@ using namespace boost::property_tree;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
+BOOST_AUTO_TEST_CASE(test_dds_topology_1)
+{
+    DDSTopology topology;
+    topology.init("topology_test_1.xml");
+
+    DDSTopoElementPtr_t e1 = topology.getTopoElementByPath("main/task1");
+    BOOST_CHECK(e1->getPath() == "main/task1");
+
+    DDSTopoElementPtr_t e2 = topology.getTopoElementByPath("main/collection1");
+    BOOST_CHECK(e2->getPath() == "main/collection1");
+
+    DDSTopoElementPtr_t e3 = topology.getTopoElementByPath("main/group1");
+    BOOST_CHECK(e3->getPath() == "main/group1");
+
+    DDSTopoElementPtr_t e4 = topology.getTopoElementByPath("main/group1/collection1");
+    BOOST_CHECK(e4->getPath() == "main/group1/collection1");
+
+    DDSTopoElementPtr_t e5 = topology.getTopoElementByPath("main/group2/collection2/task5");
+    BOOST_CHECK(e5->getPath() == "main/group2/collection2/task5");
+
+    BOOST_CHECK_THROW(topology.getTopoElementByPath("wrong_path"), runtime_error);
+}
+
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
-    DDSTopologyParserXML parser;
+    DDSTopology topology;
+    topology.init("topology_test_1.xml");
+    DDSTaskGroupPtr_t main = topology.getMainGroup();
 
-    DDSTaskGroupPtr_t main = parser.parse("topology_test_1.xml");
+    //  DDSTopologyParserXML parser;
+    //  DDSTaskGroupPtr_t main = make_shared<DDSTaskGroup>();
+    //  parser.parse("topology_test_1.xml", main);
+
     BOOST_CHECK(main != nullptr);
 
     BOOST_CHECK(main->getNofTasks() == 22);

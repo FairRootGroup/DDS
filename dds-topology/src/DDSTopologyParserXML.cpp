@@ -55,21 +55,23 @@ bool DDSTopologyParserXML::isValid(const std::string& _fileName)
     return (status == 0);
 }
 
-DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
+void DDSTopologyParserXML::parse(const string& _fileName, DDSTaskGroupPtr_t _main)
 {
     // FIXME: Do we really need seperate try{} catch{} blocks?
     //        Or we have to put everything in one big try{} catch{} block in this function.
+
+    if (_main == nullptr)
+        throw runtime_error("NULL input pointer.");
 
     // First validate XML against XSD schema
     try
     {
         if (!isValid(_fileName))
-            return nullptr;
+            throw runtime_error("XML file is not valid.");
     }
     catch (runtime_error& error)
     {
         throw runtime_error(string("XML validation failed with the following error: ") + error.what());
-        return nullptr;
     }
 
     ptree pt;
@@ -82,25 +84,17 @@ DDSTaskGroupPtr_t DDSTopologyParserXML::parse(const string& _fileName)
     catch (xml_parser_error& error)
     {
         throw runtime_error(string("Reading of input XML file failed with the following error: ") + error.what());
-        return nullptr;
     }
 
-    //    PrintPropertyTree("", pt);
-
-    // Create main group and parse property tree
-
-    DDSTaskGroupPtr_t main = make_shared<DDSTaskGroup>();
+    // Parse property tree
     try
     {
-        main->initFromPropertyTree("main", pt);
+        _main->initFromPropertyTree("main", pt);
     }
     catch (exception& error) // ptree_error, out_of_range, logic_error
     {
         throw runtime_error(string("Initialization of Main failed with the following error") + error.what());
-        return nullptr;
     }
-
-    return main;
 }
 
 void DDSTopologyParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const

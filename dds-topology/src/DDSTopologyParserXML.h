@@ -23,8 +23,9 @@ class DDSTopologyParserXML
     virtual ~DDSTopologyParserXML();
 
     /// \brief Read topology from specified XML file.
-    /// \return Main task group or nullptr in case of error.
-    DDSTaskGroupPtr_t parse(const std::string& _fileName);
+    /// \param[in] _fileName Name of file with topology.
+    /// \param[in] _main Main task group or nullptr in case of error.
+    void parse(const std::string& _fileName, DDSTaskGroupPtr_t _main);
 
     /// \brief Validate provided XML file against XSD using xmllint.
     /// \throw runtime_error
@@ -33,8 +34,6 @@ class DDSTopologyParserXML
   private:
     /// \brief Print recursively property tree to std::cout.
     void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
-
-   // DDSTaskGroupPtr_t m_main; ///> Main task group which we run
 };
 
 #endif /* defined(__DDS__DDSTopologyParserXML__) */
