@@ -65,6 +65,11 @@ string DDSTopoBase::getPath() const
     }
 }
 
+DDSIndex DDSTopoBase::getIndex() const
+{
+    return DDSIndex(getPath());
+}
+
 const ptree& DDSTopoBase::findElement(DDSTopoType _type, const string& _name, const ptree& _pt)
 {
     const ptree* result = nullptr;

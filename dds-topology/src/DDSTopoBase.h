@@ -6,6 +6,8 @@
 #ifndef __DDS__DDSTopoBase__
 #define __DDS__DDSTopoBase__
 
+// DDS
+#include "DDSIndex.h"
 // STD
 #include <sstream>
 #include <string>
@@ -38,6 +40,9 @@ class DDSTopoBase
 
     /// \brief Return full path to topo element or property.
     std::string getPath() const;
+
+    /// \brief Return index of topo element or property.
+    DDSIndex getIndex() const;
 
     /// \brief Initialize object with data from property tree.
     /// \param[in] _name Name of the object as in input file.

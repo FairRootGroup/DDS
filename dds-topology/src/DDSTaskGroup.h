@@ -7,6 +7,7 @@
 #define DDS_DDSTaskGroup_h
 // DDS
 #include "DDSTaskContainer.h"
+#include "DDSIndex.h"
 
 class DDSTaskGroup : public DDSTaskContainer
 {
@@ -38,6 +39,8 @@ class DDSTaskGroup : public DDSTaskContainer
     void setMinimumRequired(size_t _minimumRequired);
 
     DDSTopoElementPtrVector_t getElementsByType(DDSTopoType _type) const;
+
+    DDSIndexVector_t getIndicesByType(DDSTopoType _type) const;
 
     /// \brief Returns string representation of an object.
     /// \return String representation of an object.

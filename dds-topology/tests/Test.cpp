@@ -10,6 +10,7 @@
 #include <boost/test/unit_test.hpp>
 
 // DDS
+#include "DDSIndex.h"
 #include "DDSTopology.h"
 #include "DDSTopologyParserXML.h"
 #include "DDSTopoBase.h"
@@ -34,22 +35,22 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_1)
     DDSTopology topology;
     topology.init("topology_test_1.xml");
 
-    DDSTopoElementPtr_t e1 = topology.getTopoElementByPath("main/task1");
+    DDSTopoElementPtr_t e1 = topology.getTopoElementByIndex(DDSIndex("main/task1"));
     BOOST_CHECK(e1->getPath() == "main/task1");
 
-    DDSTopoElementPtr_t e2 = topology.getTopoElementByPath("main/collection1");
+    DDSTopoElementPtr_t e2 = topology.getTopoElementByIndex(DDSIndex("main/collection1"));
     BOOST_CHECK(e2->getPath() == "main/collection1");
 
-    DDSTopoElementPtr_t e3 = topology.getTopoElementByPath("main/group1");
+    DDSTopoElementPtr_t e3 = topology.getTopoElementByIndex(DDSIndex("main/group1"));
     BOOST_CHECK(e3->getPath() == "main/group1");
 
-    DDSTopoElementPtr_t e4 = topology.getTopoElementByPath("main/group1/collection1");
+    DDSTopoElementPtr_t e4 = topology.getTopoElementByIndex(DDSIndex("main/group1/collection1"));
     BOOST_CHECK(e4->getPath() == "main/group1/collection1");
 
-    DDSTopoElementPtr_t e5 = topology.getTopoElementByPath("main/group2/collection2/task5");
+    DDSTopoElementPtr_t e5 = topology.getTopoElementByIndex(DDSIndex("main/group2/collection2/task5"));
     BOOST_CHECK(e5->getPath() == "main/group2/collection2/task5");
 
-    BOOST_CHECK_THROW(topology.getTopoElementByPath("wrong_path"), runtime_error);
+    BOOST_CHECK_THROW(topology.getTopoElementByIndex(DDSIndex("wrong_path")), runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
@@ -206,6 +207,22 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(castedCollection->getName() == "collection2");
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
+
+    /// test getIndicesByType
+    DDSIndexVector_t ids1 = main->getIndicesByType(DDSTopoType::COLLECTION);
+    BOOST_CHECK(ids1.size() == 5);
+    BOOST_CHECK(ids1[0].getPath() == "main/collection1");
+    BOOST_CHECK(ids1[1].getPath() == "main/group1/collection1");
+    BOOST_CHECK(ids1[2].getPath() == "main/group1/collection2");
+    BOOST_CHECK(ids1[3].getPath() == "main/group2/collection1");
+    BOOST_CHECK(ids1[4].getPath() == "main/group2/collection2");
+
+    DDSIndexVector_t ids2 = main->getIndicesByType(DDSTopoType::TASK);
+    BOOST_CHECK(ids2.size() == 4);
+    BOOST_CHECK(ids2[0].getPath() == "main/task1");
+    BOOST_CHECK(ids2[1].getPath() == "main/group1/task1");
+    BOOST_CHECK(ids2[2].getPath() == "main/group2/task3");
+    BOOST_CHECK(ids2[3].getPath() == "main/group2/task4");
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)

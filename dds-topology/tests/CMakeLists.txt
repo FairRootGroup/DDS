@@ -10,6 +10,7 @@ include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set( SOURCE_FILES
 	Test.cpp
+	${dds-topology_SOURCE_DIR}/src/DDSIndex.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopoProperty.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopoBase.cpp
 	${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp

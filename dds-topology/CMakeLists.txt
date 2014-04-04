@@ -39,6 +39,7 @@ set( SOURCE_FILES
 	./src/DDSTopoElement.cpp
 	./src/DDSTaskContainer.cpp
 	./src/DDSTopologyParserXML.cpp
+	./src/DDSIndex.cpp
 )
 
 #
@@ -57,6 +58,7 @@ set( HEADER_FILES
 	./src/DDSTopoElement.h
 	./src/DDSTaskContainer.h
 	./src/DDSTopologyParserXML.h
+	./src/DDSIndex.h
 )
 
 include_directories(

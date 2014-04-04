@@ -118,6 +118,29 @@ DDSTopoElementPtrVector_t DDSTaskGroup::getElementsByType(DDSTopoType _type) con
     return result;
 }
 
+DDSIndexVector_t DDSTaskGroup::getIndicesByType(DDSTopoType _type) const
+{
+    DDSIndexVector_t result;
+    const auto& elements = getElements();
+    for (const auto& v : elements)
+    {
+        if (v->getType() == _type)
+        {
+            result.push_back(v->getIndex());
+        }
+        else if (v->getType() == DDSTopoType::GROUP)
+        {
+            DDSTopoElementPtrVector_t groupElements = dynamic_pointer_cast<DDSTaskGroup>(v)->getElementsByType(_type);
+            for (const auto& v : groupElements)
+            {
+                result.push_back(v->getIndex());
+            }
+        }
+    }
+
+    return result;
+}
+
 string DDSTaskGroup::toString() const
 {
     stringstream ss;
