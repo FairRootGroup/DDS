@@ -24,19 +24,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # Build pipe_log_engine
 #
 #message(STATUS "Build the pipe_log_engine lib - YES")
-#add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
-
-#
-# Build pod_protocol
-#
-#message(STATUS "Build the pod_protocol lib - YES")
-#add_subdirectory( ${MiscCommon_SOURCE_DIR}/pod_protocol )
-
-#
-# Build proof_status_file
-#
-#message(STATUS "Build the proof_status_file lib - YES")
-#add_subdirectory( ${MiscCommon_SOURCE_DIR}/proof_status_file )
+add_subdirectory( ${MiscCommon_SOURCE_DIR}/pipe_log_engine )
 
 #
 # Build SSHTunnel
@@ -47,15 +35,15 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # Build dds_sys_files
 #
-#message(STATUS "Build the dds_sys_files lib - YES")
-#add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
+message(STATUS "Build the dds_sys_files lib - YES")
+add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
 
 #
 ## Unit tests
 #
-#if (BUILD_TESTS)
-#    message (STATUS "Build MiscCommon unit tests - YES")
-#    add_subdirectory ( ${MiscCommon_SOURCE_DIR}/tests ) 
-#else (BUILD_TESTS)
-#    message (STATUS "Build MiscCommon unit tests - NO")
-#endif (BUILD_TESTS)
+if (BUILD_TESTS)
+    message (STATUS "Build MiscCommon unit tests - YES")
+    add_subdirectory ( ${MiscCommon_SOURCE_DIR}/tests ) 
+else (BUILD_TESTS)
+    message (STATUS "Build MiscCommon unit tests - NO")
+endif (BUILD_TESTS)

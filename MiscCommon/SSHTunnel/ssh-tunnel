@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+#
+# Copyright 2014 GSI, Inc. All rights reserved.
+#
+#
+#
+#=============================================================================
+# ***** USAGE *****
+#=============================================================================
+usage() {
+    cat <<EOF
+A private command line utility, which is used to set up an SSH tunnel.
+   Copyright (C) 2011-2013 GSI, Scientific Computing group.
+
+Usage: ssh-tunnel [OPTION]
+     -l login@host.fqdn 	SSH connection string.
+     -p port                    The local port.
+     -r port                    The remote port.
+     -o open.domain.org         The name of a third party machine open to the outside world
+                                and from which direct connections to the server are possible.
+     -f pid_file                The full path of the tunnel pid file.
+     -i identity_file           Provide an identity file.
+     -d 			Enable debug output.
+     -b				Enable batch mode.
+     -h          		Show summary of options.
+
+Report bugs to http://pod.gsi.de
+EOF
+}
+#=============================================================================
+# ***** OPTARG *****
+#=============================================================================
+LOCAL_PORT=""
+REMOTE_PORT=""
+SSH_CON_STR=""
+OPEN_DOMAIN=""
+DEBUG=""
+BATCH_MODE=""
+PID_FILE=""
+IDENTITY_FILE=""
+while getopts ":l:o:p:r:f:i:dbh" opt; do
+  case $opt in
+  f)
+    PID_FILE="$OPTARG"
+    ;;
+  p)
+    LOCAL_PORT="$OPTARG"
+    ;;
+  r)
+    REMOTE_PORT="$OPTARG"
+    ;;
+  l)
+    SSH_CON_STR="$OPTARG"
+    ;;
+  o)
+    OPEN_DOMAIN="$OPTARG"
+    ;;
+  i)
+    IDENTITY_FILE="$OPTARG"
+    ;;
+  d)
+    DEBUG="YES"
+    ;;
+  b)
+    BATCH_MODE="YES"
+    ;;
+  h) 
+    usage
+    exit 0
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+
+if [ -z "$SSH_CON_STR" ]; then
+   usage
+   exit 1
+fi
+#=============================================================================
+# ***** VARS *****
+#=============================================================================
+TOOL_NAME="pod-ssh-tunnel"
+TIMEOUT=30
+
+if [ -n "$BATCH_MODE" ]; then
+    SSH_CMD="ssh $IDENTITY_FILE -4 -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=$TIMEOUT -o PasswordAuthentication=no"
+else
+    SSH_CMD="ssh $IDENTITY_FILE -4 -o StrictHostKeyChecking=no -o ConnectTimeout=$TIMEOUT"
+fi
+#=============================================================================
+# ***** MAIN *****
+#=============================================================================
+
+# additional protection, in case pid file is there
+PID=$(cat $PID_FILE 2>/dev/null)
+kill -9 $PID 2>/dev/null
+rm -f $PID_FILE
+
+# TODO: to silence the "bind: Cannot assign requested address" error we forced -4 IPv4
+# investigate this.
+#
+if [ -z "$OPEN_DOMAIN" ]; then
+   # My ssh tunnel attempts to establish the connection to the public domain name,
+   # which uses the public IP (the same one I'm SSHing into).
+   # The PoD server I'm trying to reach is not bound to that adapter!
+   # We need to use localhost on the public domain to connect to the server
+   $SSH_CMD -N -L $LOCAL_PORT:localhost:$REMOTE_PORT $SSH_CON_STR &
+   echo "DBG SSH Tunnel (w/t open domain): $SSH_CMD -N -L $LOCAL_PORT:localhost:$REMOTE_PORT $SSH_CON_STR"
+   PID=$!
+else
+   # we must use connection string without a user name
+   SSH_REMOTE_HOST=$( echo "$SSH_CON_STR" | awk -F@ '{print $2}')
+   if [ -z $SSH_REMOTE_HOST ]; then
+      SSH_REMOTE_HOST=$SSH_CON_STR
+   fi
+   $SSH_CMD -N -L $LOCAL_PORT:$SSH_REMOTE_HOST:$REMOTE_PORT $OPEN_DOMAIN &
+   echo "DBG SSH Tunnel (w. open domain): $SSH_CMD -N -L $LOCAL_PORT:$SSH_REMOTE_HOST:$REMOTE_PORT $OPEN_DOMAIN"
+   PID=$!
+fi
+
+if [ -n "$PID" ]; then
+   echo "$PID" > $PID_FILE
+fi
+
+exit 0
+

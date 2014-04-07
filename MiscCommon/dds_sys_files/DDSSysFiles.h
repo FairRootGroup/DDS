@@ -8,9 +8,9 @@
 // STD
 #include <string>
 // MiscCommon
-#include "PoDUserDefaultsOptions.h"
+#include "DDSUserDefaultsOptions.h"
 //=============================================================================
-class CPoDEnvironment
+/*class CPoDEnvironment
 {
     public:
         CPoDEnvironment();
@@ -62,7 +62,7 @@ class CPoDEnvironment
         {
             if( m_wrkDir.empty() )
                 return( "" );
-
+:
             std::string ret( m_wrkDir );
             ret += "rmt_srv_tunnel_agent.pid";
             return ret;
@@ -140,6 +140,6 @@ class CPoDEnvironment
         PoD::SPoDUserDefaultsOptions_t *m_ud;
         std::string m_wrkDir;
         std::string m_dotPoDPath;
-};
+};*/
 
 #endif

@@ -156,7 +156,7 @@ endif(BUILD_dds_topology)
 # Install
 #
 install(FILES ${DDS_MISC_FILES} DESTINATION .)
-#install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/PoD_env.sh DESTINATION .)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/DDS_env.sh DESTINATION .)
 # install etc files
 install(FILES ${DDS_ETC_FILES} DESTINATION etc)
 # tests runner
