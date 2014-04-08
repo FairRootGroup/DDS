@@ -12,9 +12,9 @@ trap clean_up SIGHUP SIGINT SIGTERM
 
 exec_test() {
 
-if [ -e $1 ]; then
+if [ -e "./$1" ]; then
 	echo ">>> Processing $1"
-	./$1 $2 || clean_up
+	"./$1" $2 || clean_up
 	echo
 else
 	echo "WARNING: can't find $1"
@@ -23,7 +23,7 @@ fi
 }
 
 # TODO: pass DDS_LOCATION as an argument to the script
-eval DDS_LOCATION=../$1
+eval DDS_LOCATION=$1
 if [ -z "${LD_LIBRARY_PATH}" ]; then
    LD_LIBRARY_PATH=$DDS_LOCATION/lib; export LD_LIBRARY_PATH
 else
@@ -39,7 +39,8 @@ fi
 
 
 pushd $(pwd)
-cd $1
+cd "$1"/tests
+
 
 echo "Working directory: $(pwd)"
 echo
