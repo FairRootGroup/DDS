@@ -76,7 +76,7 @@ namespace MiscCommon
      */
     class system_error : public std::exception
     {
-    public:
+      public:
         explicit system_error(const std::string& _ErrorPrefix)
         {
             m_errno = errno;
@@ -99,7 +99,7 @@ namespace MiscCommon
             return m_errno;
         }
 
-    private:
+      private:
         std::string m_Msg;
         int m_errno;
     };

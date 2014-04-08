@@ -34,7 +34,7 @@ namespace MiscCommon
          */
         class smart_XMLCh
         {
-        public:
+          public:
             XMLCh* m_xmlString;
 
             smart_XMLCh()

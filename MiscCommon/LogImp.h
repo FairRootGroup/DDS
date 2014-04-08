@@ -42,7 +42,7 @@ namespace MiscCommon
         {
         }
 
-    public:
+      public:
         int Init(const std::string& _LogFileName,
                  bool _CreateNew = false,
                  unsigned char _logLevel = LOG_SEVERITY_INFO | LOG_SEVERITY_WARNING | LOG_SEVERITY_FAULT | LOG_SEVERITY_CRITICAL_ERROR)
@@ -73,7 +73,7 @@ namespace MiscCommon
             return (NULL != m_log.get());
         }
 
-    private:
+      private:
         CFileLogPtr m_log;
     };
 
@@ -96,7 +96,7 @@ namespace MiscCommon
     template <typename _T>
     class CLogImp
     {
-    public:
+      public:
         CLogImp()
         {
             if (CLogSingleton::Instance().IsReady())
@@ -135,7 +135,7 @@ namespace MiscCommon
             return CLogSingleton::Instance().push(_Severity, _ErrorCode, GetModuleName(), _Message);
         }
 
-    private:
+      private:
         std::string GetModuleName()
         {
             _T* pT = reinterpret_cast<_T*>(this);

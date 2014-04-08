@@ -115,6 +115,13 @@ SET(DDS_ETC_FILES
      ${DDS_VERSION_FILE}
 )
 #
+# "share" files
+#
+SET(DDS_SHARE_FILES
+     ${CMAKE_SOURCE_DIR}/res/topology.xsd
+)
+
+#
 #
 # Build DDS modules
 #
@@ -159,6 +166,8 @@ install(FILES ${DDS_MISC_FILES} DESTINATION .)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/DDS_env.sh DESTINATION .)
 # install etc files
 install(FILES ${DDS_ETC_FILES} DESTINATION etc)
+# install share files
+install(FILES ${DDS_SHARE_FILES} DESTINATION share)
 # tests runner
 if( BUILD_TESTS )
   install(PROGRAMS run_test.sh DESTINATION tests)

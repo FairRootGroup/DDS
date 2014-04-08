@@ -49,7 +49,7 @@ namespace MiscCommon
         class smart_socket : public NONCopyable
         {
             // TODO: Implement reference count
-        public:
+          public:
             smart_socket()
                 : m_Socket(INVALID_SOCKET)
             {
@@ -144,7 +144,7 @@ namespace MiscCommon
                 return FD_ISSET(m_Socket, &readset);
             }
 
-        private:
+          private:
             Socket_t m_Socket;
         };
 
@@ -350,7 +350,7 @@ namespace MiscCommon
          */
         class CSocketServer
         {
-        public:
+          public:
             CSocketServer()
                 : m_Socket(AF_INET, SOCK_STREAM, 0)
             {
@@ -395,7 +395,7 @@ namespace MiscCommon
                 return m_Socket.detach();
             }
 
-        protected:
+          protected:
             smart_socket m_Socket;
         };
         /**
@@ -405,7 +405,7 @@ namespace MiscCommon
          */
         class CSocketClient
         {
-        public:
+          public:
             CSocketClient()
                 : m_Socket(AF_INET, SOCK_STREAM, 0)
             {
@@ -440,7 +440,7 @@ namespace MiscCommon
                 return m_Socket.detach();
             }
 
-        protected:
+          protected:
             smart_socket m_Socket;
         };
         /**

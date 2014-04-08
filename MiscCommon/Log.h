@@ -49,7 +49,7 @@ namespace MiscCommon
     template <typename _T>
     class CLog
     {
-    public:
+      public:
         CLog(_T* _stream, unsigned char _logLevel)
             : m_stream(_stream)
             , m_logLevel(_logLevel)
@@ -80,7 +80,7 @@ namespace MiscCommon
             }
         }
 
-    private:
+      private:
         std::string& GetCurTimeString(std::string* _Buf)
         {
             if (!_Buf)
@@ -124,7 +124,7 @@ namespace MiscCommon
             return sErrCode.str();
         }
 
-    private:
+      private:
         _T* m_stream;
         CMutex m_mutex;
         unsigned char m_logLevel;
@@ -143,10 +143,10 @@ namespace MiscCommon
      */
     class CFileLog : public CLog<std::ofstream>
     {
-    public:
+      public:
         typedef std::ofstream stream_type;
 
-    public:
+      public:
         CFileLog(const std::string& _LogFileName,
                  bool _CreateNew = false,
                  unsigned char _logLevel = LOG_SEVERITY_INFO | LOG_SEVERITY_WARNING | LOG_SEVERITY_FAULT | LOG_SEVERITY_CRITICAL_ERROR)
@@ -155,7 +155,7 @@ namespace MiscCommon
         {
         }
 
-    private:
+      private:
         stream_type m_log_file;
     };
 };

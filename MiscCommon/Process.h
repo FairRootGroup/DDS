@@ -51,7 +51,7 @@ namespace MiscCommon
      */
     class CPIDFile
     {
-    public:
+      public:
         CPIDFile(const std::string& _FileName, pid_t _PID)
             : m_FileName(_FileName)
         {
@@ -95,7 +95,7 @@ namespace MiscCommon
             return pid;
         }
 
-    private:
+      private:
         std::string m_FileName;
     };
 
@@ -109,10 +109,10 @@ namespace MiscCommon
      */
     class CFindProcess
     {
-    public:
+      public:
         typedef std::set<pid_t> ProcContainer_t;
 
-    public:
+      public:
         static void getAllPIDsForProcessName(const std::string& _processName, ProcContainer_t* _pidContainer, bool _filterForRealUserID = false)
         {
             // Setting up the mib (Management Information Base)
@@ -230,10 +230,10 @@ namespace MiscCommon
 #if !defined(__APPLE__)
     class CProcList
     {
-    public:
+      public:
         typedef std::set<pid_t> ProcContainer_t;
 
-    public:
+      public:
         static void GetProcList(ProcContainer_t* _Procs)
         {
             if (!_Procs)
@@ -262,7 +262,7 @@ namespace MiscCommon
             free(namelist);
         }
 
-    private:
+      private:
         static int CheckDigit(const struct dirent* _d)
         {
             const std::string sName(_d->d_name);
@@ -294,7 +294,7 @@ namespace MiscCommon
         typedef std::auto_ptr<std::ifstream> ifstream_ptr;
         typedef std::map<std::string, std::string> keyvalue_t;
 
-    public:
+      public:
         CProcStatus()
         {
             // Preparing regular expression pattern
@@ -341,7 +341,7 @@ namespace MiscCommon
             return (m_values.end() == iter ? std::string() : iter->second);
         }
 
-    private:
+      private:
         bool _Parser(const std::string& _sVal)
         {
             regmatch_t PMatch[3];
@@ -359,7 +359,7 @@ namespace MiscCommon
             return true;
         }
 
-    private:
+      private:
         ifstream_ptr m_f;
         regex_t m_re;
         keyvalue_t m_values;

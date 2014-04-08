@@ -56,11 +56,11 @@ namespace MiscCommon
     template <class _T>
     class CFindCfgFile
     {
-    public:
+      public:
         typedef _T container_value;
         typedef std::vector<_T> container_type;
 
-    public:
+      public:
         CFindCfgFile& SetOrder(const container_value& _Path)
         {
             m_Paths.push_back(_Path);
@@ -93,7 +93,7 @@ namespace MiscCommon
             std::copy(m_Paths.begin(), m_Paths.end(), std::ostream_iterator<container_value>(*_stream, _Seporator.c_str()));
         }
 
-    private:
+      private:
         container_type m_Paths;
     };
 };

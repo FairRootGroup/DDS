@@ -46,7 +46,7 @@ namespace MiscCommon
     template <class _T>
     class CHexView
     {
-    public:
+      public:
         CHexView(const _T& _Val, size_t _nElementsInRaw = 16)
             : m_nElementsInRaw(_nElementsInRaw)
             , m_Container(_Val)
@@ -79,7 +79,7 @@ namespace MiscCommon
             return _ostream;
         }
 
-    private:
+      private:
         void Print(std::ostream& _ostream, const std::stringstream& _ssHex, const std::stringstream& _ssTxt, size_t _nCount) const
         {
             static size_t nRaw = 0;
@@ -91,7 +91,7 @@ namespace MiscCommon
             ++nRaw;
         }
 
-    private:
+      private:
         const size_t m_nElementsInRaw;
         const _T& m_Container;
     };

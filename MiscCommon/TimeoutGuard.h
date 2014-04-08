@@ -26,7 +26,7 @@ namespace MiscCommon
         {
         }
 
-    public:
+      public:
         void Init(pid_t _pid, size_t _timeout)
         {
             if (m_IsInit)
@@ -52,7 +52,7 @@ namespace MiscCommon
             }
         }
 
-    private:
+      private:
         bool m_IsInit;
         pid_t m_pid;
         size_t m_secTimeOut;

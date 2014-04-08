@@ -23,7 +23,7 @@ namespace MiscCommon
     template <class T, class Ch = char, class Tr = std::char_traits<Ch>, class Dist = std::ptrdiff_t>
     class custom_istream_iterator : public std::iterator<std::input_iterator_tag, T, Dist, const T*, const T&>
     {
-    public:
+      public:
         typedef custom_istream_iterator<T, Ch, Tr, Dist> m_it;
         typedef Ch char_type;
         typedef Tr traits_type;
@@ -75,7 +75,7 @@ namespace MiscCommon
             return m_istream == rhs.m_istream;
         }
 
-    protected:
+      protected:
         // get a T value if possible
         void getval()
         {

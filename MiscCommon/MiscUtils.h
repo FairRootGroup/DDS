@@ -23,7 +23,7 @@ namespace MiscCommon
      */
     class NONCopyable
     {
-    protected:
+      protected:
         NONCopyable()
         {
         }
@@ -31,7 +31,7 @@ namespace MiscCommon
         {
         }
 
-    private:
+      private:
         NONCopyable(const NONCopyable&);
         const NONCopyable& operator=(const NONCopyable&);
     };
@@ -46,7 +46,7 @@ namespace MiscCommon
      */
     class auto_setenv
     {
-    public:
+      public:
         auto_setenv()
             : m_unset(false)
         {
@@ -70,7 +70,7 @@ namespace MiscCommon
             unset();
         }
 
-    public:
+      public:
         void set(const std::string& _VarName, const std::string& _NewValue)
         {
             unset();
@@ -102,7 +102,7 @@ namespace MiscCommon
             }
         }
 
-    private:
+      private:
         std::string m_sVarName;
         std::string m_sNewValue;
         std::string m_sOldValue;

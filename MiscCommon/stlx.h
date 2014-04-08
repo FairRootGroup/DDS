@@ -31,7 +31,7 @@ namespace MiscCommon
                                                        typename remove_cref<_Argument>::type, // was: Argument
                                                        _Result>
         {
-        public:
+          public:
             explicit mem_fun1_t(_Result (_Class::*member)(_Argument))
                 : member_(member)
             {
@@ -42,7 +42,7 @@ namespace MiscCommon
                 return (object->*member_)(argument);
             }
 
-        private:
+          private:
             _Result (_Class::*member_)(_Argument);
         };
         /**

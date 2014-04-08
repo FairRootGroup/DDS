@@ -243,7 +243,7 @@ namespace MiscCommon
      **/
     class CMutex
     {
-    public:
+      public:
         CMutex()
         {
             pthread_mutex_init(&m, 0);
@@ -259,7 +259,7 @@ namespace MiscCommon
             pthread_mutex_unlock(&m);
         }
 
-    private:
+      private:
         pthread_mutex_t m;
     };
     /**
@@ -268,7 +268,7 @@ namespace MiscCommon
      **/
     class smart_mutex : public NONCopyable
     {
-    public:
+      public:
         smart_mutex(CMutex& _mutex)
             : m(_mutex)
         {
@@ -279,7 +279,7 @@ namespace MiscCommon
             m.Unlock();
         }
 
-    private:
+      private:
         CMutex& m;
     };
 
