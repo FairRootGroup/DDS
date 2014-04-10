@@ -64,6 +64,11 @@ if(DOXYGEN_FOUND)
        COMMENT "Upload API documentation to PoD's web server")
    add_dependencies( upload-api-docs api-docs )
 endif(DOXYGEN_FOUND)
+
+add_custom_target( format-code 
+       COMMAND ${CMAKE_SOURCE_DIR}/utils/update_format.sh ${CMAKE_SOURCE_DIR}
+       COMMENT "Updating source code formatting.")
+
 #
 # Install directory
 #
