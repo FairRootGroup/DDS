@@ -12,7 +12,8 @@
 
 using namespace std;
 
-DDSTopology::DDSTopology() : m_main()
+DDSTopology::DDSTopology()
+    : m_main()
 {
 }
 

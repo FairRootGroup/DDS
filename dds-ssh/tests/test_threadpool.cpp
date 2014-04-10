@@ -43,7 +43,7 @@ enum EProc
 };
 class CTestTask : public CTaskImp<CTestTask, EProc>
 {
-public:
+  public:
     bool runTask(EProc _param)
     {
         m_tid = MiscCommon::gettid();
@@ -55,7 +55,7 @@ public:
         return m_tid;
     }
 
-private:
+  private:
     unsigned long m_tid;
 };
 ostream& operator<<(ostream& _stream, const CTestTask& _task)

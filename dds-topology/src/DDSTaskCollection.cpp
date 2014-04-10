@@ -12,7 +12,8 @@
 using namespace std;
 using namespace boost::property_tree;
 
-DDSTaskCollection::DDSTaskCollection() : DDSTaskContainer()
+DDSTaskCollection::DDSTaskCollection()
+    : DDSTaskContainer()
 {
     setType(DDSTopoType::COLLECTION);
 }

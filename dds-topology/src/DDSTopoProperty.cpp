@@ -11,7 +11,8 @@
 using namespace std;
 using namespace boost::property_tree;
 
-DDSTopoProperty::DDSTopoProperty() : DDSTopoBase()
+DDSTopoProperty::DDSTopoProperty()
+    : DDSTopoBase()
 {
     setType(DDSTopoType::TOPO_PROPERTY);
 }

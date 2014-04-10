@@ -17,7 +17,7 @@
 template <class _T, class _P>
 class CTaskImp
 {
-public:
+  public:
     bool run(_P& _param)
     {
         _T* pThis = reinterpret_cast<_T*>(this);
@@ -28,10 +28,10 @@ public:
 template <class _T, class _P>
 class CTask
 {
-public:
+  public:
     typedef CTaskImp<_T, _P> task_t;
 
-public:
+  public:
     CTask(task_t& _task, _P& _param)
         : m_task(_task)
         , m_taskParam(_param)
@@ -42,7 +42,7 @@ public:
         return m_task.run(m_taskParam);
     }
 
-private:
+  private:
     task_t& m_task;
     _P m_taskParam;
 };
@@ -53,7 +53,7 @@ class CThreadPool
     typedef CTask<_T, _P> task_t;
     typedef std::queue<task_t*> taskqueue_t;
 
-public:
+  public:
     CThreadPool(size_t _threadsCount)
         : m_stopped(false)
         , m_stopping(false)
@@ -147,7 +147,7 @@ public:
         return m_successfulTasks;
     }
 
-private:
+  private:
     boost::thread_group m_threads;
     taskqueue_t m_tasks;
     boost::mutex m_mutex;

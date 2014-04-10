@@ -10,11 +10,13 @@
 
 using namespace std;
 
-DDSIndex::DDSIndex() : m_path()
+DDSIndex::DDSIndex()
+    : m_path()
 {
 }
 
-DDSIndex::DDSIndex(const string& _path) : m_path(_path)
+DDSIndex::DDSIndex(const string& _path)
+    : m_path(_path)
 {
 }
 

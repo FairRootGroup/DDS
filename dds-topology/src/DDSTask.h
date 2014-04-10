@@ -32,7 +32,7 @@ class DDSTask : public DDSTopoElement
     void setExec(const std::string& _exec);
     void setPorts(const DDSPortPtrVector_t& _ports);
     void addPort(DDSPortPtr_t& _port);
-    
+
     /// \brief If parent is a group than return N, else return 1.
     size_t getTotalCounter() const;
 

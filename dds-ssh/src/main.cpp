@@ -321,19 +321,19 @@ int main(int argc, char* argv[])
         }
         else if (cmd_submit == command)
         {
-//            stringstream ssWarning;
-//            ssWarning << "\n********************************************\n"
-//                      << "Warning! There is no inline environment script found in " << configFile << "\n"
-//                      << "Be advised, with SSH plug-in it is very often the case,\n"
-//                      << "that PoD can't start workers, because xproofd/ROOT is not\n"
-//                      << "in the PATH on worker nodes.\n"
-//                      << "If your PoD job fails, just after submission it shows DONE status, \n"
-//                      << "then you may want use inline environment script in your pod-ssh config file.\n"
-//                      << "See http://pod.gsi.de/doc/pro/pod-ssh.html for more information\n"
-//                      << "\n"
-//                      << "Usage of user_worker_env.sh in pod-ssh is deprecated.\n"
-//                      << "********************************************\n";
-//            slog(ssWarning.str());
+            //            stringstream ssWarning;
+            //            ssWarning << "\n********************************************\n"
+            //                      << "Warning! There is no inline environment script found in " << configFile << "\n"
+            //                      << "Be advised, with SSH plug-in it is very often the case,\n"
+            //                      << "that PoD can't start workers, because xproofd/ROOT is not\n"
+            //                      << "in the PATH on worker nodes.\n"
+            //                      << "If your PoD job fails, just after submission it shows DONE status, \n"
+            //                      << "then you may want use inline environment script in your pod-ssh config file.\n"
+            //                      << "See http://pod.gsi.de/doc/pro/pod-ssh.html for more information\n"
+            //                      << "\n"
+            //                      << "Usage of user_worker_env.sh in pod-ssh is deprecated.\n"
+            //                      << "********************************************\n";
+            //            slog(ssWarning.str());
         }
 
         // a number of threads in the thread-pool
@@ -353,10 +353,10 @@ int main(int argc, char* argv[])
         ss << "Number of DDS workers: " << workers.size() << "\n";
         slog.debug_msg(ss.str());
         ss.str("");
-//        if (dynWrk)
-//            ss << "Number of PROOF workers: on some workers is dynamic, according to a number of CPU cores\n";
-//        else
-//            ss << "Number of PROOF workers: " << wrkCount << "\n";
+        //        if (dynWrk)
+        //            ss << "Number of PROOF workers: on some workers is dynamic, according to a number of CPU cores\n";
+        //        else
+        //            ss << "Number of PROOF workers: " << wrkCount << "\n";
         slog.debug_msg(ss.str());
 
         slog.debug_msg("Workers list:\n");

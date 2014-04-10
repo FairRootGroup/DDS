@@ -85,7 +85,7 @@ typedef std::vector<configRecord_t> configRecords_t;
 //=============================================================================
 class CConfig
 {
-public:
+  public:
     void readFrom(std::istream& _stream);
     configRecords_t getRecords();
     std::string getBashEnvCmds()
@@ -93,7 +93,7 @@ public:
         return m_bashEnvCmds;
     }
 
-private:
+  private:
     configRecords_t m_records;
     std::string m_bashEnvCmds;
 };
