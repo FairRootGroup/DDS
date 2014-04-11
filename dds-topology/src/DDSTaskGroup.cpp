@@ -16,7 +16,6 @@ using namespace boost::property_tree;
 DDSTaskGroup::DDSTaskGroup()
     : DDSTaskContainer()
     , m_n(0)
-    , m_minimumRequired(0)
 {
     setType(DDSTopoType::GROUP);
 }
@@ -41,17 +40,6 @@ size_t DDSTaskGroup::getTotalNofTasks() const
     return counter;
 }
 
-size_t DDSTaskGroup::getMinRequiredNofTasks() const
-{
-    const auto& elements = getElements();
-    size_t counter = 0;
-    for (const auto& v : elements)
-    {
-        counter += m_minimumRequired * v->getMinRequiredNofTasks();
-    }
-    return counter;
-}
-
 void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
@@ -61,7 +49,6 @@ void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 
         setName(groupPT.get<string>("<xmlattr>.name"));
         setN(groupPT.get<size_t>("<xmlattr>.n"));
-        setMinimumRequired(groupPT.get<size_t>("<xmlattr>.minRequired"));
 
         for (const auto& element : groupPT)
         {
@@ -84,19 +71,9 @@ size_t DDSTaskGroup::getN() const
     return m_n;
 }
 
-size_t DDSTaskGroup::getMinimumRequired() const
-{
-    return m_minimumRequired;
-}
-
 void DDSTaskGroup::setN(size_t _n)
 {
     m_n = _n;
-}
-
-void DDSTaskGroup::setMinimumRequired(size_t _minimumRequired)
-{
-    m_minimumRequired = _minimumRequired;
 }
 
 DDSTopoElementPtrVector_t DDSTaskGroup::getElementsByType(DDSTopoType _type) const
@@ -144,8 +121,7 @@ DDSIndexVector_t DDSTaskGroup::getIndicesByType(DDSTopoType _type) const
 string DDSTaskGroup::toString() const
 {
     stringstream ss;
-    ss << "DDSTaskGroup: m_name=" << getName() << " m_n=" << m_n << " m_minimumRequired=" << m_minimumRequired << " nofElements=" << getNofElements()
-       << " elements:\n";
+    ss << "DDSTaskGroup: m_name=" << getName() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
     const auto& elements = getElements();
     for (const auto& element : elements)
     {

@@ -15,6 +15,8 @@
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
+/// \class DDSTopoProperty
+/// \brief Data class to hold topology property.
 class DDSTopoProperty : public DDSTopoBase
 {
   protected:

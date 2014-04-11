@@ -24,19 +24,12 @@ class DDSTaskGroup : public DDSTaskContainer
     /// \brief Inherited from DDSTopoElement.
     virtual size_t getTotalNofTasks() const;
 
-    /// \brief Inherited from DDSTopoElement.
-    virtual size_t getMinRequiredNofTasks() const;
-
     /// \brief Inherited from DDSTopoBase.
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
     size_t getN() const;
 
-    size_t getMinimumRequired() const;
-
     void setN(size_t _n);
-
-    void setMinimumRequired(size_t _minimumRequired);
 
     DDSTopoElementPtrVector_t getElementsByType(DDSTopoType _type) const;
 
@@ -52,8 +45,7 @@ class DDSTaskGroup : public DDSTaskContainer
     friend std::ostream& operator<<(std::ostream& _strm, const DDSTaskGroup& _taskContainer);
 
   private:
-    size_t m_n;               ///> Number of times this group has to be executed
-    size_t m_minimumRequired; ///> Minimum required number of tasks to start processing
+    size_t m_n; ///> Number of times this group has to be executed
 };
 
 typedef std::shared_ptr<DDSTaskGroup> DDSTaskGroupPtr_t;

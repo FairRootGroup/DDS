@@ -22,15 +22,15 @@ class CDDSEnvironment
     {
         return m_localVer;
     }
-    std::string DDSPath() const
-    {
-        return m_DDSPath;
-    }
-    const PoD::SDDSUserDefaultsOptions_t getUD() const
-    {
-        assert(m_ud); // did you forget to call the Init method?
-        return *m_ud;
-    }
+    //    std::string DDSPath() const
+    //    {
+    //        return m_DDSPath;
+    //    }
+    //    const PoD::SDDSUserDefaultsOptions_t getUD() const
+    //    {
+    //        assert(m_ud); // did you forget to call the Init method?
+    //        return *m_ud;
+    //}
     /*       std::string srvInfoFile() const
            {
                if( m_wrkDir.empty() )
@@ -62,7 +62,7 @@ class CDDSEnvironment
            {
                if( m_wrkDir.empty() )
                    return( "" );
-   :
+    :
                std::string ret( m_wrkDir );
                ret += "rmt_srv_tunnel_agent.pid";
                return ret;
@@ -130,14 +130,13 @@ class CDDSEnvironment
                ret += "etc/pod-ssh.cfg";
                return ret;
            }*/
-
   private:
     void _localVersion();
 
   private:
     std::string m_PoDPath;
     std::string m_localVer;
-    PoD::SPoDUserDefaultsOptions_t* m_ud;
+    //    PoD::SPoDUserDefaultsOptions_t* m_ud;
     std::string m_wrkDir;
     std::string m_dotPoDPath;
 };

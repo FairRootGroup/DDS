@@ -38,7 +38,6 @@
 <xs:complexType name="mainGroupType">
 	<xs:attribute name="name" type="stringNameType" use="required"/>
 	<xs:attribute name="n" type="sizeType" use="required"/>
-	<xs:attribute name="minRequired" type="xs:unsignedShort" use="required"/>
 </xs:complexType>
 
 
@@ -73,7 +72,6 @@
   </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="n" type="sizeType" use="required"/>
-  <xs:attribute name="minRequired" type="sizeType" use="required"/>
 </xs:complexType>
 
 
@@ -85,7 +83,6 @@
   </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="n" type="sizeType" use="required"/>
-  <xs:attribute name="minRequired" type="sizeType" use="required"/>
 </xs:complexType>
 
 

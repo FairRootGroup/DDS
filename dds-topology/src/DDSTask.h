@@ -43,9 +43,6 @@ class DDSTask : public DDSTopoElement
     virtual size_t getTotalNofTasks() const;
 
     /// \brief Inherited from DDSTopoElement.
-    virtual size_t getMinRequiredNofTasks() const;
-
-    /// \brief Inherited from DDSTopoElement.
     virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
     /// \brief Returns string representation of an object.

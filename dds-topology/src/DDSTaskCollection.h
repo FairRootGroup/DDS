@@ -25,9 +25,6 @@ class DDSTaskCollection : public DDSTaskContainer
     virtual size_t getTotalNofTasks() const;
 
     /// \brief Inherited from DDSTopoElement.
-    virtual size_t getMinRequiredNofTasks() const;
-
-    /// \brief Inherited from DDSTopoElement.
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
     /// \brief If parent is a group than return N, else return 1.

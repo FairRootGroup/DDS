@@ -12,8 +12,7 @@
 using namespace std;
 using namespace boost::property_tree;
 
-DDSTaskCollection::DDSTaskCollection()
-    : DDSTaskContainer()
+DDSTaskCollection::DDSTaskCollection() : DDSTaskContainer()
 {
     setType(DDSTopoType::COLLECTION);
 }
@@ -28,11 +27,6 @@ size_t DDSTaskCollection::getNofTasks() const
 }
 
 size_t DDSTaskCollection::getTotalNofTasks() const
-{
-    return getNofTasksDefault();
-}
-
-size_t DDSTaskCollection::getMinRequiredNofTasks() const
 {
     return getNofTasksDefault();
 }

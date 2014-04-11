@@ -67,9 +67,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 
     BOOST_CHECK(main->getNofTasks() == 22);
     BOOST_CHECK(main->getTotalNofTasks() == 220);
-    BOOST_CHECK(main->getMinRequiredNofTasks() == 40);
     BOOST_CHECK(main->getN() == 1);
-    BOOST_CHECK(main->getMinimumRequired() == 1);
     BOOST_CHECK(main->getName() == "main");
     BOOST_CHECK(main->getNofElements() == 4);
     BOOST_CHECK(main->getParent() == nullptr);
@@ -83,7 +81,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element1->getPath() == "main/task1");
     BOOST_CHECK(element1->getNofTasks() == 1);
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
-    BOOST_CHECK(element1->getMinRequiredNofTasks() == 1);
     DDSTaskPtr_t casted1 = dynamic_pointer_cast<DDSTask>(element1);
     BOOST_CHECK(casted1->getNofPorts() == 2);
     BOOST_CHECK(casted1->getExec() == "app1");
@@ -95,7 +92,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element2->getPath() == "main/collection1");
     BOOST_CHECK(element2->getNofTasks() == 4);
     BOOST_CHECK(element2->getTotalNofTasks() == 4);
-    BOOST_CHECK(element2->getMinRequiredNofTasks() == 4);
     DDSTaskCollectionPtr_t casted2 = dynamic_pointer_cast<DDSTaskCollection>(element2);
     BOOST_CHECK(casted2->getNofElements() == 4);
     BOOST_CHECK_THROW(casted2->getElement(4), std::out_of_range);
@@ -113,12 +109,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element3->getPath() == "main/group1");
     BOOST_CHECK(element3->getNofTasks() == 8);
     BOOST_CHECK(element3->getTotalNofTasks() == 80);
-    BOOST_CHECK(element3->getMinRequiredNofTasks() == 8);
     DDSTaskGroupPtr_t casted3 = dynamic_pointer_cast<DDSTaskGroup>(element3);
     BOOST_CHECK(casted3->getNofElements() == 3);
     BOOST_CHECK_THROW(casted3->getElement(3), std::out_of_range);
     BOOST_CHECK(casted3->getN() == 10);
-    BOOST_CHECK(casted3->getMinimumRequired() == 1);
 
     DDSTopoElementPtr_t element4 = main->getElement(3);
     BOOST_CHECK(element4->getName() == "group2");
@@ -127,12 +121,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element4->getPath() == "main/group2");
     BOOST_CHECK(element4->getNofTasks() == 9);
     BOOST_CHECK(element4->getTotalNofTasks() == 135);
-    BOOST_CHECK(element4->getMinRequiredNofTasks() == 27);
     DDSTaskGroupPtr_t casted4 = dynamic_pointer_cast<DDSTaskGroup>(element4);
     BOOST_CHECK(casted4->getNofElements() == 4);
     BOOST_CHECK_THROW(casted4->getElement(4), std::out_of_range);
     BOOST_CHECK(casted4->getN() == 15);
-    BOOST_CHECK(casted4->getMinimumRequired() == 3);
 
     DDSTaskCollectionPtr_t casted5 = dynamic_pointer_cast<DDSTaskCollection>(casted4->getElement(2));
     BOOST_CHECK(casted5->getName() == "collection1");
@@ -141,7 +133,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted5->getPath() == "main/group2/collection1");
     BOOST_CHECK(casted5->getNofTasks() == 4);
     BOOST_CHECK(casted5->getTotalNofTasks() == 4);
-    BOOST_CHECK(casted5->getMinRequiredNofTasks() == 4);
     BOOST_CHECK(casted5->getNofElements() == 4);
     BOOST_CHECK_THROW(casted5->getElement(4), std::out_of_range);
     BOOST_CHECK(casted5->getTotalCounter() == 15);
@@ -153,7 +144,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
     BOOST_CHECK(casted6->getNofTasks() == 1);
     BOOST_CHECK(casted6->getTotalNofTasks() == 1);
-    BOOST_CHECK(casted6->getMinRequiredNofTasks() == 1);
     BOOST_CHECK(casted6->getNofPorts() == 2);
     BOOST_CHECK(casted6->getExec() == "app1");
 

@@ -20,9 +20,6 @@ class DDSTopoElement : public DDSTopoBase
     /// \brief Return total number of tasks, i.e. number of tasks multiplied by n.
     virtual size_t getTotalNofTasks() const = 0;
 
-    /// \brief Return minimum required number of tasks.
-    virtual size_t getMinRequiredNofTasks() const = 0;
-
   protected:
     /// \brief Constructor.
     DDSTopoElement();
