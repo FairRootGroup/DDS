@@ -38,7 +38,9 @@ option(BUILD_DOCUMENTATION "Build documentation" OFF)
 # tests
 option(BUILD_TESTS "Build DDS unit tests" OFF)
 # modules
+option(BUILD_dds_commander "Build dds-commander" ON)
 option(BUILD_dds_topology "Build dds-topology" ON)
+option(BUILD_dds_agent "Build dds-agent" ON)
 option(BUILD_dds_ssh "Build dds-ssh" ON)
 #
 # Documentation output directory
@@ -151,17 +153,30 @@ endif(Boost_FOUND)
 message(STATUS "Build MiscCommon - YES")
 add_subdirectory ( MiscCommon )
 
+# dds_commander
+if(BUILD_dds_commander)
+    message(STATUS "Build dds-commander - YES")
+    add_subdirectory ( dds-commander )
+endif(BUILD_dds_commander)
+
 # dds_topology
 if(BUILD_dds_topology)
     message(STATUS "Build dds-topology - YES")
     add_subdirectory ( dds-topology )
 endif(BUILD_dds_topology)
 
+# dds_agent
+if(BUILD_dds_agent)
+    message(STATUS "Build dds-agent - YES")
+    add_subdirectory ( dds-agent )
+endif(BUILD_dds_agent)
+
+
 # dds_ssh
-#if(BUILD_dds_ssh)
-#    message(STATUS "Build dds-ssh - YES")
-#    add_subdirectory ( dds-ssh )
-#endif(BUILD_dds_ssh)
+if(BUILD_dds_ssh)
+    message(STATUS "Build dds-ssh - YES")
+    add_subdirectory ( dds-ssh )
+endif(BUILD_dds_ssh)
 
 
 #
