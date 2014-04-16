@@ -38,10 +38,11 @@ option(BUILD_DOCUMENTATION "Build documentation" OFF)
 # tests
 option(BUILD_TESTS "Build DDS unit tests" OFF)
 # modules
-option(BUILD_dds_commander "Build dds-commander" ON)
-option(BUILD_dds_topology "Build dds-topology" ON)
-option(BUILD_dds_agent "Build dds-agent" ON)
-option(BUILD_dds_ssh "Build dds-ssh" ON)
+option(BUILD_dds-commander "Build dds-commander" ON)
+option(BUILD_dds-topology "Build dds-topology" ON)
+option(BUILD_dds-agent "Build dds-agent" ON)
+option(BUILD_dds-ssh "Build dds-ssh" ON)
+option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
 #
 # Documentation output directory
 #
@@ -154,30 +155,35 @@ message(STATUS "Build MiscCommon - YES")
 add_subdirectory ( MiscCommon )
 
 # dds_commander
-if(BUILD_dds_commander)
+if(BUILD_dds-commander)
     message(STATUS "Build dds-commander - YES")
     add_subdirectory ( dds-commander )
-endif(BUILD_dds_commander)
+endif(BUILD_dds-commander)
 
 # dds_topology
-if(BUILD_dds_topology)
+if(BUILD_dds-topology)
     message(STATUS "Build dds-topology - YES")
     add_subdirectory ( dds-topology )
-endif(BUILD_dds_topology)
+endif(BUILD_dds-topology)
 
 # dds_agent
-if(BUILD_dds_agent)
+if(BUILD_dds-agent)
     message(STATUS "Build dds-agent - YES")
     add_subdirectory ( dds-agent )
-endif(BUILD_dds_agent)
+endif(BUILD_dds-agent)
 
 
 # dds_ssh
-if(BUILD_dds_ssh)
+if(BUILD_dds-ssh)
     message(STATUS "Build dds-ssh - YES")
     add_subdirectory ( dds-ssh )
-endif(BUILD_dds_ssh)
+endif(BUILD_dds-ssh)
 
+# dds_user_defaults
+if(BUILD_dds-user-defaults)
+    message(STATUS "Build dds-user-defaults - YES")
+    add_subdirectory ( dds-user-defaults )
+endif(BUILD_dds-user-defaults)
 
 #
 # Install
