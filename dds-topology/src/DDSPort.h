@@ -13,6 +13,12 @@
 #include <string>
 #include <vector>
 
+enum class DDSPortType
+{
+    SERVER,
+    CLIENT
+};
+
 class DDSPort : public DDSTopoProperty
 {
   public:
@@ -27,9 +33,11 @@ class DDSPort : public DDSTopoProperty
   public:
     /// Accessors
     void setRange(unsigned short _min, unsigned short _max);
+    void setPortType(DDSPortType _portType);
 
     /// Modifiers
     const DDSPortRange_t& getRange() const;
+    DDSPortType getPortType() const;
 
     /// \brief Inherited from DDSTopoBase
     void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
@@ -45,6 +53,7 @@ class DDSPort : public DDSTopoProperty
 
   private:
     DDSPortRange_t m_range; ///> Requested range of ports.
+    DDSPortType m_portType; ///> Port type: server or client
 };
 
 typedef std::shared_ptr<DDSPort> DDSPortPtr_t;

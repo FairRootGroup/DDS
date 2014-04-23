@@ -23,6 +23,13 @@
 </xs:simpleType>
 
 
+<xs:simpleType name="portTypeType">
+	<xs:restriction base="xs:string">
+    	<xs:pattern value="server|client"/>
+	</xs:restriction>
+</xs:simpleType>
+
+
 <xs:complexType name="namedType">
 	<xs:attribute name="name" type="stringNameType" use="required"/>
 </xs:complexType>
@@ -45,6 +52,7 @@
   <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="min" type="portNumberType" use="required"/>
   <xs:attribute name="max" type="portNumberType" use="required"/>
+  <xs:attribute name="type" type="portTypeType" use="required"/>
 </xs:complexType>
 
 

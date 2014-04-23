@@ -6,6 +6,7 @@
 // DDS
 #include "DDSPort.h"
 #include "DDSTopoElement.h"
+#include "DDSTopoUtils.h"
 // STD
 #include <string>
 #include <sstream>
@@ -18,6 +19,7 @@ using namespace std;
 DDSPort::DDSPort()
     : DDSTopoProperty()
     , m_range(std::make_pair(10000, 50000))
+    , m_portType(DDSPortType::CLIENT)
 {
     setType(DDSTopoType::PORT);
 }
@@ -36,6 +38,16 @@ const DDSPort::DDSPortRange_t& DDSPort::getRange() const
     return m_range;
 }
 
+void DDSPort::setPortType(DDSPortType _portType)
+{
+    m_portType = _portType;
+}
+
+DDSPortType DDSPort::getPortType() const
+{
+    return m_portType;
+}
+
 void DDSPort::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
 {
     try
@@ -43,8 +55,9 @@ void DDSPort::initFromPropertyTree(const std::string& _name, const boost::proper
         const ptree& portPT = DDSTopoElement::findElement(DDSTopoType::PORT, _name, _pt.get_child("topology"));
         setName(portPT.get<string>("<xmlattr>.name"));
         setRange(portPT.get<unsigned int>("<xmlattr>.min"), portPT.get<unsigned int>("<xmlattr>.max"));
+        setPortType(DDSStringToPortType(portPT.get<string>("<xmlattr>.type")));
     }
-    catch (ptree_error& error)
+    catch (exception& error) // ptree_error, runtime_error
     {
         throw logic_error("Unable to initialize port " + _name + " error:" + error.what());
     }

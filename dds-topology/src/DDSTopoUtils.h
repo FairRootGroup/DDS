@@ -8,11 +8,14 @@
 
 // DDS
 #include "DDSTopoElement.h"
+#include "DDSPort.h"
 // STD
 #include <string>
 
 std::string DDSTopoTypeToTag(DDSTopoType _type);
 
 DDSTopoType DDSTagToTopoType(const std::string& _name);
+
+DDSPortType DDSStringToPortType(const std::string& _name);
 
 #endif /* defined(__DDS__DDSTopoUtils__) */

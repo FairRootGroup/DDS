@@ -40,3 +40,13 @@ DDSTopoType DDSTagToTopoType(const string& _name)
     else
         throw runtime_error("Topology element with name " + _name + " does not exist.");
 }
+
+DDSPortType DDSStringToPortType(const std::string& _name)
+{
+    if (_name == "server")
+        return DDSPortType::SERVER;
+    else if (_name == "client")
+        return DDSPortType::CLIENT;
+    else
+        throw runtime_error("Topology element with name " + _name + " does not exist.");
+}

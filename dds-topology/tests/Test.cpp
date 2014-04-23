@@ -83,6 +83,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
     DDSTaskPtr_t casted1 = dynamic_pointer_cast<DDSTask>(element1);
     BOOST_CHECK(casted1->getNofPorts() == 2);
+    BOOST_CHECK(casted1->getPort(0)->getPortType() == DDSPortType::SERVER);
+    BOOST_CHECK(casted1->getPort(1)->getPortType() == DDSPortType::CLIENT);
     BOOST_CHECK(casted1->getExec() == "app1");
 
     DDSTopoElementPtr_t element2 = main->getElement(1);
