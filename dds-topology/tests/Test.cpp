@@ -324,6 +324,11 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(DDSTagToTopoType("collection") == DDSTopoType::COLLECTION);
     BOOST_CHECK(DDSTagToTopoType("group") == DDSTopoType::GROUP);
     BOOST_CHECK(DDSTagToTopoType("port") == DDSTopoType::PORT);
+
+    // DDSStringToPortType
+    BOOST_CHECK_THROW(DDSStringToPortType("blablabla"), runtime_error);
+    BOOST_CHECK(DDSStringToPortType("server") == DDSPortType::SERVER);
+    BOOST_CHECK(DDSStringToPortType("client") == DDSPortType::CLIENT);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
