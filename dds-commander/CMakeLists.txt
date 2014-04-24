@@ -60,7 +60,7 @@ install(TARGETS dds-commander DESTINATION bin)
 #
 if (BUILD_TESTS)
     message (STATUS "Build dds-commander unit tests - YES")
-    add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests ) 
+ #   add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests ) 
 else (BUILD_TESTS)
     message (STATUS "Build dds-commander unit tests - NO")
 endif (BUILD_TESTS)

@@ -20,5 +20,8 @@ namespace MiscCommon
     const LPCSTR g_cszLOG_SEVERITY_DEBUG("DBG");
 
     const LPCSTR g_cszMODULENAME_CORE("CORE");
+    
+    //---------------------- strings -------------------------------------------
+    const LPCSTR g_cszReportBugsAddr("Report bugs/comments to fairroot@gsi.de");
 };
 #endif
