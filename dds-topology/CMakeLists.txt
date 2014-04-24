@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # configure files
 # 
-configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
+configure_file( ${dds-topology_SOURCE_DIR}/src/version.h.in ${dds-topology_BINARY_DIR}/version.h @ONLY )
 
 #
 # API Docs
@@ -62,10 +62,10 @@ set( HEADER_FILES
 )
 
 include_directories(
-#    ${PROJECT_BINARY_DIR}/src
-#    ${MiscCommon_LOCATION}
-#    ${MiscCommon_LOCATION}/pipe_log_engine
-    ${Boost_INCLUDE_DIRS} )
+	${dds-topology_BINARY_DIR}
+	${MiscCommon_LOCATION}
+	${Boost_INCLUDE_DIRS}
+)
 
 #
 # dds-topology executable
