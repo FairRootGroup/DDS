@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # configure files
 # 
-configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
+configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BINARY_DIR}/src/version.h @ONLY )
 
 #
 # API Docs
@@ -33,11 +33,14 @@ set( SOURCE_FILES
 # Header files
 #
 set( HEADER_FILES
-
+    ./src/DDSOptions.h
 )
 
 include_directories(
-    ${Boost_INCLUDE_DIRS} )
+	${dds-commander_BINARY_DIR}
+	${MiscCommon_LOCATION}
+    ${Boost_INCLUDE_DIRS} 
+)
 
 #
 # dds-commander executable
@@ -48,9 +51,12 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
     add_executable(dds-commander ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
+message(STATUS "dds-commander Boost_PROGRAM_OPTIONS_LIBRARY=${Boost_PROGRAM_OPTIONS_LIBRARY}")
+
 target_link_libraries (
     dds-commander
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
 )
 
 install(TARGETS dds-commander DESTINATION bin)
