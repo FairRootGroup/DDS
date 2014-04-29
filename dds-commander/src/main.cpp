@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 // DDS
-#include "version.h.in"
+#include "version.h"
 #include "DDSOptions.h"
 #include "Process.h"
 #include "ErrorCode.h"
@@ -252,9 +252,9 @@ int main(int argc, char* argv[])
             //       if (options.m_bDaemonize)
             //       {
             // Change the current working directory
-            //     chdir("/") to ensure that our process doesn't keep any directory
-            //     in use. Failure to do this could make it so that an administrator
-            //     couldn't unmount a file system, because it was our current directory.
+            // chdir("/") to ensure that our process doesn't keep any directory
+            // in use. Failure to do this could make it so that an administrator
+            // couldn't unmount a file system, because it was our current directory.
             if (::chdir("/") < 0) // TODO: Log the failure
                 return EXIT_FAILURE;
 
