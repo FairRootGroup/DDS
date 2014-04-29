@@ -16,7 +16,7 @@
 #include <fcntl.h>
 // DDS
 #include "version.h"
-#include "DDSOptions.h"
+#include "Options.h"
 #include "Process.h"
 #include "ErrorCode.h"
 //#include "PROOFAgent.h"

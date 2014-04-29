@@ -33,7 +33,7 @@ set( SOURCE_FILES
 # Header files
 #
 set( HEADER_FILES
-    ./src/DDSOptions.h
+    ./src/Options.h
 )
 
 include_directories(
