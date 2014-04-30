@@ -4,43 +4,45 @@
 //
 
 // DDS
-#include "DDSTaskCollection.h"
-#include "DDSTask.h"
-#include "DDSTopoFactory.h"
-#include "DDSTopoUtils.h"
+#include "TaskCollection.h"
+#include "Task.h"
+#include "TopoFactory.h"
+#include "TopoUtils.h"
 
 using namespace std;
 using namespace boost::property_tree;
+using namespace dds;
 
-DDSTaskCollection::DDSTaskCollection() : DDSTaskContainer()
+CTaskCollection::CTaskCollection()
+    : CTaskContainer()
 {
-    setType(DDSTopoType::COLLECTION);
+    setType(ETopoType::COLLECTION);
 }
 
-DDSTaskCollection::~DDSTaskCollection()
+CTaskCollection::~CTaskCollection()
 {
 }
 
-size_t DDSTaskCollection::getNofTasks() const
-{
-    return getNofTasksDefault();
-}
-
-size_t DDSTaskCollection::getTotalNofTasks() const
+size_t CTaskCollection::getNofTasks() const
 {
     return getNofTasksDefault();
 }
 
-size_t DDSTaskCollection::getTotalCounter() const
+size_t CTaskCollection::getTotalNofTasks() const
+{
+    return getNofTasksDefault();
+}
+
+size_t CTaskCollection::getTotalCounter() const
 {
     return getTotalCounterDefault();
 }
 
-void DDSTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& collectionPT = DDSTopoElement::findElement(DDSTopoType::COLLECTION, _name, _pt.get_child("topology"));
+        const ptree& collectionPT = CTopoElement::findElement(ETopoType::COLLECTION, _name, _pt.get_child("topology"));
 
         setName(collectionPT.get<string>("<xmlattr>.name"));
 
@@ -48,7 +50,7 @@ void DDSTaskCollection::initFromPropertyTree(const string& _name, const ptree& _
         {
             if (element.first == "<xmlattr>")
                 continue;
-            DDSTopoElementPtr_t newElement = DDSCreateTopoElement(DDSTagToTopoType(element.first));
+            TopoElementPtr_t newElement = CreateTopoElement(TagToTopoType(element.first));
             newElement->setParent(this);
             newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
             addElement(newElement);

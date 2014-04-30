@@ -4,10 +4,10 @@
 //
 
 // DDS
-#include "DDSTaskContainer.h"
-#include "DDSTaskGroup.h"
-#include "DDSTaskCollection.h"
-#include "DDSTask.h"
+#include "TaskContainer.h"
+#include "TaskGroup.h"
+#include "TaskCollection.h"
+#include "Task.h"
 // STD
 #include <memory>
 #include <sstream>
@@ -17,45 +17,46 @@
 
 using namespace std;
 using namespace boost::property_tree;
+using namespace dds;
 
-DDSTaskContainer::DDSTaskContainer()
-    : DDSTopoElement()
+CTaskContainer::CTaskContainer()
+    : CTopoElement()
     , m_elements()
 {
 }
 
-DDSTaskContainer::~DDSTaskContainer()
+CTaskContainer::~CTaskContainer()
 {
 }
 
-size_t DDSTaskContainer::getNofElements() const
+size_t CTaskContainer::getNofElements() const
 {
     return m_elements.size();
 }
 
-DDSTopoElementPtr_t DDSTaskContainer::getElement(size_t _i) const
+TopoElementPtr_t CTaskContainer::getElement(size_t _i) const
 {
     if (_i >= getNofElements())
         throw std::out_of_range("Out of range exception");
     return m_elements[_i];
 }
 
-const DDSTopoElementPtrVector_t& DDSTaskContainer::getElements() const
+const TopoElementPtrVector_t& CTaskContainer::getElements() const
 {
     return m_elements;
 }
 
-void DDSTaskContainer::setElements(const DDSTopoElementPtrVector_t& _elements)
+void CTaskContainer::setElements(const TopoElementPtrVector_t& _elements)
 {
     m_elements = _elements;
 }
 
-void DDSTaskContainer::addElement(DDSTopoElementPtr_t _element)
+void CTaskContainer::addElement(TopoElementPtr_t _element)
 {
     m_elements.push_back(_element);
 }
 
-size_t DDSTaskContainer::getNofTasksDefault() const
+size_t CTaskContainer::getNofTasksDefault() const
 {
     const auto& elements = getElements();
     size_t counter = 0;
@@ -66,10 +67,10 @@ size_t DDSTaskContainer::getNofTasksDefault() const
     return counter;
 }
 
-string DDSTaskContainer::toString() const
+string CTaskContainer::toString() const
 {
     stringstream ss;
-    ss << "DDSTaskContainer: m_name=" << getName() << " nofElements=" << getNofElements() << " elements:\n";
+    ss << "TaskContainer: m_name=" << getName() << " nofElements=" << getNofElements() << " elements:\n";
     for (const auto& element : m_elements)
     {
         ss << " - " << element->toString() << std::endl;
@@ -77,7 +78,7 @@ string DDSTaskContainer::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const DDSTaskContainer& _taskContainer)
+ostream& operator<<(ostream& _strm, const CTaskContainer& _taskContainer)
 {
     _strm << _taskContainer.toString();
     return _strm;

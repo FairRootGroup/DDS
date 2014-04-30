@@ -4,56 +4,57 @@
 //
 
 // DDS
-#include "DDSTopoBase.h"
-#include "DDSTopoUtils.h"
+#include "TopoBase.h"
+#include "TopoUtils.h"
 // STD
 #include <iostream>
 
 using namespace std;
 using namespace boost::property_tree;
+using namespace dds;
 
-DDSTopoBase::DDSTopoBase()
+CTopoBase::CTopoBase()
     : m_name("")
-    , m_type(DDSTopoType::TOPO_BASE)
+    , m_type(ETopoType::TOPO_BASE)
     , m_parent(nullptr)
 {
 }
 
-DDSTopoBase::~DDSTopoBase()
+CTopoBase::~CTopoBase()
 {
 }
 
-void DDSTopoBase::setType(DDSTopoType _type)
+void CTopoBase::setType(ETopoType _type)
 {
     m_type = _type;
 }
 
-void DDSTopoBase::setName(const string& _name)
+void CTopoBase::setName(const string& _name)
 {
     m_name = _name;
 }
 
-void DDSTopoBase::setParent(DDSTopoBase* _parent)
+void CTopoBase::setParent(CTopoBase* _parent)
 {
     m_parent = _parent;
 }
 
-string DDSTopoBase::getName() const
+string CTopoBase::getName() const
 {
     return m_name;
 }
 
-DDSTopoType DDSTopoBase::getType() const
+ETopoType CTopoBase::getType() const
 {
     return m_type;
 }
 
-DDSTopoBase* DDSTopoBase::getParent() const
+CTopoBase* CTopoBase::getParent() const
 {
     return m_parent;
 }
 
-string DDSTopoBase::getPath() const
+string CTopoBase::getPath() const
 {
     if (getParent() == nullptr)
     {
@@ -65,18 +66,18 @@ string DDSTopoBase::getPath() const
     }
 }
 
-DDSIndex DDSTopoBase::getIndex() const
+CIndex CTopoBase::getIndex() const
 {
-    return DDSIndex(getPath());
+    return CIndex(getPath());
 }
 
-const ptree& DDSTopoBase::findElement(DDSTopoType _type, const string& _name, const ptree& _pt)
+const ptree& CTopoBase::findElement(ETopoType _type, const string& _name, const ptree& _pt)
 {
     const ptree* result = nullptr;
     for (const auto& v : _pt)
     {
         const auto& elementPT = v.second;
-        if (v.first == DDSTopoTypeToTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
+        if (v.first == TopoTypeToTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
         {
             if (result != nullptr)
                 throw logic_error("Element \"" + _name + "\" has dublicated name.");
@@ -89,14 +90,14 @@ const ptree& DDSTopoBase::findElement(DDSTopoType _type, const string& _name, co
     return *result;
 }
 
-string DDSTopoBase::toString() const
+string CTopoBase::toString() const
 {
     stringstream ss;
-    ss << "DDSTopoBase: m_name=" << m_name;
+    ss << "TopoBase: m_name=" << m_name;
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const DDSTopoBase& _element)
+ostream& operator<<(ostream& _strm, const CTopoBase& _element)
 {
     _strm << _element.toString();
     return _strm;

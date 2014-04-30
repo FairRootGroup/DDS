@@ -3,8 +3,8 @@
 //
 //
 
-#include "DDSTask.h"
-#include "DDSTaskGroup.h"
+#include "Task.h"
+#include "TaskGroup.h"
 // STD
 #include <sstream>
 #include <string>
@@ -15,76 +15,77 @@
 
 using namespace std;
 using namespace boost::property_tree;
+using namespace dds;
 
-DDSTask::DDSTask()
-    : DDSTopoElement()
+CTask::CTask()
+    : CTopoElement()
     , m_exec()
     , m_ports()
 {
-    setType(DDSTopoType::TASK);
+    setType(ETopoType::TASK);
 }
 
-DDSTask::~DDSTask()
+CTask::~CTask()
 {
 }
 
-void DDSTask::setExec(const string& _exec)
+void CTask::setExec(const string& _exec)
 {
     m_exec = _exec;
 }
 
-void DDSTask::setPorts(const DDSPortPtrVector_t& _ports)
+void CTask::setPorts(const PortPtrVector_t& _ports)
 {
     m_ports = _ports;
 }
 
-void DDSTask::addPort(DDSPortPtr_t& _port)
+void CTask::addPort(PortPtr_t& _port)
 {
     m_ports.push_back(_port);
 }
 
-size_t DDSTask::getNofTasks() const
+size_t CTask::getNofTasks() const
 {
     return 1;
 }
 
-size_t DDSTask::getTotalNofTasks() const
+size_t CTask::getTotalNofTasks() const
 {
     return 1;
 }
 
-string DDSTask::getExec() const
+string CTask::getExec() const
 {
     return m_exec;
 }
 
-size_t DDSTask::getNofPorts() const
+size_t CTask::getNofPorts() const
 {
     return m_ports.size();
 }
 
-size_t DDSTask::getTotalCounter() const
+size_t CTask::getTotalCounter() const
 {
     return getTotalCounterDefault();
 }
 
-DDSPortPtr_t DDSTask::getPort(size_t _i) const
+PortPtr_t CTask::getPort(size_t _i) const
 {
     if (_i >= getNofPorts())
         throw out_of_range("Out of range exception");
     return m_ports[_i];
 }
 
-const DDSPortPtrVector_t& DDSTask::getPorts() const
+const PortPtrVector_t& CTask::getPorts() const
 {
     return m_ports;
 }
 
-void DDSTask::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& taskPT = DDSTopoElement::findElement(DDSTopoType::TASK, _name, _pt.get_child("topology"));
+        const ptree& taskPT = CTopoElement::findElement(ETopoType::TASK, _name, _pt.get_child("topology"));
 
         setName(taskPT.get<string>("<xmlattr>.name"));
         setExec(taskPT.get<string>("<xmlattr>.exec"));
@@ -92,7 +93,7 @@ void DDSTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             if (port.first == "<xmlattr>")
                 continue;
-            DDSPortPtr_t newPort = make_shared<DDSPort>();
+            PortPtr_t newPort = make_shared<CPort>();
             newPort->setParent(this);
             newPort->initFromPropertyTree(port.second.get<string>("<xmlattr>.name"), _pt);
             addPort(newPort);
@@ -104,10 +105,10 @@ void DDSTask::initFromPropertyTree(const string& _name, const ptree& _pt)
     }
 }
 
-string DDSTask::toString() const
+string CTask::toString() const
 {
     stringstream ss;
-    ss << "DDSTask: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:\n";
+    ss << "Task: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:\n";
     for (const auto& port : m_ports)
     {
         ss << " - " << port->toString() << endl;
@@ -115,7 +116,7 @@ string DDSTask::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const DDSTask& _task)
+ostream& operator<<(ostream& _strm, const CTask& _task)
 {
     _strm << _task.toString();
     return _strm;

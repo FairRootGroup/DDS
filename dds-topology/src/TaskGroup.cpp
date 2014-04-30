@@ -4,32 +4,33 @@
 //
 
 // DDS
-#include "DDSTaskGroup.h"
-#include "DDSTopoFactory.h"
-#include "DDSTopoUtils.h"
+#include "TaskGroup.h"
+#include "TopoFactory.h"
+#include "TopoUtils.h"
 // STD
 #include <memory>
 
 using namespace std;
 using namespace boost::property_tree;
+using namespace dds;
 
-DDSTaskGroup::DDSTaskGroup()
-    : DDSTaskContainer()
+CTaskGroup::CTaskGroup()
+    : CTaskContainer()
     , m_n(0)
 {
-    setType(DDSTopoType::GROUP);
+    setType(ETopoType::GROUP);
 }
 
-DDSTaskGroup::~DDSTaskGroup()
+CTaskGroup::~CTaskGroup()
 {
 }
 
-size_t DDSTaskGroup::getNofTasks() const
+size_t CTaskGroup::getNofTasks() const
 {
     return getNofTasksDefault();
 }
 
-size_t DDSTaskGroup::getTotalNofTasks() const
+size_t CTaskGroup::getTotalNofTasks() const
 {
     const auto& elements = getElements();
     size_t counter = 0;
@@ -40,12 +41,12 @@ size_t DDSTaskGroup::getTotalNofTasks() const
     return counter;
 }
 
-void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
         const ptree& mainPT = _pt.get_child("topology.main");
-        const ptree& groupPT = (_name == "main") ? mainPT : DDSTopoElement::findElement(DDSTopoType::GROUP, _name, mainPT);
+        const ptree& groupPT = (_name == "main") ? mainPT : CTopoElement::findElement(ETopoType::GROUP, _name, mainPT);
 
         setName(groupPT.get<string>("<xmlattr>.name"));
         setN(groupPT.get<size_t>("<xmlattr>.n"));
@@ -54,7 +55,7 @@ void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             if (element.first == "<xmlattr>")
                 continue;
-            DDSTopoElementPtr_t newElement = DDSCreateTopoElement(DDSTagToTopoType(element.first));
+            TopoElementPtr_t newElement = CreateTopoElement(TagToTopoType(element.first));
             newElement->setParent(this);
             newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
             addElement(newElement);
@@ -66,38 +67,38 @@ void DDSTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
     }
 }
 
-size_t DDSTaskGroup::getN() const
+size_t CTaskGroup::getN() const
 {
     return m_n;
 }
 
-void DDSTaskGroup::setN(size_t _n)
+void CTaskGroup::setN(size_t _n)
 {
     m_n = _n;
 }
 
-DDSTopoElementPtrVector_t DDSTaskGroup::getElementsByType(DDSTopoType _type) const
+TopoElementPtrVector_t CTaskGroup::getElementsByType(ETopoType _type) const
 {
     const auto& elements = getElements();
-    DDSTopoElementPtrVector_t result;
+    TopoElementPtrVector_t result;
     for (const auto& v : elements)
     {
         if (v->getType() == _type)
         {
             result.push_back(v);
         }
-        else if (v->getType() == DDSTopoType::GROUP)
+        else if (v->getType() == ETopoType::GROUP)
         {
-            DDSTopoElementPtrVector_t groupElements = dynamic_pointer_cast<DDSTaskGroup>(v)->getElementsByType(_type);
+            TopoElementPtrVector_t groupElements = dynamic_pointer_cast<CTaskGroup>(v)->getElementsByType(_type);
             result.insert(result.end(), groupElements.begin(), groupElements.end());
         }
     }
     return result;
 }
 
-DDSIndexVector_t DDSTaskGroup::getIndicesByType(DDSTopoType _type) const
+IndexVector_t CTaskGroup::getIndicesByType(ETopoType _type) const
 {
-    DDSIndexVector_t result;
+    IndexVector_t result;
     const auto& elements = getElements();
     for (const auto& v : elements)
     {
@@ -105,9 +106,9 @@ DDSIndexVector_t DDSTaskGroup::getIndicesByType(DDSTopoType _type) const
         {
             result.push_back(v->getIndex());
         }
-        else if (v->getType() == DDSTopoType::GROUP)
+        else if (v->getType() == ETopoType::GROUP)
         {
-            DDSTopoElementPtrVector_t groupElements = dynamic_pointer_cast<DDSTaskGroup>(v)->getElementsByType(_type);
+            TopoElementPtrVector_t groupElements = dynamic_pointer_cast<CTaskGroup>(v)->getElementsByType(_type);
             for (const auto& v : groupElements)
             {
                 result.push_back(v->getIndex());
@@ -118,10 +119,10 @@ DDSIndexVector_t DDSTaskGroup::getIndicesByType(DDSTopoType _type) const
     return result;
 }
 
-string DDSTaskGroup::toString() const
+string CTaskGroup::toString() const
 {
     stringstream ss;
-    ss << "DDSTaskGroup: m_name=" << getName() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
+    ss << "TaskGroup: m_name=" << getName() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
     const auto& elements = getElements();
     for (const auto& element : elements)
     {
@@ -130,7 +131,7 @@ string DDSTaskGroup::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const DDSTaskGroup& _taskContainer)
+ostream& operator<<(ostream& _strm, const CTaskGroup& _taskContainer)
 {
     _strm << _taskContainer.toString();
     return _strm;

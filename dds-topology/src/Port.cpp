@@ -4,9 +4,9 @@
 //
 
 // DDS
-#include "DDSPort.h"
-#include "DDSTopoElement.h"
-#include "DDSTopoUtils.h"
+#include "Port.h"
+#include "TopoElement.h"
+#include "TopoUtils.h"
 // STD
 #include <string>
 #include <sstream>
@@ -15,47 +15,48 @@
 
 using namespace boost::property_tree;
 using namespace std;
+using namespace dds;
 
-DDSPort::DDSPort()
-    : DDSTopoProperty()
+CPort::CPort()
+    : CTopoProperty()
     , m_range(std::make_pair(10000, 50000))
-    , m_portType(DDSPortType::CLIENT)
+    , m_portType(EPortType::CLIENT)
 {
-    setType(DDSTopoType::PORT);
+    setType(ETopoType::PORT);
 }
 
-DDSPort::~DDSPort()
+CPort::~CPort()
 {
 }
 
-void DDSPort::setRange(unsigned short _min, unsigned short _max)
+void CPort::setRange(unsigned short _min, unsigned short _max)
 {
     m_range = make_pair(_min, _max);
 }
 
-const DDSPort::DDSPortRange_t& DDSPort::getRange() const
+const CPort::PortRange_t& CPort::getRange() const
 {
     return m_range;
 }
 
-void DDSPort::setPortType(DDSPortType _portType)
+void CPort::setPortType(EPortType _portType)
 {
     m_portType = _portType;
 }
 
-DDSPortType DDSPort::getPortType() const
+EPortType CPort::getPortType() const
 {
     return m_portType;
 }
 
-void DDSPort::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void CPort::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
 {
     try
     {
-        const ptree& portPT = DDSTopoElement::findElement(DDSTopoType::PORT, _name, _pt.get_child("topology"));
+        const ptree& portPT = CTopoElement::findElement(ETopoType::PORT, _name, _pt.get_child("topology"));
         setName(portPT.get<string>("<xmlattr>.name"));
         setRange(portPT.get<unsigned int>("<xmlattr>.min"), portPT.get<unsigned int>("<xmlattr>.max"));
-        setPortType(DDSStringToPortType(portPT.get<string>("<xmlattr>.type")));
+        setPortType(StringToPortType(portPT.get<string>("<xmlattr>.type")));
     }
     catch (exception& error) // ptree_error, runtime_error
     {
@@ -63,14 +64,14 @@ void DDSPort::initFromPropertyTree(const std::string& _name, const boost::proper
     }
 }
 
-string DDSPort::toString() const
+string CPort::toString() const
 {
     stringstream ss;
     ss << "DDSPort: m_name=" << getName() << " m_range=(" << m_range.first << ", " << m_range.second << ")";
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const DDSPort& _port)
+ostream& operator<<(ostream& _strm, const CPort& _port)
 {
     _strm << _port.toString();
     return _strm;

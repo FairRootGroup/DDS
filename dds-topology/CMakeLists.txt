@@ -27,38 +27,38 @@ configure_file( ${dds-topology_SOURCE_DIR}/src/version.h.in ${dds-topology_BINAR
 #
 set( SOURCE_FILES
 	./src/main.cpp
-	./src/DDSTopoProperty.cpp
-	./src/DDSTopoBase.cpp
-	./src/DDSTopoUtils.cpp
-	./src/DDSTopoFactory.cpp
-	./src/DDSTopology.cpp
-	./src/DDSTask.cpp
-	./src/DDSTaskCollection.cpp
-	./src/DDSTaskGroup.cpp
-	./src/DDSPort.cpp
-	./src/DDSTopoElement.cpp
-	./src/DDSTaskContainer.cpp
-	./src/DDSTopologyParserXML.cpp
-	./src/DDSIndex.cpp
+	./src/TopoProperty.cpp
+	./src/TopoBase.cpp
+	./src/TopoUtils.cpp
+	./src/TopoFactory.cpp
+	./src/Topology.cpp
+	./src/Task.cpp
+	./src/TaskCollection.cpp
+	./src/TaskGroup.cpp
+	./src/Port.cpp
+	./src/TopoElement.cpp
+	./src/TaskContainer.cpp
+	./src/TopologyParserXML.cpp
+	./src/Index.cpp
 )
 
 #
 # Header files
 #
 set( HEADER_FILES
-	./src/DDSTopoProperty.h
-	./src/DDSTopoBase.h
-	./src/DDSTopoUtils.h
-	./src/DDSTopoFactory.h
-	./src/DDSTopology.h
-	./src/DDSTask.h
-	./src/DDSTaskCollection.h
-	./src/DDSTaskGroup.h
-	./src/DDSPort.h
-	./src/DDSTopoElement.h
-	./src/DDSTaskContainer.h
-	./src/DDSTopologyParserXML.h
-	./src/DDSIndex.h
+	./src/TopoProperty.h
+	./src/TopoBase.h
+	./src/TopoUtils.h
+	./src/TopoFactory.h
+	./src/Topology.h
+	./src/Task.h
+	./src/TaskCollection.h
+	./src/TaskGroup.h
+	./src/Port.h
+	./src/TopoElement.h
+	./src/TaskContainer.h
+	./src/TopologyParserXML.h
+	./src/Index.h
 )
 
 include_directories(

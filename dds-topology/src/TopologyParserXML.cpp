@@ -4,10 +4,10 @@
 //
 
 // DDS
-#include "DDSTopologyParserXML.h"
-#include "DDSTask.h"
-#include "DDSTaskGroup.h"
-#include "DDSTaskCollection.h"
+#include "TopologyParserXML.h"
+#include "Task.h"
+#include "TaskGroup.h"
+#include "TaskCollection.h"
 // STL
 #include <map>
 // SYSTEM
@@ -19,16 +19,17 @@
 
 using namespace boost::property_tree;
 using namespace std;
+using namespace dds;
 
-DDSTopologyParserXML::DDSTopologyParserXML()
+CTopologyParserXML::CTopologyParserXML()
 {
 }
 
-DDSTopologyParserXML::~DDSTopologyParserXML()
+CTopologyParserXML::~CTopologyParserXML()
 {
 }
 
-bool DDSTopologyParserXML::isValid(const std::string& _fileName)
+bool CTopologyParserXML::isValid(const std::string& _fileName)
 {
     pid_t pid = fork();
 
@@ -55,7 +56,7 @@ bool DDSTopologyParserXML::isValid(const std::string& _fileName)
     return (status == 0);
 }
 
-void DDSTopologyParserXML::parse(const string& _fileName, DDSTaskGroupPtr_t _main)
+void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main)
 {
     // FIXME: Do we really need seperate try{} catch{} blocks?
     //        Or we have to put everything in one big try{} catch{} block in this function.
@@ -97,7 +98,7 @@ void DDSTopologyParserXML::parse(const string& _fileName, DDSTaskGroupPtr_t _mai
     }
 }
 
-void DDSTopologyParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const
+void CTopologyParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const
 {
     if (_pt.size() == 0)
     {

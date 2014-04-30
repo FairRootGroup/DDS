@@ -10,20 +10,20 @@ include_directories(${dds-topology_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set( SOURCE_FILES
 	Test.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSIndex.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopoProperty.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopoBase.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopology.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTask.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSPort.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTaskCollection.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTaskGroup.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopoElement.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTaskContainer.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopologyParserXML.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSPort.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopoUtils.cpp
-	${dds-topology_SOURCE_DIR}/src/DDSTopoFactory.cpp
+	${dds-topology_SOURCE_DIR}/src/Index.cpp
+	${dds-topology_SOURCE_DIR}/src/TopoProperty.cpp
+	${dds-topology_SOURCE_DIR}/src/TopoBase.cpp
+	${dds-topology_SOURCE_DIR}/src/Topology.cpp
+	${dds-topology_SOURCE_DIR}/src/Task.cpp
+	${dds-topology_SOURCE_DIR}/src/Port.cpp
+	${dds-topology_SOURCE_DIR}/src/TaskCollection.cpp
+	${dds-topology_SOURCE_DIR}/src/TaskGroup.cpp
+	${dds-topology_SOURCE_DIR}/src/TopoElement.cpp
+	${dds-topology_SOURCE_DIR}/src/TaskContainer.cpp
+	${dds-topology_SOURCE_DIR}/src/TopologyParserXML.cpp
+	${dds-topology_SOURCE_DIR}/src/Port.cpp
+	${dds-topology_SOURCE_DIR}/src/TopoUtils.cpp
+	${dds-topology_SOURCE_DIR}/src/TopoFactory.cpp
 )
 add_executable(dds-topology_tests ${SOURCE_FILES} )
 
