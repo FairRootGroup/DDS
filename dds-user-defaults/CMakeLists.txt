@@ -29,14 +29,15 @@ configure_file( ${dds-user-defaults_SOURCE_DIR}/src/version.h.in ${dds-user-defa
 # Source files
 #
 set( SOURCE_FILES
-	./src/main.cpp
+    ./src/main.cpp
+    ./src/UserDefaults.cpp
 )
 
 #
 # Header files
 #
 set( HEADER_FILES
-
+   ./src/UserDefaults.h
 )
 
 include_directories(
