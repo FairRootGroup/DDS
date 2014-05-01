@@ -83,7 +83,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 #    ${Boost_PROGRAM_OPTIONS_LIBRARY}
 #)
 
-install(TARGETS dds-topology DESTINATION bin)
+install(TARGETS dds-topology DESTINATION lib)
 
 #
 # Unit tests
