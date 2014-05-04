@@ -2,6 +2,9 @@
 //
 //
 //
+// DDS
+#include "UserDefaults.h"
+#include "version.h"
 // BOOST
 #include <boost/program_options/cmdline.hpp>
 //#include <boost/program_options/variables_map.hpp>
@@ -12,12 +15,9 @@
 #include <fstream>
 #include <string>
 // MiscCommon
-#include "DDSUserDefaultsOptions.h"
 #include "BOOSTHelper.h"
 #include "SysHelper.h"
 #include "Res.h"
-//
-#include "version.h"
 
 using namespace DDS;
 using namespace MiscCommon;

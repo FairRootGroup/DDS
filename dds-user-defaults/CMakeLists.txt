@@ -38,6 +38,7 @@ set( SOURCE_FILES
 #
 set( HEADER_FILES
    ./src/UserDefaults.h
+   ./src/DDSOptions.h
 )
 
 include_directories(
