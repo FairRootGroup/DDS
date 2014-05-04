@@ -28,9 +28,13 @@ configure_file( ${dds-user-defaults_SOURCE_DIR}/src/version.h.in ${dds-user-defa
 #
 # Source files
 #
+set( LIB_SOURCE_FILES
+    ./src/UserDefaults.cpp
+)
+
 set( SOURCE_FILES
     ./src/main.cpp
-    ./src/UserDefaults.cpp
+    ${LIB_SOURCE_FILES}
 )
 
 #
@@ -51,10 +55,15 @@ include_directories(
 # dds-user-defaults executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
+    add_library(dds-user-defaults-lib SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
     add_executable(dds-user-defaults ${SOURCE_FILES} ${HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
+    add_library(dds-user-defaults-lib SHARED ${LIB_SOURCE_FILES})
     add_executable(dds-user-defaults ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
+
+# we want to have the same name for the library and for the exe
+SET_TARGET_PROPERTIES(dds-user-defaults-lib PROPERTIES OUTPUT_NAME dds-user-defaults)
 
 target_link_libraries (
     dds-user-defaults
@@ -62,7 +71,15 @@ target_link_libraries (
     ${Boost_SYSTEM_LIBRARY}
 )
 
+target_link_libraries (
+    dds-user-defaults-lib
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+)
+
 install(TARGETS dds-user-defaults DESTINATION bin)
+install(TARGETS dds-user-defaults-lib DESTINATION lib)
+
 
 #
 # Unit tests
