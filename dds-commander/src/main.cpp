@@ -19,15 +19,12 @@
 #include "Options.h"
 #include "Process.h"
 #include "ErrorCode.h"
-//#include "PROOFAgent.h"
-//#include "PARes.h"
-//#include "BOOSTHelper.h"
+#include "CommanderServer.h"
+#include "BOOSTHelper.h"
 
 using namespace std;
 using namespace MiscCommon;
-// using namespace PROOFAgent;
 namespace bpo = boost::program_options;
-// namespace boost_hlp = MiscCommon::BOOSTHelper;
 using namespace dds::commander;
 
 void PrintVersion()
@@ -46,7 +43,7 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
 
     // Generic options
     bpo::options_description options("dds-commander options");
-    options.add_options()("help,h", "Produce help message")("version,v", "Version information")("start", "Start dds-commander daemon (default action)")(
+    options.add_options()("help,h", "Produce help message")("version,v", "Version information")("start", "Start dds-commander daemon")(
         "stop", "Stop dds-commander daemon")("status", "Query current status of dds-command daemon");
 
     //    options.add_options()("help,h", "Produce help message")("version,v", "Version information")("config,c", bpo::value<string>(), "A PoD configuration
@@ -91,20 +88,11 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
     //        _Options->m_podOptions = user_defaults.getOptions();
     //    }
     //
-    //    boost_hlp::conflicting_options(vm, "start", "stop");
-    //    boost_hlp::conflicting_options(vm, "start", "status");
-    //    boost_hlp::conflicting_options(vm, "stop", "status");
+
+    MiscCommon::BOOSTHelper::conflicting_options(vm, "start", "stop");
+    MiscCommon::BOOSTHelper::conflicting_options(vm, "start", "status");
+    MiscCommon::BOOSTHelper::conflicting_options(vm, "stop", "status");
     //    boost_hlp::option_dependency(vm, "start", "daemonize");
-    //    boost_hlp::option_dependency(vm, "stop", "daemonize");
-    //    boost_hlp::option_dependency(vm, "status", "daemonize");
-    //
-    //    if (vm.count("mode"))
-    //    {
-    //        string mode(vm["mode"].as<string>());
-    //        if ("worker" == mode)
-    //            _Options->m_agentMode = Client;
-    //    }
-    //
 
     if (vm.count("start"))
         _options->m_Command = SOptions_t::Start;
@@ -113,23 +101,6 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
     if (vm.count("status"))
         _options->m_Command = SOptions_t::Status;
 
-    //_options->m_bDaemonize = vm.count("daemonize");
-    //
-    //    if (vm.count("serverinfo"))
-    //    {
-    //        _Options->m_serverInfoFile = vm["serverinfo"].as<string>();
-    //        smart_path(&_Options->m_serverInfoFile);
-    //    }
-    //
-    //    if (vm.count("workers"))
-    //    {
-    //        if (Client != _Options->m_agentMode)
-    //            throw runtime_error("The \"workers\" parameter can only be used by pod-aget workers.");
-    //
-    //        // TODO: set some protection on the number of workers
-    //        _Options->m_numberOfPROOFWorkers = vm["workers"].as<unsigned int>();
-    //    }
-    //
     return true;
 }
 
@@ -277,12 +248,15 @@ int main(int argc, char* argv[])
             // Starting Agent
             // agent.Start();
 
+            CCommanderServer server;
+            server.start();
+
             // Main loop
-            while (1)
-            {
-                sleep(30); // wait 30 seconds
-                cout << "running..." << endl;
-            }
+            /*   while (1)
+               {
+                   sleep(30); // wait 30 seconds
+                   cout << "running..." << endl;
+               }*/
         }
         catch (exception& e)
         {

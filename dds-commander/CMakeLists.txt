@@ -27,6 +27,7 @@ configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BIN
 #
 set( SOURCE_FILES
 	./src/main.cpp
+    ./src/CommanderServer.cpp
 )
 
 #
@@ -34,6 +35,7 @@ set( SOURCE_FILES
 #
 set( HEADER_FILES
     ./src/Options.h
+    ./src/CommanderServer.h
 )
 
 include_directories(
@@ -50,8 +52,6 @@ if (CMAKE_GENERATOR STREQUAL "Xcode")
 else (CMAKE_GENERATOR STREQUAL "Xcode")
     add_executable(dds-commander ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-message(STATUS "dds-commander Boost_PROGRAM_OPTIONS_LIBRARY=${Boost_PROGRAM_OPTIONS_LIBRARY}")
 
 target_link_libraries (
     dds-commander
@@ -70,4 +70,3 @@ if (BUILD_TESTS)
 else (BUILD_TESTS)
     message (STATUS "Build dds-commander unit tests - NO")
 endif (BUILD_TESTS)
-
