@@ -13,6 +13,8 @@ using namespace std::placeholders;
 using namespace boost::asio;
 
 CAgentClient::CAgentClient()
+    : m_resolver(m_service)
+    , m_socket(m_service)
 {
 }
 
@@ -22,37 +24,73 @@ CAgentClient::~CAgentClient()
 
 void CAgentClient::start()
 {
+    // boost::asio::ip::tcp::resolver::query query("127.0.0.1", "8001");
+    // m_resolver.async_resolve(query, std::bind(&CAgentClient::resolveHandler, this));
+
     ip::tcp::endpoint ep(ip::address::from_string("127.0.0.1"), 8001);
-    for (int i = 0; i < 100; i++)
-    {
-        sleep(1);
-        echo(ep, "Message 1");
-    }
+    m_socket.async_connect(ep, std::bind(&CAgentClient::connectHandler, this, std::placeholders::_1));
+    m_service.run();
 }
 
 void CAgentClient::stop()
 {
+    m_service.stop();
+    m_resolver.cancel();
+    m_socket.close();
 }
 
-size_t read_complete(char* buf, const boost::system::error_code& err, size_t bytes)
+void CAgentClient::readHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
 {
-    if (err)
+    if (!_ec)
+    {
+        std::string msg(m_readBuffer, _bytesTransferred);
+        std::cout << "Server response: " << msg;
+        sleep(1);
+
+        doWrite("ping\n");
+    }
+}
+
+void CAgentClient::writeHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
+{
+    doRead();
+}
+
+void CAgentClient::connectHandler(const boost::system::error_code& _ec)
+{
+    if (!_ec)
+    {
+        doWrite("ping\n");
+    }
+}
+
+// void CAgentClient::resolveHandler(const boost::system::error_code& _ec, boost::asio::ip::tcp::resolver::iterator _it)
+//{
+//    if (!_ec)
+//    {
+//        m_socket.async_connect(*_it, std::bind(&CAgentClient::connectHandler, this));
+//    }
+//}
+
+size_t CAgentClient::readCompleteHandler(const boost::system::error_code& _ec, size_t _bytesTransferred)
+{
+    if (_ec)
         return 0;
-    bool found = std::find(buf, buf + bytes, '\n') < buf + bytes;
+    bool found = std::find(m_readBuffer, m_readBuffer + _bytesTransferred, '\n') < m_readBuffer + _bytesTransferred;
     return found ? 0 : 1;
 }
 
-void CAgentClient::echo(const ip::tcp::endpoint& _ep, const std::string& _message)
+void CAgentClient::doRead()
 {
-    std::string message = _message + "\n";
-    ip::tcp::socket sock(m_service);
-    sock.connect(_ep);
-    sock.write_some(buffer(message));
-    char buf[1024];
-    int bytes = read(sock, buffer(buf), std::bind(read_complete, buf, _1, _2));
-    // int bytes = sock.read_some(buffer(buf));
-    std::string copy(buf, bytes - 1);
-    message = message.substr(0, message.size() - 1);
-    std::cout << "Server echo: " << message << ": " << (copy == message ? "OK" : "FAIL") << std::endl;
-    sock.close();
+    async_read(m_socket,
+               boost::asio::buffer(m_readBuffer),
+               std::bind(&CAgentClient::readCompleteHandler, this, std::placeholders::_1, std::placeholders::_2),
+               std::bind(&CAgentClient::readHandler, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+void CAgentClient::doWrite(const std::string& msg)
+{
+    std::copy(msg.begin(), msg.end(), m_writeBuffer);
+    async_write(
+        m_socket, boost::asio::buffer(m_writeBuffer, msg.size()), std::bind(&CAgentClient::writeHandler, this, std::placeholders::_1, std::placeholders::_2));
 }

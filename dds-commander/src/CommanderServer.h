@@ -25,8 +25,8 @@ class CCommanderServer
   private:
     void acceptHandler(TalkToAgentPtr_t _agent, const boost::system::error_code& _ec);
 
-    boost::asio::io_service m_service;
-    boost::asio::ip::tcp::acceptor m_acceptor;
+    boost::asio::io_service* m_service;
+    boost::asio::ip::tcp::acceptor* m_acceptor;
     TalkToAgentPtrVector_t m_agents;
 };
 

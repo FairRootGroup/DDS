@@ -252,11 +252,11 @@ int main(int argc, char* argv[])
             server.start();
 
             // Main loop
-            /*   while (1)
-               {
-                   sleep(30); // wait 30 seconds
-                   cout << "running..." << endl;
-               }*/
+            //            while (1)
+            //            {
+            //                sleep(30); // wait 30 seconds
+            //                cout << "running..." << endl;
+            //            }
         }
         catch (exception& e)
         {

@@ -5,9 +5,10 @@
 
 // DDS
 #include "TalkToAgent.h"
-
 // BOOST
 #include "boost/asio.hpp"
+// STD
+#include <iostream>
 
 CTalkToAgent::CTalkToAgent(boost::asio::io_service& _service)
     : m_socket(_service)
@@ -55,7 +56,7 @@ void CTalkToAgent::readHandler(const boost::system::error_code& _ec, size_t _byt
     if (msg.find("ping") == 0)
         pingRequest();
     else
-        std::cerr << "Invalid request " << msg << std::endl;
+        std::cout << "Invalid request " << msg << std::endl;
 }
 
 void CTalkToAgent::writeHandler(const boost::system::error_code& _ec, size_t bytesTransferred)
@@ -68,7 +69,6 @@ size_t CTalkToAgent::readCompleteHandler(const boost::system::error_code& _ec, s
     if (_ec)
         return 0;
     bool found = std::find(m_readBuffer, m_readBuffer + _bytesTransferred, '\n') < m_readBuffer + _bytesTransferred;
-    // we read one-by-one until we get to enter, no buffering
     return found ? 0 : 1;
 }
 
