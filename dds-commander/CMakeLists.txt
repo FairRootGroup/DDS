@@ -28,6 +28,7 @@ configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BIN
 set( SOURCE_FILES
 	./src/main.cpp
     ./src/CommanderServer.cpp
+    ./src/TalkToAgent.cpp
 )
 
 #
@@ -36,6 +37,7 @@ set( SOURCE_FILES
 set( HEADER_FILES
     ./src/Options.h
     ./src/CommanderServer.h
+    ./src/TalkToAgent.h
 )
 
 include_directories(

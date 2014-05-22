@@ -3,13 +3,19 @@
 //
 //
 
+// DDS
 #include "CommanderServer.h"
+#include "TalkToAgent.h"
+
+// BOOST
+#include "boost/asio.hpp"
 
 using namespace boost::asio;
 using namespace std::placeholders;
 using namespace std;
 
 CCommanderServer::CCommanderServer()
+    : m_acceptor(m_service)
 {
 }
 
@@ -17,30 +23,37 @@ CCommanderServer::~CCommanderServer()
 {
 }
 
-size_t read_complete(char* buff, const boost::system::error_code& err, size_t bytes)
-{
-    if (err)
-        return 0;
-    bool found = std::find(buff, buff + bytes, '\n') < buff + bytes;
-    return found ? 0 : 1;
-}
-
 void CCommanderServer::start()
 {
-    ip::tcp::acceptor acceptor(m_service, ip::tcp::endpoint(ip::tcp::v4(), 8001));
-    char buff[1024];
-    while (true)
-    {
-        ip::tcp::socket sock(m_service);
-        acceptor.accept(sock);
-        int bytes = read(sock, buffer(buff), bind(read_complete, buff, _1, _2));
-        // int bytes = sock.read_some(buffer(buff));
-        std::string msg(buff, bytes);
-        sock.write_some(buffer(msg));
-        sock.close();
-    }
+    m_acceptor.bind(ip::tcp::endpoint(ip::tcp::v4(), 8001));
+    m_acceptor.listen();
+    TalkToAgentPtr_t client = CTalkToAgent::makeNew(m_service);
+    m_acceptor.async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, _1));
+    m_service.run();
 }
 
 void CCommanderServer::stop()
 {
+    m_acceptor.close();
+    m_service.stop();
+    for (const auto& v : m_agents)
+    {
+        v->stop();
+    }
+    m_agents.clear();
+}
+
+void CCommanderServer::acceptHandler(TalkToAgentPtr_t _client, const boost::system::error_code& _ec)
+{
+    if (!_ec) // FIXME: Add proper error processing
+    {
+        _client->start();
+        m_agents.push_back(_client);
+
+        TalkToAgentPtr_t newClient = CTalkToAgent::makeNew(m_service);
+        m_acceptor.async_accept(newClient->socket(), std::bind(&CCommanderServer::acceptHandler, this, newClient, _1));
+    }
+    else
+    {
+    }
 }
