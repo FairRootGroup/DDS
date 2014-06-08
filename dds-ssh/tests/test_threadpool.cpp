@@ -37,10 +37,8 @@ const size_t g_numTasks = 32;
 const size_t g_numThreads = 4;
 //=============================================================================
 enum EProc
-{
-    start,
-    clean
-};
+{ start,
+  clean };
 class CTestTask : public CTaskImp<CTestTask, EProc>
 {
   public:

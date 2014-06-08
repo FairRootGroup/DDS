@@ -21,11 +21,9 @@ namespace dds
         typedef struct SOptions
         {
             typedef enum ECommand
-            {
-                Start,
-                Stop,
-                Status
-            } ECommand_t;
+            { Start,
+              Stop,
+              Status } ECommand_t;
 
             SOptions()
                 : m_Command(Start)

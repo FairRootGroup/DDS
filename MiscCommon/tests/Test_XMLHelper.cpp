@@ -18,7 +18,7 @@ XERCES_CPP_NAMESPACE_USE;
 
 void test_smrat_XMLCh0();
 
-test_suite* init_unit_test_suite(int, char * [])
+test_suite* init_unit_test_suite(int, char* [])
 {
     test_suite* test = BOOST_TEST_SUITE("Unit tests of MiscCommon");
 

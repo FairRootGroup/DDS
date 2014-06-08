@@ -27,18 +27,14 @@ namespace MiscCommon
      *
      */
     typedef enum ESeverity
-    {
-        LOG_SEVERITY_INFO = 0x01,
-        LOG_SEVERITY_WARNING = 0x02,
-        LOG_SEVERITY_FAULT = 0x04,
-        LOG_SEVERITY_CRITICAL_ERROR = 0x08,
-        LOG_SEVERITY_DEBUG = 0x10
-    } LOG_SEVERITY;
+    { LOG_SEVERITY_INFO = 0x01,
+      LOG_SEVERITY_WARNING = 0x02,
+      LOG_SEVERITY_FAULT = 0x04,
+      LOG_SEVERITY_CRITICAL_ERROR = 0x08,
+      LOG_SEVERITY_DEBUG = 0x10 } LOG_SEVERITY;
     enum
-    {
-        e_FieldSeparator = 0x20,
-        e_WhiteSpace = 0x20
-    };
+    { e_FieldSeparator = 0x20,
+      e_WhiteSpace = 0x20 };
     /**
      *
      * @brief A simple template class which represents the Log engine of library.
