@@ -40,6 +40,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce ureadable output
     visible.add_options()("help,h", "Produce help message");
     visible.add_options()("version,v", "Version information");
+    visible.add_options()("verbose,V", "Cause pod-user-defaults to be verbose in case of an error");
     visible.add_options()("path,p", "Show DDS user defaults config file path");
     visible.add_options()("default,d", "Generate a default PoD configuration file");
     visible.add_options()("config,c", bpo::value<string>()->default_value("~/.DDS/DDS.cfg"), "DDS user defaults configuration file")(
@@ -50,14 +51,14 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
             "wrkpkg", "Show the full path of the worker package. The path must be evaluated before use")(
             "wrkscript", "Show the full path of the worker script. The path must be evaluated before use")(
             "wn-sandbox-dir", "Show the full path of the sandbox directory. The path must be evaluated before use")(
-            "verbose,V", "Cause pod-user-defaults to be verbose in case of an error");
+
     */
     // Parsing command-line
     bpo::variables_map vm;
     bpo::store(bpo::command_line_parser(_Argc, _Argv).options(visible).run(), vm);
     bpo::notify(vm);
 
-    if (vm.count("help") || vm.empty())
+    if (_Argc < 2 || vm.count("help") || vm.empty())
     {
         cout << visible << endl;
         return false;
@@ -67,30 +68,35 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
         printVersion();
         return false;
     }
+    if (vm.count("verbose"))
+    {
+        *_verbose = true;
+    }
     if (vm.count("path"))
     {
         CUserDefaults ud;
         cout << ud.currentUDFile() << endl;
         return true;
     }
+
+    string sCfgFileName(vm["config"].as<string>());
+    smart_path(&sCfgFileName);
+
     if (vm.count("default"))
     {
         cout << "Generating a default DDS configuration file..." << endl;
 
-        string filename(vm["config"].as<string>());
-        if (MiscCommon::file_exists(filename) && !vm.count("force"))
+        if (MiscCommon::file_exists(sCfgFileName) && !vm.count("force"))
             throw runtime_error("Error: Destination file exists. Please use -f options to overwrite it.");
 
-        if (filename.empty())
+        if (sCfgFileName.empty())
             throw runtime_error("Error: Destination file name is empty. Please use -c options to define it.");
 
-        smart_path(&filename);
-
-        ofstream f(filename.c_str());
+        ofstream f(sCfgFileName.c_str());
         if (!f.is_open())
         {
             string s("Can't open file ");
-            s += filename;
+            s += sCfgFileName;
             s += " for writing.";
             throw runtime_error(s);
         }
@@ -105,6 +111,24 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
         CUserDefaults::printDefaults(f);
         cout << "Generating a default DDS configuration file - DONE." << endl;
         return false;
+    }
+
+    // Check UD
+    CUserDefaults user_defaults;
+    try
+    {
+        user_defaults.init(sCfgFileName);
+    }
+    catch (std::exception& _e)
+    {
+        stringstream ss;
+        ss << "DDS user defaults \"" << sCfgFileName << "\" is illformed: " << _e.what();
+        throw runtime_error(ss.str());
+    }
+
+    if (vm.count("key"))
+    {
+        cout << user_defaults.getValueForKey(vm["key"].as<string>()) << endl;
     }
 
     *_verbose = vm.count("verbose");

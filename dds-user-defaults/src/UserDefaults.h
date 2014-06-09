@@ -19,12 +19,12 @@ namespace DDS
         void init(const std::string& _DDSCfgFileName, bool _get_default = false);
 
       public:
+        std::string getValueForKey(const std::string& _Key) const;
         std::string currentUDFile() const;
         static void printDefaults(std::ostream& _stream);
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;
-        std::string getValueForKey(const std::string& _Key) const;
         std::string getUnifiedBoolValueForBoolKey(const std::string& _Key) const;
         const SDDSUserDefaultsOptions_t getOptions() const
         {
