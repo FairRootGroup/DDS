@@ -27,23 +27,24 @@ configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BIN
 #
 set( SOURCE_FILES
 	./src/main.cpp
-    ./src/CommanderServer.cpp
-    ./src/TalkToAgent.cpp
+	./src/CommanderServer.cpp
+	./src/TalkToAgent.cpp
 )
 
 #
 # Header files
 #
 set( HEADER_FILES
-    ./src/Options.h
-    ./src/CommanderServer.h
-    ./src/TalkToAgent.h
+	./src/Options.h
+	./src/CommanderServer.h
+	./src/TalkToAgent.h
 )
 
 include_directories(
 	${dds-commander_BINARY_DIR}
 	${MiscCommon_LOCATION}
-    ${Boost_INCLUDE_DIRS} 
+	${dds-user-defaults_BINRARY_DIR}
+	${Boost_INCLUDE_DIRS} 
 )
 
 #
@@ -56,9 +57,15 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-    dds-commander
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
+	dds-commander
+	dds-user-defaults-lib
+	${Boost_PROGRAM_OPTIONS_LIBRARY}
+	${Boost_SYSTEM_LIBRARY}
+)
+
+target_include_directories(dds-commander
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-commander DESTINATION bin)

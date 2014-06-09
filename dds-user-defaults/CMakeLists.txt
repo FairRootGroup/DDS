@@ -65,6 +65,9 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 # we want to have the same name for the library and for the exe
 SET_TARGET_PROPERTIES(dds-user-defaults-lib PROPERTIES OUTPUT_NAME dds-user-defaults)
 
+# API headers
+target_include_directories(dds-user-defaults-lib INTERFACE ${dds-user-defaults_SOURCE_DIR}/src)
+
 target_link_libraries (
     dds-user-defaults
     ${Boost_PROGRAM_OPTIONS_LIBRARY}

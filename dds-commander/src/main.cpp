@@ -21,6 +21,8 @@
 #include "ErrorCode.h"
 #include "CommanderServer.h"
 #include "BOOSTHelper.h"
+#include "Res.h"
+#include "UserDefaults.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -29,10 +31,9 @@ using namespace dds::commander;
 
 void PrintVersion()
 {
-    // TODO: make VERSION to be taken from the build
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n";
-    //         << "protocol: v" << g_protocolCommandsVersion << "\n"
-    //         << "Report bugs/comments to A.Manafov@gsi.de" << endl;
+    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
+         << "DDS configuration"
+         << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << g_cszReportBugsAddr << endl;
 }
 
 // Command line parser
@@ -43,8 +44,11 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
 
     // Generic options
     bpo::options_description options("dds-commander options");
-    options.add_options()("help,h", "Produce help message")("version,v", "Version information")("start", "Start dds-commander daemon")(
-        "stop", "Stop dds-commander daemon")("status", "Query current status of dds-command daemon");
+    options.add_options()("help,h", "Produce help message");
+    options.add_options()("version,v", "Version information");
+    options.add_options()("start", "Start dds-commander daemon");
+    options.add_options()("stop", "Stop dds-commander daemon");
+    options.add_options()("status", "Query current status of dds-command daemon");
 
     //    options.add_options()("help,h", "Produce help message")("version,v", "Version information")("config,c", bpo::value<string>(), "A PoD configuration
     // file")(

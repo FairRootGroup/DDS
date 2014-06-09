@@ -117,6 +117,12 @@ SET(DDS_MISC_FILES
     ${CMAKE_SOURCE_DIR}/ReleaseNotes.md
 )
 #
+# "bin" files
+#
+SET(DDS_BIN_FILES 
+    ${CMAKE_SOURCE_DIR}/bin/dds-server
+)
+#
 # "etc" files
 #
 SET(DDS_ETC_FILES
@@ -172,7 +178,6 @@ if(BUILD_dds-agent)
     add_subdirectory ( dds-agent )
 endif(BUILD_dds-agent)
 
-
 # dds_ssh
 if(BUILD_dds-ssh)
     message(STATUS "Build dds-ssh - YES")
@@ -190,6 +195,8 @@ endif(BUILD_dds-user-defaults)
 #
 install(FILES ${DDS_MISC_FILES} DESTINATION .)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/DDS_env.sh DESTINATION .)
+# install bin files
+install(PROGRAMS ${DDS_BIN_FILES} DESTINATION bin)
 # install etc files
 install(FILES ${DDS_ETC_FILES} DESTINATION etc)
 # install share files
