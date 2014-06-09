@@ -17,10 +17,10 @@ namespace DDS
     {
       public:
         void init(const std::string& _DDSCfgFileName, bool _get_default = false);
-        void printDefaults(std::ostream& _stream) const;
 
       public:
         std::string currentUDFile() const;
+        static void printDefaults(std::ostream& _stream);
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;

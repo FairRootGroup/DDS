@@ -13,13 +13,14 @@
 
 using namespace std;
 using namespace DDS;
+using namespace MiscCommon;
 
 void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
 {
     m_keys.clear();
     boost::program_options::options_description config_file_options("DDS user defaults options");
     config_file_options.add_options()(
-        "general.work_dir", boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"), "");
+        "server.work_dir", boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"), "");
 
     if (!_get_default)
     {
@@ -46,7 +47,7 @@ void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
     boost::program_options::notify(m_keys);
 }
 
-void CUserDefaults::printDefaults(ostream& _stream) const
+void CUserDefaults::printDefaults(ostream& _stream)
 {
     CUserDefaults ud;
     ud.init("", true);
@@ -101,6 +102,8 @@ string CUserDefaults::currentUDFile() const
     cfg.SetOrder("$HOME/.DDS/DDS.cfg")("$DDS_LOCATION/etc/DDS.cfg")("$DDS_LOCATION/DDS.cfg");
     string val;
     cfg.GetCfg(&val);
+
+    smart_path(&val);
 
     return val;
 }

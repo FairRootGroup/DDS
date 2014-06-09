@@ -41,10 +41,11 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("help,h", "Produce help message");
     visible.add_options()("version,v", "Version information");
     visible.add_options()("path,p", "Show DDS user defaults config file path");
+    visible.add_options()("default,d", "Generate a default PoD configuration file");
+    visible.add_options()("config,c", bpo::value<string>()->default_value("~/.DDS/DDS.cfg"), "DDS user defaults configuration file")(
+        "key", bpo::value<string>(), "Get a value for the given key");
+    visible.add_options()("force,f", "If the destination file exists, remove it and create a new file, without prompting for confirmation");
     /*    (
-            "config,c", bpo::value<string>(), "DDS user defaults configuration file")("key", bpo::value<string>(), "Get a value for the given key")(
-            "default,d", "Generate a default PoD configuration file")(
-            "force,f", "If the destination file exists, remove it and create a new file, without prompting for confirmation")(
             "userenvscript", "Show the full path of user's environment script for workers (if present). The path must be evaluated before use")(
             "wrkpkg", "Show the full path of the worker package. The path must be evaluated before use")(
             "wrkscript", "Show the full path of the worker script. The path must be evaluated before use")(
@@ -66,6 +67,46 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
         printVersion();
         return false;
     }
+    if (vm.count("path"))
+    {
+        CUserDefaults ud;
+        cout << ud.currentUDFile() << endl;
+        return true;
+    }
+    if (vm.count("default"))
+    {
+        cout << "Generating a default DDS configuration file..." << endl;
+
+        string filename(vm["config"].as<string>());
+        if (MiscCommon::file_exists(filename) && !vm.count("force"))
+            throw runtime_error("Error: Destination file exists. Please use -f options to overwrite it.");
+
+        if (filename.empty())
+            throw runtime_error("Error: Destination file name is empty. Please use -c options to define it.");
+
+        smart_path(&filename);
+
+        ofstream f(filename.c_str());
+        if (!f.is_open())
+        {
+            string s("Can't open file ");
+            s += filename;
+            s += " for writing.";
+            throw runtime_error(s);
+        }
+
+        f << "# DDS user defaults\n"
+          << "# version: " << USER_DEFAULTS_CFG_VERSION << "\n"
+          << "#\n"
+          << "# Please use DDS User's Manual to find out more details on\n"
+          << "# keys and values of this configuration file.\n"
+          << "# PoD User's Manual can be found in $DDS_LOCATION/doc folder or\n"
+          << "# by the following address: http://dds.gsi.de/documentation.html\n";
+        CUserDefaults::printDefaults(f);
+        cout << "Generating a default DDS configuration file - DONE." << endl;
+        return false;
+    }
+
     *_verbose = vm.count("verbose");
 
     boost_hlp::option_dependency(vm, "default", "config");
