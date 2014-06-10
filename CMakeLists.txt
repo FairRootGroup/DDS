@@ -43,6 +43,7 @@ option(BUILD_dds-topology "Build dds-topology" ON)
 option(BUILD_dds-agent "Build dds-agent" ON)
 option(BUILD_dds-ssh "Build dds-ssh" ON)
 option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
+option(BUILD_dds-info "Build dds-info" ON)
 #
 # Documentation output directory
 #
@@ -189,6 +190,12 @@ if(BUILD_dds-user-defaults)
     message(STATUS "Build dds-user-defaults - YES")
     add_subdirectory ( dds-user-defaults )
 endif(BUILD_dds-user-defaults)
+
+# dds_info
+if(BUILD_dds-info)
+    message(STATUS "Build dds-info - YES")
+    add_subdirectory ( dds-info )
+endif(BUILD_dds-info)
 
 #
 # Install
