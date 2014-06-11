@@ -43,7 +43,6 @@ set( HEADER_FILES
 include_directories(
 	${dds-commander_BINARY_DIR}
 	${MiscCommon_LOCATION}
-	${dds-user-defaults_BINRARY_DIR}
 	${Boost_INCLUDE_DIRS} 
 )
 
@@ -73,9 +72,9 @@ install(TARGETS dds-commander DESTINATION bin)
 #
 # Unit tests
 #
-if (BUILD_TESTS)
-    message (STATUS "Build dds-commander unit tests - YES")
- #   add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests ) 
-else (BUILD_TESTS)
-    message (STATUS "Build dds-commander unit tests - NO")
-endif (BUILD_TESTS)
+#if (BUILD_TESTS)
+#    message (STATUS "Build dds-commander unit tests - YES")
+#    add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests ) 
+#else (BUILD_TESTS)
+#    message (STATUS "Build dds-commander unit tests - NO")
+#endif (BUILD_TESTS)

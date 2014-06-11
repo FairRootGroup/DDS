@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#!/usr/bin/env bash
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
@@ -16,13 +15,14 @@
 # 
 #
 #######
-DDS_CFG=$(pod-user-defaults -p)
-if [ -z "$POD_CFG" ]; then
-   echo "error: can't find PoD user defaults"
+DDS_CFG=$(dds-user-defaults -p)
+if [ -z "$DDS_CFG" ]; then
+   echo "error: can't find DDS user defaults"
+   echo "You can create the default config file by using: dds-user-defaults -f -d -c ~/.DDS/DDS.cfg"
    exit 1
 fi
 #######
-WORK_DIR=$(pod-user-defaults -V --key server.work_dir)
+WORK_DIR=$(dds-user-defaults -V --key server.work_dir)
 if (( $? != 0 )) ; then
    echo "ERROR: Your DDS user defaults can't be used with this version of DDS."
    echo "If you want to continue to use this version of DDS, you have the following options:"
@@ -39,19 +39,15 @@ SERVER_OS=$(uname -s 2>&1)
 PKG_VERSION=$(cat $DDS_LOCATION/etc/version)
 
 # default location for WNs' pre-compiled binaries
-POD_URL=" http://dds.gsi.de/releases/add"
+DDS_URL=" http://dds.gsi.de/releases/add"
 # ************************************************************************
 # ***** STATUS *****
 # ************************************************************************
 server_status()
 {
 #   $cmd_dds_info -s
-#   if (( $? == 0 )); then
-#      echo "PROOF connection string: $($cmd_pod_info -c)"
-#      return 0
-#   fi
 #
-#   return 1
+   return 0
 }
 # ************************************************************************
 # ***** returns a free port from a given range  *****
@@ -130,44 +126,25 @@ get_bins()
    # download all pre-compiled bins
    for index in 0 1
    do
-      FILE_NAME="pod-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
+      FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
       $CMD_URL ${POD_URL}/$PKG_VERSION/$FILE_NAME
       if (( $? != 0 )); then
          echo "Error: Can't download pre-compiled binaries for WNs."
-         echo "Please check availability of ${POD_URL}/$PKG_VERSION/$FILE_NAME"
+         echo "Please check availability of ${DDS_URL}/$PKG_VERSION/$FILE_NAME"
          exit 1
       fi
    done
 
    # download a mac bin independently, since we provide only universal version
-   FILE_NAME="pod-wrk-bin-$PKG_VERSION-Darwin-universal.tar.gz"
-   $CMD_URL ${POD_URL}/$PKG_VERSION/$FILE_NAME
+   FILE_NAME="dds-wrk-bin-$PKG_VERSION-Darwin-universal.tar.gz"
+   $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
    if (( $? != 0 )); then
       echo "Error: Can't download pre-compiled binaries for WNs."
-      echo "Please check availability of ${POD_URL}/$PKG_VERSION/$FILE_NAME"
+      echo "Please check availability of ${DDS_URL}/$PKG_VERSION/$FILE_NAME"
       exit 1
    fi
 
    popd &> /dev/null
-}
-#=============================================================================
-# ***** delete_tmp_dir  *****
-#=============================================================================
-delete_tmp_dir()
-{
-   local old_tmp_holder="$WORK_DIR/./xproofd.tmp"
-
-   # delete the previous tmp dir
-   if [ -r "$old_tmp_holder" ]; then 
-      local old_tmp=$(cat "$old_tmp_holder")
-      if [ -L "$old_tmp" ]; then
-         echo "Security Error: tmp directory of the previous session is a symbolic link."
-         exit 1
-      fi
-      if [ -d "$old_tmp" ]; then
-         rm -rf "$old_tmp"
-      fi
-   fi
 }
 #=============================================================================
 # ***** create_dir  *****
@@ -183,52 +160,12 @@ create_dir()
 # ************************************************************************
 create_dir_hierarchy()
 {
-   create_dir "$WORK_DIR/etc"
-   create_dir "$POD_SRV_LOGDIR"
-   # create workers' sandbox
-   local dir=$(eval dirname $(pod-user-defaults --wrkscript))
-   create_dir "$dir"
-}
-# ************************************************************************
-# ***** update_xpd_cfg  *****
-# ************************************************************************
-update_xpd_cfg()
-{
-   # We renew the xpd conf every time PoD server is restarted.
-   # It is needed since otherwise it will be difficult (if ever possible)
-   # to find out, which xproofd was started exactly by this server.
-   # PoD and AliEn integration, for example, require, that several PoD
-   # servers can be started on one machine under the same user account.
-
-   local old_tmp_holder="$WORK_DIR/./xproofd.tmp"
-   local xpd_template="$POD_LOCATION/etc/xpd.cf.in"
-
-   # 1. delete the previous tmp dir
-   delete_tmp_dir
-
-   # 2. copy the template file
-   cp $xpd_template $XPD_CFG
-   # 3. create new tmp folder
-   _TMP_DIR=$(mktemp -d /tmp/PoD_XXXXXXXXXX) ||  { echo "error: Can't create a tmp dir in /tmp/. Check permissions."; exit 1; }
-   echo "$_TMP_DIR" > "$old_tmp_holder"
-   chmod 777 $_TMP_DIR
-   # 4. update configuration
-   eval sed -i.bup 's%_POD_TMP_DIR%$_TMP_DIR%g' $XPD_CFG 
-   NEW_XPROOF_PORT=$(get_freeport $XPROOF_PORTS_RANGE_MIN $XPROOF_PORTS_RANGE_MAX)
-   regexp_xpd_port="s/\(xpd.port[[:space:]]*\)[0-9]*/\1$NEW_XPROOF_PORT/g"
-   regexp_server_host="s/\(if[[:space:]]\).*\([[:space:]]#SERVERHOST DONT EDIT THIS LINE\)/\1$agent_host\2/g"
-   sed -e "$regexp_xpd_port" -e "$regexp_xproof_port" -e "$regexp_server_host" $XPD_CFG > "$XPD_CFG.temp"
-   mv -f "$XPD_CFG.temp" $XPD_CFG
-
-   # add custom xpd configuration, if needed
-   # the algorithm will add the following files
-   # $HOME/.PoD/user_xpd.cf*
-   # $POD_LOCATION/etc/user_xpd.cf*
-   # to the generated xpd.cf.
-   eval USER_XPD="$HOME/.PoD/"
-   eval CENTRAL_XPD="$POD_LOCATION/etc"
-   cat $CENTRAL_XPD/user_xpd.cf* >> "$XPD_CFG" 2>/dev/null
-   cat $USER_XPD/user_xpd.cf* >> "$XPD_CFG" 2>/dev/null
+#   create_dir "$WORK_DIR/etc"
+#   create_dir "$DDS_SRV_LOGDIR"
+#   # create workers' sandbox
+#   local dir=$(eval dirname $(dds-user-defaults --wrkscript))
+#   create_dir "$dir"
+   return 0
 }
 # ************************************************************************
 # ***** Internal START  *****
@@ -236,69 +173,13 @@ update_xpd_cfg()
 _start() 
 {
    # S T A R T I N G the server
-   echo "Starting PoD server..."
-   # proof.conf must be presented before xproofd is started
-   touch $POD_PROOFCFG_FILE
-
-   # updating XPD configuration file
-   echo "updating xproofd configuration file..."
-   update_xpd_cfg
-
-   # Start XPROOFD
-   ####
-   echo "starting xproofd..."
-   xproofd -c $XPD_CFG -b -l $POD_SRV_LOGDIR/xpd.log -n PoDServer
+   echo "Starting DDS commander..."
+   $DDS_LOCATION/bin/dds-commander start
    if (( $? != 0 )); then
-      echo "Error: can't start xproofd."
+      echo "Error: can't start dds-commander."
       return 1
    fi
-
-   # wait for xproofd to start
-   local WAIT_TIME=50
-   cnt=0
-   while true; do
-      local xpd_pid=$($cmd_pod_info --xpdPid)
-      if [ -n "$xpd_pid" ]; then
-         break;
-      fi
-      cnt=$(expr $cnt + 1)
-      if [ $cnt -gt $WAIT_TIME ]; then
-         echo "WARNING: Can't detect whether xproofd has started or not..."
-         break;
-      fi
-   done
-	
-   # Start pod-agent
-   ####
-   echo "starting PoD agent..."
-   $POD_LOCATION/bin/pod-agent -d -m server -c "$POD_CFG" --serverinfo "$SERVERINFO_FILE" --start
-   if (( $? != 0 )); then
-      echo "Error: can't start pod-agent."
-      return 1
-   fi
-
-   # wait for pod-agent to start
-   # We need to be sure, that agent is started, since it creates a server info file,
-   # which is than used by pod-prep-worker
-   cnt=0
-   while [ ! -f "$SERVERINFO_FILE" ]; do
-      cnt=$(expr $cnt + 1)
-      if [ $cnt -gt $WAIT_TIME ]; then
-         echo "WARNING: Can't detect whether pod-agent has started or not..."
-         break;
-      fi
-      # sleep to give pod-agent time to create the file
-      sleep 1
-   done
-
-   # Prepare the worker package
-   ####
-   $POD_LOCATION/bin/pod-prep-worker
-   if (( $? != 0 )); then
-      echo "Error: Can't start PoD server. Please check pod-agent.server.log and xpd.log for more information."
-      return 1
-   fi
-
+   
    # show status
    echo "------------------------"
    status
@@ -311,16 +192,15 @@ _start()
 # ************************************************************************
 start() 
 {
-   local xpd_pid=$($cmd_pod_info --xpdPid)
-   local agent_pid=$($cmd_pod_info --agentPid)
+   local commander_pid=$($cmd_dds_info --commanderPid)
    # don't need to do anything
-   if [ -n "$xpd_pid" -a -n "$agent_pid" ]; then
-      echo "PoD Server is running already."
+   if [ -n "$commander_pid" ]; then
+      echo "DDS Commander is running already."
       echo "If you observer problems with it, try to restart it."
       return 0
    fi
-  # R E - S T A R T I N G the server
-   if [ -n "$xpd_pid" -o -n "$agent_pid" ]; then
+  # R E - S T A R T I N G the commander
+   if [ -n "$agent_pid" ]; then
       restart $1
       return 1
    fi
@@ -399,12 +279,6 @@ stop()
 status()
 {
    server_status
-    
-   # check that ROOTSYS is set
-   if [ -z $ROOTSYS ]; then
-      echo ""
-      echo 'WARNING: $ROOTSYS is not set.'
-   fi
 }
 # ************************************************************************
 # ***** STATUS with error code *****
@@ -430,7 +304,7 @@ fi
 # star|stop|status|getbins
 case "$1" in
     start)
-        get_bins	
+        #get_bins	
 	start $WORK_DIR
 	RETVAL=$?
 	;;
