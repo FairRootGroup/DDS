@@ -49,7 +49,7 @@ namespace MiscCommon
         }
 
         // return pointer to class object
-        const T* operator->() const
+        const T * operator->() const
         {
             return &**this;
         }

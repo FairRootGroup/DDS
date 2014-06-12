@@ -9,10 +9,6 @@
 // STD
 #include <string>
 
-// MiscCommon
-//#include "PARes.h"
-//#include "PoDUserDefaultsOptions.h"
-
 namespace dds
 {
     namespace commander
@@ -20,29 +16,31 @@ namespace dds
         /// \brief dds-commander's container of options
         typedef struct SOptions
         {
-            typedef enum ECommand
-            { Start,
-              Stop,
-              Status } ECommand_t;
-
+            enum ECommands
+            {
+                cmd_unknown,
+                cmd_start,
+                cmd_stop,
+                cmd_status
+            };
             SOptions()
-                : m_Command(Start)
-            //    , m_bDaemonize(false)
-            //    , m_bValidate(false)
-            //    , m_agentMode(Server)
-            //    , m_numberOfPROOFWorkers(1)
+                : m_Command(cmd_start)
             {
             }
 
-            // std::string m_sConfigFile;
-            ECommand_t m_Command;
-            // bool m_bDaemonize;
-            // bool m_bValidate;
-            // EAgentMode_t m_agentMode; //!< A mode of PROOFAgent, defined by ::EAgentMode_t.
-            // std::string m_serverInfoFile;
-            // unsigned int m_numberOfPROOFWorkers;
+            static ECommands getCommandByName(const std::string& _name)
+            {
+                if ("start" == _name)
+                    return cmd_start;
+                if ("stop" == _name)
+                    return cmd_stop;
+                if ("status" == _name)
+                    return cmd_status;
 
-            // PoD::SPoDUserDefaultsOptions_t m_podOptions;
+                return cmd_unknown;
+            }
+
+            ECommands m_Command;
         } SOptions_t;
     }
 }

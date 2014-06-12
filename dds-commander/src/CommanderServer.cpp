@@ -5,11 +5,9 @@
 
 // STD
 #include <iostream>
-
 // DDS
 #include "CommanderServer.h"
 #include "TalkToAgent.h"
-
 // BOOST
 #include "boost/asio.hpp"
 

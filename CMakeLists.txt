@@ -3,6 +3,8 @@
 #
 project( DDS )
 
+set(USER_DEFAULTS_CFG_VERSION "0.1")
+
 #
 # Check if cmake has the required version
 #

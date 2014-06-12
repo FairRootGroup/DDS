@@ -3,9 +3,6 @@
 #
 project( dds-user-defaults)
 
-
-set(USER_DEFAULTS_CFG_VERSION "0.1")
-
 #
 # Where to lookup modules
 #

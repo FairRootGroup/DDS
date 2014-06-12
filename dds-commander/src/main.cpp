@@ -29,13 +29,14 @@ using namespace MiscCommon;
 namespace bpo = boost::program_options;
 using namespace dds::commander;
 
+//=============================================================================
 void PrintVersion()
 {
     cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
          << "DDS configuration"
          << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << g_cszReportBugsAddr << endl;
 }
-
+//=============================================================================
 // Command line parser
 bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
 {
@@ -46,13 +47,24 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
     bpo::options_description options("dds-commander options");
     options.add_options()("help,h", "Produce help message");
     options.add_options()("version,v", "Version information");
-    options.add_options()("start", "Start dds-commander daemon");
-    options.add_options()("stop", "Stop dds-commander daemon");
-    options.add_options()("status", "Query current status of dds-command daemon");
+    options.add_options()("command",
+                          bpo::value<string>(),
+                          "The command is a name of dds-commander command."
+                          " Can be one of the following: start, stop, status.\n"
+                          "For user's convenience it is allowed to call dds-commander without \"--command\" option"
+                          " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
+                          "Commands:\n"
+                          "   start: \tStart dds-commander daemon\n"
+                          "   stop: \tStop dds-commander daemon\n"
+                          "   status: \tQuery current status of dds-command daemon\n");
+
+    //...positional
+    bpo::positional_options_description pd;
+    pd.add("command", 1);
 
     // Parsing command-line
     bpo::variables_map vm;
-    bpo::store(bpo::parse_command_line(_argc, _argv, options), vm);
+    bpo::store(bpo::command_line_parser(_argc, _argv).options(options).positional(pd).run(), vm);
     bpo::notify(vm);
 
     if (vm.count("help") || vm.empty())
@@ -66,21 +78,26 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
         return false;
     }
 
-    MiscCommon::BOOSTHelper::conflicting_options(vm, "start", "stop");
-    MiscCommon::BOOSTHelper::conflicting_options(vm, "start", "status");
-    MiscCommon::BOOSTHelper::conflicting_options(vm, "stop", "status");
-    //    boost_hlp::option_dependency(vm, "start", "daemonize");
+    // Command
+    if (vm.count("command"))
+    {
+        if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<string>()))
+        {
+            cout << PROJECT_NAME << " error: unknown command: " << vm["command"].as<string>() << "\n\n" << options << endl;
+            return false;
+        }
+    }
+    else
+    {
+        cout << PROJECT_NAME << ": Nothing to do\n\n" << options << endl;
+        return false;
+    }
 
-    if (vm.count("start"))
-        _options->m_Command = SOptions_t::Start;
-    if (vm.count("stop"))
-        _options->m_Command = SOptions_t::Stop;
-    if (vm.count("status"))
-        _options->m_Command = SOptions_t::Status;
+    _options->m_Command = SOptions::getCommandByName(vm["command"].as<string>());
 
     return true;
 }
-
+//=============================================================================
 int main(int argc, char* argv[])
 {
     // Command line parser
@@ -114,7 +131,7 @@ int main(int argc, char* argv[])
     string pidfile_name("pidfile.txt"); // ONLY TEMP
 
     // Checking for "status" option
-    if (options.m_Command == SOptions_t::Status)
+    if (SOptions_t::cmd_status == options.m_Command)
     {
         pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid > 0 && IsProcessExist(pid))
@@ -130,7 +147,7 @@ int main(int argc, char* argv[])
     }
 
     // Checking for "stop" option
-    if (SOptions_t::Stop == options.m_Command)
+    if (SOptions_t::cmd_stop == options.m_Command)
     {
         // TODO: make wait for the process here to check for errors
         const pid_t pid_to_kill = CPIDFile::GetPIDFromFile(pidfile_name);
@@ -164,7 +181,7 @@ int main(int argc, char* argv[])
     }
 
     // Checking for "start" option
-    if (SOptions_t::Start == options.m_Command)
+    if (SOptions_t::cmd_start == options.m_Command)
     {
         // process ID and Session ID
         pid_t pid;
@@ -194,11 +211,6 @@ int main(int argc, char* argv[])
         {
             CPIDFile pidfile(pidfile_name, ::getpid());
 
-            // Daemon-specific initialization goes here
-            // agent.setConfiguration(Options);
-
-            //       if (options.m_bDaemonize)
-            //       {
             // Change the current working directory
             // chdir("/") to ensure that our process doesn't keep any directory
             // in use. Failure to do this could make it so that an administrator
@@ -220,20 +232,9 @@ int main(int argc, char* argv[])
             // stderr - file handle 2.
             if (dup(fd) < 0)
                 throw MiscCommon::system_error("Error occurred while duplicating stderr descriptor");
-            //     }
-
-            // Starting Agent
-            // agent.Start();
 
             CCommanderServer server;
             server.start();
-
-            // Main loop
-            //            while (1)
-            //            {
-            //                sleep(30); // wait 30 seconds
-            //                cout << "running..." << endl;
-            //            }
         }
         catch (exception& e)
         {

@@ -42,7 +42,9 @@ class CAgentClient
     boost::asio::ip::tcp::socket m_socket;
 
     enum
-    { max_msg = 1024 };
+    {
+        max_msg = 1024
+    };
     char m_readBuffer[max_msg];
     char m_writeBuffer[max_msg];
 };

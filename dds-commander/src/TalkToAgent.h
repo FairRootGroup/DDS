@@ -50,7 +50,9 @@ class CTalkToAgent : public std::enable_shared_from_this<CTalkToAgent>, boost::n
     bool m_started;
 
     enum
-    { max_msg = 1024 };
+    {
+        max_msg = 1024
+    };
     char m_readBuffer[max_msg];
     char m_writeBuffer[max_msg];
 };
