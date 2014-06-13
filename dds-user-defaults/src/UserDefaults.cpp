@@ -107,3 +107,16 @@ string CUserDefaults::currentUDFile() const
 
     return val;
 }
+
+std::string getDDSPath()
+{
+    char* dds_location;
+    dds_location = getenv("DDS_LOCATION");
+    if (NULL == dds_location)
+        return string();
+
+    string sDDSPath(dds_location);
+    smart_path(&sDDSPath);
+    smart_append(&sDDSPath, '/');
+    return sDDSPath;
+}

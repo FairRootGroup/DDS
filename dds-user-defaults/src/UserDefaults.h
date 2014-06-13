@@ -22,6 +22,7 @@ namespace DDS
         std::string getValueForKey(const std::string& _Key) const;
         std::string currentUDFile() const;
         static void printDefaults(std::ostream& _stream);
+        static std::string getDDSPath();
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;

@@ -2,26 +2,17 @@
 //
 //
 //
-
-// STD
-#include <iostream>
-// BOOST
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/program_options/options_description.hpp>
 // API
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 // DDS
-#include "version.h"
 #include "Options.h"
 #include "Process.h"
 #include "ErrorCode.h"
 #include "CommanderServer.h"
 #include "BOOSTHelper.h"
-#include "Res.h"
 #include "UserDefaults.h"
 
 using namespace std;
@@ -29,74 +20,6 @@ using namespace MiscCommon;
 namespace bpo = boost::program_options;
 using namespace dds::commander;
 
-//=============================================================================
-void PrintVersion()
-{
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
-         << "DDS configuration"
-         << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << g_cszReportBugsAddr << endl;
-}
-//=============================================================================
-// Command line parser
-bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
-{
-    if (nullptr == _options)
-        throw runtime_error("Internal error: options' container is empty.");
-
-    // Generic options
-    bpo::options_description options("dds-commander options");
-    options.add_options()("help,h", "Produce help message");
-    options.add_options()("version,v", "Version information");
-    options.add_options()("command",
-                          bpo::value<string>(),
-                          "The command is a name of dds-commander command."
-                          " Can be one of the following: start, stop, status.\n"
-                          "For user's convenience it is allowed to call dds-commander without \"--command\" option"
-                          " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
-                          "Commands:\n"
-                          "   start: \tStart dds-commander daemon\n"
-                          "   stop: \tStop dds-commander daemon\n"
-                          "   status: \tQuery current status of dds-command daemon\n");
-
-    //...positional
-    bpo::positional_options_description pd;
-    pd.add("command", 1);
-
-    // Parsing command-line
-    bpo::variables_map vm;
-    bpo::store(bpo::command_line_parser(_argc, _argv).options(options).positional(pd).run(), vm);
-    bpo::notify(vm);
-
-    if (vm.count("help") || vm.empty())
-    {
-        cout << options << endl;
-        return false;
-    }
-    if (vm.count("version"))
-    {
-        PrintVersion();
-        return false;
-    }
-
-    // Command
-    if (vm.count("command"))
-    {
-        if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<string>()))
-        {
-            cout << PROJECT_NAME << " error: unknown command: " << vm["command"].as<string>() << "\n\n" << options << endl;
-            return false;
-        }
-    }
-    else
-    {
-        cout << PROJECT_NAME << ": Nothing to do\n\n" << options << endl;
-        return false;
-    }
-
-    _options->m_Command = SOptions::getCommandByName(vm["command"].as<string>());
-
-    return true;
-}
 //=============================================================================
 int main(int argc, char* argv[])
 {
