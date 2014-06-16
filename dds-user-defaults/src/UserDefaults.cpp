@@ -21,6 +21,12 @@ void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
     boost::program_options::options_description config_file_options("DDS user defaults options");
     config_file_options.add_options()(
         "server.work_dir", boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"), "");
+    config_file_options.add_options()("server.commander_port_range_min",
+                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMin)->default_value(20000),
+                                      "");
+    config_file_options.add_options()("server.commander_port_range_max",
+                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMax)->default_value(21000),
+                                      "");
 
     if (!_get_default)
     {
@@ -53,7 +59,9 @@ void CUserDefaults::printDefaults(ostream& _stream)
     ud.init("", true);
 
     _stream << "[server]\n"
-            << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n";
+            << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
+            << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
+            << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n";
 }
 
 // TODO: we use boost 1.32. This is the only method I found to convert boost::any to string.
