@@ -163,6 +163,10 @@ endif(Boost_FOUND)
 message(STATUS "Build MiscCommon - YES")
 add_subdirectory ( MiscCommon )
 
+# DDS Protocol lib
+message(STATUS "Build dds-protocol-lib - YES")
+add_subdirectory( dds-protocol-lib )
+
 # dds_commander
 if(BUILD_dds-commander)
     message(STATUS "Build dds-commander - YES")

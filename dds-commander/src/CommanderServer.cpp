@@ -7,14 +7,13 @@
 #include <iostream>
 // BOOST
 #include <boost/asio.hpp>
-//#define BOOST_BIND_NO_PLACEHOLDERS
 // DDS
 #include "CommanderServer.h"
 #include "TalkToAgent.h"
 #include "INet.h"
 
 using namespace boost::asio;
-using namespace std::placeholders;
+namespace sp = std::placeholders;
 using namespace std;
 using namespace dds;
 using namespace dds::commander;
@@ -44,7 +43,7 @@ void CCommanderServer::start()
     {
         m_acceptor->listen();
         TalkToAgentPtr_t client = CTalkToAgent::makeNew(*m_service);
-        m_acceptor->async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, std::placeholders::_1));
+        m_acceptor->async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, sp::_1));
         m_service->run();
     }
     catch (exception& e)
@@ -72,7 +71,7 @@ void CCommanderServer::acceptHandler(TalkToAgentPtr_t _client, const boost::syst
         m_agents.push_back(_client);
 
         TalkToAgentPtr_t newClient = CTalkToAgent::makeNew(*m_service);
-        m_acceptor->async_accept(newClient->socket(), std::bind(&CCommanderServer::acceptHandler, this, newClient, std::placeholders::_1));
+        m_acceptor->async_accept(newClient->socket(), std::bind(&CCommanderServer::acceptHandler, this, newClient, sp::_1));
     }
     else
     {
