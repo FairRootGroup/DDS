@@ -151,7 +151,7 @@ find_package(Boost 1.55 REQUIRED)
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
-  set(Boost_Components thread program_options filesystem system)  
+  set(Boost_Components log thread program_options filesystem system)  
   if( BUILD_TESTS)
     set(Boost_Components ${Boost_Components} unit_test_framework)
   endif( BUILD_TESTS)

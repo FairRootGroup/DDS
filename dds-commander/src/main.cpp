@@ -14,6 +14,7 @@
 #include "CommanderServer.h"
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
+#include "Logger.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -23,6 +24,9 @@ using namespace dds::commander;
 //=============================================================================
 int main(int argc, char* argv[])
 {
+    using namespace boost::log::trivial;
+    Logger::instance().init("dds_commander.log");
+
     // Command line parser
     SOptions_t options;
     try
@@ -33,7 +37,7 @@ int main(int argc, char* argv[])
     catch (exception& e)
     {
         // TODO: Log me!
-        cerr << e.what() << endl;
+        std::cout << e.what() << endl;
         return EXIT_FAILURE;
     }
 
@@ -59,11 +63,11 @@ int main(int argc, char* argv[])
         pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid > 0 && IsProcessExist(pid))
         {
-            cout << PROJECT_NAME << " process (" << pid << ") is running..." << endl;
+            LOG(info) << PROJECT_NAME << " process (" << pid << ") is running..." << endl;
         }
         else
         {
-            cout << PROJECT_NAME << " is not running..." << endl;
+            LOG(info) << PROJECT_NAME << " is not running..." << endl;
         }
 
         return EXIT_SUCCESS;
@@ -76,7 +80,7 @@ int main(int argc, char* argv[])
         const pid_t pid_to_kill = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid_to_kill > 0 && IsProcessExist(pid_to_kill))
         {
-            cout << PROJECT_NAME << ": self exiting (" << pid_to_kill << ")..." << endl;
+            std::cout << PROJECT_NAME << ": self exiting (" << pid_to_kill << ")..." << endl;
             // TODO: Maybe we need more validations of the process before
             // sending a signal. We don't want to kill someone else.
             kill(pid_to_kill, SIGTERM);
@@ -88,16 +92,16 @@ int main(int argc, char* argv[])
             {
                 if (!IsProcessExist(pid_to_kill))
                 {
-                    cout << endl;
+                    std::cout << endl;
                     break;
                 }
-                cout << ".";
-                cout.flush();
+                std::cout << ".";
+                // cout.flush();
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
             if (IsProcessExist(pid_to_kill))
-                cerr << "FAILED to close the process." << endl;
+                std::cout << "FAILED to close the process." << endl;
         }
 
         return EXIT_SUCCESS;
@@ -157,6 +161,16 @@ int main(int argc, char* argv[])
                 throw MiscCommon::system_error("Error occurred while duplicating stderr descriptor");
 
             CCommanderServer server(options);
+            // After fork we have to reinit log engine
+            Logger::instance().init("dds_commander_2.log");
+            try
+            {
+                LOG(boost::log::trivial::info) << "Log created.";
+            }
+            catch (std::exception& e)
+            {
+                LOG(boost::log::trivial::info) << "Log exception: " << e.what();
+            }
             server.start();
         }
         catch (exception& e)

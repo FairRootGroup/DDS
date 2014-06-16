@@ -16,6 +16,7 @@
 #include "ErrorCode.h"
 #include "AgentClient.h"
 #include "BOOSTHelper.h"
+#include "Logger.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -73,6 +74,8 @@ bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
 
 int main(int argc, char* argv[])
 {
+    Logger::instance().init("dds_adent.log");
+
     // Command line parser
     SOptions_t options;
     try

@@ -57,6 +57,8 @@ target_link_libraries (
     dds-agent
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
+    ${Boost_LOG_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
 )
 
 install(TARGETS dds-agent DESTINATION bin)

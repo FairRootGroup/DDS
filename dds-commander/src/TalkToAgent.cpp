@@ -5,10 +5,14 @@
 
 // DDS
 #include "TalkToAgent.h"
+#include "Logger.h"
 // BOOST
 #include "boost/asio.hpp"
 // STD
 #include <iostream>
+#include <fstream>
+
+using namespace boost::log::trivial;
 
 CTalkToAgent::CTalkToAgent(boost::asio::io_service& _service)
     : m_socket(_service)
@@ -56,7 +60,7 @@ void CTalkToAgent::readHandler(const boost::system::error_code& _ec, size_t _byt
     if (msg.find("ping") == 0)
         pingRequest();
     else
-        std::cout << "Invalid request " << msg << std::endl;
+        LOG(error) << "Invalid request " << msg << std::endl;
 }
 
 void CTalkToAgent::writeHandler(const boost::system::error_code& _ec, size_t bytesTransferred)
@@ -75,6 +79,25 @@ size_t CTalkToAgent::readCompleteHandler(const boost::system::error_code& _ec, s
 void CTalkToAgent::pingRequest()
 {
     doWrite("ping ok\n");
+
+    // std::ofstream fout("dds-commander-log.log", std::ios::app);
+    // boost::log::sources::logger lg;
+    // BOOST_LOG_SEV(lg, boost::log::trivial::info) << "ping OK";
+    try
+    {
+        //    fout << "before first log\n";
+        LOG(info) << "first ping OK";
+        //    fout << "afer first log\n";
+        LOG(error) << "second ping OK";
+        //    fout << "after secong log\n";
+    }
+    catch (std::exception& e)
+    {
+        //    fout << "exception e.what=" << e.what() << std::endl;
+        // LOG(error) << "exception e.what=" << e.what();
+    }
+    // fout.flush();
+    // fout.close();
 }
 
 void CTalkToAgent::checkPingHandler()

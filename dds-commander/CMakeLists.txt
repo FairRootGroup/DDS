@@ -55,11 +55,15 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
     add_executable(dds-commander ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
+message(STATUS "LOG_LIBRARY=${Boost_LOG_LIBRARY}")
+
 target_link_libraries (
 	dds-commander
 	dds-user-defaults-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
+    ${Boost_LOG_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
 )
 
 target_include_directories(dds-commander

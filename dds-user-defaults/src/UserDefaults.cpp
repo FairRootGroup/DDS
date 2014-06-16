@@ -27,6 +27,10 @@ void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
     config_file_options.add_options()("server.commander_port_range_max",
                                       boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMax)->default_value(21000),
                                       "");
+    config_file_options.add_options()(
+        "server.log_dir", boost::program_options::value<string>(&m_options.m_general.m_logDir)->default_value("$HOME/.DDS/log"), "");
+    config_file_options.add_options()(
+        "server.log_severity", boost::program_options::value<string>(&m_options.m_general.m_logSeverity)->default_value("debug"), "");
 
     if (!_get_default)
     {

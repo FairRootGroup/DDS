@@ -5,12 +5,13 @@
 
 // DDS
 #include "AgentClient.h"
+#include "Logger.h"
 // STD
-#include <iostream>
 #include <functional>
 
 using namespace std::placeholders;
 using namespace boost::asio;
+using namespace boost::log::trivial;
 
 CAgentClient::CAgentClient()
     : m_resolver(m_service)
@@ -24,6 +25,7 @@ CAgentClient::~CAgentClient()
 
 void CAgentClient::start()
 {
+    LOG(info) << "Starting agent...";
     // boost::asio::ip::tcp::resolver::query query("127.0.0.1", "8001");
     // m_resolver.async_resolve(query, std::bind(&CAgentClient::resolveHandler, this));
 
@@ -34,6 +36,7 @@ void CAgentClient::start()
 
 void CAgentClient::stop()
 {
+    LOG(info) << "Stoping agent...";
     m_service.stop();
     m_resolver.cancel();
     m_socket.close();
@@ -44,7 +47,7 @@ void CAgentClient::readHandler(const boost::system::error_code& _ec, std::size_t
     if (!_ec)
     {
         std::string msg(m_readBuffer, _bytesTransferred);
-        std::cout << "Server response: " << msg;
+        LOG(info) << "Server response: " << msg;
         sleep(1);
 
         doWrite("ping\n");
