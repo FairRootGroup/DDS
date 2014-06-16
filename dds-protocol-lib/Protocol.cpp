@@ -11,7 +11,7 @@
 #include "HexView.h"
 //=============================================================================
 using namespace std;
-using namespace PROOFAgent;
+using namespace dds;
 using namespace MiscCommon;
 using namespace MiscCommon::INet;
 //=============================================================================
@@ -20,7 +20,7 @@ const ssize_t MAX_MSG_SIZE = 256;
 //=============================================================================
 //=============================================================================
 //=============================================================================
-BYTEVector_t PROOFAgent::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
+BYTEVector_t dds::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
 {
     SMessageHeader header;
     strncpy(header.m_sign, "<POD_CMD>", sizeof(header.m_sign));
@@ -38,7 +38,7 @@ BYTEVector_t PROOFAgent::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
 // 1. an exception - if the message bad/corrupted
 // 2. an invalid SMessageHeader - if the message is incomplete
 // 3. a valid SMessageHeader - if the message is OK
-SMessageHeader PROOFAgent::parseMsg(BYTEVector_t* _data, const BYTEVector_t& _msg)
+SMessageHeader dds::parseMsg(BYTEVector_t* _data, const BYTEVector_t& _msg)
 {
     SMessageHeader header;
     if (_msg.size() < HEADER_SIZE)
