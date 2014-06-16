@@ -368,7 +368,7 @@ namespace MiscCommon
                 else
                     inet_aton(_Addr->c_str(), &addr.sin_addr);
 
-                if (bind(m_Socket, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0)
+                if (::bind(m_Socket, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0)
                     throw std::runtime_error(socket_error_string(m_Socket, "Socket bind error..."));
             }
 

@@ -17,7 +17,9 @@
 // DDS
 #include "version.h"
 #include "Res.h"
+#include "UserDefaults.h"
 //=============================================================================
+using namespace std;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
 //=============================================================================
@@ -53,9 +55,10 @@ namespace dds
             }
 
             ECommands m_Command;
+            CUserDefaults m_userDefaults;
         } SOptions_t;
         //=============================================================================
-        void PrintVersion()
+        inline void PrintVersion()
         {
             std::cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
                       << "DDS configuration"
@@ -63,7 +66,7 @@ namespace dds
         }
         //=============================================================================
         // Command line parser
-        bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(std::exception)
+        inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(std::exception)
         {
             if (nullptr == _options)
                 throw std::runtime_error("Internal error: options' container is empty.");
@@ -72,6 +75,7 @@ namespace dds
             bpo::options_description options("dds-commander options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("config,c", "A DDS configuration file. The commander will look for DDS config. automatically, if this argument is missing.");
             options.add_options()("command",
                                   bpo::value<std::string>(),
                                   "The command is a name of dds-commander command."
@@ -102,6 +106,10 @@ namespace dds
                 PrintVersion();
                 return false;
             }
+
+            // initilize DDS user defaults
+            string sCfgFile((vm.count("config")) ? vm["command"].as<std::string>() : _options->m_userDefaults.currentUDFile());
+            _options->m_userDefaults.init(sCfgFile);
 
             // Command
             if (vm.count("command"))

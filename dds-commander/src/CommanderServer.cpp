@@ -5,20 +5,29 @@
 
 // STD
 #include <iostream>
+// BOOST
+#include <boost/asio.hpp>
+//#define BOOST_BIND_NO_PLACEHOLDERS
 // DDS
 #include "CommanderServer.h"
 #include "TalkToAgent.h"
-// BOOST
-#include "boost/asio.hpp"
+#include "INet.h"
 
 using namespace boost::asio;
 using namespace std::placeholders;
 using namespace std;
+using namespace dds;
+using namespace dds::commander;
 
-CCommanderServer::CCommanderServer()
+CCommanderServer::CCommanderServer(const SOptions_t& _options)
+    : m_options(_options)
 {
     m_service = new io_service();
-    m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), 8001));
+    // get a free port from a given range
+    int port = MiscCommon::INet::get_free_port(m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
+                                               m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+    // open admin port
+    m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), port));
 }
 
 CCommanderServer::~CCommanderServer()
@@ -35,7 +44,7 @@ void CCommanderServer::start()
     {
         m_acceptor->listen();
         TalkToAgentPtr_t client = CTalkToAgent::makeNew(*m_service);
-        m_acceptor->async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, _1));
+        m_acceptor->async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, std::placeholders::_1));
         m_service->run();
     }
     catch (exception& e)
@@ -63,7 +72,7 @@ void CCommanderServer::acceptHandler(TalkToAgentPtr_t _client, const boost::syst
         m_agents.push_back(_client);
 
         TalkToAgentPtr_t newClient = CTalkToAgent::makeNew(*m_service);
-        m_acceptor->async_accept(newClient->socket(), std::bind(&CCommanderServer::acceptHandler, this, newClient, _1));
+        m_acceptor->async_accept(newClient->socket(), std::bind(&CCommanderServer::acceptHandler, this, newClient, std::placeholders::_1));
     }
     else
     {

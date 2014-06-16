@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
             if (dup(fd) < 0)
                 throw MiscCommon::system_error("Error occurred while duplicating stderr descriptor");
 
-            CCommanderServer server;
+            CCommanderServer server(options);
             server.start();
         }
         catch (exception& e)

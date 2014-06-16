@@ -5,16 +5,16 @@
 
 #ifndef __DDS__CommanderServer__
 #define __DDS__CommanderServer__
-
-// DDS
-#include "TalkToAgent.h"
 // BOOST
 #include <boost/asio.hpp>
+// DDS
+#include "TalkToAgent.h"
+#include "Options.h"
 
 class CCommanderServer
 {
   public:
-    CCommanderServer();
+    CCommanderServer(const dds::commander::SOptions_t& _options);
 
     virtual ~CCommanderServer();
 
@@ -28,6 +28,7 @@ class CCommanderServer
     boost::asio::io_service* m_service;
     boost::asio::ip::tcp::acceptor* m_acceptor;
     TalkToAgentPtrVector_t m_agents;
+    dds::commander::SOptions_t m_options;
 };
 
 #endif /* defined(__DDS__CommanderServer__) */

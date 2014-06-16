@@ -11,7 +11,7 @@
 // STD
 #include <string>
 
-namespace DDS
+namespace dds
 {
     class CUserDefaults
     {
@@ -23,14 +23,14 @@ namespace DDS
         std::string currentUDFile() const;
         static void printDefaults(std::ostream& _stream);
         static std::string getDDSPath();
-
-      private:
-        std::string convertAnyToString(const boost::any& _any) const;
-        std::string getUnifiedBoolValueForBoolKey(const std::string& _Key) const;
         const SDDSUserDefaultsOptions_t getOptions() const
         {
             return m_options;
         }
+
+      private:
+        std::string convertAnyToString(const boost::any& _any) const;
+        std::string getUnifiedBoolValueForBoolKey(const std::string& _Key) const;
 
       private:
         boost::program_options::variables_map m_keys;

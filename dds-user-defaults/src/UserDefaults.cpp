@@ -12,7 +12,7 @@
 #include "FindCfgFile.h"
 
 using namespace std;
-using namespace DDS;
+using namespace dds;
 using namespace MiscCommon;
 
 void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)

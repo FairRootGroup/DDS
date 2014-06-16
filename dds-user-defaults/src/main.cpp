@@ -19,7 +19,7 @@
 #include "SysHelper.h"
 #include "Res.h"
 
-using namespace DDS;
+using namespace dds;
 using namespace MiscCommon;
 using namespace std;
 namespace bpo = boost::program_options;
