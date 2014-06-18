@@ -58,12 +58,12 @@ endif(DOXYGEN_FOUND)
 #
 if(DOXYGEN_FOUND)
    add_custom_target( api-docs COMMENT "Generating API docs" )
-   add_dependencies( api-docs
-                     MiscCommon-api-docs
-                     pod-ssh-api-docs
-                     pod-agent-api-docs
-                     pod-info-api-docs
-                     pod-remote-api-docs )
+   #add_dependencies( apia-docs
+   #                  MiscCommon-api-docs
+   #                  pod-ssh-api-docs
+   #                  pod-agent-api-docs
+   #                  pod-info-api-docs
+   #                  pod-remote-api-docs )
 
    add_custom_target( upload-api-docs 
        COMMAND rsync -avz -e ssh  ${DOC_OUTPUT_DIR} podwww@lxi001.gsi.de:~/web-docs/doc
@@ -167,37 +167,41 @@ add_subdirectory ( MiscCommon )
 message(STATUS "Build dds-protocol-lib - YES")
 add_subdirectory( dds-protocol-lib )
 
-# dds_commander
+# dds-daemonize
+message(STATUS "Build dds-daemonize - YES")
+add_subdirectory( dds-daemonize )
+
+# dds-commander
 if(BUILD_dds-commander)
     message(STATUS "Build dds-commander - YES")
     add_subdirectory ( dds-commander )
 endif(BUILD_dds-commander)
 
-# dds_topology
+# dds-topology
 if(BUILD_dds-topology)
     message(STATUS "Build dds-topology - YES")
     add_subdirectory ( dds-topology )
 endif(BUILD_dds-topology)
 
-# dds_agent
+# dds-agent
 if(BUILD_dds-agent)
     message(STATUS "Build dds-agent - YES")
     add_subdirectory ( dds-agent )
 endif(BUILD_dds-agent)
 
-# dds_ssh
+# dds-ssh
 if(BUILD_dds-ssh)
     message(STATUS "Build dds-ssh - YES")
     add_subdirectory ( dds-ssh )
 endif(BUILD_dds-ssh)
 
-# dds_user_defaults
+# dds-user-defaults
 if(BUILD_dds-user-defaults)
     message(STATUS "Build dds-user-defaults - YES")
     add_subdirectory ( dds-user-defaults )
 endif(BUILD_dds-user-defaults)
 
-# dds_info
+# dds-info
 if(BUILD_dds-info)
     message(STATUS "Build dds-info - YES")
     add_subdirectory ( dds-info )

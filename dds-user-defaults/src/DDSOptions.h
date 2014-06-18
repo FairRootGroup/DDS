@@ -12,9 +12,8 @@ namespace dds
         std::string m_workDir;                   //!< Working folder.
         unsigned int m_ddsCommanderPortRangeMin; //!< commander port range min value (should be open for incoming connection)
         unsigned int m_ddsCommanderPortRangeMax; //!< commander port range max value (should be open for incoming connection)
-        std::string m_workDir;                   //!< Working folder.
         std::string m_logDir;                    //!< Logging directory.
-        std::string m_logSeverity;
+        std::string m_logSeverity;               //!< Log severity
     } SDDSGeneralOptions_t;
 
     typedef struct SDDSUserDefaultOptions
