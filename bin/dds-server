@@ -174,7 +174,7 @@ _start()
 {
    # S T A R T I N G the server
    echo "Starting DDS commander..."
-   $DDS_LOCATION/bin/dds-commander start
+   $DDS_LOCATION/bin/dds-daemonize dds-commander start
    if (( $? != 0 )); then
       echo "Error: can't start dds-commander."
       return 1

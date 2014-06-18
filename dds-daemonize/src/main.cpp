@@ -2,25 +2,21 @@
 //
 //
 //
-// DDS
-#include "version.h"
-// BOOST
-#include <boost/program_options/cmdline.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
+// API
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 // STD
 #include <iostream>
-#include <fstream>
 #include <string>
-// MiscCommon
-#include "BOOSTHelper.h"
-#include "SysHelper.h"
+// DDS
+#include "version.h"
 #include "Res.h"
 
-using namespace MiscCommon;
 using namespace std;
-namespace bpo = boost::program_options;
-namespace boost_hlp = MiscCommon::BOOSTHelper;
+using namespace MiscCommon;
 
 void printVersion()
 {
@@ -29,54 +25,54 @@ void printVersion()
          << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << g_cszReportBugsAddr << endl;
 }
 
-// Command line parser
-bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
-{
-    // Generic options
-    bpo::options_description visible("Options");
-    // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce ureadable output
-    visible.add_options()("help,h", "Produce help message");
-    visible.add_options()("version,v", "Version information");
-    visible.add_options()("verbose,V", "Cause pod-user-defaults to be verbose in case of an error");
-
-    // Parsing command-line
-    bpo::variables_map vm;
-    bpo::store(bpo::command_line_parser(_Argc, _Argv).options(visible).run(), vm);
-    bpo::notify(vm);
-
-    if (_Argc < 2 || vm.count("help") || vm.empty())
-    {
-        cout << visible << endl;
-        return false;
-    }
-    if (vm.count("version"))
-    {
-        printVersion();
-        return false;
-    }
-    if (vm.count("verbose"))
-    {
-        *_verbose = true;
-    }
-
-    return true;
-}
-
 int main(int argc, char* argv[])
 {
-    // Command line parser
-    bool verbose(false);
-    try
-    {
-        if (!parseCmdLine(argc, argv, &verbose))
-            return 0;
-    }
-    catch (exception& e)
-    {
-        if (verbose)
-            cerr << e.what() << endl;
-        return 1;
-    }
+
+    // process ID and Session ID
+    pid_t pid;
+    pid_t sid;
+
+    // Fork off the parent process
+    pid = ::fork();
+    if (pid < 0)
+        return EXIT_FAILURE;
+
+    // If we got a good PID, then we can exit the parent process.
+    if (pid > 0)
+        return EXIT_SUCCESS;
+
+    // Change the file mode mask
+    ::umask(0);
+
+    // Create a new SID for the child process
+    sid = ::setsid();
+    if (sid < 0) // TODO:  Log the failure
+        return EXIT_FAILURE;
+
+    // Change the current working directory
+    // chdir("/") to ensure that our process doesn't keep any directory
+    // in use. Failure to do this could make it so that an administrator
+    // couldn't unmount a file system, because it was our current directory.
+    if (::chdir("/") < 0) // TODO: Log the failure
+        return EXIT_FAILURE;
+
+    // Close out the standard file descriptors
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+
+    // Establish new open descriptors for stdin, stdout, and stderr. Even if
+    // we don't plan to use them, it is still a good idea to have them open.
+    int fd = open("/dev/null", O_RDWR); // stdin - file handle 0.
+    // stdout - file handle 1.
+    if (dup(fd) < 0)
+        cerr << "Error occurred while duplicating stdout descriptor" << endl;
+    // stderr - file handle 2.
+    if (dup(fd) < 0)
+        cerr << "Error occurred while duplicating stderr descriptor" << endl;
+
+    if (argc > 2)
+        execvp(argv[1], argv);
 
     return 0;
 }

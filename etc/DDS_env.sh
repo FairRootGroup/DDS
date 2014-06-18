@@ -52,10 +52,10 @@ create_dir "$LOCAL_DDS"
 create_dir "$LOCAL_DDS/etc"
 
 ## create a default configuration file if needed
-#POD_CFG=$(pod-user-defaults -p)
-#if [ -z "$POD_CFG" ]; then
-#   pod-user-defaults -d -c "$LOCAL_POD/PoD.cfg"
-#fi
+DDS_CFG=$(dds-user-defaults -p)
+if [ -z "$DDS_CFG" ]; then
+   dds-user-defaults -d -c "$LOCAL_DDS/DDS.cfg"
+fi
 #
 ## create working dir for custom locations
 #eval WORK_DIR=$(pod-user-defaults -V --key server.work_dir)
