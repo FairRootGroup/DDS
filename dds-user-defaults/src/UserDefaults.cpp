@@ -109,7 +109,7 @@ string CUserDefaults::getUnifiedBoolValueForBoolKey(const string& _Key) const
     return (m_keys[_Key].as<bool>() ? "yes" : "no");
 }
 
-string CUserDefaults::currentUDFile() const
+string CUserDefaults::currentUDFile()
 {
     MiscCommon::CFindCfgFile<string> cfg;
     cfg.SetOrder("$HOME/.DDS/DDS.cfg")("$DDS_LOCATION/etc/DDS.cfg")("$DDS_LOCATION/DDS.cfg");

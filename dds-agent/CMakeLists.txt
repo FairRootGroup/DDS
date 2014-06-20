@@ -55,10 +55,16 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
     dds-agent
+    dds-user-defaults-lib
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_LOG_LIBRARY}
     ${Boost_THREAD_LIBRARY}
+)
+
+target_include_directories(dds-commander
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-agent DESTINATION bin)

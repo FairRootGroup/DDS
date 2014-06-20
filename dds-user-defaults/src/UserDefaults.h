@@ -20,7 +20,7 @@ namespace dds
 
       public:
         std::string getValueForKey(const std::string& _Key) const;
-        std::string currentUDFile() const;
+        static std::string currentUDFile();
         static void printDefaults(std::ostream& _stream);
         static std::string getDDSPath();
         const SDDSUserDefaultsOptions_t getOptions() const

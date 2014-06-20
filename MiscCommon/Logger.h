@@ -24,43 +24,52 @@
 // STD
 #include <fstream>
 
+// DDS
+#include "version.h"
+#include "UserDefaults.h"
+#include "SysHelper.h"
+
 // Main macro to be used for logging in DDS
 // Example: LOG(trace) << "My message";
 #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
 
 namespace MiscCommon
 {
-    //==========================
-    // namespace logging = boost::log;
-    // namespace src = boost::log::sources;
-    // namespace expr = boost::log::expressions;
-    // namespace sinks = boost::log::sinks;
-    // namespace keywords = boost::log::keywords;
-
-    // BOOST_LOG_SEV(lg, trace) << "A trace severity message";
-    //    BOOST_LOG_SEV(lg, debug) << "A debug severity message";
-    //    BOOST_LOG_SEV(lg, info) << "An informational severity message";
-    //    BOOST_LOG_SEV(lg, warning) << "A warning severity message";
-    //    BOOST_LOG_SEV(lg, error) << "An error severity message";
-    //    BOOST_LOG_SEV(lg, fatal) << "A fatal severity message";
-
-    // BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(gLogger, boost::log::sources::logger_mt)
-
-    // BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int)
-    // BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", boost::log::trivial::severity_level)
-    // BOOST_LOG_ATTRIBUTE_KEYWORD(process_id, "ProcessID", unsigned int)
-    // BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", unsigned int)
-
     class Logger
     {
       public:
-        void init(const std::string& _fileName)
+        // typedef boost::log::sources::severity_logger_mt<boost::log::trivial::severity_level> logger_t;
+        typedef boost::log::sources::logger_mt logger_t;
+
+        /// \brief Return singleton instance
+        static Logger& instance()
+        {
+            static Logger instance;
+            return instance;
+        }
+
+        logger_t& logger()
+        {
+            return fLogger;
+        }
+
+      private:
+        /// \brief Initialization of log.
+        void init()
         {
             using namespace boost::log;
 
-            // core::get()->reset_filter();
-            // core::get()->remove_all_sinks();
+            // Get the path to log file
+            dds::CUserDefaults userDefaults;
+            std::string sCfgFile(dds::CUserDefaults::currentUDFile());
+            userDefaults.init(sCfgFile);
+            std::string sLogDir(userDefaults.getOptions().m_general.m_logDir);
+            smart_append<std::string>(&sLogDir, '/');
+            std::string sLogFile(sLogDir);
+            sLogFile += std::string(PROJECT_NAME) + ".log";
+            smart_path<std::string>(&sLogFile);
 
+            // Default format for logger
             boost::log::formatter formatter = expressions::stream
                                               << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f <")
                                               << expressions::attr<int>("Severity") << "> [" << expressions::attr<std::string>("Process") << "] <"
@@ -68,8 +77,8 @@ namespace MiscCommon
                                               << expressions::attr<attributes::current_thread_id::value_type>("ThreadID") << "> " << expressions::smessage;
 
             // Logging to file
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink = add_file_log(
-                keywords::file_name = _fileName, keywords::open_mode = (std::ios::out | std::ios::app), keywords::rotation_size = 10 * 1024 * 1024);
+            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
+                add_file_log(keywords::file_name = sLogFile, keywords::open_mode = (std::ios::out | std::ios::app), keywords::rotation_size = 10 * 1024 * 1024);
             fileSink->set_formatter(formatter);
             fileSink->locked_backend()->auto_flush(true);
 
@@ -103,28 +112,16 @@ namespace MiscCommon
              */
 
             add_common_attributes();
-            // core::get()->add_global_attribute("ProcessID", attributes::current_process_id());
             core::get()->add_global_attribute("Process", attributes::current_process_name());
-            // core::get()->add_global_attribute("ThreadID", attributes::current_thread_id());
         }
 
-      public:
-        // typedef boost::log::sources::severity_logger_mt<boost::log::trivial::severity_level> logger_t;
-        typedef boost::log::sources::logger_mt logger_t;
-
-        static Logger& instance()
+        /// \brief Constructor
+        Logger()
         {
-            static Logger instance;
-            return instance;
+            init();
         }
 
-        logger_t& logger()
-        {
-            return fLogger;
-        }
-
-      private:
-        logger_t fLogger;
+        logger_t fLogger; ///> Main logger object
     };
 };
 #endif
