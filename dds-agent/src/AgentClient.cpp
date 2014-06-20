@@ -11,7 +11,7 @@
 
 using namespace std::placeholders;
 using namespace boost::asio;
-using namespace boost::log::trivial;
+using namespace MiscCommon;
 
 CAgentClient::CAgentClient()
     : m_resolver(m_service)

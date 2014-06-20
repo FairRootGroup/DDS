@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 
-using namespace boost::log::trivial;
+using namespace MiscCommon;
 
 CTalkToAgent::CTalkToAgent(boost::asio::io_service& _service)
     : m_socket(_service)

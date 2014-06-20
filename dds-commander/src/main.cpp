@@ -20,7 +20,11 @@ using namespace dds::commander;
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    using namespace boost::log::trivial;
+    Logger::instance().init();
+
+    LOG(info) << "Starting dds-commander";
+    LOG(debug) << "Starting dds-commander";
+    LOG(error) << "Starting dds-commander";
 
     // Command line parser
     SOptions_t options;
@@ -61,11 +65,11 @@ int main(int argc, char* argv[])
         pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid > 0 && IsProcessExist(pid))
         {
-            LOG(info) << PROJECT_NAME << " process (" << pid << ") is running..." << endl;
+            LOG(info) << PROJECT_NAME << " process (" << pid << ") is running...";
         }
         else
         {
-            LOG(info) << PROJECT_NAME << " is not running..." << endl;
+            LOG(info) << PROJECT_NAME << " is not running...";
         }
 
         return EXIT_SUCCESS;
