@@ -10,6 +10,7 @@
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "Logger.h"
+#include "SysHelper.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
     Logger::instance().init(sLogFile);
 
     // pidfile name
-    string pidfile_name(common.m_workDir);
+    string pidfile_name(sWorkDir);
     pidfile_name += "dds-commander.pid";
 
     // Checking for "status" option
