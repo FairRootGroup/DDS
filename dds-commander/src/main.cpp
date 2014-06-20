@@ -20,7 +20,6 @@ using namespace dds::commander;
 int main(int argc, char* argv[])
 {
     using namespace boost::log::trivial;
-    Logger::instance().init("dds_commander.log");
 
     // Command line parser
     SOptions_t options;
@@ -36,21 +35,24 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    /*    // Normalizing paths of common options
-        PoD::SCommonOptions_t& common = (Server == options.m_agentMode) ? Options.m_podOptions.m_server.m_common : Options.m_podOptions.m_worker.m_common;
-        // resolving user's home dir from (~/ or $HOME, if present)
-        smart_path(&common.m_workDir);
-        // We need to be sure that there is "/" always at the end of the path
-        smart_append<string>(&common.m_workDir, '/');
-        smart_path(&common.m_logFileDir);
-        smart_append<string>(&common.m_logFileDir, '/');
+    // resolving user's home dir from (~/ or $HOME, if present)
+    string sWorkDir(options.m_userDefaults.getOptions().m_general.m_workDir);
+    string sLogDir(options.m_userDefaults.getOptions().m_general.m_logDir);
+    smart_path(&sWorkDir);
+    smart_path(&sLogDir);
+    // We need to be sure that there is "/" always at the end of the path
+    smart_append<string>(&sWorkDir, '/');
+    smart_append<string>(&sLogDir, '/');
 
-        // pidfile name
-        string pidfile_name(common.m_workDir);
-        pidfile_name += "pod-agent.pid";
-    */
+    string sLogFile(sLogDir);
+    sLogFile += "dds_commander.log";
 
-    string pidfile_name("pidfile.txt"); // ONLY TEMP
+    // Init log engine
+    Logger::instance().init(sLogFile);
+
+    // pidfile name
+    string pidfile_name(common.m_workDir);
+    pidfile_name += "dds-commander.pid";
 
     // Checking for "status" option
     if (SOptions_t::cmd_status == options.m_Command)
@@ -105,22 +107,18 @@ int main(int argc, char* argv[])
     // Checking for "start" option
     if (SOptions_t::cmd_start == options.m_Command)
     {
-
-
         try
         {
             CPIDFile pidfile(pidfile_name, ::getpid());
 
             CCommanderServer server(options);
-            // After fork we have to reinit log engine
-            Logger::instance().init("dds_commander_2.log");
             try
             {
-                LOG(boost::log::trivial::info) << "Log created.";
+                LOG(info) << "Log created.";
             }
             catch (std::exception& e)
             {
-                LOG(boost::log::trivial::info) << "Log exception: " << e.what();
+                LOG(info) << "Log exception: " << e.what();
             }
             server.start();
         }

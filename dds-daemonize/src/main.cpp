@@ -71,8 +71,9 @@ int main(int argc, char* argv[])
     if (dup(fd) < 0)
         cerr << "Error occurred while duplicating stderr descriptor" << endl;
 
+    char** cmd_arg = &argv[1];
     if (argc > 2)
-        execvp(argv[1], argv);
+        execvp(argv[1], cmd_arg);
 
     return 0;
 }
