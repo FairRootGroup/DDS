@@ -9,6 +9,7 @@
 #include "CommanderServer.h"
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
+#include "SysHelper.h"
 #include "Logger.h"
 #include "SysHelper.h"
 
