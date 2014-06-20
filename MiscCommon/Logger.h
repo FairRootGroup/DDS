@@ -61,12 +61,11 @@ namespace MiscCommon
             // core::get()->reset_filter();
             // core::get()->remove_all_sinks();
 
-            boost::log::formatter formatter = expressions::stream //<< expressions::attr<unsigned int>("LineID") << " "
-                                              << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S <")
-                                              << expressions::attr<int>("Severity") << "> "
-                                              << expressions::attr<attributes::current_process_id::value_type>("ProcessID") << " "
-                                              << expressions::attr<attributes::current_thread_id::value_type>("ThreadID") << " "
-                                              << expressions::attr<std::string>("Process") << " " << expressions::smessage;
+            boost::log::formatter formatter = expressions::stream
+                                              << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f <")
+                                              << expressions::attr<int>("Severity") << "> [" << expressions::attr<std::string>("Process") << "] <"
+                                              << expressions::attr<attributes::current_process_id::value_type>("ProcessID") << ":"
+                                              << expressions::attr<attributes::current_thread_id::value_type>("ThreadID") << "> " << expressions::smessage;
 
             // Logging to file
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink = add_file_log(
