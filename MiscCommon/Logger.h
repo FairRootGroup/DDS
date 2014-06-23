@@ -8,7 +8,6 @@
 // BOOST
 #define BOOST_LOG_DYN_LINK
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-//#include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/sources/logger.hpp>
@@ -33,7 +32,7 @@
 // Main macro to be used for logging in DDS
 // Example: LOG(trace) << "My message";
 #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
-//
+// Convenience functions
 #define TRACE BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::trace)
 #define DEBUG BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::debug)
 #define INFO BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::info)
@@ -103,6 +102,10 @@ namespace MiscCommon
             sLogFile += std::string(PROJECT_NAME) + ".log";
             smart_path<std::string>(&sLogFile);
 
+            unsigned int rotationSize = userDefaults.getOptions().m_general.m_logRotationSize;
+            unsigned int severityLevel = userDefaults.getOptions().m_general.m_logSeverityLevel;
+            unsigned int hasConsoleOutput = userDefaults.getOptions().m_general.m_logHasConsoleOutput;
+
             // Default format for logger
             boost::log::formatter formatter = expressions::stream
                                               << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f <")
@@ -112,13 +115,13 @@ namespace MiscCommon
 
             // Logging to file
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
-                add_file_log(keywords::file_name = sLogFile, keywords::open_mode = (std::ios::out | std::ios::app), keywords::rotation_size = 10 * 1024 * 1024);
+                add_file_log(keywords::file_name = sLogFile, keywords::open_mode = (std::ios::out | std::ios::app), keywords::rotation_size = rotationSize);
             fileSink->set_formatter(formatter);
             fileSink->locked_backend()->auto_flush(true);
 
             // Logging to console
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSink = add_console_log();
-            // consoleSink->set_filter(severity == info || severity == error);
+            consoleSink->set_filter((severity <= severityLevel && hasConsoleOutput) || severity == console);
             // consoleSink->set_formatter(formatter);
 
             add_common_attributes();

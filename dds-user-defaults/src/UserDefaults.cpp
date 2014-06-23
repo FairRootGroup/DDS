@@ -23,8 +23,12 @@ void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
         "server.work_dir", boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"), "");
     config_file_options.add_options()(
         "server.log_dir", boost::program_options::value<string>(&m_options.m_general.m_logDir)->default_value("$HOME/.DDS/log"), "");
-    config_file_options.add_options()(
-        "server.log_severity", boost::program_options::value<string>(&m_options.m_general.m_logSeverity)->default_value("debug"), "");
+    config_file_options.add_options()("server.log_severity_level",
+                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_logSeverityLevel)->default_value(0));
+    config_file_options.add_options()("server.log_rotation_size",
+                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_logRotationSize)->default_value(10 * 1024 * 1024));
+    config_file_options.add_options()("server.log_has_console_output",
+                                      boost::program_options::value<bool>(&m_options.m_general.m_logHasConsoleOutput)->default_value(false));
     config_file_options.add_options()("server.commander_port_range_min",
                                       boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMin)->default_value(20000),
                                       "");
@@ -64,7 +68,9 @@ void CUserDefaults::printDefaults(ostream& _stream)
     _stream << "[server]\n"
             << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
             << "log_dir=" << ud.getValueForKey("server.log_dir") << "\n"
-            << "log_severity=" << ud.getValueForKey("server.log_severity") << "\n"
+            << "log_severity_level=" << ud.getValueForKey("server.log_severity_level") << "\n"
+            << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
+            << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
             << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
             << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n";
 }

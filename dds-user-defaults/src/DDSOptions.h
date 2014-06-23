@@ -13,7 +13,9 @@ namespace dds
         unsigned int m_ddsCommanderPortRangeMin; //!< commander port range min value (should be open for incoming connection)
         unsigned int m_ddsCommanderPortRangeMax; //!< commander port range max value (should be open for incoming connection)
         std::string m_logDir;                    //!< Logging directory.
-        std::string m_logSeverity;               //!< Log severity
+        unsigned int m_logSeverityLevel;         //!< Log severity level
+        unsigned int m_logRotationSize;          //!< Log rotation size in bytes
+        bool m_logHasConsoleOutput;              //!< True if output log also to console
     } SDDSGeneralOptions_t;
 
     typedef struct SDDSUserDefaultOptions
