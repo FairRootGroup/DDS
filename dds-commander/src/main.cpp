@@ -35,26 +35,15 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        // TODO: Log me!
         LOG(console) << e.what();
         return EXIT_FAILURE;
     }
 
     // resolving user's home dir from (~/ or $HOME, if present)
     string sWorkDir(options.m_userDefaults.getOptions().m_general.m_workDir);
-    // string sLogDir(options.m_userDefaults.getOptions().m_general.m_logDir);
     smart_path(&sWorkDir);
-    // smart_path(&sLogDir);
     // We need to be sure that there is "/" always at the end of the path
     smart_append<string>(&sWorkDir, '/');
-    // smart_append<string>(&sLogDir, '/');
-
-    // string sLogFile(sLogDir);
-    // sLogFile += "dds_commander.log";
-
-    // Init log engine
-    // Logger::instance().init(sLogFile);
-
     // pidfile name
     string pidfile_name(sWorkDir);
     pidfile_name += "dds-commander.pid";
@@ -98,7 +87,6 @@ int main(int argc, char* argv[])
                     break;
                 }
                 LOG(console) << ".";
-                // cout.flush();
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
@@ -130,15 +118,14 @@ int main(int argc, char* argv[])
         catch (exception& e)
         {
             LOG(fatal) << e.what();
-            return EXIT_FAILURE; // exitCode_GENERAL_ERROR;
+            return EXIT_FAILURE;
         }
         catch (...)
         {
             LOG(fatal) << "Unexpected Exception occurred.";
-            return EXIT_FAILURE; // exitCode_GENERAL_ERROR;
+            return EXIT_FAILURE;
         }
     }
 
-    //   return agent.getExitCode();
     return EXIT_SUCCESS;
 }
