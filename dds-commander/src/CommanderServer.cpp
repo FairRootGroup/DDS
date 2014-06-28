@@ -28,9 +28,6 @@ CCommanderServer::CCommanderServer(const SOptions_t& _options)
                                                m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
     // open admin port
     m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), port));
-
-    // init topo
-    m_topo.init(m_options.m_sTopoFile);
 }
 
 CCommanderServer::~CCommanderServer()
@@ -45,6 +42,9 @@ void CCommanderServer::start()
 {
     try
     {
+        // init topo
+        m_topo.init(m_options.m_sTopoFile);
+
         m_acceptor->listen();
         TalkToAgentPtr_t client = CTalkToAgent::makeNew(*m_service);
         m_acceptor->async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, sp::_1));
