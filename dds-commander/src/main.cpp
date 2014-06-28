@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     catch (exception& e)
     {
         // TODO: Log me!
-        std::cout << e.what() << endl;
+        LOG(console) << e.what();
         return EXIT_FAILURE;
     }
 
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
         const pid_t pid_to_kill = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid_to_kill > 0 && IsProcessExist(pid_to_kill))
         {
-            std::cout << PROJECT_NAME << ": self exiting (" << pid_to_kill << ")..." << endl;
+            LOG(console) << PROJECT_NAME << ": self exiting (" << pid_to_kill << ")...";
             // TODO: Maybe we need more validations of the process before
             // sending a signal. We don't want to kill someone else.
             kill(pid_to_kill, SIGTERM);
@@ -94,16 +94,16 @@ int main(int argc, char* argv[])
             {
                 if (!IsProcessExist(pid_to_kill))
                 {
-                    std::cout << endl;
+                    LOG(console) << "\n";
                     break;
                 }
-                std::cout << ".";
+                LOG(console) << ".";
                 // cout.flush();
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
             if (IsProcessExist(pid_to_kill))
-                std::cout << "FAILED to close the process." << endl;
+                LOG(console) << "FAILED to close the process.";
         }
 
         return EXIT_SUCCESS;
@@ -123,19 +123,18 @@ int main(int argc, char* argv[])
             }
             catch (std::exception& e)
             {
-                LOG(info) << "Log exception: " << e.what();
+                LOG(error) << "Log exception: " << e.what();
             }
             server.start();
         }
         catch (exception& e)
         {
-            //  agent.FaultLog(erError, e.what());
+            LOG(fatal) << e.what();
             return EXIT_FAILURE; // exitCode_GENERAL_ERROR;
         }
         catch (...)
         {
-            //  string errMsg("Unexpected Exception occurred.");
-            //  agent.FaultLog(erXMLInit, errMsg);
+            LOG(fatal) << "Unexpected Exception occurred.";
             return EXIT_FAILURE; // exitCode_GENERAL_ERROR;
         }
     }
