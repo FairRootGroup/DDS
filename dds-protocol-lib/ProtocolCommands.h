@@ -22,7 +22,6 @@ namespace dds
     {
         // ----------- VERSION 5 --------------------
         cmdUNKNOWN = -1,
-
         cmdVERSION = 1,
         cmdUI_CONNECT,       // these command are used for PoD UI communication
         cmdUI_CONNECT_READY, // these command are used for PoD UI communication
@@ -40,7 +39,6 @@ namespace dds
         cmdWNs_LIST      // return a list of available workers
 
         // ----------- VERSION 6 --------------------
-
     };
     //=============================================================================
     template <class _Owner>

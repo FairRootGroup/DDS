@@ -45,15 +45,13 @@ namespace MiscCommon
 {
     /// Severity levels
     enum ELogSeverityLevel
-    {
-        trace = 0,
-        debug = 1,
-        info = 2,
-        warning = 3,
-        error = 4,
-        fatal = 5,
-        console = 6
-    };
+    { trace = 0,
+      debug = 1,
+      info = 2,
+      warning = 3,
+      error = 4,
+      fatal = 5,
+      console = 6 };
 
     /// The operator puts a human-friendly representation of the severity level to the stream
     inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)

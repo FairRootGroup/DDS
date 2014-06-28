@@ -83,6 +83,9 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 #    ${Boost_PROGRAM_OPTIONS_LIBRARY}
 #)
 
+# API headers
+target_include_directories(dds-topology INTERFACE ${dds-topology_SOURCE_DIR}/src)
+
 install(TARGETS dds-topology DESTINATION lib)
 
 #

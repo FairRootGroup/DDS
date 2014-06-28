@@ -18,15 +18,13 @@
 namespace dds
 {
     enum class ETopoType
-    {
-        TOPO_BASE,
-        TOPO_PROPERTY,
-        TOPO_ELEMENT,
-        TASK,
-        COLLECTION,
-        GROUP,
-        PORT
-    };
+    { TOPO_BASE,
+      TOPO_PROPERTY,
+      TOPO_ELEMENT,
+      TASK,
+      COLLECTION,
+      GROUP,
+      PORT };
 
     class CTopoBase
     {

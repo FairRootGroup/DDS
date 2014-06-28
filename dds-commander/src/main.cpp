@@ -9,22 +9,18 @@
 #include "CommanderServer.h"
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
-#include "Logger.h"
 #include "SysHelper.h"
 
 using namespace std;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
-using namespace dds::commander;
+using namespace dds;
 
 //=============================================================================
 int main(int argc, char* argv[])
 {
     Logger::instance().init();
-
     LOG(info) << "Starting dds-commander";
-    LOG(debug) << "Starting dds-commander";
-    LOG(error) << "Starting dds-commander";
 
     // Command line parser
     SOptions_t options;
@@ -35,7 +31,7 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        LOG(console) << e.what();
+        LOG(fatal) << e.what();
         return EXIT_FAILURE;
     }
 
@@ -54,11 +50,11 @@ int main(int argc, char* argv[])
         pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid > 0 && IsProcessExist(pid))
         {
-            LOG(info) << PROJECT_NAME << " process (" << pid << ") is running...";
+            LOG(console) << PROJECT_NAME << " process (" << pid << ") is running...";
         }
         else
         {
-            LOG(info) << PROJECT_NAME << " is not running...";
+            LOG(console) << PROJECT_NAME << " is not running...";
         }
 
         return EXIT_SUCCESS;
@@ -81,12 +77,13 @@ int main(int argc, char* argv[])
             const size_t max_iter = 30;
             while (iter <= max_iter)
             {
+                // show "progress dots". Don't use Log, as it will create a new line after each dot.
                 if (!IsProcessExist(pid_to_kill))
                 {
-                    LOG(console) << "\n";
+                    cout << "\n";
                     break;
                 }
-                LOG(console) << ".";
+                cout << ".";
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }

@@ -10,25 +10,29 @@
 // DDS
 #include "TalkToAgent.h"
 #include "Options.h"
+#include "Topology.h"
 
-class CCommanderServer
+namespace dds
 {
-  public:
-    CCommanderServer(const dds::commander::SOptions_t& _options);
+    class CCommanderServer
+    {
+      public:
+        CCommanderServer(const SOptions_t& _options);
 
-    virtual ~CCommanderServer();
+        virtual ~CCommanderServer();
 
-    void start();
+        void start();
 
-    void stop();
+        void stop();
 
-  private:
-    void acceptHandler(TalkToAgentPtr_t _agent, const boost::system::error_code& _ec);
+      private:
+        void acceptHandler(TalkToAgentPtr_t _agent, const boost::system::error_code& _ec);
 
-    boost::asio::io_service* m_service;
-    boost::asio::ip::tcp::acceptor* m_acceptor;
-    TalkToAgentPtrVector_t m_agents;
-    dds::commander::SOptions_t m_options;
-};
-
+        boost::asio::io_service* m_service;
+        boost::asio::ip::tcp::acceptor* m_acceptor;
+        TalkToAgentPtrVector_t m_agents;
+        dds::SOptions_t m_options;
+        CTopology m_topo;
+    };
+}
 #endif /* defined(__DDS__CommanderServer__) */

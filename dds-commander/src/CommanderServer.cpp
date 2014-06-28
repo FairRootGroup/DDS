@@ -11,12 +11,13 @@
 #include "CommanderServer.h"
 #include "TalkToAgent.h"
 #include "INet.h"
+#include "Logger.h"
 
 using namespace boost::asio;
-namespace sp = std::placeholders;
 using namespace std;
 using namespace dds;
-using namespace dds::commander;
+using namespace MiscCommon;
+namespace sp = std::placeholders;
 
 CCommanderServer::CCommanderServer(const SOptions_t& _options)
     : m_options(_options)
@@ -27,6 +28,9 @@ CCommanderServer::CCommanderServer(const SOptions_t& _options)
                                                m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
     // open admin port
     m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), port));
+
+    // init topo
+    m_topo.init(m_options.m_sTopoFile);
 }
 
 CCommanderServer::~CCommanderServer()
@@ -48,7 +52,7 @@ void CCommanderServer::start()
     }
     catch (exception& e)
     {
-        // FIXME: log fail
+        LOG(fatal) << e.what();
     }
 }
 
