@@ -40,4 +40,12 @@ target_link_libraries (
 )
 
 install(TARGETS MiscCommon_test_FindCfgFile DESTINATION tests)
+#=============================================================================
+add_executable(MiscCommon_test_Logger Test_Logger.cpp )
 
+target_link_libraries (
+    MiscCommon_test_Logger
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+)
+
+install(TARGETS MiscCommon_test_Logger DESTINATION tests)
