@@ -16,8 +16,10 @@
 namespace dds
 {
     enum class EPortType
-    { SERVER,
-      CLIENT };
+    {
+        SERVER,
+        CLIENT
+    };
 
     class CPort : public CTopoProperty
     {

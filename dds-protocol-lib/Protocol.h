@@ -57,9 +57,11 @@ namespace dds
         virtual ~CProtocol();
 
         typedef enum EStatus
-        { stOK = 0,
-          stDISCONNECT = 1,
-          stAGAIN = 2 } EStatus_t;
+        {
+            stOK = 0,
+            stDISCONNECT = 1,
+            stAGAIN = 2
+        } EStatus_t;
 
         EStatus_t read(int _socket);
         void write(int _socket, uint16_t _cmd, const MiscCommon::BYTEVector_t& _data) const;

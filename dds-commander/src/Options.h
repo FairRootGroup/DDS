@@ -27,10 +27,12 @@ namespace dds
     typedef struct SOptions
     {
         enum ECommands
-        { cmd_unknown,
-          cmd_start,
-          cmd_stop,
-          cmd_status };
+        {
+            cmd_unknown,
+            cmd_start,
+            cmd_stop,
+            cmd_status
+        };
         SOptions()
             : m_Command(cmd_start)
         {

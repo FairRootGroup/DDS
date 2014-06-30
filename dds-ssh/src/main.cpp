@@ -39,11 +39,13 @@ void printVersion()
 }
 //=============================================================================
 enum ECommands
-{ cmd_unknown,
-  cmd_submit,
-  cmd_status,
-  cmd_clean,
-  cmd_fast_clean };
+{
+    cmd_unknown,
+    cmd_submit,
+    cmd_status,
+    cmd_clean,
+    cmd_fast_clean
+};
 ECommands getCommandByName(const string& _name)
 {
     if ("submit" == _name)
