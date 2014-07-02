@@ -242,34 +242,23 @@ wait_and_kill()
 # ***** STOP *****
 # ************************************************************************
 stop()
-{
-   local xpd_pid=$($cmd_pod_info --xpdPid)
-   local agent_pid=$($cmd_pod_info --agentPid)
+{ 
+   $DDS_LOCATION/bin/dds-commander stop
+
+   local commander_pid=$($cmd_pod_info --commanderPid)
    
-   if [ -z "$xpd_pid" -a  -z "$agent_pid" ]; then
+   if [ -z "$commander_pid" ]; then
       return 0
    fi
 
-   echo "Stopping PoD server..."
-
-   if [ -n "$xpd_pid" ]; then
-      # kill all proofserv, which are children of our xproofd.
-      # PROOF sometime can't properly clean them and it could give us
-      # some problem next time we start PROOF session
-      for i in `ps -ef| awk '$3 == '$xpd_pid' { print $2 }'`
-      do
-        echo "killing proofserv: $i"
-        kill -9 $i &>/dev/null
-      done
-   fi
+   echo "Stopping DDS server..."
 
    # Try to stop the server by first sending a TERM signal
    # And if after 10 sec. it still exists send a non-ignorable kill
-   echo "Gracefully shut down PoD server process(es): $xpd_pid $agent_pid"
-   kill $agent_pid $xpd_pid &>/dev/null
+   echo "Gracefully shut down DDS server process(es): $commander_pid"
+   kill $commander_pid &>/dev/null
 
-   wait_and_kill $agent_pid
-   wait_and_kill $xpd_pid
+   wait_and_kill $commander_pid
    
    return 0
 }

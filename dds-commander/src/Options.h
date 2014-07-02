@@ -31,7 +31,8 @@ namespace dds
             cmd_unknown,
             cmd_start,
             cmd_stop,
-            cmd_status
+            cmd_status,
+            cmd_submit
         };
         SOptions()
             : m_Command(cmd_start)
@@ -46,6 +47,8 @@ namespace dds
                 return cmd_stop;
             if ("status" == _name)
                 return cmd_status;
+            if ("submit" == _name)
+                return cmd_submit;
 
             return cmd_unknown;
         }
@@ -83,7 +86,8 @@ namespace dds
                               "Commands:\n"
                               "   start: \tStart dds-commander daemon\n"
                               "   stop: \tStop dds-commander daemon\n"
-                              "   status: \tQuery current status of dds-command daemon\n");
+                              "   status: \tQuery current status of dds-command daemon\n"
+                              "   submit: \tSubmit a topology to a defined RMS\n");
 
         //...positional
         bpo::positional_options_description pd;
@@ -115,6 +119,13 @@ namespace dds
             if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
             {
                 LOG(MiscCommon::console) << PROJECT_NAME << " error: unknown command: " << vm["command"].as<std::string>() << "\n\n" << options;
+                return false;
+            }
+
+            if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) && !vm.count("topo"))
+            {
+                LOG(MiscCommon::console) << PROJECT_NAME << " error: specify a topo file"
+                                         << "\n\n" << options;
                 return false;
             }
         }
