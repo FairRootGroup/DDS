@@ -125,6 +125,10 @@ SET(DDS_MISC_FILES
 SET(DDS_BIN_FILES 
     ${CMAKE_SOURCE_DIR}/bin/dds-server
 )
+
+SET(DDS_BIN_PRIVATE_FILES
+    ${CMAKE_SOURCE_DIR}/bin/private/pod-addpayload
+)
 #
 # "etc" files
 #
@@ -214,6 +218,7 @@ install(FILES ${DDS_MISC_FILES} DESTINATION .)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/DDS_env.sh DESTINATION .)
 # install bin files
 install(PROGRAMS ${DDS_BIN_FILES} DESTINATION bin)
+install(PROGRAMS ${DDS_BIN_PRIVATE_FILES} DESTINATION bin/private)
 # install etc files
 install(FILES ${DDS_ETC_FILES} DESTINATION etc)
 # install share files
