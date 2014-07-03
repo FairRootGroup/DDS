@@ -124,5 +124,10 @@ int main(int argc, char* argv[])
         }
     }
 
+    // Checking for "submit" option
+    if (SOptions_t::cmd_submit == options.m_Command)
+    {
+    }
+
     return EXIT_SUCCESS;
 }

@@ -27,12 +27,16 @@ namespace dds
 
       private:
         void acceptHandler(TalkToAgentPtr_t _agent, const boost::system::error_code& _ec);
+        void createServerInfoFile() const;
+        void deleteServerInfoFile() const;
 
+      private:
         boost::asio::io_service* m_service;
         boost::asio::ip::tcp::acceptor* m_acceptor;
         TalkToAgentPtrVector_t m_agents;
         dds::SOptions_t m_options;
         CTopology m_topo;
+        int m_nSrvPort;
     };
 }
 #endif /* defined(__DDS__CommanderServer__) */

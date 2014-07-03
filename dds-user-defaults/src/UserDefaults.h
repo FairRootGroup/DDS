@@ -16,7 +16,8 @@ namespace dds
     class CUserDefaults
     {
       public:
-        void init(const std::string& _DDSCfgFileName, bool _get_default = false);
+        void init(bool _get_default = false);
+        void init(const std::string& _cfgFileName, bool _get_default = false);
 
       public:
         std::string getValueForKey(const std::string& _Key) const;
@@ -27,6 +28,7 @@ namespace dds
         {
             return m_options;
         }
+        static std::string getServerInfoFile();
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;

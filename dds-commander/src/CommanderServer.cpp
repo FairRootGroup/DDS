@@ -24,14 +24,21 @@ CCommanderServer::CCommanderServer(const SOptions_t& _options)
 {
     m_service = new io_service();
     // get a free port from a given range
-    int port = MiscCommon::INet::get_free_port(m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
-                                               m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+    m_nSrvPort = MiscCommon::INet::get_free_port(m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
+                                                 m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+
+    // Create a server info file
+    createServerInfoFile();
+
     // open admin port
-    m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), port));
+    m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), m_nSrvPort));
 }
 
 CCommanderServer::~CCommanderServer()
 {
+    // Delete server info file
+    deleteServerInfoFile();
+
     if (m_service)
         delete m_service;
     if (m_acceptor)
@@ -43,7 +50,7 @@ void CCommanderServer::start()
     try
     {
         // init topo
-        m_topo.init(m_options.m_sTopoFile);
+        // m_topo.init(m_options.m_sTopoFile);
 
         m_acceptor->listen();
         TalkToAgentPtr_t client = CTalkToAgent::makeNew(*m_service);
@@ -80,4 +87,37 @@ void CCommanderServer::acceptHandler(TalkToAgentPtr_t _client, const boost::syst
     else
     {
     }
+}
+
+void CCommanderServer::createServerInfoFile() const
+{
+    const string sSrvCfg(CUserDefaults::getServerInfoFile());
+    LOG(info) << "Createing a server info file: " << sSrvCfg;
+    ofstream f(sSrvCfg.c_str());
+    if (!f.is_open() || !f.good())
+    {
+        string msg("Could not open a server info configuration file: ");
+        msg += sSrvCfg;
+        throw runtime_error(msg);
+    }
+
+    string srvHost;
+    get_hostname(&srvHost);
+    string srvUser;
+    get_cuser_name(&srvUser);
+
+    f << "[server]\n"
+      << "host=" << srvHost << "\n"
+      << "user=" << srvUser << "\n"
+      << "port=" << m_nSrvPort << "\n" << endl;
+}
+
+void CCommanderServer::deleteServerInfoFile() const
+{
+    const string sSrvCfg(CUserDefaults::getServerInfoFile());
+    if (sSrvCfg.empty())
+        return;
+
+    // TODO: check error code
+    unlink(sSrvCfg.c_str());
 }

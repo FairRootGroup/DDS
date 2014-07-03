@@ -75,7 +75,6 @@ namespace dds
         bpo::options_description options("dds-commander options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("config,c", "A DDS configuration file. The commander will look for DDS config. automatically, if this argument is missing.");
         options.add_options()("topo,t", "A topology file.");
         options.add_options()("command",
                               bpo::value<std::string>(),
@@ -110,8 +109,7 @@ namespace dds
         }
 
         // initilize DDS user defaults
-        string sCfgFile((vm.count("config")) ? vm["command"].as<std::string>() : _options->m_userDefaults.currentUDFile());
-        _options->m_userDefaults.init(sCfgFile);
+        _options->m_userDefaults.init();
 
         // Command
         if (vm.count("command"))

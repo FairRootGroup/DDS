@@ -15,7 +15,7 @@ using namespace std;
 using namespace dds;
 using namespace MiscCommon;
 
-void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
+void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
 {
     m_keys.clear();
     boost::program_options::options_description config_file_options("DDS user defaults options");
@@ -37,11 +37,11 @@ void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
                                       "");
     if (!_get_default)
     {
-        std::ifstream ifs(_DDSCfgFileName.c_str());
+        ifstream ifs(_cfgFileName.c_str());
         if (!ifs.good())
         {
             string msg("Could not open a DDS configuration file: ");
-            msg += _DDSCfgFileName;
+            msg += _cfgFileName;
             throw runtime_error(msg);
         }
         // Parse the config file
@@ -60,10 +60,17 @@ void CUserDefaults::init(const string& _DDSCfgFileName, bool _get_default)
     boost::program_options::notify(m_keys);
 }
 
+void CUserDefaults::init(bool _get_default)
+{
+    // Use the default look up algorithm
+    string sDDSCfgFileName(currentUDFile());
+    init(sDDSCfgFileName, _get_default);
+}
+
 void CUserDefaults::printDefaults(ostream& _stream)
 {
     CUserDefaults ud;
-    ud.init("", true);
+    ud.init(true);
 
     _stream << "[server]\n"
             << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
@@ -127,7 +134,7 @@ string CUserDefaults::currentUDFile()
     return val;
 }
 
-std::string getDDSPath()
+string CUserDefaults::getDDSPath()
 {
     char* dds_location;
     dds_location = getenv("DDS_LOCATION");
@@ -138,4 +145,15 @@ std::string getDDSPath()
     smart_path(&sDDSPath);
     smart_append(&sDDSPath, '/');
     return sDDSPath;
+}
+
+string CUserDefaults::getServerInfoFile()
+{
+    CUserDefaults ud;
+    ud.init();
+    const string sFileName("server_info.cfg");
+    string sWrkDir(ud.getValueForKey("server.work_dir"));
+    smart_path(&sWrkDir);
+    smart_append(&sWrkDir, '/');
+    return (sWrkDir + sFileName);
 }
