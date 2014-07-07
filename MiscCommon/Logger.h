@@ -39,7 +39,8 @@
 #define WARNING BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::warning)
 #define ERROR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::error)
 #define FATAL BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::fatal)
-#define CONSOLE BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::console)
+#define STDOUT BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::stdout)
+#define STDERR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::stderr)
 
 namespace MiscCommon
 {
@@ -52,13 +53,14 @@ namespace MiscCommon
         warning = 3,
         error = 4,
         fatal = 5,
-        console = 6
+        log_stdout = 6,
+        log_stderr = 7
     };
 
     /// The operator puts a human-friendly representation of the severity level to the stream
     inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)
     {
-        static const char* strings[] = { "TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL", "CONSOLE" };
+        static const char* strings[] = { "TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL", "STDOUT", "STDERR" };
 
         if (static_cast<std::size_t>(level) < sizeof(strings) / sizeof(*strings))
             strm << strings[level];
@@ -121,7 +123,7 @@ namespace MiscCommon
 
             // Logging to console
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSink = add_console_log();
-            consoleSink->set_filter((severity <= severityLevel && hasConsoleOutput) || severity == console);
+            consoleSink->set_filter((severity <= severityLevel && hasConsoleOutput) || (severity == log_stdout || severity == log_stderr));
             // consoleSink->set_formatter(formatter);
 
             add_common_attributes();

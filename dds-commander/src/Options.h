@@ -60,9 +60,9 @@ namespace dds
     //=============================================================================
     inline void PrintVersion()
     {
-        LOG(MiscCommon::console) << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
-                                 << "DDS configuration"
-                                 << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
+        LOG(MiscCommon::log_stdout) << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
+                                    << "DDS configuration"
+                                    << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
     }
     //=============================================================================
     // Command line parser
@@ -99,7 +99,7 @@ namespace dds
 
         if (vm.count("help") || vm.empty())
         {
-            LOG(MiscCommon::console) << options;
+            LOG(MiscCommon::log_stdout) << options;
             return false;
         }
         if (vm.count("version"))
@@ -116,20 +116,20 @@ namespace dds
         {
             if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
             {
-                LOG(MiscCommon::console) << PROJECT_NAME << " error: unknown command: " << vm["command"].as<std::string>() << "\n\n" << options;
+                LOG(MiscCommon::log_stderr) << PROJECT_NAME << " error: unknown command: " << vm["command"].as<std::string>() << "\n\n" << options;
                 return false;
             }
 
             if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) && !vm.count("topo"))
             {
-                LOG(MiscCommon::console) << PROJECT_NAME << " error: specify a topo file"
-                                         << "\n\n" << options;
+                LOG(MiscCommon::log_stderr) << PROJECT_NAME << " error: specify a topo file"
+                                            << "\n\n" << options;
                 return false;
             }
         }
         else
         {
-            LOG(MiscCommon::console) << PROJECT_NAME << ": Nothing to do\n\n" << options;
+            LOG(MiscCommon::log_stderr) << PROJECT_NAME << ": Nothing to do\n\n" << options;
             return false;
         }
 
