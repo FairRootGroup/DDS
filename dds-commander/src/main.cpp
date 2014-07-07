@@ -10,11 +10,17 @@
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
+#include "SendCommandToItself.h"
+// BOOST
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/asio.hpp>
 
 using namespace std;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
 using namespace dds;
+using boost::asio::ip::tcp;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -127,6 +133,35 @@ int main(int argc, char* argv[])
     // Checking for "submit" option
     if (SOptions_t::cmd_submit == options.m_Command)
     {
+        try
+        {
+            // Read server info file
+            const string sSrvCfg(CUserDefaults::getServerInfoFile());
+            LOG(info) << "Reading server info from: " << sSrvCfg;
+            if (sSrvCfg.empty())
+                throw runtime_error("Can't find server info file.");
+
+            boost::property_tree::ptree pt;
+            boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
+            const string sHost(pt.get<string>("server.host"));
+            const string sPort(pt.get<string>("server.port"));
+
+            LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort;
+
+            boost::asio::io_service io_service;
+
+            tcp::resolver resolver(io_service);
+            tcp::resolver::query query(sHost, sPort);
+            tcp::resolver::iterator iterator = resolver.resolve(query);
+            CSendCommandToItself cmd(io_service, iterator);
+
+            boost::thread t(boost::bind(&boost::asio::io_service::run, &io_service));
+        }
+        catch (exception& e)
+        {
+            LOG(fatal) << e.what();
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;

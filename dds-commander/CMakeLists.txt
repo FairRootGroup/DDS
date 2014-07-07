@@ -29,6 +29,7 @@ set( SOURCE_FILES
 	./src/main.cpp
 	./src/CommanderServer.cpp
 	./src/TalkToAgent.cpp
+	./src/SendCommandToItself.cpp
 )
 
 #
@@ -38,6 +39,7 @@ set( HEADER_FILES
 	./src/Options.h
 	./src/CommanderServer.h
 	./src/TalkToAgent.h
+	./src/SendCommandToItself.h
 )
 
 include_directories(

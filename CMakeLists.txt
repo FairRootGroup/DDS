@@ -127,7 +127,7 @@ SET(DDS_BIN_FILES
 )
 
 SET(DDS_BIN_PRIVATE_FILES
-    ${CMAKE_SOURCE_DIR}/bin/private/pod-addpayload
+    ${CMAKE_SOURCE_DIR}/bin/private/dds-addpayload
 )
 #
 # "etc" files

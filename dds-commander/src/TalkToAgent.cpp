@@ -8,9 +8,6 @@
 #include "Logger.h"
 // BOOST
 #include "boost/asio.hpp"
-// STD
-#include <iostream>
-#include <fstream>
 
 using namespace MiscCommon;
 
@@ -80,24 +77,14 @@ void CTalkToAgent::pingRequest()
 {
     doWrite("ping ok\n");
 
-    // std::ofstream fout("dds-commander-log.log", std::ios::app);
-    // boost::log::sources::logger lg;
-    // BOOST_LOG_SEV(lg, boost::log::trivial::info) << "ping OK";
     try
     {
-        //    fout << "before first log\n";
         LOG(info) << "first ping OK";
-        //    fout << "afer first log\n";
-        LOG(error) << "second ping OK";
-        //    fout << "after secong log\n";
     }
     catch (std::exception& e)
     {
-        //    fout << "exception e.what=" << e.what() << std::endl;
-        // LOG(error) << "exception e.what=" << e.what();
+        LOG(error) << "exception e.what=" << e.what();
     }
-    // fout.flush();
-    // fout.close();
 }
 
 void CTalkToAgent::checkPingHandler()
