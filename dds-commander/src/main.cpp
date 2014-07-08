@@ -153,9 +153,11 @@ int main(int argc, char* argv[])
             tcp::resolver resolver(io_service);
             tcp::resolver::query query(sHost, sPort);
             tcp::resolver::iterator iterator = resolver.resolve(query);
-            CSendCommandToItself cmd(io_service, iterator);
 
-            boost::thread t(boost::bind(&boost::asio::io_service::run, &io_service));
+            //            boost::thread t(boost::bind(&boost::asio::io_service::run, &io_service));
+
+            CSendCommandToItself cmd(io_service, iterator);
+            io_service.run();
         }
         catch (exception& e)
         {

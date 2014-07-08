@@ -6,19 +6,26 @@
 #ifndef __DDS__SendCommandToItself__
 #define __DDS__SendCommandToItself__
 
-#include "boost/noncopyable.hpp"
 #include "boost/asio.hpp"
 
 class CSendCommandToItself
 {
   public:
-    CSendCommandToItself(boost::asio::io_service& io_service, tcp::resolver::iterator endpoint_iterator);
+    CSendCommandToItself(boost::asio::io_service& _io_service, boost::asio::ip::tcp::resolver::iterator _endpoint_iterator);
 
   private:
-    boost::asio::io_service& io_service_;
-    tcp::socket socket_;
-    // chat_message read_msg_;
-    // chat_message_queue write_msgs_;
+    void handle_resolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
+    void handle_connect(const boost::system::error_code& err);
+    void handle_write_request(const boost::system::error_code& err);
+    void handle_read_status_line(const boost::system::error_code& err);
+    void handle_read_headers(const boost::system::error_code& err);
+    void handle_read_content(const boost::system::error_code& err);
+
+  private:
+    boost::asio::ip::tcp::resolver m_resolver;
+    boost::asio::ip::tcp::socket m_socket;
+    boost::asio::streambuf m_request;
+    boost::asio::streambuf m_response;
 };
 
-#endif /* defined(__DDS__TalkToAgent__) */
+#endif
