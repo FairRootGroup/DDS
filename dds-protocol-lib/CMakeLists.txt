@@ -12,13 +12,13 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # Source files
 #
 set( SOURCE_FILES
-     Protocol.cpp 
-     ProtocolCommands.cpp
+     ./src/Protocol.cpp 
+     ./src/ProtocolCommands.cpp
 )
 
 set( SRC_HDRS
-     Protocol.h 
-     ProtocolCommands.h
+     ./src/Protocol.h 
+     ./src/ProtocolCommands.h
 )
 
 include_directories(
@@ -38,6 +38,9 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries (
     dds-protocol-lib
 )
+
+# API headers
+target_include_directories(dds-protocol-lib INTERFACE ${dds-protocol-lib_SOURCE_DIR}/src)
 
 install(TARGETS dds-protocol-lib DESTINATION lib)
 

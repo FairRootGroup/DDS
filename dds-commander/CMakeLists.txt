@@ -63,6 +63,7 @@ target_link_libraries (
 	dds-commander
 	dds-user-defaults-lib
     dds-topology
+    dds-protocol-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
     ${Boost_LOG_LIBRARY}
@@ -74,6 +75,8 @@ target_include_directories(dds-commander
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
     PRIVATE
         $<TARGET_PROPERTY:dds-topology,INTERFACE_INCLUDE_DIRECTORIES>
+    PRIVATE
+        $<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-commander DESTINATION bin)
