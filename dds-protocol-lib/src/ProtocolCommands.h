@@ -20,11 +20,11 @@ namespace dds
     //=============================================================================
     enum ECmdType
     {
-        // ----------- VERSION 5 --------------------
+        // ----------- VERSION 1 --------------------
         cmdUNKNOWN = -1,
         cmdVERSION = 1,
-        cmdUI_CONNECT,       // these command are used for PoD UI communication
-        cmdUI_CONNECT_READY, // these command are used for PoD UI communication
+        cmdUI_CONNECT,
+        cmdUI_CONNECT_READY,
         cmdHOST_INFO,
         cmdGET_HOST_INFO,
         cmdUSE_PACKETFORWARDING_PROOF,
@@ -38,7 +38,7 @@ namespace dds
         cmdGET_WNs_LIST, // request a list of available workers
         cmdWNs_LIST      // return a list of available workers
 
-        // ----------- VERSION 6 --------------------
+        // ----------- VERSION 2 --------------------
     };
     //=============================================================================
     template <class _Owner>

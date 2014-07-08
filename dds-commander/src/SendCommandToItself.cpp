@@ -16,7 +16,7 @@ using namespace MiscCommon;
 using namespace std;
 using namespace dds;
 using boost::asio::ip::tcp;
-//=============================================================================
+
 CSendCommandToItself::CSendCommandToItself(boost::asio::io_service& _io_service, tcp::resolver::iterator _endpoint_iterator)
     : m_resolver(_io_service)
     , m_socket(_io_service)
@@ -26,7 +26,7 @@ CSendCommandToItself::CSendCommandToItself(boost::asio::io_service& _io_service,
 
     boost::asio::async_connect(m_socket, _endpoint_iterator, boost::bind(&CSendCommandToItself::handle_connect, this, boost::asio::placeholders::error));
 }
-//=============================================================================
+
 void CSendCommandToItself::handle_resolve(const boost::system::error_code& err, tcp::resolver::iterator endpoint_iterator)
 {
     LOG(debug) << "CSendCommandToItself::handle_resolve";
@@ -41,7 +41,7 @@ void CSendCommandToItself::handle_resolve(const boost::system::error_code& err, 
         LOG(log_stderr) << "Error: " << err.message();
     }
 }
-//=============================================================================
+
 void CSendCommandToItself::handle_connect(const boost::system::error_code& err)
 {
     LOG(debug) << "CSendCommandToItself::handle_connect";
@@ -55,7 +55,7 @@ void CSendCommandToItself::handle_connect(const boost::system::error_code& err)
         LOG(log_stderr) << "Error: " << err.message();
     }
 }
-//=============================================================================
+
 void CSendCommandToItself::handle_write_request(const boost::system::error_code& err)
 {
     LOG(debug) << "CSendCommandToItself::handle_write_request";
@@ -72,7 +72,7 @@ void CSendCommandToItself::handle_write_request(const boost::system::error_code&
         LOG(log_stderr) << "Error: " << err.message();
     }
 }
-//=============================================================================
+
 void CSendCommandToItself::handle_read_status_line(const boost::system::error_code& err)
 {
     LOG(debug) << "CSendCommandToItself::handle_read_status_line";
@@ -107,7 +107,7 @@ void CSendCommandToItself::handle_read_status_line(const boost::system::error_co
         LOG(log_stderr) << "Error: " << err;
     }
 }
-//=============================================================================
+
 void CSendCommandToItself::handle_read_headers(const boost::system::error_code& err)
 {
     LOG(debug) << "CSendCommandToItself::handle_read_headers";
@@ -135,7 +135,7 @@ void CSendCommandToItself::handle_read_headers(const boost::system::error_code& 
         LOG(log_stderr) << "Error: " << err;
     }
 }
-//=============================================================================
+
 void CSendCommandToItself::handle_read_content(const boost::system::error_code& err)
 {
     LOG(debug) << "CSendCommandToItself::handle_read_content";
@@ -155,7 +155,7 @@ void CSendCommandToItself::handle_read_content(const boost::system::error_code& 
         LOG(log_stderr) << "Error: " << err;
     }
 }
-//=============================================================================
+
 void CSendCommandToItself::processAdminConnection(int _serverSock)
 {
     LOG(debug) << "receiving server commands";
@@ -176,7 +176,7 @@ void CSendCommandToItself::processAdminConnection(int _serverSock)
             break;
         }*/
 }
-//=============================================================================
+
 int CSendCommandToItself::processProtocolMsgs(int _serverSock, CProtocol* _protocol)
 {
     /* BYTEVector_t data;
