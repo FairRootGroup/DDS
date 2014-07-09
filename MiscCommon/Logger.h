@@ -8,6 +8,10 @@
 // BOOST
 #define BOOST_LOG_DYN_LINK
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+
+// TODO: remove this warning suppression when BOOST 1.56 is released (when it is fixed there).
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/sources/logger.hpp>
@@ -20,6 +24,7 @@
 #include <boost/log/attributes/current_process_id.hpp>
 #include <boost/log/attributes/current_process_name.hpp>
 #include <boost/log/attributes/current_thread_id.hpp>
+#pragma clang diagnostic pop
 
 // STD
 #include <fstream>
