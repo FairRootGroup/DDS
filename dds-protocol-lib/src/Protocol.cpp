@@ -15,15 +15,12 @@ using namespace dds;
 using namespace MiscCommon;
 using namespace MiscCommon::INet;
 //=============================================================================
-const size_t HEADER_SIZE = sizeof(SMessageHeader);
-const ssize_t MAX_MSG_SIZE = 256;
-//=============================================================================
 //=============================================================================
 //=============================================================================
 BYTEVector_t dds::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
 {
     SMessageHeader header;
-    strncpy(header.m_sign, "<POD_CMD>", sizeof(header.m_sign));
+    strncpy(header.m_sign, g_CmdSign, sizeof(header.m_sign));
     header.m_cmd = _normalizeWrite16(_cmd);
     header.m_len = _normalizeWrite32(_data.size());
 
@@ -78,7 +75,7 @@ CProtocol::~CProtocol()
 // warning: no matching class member found for
 // This happens because doxygen is not handling namespaces in arguments properly
 /**
- * @memberof PROOFAgent::CProtocol
+ * @memberof dds::CProtocol
  *
  */
 SMessageHeader CProtocol::getMsg(BYTEVector_t* _data) const
@@ -132,7 +129,7 @@ bool CProtocol::checkoutNextMsg()
     }
     catch (...)
     {
-        // TODO: Clear only until there is another <POD_CMD> found
+        // TODO: Clear only until there is another <DDS_CMD> found
         m_buffer.clear();
         throw;
     }

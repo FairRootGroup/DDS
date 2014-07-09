@@ -44,3 +44,14 @@ target_include_directories(dds-protocol-lib INTERFACE ${dds-protocol-lib_SOURCE_
 
 install(TARGETS dds-protocol-lib DESTINATION lib)
 
+
+#
+# Unit tests
+#
+if (BUILD_TESTS)
+    message (STATUS "Build dds-protocol-lib tests - YES")
+    add_subdirectory ( ${dds-protocol-lib_SOURCE_DIR}/tests ) 
+else (BUILD_TESTS)
+    message (STATUS "Build dds-protocol-lib tests - NO")
+endif (BUILD_TESTS)
+

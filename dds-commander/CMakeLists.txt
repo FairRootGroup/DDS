@@ -62,12 +62,12 @@ message(STATUS "LOG_LIBRARY=${Boost_LOG_LIBRARY}")
 target_link_libraries (
 	dds-commander
 	dds-user-defaults-lib
-    dds-topology
-    dds-protocol-lib
+	dds-topology
+	dds-protocol-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
-    ${Boost_LOG_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
+	${Boost_LOG_LIBRARY}
+	${Boost_THREAD_LIBRARY}
 )
 
 target_include_directories(dds-commander

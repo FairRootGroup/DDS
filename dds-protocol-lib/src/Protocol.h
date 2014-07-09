@@ -16,7 +16,16 @@ namespace dds
 {
     //=============================================================================
     // a very simple protocol
-    // | <POD_CMD> (10) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
+    // | <DDS_CMD> (10) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
+    const char* const g_CmdSign = "<DDS_CMD>";
+    enum
+    {
+        header_sign_length = 10
+    };
+    enum
+    {
+        MAX_MSG_SIZE = 256
+    };
     struct SMessageHeader
     {
         SMessageHeader()
@@ -25,13 +34,13 @@ namespace dds
         {
             m_sign[0] = '\0';
         }
-        char m_sign[10];
+        char m_sign[header_sign_length];
         uint16_t m_cmd;
         uint32_t m_len;
 
         bool isValid() const
         {
-            return (strcmp(m_sign, "<POD_CMD>") == 0);
+            return (strcmp(m_sign, g_CmdSign) == 0);
         }
         void clear()
         {
@@ -39,6 +48,11 @@ namespace dds
             m_cmd = 0;
             m_len = 0;
         }
+    };
+    //=============================================================================
+    enum
+    {
+        HEADER_SIZE = sizeof(SMessageHeader)
     };
     //=============================================================================
     MiscCommon::BYTEVector_t createMsg(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data);
@@ -71,7 +85,6 @@ namespace dds
 
       private:
         MiscCommon::BYTEVector_t m_buffer;
-
         SMessageHeader m_msgHeader;
         MiscCommon::BYTEVector_t m_curDATA;
     };
