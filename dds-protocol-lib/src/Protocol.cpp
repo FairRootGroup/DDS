@@ -9,14 +9,14 @@
 #include "ErrorCode.h"
 #include "INet.h"
 #include "HexView.h"
-//=============================================================================
+
 using namespace std;
 using namespace dds;
 using namespace MiscCommon;
 using namespace MiscCommon::INet;
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
+//----------------------------------------------------------------------
+
 BYTEVector_t dds::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
 {
     SMessageHeader header;
@@ -30,11 +30,13 @@ BYTEVector_t dds::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
 
     return ret_val;
 }
-//=============================================================================
+
+////////////////////////////////////////////////////////////////////////
 // return:
 // 1. an exception - if the message bad/corrupted
 // 2. an invalid SMessageHeader - if the message is incomplete
 // 3. a valid SMessageHeader - if the message is OK
+////////////////////////////////////////////////////////////////////////
 SMessageHeader dds::parseMsg(BYTEVector_t* _data, const BYTEVector_t& _msg)
 {
     SMessageHeader header;
@@ -60,30 +62,31 @@ SMessageHeader dds::parseMsg(BYTEVector_t* _data, const BYTEVector_t& _msg)
 
     return header;
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
+//----------------------------------------------------------------------
+
 CProtocol::CProtocol()
 {
 }
-//=============================================================================
+
 CProtocol::~CProtocol()
 {
 }
-//=============================================================================
+////////////////////////////////////////////////////////////////////////
 // memberof to silence doxygen warning:
 // warning: no matching class member found for
 // This happens because doxygen is not handling namespaces in arguments properly
-/**
- * @memberof dds::CProtocol
- *
- */
+//
+// @memberof dds::CProtocol
+//
+//
+////////////////////////////////////////////////////////////////////////
 SMessageHeader CProtocol::getMsg(BYTEVector_t* _data) const
 {
     copy(m_curDATA.begin(), m_curDATA.end(), back_inserter(*_data));
     return m_msgHeader;
 }
-//=============================================================================
+
 CProtocol::EStatus_t CProtocol::read(int _socket)
 {
     BYTEVector_t tmp_buf(MAX_MSG_SIZE);
@@ -114,7 +117,7 @@ CProtocol::EStatus_t CProtocol::read(int _socket)
 
     return stOK;
 }
-//=============================================================================
+
 bool CProtocol::checkoutNextMsg()
 {
     try
@@ -136,30 +139,33 @@ bool CProtocol::checkoutNextMsg()
 
     return true;
 }
-//=============================================================================
+
+////////////////////////////////////////////////////////////////////////
 // memberof to silence doxygen warning:
 // warning: no matching class member found for
 // This happens because doxygen is not handling namespaces in arguments properly
-/**
- * @memberof PROOFAgent::CProtocol
- *
- */
+//
+// @memberof dds::CProtocol
+//
+//
+////////////////////////////////////////////////////////////////////////
 void CProtocol::write(int _socket, uint16_t _cmd, const BYTEVector_t& _data) const
 {
     BYTEVector_t msg(createMsg(_cmd, _data));
     sendall(_socket, &msg[0], msg.size(), 0);
 }
-//=============================================================================
+
+////////////////////////////////////////////////////////////////////////
 // memberof to silence doxygen warning:
 // warning: no matching class member found for
 // This happens because doxygen is not handling namespaces in arguments properly
-/**
- * @memberof PROOFAgent::CProtocol
- *
- */
+//
+// @memberof dds::CProtocol
+//
+//
+////////////////////////////////////////////////////////////////////////
 void CProtocol::writeSimpleCmd(int _socket, uint16_t _cmd) const
 {
     BYTEVector_t data;
     write(_socket, _cmd, data);
 }
-//=============================================================================

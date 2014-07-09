@@ -4,17 +4,15 @@
 //
 #ifndef PROTOCOL_H_
 #define PROTOCOL_H_
-//=============================================================================
 // STD
 #include <cstring>
 // API
 #include <arpa/inet.h>
 // MiscCommon
 #include "def.h"
-//=============================================================================
+
 namespace dds
 {
-    //=============================================================================
     // a very simple protocol
     // | <DDS_CMD> (10) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
     const char* const g_CmdSign = "<DDS_CMD>";
@@ -49,16 +47,20 @@ namespace dds
             m_len = 0;
         }
     };
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     enum
     {
         HEADER_SIZE = sizeof(SMessageHeader)
     };
-    //=============================================================================
+
     MiscCommon::BYTEVector_t createMsg(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data);
-    //=============================================================================
+
     SMessageHeader parseMsg(MiscCommon::BYTEVector_t* _data, const MiscCommon::BYTEVector_t& _msg);
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     /**
      *
      * @brief The protocol low level class

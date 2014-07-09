@@ -6,25 +6,24 @@
 // STD
 #include <stdint.h>
 #include <stdexcept>
-
 // MiscCommon
 #include "INet.h"
-//=============================================================================
+
 using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-//=============================================================================
+//----------------------------------------------------------------------
 void SVersionCmd::normalizeToLocal()
 {
     m_version = inet::_normalizeRead16(m_version);
 }
-//=============================================================================
+
 void SVersionCmd::normalizeToRemote()
 {
     m_version = inet::_normalizeWrite16(m_version);
 }
-//=============================================================================
+
 void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
     if (_data.size() < size())
@@ -37,15 +36,15 @@ void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     m_version = _data[0];
     m_version += (_data[1] << 8);
 }
-//=============================================================================
+
 void SVersionCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     _data->push_back(m_version & 0xFF);
     _data->push_back(m_version >> 8);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
+//----------------------------------------------------------------------
+
 void SHostInfoCmd::normalizeToLocal()
 {
     m_xpdPort = inet::_normalizeRead16(m_xpdPort);
@@ -53,7 +52,7 @@ void SHostInfoCmd::normalizeToLocal()
     m_agentPort = inet::_normalizeRead16(m_agentPort);
     m_agentPid = inet::_normalizeRead32(m_agentPid);
 }
-//=============================================================================
+
 void SHostInfoCmd::normalizeToRemote()
 {
     m_xpdPort = inet::_normalizeWrite16(m_xpdPort);
@@ -61,7 +60,7 @@ void SHostInfoCmd::normalizeToRemote()
     m_agentPort = inet::_normalizeWrite16(m_agentPort);
     m_agentPid = inet::_normalizeWrite32(m_agentPid);
 }
-//=============================================================================
+
 void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
     size_t idx(0);
@@ -147,7 +146,7 @@ void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     m_timeStamp += (_data[idx++] << 16);
     m_timeStamp += (_data[idx] << 24);
 }
-//=============================================================================
+
 void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     std::copy(m_username.begin(), m_username.end(), std::back_inserter(*_data));
@@ -180,19 +179,19 @@ void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back((m_timeStamp >> 16) & 0xFF);
     _data->push_back((m_timeStamp >> 24) & 0xFF);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
+//----------------------------------------------------------------------
+
 void SIdCmd::normalizeToLocal()
 {
     m_id = inet::_normalizeRead32(m_id);
 }
-//=============================================================================
+
 void SIdCmd::normalizeToRemote()
 {
     m_id = inet::_normalizeWrite32(m_id);
 }
-//=============================================================================
+
 void SIdCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
     if (_data.size() < size())
@@ -207,7 +206,7 @@ void SIdCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     m_id += (_data[2] << 16);
     m_id += (_data[3] << 24);
 }
-//=============================================================================
+
 void SIdCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     _data->push_back(m_id & 0xFF);
@@ -215,17 +214,17 @@ void SIdCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back((m_id >> 16) & 0xFF);
     _data->push_back((m_id >> 24) & 0xFF);
 }
-//=============================================================================
-//=============================================================================
-//=============================================================================
+
+//----------------------------------------------------------------------
+
 void SWnListCmd::normalizeToLocal()
 {
 }
-//=============================================================================
+
 void SWnListCmd::normalizeToRemote()
 {
 }
-//=============================================================================
+
 void SWnListCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
     m_container.clear();
@@ -253,7 +252,7 @@ void SWnListCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         throw std::runtime_error(ss.str());
     }
 }
-//=============================================================================
+
 void SWnListCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     MiscCommon::StringVector_t::const_iterator iter = m_container.begin();

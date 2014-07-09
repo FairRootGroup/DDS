@@ -4,20 +4,18 @@
 //
 #ifndef PROTOCOLCOMMANDS_H_
 #define PROTOCOLCOMMANDS_H_
-//=============================================================================
 // STD
 #include <iterator>
 // MiscCommon
 #include "def.h"
 // pod-agetn
 #include "Protocol.h"
-//=============================================================================
-// v6: added m_timeStamp to SHostInfoCmd
+
+// v1
 const uint16_t g_protocolCommandsVersion = 1;
-//=============================================================================
+
 namespace dds
 {
-    //=============================================================================
     enum ECmdType
     {
         // ----------- VERSION 1 --------------------
@@ -40,7 +38,9 @@ namespace dds
 
         // ----------- VERSION 2 --------------------
     };
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     template <class _Owner>
     struct SBasicCmd
     {
@@ -58,7 +58,9 @@ namespace dds
             p->normalizeToLocal();
         }
     };
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     struct SVersionCmd : public SBasicCmd<SVersionCmd>
     {
         SVersionCmd()
@@ -84,7 +86,9 @@ namespace dds
     {
         return _stream << val.m_version;
     }
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     struct SHostInfoCmd : public SBasicCmd<SHostInfoCmd>
     {
         SHostInfoCmd()
@@ -135,7 +139,9 @@ namespace dds
                 << "; agent [" << val.m_agentPid << "] on port " << val.m_agentPort << "; submitted on " << val.m_timeStamp;
         return _stream;
     }
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     struct SIdCmd : public SBasicCmd<SIdCmd>
     {
         SIdCmd()
@@ -161,7 +167,9 @@ namespace dds
     {
         return _stream << _val.m_id;
     }
-    //=============================================================================
+
+    //----------------------------------------------------------------------
+
     struct SWnListCmd : public SBasicCmd<SWnListCmd>
     {
         SWnListCmd()
