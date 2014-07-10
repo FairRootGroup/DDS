@@ -14,11 +14,11 @@
 namespace dds
 {
     // a very simple protocol
-    // | <DDS_CMD> (10) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
-    const char* const g_CmdSign = "<DDS_CMD>";
+    // | <DDS> (6) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
+    const char* const g_CmdSign = "<DDS>";
     enum
     {
-        header_sign_length = 10
+        header_sign_length = 6
     };
 
     //----------------------------------------------------------------------

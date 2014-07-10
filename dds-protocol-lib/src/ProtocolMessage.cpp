@@ -92,12 +92,18 @@ bool CProtocolMessage::decode_header()
 
 void CProtocolMessage::encode_message(uint16_t _cmd, const CProtocolMessage::dataContainer_t& _data)
 {
+    // prepare data for transport
     SMessageHeader header;
     strncpy(header.m_sign, g_CmdSign, sizeof(header.m_sign));
     header.m_cmd = _normalizeWrite16(_cmd);
     header.m_len = _normalizeWrite32(_data.size());
 
-    dataContainer_t ret_val(header_length);
+    // local copy
+    strncpy(m_header.m_sign, g_CmdSign, sizeof(m_header.m_sign));
+    m_header.m_cmd = _cmd;
+    m_header.m_len = _data.size();
+
+    BYTEVector_t ret_val(header_length);
     memcpy(&ret_val[0], reinterpret_cast<unsigned char*>(&header), header_length);
     copy(_data.begin(), _data.end(), back_inserter(ret_val));
     swap(m_data, ret_val);
