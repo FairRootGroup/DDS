@@ -17,61 +17,13 @@ using namespace MiscCommon::INet;
 
 //----------------------------------------------------------------------
 
-BYTEVector_t dds::createMsg(uint16_t _cmd, const BYTEVector_t& _data)
-{
-    SMessageHeader header;
-    strncpy(header.m_sign, g_CmdSign, sizeof(header.m_sign));
-    header.m_cmd = _normalizeWrite16(_cmd);
-    header.m_len = _normalizeWrite32(_data.size());
-
-    BYTEVector_t ret_val(HEADER_SIZE);
-    memcpy(&ret_val[0], reinterpret_cast<unsigned char*>(&header), HEADER_SIZE);
-    copy(_data.begin(), _data.end(), back_inserter(ret_val));
-
-    return ret_val;
-}
-
-////////////////////////////////////////////////////////////////////////
-// return:
-// 1. an exception - if the message bad/corrupted
-// 2. an invalid SMessageHeader - if the message is incomplete
-// 3. a valid SMessageHeader - if the message is OK
-////////////////////////////////////////////////////////////////////////
-SMessageHeader dds::parseMsg(BYTEVector_t* _data, const BYTEVector_t& _msg)
-{
-    SMessageHeader header;
-    if (_msg.size() < HEADER_SIZE)
-        return SMessageHeader();
-
-    memcpy(&header, &_msg[0], HEADER_SIZE);
-    if (!header.isValid())
-    {
-        stringstream ss;
-        ss << "the protocol message is bad or corrupted. Invalid header:\n" << BYTEVectorHexView_t(_msg);
-        throw runtime_error(ss.str());
-    }
-
-    header.m_cmd = _normalizeRead16(header.m_cmd);
-    header.m_len = _normalizeRead32(header.m_len);
-
-    if (0 == header.m_len)
-        return header;
-
-    BYTEVector_t::const_iterator iter = _msg.begin() + HEADER_SIZE;
-    copy(iter, iter + header.m_len, back_inserter(*_data));
-
-    return header;
-}
-
-//----------------------------------------------------------------------
-
-CProtocol::CProtocol()
+/*CProtocol::CProtocol()
 {
 }
 
 CProtocol::~CProtocol()
 {
-}
+}*/
 ////////////////////////////////////////////////////////////////////////
 // memberof to silence doxygen warning:
 // warning: no matching class member found for
@@ -81,7 +33,7 @@ CProtocol::~CProtocol()
 //
 //
 ////////////////////////////////////////////////////////////////////////
-SMessageHeader CProtocol::getMsg(BYTEVector_t* _data) const
+/*SMessageHeader CProtocol::getMsg(BYTEVector_t* _data) const
 {
     copy(m_curDATA.begin(), m_curDATA.end(), back_inserter(*_data));
     return m_msgHeader;
@@ -138,7 +90,7 @@ bool CProtocol::checkoutNextMsg()
     }
 
     return true;
-}
+}*/
 
 ////////////////////////////////////////////////////////////////////////
 // memberof to silence doxygen warning:
@@ -149,11 +101,11 @@ bool CProtocol::checkoutNextMsg()
 //
 //
 ////////////////////////////////////////////////////////////////////////
-void CProtocol::write(int _socket, uint16_t _cmd, const BYTEVector_t& _data) const
+/*void CProtocol::write(int _socket, uint16_t _cmd, const BYTEVector_t& _data) const
 {
     BYTEVector_t msg(createMsg(_cmd, _data));
     sendall(_socket, &msg[0], msg.size(), 0);
-}
+}*/
 
 ////////////////////////////////////////////////////////////////////////
 // memberof to silence doxygen warning:
@@ -164,8 +116,8 @@ void CProtocol::write(int _socket, uint16_t _cmd, const BYTEVector_t& _data) con
 //
 //
 ////////////////////////////////////////////////////////////////////////
-void CProtocol::writeSimpleCmd(int _socket, uint16_t _cmd) const
+/*void CProtocol::writeSimpleCmd(int _socket, uint16_t _cmd) const
 {
     BYTEVector_t data;
     write(_socket, _cmd, data);
-}
+}*/

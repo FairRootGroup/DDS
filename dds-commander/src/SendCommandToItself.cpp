@@ -159,8 +159,8 @@ void CSendCommandToItself::handle_read_content(const boost::system::error_code& 
 void CSendCommandToItself::processAdminConnection(int _serverSock)
 {
     LOG(debug) << "receiving server commands";
-    CProtocol protocol;
-    CProtocol::EStatus_t ret = protocol.read(_serverSock);
+    //   CProtocol protocol;
+    //   CProtocol::EStatus_t ret = protocol.read(_serverSock);
     /*    switch (ret)
         {
             case CProtocol::stDISCONNECT:

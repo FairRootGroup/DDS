@@ -13,51 +13,12 @@
 
 namespace dds
 {
-    // a very simple protocol
-    // | <DDS_CMD> (10) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
-    const char* const g_CmdSign = "<DDS_CMD>";
-    enum
-    {
-        header_sign_length = 10
-    };
-    enum
-    {
-        MAX_MSG_SIZE = 256
-    };
-    struct SMessageHeader
-    {
-        SMessageHeader()
-            : m_cmd(0)
-            , m_len(0)
-        {
-            m_sign[0] = '\0';
-        }
-        char m_sign[header_sign_length];
-        uint16_t m_cmd;
-        uint32_t m_len;
-
-        bool isValid() const
-        {
-            return (strcmp(m_sign, g_CmdSign) == 0);
-        }
-        void clear()
-        {
-            m_sign[0] = '\0';
-            m_cmd = 0;
-            m_len = 0;
-        }
-    };
 
     //----------------------------------------------------------------------
 
-    enum
-    {
-        HEADER_SIZE = sizeof(SMessageHeader)
-    };
+    //   MiscCommon::BYTEVector_t createMsg(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data);
 
-    MiscCommon::BYTEVector_t createMsg(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data);
-
-    SMessageHeader parseMsg(MiscCommon::BYTEVector_t* _data, const MiscCommon::BYTEVector_t& _msg);
+    //   SMessageHeader parseMsg(MiscCommon::BYTEVector_t* _data, const MiscCommon::BYTEVector_t& _msg);
 
     //----------------------------------------------------------------------
 
@@ -68,28 +29,43 @@ namespace dds
      */
     class CProtocol
     {
-      public:
-        CProtocol();
-        virtual ~CProtocol();
+        /*    public:
+              CProtocol();
+              virtual ~CProtocol();
 
-        typedef enum EStatus
-        {
-            stOK = 0,
-            stDISCONNECT = 1,
-            stAGAIN = 2
-        } EStatus_t;
+              typedef enum EStatus
+              {
+                  stOK = 0,
+                  stDISCONNECT = 1,
+                  stAGAIN = 2
+              } EStatus_t;
 
-        EStatus_t read(int _socket);
-        void write(int _socket, uint16_t _cmd, const MiscCommon::BYTEVector_t& _data) const;
-        void writeSimpleCmd(int _socket, uint16_t _cmd) const;
-        SMessageHeader getMsg(MiscCommon::BYTEVector_t* _data) const;
-        bool checkoutNextMsg();
+              EStatus_t read(int _socket);
+              void write(int _socket, uint16_t _cmd, const MiscCommon::BYTEVector_t& _data) const;
+              void writeSimpleCmd(int _socket, uint16_t _cmd) const;
+              SMessageHeader getMsg(MiscCommon::BYTEVector_t* _data) const;
+              bool checkoutNextMsg();
 
-      private:
-        MiscCommon::BYTEVector_t m_buffer;
-        SMessageHeader m_msgHeader;
-        MiscCommon::BYTEVector_t m_curDATA;
+            private:
+              MiscCommon::BYTEVector_t m_buffer;
+              SMessageHeader m_msgHeader;
+              MiscCommon::BYTEVector_t m_curDATA;*/
     };
+
+    //----------------------------------------------------------------------
+
+    /*  class session_participant
+      {
+        public:
+          virtual ~session_participant()
+          {
+          }
+          virtual void deliver(const chat_message& msg) = 0;
+      };
+
+      typedef shared_ptr<session_participant> session_participant_ptr; */
+
+    //----------------------------------------------------------------------
 }
 
 #endif /* PROTOCOL_H_ */
