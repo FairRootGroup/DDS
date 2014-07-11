@@ -32,12 +32,17 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdVERSION)
     CProtocolMessage msg_src;
     msg_src.encode_message(cmdVERSION, ver);
 
+    BOOST_CHECK(msg_src.header().m_cmd == cmdVERSION);
+
     // "Send" message
     CProtocolMessage msg_dest;
     memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
 
     // Decode the message
     BOOST_CHECK(msg_dest.decode_header());
+
+    // Check that we got the proper command ID
+    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
 
     // Read the message
     SVersionCmd ver_dest;
