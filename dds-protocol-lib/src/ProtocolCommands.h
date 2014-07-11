@@ -8,8 +8,6 @@
 #include <iterator>
 // MiscCommon
 #include "def.h"
-// pod-agetn
-#include "Protocol.h"
 
 // v1
 const uint16_t g_protocolCommandsVersion = 1;

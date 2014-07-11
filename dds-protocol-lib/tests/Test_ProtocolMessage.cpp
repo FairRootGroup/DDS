@@ -27,10 +27,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdVERSION)
     // Create a message
     SVersionCmd ver_src;
     ver_src.m_version = 444;
-    BYTEVector_t ver;
-    ver_src.convertToData(&ver);
+    BYTEVector_t data_to_send;
+    ver_src.convertToData(&data_to_send);
     CProtocolMessage msg_src;
-    msg_src.encode_message(cmdVERSION, ver);
+    msg_src.encode_message(cmdVERSION, data_to_send);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdVERSION);
 

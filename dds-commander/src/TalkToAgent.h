@@ -2,10 +2,9 @@
 //
 //
 //
-
 #ifndef __DDS__TalkToAgent__
 #define __DDS__TalkToAgent__
-
+// BOOST
 #include "boost/noncopyable.hpp"
 #include "boost/asio.hpp"
 
@@ -18,29 +17,20 @@ class CTalkToAgent : public std::enable_shared_from_this<CTalkToAgent>, boost::n
     CTalkToAgent(boost::asio::io_service& _service);
 
   public:
-    void start();
-
     static TalkToAgentPtr_t makeNew(boost::asio::io_service& _service);
-
+    void start();
     void stop();
 
     boost::asio::ip::tcp::socket& socket();
 
   private:
     void readHandler(const boost::system::error_code& _ec, size_t _bytesTransferred);
-
     void writeHandler(const boost::system::error_code& _ec, size_t bytesTransferred);
-
     size_t readCompleteHandler(const boost::system::error_code& _ec, size_t _bytesTransferred);
-
     void pingRequest();
-
     void checkPingHandler();
-
     void checkPing();
-
     void doRead();
-
     void doWrite(const std::string& msg);
 
   private:

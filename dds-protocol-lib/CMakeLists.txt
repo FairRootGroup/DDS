@@ -12,13 +12,11 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # Source files
 #
 set( SOURCE_FILES
-	./src/Protocol.cpp 
 	./src/ProtocolCommands.cpp
 	./src/ProtocolMessage.cpp
 )
 
 set( SRC_HDRS
-	./src/Protocol.h 
 	./src/ProtocolCommands.h
 	./src/ProtocolMessage.h
 )
