@@ -194,9 +194,11 @@ namespace MiscCommon
         {
             int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
             size_t length = 0;
-            int err = sysctl(name, 4, NULL, &length, NULL, 0);
+            if (sysctl(name, 4, NULL, &length, NULL, 0))
+                throw system_error("Unable to call sysctl in the pidExists function.");
             kinfo_proc* result = (kinfo_proc*)malloc(length);
-            err = sysctl(name, 4, result, &length, NULL, 0);
+            if (sysctl(name, 4, result, &length, NULL, 0))
+                throw system_error("Unable to call sysctl in the pidExists function.");
             int i, procCount = length / sizeof(kinfo_proc);
             for (i = 0; i < procCount; ++i)
             {

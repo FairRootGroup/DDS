@@ -4,12 +4,12 @@
 //
 #ifndef PROTOCOL_H_
 #define PROTOCOL_H_
-// STD
-#include <cstring>
-// API
-#include <arpa/inet.h>
+// DDS
+#include "ProtocolMessage.h"
 // MiscCommon
 #include "def.h"
+// BOOST
+#include <boost/shared_ptr.hpp>
 
 namespace dds
 {
@@ -54,16 +54,16 @@ namespace dds
 
     //----------------------------------------------------------------------
 
-    /*  class session_participant
-      {
-        public:
-          virtual ~session_participant()
-          {
-          }
-          virtual void deliver(const chat_message& msg) = 0;
-      };
+    class session_participant
+    {
+      public:
+        virtual ~session_participant()
+        {
+        }
+        virtual void deliver(const CProtocolMessage& msg) = 0;
+    };
 
-      typedef shared_ptr<session_participant> session_participant_ptr; */
+    typedef boost::shared_ptr<session_participant> sessionParticipantPtr_t;
 
     //----------------------------------------------------------------------
 }

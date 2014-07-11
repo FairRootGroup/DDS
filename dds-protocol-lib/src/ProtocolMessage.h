@@ -6,10 +6,6 @@
 #define __DDS__ProtocolMessage__
 // DDS
 #include "def.h"
-// STD
-//#include <cstdio>
-//#include <cstdlib>
-//#include <cstring>
 
 namespace dds
 {
@@ -84,7 +80,7 @@ namespace dds
         const SMessageHeader header() const;
 
       private:
-        dataContainer_t m_data;
+        dataContainer_t m_data; /// the whole data buffer, whcih includes the header and the msg body
         SMessageHeader m_header;
     };
 }

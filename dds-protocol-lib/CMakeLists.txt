@@ -24,21 +24,22 @@ set( SRC_HDRS
 )
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}
-    ${MiscCommon_LOCATION}
+	${PROJECT_SOURCE_DIR}
+	${MiscCommon_LOCATION}
+	${Boost_INCLUDE_DIRS}
 )
 
 #
 # lib
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds-protocol-lib SHARED ${SOURCE_FILES} ${SRC_HDRS})
+	add_library(dds-protocol-lib SHARED ${SOURCE_FILES} ${SRC_HDRS})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds-protocol-lib SHARED ${SOURCE_FILES})
+	add_library(dds-protocol-lib SHARED ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-    dds-protocol-lib
+	dds-protocol-lib
 )
 
 # API headers
@@ -51,9 +52,9 @@ install(TARGETS dds-protocol-lib DESTINATION lib)
 # Unit tests
 #
 if (BUILD_TESTS)
-    message (STATUS "Build dds-protocol-lib tests - YES")
-    add_subdirectory ( ${dds-protocol-lib_SOURCE_DIR}/tests ) 
+	message (STATUS "Build dds-protocol-lib tests - YES")
+	add_subdirectory ( ${dds-protocol-lib_SOURCE_DIR}/tests ) 
 else (BUILD_TESTS)
-    message (STATUS "Build dds-protocol-lib tests - NO")
+	message (STATUS "Build dds-protocol-lib tests - NO")
 endif (BUILD_TESTS)
 
