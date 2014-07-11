@@ -40,6 +40,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-protocol-lib
+	${Boost_SYSTEM_LIBRARY}
 )
 
 # API headers
