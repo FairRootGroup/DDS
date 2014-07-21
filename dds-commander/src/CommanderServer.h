@@ -10,33 +10,33 @@
 // DDS
 #include "TalkToAgent.h"
 #include "Options.h"
-#include "Topology.h"
 
 namespace dds
 {
-    class CCommanderServer
+    class CConnectionManager
     {
       public:
-        CCommanderServer(const SOptions_t& _options);
-
-        virtual ~CCommanderServer();
+        CConnectionManager(const SOptions_t& _options, boost::asio::io_service& io_service, boost::asio::ip::tcp::endpoint& endpoint);
+        virtual ~CConnectionManager();
 
         void start();
-
         void stop();
 
       private:
         void acceptHandler(TalkToAgentPtr_t _agent, const boost::system::error_code& _ec);
         void createServerInfoFile() const;
         void deleteServerInfoFile() const;
+        void doAwaitStop();
 
       private:
-        boost::asio::io_service* m_service;
-        boost::asio::ip::tcp::acceptor* m_acceptor;
+        boost::asio::ip::tcp::acceptor m_acceptor;
+        boost::asio::ip::tcp::endpoint m_endpoint;
+        boost::asio::ip::tcp::socket m_socket;
+        /// The signal_set is used to register for process termination notifications.
+        boost::asio::signal_set m_signals;
+
         TalkToAgentPtrVector_t m_agents;
         dds::SOptions_t m_options;
-        CTopology m_topo;
-        int m_nSrvPort;
     };
 }
 #endif /* defined(__DDS__CommanderServer__) */

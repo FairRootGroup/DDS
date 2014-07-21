@@ -6,7 +6,7 @@
 // DDS
 #include "SendCommandToItself.h"
 #include "Logger.h"
-#include "Protocol.h"
+//#include "Protocol.h"
 #include "ProtocolCommands.h"
 // BOOST
 #include "boost/asio.hpp"

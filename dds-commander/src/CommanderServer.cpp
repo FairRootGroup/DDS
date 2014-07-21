@@ -10,8 +10,9 @@
 // DDS
 #include "CommanderServer.h"
 #include "TalkToAgent.h"
-#include "INet.h"
 #include "Logger.h"
+// API
+//#include <signal.h>
 
 using namespace boost::asio;
 using namespace std;
@@ -19,40 +20,53 @@ using namespace dds;
 using namespace MiscCommon;
 namespace sp = std::placeholders;
 
-CCommanderServer::CCommanderServer(const SOptions_t& _options)
-    : m_options(_options)
+CConnectionManager::CConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service, boost::asio::ip::tcp::endpoint& _endpoint)
+    : m_acceptor(_io_service, _endpoint)
+    , m_socket(_io_service)
+    , m_signals(_io_service)
+    , m_options(_options)
 {
-    m_service = new io_service();
-    // get a free port from a given range
-    m_nSrvPort = MiscCommon::INet::get_free_port(m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
-                                                 m_options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
-
-    // Create a server info file
-    createServerInfoFile();
-
-    // open admin port
-    m_acceptor = new ip::tcp::acceptor(*m_service, ip::tcp::endpoint(ip::tcp::v4(), m_nSrvPort));
+    // Register to handle the signals that indicate when the server should exit.
+    // It is safe to register for the same signal multiple times in a program,
+    // provided all registration for the specified signal is made through Asio.
+    m_signals.add(SIGINT);
+    m_signals.add(SIGTERM);
+#if defined(SIGQUIT)
+    m_signals.add(SIGQUIT);
+#endif // defined(SIGQUIT)
+    
+    doAwaitStop();
 }
 
-CCommanderServer::~CCommanderServer()
+CConnectionManager::~CConnectionManager()
 {
     // Delete server info file
     deleteServerInfoFile();
-
-    if (m_service)
-        delete m_service;
-    if (m_acceptor)
-        delete m_acceptor;
 }
 
-void CCommanderServer::start()
+void CConnectionManager::doAwaitStop()
+{
+    m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
+                         {
+                             // The server is stopped by cancelling all outstanding asynchronous
+                             // operations. Once all operations have finished the io_service::run()
+                             // call will exit.
+                             stop();
+                         });
+}
+
+void CConnectionManager::start()
 {
     try
     {
-        m_acceptor->listen();
-        TalkToAgentPtr_t client = CTalkToAgent::makeNew(*m_service);
-        m_acceptor->async_accept(client->socket(), std::bind(&CCommanderServer::acceptHandler, this, client, sp::_1));
-        m_service->run();
+        m_acceptor.listen();
+        TalkToAgentPtr_t client = CTalkToAgent::makeNew(m_acceptor.get_io_service());
+        m_acceptor.async_accept(client->socket(), std::bind(&CConnectionManager::acceptHandler, this, client, sp::_1));
+
+        // Create a server info file
+        createServerInfoFile();
+
+        m_acceptor.get_io_service().run();
     }
     catch (exception& e)
     {
@@ -60,33 +74,39 @@ void CCommanderServer::start()
     }
 }
 
-void CCommanderServer::stop()
+void CConnectionManager::stop()
 {
-    m_acceptor->close();
-    m_service->stop();
-    for (const auto& v : m_agents)
+    try
     {
-        v->stop();
+        m_acceptor.close();
+        m_acceptor.get_io_service().stop();
+        for (const auto& v : m_agents)
+        {
+            v->stop();
+        }
+        m_agents.clear();
     }
-    m_agents.clear();
+    catch (...)
+    {
+    }
 }
 
-void CCommanderServer::acceptHandler(TalkToAgentPtr_t _client, const boost::system::error_code& _ec)
+void CConnectionManager::acceptHandler(TalkToAgentPtr_t _client, const boost::system::error_code& _ec)
 {
     if (!_ec) // FIXME: Add proper error processing
     {
         _client->start();
         m_agents.push_back(_client);
 
-        TalkToAgentPtr_t newClient = CTalkToAgent::makeNew(*m_service);
-        m_acceptor->async_accept(newClient->socket(), std::bind(&CCommanderServer::acceptHandler, this, newClient, sp::_1));
+        TalkToAgentPtr_t newClient = CTalkToAgent::makeNew(m_acceptor.get_io_service());
+        m_acceptor.async_accept(newClient->socket(), std::bind(&CConnectionManager::acceptHandler, this, newClient, sp::_1));
     }
     else
     {
     }
 }
 
-void CCommanderServer::createServerInfoFile() const
+void CConnectionManager::createServerInfoFile() const
 {
     const string sSrvCfg(CUserDefaults::getServerInfoFile());
     LOG(info) << "Createing a server info file: " << sSrvCfg;
@@ -106,10 +126,10 @@ void CCommanderServer::createServerInfoFile() const
     f << "[server]\n"
       << "host=" << srvHost << "\n"
       << "user=" << srvUser << "\n"
-      << "port=" << m_nSrvPort << "\n" << endl;
+      << "port=" << m_acceptor.local_endpoint().port() << "\n" << endl;
 }
 
-void CCommanderServer::deleteServerInfoFile() const
+void CConnectionManager::deleteServerInfoFile() const
 {
     const string sSrvCfg(CUserDefaults::getServerInfoFile());
     if (sSrvCfg.empty())

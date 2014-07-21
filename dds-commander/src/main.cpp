@@ -11,6 +11,7 @@
 #include "UserDefaults.h"
 #include "SysHelper.h"
 #include "SendCommandToItself.h"
+#include "INet.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -107,7 +108,14 @@ int main(int argc, char* argv[])
         {
             CPIDFile pidfile(pidfile_name, ::getpid());
 
-            CCommanderServer server(options);
+            boost::asio::io_service io_service;
+            // get a free port from a given range
+            int nSrvPort = MiscCommon::INet::get_free_port(options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
+                                                           options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+
+            tcp::endpoint endpoint(tcp::v4(), nSrvPort);
+
+            CConnectionManager server(options, io_service, endpoint);
             try
             {
                 LOG(info) << "Log created.";
