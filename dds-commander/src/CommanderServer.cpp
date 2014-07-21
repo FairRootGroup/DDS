@@ -34,7 +34,7 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options, boost::asio::
 #if defined(SIGQUIT)
     m_signals.add(SIGQUIT);
 #endif // defined(SIGQUIT)
-    
+
     doAwaitStop();
 }
 
@@ -86,8 +86,9 @@ void CConnectionManager::stop()
         }
         m_agents.clear();
     }
-    catch (...)
+    catch (exception& e)
     {
+        LOG(fatal) << e.what();
     }
 }
 
