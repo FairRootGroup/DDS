@@ -8,7 +8,7 @@
 // BOOST
 #include <boost/asio.hpp>
 // DDS
-#include "CommanderServer.h"
+#include "ConnectionManager.h"
 #include "TalkToAgent.h"
 #include "Logger.h"
 // API
