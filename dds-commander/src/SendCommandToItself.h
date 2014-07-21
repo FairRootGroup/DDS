@@ -27,6 +27,8 @@ namespace dds
         void processAdminConnection(int _serverSock);
         int processProtocolMsgs(int _serverSock, CProtocol* _protocol);
 
+        void writeHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred);
+
       private:
         boost::asio::ip::tcp::resolver m_resolver;
         boost::asio::ip::tcp::socket m_socket;

@@ -6,7 +6,7 @@
 // DDS
 #include "SendCommandToItself.h"
 #include "Logger.h"
-//#include "Protocol.h"
+#include "ProtocolMessage.h"
 #include "ProtocolCommands.h"
 // BOOST
 #include "boost/asio.hpp"
@@ -21,8 +21,8 @@ CSendCommandToItself::CSendCommandToItself(boost::asio::io_service& _io_service,
     : m_resolver(_io_service)
     , m_socket(_io_service)
 {
-    std::ostream request_stream(&m_request);
-    request_stream << "TEST_CMD";
+    //  std::ostream request_stream(&m_request);
+    //  request_stream << "TEST_CMD";
 
     boost::asio::async_connect(m_socket, _endpoint_iterator, boost::bind(&CSendCommandToItself::handle_connect, this, boost::asio::placeholders::error));
 }
@@ -48,12 +48,28 @@ void CSendCommandToItself::handle_connect(const boost::system::error_code& err)
     if (!err)
     {
         // The connection was successful. Send the request.
-        boost::asio::async_write(m_socket, m_request, boost::bind(&CSendCommandToItself::handle_write_request, this, boost::asio::placeholders::error));
+        // boost::asio::async_write(m_socket, m_request, boost::bind(&CSendCommandToItself::handle_write_request, this, boost::asio::placeholders::error));
+
+        SVersionCmd ver_src;
+        ver_src.m_version = 444;
+        BYTEVector_t data_to_send;
+        ver_src.convertToData(&data_to_send);
+        CProtocolMessage msg;
+        msg.encode_message(cmdVERSION, data_to_send);
+
+        async_write(m_socket,
+                    boost::asio::buffer(msg.data(), msg.length()),
+                    std::bind(&CSendCommandToItself::writeHandler, this, std::placeholders::_1, std::placeholders::_2));
     }
     else
     {
         LOG(log_stderr) << "Error: " << err.message();
     }
+}
+
+void CSendCommandToItself::writeHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
+{
+    // doRead();
 }
 
 void CSendCommandToItself::handle_write_request(const boost::system::error_code& err)

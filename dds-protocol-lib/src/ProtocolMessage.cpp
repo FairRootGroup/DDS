@@ -78,6 +78,8 @@ bool CProtocolMessage::decode_header()
 
     m_header = header;
 
+    m_data.resize(length());
+
     // TODO: Check if the message is bigger than max_body_length
 
     // Empty message?
@@ -112,4 +114,9 @@ void CProtocolMessage::encode_message(uint16_t _cmd, const CProtocolMessage::dat
 const SMessageHeader CProtocolMessage::header() const
 {
     return m_header;
+}
+
+void CProtocolMessage::printData(std::ostream& _stream) const
+{
+    _stream << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
 }
