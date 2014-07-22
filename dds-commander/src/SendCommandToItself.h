@@ -18,10 +18,7 @@ namespace dds
         CSendCommandToItself(boost::asio::io_service& _io_service, boost::asio::ip::tcp::resolver::iterator _endpoint_iterator);
 
       private:
-        void handle_resolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
         void handle_connect(const boost::system::error_code& err);
-        void handle_write_request(const boost::system::error_code& err);
-        void handle_read_status_line(const boost::system::error_code& err);
         void handle_read_headers(const boost::system::error_code& err);
         void handle_read_content(const boost::system::error_code& err);
         void processAdminConnection(int _serverSock);

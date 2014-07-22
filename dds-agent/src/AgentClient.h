@@ -43,7 +43,7 @@ namespace dds
         void readHeader();
         void readBody();
         void processMessage();
-        
+
         void writeMessage();
 
         boost::asio::ip::tcp::socket m_socket;

@@ -38,12 +38,11 @@
 // Example: LOG(trace) << "My message";
 #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
 // Convenience functions
-#define TRACE BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::trace)
-#define DEBUG BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::debug)
-#define INFO BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::info)
-#define WARNING BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::warning)
-#define ERROR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::error)
-#define FATAL BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::fatal)
+#define DBG BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::debug)
+#define INF BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::info)
+#define WRN BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::warning)
+#define ERR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::error)
+#define FAT BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::fatal)
 #define STDOUT BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::stdout)
 #define STDERR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::stderr)
 
@@ -52,20 +51,19 @@ namespace MiscCommon
     /// Severity levels
     enum ELogSeverityLevel
     {
-        trace = 0,
-        debug = 1,
-        info = 2,
-        warning = 3,
-        error = 4,
-        fatal = 5,
-        log_stdout = 6,
-        log_stderr = 7
+        debug = 0,
+        info = 1,
+        warning = 2,
+        error = 3,
+        fatal = 4,
+        log_stdout = 5,
+        log_stderr = 6
     };
 
     /// The operator puts a human-friendly representation of the severity level to the stream
     inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)
     {
-        static const char* strings[] = { "TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL", "STDOUT", "STDERR" };
+        static const char* strings[] = { "DBG", "INF", "WRN", "ERR", "FAT", "COUT", "CERR" };
 
         if (static_cast<std::size_t>(level) < sizeof(strings) / sizeof(*strings))
             strm << strings[level];
@@ -114,22 +112,31 @@ namespace MiscCommon
             unsigned int hasConsoleOutput = userDefaults.getOptions().m_general.m_logHasConsoleOutput;
 
             // Default format for logger
-            boost::log::formatter formatter = expressions::stream
-                                              << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f <")
-                                              << expressions::attr<ELogSeverityLevel>("Severity") << "> [" << expressions::attr<std::string>("Process") << "] <"
-                                              << expressions::attr<attributes::current_process_id::value_type>("ProcessID") << ":"
-                                              << expressions::attr<attributes::current_thread_id::value_type>("ThreadID") << "> " << expressions::smessage;
+            boost::log::formatter formatter =
+                // TODO: std::setw doesn't work for the first collumn of the log (TimeStamp). Investigate!
+                expressions::stream << std::left << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "   "
+                                    << std::setw(7) << expressions::attr<ELogSeverityLevel>("Severity") << std::setw(20)
+                                    << expressions::attr<std::string>("Process") << " <"
+                                    << expressions::attr<attributes::current_process_id::value_type>("ProcessID") << ":"
+                                    << expressions::attr<attributes::current_thread_id::value_type>("ThreadID") << ">    " << expressions::smessage;
 
             // Logging to file
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
-                add_file_log(keywords::file_name = sLogFile, keywords::open_mode = (std::ios::out | std::ios::app), keywords::rotation_size = rotationSize);
+            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink = add_file_log(keywords::file_name = sLogFile,
+                                                                                                         keywords::open_mode = (std::ios::out | std::ios::app),
+                                                                                                         keywords::rotation_size = rotationSize,
+                                                                                                         keywords::auto_flush = true);
+
             fileSink->set_formatter(formatter);
-            fileSink->locked_backend()->auto_flush(true);
+            fileSink->set_filter(severity >= severityLevel);
 
             // Logging to console
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSink = add_console_log();
-            consoleSink->set_filter((severity <= severityLevel && hasConsoleOutput) || (severity == log_stdout || severity == log_stderr));
-            // consoleSink->set_formatter(formatter);
+            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTSink =
+                add_console_log(std::cout, boost::log::keywords::format = ">> %Process%: %Message%");
+            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDERRSink =
+                add_console_log(std::cerr, boost::log::keywords::format = ">> %Process%: error: %Message%");
+
+            consoleSTDOUTSink->set_filter(severity == log_stdout && hasConsoleOutput);
+            consoleSTDERRSink->set_filter(severity == log_stderr && hasConsoleOutput);
 
             add_common_attributes();
             core::get()->add_global_attribute("Process", attributes::current_process_name());

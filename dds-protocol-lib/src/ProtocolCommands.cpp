@@ -63,7 +63,7 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         throw std::runtime_error(ss.str());
     }
 
-    m_sTopoFile.assign ((string::value_type*)&_data[0]);
+    m_sTopoFile.assign((string::value_type*)&_data[0]);
 }
 
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const

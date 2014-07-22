@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        LOG(fatal) << e.what();
+        LOG(log_stderr) << e.what();
         return EXIT_FAILURE;
     }
 
@@ -57,11 +57,11 @@ int main(int argc, char* argv[])
         pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid > 0 && IsProcessExist(pid))
         {
-            LOG(log_stdout) << PROJECT_NAME << " process (" << pid << ") is running...";
+            LOG(log_stdout) << " process (" << pid << ") is running...";
         }
         else
         {
-            LOG(log_stdout) << PROJECT_NAME << " is not running...";
+            LOG(log_stdout) << " is not running...";
         }
 
         return EXIT_SUCCESS;
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
         const pid_t pid_to_kill = CPIDFile::GetPIDFromFile(pidfile_name);
         if (pid_to_kill > 0 && IsProcessExist(pid_to_kill))
         {
-            LOG(log_stdout) << PROJECT_NAME << ": self exiting (" << pid_to_kill << ")...";
+            LOG(log_stdout) << "self exiting (" << pid_to_kill << ")...";
             // TODO: Maybe we need more validations of the process before
             // sending a signal. We don't want to kill someone else.
             kill(pid_to_kill, SIGTERM);
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
         }
         catch (exception& e)
         {
-            LOG(fatal) << e.what();
+            LOG(log_stderr) << e.what();
             return EXIT_FAILURE;
         }
     }

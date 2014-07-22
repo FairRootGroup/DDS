@@ -28,7 +28,7 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     config_file_options.add_options()("server.log_rotation_size",
                                       boost::program_options::value<unsigned int>(&m_options.m_general.m_logRotationSize)->default_value(10 * 1024 * 1024));
     config_file_options.add_options()("server.log_has_console_output",
-                                      boost::program_options::value<bool>(&m_options.m_general.m_logHasConsoleOutput)->default_value(false));
+                                      boost::program_options::value<bool>(&m_options.m_general.m_logHasConsoleOutput)->default_value(true));
     config_file_options.add_options()("server.commander_port_range_min",
                                       boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMin)->default_value(20000),
                                       "");
