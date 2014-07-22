@@ -17,64 +17,17 @@
 #include "AgentClient.h"
 #include "BOOSTHelper.h"
 #include "Logger.h"
+#include "UserDefaults.h"
 
 using namespace std;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
-using namespace dds::commander;
-
-void PrintVersion()
-{
-    // TODO: make VERSION to be taken from the build
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n";
-    //         << "protocol: v" << g_protocolCommandsVersion << "\n"
-    //         << "Report bugs/comments to A.Manafov@gsi.de" << endl;
-}
-
-// Command line parser
-bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(exception)
-{
-    if (nullptr == _options)
-        throw runtime_error("Internal error: options' container is empty.");
-
-    // Generic options
-    bpo::options_description options("dds-agent options");
-    options.add_options()("help,h", "Produce help message")("version,v", "Version information")("start", "Start dds-agent")("stop", "Stop dds-agent")(
-        "status", "Query current status of dds-agent daemon");
-
-    // Parsing command-line
-    bpo::variables_map vm;
-    bpo::store(bpo::parse_command_line(_argc, _argv, options), vm);
-    bpo::notify(vm);
-
-    if (vm.count("help") || vm.empty())
-    {
-        cout << options << endl;
-        return false;
-    }
-    if (vm.count("version"))
-    {
-        PrintVersion();
-        return false;
-    }
-
-    MiscCommon::BOOSTHelper::conflicting_options(vm, "start", "stop");
-    MiscCommon::BOOSTHelper::conflicting_options(vm, "start", "status");
-    MiscCommon::BOOSTHelper::conflicting_options(vm, "stop", "status");
-
-    if (vm.count("start"))
-        _options->m_Command = SOptions_t::Start;
-    if (vm.count("stop"))
-        _options->m_Command = SOptions_t::Stop;
-    if (vm.count("status"))
-        _options->m_Command = SOptions_t::Status;
-
-    return true;
-}
+using namespace dds;
 
 int main(int argc, char* argv[])
 {
     Logger::instance().init();
+    LOG(info) << "Starting dds-agent...";
 
     // Command line parser
     SOptions_t options;
@@ -85,107 +38,83 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        // TODO: Log me!
-        cerr << e.what() << endl;
+        LOG(fatal) << e.what();
         return EXIT_FAILURE;
     }
 
-    /*    // Normalizing paths of common options
-        PoD::SCommonOptions_t& common = (Server == options.m_agentMode) ? Options.m_podOptions.m_server.m_common : Options.m_podOptions.m_worker.m_common;
-        // resolving user's home dir from (~/ or $HOME, if present)
-        smart_path(&common.m_workDir);
-        // We need to be sure that there is "/" always at the end of the path
-        smart_append<string>(&common.m_workDir, '/');
-        smart_path(&common.m_logFileDir);
-        smart_append<string>(&common.m_logFileDir, '/');
-
-        // pidfile name
-        string pidfile_name(common.m_workDir);
-        pidfile_name += "pod-agent.pid";
-    */
-
-    string pidfile_name("pidfile.txt"); // ONLY TEMP
+    string pidFileName(CUserDefaults::getDDSPath());
+    pidFileName += "dds-agent.pid";
 
     // Checking for "status" option
-    if (options.m_Command == SOptions_t::Status)
+    if (SOptions_t::cmd_status == options.m_Command)
     {
-        pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
+        pid_t pid = CPIDFile::GetPIDFromFile(pidFileName);
         if (pid > 0 && IsProcessExist(pid))
         {
-            cout << PROJECT_NAME << " process (" << pid << ") is running..." << endl;
+            LOG(log_stdout) << PROJECT_NAME << " process (" << pid << ") is running...";
         }
         else
         {
-            cout << PROJECT_NAME << " is not running..." << endl;
+            LOG(log_stdout) << PROJECT_NAME << " is not running...";
         }
 
         return EXIT_SUCCESS;
     }
 
     // Checking for "stop" option
-    if (SOptions_t::Stop == options.m_Command)
+    if (SOptions_t::cmd_stop == options.m_Command)
     {
         // TODO: make wait for the process here to check for errors
-        const pid_t pid_to_kill = CPIDFile::GetPIDFromFile(pidfile_name);
-        if (pid_to_kill > 0 && IsProcessExist(pid_to_kill))
+        const pid_t pidToKill = CPIDFile::GetPIDFromFile(pidFileName);
+        if (pidToKill > 0 && IsProcessExist(pidToKill))
         {
-            cout << PROJECT_NAME << ": self exiting (" << pid_to_kill << ")..." << endl;
+            LOG(log_stdout) << PROJECT_NAME << ": self exiting (" << pidToKill << ")...";
             // TODO: Maybe we need more validations of the process before
             // sending a signal. We don't want to kill someone else.
-            kill(pid_to_kill, SIGTERM);
+            kill(pidToKill, SIGTERM);
 
             // Waiting for the process to finish
             size_t iter(0);
             const size_t max_iter = 30;
             while (iter <= max_iter)
             {
-                if (!IsProcessExist(pid_to_kill))
+                if (!IsProcessExist(pidToKill))
                 {
                     cout << endl;
                     break;
                 }
-                cout << ".";
-                cout.flush();
+                LOG(log_stdout) << ".";
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
-            if (IsProcessExist(pid_to_kill))
-                cerr << "FAILED to close the process." << endl;
+            if (IsProcessExist(pidToKill))
+                LOG(error) << "FAILED to close the process.";
         }
 
         return EXIT_SUCCESS;
     }
 
     // Checking for "start" option
-    if (SOptions_t::Start == options.m_Command)
+    if (SOptions_t::cmd_start == options.m_Command)
     {
         try
         {
-            CPIDFile pidfile(pidfile_name, ::getpid());
-
-            CAgentClient agent;
+            CPIDFile pidfile(pidFileName, ::getpid());
+            boost::asio::io_service service;
+            CAgentClient agent(service);
             agent.start();
-
-            // Main loop
-            /*   while (1)
-               {
-                   sleep(30); // wait 30 seconds
-                   cout << "running..." << endl;
-               }*/
         }
         catch (exception& e)
         {
-            //  agent.FaultLog(erError, e.what());
-            return EXIT_FAILURE; // exitCode_GENERAL_ERROR;
+            LOG(fatal) << e.what();
+            return EXIT_FAILURE;
         }
         catch (...)
         {
-            //  string errMsg("Unexpected Exception occurred.");
-            //  agent.FaultLog(erXMLInit, errMsg);
-            return EXIT_FAILURE; // exitCode_GENERAL_ERROR;
+            LOG(fatal) << "Unexpected Exception occurred.";
+            return EXIT_FAILURE;
         }
     }
 
-    //   return agent.getExitCode();
     return EXIT_SUCCESS;
 }

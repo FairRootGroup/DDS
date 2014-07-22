@@ -55,6 +55,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
     dds-agent
+    dds-protocol-lib
     dds-user-defaults-lib
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}

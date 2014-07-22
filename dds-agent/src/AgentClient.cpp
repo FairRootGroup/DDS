@@ -6,16 +6,19 @@
 // DDS
 #include "AgentClient.h"
 #include "Logger.h"
+#include "ProtocolCommands.h"
 // STD
 #include <functional>
 
+using namespace std;
 using namespace std::placeholders;
 using namespace boost::asio;
 using namespace MiscCommon;
+using namespace dds;
 
-CAgentClient::CAgentClient()
-    : m_resolver(m_service)
-    , m_socket(m_service)
+CAgentClient::CAgentClient(boost::asio::io_service& _service)
+    : m_socket(_service)
+    , m_service(_service)
 {
 }
 
@@ -26,8 +29,6 @@ CAgentClient::~CAgentClient()
 void CAgentClient::start()
 {
     LOG(info) << "Starting agent...";
-    // boost::asio::ip::tcp::resolver::query query("127.0.0.1", "8001");
-    // m_resolver.async_resolve(query, std::bind(&CAgentClient::resolveHandler, this));
 
     ip::tcp::endpoint ep(ip::address::from_string("127.0.0.1"), 8001);
     m_socket.async_connect(ep, std::bind(&CAgentClient::connectHandler, this, std::placeholders::_1));
@@ -38,62 +39,166 @@ void CAgentClient::stop()
 {
     LOG(info) << "Stoping agent...";
     m_service.stop();
-    m_resolver.cancel();
     m_socket.close();
 }
 
-void CAgentClient::readHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
-{
-    if (!_ec)
-    {
-        std::string msg(m_readBuffer, _bytesTransferred);
-        LOG(info) << "Server response: " << msg;
-        sleep(1);
+// void CAgentClient::readHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
+//{
+//    if (!_ec)
+//    {
+//        std::string msg(m_readBuffer, _bytesTransferred);
+//        LOG(info) << "Server response: " << msg;
+//        sleep(1);
+//
+//        doWrite("ping\n");
+//    }
+//}
 
-        doWrite("ping\n");
-    }
-}
-
-void CAgentClient::writeHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
-{
-    doRead();
-}
+// void CAgentClient::writeHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred)
+//{
+//    readHeader();
+//}
 
 void CAgentClient::connectHandler(const boost::system::error_code& _ec)
 {
     if (!_ec)
     {
-        doWrite("ping\n");
+        writeMessage();
+        // readHeader();
+        // doWrite("ping\n");
+    }
+    else
+    {
+        LOG(fatal) << "Unable to connect.";
     }
 }
 
-// void CAgentClient::resolveHandler(const boost::system::error_code& _ec, boost::asio::ip::tcp::resolver::iterator _it)
+// size_t CAgentClient::readCompleteHandler(const boost::system::error_code& _ec, size_t _bytesTransferred)
 //{
-//    if (!_ec)
-//    {
-//        m_socket.async_connect(*_it, std::bind(&CAgentClient::connectHandler, this));
-//    }
+//    if (_ec)
+//        return 0;
+//    bool found = std::find(m_readBuffer, m_readBuffer + _bytesTransferred, '\n') < m_readBuffer + _bytesTransferred;
+//    return found ? 0 : 1;
+//}
+//
+// void CAgentClient::doRead()
+//{
+//    async_read(m_socket,
+//               boost::asio::buffer(m_readBuffer),
+//               std::bind(&CAgentClient::readCompleteHandler, this, std::placeholders::_1, std::placeholders::_2),
+//               std::bind(&CAgentClient::readHandler, this, std::placeholders::_1, std::placeholders::_2));
+//}
+//
+// void CAgentClient::doWrite(const std::string& msg)
+//{
+//    std::copy(msg.begin(), msg.end(), m_writeBuffer);
+//    async_write(
+//        m_socket, boost::asio::buffer(m_writeBuffer, msg.size()), std::bind(&CAgentClient::writeHandler, this, std::placeholders::_1, std::placeholders::_2));
 //}
 
-size_t CAgentClient::readCompleteHandler(const boost::system::error_code& _ec, size_t _bytesTransferred)
+void CAgentClient::readHeader()
 {
-    if (_ec)
-        return 0;
-    bool found = std::find(m_readBuffer, m_readBuffer + _bytesTransferred, '\n') < m_readBuffer + _bytesTransferred;
-    return found ? 0 : 1;
+    auto readHandler = [this](boost::system::error_code ec, std::size_t /*length*/)
+    {
+        if (!ec && m_currentMsg.decode_header())
+        {
+            // If the header is ok, recieve the body of the message
+            readBody();
+        }
+        else
+        {
+            stop();
+        }
+    };
+
+    boost::asio::async_read(m_socket, boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length), readHandler);
 }
 
-void CAgentClient::doRead()
+void CAgentClient::readBody()
 {
-    async_read(m_socket,
-               boost::asio::buffer(m_readBuffer),
-               std::bind(&CAgentClient::readCompleteHandler, this, std::placeholders::_1, std::placeholders::_2),
-               std::bind(&CAgentClient::readHandler, this, std::placeholders::_1, std::placeholders::_2));
+    //    auto self(shared_from_this());
+    boost::asio::async_read(m_socket,
+                            boost::asio::buffer(m_currentMsg.body(), m_currentMsg.body_length()),
+                            [this](boost::system::error_code ec, std::size_t /*length*/)
+                            {
+        if (!ec)
+        {
+            stringstream ss;
+            ss << "Received from Agent: ";
+            m_currentMsg.printData(ss);
+            LOG(debug) << ss.str();
+            // process recieved message
+            processMessage();
+            // Read next message
+            readHeader();
+        }
+        else
+        {
+            stop();
+        }
+    });
 }
 
-void CAgentClient::doWrite(const std::string& msg)
+void CAgentClient::processMessage()
 {
-    std::copy(msg.begin(), msg.end(), m_writeBuffer);
-    async_write(
-        m_socket, boost::asio::buffer(m_writeBuffer, msg.size()), std::bind(&CAgentClient::writeHandler, this, std::placeholders::_1, std::placeholders::_2));
+    switch (m_currentMsg.header().m_cmd)
+    {
+        case cmdHANDSHAKE:
+            SVersionCmd ver;
+            ver.convertFromData(m_currentMsg.bodyToContainer());
+            // send shutdown if versions are incompatible
+            if (ver != SVersionCmd())
+            {
+                LOG(warning) << "Client's protocol version is incompatable. Client: " << m_socket.remote_endpoint().address().to_string();
+                CProtocolMessage msg;
+                msg.encode_message(cmdSHUTDOWN, BYTEVector_t());
+
+                // auto self(shared_from_this());
+                async_write(m_socket,
+                            boost::asio::buffer(msg.data(), msg.length()),
+                            [this](boost::system::error_code ec, std::size_t /*length*/)
+                            {
+                    if (!ec)
+                    {
+                        // write_msgs_.pop_front();
+                        // if (!write_msgs_.empty())
+                        // {
+                        //     do_write();
+                        // }
+                    }
+                    else
+                    {
+                        // room_.leave(shared_from_this());
+                    }
+                });
+            }
+            break;
+    }
+}
+
+void CAgentClient::writeMessage()
+{
+    auto writeHandler = [this](boost::system::error_code ec, std::size_t /*_bytesTransferred*/)
+    {
+        if (!ec)
+        {
+            // If the header is ok, recieve the body of the message
+            // readBody();
+            LOG(info) << "Data successfully sent";
+        }
+        else
+        {
+            // stop();
+            LOG(info) << "Error sending data";
+        }
+    };
+
+    SVersionCmd ver_src;
+    // ver_src.m_version = 2;
+    BYTEVector_t data_to_send;
+    ver_src.convertToData(&data_to_send);
+    CProtocolMessage msg;
+    msg.encode_message(cmdHANDSHAKE, data_to_send);
+
+    async_write(m_socket, boost::asio::buffer(msg.data(), msg.length()), writeHandler);
 }
