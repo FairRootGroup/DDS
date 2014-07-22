@@ -20,6 +20,7 @@ namespace dds
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
         cmdHANDSHAKE, // attachment: SVersionCmd
+        cmdSUBMIT     // attachment: SSubmitCmd
 
         // ----------- VERSION 2 --------------------
     };
@@ -72,6 +73,37 @@ namespace dds
         return _stream << val.m_version;
     }
     inline bool operator!=(const SVersionCmd& lhs, const SVersionCmd& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SSubmitCmd : public SBasicCmd<SSubmitCmd>
+    {
+        SSubmitCmd()
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            return (m_sTopoFile.size() + 1);
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SSubmitCmd& val) const
+        {
+            return (m_sTopoFile == val.m_sTopoFile);
+        }
+
+        std::string m_sTopoFile;
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val)
+    {
+        return _stream << val.m_sTopoFile;
+    }
+    inline bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
     {
         return !(lhs == rhs);
     }

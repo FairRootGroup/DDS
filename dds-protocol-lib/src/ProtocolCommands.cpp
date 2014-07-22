@@ -14,6 +14,7 @@ using namespace dds;
 namespace inet = MiscCommon::INet;
 
 //----------------------------------------------------------------------
+
 void SVersionCmd::normalizeToLocal()
 {
     m_version = inet::_normalizeRead16(m_version);
@@ -41,6 +42,34 @@ void SVersionCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     _data->push_back(m_version & 0xFF);
     _data->push_back(m_version >> 8);
+}
+
+//----------------------------------------------------------------------
+
+void SSubmitCmd::normalizeToLocal()
+{
+}
+
+void SSubmitCmd::normalizeToRemote()
+{
+}
+
+void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+{
+    if (_data.size() < size())
+    {
+        stringstream ss;
+        ss << "SubmitCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
+        throw std::runtime_error(ss.str());
+    }
+
+    m_sTopoFile.assign ((string::value_type*)&_data[0]);
+}
+
+void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+{
+    std::copy(m_sTopoFile.begin(), m_sTopoFile.end(), std::back_inserter(*_data));
+    _data->push_back('\0');
 }
 
 //----------------------------------------------------------------------
