@@ -79,6 +79,15 @@ namespace dds
         void encode_message(uint16_t _cmd, const dataContainer_t& _data);
         const SMessageHeader header() const;
         void printData(std::ostream& _stream) const;
+        const dataContainer_t dataToContainer() const
+        {
+            return m_data;
+        }
+        const dataContainer_t bodyToContainer() const
+        {
+            dataContainer_t buf(body(), body() + body_length());
+            return buf;
+        }
 
       private:
         dataContainer_t m_data; /// the whole data buffer, whcih includes the header and the msg body

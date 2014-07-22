@@ -6,6 +6,7 @@
 // DDS
 #include "TalkToAgent.h"
 #include "Logger.h"
+#include "ProtocolCommands.h"
 // BOOST
 #include "boost/asio.hpp"
 
@@ -91,4 +92,37 @@ void CTalkToAgent::readBody()
 
 void CTalkToAgent::processMessage()
 {
+    switch (m_currentMsg.header().m_cmd)
+    {
+        case cmdHANDSHAKE:
+            SVersionCmd ver;
+            ver.convertFromData(m_currentMsg.bodyToContainer());
+            // send shutdown if versions are incompatible
+            if (ver != SVersionCmd())
+            {
+                LOG(warning) << "Client's protocol version is incompatable. Client: " << m_socket.remote_endpoint().address().to_string();
+                CProtocolMessage msg;
+                msg.encode_message(cmdSHUTDOWN, BYTEVector_t());
+
+                auto self(shared_from_this());
+                async_write(m_socket,
+                            boost::asio::buffer(msg.data(), msg.length()),
+                            [this, self](boost::system::error_code ec, std::size_t /*length*/)
+                            {
+                    if (!ec)
+                    {
+                        // write_msgs_.pop_front();
+                        // if (!write_msgs_.empty())
+                        // {
+                        //     do_write();
+                        // }
+                    }
+                    else
+                    {
+                        // room_.leave(shared_from_this());
+                    }
+                });
+            }
+            break;
+    }
 }

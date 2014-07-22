@@ -6,7 +6,7 @@
 #include "Options.h"
 #include "Process.h"
 #include "ErrorCode.h"
-#include "CommanderServer.h"
+#include "ConnectionManager.h"
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"

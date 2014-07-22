@@ -18,21 +18,8 @@ namespace dds
     {
         // ----------- VERSION 1 --------------------
         cmdUNKNOWN = -1,
-        cmdVERSION = 1,
-        cmdUI_CONNECT,
-        cmdUI_CONNECT_READY,
-        cmdHOST_INFO,
-        cmdGET_HOST_INFO,
-        cmdUSE_PACKETFORWARDING_PROOF,
-        cmdUSE_DIRECT_PROOF,
-        cmdSHUTDOWN,
-        cmdGET_ID,
-        cmdID,
-        cmdSET_ID,
-        cmdGET_WRK_NUM,  // request a number of PROOF workers, which pod wn want to spawn
-        cmdWRK_NUM,      // answer with number of PROOF wns,
-        cmdGET_WNs_LIST, // request a list of available workers
-        cmdWNs_LIST      // return a list of available workers
+        cmdSHUTDOWN = 1,
+        cmdHANDSHAKE, // attachment: SVersionCmd
 
         // ----------- VERSION 2 --------------------
     };
@@ -83,6 +70,10 @@ namespace dds
     inline std::ostream& operator<<(std::ostream& _stream, const SVersionCmd& val)
     {
         return _stream << val.m_version;
+    }
+    inline bool operator!=(const SVersionCmd& lhs, const SVersionCmd& rhs)
+    {
+        return !(lhs == rhs);
     }
 
     //----------------------------------------------------------------------

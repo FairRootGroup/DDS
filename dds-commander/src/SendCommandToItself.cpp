@@ -51,11 +51,11 @@ void CSendCommandToItself::handle_connect(const boost::system::error_code& err)
         // boost::asio::async_write(m_socket, m_request, boost::bind(&CSendCommandToItself::handle_write_request, this, boost::asio::placeholders::error));
 
         SVersionCmd ver_src;
-        ver_src.m_version = 444;
+        ver_src.m_version = 2;
         BYTEVector_t data_to_send;
         ver_src.convertToData(&data_to_send);
         CProtocolMessage msg;
-        msg.encode_message(cmdVERSION, data_to_send);
+        msg.encode_message(cmdHANDSHAKE, data_to_send);
 
         async_write(m_socket,
                     boost::asio::buffer(msg.data(), msg.length()),

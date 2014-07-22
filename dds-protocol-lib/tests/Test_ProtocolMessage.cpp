@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_SUITE(Test_ProtocolMessage);
 
 //----------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdVERSION)
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 {
     // Create a message
     SVersionCmd ver_src;
@@ -30,9 +30,9 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdVERSION)
     BYTEVector_t data_to_send;
     ver_src.convertToData(&data_to_send);
     CProtocolMessage msg_src;
-    msg_src.encode_message(cmdVERSION, data_to_send);
+    msg_src.encode_message(cmdHANDSHAKE, data_to_send);
 
-    BOOST_CHECK(msg_src.header().m_cmd == cmdVERSION);
+    BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE);
 
     // "Send" message
     CProtocolMessage msg_dest;
@@ -46,8 +46,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdVERSION)
 
     // Read the message
     SVersionCmd ver_dest;
-    BYTEVector_t buf(msg_dest.body(), msg_dest.body() + msg_dest.body_length());
-    ver_dest.convertFromData(buf);
+    ver_dest.convertFromData(msg_dest.bodyToContainer());
 
     BOOST_CHECK(ver_src == ver_dest);
 }
