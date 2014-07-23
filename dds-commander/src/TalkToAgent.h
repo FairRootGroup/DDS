@@ -13,21 +13,23 @@ namespace dds
     {
         CTalkToAgent(boost::asio::io_service& _service)
             : CConnectionImpl<CTalkToAgent>(_service)
-            , isHandShakeOK(false)
+            , m_isHandShakeOK(false)
         {
         }
 
       public:
         BEGIN_MSG_MAP(CTalkToAgent)
         MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
+        MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
         END_MSG_MAP()
 
       private:
         // Message Handlers
         int on_cmdHANDSHAKE(const CProtocolMessage& _msg);
+        int on_cmdSUBMIT(const CProtocolMessage& _msg);
 
       private:
-        bool isHandShakeOK;
+        bool m_isHandShakeOK;
     };
 }
 #endif /* defined(__DDS__TalkToAgent__) */

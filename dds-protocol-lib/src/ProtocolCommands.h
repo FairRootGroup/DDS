@@ -21,10 +21,13 @@ namespace dds
         // ----------- VERSION 1 --------------------
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
-        cmdHANDSHAKE, // attachment: SVersionCmd
-        cmdSUBMIT,    // attachment: SSubmitCmd
+        cmdHANDSHAKE,  // attachment: SVersionCmd
+        cmdSUBMIT,     // attachment: SSubmitCmd
+        cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
-        cmdREPLY_ERR_BAD_PROTOCOL_VERSION
+        cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
+        cmdREPLY_SUBMIT_OK, // attachment: SSimpleMsgCmd
+        cmdREPLY_ERR_SUBMIT // attachment: SSimpleMsgCmd
 
         // ----------- VERSION 2 --------------------
     };
@@ -35,7 +38,9 @@ namespace dds
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
-        { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) }
+        { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },
+        { cmdREPLY_SUBMIT_OK, NAME_TO_STRING(cmdREPLY_SUBMIT_OK) },
+        { cmdREPLY_ERR_SUBMIT, NAME_TO_STRING(cmdREPLY_ERR_SUBMIT) }
     };
 
     //----------------------------------------------------------------------
@@ -86,6 +91,37 @@ namespace dds
         return _stream << val.m_version;
     }
     inline bool operator!=(const SVersionCmd& lhs, const SVersionCmd& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SSimpleMsgCmd : public SBasicCmd<SSimpleMsgCmd>
+    {
+        SSimpleMsgCmd()
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            return (m_sMsg.size() + 1);
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SSimpleMsgCmd& val) const
+        {
+            return (m_sMsg == val.m_sMsg);
+        }
+
+        std::string m_sMsg;
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SSimpleMsgCmd& val)
+    {
+        return _stream << val.m_sMsg;
+    }
+    inline bool operator!=(const SSimpleMsgCmd& lhs, const SSimpleMsgCmd& rhs)
     {
         return !(lhs == rhs);
     }

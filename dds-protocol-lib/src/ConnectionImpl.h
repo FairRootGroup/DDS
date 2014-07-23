@@ -41,11 +41,18 @@ namespace dds
     {
       protected:
         CConnectionImpl<T>(boost::asio::io_service& _service)
-            : m_socket(_service)
+            : m_io_service(_service)
+            , m_socket(_service)
             , m_started(false)
             , m_currentMsg()
             , m_outputMessageQueue()
         {
+        }
+
+      public:
+        ~CConnectionImpl<T>()
+        {
+            close();
         }
 
       public:
@@ -61,6 +68,11 @@ namespace dds
         }
 
       public:
+        void connect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
+        {
+            doConnect(_endpoint_iterator);
+        }
+
         void start()
         {
             m_started = true;
@@ -68,7 +80,7 @@ namespace dds
             if (m_outputMessageQueue.empty())
                 readHeader();
             else
-                writeMessage();
+                send();
         }
 
         void stop()
@@ -79,6 +91,17 @@ namespace dds
             m_socket.close();
         }
 
+        void send()
+        {
+            //      writeMessages();
+        }
+
+        void close()
+        {
+            m_io_service.post([this]()
+                              { m_socket.close(); });
+        }
+
         boost::asio::ip::tcp::socket& socket()
         {
             return m_socket;
@@ -86,12 +109,41 @@ namespace dds
 
         void pushMsg(const CProtocolMessage& _msg)
         {
-            m_outputMessageQueue.push_back(_msg);
+            m_io_service.post([this, _msg]()
+                              {
+                                  bool write_in_progress = !m_outputMessageQueue.empty();
+                                  m_outputMessageQueue.push_back(_msg);
+                                  if (!write_in_progress)
+                                  {
+                                      writeMessages();
+                                  }
+                              });
+            // m_outputMessageQueue.push_back(_msg);
         }
 
       private:
+        void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
+        {
+            boost::asio::async_connect(m_socket,
+                                       _endpoint_iterator,
+                                       [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
+                                       {
+                if (!ec)
+                {
+                    LOG(MiscCommon::log_stdout) << "Connection established.";
+                    start();
+                }
+                else
+                {
+                    LOG(MiscCommon::log_stderr) << "Failed to connect: " << ec.message();
+                }
+            });
+        }
+
         void readHeader()
         {
+            m_currentMsg.clear();
+
             boost::asio::async_read(m_socket,
                                     boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length),
                                     [this](boost::system::error_code ec, std::size_t /*length*/)
@@ -131,37 +183,41 @@ namespace dds
             });
         }
 
-        void writeMessage()
+        void writeMessages()
         {
-            while (!m_outputMessageQueue.empty())
-            {
-                CProtocolMessage msg = m_outputMessageQueue.front();
-                m_outputMessageQueue.pop_front();
-                boost::asio::async_write(m_socket,
-                                         boost::asio::buffer(msg.data(), msg.length()),
-                                         [this, &msg](boost::system::error_code ec, std::size_t /*_bytesTransferred*/)
-                                         {
+            LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
+            boost::asio::async_write(
+                m_socket,
+                boost::asio::buffer(m_outputMessageQueue.front().data(), m_outputMessageQueue.front().length()),
+                [this](boost::system::error_code ec, std::size_t /*_bytesTransferred*/)
+                {
                     if (!ec)
                     {
-                        LOG(MiscCommon::debug) << "Data successfully sent: " << msg.toString();
+                        LOG(MiscCommon::debug) << "Data successfully sent";
+                        m_outputMessageQueue.pop_front();
+                        if (!m_outputMessageQueue.empty())
+                        {
+                            writeMessages();
+                        }
+                        else
+                        {
+                            // If there is no notghing to send, we return to read
+                            readHeader();
+                        }
                     }
                     else
                     {
-                        // stop();
-                        LOG(MiscCommon::debug) << "Error sending data: " << msg.toString();
+                        LOG(MiscCommon::error) << "Error sending data: " << ec.message();
+                        m_socket.close();
                     }
                 });
-            }
-
-            // If there is no notghing to send, we return to read
-            readHeader();
         }
 
       private:
+        boost::asio::io_service& m_io_service;
         boost::asio::ip::tcp::socket m_socket;
         bool m_started;
         CProtocolMessage m_currentMsg;
-
         messageQueue_t m_outputMessageQueue;
     };
 }

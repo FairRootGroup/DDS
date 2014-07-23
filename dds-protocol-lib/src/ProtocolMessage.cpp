@@ -17,6 +17,13 @@ CProtocolMessage::CProtocolMessage()
 {
 }
 
+void CProtocolMessage::clear()
+{
+    m_header.clear();
+    m_data.clear();
+    m_data.resize(header_length + max_body_length);
+}
+
 const CProtocolMessage::data_t* CProtocolMessage::data() const
 {
     return &m_data[0];
@@ -120,7 +127,7 @@ const SMessageHeader CProtocolMessage::header() const
 string CProtocolMessage::toString() const
 {
     stringstream ss;
-    ss << "[" << g_cmdToString[m_header.m_cmd] << "]"
+    ss << "[" << g_cmdToString[m_header.m_cmd] << "] "
        << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
     return ss.str();
 }

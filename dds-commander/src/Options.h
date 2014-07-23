@@ -75,7 +75,7 @@ namespace dds
         bpo::options_description options("dds-commander options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("topo,t", bpo::value<std::string>(), "A topology file.");
+        options.add_options()("topo,t", bpo::value<std::string>(&_options->m_sTopoFile), "A topology file.");
         options.add_options()(
             "command",
             bpo::value<std::string>(),

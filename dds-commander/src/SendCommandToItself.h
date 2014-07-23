@@ -5,33 +5,40 @@
 
 #ifndef __DDS__SendCommandToItself__
 #define __DDS__SendCommandToItself__
-
-#include "boost/asio.hpp"
+// DDS
+#include "ConnectionImpl.h"
 
 namespace dds
 {
-    class CProtocol;
-
-    class CSendCommandToItself
+    class CSendCommandToItself : public CConnectionImpl<CSendCommandToItself>
     {
+        CSendCommandToItself(boost::asio::io_service& _service)
+            : CConnectionImpl<CSendCommandToItself>(_service)
+            , m_isHandShakeOK(false)
+        {
+        }
+
       public:
-        CSendCommandToItself(boost::asio::io_service& _io_service,
-                             boost::asio::ip::tcp::resolver::iterator _endpoint_iterator);
+        BEGIN_MSG_MAP(CSendCommandToItself)
+        MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
+        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+        MESSAGE_HANDLER(cmdREPLY_SUBMIT_OK, on_cmdREPLY_SUBMIT_OK)
+        MESSAGE_HANDLER(cmdREPLY_ERR_SUBMIT, on_cmdREPLY_ERR_SUBMIT)
+        END_MSG_MAP()
+
+      public:
+        void setTopoFile(const std::string& _topoFile);
 
       private:
-        void handle_connect(const boost::system::error_code& err);
-        void handle_read_headers(const boost::system::error_code& err);
-        void handle_read_content(const boost::system::error_code& err);
-        void processAdminConnection(int _serverSock);
-        int processProtocolMsgs(int _serverSock, CProtocol* _protocol);
-
-        void writeHandler(const boost::system::error_code& _ec, std::size_t _bytesTransferred);
+        // Message Handlers
+        int on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
+        int on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
+        int on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg);
+        int on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg);
 
       private:
-        boost::asio::ip::tcp::resolver m_resolver;
-        boost::asio::ip::tcp::socket m_socket;
-        boost::asio::streambuf m_request;
-        boost::asio::streambuf m_response;
+        bool m_isHandShakeOK;
+        std::string m_sTopoFile;
     };
 }
 

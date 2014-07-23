@@ -18,6 +18,7 @@
 #include <boost/asio.hpp>
 // STD
 #include <iterator>
+#include <thread>
 
 using namespace std;
 using namespace MiscCommon;
@@ -161,18 +162,43 @@ int main(int argc, char* argv[])
             const string sHost(pt.get<string>("server.host"));
             const string sPort(pt.get<string>("server.port"));
 
-            LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort;
+            LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
+
+            ///////////////
 
             boost::asio::io_service io_service;
 
-            tcp::resolver resolver(io_service);
-            tcp::resolver::query query(sHost, sPort);
-            tcp::resolver::iterator iterator = resolver.resolve(query);
+            boost::asio::ip::tcp::resolver resolver(io_service);
+            boost::asio::ip::tcp::resolver::query query(sHost, sPort);
 
-            //            boost::thread t(boost::bind(&boost::asio::io_service::run, &io_service));
+            boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+            // Try each endpoint until we successfully establish a connection.
+            tcp::socket socket(io_service);
 
-            CSendCommandToItself cmd(io_service, iterator);
-            io_service.run();
+            CSendCommandToItself::connectionPtr_t client = CSendCommandToItself::makeNew(io_service);
+            client->connect(iterator);
+
+            std::thread t([&io_service]()
+                          { io_service.run(); });
+
+            // Prepare a hand shake message
+            SVersionCmd cmd;
+            BYTEVector_t data;
+            cmd.convertToData(&data);
+            CProtocolMessage msg;
+            msg.encode_message(cmdHANDSHAKE, data);
+            client->pushMsg(msg);
+
+            client->setTopoFile(options.m_sTopoFile);
+
+            char line[10];
+            while (std::cin.getline(line, 10))
+            {
+            }
+
+            // io_service.run();
+
+            t.join();
         }
         catch (exception& e)
         {

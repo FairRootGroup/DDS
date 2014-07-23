@@ -68,6 +68,7 @@ namespace dds
         CProtocolMessage();
 
       public:
+        void clear();
         const data_t* data() const;
         data_t* data();
         size_t length() const;

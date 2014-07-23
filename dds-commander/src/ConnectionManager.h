@@ -3,8 +3,8 @@
 //
 //
 
-#ifndef __DDS__CommanderServer__
-#define __DDS__CommanderServer__
+#ifndef __DDS__ConnectionManager__
+#define __DDS__ConnectionManager__
 // BOOST
 #include <boost/asio.hpp>
 // DDS
@@ -33,7 +33,6 @@ namespace dds
       private:
         boost::asio::ip::tcp::acceptor m_acceptor;
         boost::asio::ip::tcp::endpoint m_endpoint;
-        boost::asio::ip::tcp::socket m_socket;
         /// The signal_set is used to register for process termination notifications.
         boost::asio::signal_set m_signals;
 
@@ -41,4 +40,4 @@ namespace dds
         dds::SOptions_t m_options;
     };
 }
-#endif /* defined(__DDS__CommanderServer__) */
+#endif /* defined(__DDS__ConnectionManager__) */

@@ -11,8 +11,6 @@
 #include "ConnectionManager.h"
 #include "TalkToAgent.h"
 #include "Logger.h"
-// API
-//#include <signal.h>
 
 using namespace boost::asio;
 using namespace std;
@@ -24,7 +22,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                        boost::asio::io_service& _io_service,
                                        boost::asio::ip::tcp::endpoint& _endpoint)
     : m_acceptor(_io_service, _endpoint)
-    , m_socket(_io_service)
     , m_signals(_io_service)
     , m_options(_options)
 {
