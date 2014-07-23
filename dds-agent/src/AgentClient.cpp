@@ -9,6 +9,9 @@
 #include "ProtocolCommands.h"
 // STD
 #include <functional>
+// BOOST
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 using namespace std::placeholders;
@@ -30,7 +33,20 @@ void CAgentClient::start()
 {
     LOG(info) << "Starting agent...";
 
-    ip::tcp::endpoint ep(ip::address::from_string("127.0.0.1"), 8001);
+    // Read server info file
+    const string sSrvCfg(CUserDefaults::getServerInfoFile());
+    LOG(info) << "Reading server info from: " << sSrvCfg;
+    if (sSrvCfg.empty())
+        throw runtime_error("Can't find server info file.");
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
+    const string sHost(pt.get<string>("server.host"));
+    const int nPort(pt.get<int>("server.port"));
+
+    LOG(info) << "Contacting DDS commander on " << sHost << ":" << nPort;
+
+    ip::tcp::endpoint ep(ip::address::from_string(sHost), nPort);
     m_socket.async_connect(ep, std::bind(&CAgentClient::connectHandler, this, std::placeholders::_1));
     m_service.run();
 }
@@ -66,6 +82,7 @@ void CAgentClient::connectHandler(const boost::system::error_code& _ec)
         writeMessage();
         // readHeader();
         // doWrite("ping\n");
+        LOG(debug) << "Connection established";
     }
     else
     {
