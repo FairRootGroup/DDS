@@ -9,6 +9,8 @@
 // MiscCommon
 #include "def.h"
 
+#define NAME_TO_STRING(NAME) #NAME
+
 // v1
 const uint16_t g_protocolCommandsVersion = 1;
 
@@ -20,15 +22,19 @@ namespace dds
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
         cmdHANDSHAKE, // attachment: SVersionCmd
-        cmdSUBMIT     // attachment: SSubmitCmd
+        cmdSUBMIT,    // attachment: SSubmitCmd
+        cmdREPLY_HANDSHAKE_OK,
+        cmdREPLY_ERR_BAD_PROTOCOL_VERSION
 
         // ----------- VERSION 2 --------------------
     };
 
-    static std::map<uint16_t, std::string> g_cmdToString{ { cmdUNKNOWN, "cmdUNKNOWN" },
-                                                          { cmdSHUTDOWN, "cmdSHUTDOWN" },
-                                                          { cmdHANDSHAKE, "cmdHANDSHAKE" },
-                                                          { cmdSUBMIT, "cmdSUBMIT" } };
+    static std::map<uint16_t, std::string> g_cmdToString{ { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
+                                                          { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
+                                                          { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
+                                                          { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
+                                                          { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
+                                                          { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) } };
 
     //----------------------------------------------------------------------
 
