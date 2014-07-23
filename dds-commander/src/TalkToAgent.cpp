@@ -17,9 +17,9 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
     // send shutdown if versions are incompatible
     if (ver != SVersionCmd())
     {
-        LOG(warning) << "Client's protocol version is incompatable. Client: "; //<< m_socket.remote_endpoint().address().to_string();
-                                                                               // CProtocolMessage msg;
-                                                                               // msg.encode_message(cmdSHUTDOWN, BYTEVector_t());
+        LOG(warning) << "Client's protocol version is incompatable. Client: " << socket().remote_endpoint().address().to_string();
+        // CProtocolMessage msg;
+        // msg.encode_message(cmdSHUTDOWN, BYTEVector_t());
     }
     return 0;
 }

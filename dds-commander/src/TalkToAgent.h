@@ -4,11 +4,6 @@
 //
 #ifndef __DDS__TalkToAgent__
 #define __DDS__TalkToAgent__
-// STD
-#include <deque>
-// BOOST
-#include "boost/noncopyable.hpp"
-#include "boost/asio.hpp"
 // DDS
 #include "ConnectionImpl.h"
 
@@ -23,7 +18,7 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CTalkToAgent)
-        MESSAGE_HANDLER(dds::cmdHANDSHAKE, on_cmdHANDSHAKE)
+        MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
         END_MSG_MAP()
 
       private:
