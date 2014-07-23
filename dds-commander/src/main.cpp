@@ -178,8 +178,8 @@ int main(int argc, char* argv[])
             CSendCommandToItself::connectionPtr_t client = CSendCommandToItself::makeNew(io_service);
             client->connect(iterator);
 
-            std::thread t([&io_service]()
-                          { io_service.run(); });
+            //          std::thread t([&io_service]()
+            //                      { io_service.run(); });
 
             // Prepare a hand shake message
             SVersionCmd cmd;
@@ -191,14 +191,9 @@ int main(int argc, char* argv[])
 
             client->setTopoFile(options.m_sTopoFile);
 
-            char line[10];
-            while (std::cin.getline(line, 10))
-            {
-            }
+            io_service.run();
 
-            // io_service.run();
-
-            t.join();
+            //            t.join();
         }
         catch (exception& e)
         {
