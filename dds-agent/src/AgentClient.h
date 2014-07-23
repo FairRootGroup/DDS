@@ -38,6 +38,7 @@ namespace dds
         // void doRead();
 
         // void doWrite(const std::string& msg);
+        void resolveHandler(const boost::system::error_code& _ec, boost::asio::ip::tcp::resolver::iterator _it);
 
       private:
         void readHeader();
@@ -48,6 +49,7 @@ namespace dds
 
         boost::asio::ip::tcp::socket m_socket;
         boost::asio::io_service& m_service;
+        boost::asio::ip::tcp::resolver m_resolver;
         CProtocolMessage m_currentMsg;
     };
 }

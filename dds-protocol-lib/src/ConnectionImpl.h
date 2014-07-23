@@ -17,6 +17,7 @@
 
 #define BEGIN_MSG_MAP(theClass)                                          \
   public:                                                                \
+    friend CConnectionImpl<theClass>;                                    \
     void processMessage(const CProtocolMessage& _currentMsg, int& _nRes) \
     {                                                                    \
         switch (_currentMsg.header().m_cmd)                              \
@@ -81,6 +82,11 @@ namespace dds
         boost::asio::ip::tcp::socket& socket()
         {
             return m_socket;
+        }
+
+        void pushMsg(const CProtocolMessage& _msg)
+        {
+            m_outputMessageQueue.push_back(_msg);
         }
 
       private:

@@ -120,6 +120,7 @@ const SMessageHeader CProtocolMessage::header() const
 string CProtocolMessage::toString() const
 {
     stringstream ss;
-    ss << "[" << g_cmdToString[m_header.m_cmd] << "]" << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
+    ss << "[" << g_cmdToString[m_header.m_cmd] << "]"
+       << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
     return ss.str();
 }

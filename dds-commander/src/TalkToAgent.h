@@ -21,8 +21,6 @@ namespace dds
         {
         }
 
-        friend CConnectionImpl<CTalkToAgent>;
-
       public:
         BEGIN_MSG_MAP(CTalkToAgent)
         MESSAGE_HANDLER(dds::cmdHANDSHAKE, on_cmdHANDSHAKE)

@@ -22,6 +22,7 @@ using namespace dds;
 CAgentClient::CAgentClient(boost::asio::io_service& _service)
     : m_socket(_service)
     , m_service(_service)
+    , m_resolver(_service)
 {
 }
 
@@ -42,14 +43,30 @@ void CAgentClient::start()
     boost::property_tree::ptree pt;
     boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
     const string sHost(pt.get<string>("server.host"));
-    const int nPort(pt.get<int>("server.port"));
+    const string sPort(pt.get<string>("server.port"));
 
-    LOG(info) << "Contacting DDS commander on " << sHost << ":" << nPort;
+    LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
-    ip::tcp::endpoint ep(ip::address::from_string(sHost), nPort);
-    m_socket.async_connect(ep, std::bind(&CAgentClient::connectHandler, this, std::placeholders::_1));
+    boost::asio::io_service io_service;
+
+    boost::asio::ip::tcp::resolver resolver(io_service);
+    boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+
+    boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+    boost::asio::async_connect(m_socket, iterator, boost::bind(&CAgentClient::connectHandler, this, boost::asio::placeholders::error));
+
+    //    m_resolver.async_resolve(query, std::bind(&CAgentClient::resolveHandler, this));
+
     m_service.run();
 }
+
+/*void CAgentClient::resolveHandler(const boost::system::error_code& _ec, boost::asio::ip::tcp::resolver::iterator _it)
+{
+    if (!_ec)
+    {
+        m_socket.async_connect(*_it, std::bind(&CAgentClient::connectHandler, this));
+    }
+}*/
 
 void CAgentClient::stop()
 {
