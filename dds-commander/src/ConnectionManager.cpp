@@ -60,7 +60,7 @@ void CConnectionManager::start()
     try
     {
         m_acceptor.listen();
-        TalkToAgentPtr_t client = CTalkToAgent::makeNew(m_acceptor.get_io_service());
+        CTalkToAgent::connectionPtr_t client = CTalkToAgent::makeNew(m_acceptor.get_io_service());
         m_acceptor.async_accept(client->socket(), std::bind(&CConnectionManager::acceptHandler, this, client, sp::_1));
 
         // Create a server info file
@@ -92,14 +92,14 @@ void CConnectionManager::stop()
     }
 }
 
-void CConnectionManager::acceptHandler(TalkToAgentPtr_t _client, const boost::system::error_code& _ec)
+void CConnectionManager::acceptHandler(CTalkToAgent::connectionPtr_t _client, const boost::system::error_code& _ec)
 {
     if (!_ec) // FIXME: Add proper error processing
     {
         _client->start();
         m_agents.push_back(_client);
 
-        TalkToAgentPtr_t newClient = CTalkToAgent::makeNew(m_acceptor.get_io_service());
+        CTalkToAgent::connectionPtr_t newClient = CTalkToAgent::makeNew(m_acceptor.get_io_service());
         m_acceptor.async_accept(newClient->socket(), std::bind(&CConnectionManager::acceptHandler, this, newClient, sp::_1));
     }
     else

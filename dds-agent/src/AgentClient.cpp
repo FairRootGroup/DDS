@@ -123,10 +123,7 @@ void CAgentClient::readBody()
                             {
         if (!ec)
         {
-            stringstream ss;
-            ss << "Received from Agent: ";
-            m_currentMsg.printData(ss);
-            LOG(debug) << ss.str();
+            LOG(debug) << "Received from Agent: " << m_currentMsg.toString();
             // process recieved message
             processMessage();
             // Read next message

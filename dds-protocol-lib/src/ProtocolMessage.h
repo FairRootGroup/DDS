@@ -78,7 +78,7 @@ namespace dds
         bool decode_header();
         void encode_message(uint16_t _cmd, const dataContainer_t& _data);
         const SMessageHeader header() const;
-        void printData(std::ostream& _stream) const;
+        std::string toString() const;
         const dataContainer_t dataToContainer() const
         {
             return m_data;

@@ -25,6 +25,11 @@ namespace dds
         // ----------- VERSION 2 --------------------
     };
 
+    static std::map<uint16_t, std::string> g_cmdToString{ { cmdUNKNOWN, "cmdUNKNOWN" },
+                                                         { cmdSHUTDOWN, "cmdSHUTDOWN" },
+                                                         { cmdHANDSHAKE, "cmdHANDSHAKE" },
+                                                         { cmdSUBMIT, "cmdSUBMIT" } };
+
     //----------------------------------------------------------------------
 
     template <class _Owner>

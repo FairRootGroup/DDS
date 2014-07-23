@@ -23,7 +23,7 @@ namespace dds
         void stop();
 
       private:
-        void acceptHandler(TalkToAgentPtr_t _agent, const boost::system::error_code& _ec);
+        void acceptHandler(CTalkToAgent::connectionPtr_t _agent, const boost::system::error_code& _ec);
         void createServerInfoFile() const;
         void deleteServerInfoFile() const;
         void doAwaitStop();
@@ -35,7 +35,7 @@ namespace dds
         /// The signal_set is used to register for process termination notifications.
         boost::asio::signal_set m_signals;
 
-        TalkToAgentPtrVector_t m_agents;
+        CTalkToAgent::connectionPtrVector_t m_agents;
         dds::SOptions_t m_options;
     };
 }

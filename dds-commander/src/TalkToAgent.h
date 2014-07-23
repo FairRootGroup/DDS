@@ -10,36 +10,27 @@
 #include "boost/noncopyable.hpp"
 #include "boost/asio.hpp"
 // DDS
-#include "ProtocolMessage.h"
+#include "ConnectionImpl.h"
 
 namespace dds
 {
-    class CTalkToAgent;
-    typedef std::shared_ptr<CTalkToAgent> TalkToAgentPtr_t;
-    typedef std::vector<TalkToAgentPtr_t> TalkToAgentPtrVector_t;
-    typedef std::deque<CProtocolMessage> messageQueue_t;
-
-    class CTalkToAgent : public std::enable_shared_from_this<CTalkToAgent>, boost::noncopyable
+    class CTalkToAgent : public CConnectionImpl<CTalkToAgent>
     {
-        CTalkToAgent(boost::asio::io_service& _service);
+        CTalkToAgent(boost::asio::io_service& _service)
+            : CConnectionImpl<CTalkToAgent>(_service)
+        {
+        }
+
+        friend CConnectionImpl<CTalkToAgent>;
 
       public:
-        static TalkToAgentPtr_t makeNew(boost::asio::io_service& _service);
-        void start();
-        void stop();
-
-        boost::asio::ip::tcp::socket& socket();
+        BEGIN_MSG_MAP(CTalkToAgent)
+        MESSAGE_HANDLER(dds::cmdHANDSHAKE, on_cmdHANDSHAKE)
+        END_MSG_MAP()
 
       private:
-        void readHeader();
-        void readBody();
-        void processMessage();
-
-      private:
-        boost::asio::ip::tcp::socket m_socket;
-        bool m_started;
-        CProtocolMessage m_currentMsg;
-        // messageQueue_t m_readMsgBuffer;
+        // Message Handlers
+        int on_cmdHANDSHAKE(const CProtocolMessage& _msg);
     };
 }
 #endif /* defined(__DDS__TalkToAgent__) */

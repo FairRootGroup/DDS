@@ -3,6 +3,7 @@
 //
 //
 #include "ProtocolMessage.h"
+#include "ProtocolCommands.h"
 #include "HexView.h"
 #include "INet.h"
 
@@ -116,7 +117,9 @@ const SMessageHeader CProtocolMessage::header() const
     return m_header;
 }
 
-void CProtocolMessage::printData(std::ostream& _stream) const
+string CProtocolMessage::toString() const
 {
-    _stream << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
+    stringstream ss;
+    ss << "[" << g_cmdToString[m_header.m_cmd] << "]" << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
+    return ss.str();
 }
