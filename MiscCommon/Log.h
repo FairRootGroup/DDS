@@ -56,7 +56,10 @@ namespace MiscCommon
         {
         }
 
-        void push(LOG_SEVERITY _Severity, unsigned long _ErrorCode, const std::string& _Module, const std::string& _Message)
+        void push(LOG_SEVERITY _Severity,
+                  unsigned long _ErrorCode,
+                  const std::string& _Module,
+                  const std::string& _Message)
         {
             if ((_Severity & m_logLevel) != _Severity)
                 return;
@@ -65,8 +68,9 @@ namespace MiscCommon
             pid_t tid = gettid();
             std::string _DTBuff;
             std::stringstream strMsg;
-            strMsg << GetCurTimeString(&_DTBuff) << char(e_FieldSeparator) << GetSeverityString(_Severity) << char(e_FieldSeparator) << GetErrorCode(_ErrorCode)
-                   << char(e_FieldSeparator) << "[" << _Module << ":thread-" << tid << "]" << char(e_FieldSeparator) << _Message;
+            strMsg << GetCurTimeString(&_DTBuff) << char(e_FieldSeparator) << GetSeverityString(_Severity)
+                   << char(e_FieldSeparator) << GetErrorCode(_ErrorCode) << char(e_FieldSeparator) << "[" << _Module
+                   << ":thread-" << tid << "]" << char(e_FieldSeparator) << _Message;
 
             smart_mutex m(m_mutex);
             if (m_stream && m_stream->good())
@@ -149,7 +153,8 @@ namespace MiscCommon
       public:
         CFileLog(const std::string& _LogFileName,
                  bool _CreateNew = false,
-                 unsigned char _logLevel = LOG_SEVERITY_INFO | LOG_SEVERITY_WARNING | LOG_SEVERITY_FAULT | LOG_SEVERITY_CRITICAL_ERROR)
+                 unsigned char _logLevel = LOG_SEVERITY_INFO | LOG_SEVERITY_WARNING | LOG_SEVERITY_FAULT |
+                                           LOG_SEVERITY_CRITICAL_ERROR)
             : CLog<stream_type>(&m_log_file, _logLevel)
             , m_log_file(_LogFileName.c_str(), (_CreateNew ? std::ios::trunc : std::ios::app) | std::ios::out)
         {

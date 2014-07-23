@@ -17,14 +17,18 @@ using namespace std;
 using namespace dds;
 using boost::asio::ip::tcp;
 
-CSendCommandToItself::CSendCommandToItself(boost::asio::io_service& _io_service, tcp::resolver::iterator _endpoint_iterator)
+CSendCommandToItself::CSendCommandToItself(boost::asio::io_service& _io_service,
+                                           tcp::resolver::iterator _endpoint_iterator)
     : m_resolver(_io_service)
     , m_socket(_io_service)
 {
     //  std::ostream request_stream(&m_request);
     //  request_stream << "TEST_CMD";
 
-    boost::asio::async_connect(m_socket, _endpoint_iterator, boost::bind(&CSendCommandToItself::handle_connect, this, boost::asio::placeholders::error));
+    boost::asio::async_connect(
+        m_socket,
+        _endpoint_iterator,
+        boost::bind(&CSendCommandToItself::handle_connect, this, boost::asio::placeholders::error));
 }
 
 void CSendCommandToItself::handle_connect(const boost::system::error_code& err)
@@ -33,7 +37,8 @@ void CSendCommandToItself::handle_connect(const boost::system::error_code& err)
     if (!err)
     {
         // The connection was successful. Send the request.
-        // boost::asio::async_write(m_socket, m_request, boost::bind(&CSendCommandToItself::handle_write_request, this, boost::asio::placeholders::error));
+        // boost::asio::async_write(m_socket, m_request, boost::bind(&CSendCommandToItself::handle_write_request, this,
+        // boost::asio::placeholders::error));
 
         SVersionCmd ver_src;
         ver_src.m_version = 2;
@@ -74,10 +79,11 @@ void CSendCommandToItself::handle_read_headers(const boost::system::error_code& 
             std::cout << &m_response;
 
         // Start reading remaining data until EOF.
-        boost::asio::async_read(m_socket,
-                                m_response,
-                                boost::asio::transfer_at_least(1),
-                                boost::bind(&CSendCommandToItself::handle_read_content, this, boost::asio::placeholders::error));
+        boost::asio::async_read(
+            m_socket,
+            m_response,
+            boost::asio::transfer_at_least(1),
+            boost::bind(&CSendCommandToItself::handle_read_content, this, boost::asio::placeholders::error));
     }
     else
     {
@@ -94,10 +100,11 @@ void CSendCommandToItself::handle_read_content(const boost::system::error_code& 
         std::cout << &m_response;
 
         // Continue reading remaining data until EOF.
-        boost::asio::async_read(m_socket,
-                                m_response,
-                                boost::asio::transfer_at_least(1),
-                                boost::bind(&CSendCommandToItself::handle_read_content, this, boost::asio::placeholders::error));
+        boost::asio::async_read(
+            m_socket,
+            m_response,
+            boost::asio::transfer_at_least(1),
+            boost::bind(&CSendCommandToItself::handle_read_content, this, boost::asio::placeholders::error));
     }
     else if (err != boost::asio::error::eof)
     {

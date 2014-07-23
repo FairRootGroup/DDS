@@ -195,7 +195,8 @@ namespace MiscCommon
         return (*_pString);
     }
 
-    // HACK: because of the bug in gcc 3.3 we need to use this nasty ToLower and ToUpper instead of direct calls of tolower (tolower.. is inline in this version
+    // HACK: because of the bug in gcc 3.3 we need to use this nasty ToLower and ToUpper instead of direct calls of
+    // tolower (tolower.. is inline in this version
     // of std lib)...
     struct ToLower
     {

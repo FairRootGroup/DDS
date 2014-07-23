@@ -361,7 +361,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
 
     // Dublicated names
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task2", pt.get_child("topology")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::COLLECTION, "collection2", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::COLLECTION, "collection2", pt.get_child("topology")),
+                      logic_error);
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::GROUP, "group2", pt.get_child("topology.main")), logic_error);
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::PORT, "port3", pt.get_child("topology")), logic_error);
 }

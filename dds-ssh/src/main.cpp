@@ -85,11 +85,12 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
         bpo::value<vector<string>>()->multitoken(),
         "Perform an action on defined worker nodes. (arg is a space separated list of WN names)"
         " Can only be used in connection with \"submit\", \"clean\", \"fast-clean\", \"exec\".")(
-        "debug,d", "Verbose mode. Causes dds-ssh to print debugging messages about its progress")("threads,t",
-                                                                                                  bpo::value<size_t>()->default_value(5),
-                                                                                                  "It defines a number of threads in dds-ssh's thread pool."
-                                                                                                  " Min value is 1, max value is (Core*2)."
-                                                                                                  " Default: 5");
+        "debug,d", "Verbose mode. Causes dds-ssh to print debugging messages about its progress")(
+        "threads,t",
+        bpo::value<size_t>()->default_value(5),
+        "It defines a number of threads in dds-ssh's thread pool."
+        " Min value is 1, max value is (Core*2)."
+        " Default: 5");
 
     //...positional
     bpo::positional_options_description pd;
@@ -116,7 +117,8 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
     {
         if (getCommandByName(vm["command"].as<string>()) == cmd_unknown)
         {
-            cout << PROJECT_NAME << " error: unknown command: " << vm["command"].as<string>() << "\n\n" << visible << endl;
+            cout << PROJECT_NAME << " error: unknown command: " << vm["command"].as<string>() << "\n\n" << visible
+                 << endl;
             return false;
         }
     }
@@ -252,7 +254,9 @@ int main(int argc, char* argv[])
             stringstream ss(cmdOutput);
             // send the output line by line to the log
             StringVector_t vec;
-            std::copy(custom_istream_iterator<std::string>(ss), custom_istream_iterator<std::string>(), std::back_inserter(vec));
+            std::copy(custom_istream_iterator<std::string>(ss),
+                      custom_istream_iterator<std::string>(),
+                      std::back_inserter(vec));
             StringVector_t::const_iterator iter = vec.begin();
             StringVector_t::const_iterator iter_end = vec.end();
             for (; iter != iter_end; ++iter)
@@ -295,7 +299,8 @@ int main(int argc, char* argv[])
         // in order to insert a user defined shell script
         if (cmd_submit == command && !inlineShellScripCmds.empty())
         {
-            slog.debug_msg("dds-ssh config contains an inline shell script. It will be injected it into wrk. package\n");
+            slog.debug_msg(
+                "dds-ssh config contains an inline shell script. It will be injected it into wrk. package\n");
             string scriptFileName(DDS::showWrkPackageDir());
             scriptFileName += "user_worker_env.sh";
             smart_path(&scriptFileName);
@@ -313,7 +318,9 @@ int main(int argc, char* argv[])
             stringstream ss(cmdOutput);
             // send the output line by line to the log
             StringVector_t vec;
-            std::copy(custom_istream_iterator<std::string>(ss), custom_istream_iterator<std::string>(), std::back_inserter(vec));
+            std::copy(custom_istream_iterator<std::string>(ss),
+                      custom_istream_iterator<std::string>(),
+                      std::back_inserter(vec));
             StringVector_t::const_iterator iter = vec.begin();
             StringVector_t::const_iterator iter_end = vec.end();
             for (; iter != iter_end; ++iter)
@@ -412,8 +419,8 @@ int main(int argc, char* argv[])
         size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
         ostringstream msg;
         msg << "\n*******************\n"
-            << "Successfully processed tasks: " << threadPool.successfulTasks() << '\n' << "Failed tasks: " << badFailedCount << '\n'
-            << "*******************\n";
+            << "Successfully processed tasks: " << threadPool.successfulTasks() << '\n'
+            << "Failed tasks: " << badFailedCount << '\n' << "*******************\n";
         slog.debug_msg(msg.str());
 
         if (badFailedCount > 0 && !vm.count("debug"))

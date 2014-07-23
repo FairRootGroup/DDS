@@ -15,7 +15,8 @@ namespace dds
     class CSendCommandToItself
     {
       public:
-        CSendCommandToItself(boost::asio::io_service& _io_service, boost::asio::ip::tcp::resolver::iterator _endpoint_iterator);
+        CSendCommandToItself(boost::asio::io_service& _io_service,
+                             boost::asio::ip::tcp::resolver::iterator _endpoint_iterator);
 
       private:
         void handle_connect(const boost::system::error_code& err);

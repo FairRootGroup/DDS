@@ -76,17 +76,18 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()("topo,t", bpo::value<std::string>(), "A topology file.");
-        options.add_options()("command",
-                              bpo::value<std::string>(),
-                              "The command is a name of dds-commander command."
-                              " Can be one of the following: start, stop, status.\n"
-                              "For user's convenience it is allowed to call dds-commander without \"--command\" option"
-                              " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
-                              "Commands:\n"
-                              "   start: \tStart dds-commander daemon\n"
-                              "   stop: \tStop dds-commander daemon\n"
-                              "   status: \tQuery current status of dds-command daemon\n"
-                              "   submit: \tSubmit a topology to a defined RMS\n");
+        options.add_options()(
+            "command",
+            bpo::value<std::string>(),
+            "The command is a name of dds-commander command."
+            " Can be one of the following: start, stop, status.\n"
+            "For user's convenience it is allowed to call dds-commander without \"--command\" option"
+            " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
+            "Commands:\n"
+            "   start: \tStart dds-commander daemon\n"
+            "   stop: \tStop dds-commander daemon\n"
+            "   status: \tQuery current status of dds-command daemon\n"
+            "   submit: \tSubmit a topology to a defined RMS\n");
 
         //...positional
         bpo::positional_options_description pd;
@@ -116,11 +117,13 @@ namespace dds
         {
             if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
             {
-                LOG(MiscCommon::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n" << options;
+                LOG(MiscCommon::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n"
+                                            << options;
                 return false;
             }
 
-            if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) && !vm.count("topo"))
+            if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) &&
+                !vm.count("topo"))
             {
                 LOG(MiscCommon::log_stderr) << "specify a topo file"
                                             << "\n\n" << options;

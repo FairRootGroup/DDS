@@ -113,7 +113,8 @@ namespace MiscCommon
         }
         /**
          *
-         * @brief A specialization of the get_attr_value template function with the bool type -- xml value: true or false
+         * @brief A specialization of the get_attr_value template function with the bool type -- xml value: true or
+         *false
          * @param[in] _element - XML node to process. Must not be a NULL value.
          * @param[in] _attr - Name of the attribute to read. Must not be a NULL value.
          * @param[in,out] _data - A buffer to keep a retrieved value of the attribute. Must not be a NULL value.
@@ -212,7 +213,8 @@ namespace MiscCommon
          *
          */
         template <class _T>
-        inline xercesc::DOMNode* GetSingleNodeByName_Ex(const _T* _Node, const std::string& _NodeName) throw(std::exception)
+        inline xercesc::DOMNode* GetSingleNodeByName_Ex(const _T* _Node,
+                                                        const std::string& _NodeName) throw(std::exception)
         {
             xercesc::DOMNode* node = GetSingleNodeByName(_Node, _NodeName.c_str());
             if (!node)
@@ -242,7 +244,8 @@ namespace MiscCommon
         }
         /**
          *
-         * @brief A specialization of the get_node_value template function with the bool type -- xml value: true or false
+         * @brief A specialization of the get_node_value template function with the bool type -- xml value: true or
+         *false
          * @param[in] _parent_node - XML parent node to process. Must not be a NULL value.
          * @param[in] _node_name - Name of the node which value should be retrieved. Must not be a NULL value.
          * @param[in,out] _data - A buffer to keep a retrieved node value. Must not be a NULL value.

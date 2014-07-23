@@ -55,26 +55,27 @@ namespace MiscCommon
  * @param[in] _ELEMENT_NAME - Name of the XML element to read.
  *
  */
-#define BEGIN_READ_XML_NODE(_T, _ELEMENT_NAME)                                                                                        \
-    void ReadXmlCfg(xercesc::DOMNode* _element)                                                                                       \
-    {                                                                                                                                 \
-        const std::string str("An internal error has been detected. Can't read configuration of " + std::string(#_T) + " manager, "); \
-        if (!_element)                                                                                                                \
-            throw std::invalid_argument(str + "DOMNode is NULL.");                                                                    \
-        MiscCommon::XMLHelper::smart_XMLCh ElementName(_ELEMENT_NAME);                                                                \
-        xercesc::DOMElement* config_element(dynamic_cast<xercesc::DOMElement*>(_element));                                            \
-        if (!config_element)                                                                                                          \
-            throw std::runtime_error(str + "element " + std::string(#_ELEMENT_NAME) + " is missing");                                 \
-        xercesc::DOMNodeList* list(config_element->getElementsByTagName(ElementName));                                                \
-        if (!list)                                                                                                                    \
-            throw std::runtime_error(str + "element " + std::string(#_ELEMENT_NAME) + " is missing");                                 \
-        xercesc::DOMNode* node(list->item(0));                                                                                        \
-        if (!node)                                                                                                                    \
-            throw std::runtime_error(str + "element " + std::string(#_ELEMENT_NAME) + " is missing");                                 \
-        xercesc::DOMElement* elementConfig(NULL);                                                                                     \
-        if (xercesc::DOMNode::ELEMENT_NODE == node->getNodeType())                                                                    \
-            elementConfig = dynamic_cast<xercesc::DOMElement*>(node);                                                                 \
-        if (!elementConfig)                                                                                                           \
+#define BEGIN_READ_XML_NODE(_T, _ELEMENT_NAME)                                                                         \
+    void ReadXmlCfg(xercesc::DOMNode* _element)                                                                        \
+    {                                                                                                                  \
+        const std::string str("An internal error has been detected. Can't read configuration of " + std::string(#_T) + \
+                              " manager, ");                                                                           \
+        if (!_element)                                                                                                 \
+            throw std::invalid_argument(str + "DOMNode is NULL.");                                                     \
+        MiscCommon::XMLHelper::smart_XMLCh ElementName(_ELEMENT_NAME);                                                 \
+        xercesc::DOMElement* config_element(dynamic_cast<xercesc::DOMElement*>(_element));                             \
+        if (!config_element)                                                                                           \
+            throw std::runtime_error(str + "element " + std::string(#_ELEMENT_NAME) + " is missing");                  \
+        xercesc::DOMNodeList* list(config_element->getElementsByTagName(ElementName));                                 \
+        if (!list)                                                                                                     \
+            throw std::runtime_error(str + "element " + std::string(#_ELEMENT_NAME) + " is missing");                  \
+        xercesc::DOMNode* node(list->item(0));                                                                         \
+        if (!node)                                                                                                     \
+            throw std::runtime_error(str + "element " + std::string(#_ELEMENT_NAME) + " is missing");                  \
+        xercesc::DOMElement* elementConfig(NULL);                                                                      \
+        if (xercesc::DOMNode::ELEMENT_NODE == node->getNodeType())                                                     \
+            elementConfig = dynamic_cast<xercesc::DOMElement*>(node);                                                  \
+        if (!elementConfig)                                                                                            \
             throw std::runtime_error(str + "empty XML document");
 /**
  *

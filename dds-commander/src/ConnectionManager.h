@@ -16,7 +16,9 @@ namespace dds
     class CConnectionManager
     {
       public:
-        CConnectionManager(const SOptions_t& _options, boost::asio::io_service& io_service, boost::asio::ip::tcp::endpoint& endpoint);
+        CConnectionManager(const SOptions_t& _options,
+                           boost::asio::io_service& io_service,
+                           boost::asio::ip::tcp::endpoint& endpoint);
         virtual ~CConnectionManager();
 
         void start();

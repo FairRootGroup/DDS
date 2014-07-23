@@ -98,13 +98,15 @@ namespace MiscCommon
     // m_istream_iterator template operators
     // test for m_istream_iterator equality
     template <class T, class Ch, class Tr, class Dist>
-    inline bool operator==(const custom_istream_iterator<T, Ch, Tr, Dist>& lhs, const custom_istream_iterator<T, Ch, Tr, Dist>& rhs)
+    inline bool operator==(const custom_istream_iterator<T, Ch, Tr, Dist>& lhs,
+                           const custom_istream_iterator<T, Ch, Tr, Dist>& rhs)
     {
         return lhs.equal(rhs);
     }
 
     template <class T, class Ch, class Tr, class Dist>
-    inline bool operator!=(const custom_istream_iterator<T, Ch, Tr, Dist>& lhs, const custom_istream_iterator<T, Ch, Tr, Dist>& rhs)
+    inline bool operator!=(const custom_istream_iterator<T, Ch, Tr, Dist>& lhs,
+                           const custom_istream_iterator<T, Ch, Tr, Dist>& rhs)
     {
         return !(lhs == rhs);
     }

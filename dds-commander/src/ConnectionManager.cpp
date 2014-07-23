@@ -20,7 +20,9 @@ using namespace dds;
 using namespace MiscCommon;
 namespace sp = std::placeholders;
 
-CConnectionManager::CConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service, boost::asio::ip::tcp::endpoint& _endpoint)
+CConnectionManager::CConnectionManager(const SOptions_t& _options,
+                                       boost::asio::io_service& _io_service,
+                                       boost::asio::ip::tcp::endpoint& _endpoint)
     : m_acceptor(_io_service, _endpoint)
     , m_socket(_io_service)
     , m_signals(_io_service)
@@ -100,7 +102,8 @@ void CConnectionManager::acceptHandler(CTalkToAgent::connectionPtr_t _client, co
         m_agents.push_back(_client);
 
         CTalkToAgent::connectionPtr_t newClient = CTalkToAgent::makeNew(m_acceptor.get_io_service());
-        m_acceptor.async_accept(newClient->socket(), std::bind(&CConnectionManager::acceptHandler, this, newClient, sp::_1));
+        m_acceptor.async_accept(newClient->socket(),
+                                std::bind(&CConnectionManager::acceptHandler, this, newClient, sp::_1));
     }
     else
     {

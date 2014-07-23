@@ -414,7 +414,8 @@ namespace MiscCommon
             void connect(unsigned short _nPort, const std::string& _Addr)
             {
                 if (m_Socket < 0)
-                    throw std::runtime_error(socket_error_string(m_Socket, "there was NULL socket given as a client socket to Connect"));
+                    throw std::runtime_error(
+                        socket_error_string(m_Socket, "there was NULL socket given as a client socket to Connect"));
 
                 sockaddr_in addr;
                 addr.sin_family = AF_INET;

@@ -53,7 +53,8 @@ void CAgentClient::start()
     boost::asio::ip::tcp::resolver::query query(sHost, sPort);
 
     boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-    boost::asio::async_connect(m_socket, iterator, boost::bind(&CAgentClient::connectHandler, this, boost::asio::placeholders::error));
+    boost::asio::async_connect(
+        m_socket, iterator, boost::bind(&CAgentClient::connectHandler, this, boost::asio::placeholders::error));
 
     //    m_resolver.async_resolve(query, std::bind(&CAgentClient::resolveHandler, this));
 
@@ -127,7 +128,8 @@ void CAgentClient::connectHandler(const boost::system::error_code& _ec)
 //{
 //    std::copy(msg.begin(), msg.end(), m_writeBuffer);
 //    async_write(
-//        m_socket, boost::asio::buffer(m_writeBuffer, msg.size()), std::bind(&CAgentClient::writeHandler, this, std::placeholders::_1, std::placeholders::_2));
+//        m_socket, boost::asio::buffer(m_writeBuffer, msg.size()), std::bind(&CAgentClient::writeHandler, this,
+//        std::placeholders::_1, std::placeholders::_2));
 //}
 
 void CAgentClient::readHeader()
@@ -145,7 +147,8 @@ void CAgentClient::readHeader()
         }
     };
 
-    boost::asio::async_read(m_socket, boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length), readHandler);
+    boost::asio::async_read(
+        m_socket, boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length), readHandler);
 }
 
 void CAgentClient::readBody()
@@ -180,7 +183,8 @@ void CAgentClient::processMessage()
             // send shutdown if versions are incompatible
             if (ver != SVersionCmd())
             {
-                LOG(warning) << "Client's protocol version is incompatable. Client: " << m_socket.remote_endpoint().address().to_string();
+                LOG(warning) << "Client's protocol version is incompatable. Client: "
+                             << m_socket.remote_endpoint().address().to_string();
                 CProtocolMessage msg;
                 msg.encode_message(cmdSHUTDOWN, BYTEVector_t());
 

@@ -20,20 +20,29 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     m_keys.clear();
     boost::program_options::options_description config_file_options("DDS user defaults options");
     config_file_options.add_options()(
-        "server.work_dir", boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"), "");
+        "server.work_dir",
+        boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"),
+        "");
     config_file_options.add_options()(
-        "server.log_dir", boost::program_options::value<string>(&m_options.m_general.m_logDir)->default_value("$HOME/.DDS/log"), "");
-    config_file_options.add_options()("server.log_severity_level",
-                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_logSeverityLevel)->default_value(0));
+        "server.log_dir",
+        boost::program_options::value<string>(&m_options.m_general.m_logDir)->default_value("$HOME/.DDS/log"),
+        "");
+    config_file_options.add_options()(
+        "server.log_severity_level",
+        boost::program_options::value<unsigned int>(&m_options.m_general.m_logSeverityLevel)->default_value(0));
     config_file_options.add_options()("server.log_rotation_size",
-                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_logRotationSize)->default_value(10 * 1024 * 1024));
-    config_file_options.add_options()("server.log_has_console_output",
-                                      boost::program_options::value<bool>(&m_options.m_general.m_logHasConsoleOutput)->default_value(true));
+                                      boost::program_options::value<unsigned int>(
+                                          &m_options.m_general.m_logRotationSize)->default_value(10 * 1024 * 1024));
+    config_file_options.add_options()(
+        "server.log_has_console_output",
+        boost::program_options::value<bool>(&m_options.m_general.m_logHasConsoleOutput)->default_value(true));
     config_file_options.add_options()("server.commander_port_range_min",
-                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMin)->default_value(20000),
+                                      boost::program_options::value<unsigned int>(
+                                          &m_options.m_general.m_ddsCommanderPortRangeMin)->default_value(20000),
                                       "");
     config_file_options.add_options()("server.commander_port_range_max",
-                                      boost::program_options::value<unsigned int>(&m_options.m_general.m_ddsCommanderPortRangeMax)->default_value(21000),
+                                      boost::program_options::value<unsigned int>(
+                                          &m_options.m_general.m_ddsCommanderPortRangeMax)->default_value(21000),
                                       "");
     if (!_get_default)
     {
@@ -45,7 +54,8 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
             throw runtime_error(msg);
         }
         // Parse the config file
-        boost::program_options::store(boost::program_options::parse_config_file(ifs, config_file_options, true), m_keys);
+        boost::program_options::store(boost::program_options::parse_config_file(ifs, config_file_options, true),
+                                      m_keys);
     }
     else
     {
@@ -53,7 +63,8 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         char* arg[1];
         arg[0] = new char[1];
         arg[0][0] = '\0';
-        boost::program_options::store(boost::program_options::basic_command_line_parser<char>(1, arg).options(config_file_options).run(), m_keys);
+        boost::program_options::store(
+            boost::program_options::basic_command_line_parser<char>(1, arg).options(config_file_options).run(), m_keys);
         delete[] arg[0];
     }
 

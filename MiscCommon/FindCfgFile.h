@@ -77,7 +77,8 @@ namespace MiscCommon
         {
             if (!_RetVal)
                 return;
-            typename container_type::const_iterator iter(find_if(m_Paths.begin(), m_Paths.end(), SFileExists<container_value>()));
+            typename container_type::const_iterator iter(
+                find_if(m_Paths.begin(), m_Paths.end(), SFileExists<container_value>()));
 
             if (m_Paths.end() == iter)
                 return;
@@ -90,7 +91,8 @@ namespace MiscCommon
             if (!_stream)
                 return;
 
-            std::copy(m_Paths.begin(), m_Paths.end(), std::ostream_iterator<container_value>(*_stream, _Seporator.c_str()));
+            std::copy(
+                m_Paths.begin(), m_Paths.end(), std::ostream_iterator<container_value>(*_stream, _Seporator.c_str()));
         }
 
       private:

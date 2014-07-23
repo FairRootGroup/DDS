@@ -71,7 +71,8 @@ struct SConfigRecord
     }
     bool operator==(const SConfigRecord& _rec) const
     {
-        return (m_id == _rec.m_id && m_addr == _rec.m_addr && m_sshOptions == _rec.m_sshOptions && m_wrkDir == _rec.m_wrkDir && m_nWorkers == _rec.m_nWorkers);
+        return (m_id == _rec.m_id && m_addr == _rec.m_addr && m_sshOptions == _rec.m_sshOptions &&
+                m_wrkDir == _rec.m_wrkDir && m_nWorkers == _rec.m_nWorkers);
     }
     std::string m_id;
     std::string m_addr;

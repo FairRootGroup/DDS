@@ -116,8 +116,9 @@ int main(int argc, char* argv[])
 
             boost::asio::io_service io_service;
             // get a free port from a given range
-            int nSrvPort = MiscCommon::INet::get_free_port(options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
-                                                           options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+            int nSrvPort = MiscCommon::INet::get_free_port(
+                options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
+                options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 

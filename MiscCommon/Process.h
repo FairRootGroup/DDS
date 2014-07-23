@@ -63,7 +63,8 @@ namespace MiscCommon
                 {
                     // We don't want to unlink this file
                     m_FileName.clear();
-                    throw std::runtime_error("Error creating pidfile. The process corresponding to pidfile \"" + _FileName + "\" is still running");
+                    throw std::runtime_error("Error creating pidfile. The process corresponding to pidfile \"" +
+                                             _FileName + "\" is still running");
                 }
 
                 // Wrtiting new pidfile
@@ -113,7 +114,9 @@ namespace MiscCommon
         typedef std::set<pid_t> ProcContainer_t;
 
       public:
-        static void getAllPIDsForProcessName(const std::string& _processName, ProcContainer_t* _pidContainer, bool _filterForRealUserID = false)
+        static void getAllPIDsForProcessName(const std::string& _processName,
+                                             ProcContainer_t* _pidContainer,
+                                             bool _filterForRealUserID = false)
         {
             // Setting up the mib (Management Information Base)
             // We pass CTL_KERN, KERN_PROC, KERN_PROC_ALL to sysctl as the MIB
@@ -143,7 +146,8 @@ namespace MiscCommon
                 BSDProcInfo = (struct kinfo_proc*)malloc(buffSize);
 
                 if (BSDProcInfo == NULL)
-                    throw system_error("Error occurred while retrieving a running processes list. Unable to allocate the buffer.");
+                    throw system_error(
+                        "Error occurred while retrieving a running processes list. Unable to allocate the buffer.");
 
                 error = sysctl(mib, 3, BSDProcInfo, &buffSize, NULL, 0);
 
@@ -155,7 +159,8 @@ namespace MiscCommon
                 }
                 else
                 {
-                    // failed getting process information we will try again next time around the loop.  Note this is caused
+                    // failed getting process information we will try again next time around the loop.  Note this is
+                    // caused
                     // by the fact the process list changed between getting the size of the buffer and actually filling
                     // the buffer (something which will happen from time to time since the process list is dynamic).
                     // Anyways, the attempted sysctl call failed.  We will now begin again by freeing up the allocated
@@ -317,7 +322,8 @@ namespace MiscCommon
             m_f = ifstream_ptr(new std::ifstream(ss.str().c_str()));
             // create reader objects
             // HACK: the extra set of parenthesis (the last argument of vector's ctor) is required (for gcc 4.1+)
-            //      StringVector_t vec( custom_istream_iterator<std::string>(*m_f), (custom_istream_iterator<std::string>()) );
+            //      StringVector_t vec( custom_istream_iterator<std::string>(*m_f),
+            //      (custom_istream_iterator<std::string>()) );
             // or
             // custom_istream_iterator<std::string> in_begin(*m_f);
             //      custom_istream_iterator<std::string> in_end;
@@ -419,8 +425,11 @@ namespace MiscCommon
     }
 
     // TODO: Document me!
-    inline void do_execv(const std::string& _Command, const StringVector_t& _Params, size_t _Delay, std::string* _output, std::string* _errout = NULL) throw(
-        std::exception)
+    inline void do_execv(const std::string& _Command,
+                         const StringVector_t& _Params,
+                         size_t _Delay,
+                         std::string* _output,
+                         std::string* _errout = NULL) throw(std::exception)
     {
         pid_t child_pid;
         std::vector<const char*> cargs; // careful with c_str()!!!

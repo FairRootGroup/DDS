@@ -29,12 +29,14 @@ namespace dds
         // ----------- VERSION 2 --------------------
     };
 
-    static std::map<uint16_t, std::string> g_cmdToString{ { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
-                                                          { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
-                                                          { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
-                                                          { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
-                                                          { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
-                                                          { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) } };
+    static std::map<uint16_t, std::string> g_cmdToString{
+        { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
+        { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
+        { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
+        { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
+        { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
+        { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) }
+    };
 
     //----------------------------------------------------------------------
 
@@ -150,9 +152,9 @@ namespace dds
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SHostInfoCmd& val) const
         {
-            return (m_username == val.m_username && m_host == val.m_host && m_version == val.m_version && m_PoDPath == val.m_PoDPath &&
-                    m_xpdPort == val.m_xpdPort && m_xpdPid == val.m_xpdPid && m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid &&
-                    m_timeStamp == val.m_timeStamp);
+            return (m_username == val.m_username && m_host == val.m_host && m_version == val.m_version &&
+                    m_PoDPath == val.m_PoDPath && m_xpdPort == val.m_xpdPort && m_xpdPid == val.m_xpdPid &&
+                    m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid && m_timeStamp == val.m_timeStamp);
         }
 
         std::string m_username;
@@ -167,8 +169,9 @@ namespace dds
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SHostInfoCmd& val)
     {
-        _stream << val.m_username << ":" << val.m_host << ": [" << val.m_xpdPid << "] " << val.m_xpdPort << ":" << val.m_version << ":" << val.m_PoDPath
-                << "; agent [" << val.m_agentPid << "] on port " << val.m_agentPort << "; submitted on " << val.m_timeStamp;
+        _stream << val.m_username << ":" << val.m_host << ": [" << val.m_xpdPid << "] " << val.m_xpdPort << ":"
+                << val.m_version << ":" << val.m_PoDPath << "; agent [" << val.m_agentPid << "] on port "
+                << val.m_agentPort << "; submitted on " << val.m_timeStamp;
         return _stream;
     }
 

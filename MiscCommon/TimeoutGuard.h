@@ -12,7 +12,8 @@
 namespace MiscCommon
 {
     /**
-     * @brief The class, which watches the running time of the process and sends SEGTERM when defined time-out is reached.
+     * @brief The class, which watches the running time of the process and sends SEGTERM when defined time-out is
+     *reached.
      **/
     class CTimeoutGuard
     {
@@ -35,7 +36,8 @@ namespace MiscCommon
             m_pid = _pid;
             m_secTimeOut = _timeout;
             m_IsInit = true;
-            m_Thread = MiscCommon::BOOSTHelper::Thread_PTR_t(new boost::thread(boost::bind(&CTimeoutGuard::ThreadWorker, this)));
+            m_Thread = MiscCommon::BOOSTHelper::Thread_PTR_t(
+                new boost::thread(boost::bind(&CTimeoutGuard::ThreadWorker, this)));
         }
         static CTimeoutGuard& Instance()
         {

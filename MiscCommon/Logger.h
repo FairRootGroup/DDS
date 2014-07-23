@@ -114,17 +114,20 @@ namespace MiscCommon
             // Default format for logger
             boost::log::formatter formatter =
                 // TODO: std::setw doesn't work for the first collumn of the log (TimeStamp). Investigate!
-                expressions::stream << std::left << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "   "
-                                    << std::setw(7) << expressions::attr<ELogSeverityLevel>("Severity") << std::setw(20)
+                expressions::stream << std::left << expressions::format_date_time<boost::posix_time::ptime>(
+                                                        "TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "   " << std::setw(7)
+                                    << expressions::attr<ELogSeverityLevel>("Severity") << std::setw(20)
                                     << expressions::attr<std::string>("Process") << " <"
                                     << expressions::attr<attributes::current_process_id::value_type>("ProcessID") << ":"
-                                    << expressions::attr<attributes::current_thread_id::value_type>("ThreadID") << ">    " << expressions::smessage;
+                                    << expressions::attr<attributes::current_thread_id::value_type>("ThreadID")
+                                    << ">    " << expressions::smessage;
 
             // Logging to file
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink = add_file_log(keywords::file_name = sLogFile,
-                                                                                                         keywords::open_mode = (std::ios::out | std::ios::app),
-                                                                                                         keywords::rotation_size = rotationSize,
-                                                                                                         keywords::auto_flush = true);
+            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
+                add_file_log(keywords::file_name = sLogFile,
+                             keywords::open_mode = (std::ios::out | std::ios::app),
+                             keywords::rotation_size = rotationSize,
+                             keywords::auto_flush = true);
 
             fileSink->set_formatter(formatter);
             fileSink->set_filter(severity >= severityLevel);
