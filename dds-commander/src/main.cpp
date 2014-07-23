@@ -16,6 +16,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/asio.hpp>
+// STD
+#include <iterator>
 
 using namespace std;
 using namespace MiscCommon;
@@ -27,7 +29,11 @@ using boost::asio::ip::tcp;
 int main(int argc, char* argv[])
 {
     Logger::instance().init();
-    LOG(info) << "Starting dds-commander";
+
+    vector<std::string> arguments(argv + 1, argv + argc);
+    ostringstream ss;
+    copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
+    LOG(info) << "Starting dds-commander with arguments: " << ss.str();
 
     // Command line parser
     SOptions_t options;

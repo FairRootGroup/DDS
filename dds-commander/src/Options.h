@@ -116,20 +116,20 @@ namespace dds
         {
             if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
             {
-                LOG(MiscCommon::log_stderr) << PROJECT_NAME << " error: unknown command: " << vm["command"].as<std::string>() << "\n\n" << options;
+                LOG(MiscCommon::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n" << options;
                 return false;
             }
 
             if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) && !vm.count("topo"))
             {
-                LOG(MiscCommon::log_stderr) << PROJECT_NAME << " error: specify a topo file"
+                LOG(MiscCommon::log_stderr) << "specify a topo file"
                                             << "\n\n" << options;
                 return false;
             }
         }
         else
         {
-            LOG(MiscCommon::log_stderr) << PROJECT_NAME << ": Nothing to do\n\n" << options;
+            LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
             return false;
         }
 
