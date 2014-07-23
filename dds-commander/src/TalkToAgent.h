@@ -13,6 +13,7 @@ namespace dds
     {
         CTalkToAgent(boost::asio::io_service& _service)
             : CConnectionImpl<CTalkToAgent>(_service)
+            , isHandShakeOK(false)
         {
         }
 
@@ -24,6 +25,9 @@ namespace dds
       private:
         // Message Handlers
         int on_cmdHANDSHAKE(const CProtocolMessage& _msg);
+
+      private:
+        bool isHandShakeOK;
     };
 }
 #endif /* defined(__DDS__TalkToAgent__) */
