@@ -14,7 +14,8 @@
 #include "Options.h"
 #include "Process.h"
 #include "ErrorCode.h"
-#include "AgentClient.h"
+#include "AgentConnectionManager.h"
+#include "TalkToCommander.h"
 #include "BOOSTHelper.h"
 #include "Logger.h"
 #include "UserDefaults.h"
@@ -101,7 +102,7 @@ int main(int argc, char* argv[])
         {
             CPIDFile pidfile(pidFileName, ::getpid());
             boost::asio::io_service service;
-            CAgentClient agent(service);
+            CAgentConnectionManager agent(options, service);
             agent.start();
         }
         catch (exception& e)

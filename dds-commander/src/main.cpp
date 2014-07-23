@@ -123,14 +123,6 @@ int main(int argc, char* argv[])
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
             CConnectionManager server(options, io_service, endpoint);
-            try
-            {
-                LOG(info) << "Log created.";
-            }
-            catch (std::exception& e)
-            {
-                LOG(error) << "Log exception: " << e.what();
-            }
             server.start();
         }
         catch (exception& e)

@@ -27,7 +27,8 @@ configure_file( ${dds-agent_SOURCE_DIR}/src/version.h.in ${dds-agent_BINARY_DIR}
 #
 set( SOURCE_FILES
 	./src/main.cpp
-    ./src/AgentClient.cpp
+    ./src/TalkToCommander.cpp
+    ./src/AgentConnectionManager.cpp
 )
 
 #
@@ -35,7 +36,8 @@ set( SOURCE_FILES
 #
 set( HEADER_FILES
     ./src/Options.h
-    ./src/AgentClient.h
+    ./src/TalkToCommander.h
+    ./src/AgentConnectionManager.h
 )
 
 include_directories(
