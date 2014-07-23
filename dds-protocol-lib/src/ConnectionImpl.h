@@ -18,14 +18,13 @@
 
 namespace dds
 {
-    class CConnection;
-    typedef std::shared_ptr<CConnection> ConnectionPtr_t;
-    typedef std::vector<ConnectionPtr_t> ConnectionPtrVector_t;
-    typedef std::deque<CProtocolMessage> MessageQueue_t;
-
-    class CConnection : public std::enable_shared_from_this<CConnection>, boost::noncopyable
+    tempalte<class _T> class CConnectionImpl : public std::enable_shared_from_this<_T>, boost::noncopyable
     {
-        CConnection(boost::asio::io_service& _service);
+        CConnectionImpl(boost::asio::io_service& _service);
+
+      public:
+        typedef std::shared_ptr<T> ConnectionPtr_t;
+        typedef std::deque<CProtocolMessage> MessageQueue_t;
 
       public:
         static ConnectionPtr_t makeNew(boost::asio::io_service& _service);
@@ -38,7 +37,6 @@ namespace dds
         void readHeader();
         void readBody();
         void writeMessage();
-        void processMessage();
 
       private:
         boost::asio::ip::tcp::socket m_socket;
