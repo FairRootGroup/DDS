@@ -75,6 +75,9 @@ namespace dds
 
         void start()
         {
+            if (m_started)
+                return;
+
             m_started = true;
 
             if (m_outputMessageQueue.empty())
@@ -118,7 +121,6 @@ namespace dds
                                       writeMessages();
                                   }
                               });
-            // m_outputMessageQueue.push_back(_msg);
         }
 
       private:
@@ -146,8 +148,10 @@ namespace dds
 
             boost::asio::async_read(m_socket,
                                     boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length),
-                                    [this](boost::system::error_code ec, std::size_t /*length*/)
+                                    [this](boost::system::error_code ec, std::size_t length)
                                     {
+                LOG(MiscCommon::debug) << "readHeader received: " << length << " bytes, expected "
+                                       << CProtocolMessage::header_length;
                 if (!ec && m_currentMsg.decode_header())
                 {
                     // If the header is ok, recieve the body of the message
@@ -164,8 +168,10 @@ namespace dds
         {
             boost::asio::async_read(m_socket,
                                     boost::asio::buffer(m_currentMsg.body(), m_currentMsg.body_length()),
-                                    [this](boost::system::error_code ec, std::size_t /*length*/)
+                                    [this](boost::system::error_code ec, std::size_t length)
                                     {
+                LOG(MiscCommon::debug) << "readBody received: " << length << " bytes, expected "
+                                       << m_currentMsg.body_length();
                 if (!ec)
                 {
                     LOG(MiscCommon::debug) << "Received from Agent: " << m_currentMsg.toString();

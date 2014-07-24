@@ -18,7 +18,6 @@
 #include <boost/asio.hpp>
 // STD
 #include <iterator>
-#include <thread>
 
 using namespace std;
 using namespace MiscCommon;
@@ -178,9 +177,6 @@ int main(int argc, char* argv[])
             CSendCommandToItself::connectionPtr_t client = CSendCommandToItself::makeNew(io_service);
             client->connect(iterator);
 
-            //          std::thread t([&io_service]()
-            //                      { io_service.run(); });
-
             // Prepare a hand shake message
             SVersionCmd cmd;
             BYTEVector_t data;
@@ -192,8 +188,6 @@ int main(int argc, char* argv[])
             client->setTopoFile(options.m_sTopoFile);
 
             io_service.run();
-
-            //            t.join();
         }
         catch (exception& e)
         {
