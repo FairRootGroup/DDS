@@ -17,7 +17,7 @@ namespace dds
         {
         }
 
-        REGISTER_DEFAULT_CALLBACKS
+        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CTalkToAgent)
@@ -33,6 +33,11 @@ namespace dds
         int on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg);
         int on_cmdSUBMIT(const CProtocolMessage& _msg);
         int on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
+        // On connection handles
+        void onRemoteEndDissconnected()
+        {
+            LOG(MiscCommon::info) << "The Agent has closed the connection.";
+        }
 
       private:
         bool m_isHandShakeOK;

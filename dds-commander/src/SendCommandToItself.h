@@ -45,6 +45,10 @@ namespace dds
         {
             LOG(MiscCommon::log_stdout) << "Failed to connect.";
         }
+        void onRemoteEndDissconnected()
+        {
+            LOG(MiscCommon::log_stderr) << "Server has closed the coinnection.";
+        }
 
       private:
         bool m_isHandShakeOK;

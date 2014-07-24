@@ -15,6 +15,8 @@ namespace dds
     {
         CTalkToCommander(boost::asio::io_service& _service);
 
+        REGISTER_ALL_DEFAULT_CALLBACKS
+
       public:
         BEGIN_MSG_MAP(CTalkToCommander)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)

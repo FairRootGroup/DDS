@@ -34,13 +34,20 @@
         }                                                                                                    \
         }
 
-#define REGISTER_DEFAULT_CALLBACKS \
-    void onConnected()             \
-    {                              \
-    }                              \
-    void onFailedToConnect()       \
-    {                              \
+#define REGISTER_DEFAULT_ON_CONNECT_CALLBACKS \
+    void onConnected()                        \
+    {                                         \
+    }                                         \
+    void onFailedToConnect()                  \
+    {                                         \
     }
+
+#define REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS \
+    void onRemoteEndDissconnected()              \
+    {                                            \
+    }
+
+#define REGISTER_ALL_DEFAULT_CALLBACKS REGISTER_DEFAULT_ON_CONNECT_CALLBACKS REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
 
 namespace dds
 {
@@ -60,7 +67,7 @@ namespace dds
       public:
         ~CConnectionImpl<T>()
         {
-            close();
+            stop();
         }
 
       public:
@@ -96,14 +103,6 @@ namespace dds
                 return;
             m_started = false;
             close();
-        }
-
-        void close()
-        {
-            m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
         }
 
         boost::asio::ip::tcp::socket& socket()
@@ -159,12 +158,25 @@ namespace dds
                                        << CProtocolMessage::header_length;
                 if (!ec && m_currentMsg.decode_header())
                 {
-                    // If the header is ok, recieve the body of the message
+                    // If the header is ok, receive the body of the message
                     readBody();
+                }
+                else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
+                {
+                    LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
+                    // give a chance to child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onRemoteEndDissconnected();
                 }
                 else
                 {
-                    LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
+                    if (m_started)
+                        LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
+                    else
+                        LOG(MiscCommon::info)
+                            << "The stop signal is received, aborting current operation and closing the connection."
+                            << ec.message();
+
                     stop();
                 }
             });
@@ -175,7 +187,7 @@ namespace dds
             if (m_currentMsg.body_length() == 0)
             {
                 LOG(MiscCommon::debug) << "readBody: the message has no attachment: " << m_currentMsg.toString();
-                // processe recieved message
+                // process received message
                 int nRes(0);
                 T* pThis = static_cast<T*>(this);
                 pThis->processMessage(m_currentMsg, nRes);
@@ -192,7 +204,7 @@ namespace dds
                 if (!ec)
                 {
                     LOG(MiscCommon::debug) << "Received from Agent: " << m_currentMsg.toString();
-                    // processe recieved message
+                    // process received message
                     int nRes(0);
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg, nRes);
@@ -200,9 +212,22 @@ namespace dds
                     m_currentMsg.clear();
                     readHeader();
                 }
+                else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
+                {
+                    LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
+                    // give a chance to child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onRemoteEndDissconnected();
+                }
                 else
                 {
-                    LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
+                    // don't show error if service is closed
+                    if (m_started)
+                        LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
+                    else
+                        LOG(MiscCommon::info)
+                            << "The stop signal is received, aborting current operation and closing the connection."
+                            << ec.message();
                     stop();
                 }
             });
@@ -225,12 +250,34 @@ namespace dds
                             writeMessages();
                         }
                     }
+                    else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
+                    {
+                        LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
+                        // give a chance to child to execute something
+                        T* pThis = static_cast<T*>(this);
+                        pThis->onRemoteEndDissconnected();
+                    }
                     else
                     {
-                        LOG(MiscCommon::error) << "Error sending data: " << ec.message();
+                        // don't show error if service is closed
+                        if (m_started)
+                            LOG(MiscCommon::error) << "Error sending data: " << ec.message();
+                        else
+                            LOG(MiscCommon::info)
+                                << "The stop signal is received, aborting current operation and closing the connection."
+                                << ec.message();
                         stop();
                     }
                 });
+        }
+
+      private:
+        void close()
+        {
+            m_io_service.post([this]()
+                              {
+                                  m_socket.close();
+                              });
         }
 
       private:

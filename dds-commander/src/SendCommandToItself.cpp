@@ -48,7 +48,7 @@ int CSendCommandToItself::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
     on_cmdSIMPLE_MSG(_msg);
 
     // Close communication channel
-    close();
+    stop();
     return 0;
 }
 
@@ -59,6 +59,6 @@ int CSendCommandToItself::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
     on_cmdSIMPLE_MSG(_msg);
 
     // Close communication channel
-    close();
+    stop();
     return 0;
 }
