@@ -25,6 +25,7 @@ namespace dds
         // Message Handlers
         int on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
         int on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
+        int on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
 
       private:
         bool m_isHandShakeOK;
