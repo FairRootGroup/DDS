@@ -26,8 +26,10 @@ namespace dds
         cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
-        cmdREPLY_SUBMIT_OK, // attachment: SSimpleMsgCmd
-        cmdREPLY_ERR_SUBMIT // attachment: SSimpleMsgCmd
+        cmdREPLY_SUBMIT_OK,  // attachment: SSimpleMsgCmd
+        cmdREPLY_ERR_SUBMIT, // attachment: SSimpleMsgCmd
+        cmdGET_HOST_INFO,
+        cmdREPLY_HOST_INFO // attachment: SHostInfoCmd
 
         // ----------- VERSION 2 --------------------
     };
@@ -40,7 +42,9 @@ namespace dds
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
         { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },
         { cmdREPLY_SUBMIT_OK, NAME_TO_STRING(cmdREPLY_SUBMIT_OK) },
-        { cmdREPLY_ERR_SUBMIT, NAME_TO_STRING(cmdREPLY_ERR_SUBMIT) }
+        { cmdREPLY_ERR_SUBMIT, NAME_TO_STRING(cmdREPLY_ERR_SUBMIT) },
+        { cmdGET_HOST_INFO, NAME_TO_STRING(cmdGET_HOST_INFO) },
+        { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) }
     };
 
     //----------------------------------------------------------------------
@@ -162,9 +166,7 @@ namespace dds
     struct SHostInfoCmd : public SBasicCmd<SHostInfoCmd>
     {
         SHostInfoCmd()
-            : m_xpdPort(0)
-            , m_xpdPid(0)
-            , m_agentPort(0)
+            : m_agentPort(0)
             , m_agentPid(0)
             , m_timeStamp(0)
         {
@@ -173,12 +175,10 @@ namespace dds
         {
             size_t size(m_username.size() + 1);
             size += m_host.size() + 1;
-            size += sizeof(m_xpdPort);
-            size += sizeof(m_xpdPid);
             size += sizeof(m_agentPort);
             size += sizeof(m_agentPid);
             size += m_version.size() + 1;
-            size += m_PoDPath.size() + 1;
+            size += m_DDSPath.size() + 1;
             size += sizeof(m_timeStamp);
             return size;
         }
@@ -189,26 +189,27 @@ namespace dds
         bool operator==(const SHostInfoCmd& val) const
         {
             return (m_username == val.m_username && m_host == val.m_host && m_version == val.m_version &&
-                    m_PoDPath == val.m_PoDPath && m_xpdPort == val.m_xpdPort && m_xpdPid == val.m_xpdPid &&
-                    m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid && m_timeStamp == val.m_timeStamp);
+                    m_DDSPath == val.m_DDSPath && m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid &&
+                    m_timeStamp == val.m_timeStamp);
         }
 
         std::string m_username;
         std::string m_host;
         std::string m_version;
-        std::string m_PoDPath;
-        uint16_t m_xpdPort;
-        uint32_t m_xpdPid;
+        std::string m_DDSPath;
         uint16_t m_agentPort;
         uint32_t m_agentPid;
-        uint32_t m_timeStamp; // defines a time stamp when PoD Job was submitted
+        uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SHostInfoCmd& val)
     {
-        _stream << val.m_username << ":" << val.m_host << ": [" << val.m_xpdPid << "] " << val.m_xpdPort << ":"
-                << val.m_version << ":" << val.m_PoDPath << "; agent [" << val.m_agentPid << "] on port "
-                << val.m_agentPort << "; submitted on " << val.m_timeStamp;
+        _stream << val.m_username << ":" << val.m_host << ": " << val.m_version << ":" << val.m_DDSPath << "; agent ["
+                << val.m_agentPid << "] on port " << val.m_agentPort << "; submitted on " << val.m_timeStamp;
         return _stream;
+    }
+    inline bool operator!=(const SHostInfoCmd& lhs, const SHostInfoCmd& rhs)
+    {
+        return !(lhs == rhs);
     }
 
     //----------------------------------------------------------------------
