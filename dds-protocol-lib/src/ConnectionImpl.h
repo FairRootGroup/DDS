@@ -34,6 +34,14 @@
         }                                                                                                    \
         }
 
+#define REGISTER_DEFAULT_CALLBACKS \
+    void onConnected()             \
+    {                              \
+    }                              \
+    void onFailedToConnect()       \
+    {                              \
+    }
+
 namespace dds
 {
     template <class T>
@@ -124,12 +132,18 @@ namespace dds
                                        {
                 if (!ec)
                 {
-                    LOG(MiscCommon::debug) << "Connection established.";
+                    // give a chance to child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onConnected();
+
+                    // start the communication channel
                     start();
                 }
                 else
                 {
-                    LOG(MiscCommon::log_stderr) << "Failed to connect: " << ec.message();
+                    // give a chance to child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onFailedToConnect();
                 }
             });
         }

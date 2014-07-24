@@ -18,6 +18,8 @@ namespace dds
         {
         }
 
+        REGISTER_DEFAULT_CALLBACKS
+
       public:
         BEGIN_MSG_MAP(CSendCommandToItself)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)

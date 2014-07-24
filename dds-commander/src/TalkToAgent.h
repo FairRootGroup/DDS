@@ -17,6 +17,8 @@ namespace dds
         {
         }
 
+        REGISTER_DEFAULT_CALLBACKS
+
       public:
         BEGIN_MSG_MAP(CTalkToAgent)
         MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
