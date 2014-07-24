@@ -54,13 +54,6 @@ size_t CProtocolMessage::body_length() const
     return m_header.m_len;
 }
 
-void CProtocolMessage::body_length(size_t new_length)
-{
-    /*    body_length_ = new_length;
-        if (body_length_ > max_body_length)
-            body_length_ = max_body_length;*/
-}
-
 ////////////////////////////////////////////////////////////////////////
 // return:
 // 1. an exception - if the message bad/corrupted
@@ -93,9 +86,6 @@ bool CProtocolMessage::decode_header()
     // Empty message?
     if (0 == header.m_len)
         return true;
-
-    //  BYTEVector_t::const_iterator iter = _msg.begin() + HEADER_SIZE;
-    //  copy(iter, iter + header.m_len, back_inserter(*_data));
 
     return true;
 }

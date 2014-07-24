@@ -75,7 +75,6 @@ namespace dds
         const data_t* body() const;
         data_t* body();
         size_t body_length() const;
-        void body_length(size_t new_length);
         bool decode_header();
         void encode_message(uint16_t _cmd, const dataContainer_t& _data);
         const SMessageHeader header() const;
