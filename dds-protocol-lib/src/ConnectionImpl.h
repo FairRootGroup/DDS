@@ -87,7 +87,6 @@ namespace dds
                 return;
 
             m_started = true;
-
             readHeader();
         }
 

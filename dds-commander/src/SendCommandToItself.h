@@ -18,8 +18,6 @@ namespace dds
         {
         }
 
-        REGISTER_DEFAULT_CALLBACKS
-
       public:
         BEGIN_MSG_MAP(CSendCommandToItself)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
@@ -37,6 +35,16 @@ namespace dds
         int on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
         int on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg);
         int on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg);
+        // On connection handles
+        void onConnected()
+        {
+            LOG(MiscCommon::log_stdout) << "Connection established.";
+            LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
+        }
+        void onFailedToConnect()
+        {
+            LOG(MiscCommon::log_stdout) << "Failed to connect.";
+        }
 
       private:
         bool m_isHandShakeOK;
