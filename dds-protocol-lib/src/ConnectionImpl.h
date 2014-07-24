@@ -222,11 +222,6 @@ namespace dds
                         {
                             writeMessages();
                         }
-                        else
-                        {
-                            // If there is no notghing to send, we return to read
-                            readHeader();
-                        }
                     }
                     else
                     {
