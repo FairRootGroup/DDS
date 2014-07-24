@@ -91,7 +91,7 @@ namespace dds
             if (!m_started)
                 return;
             m_started = false;
-            m_socket.close();
+            close();
         }
 
         void send()
@@ -159,6 +159,7 @@ namespace dds
                 }
                 else
                 {
+                    LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
                     stop();
                 }
             });
@@ -166,6 +167,18 @@ namespace dds
 
         void readBody()
         {
+            if (m_currentMsg.body_length() == 0)
+            {
+                LOG(MiscCommon::debug) << "readBody: the message has no attachment: " << m_currentMsg.toString();
+                // processe recieved message
+                int nRes(0);
+                T* pThis = static_cast<T*>(this);
+                pThis->processMessage(m_currentMsg, nRes);
+                // Read next message
+                readHeader();
+                return;
+            }
+
             boost::asio::async_read(m_socket,
                                     boost::asio::buffer(m_currentMsg.body(), m_currentMsg.body_length()),
                                     [this](boost::system::error_code ec, std::size_t length)
@@ -184,6 +197,7 @@ namespace dds
                 }
                 else
                 {
+                    LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
                     stop();
                 }
             });
@@ -214,7 +228,7 @@ namespace dds
                     else
                     {
                         LOG(MiscCommon::error) << "Error sending data: " << ec.message();
-                        m_socket.close();
+                        stop();
                     }
                 });
         }

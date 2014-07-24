@@ -155,16 +155,12 @@ int main(int argc, char* argv[])
 
             LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
 
-            ///////////////
-
             boost::asio::io_service io_service;
 
             boost::asio::ip::tcp::resolver resolver(io_service);
             boost::asio::ip::tcp::resolver::query query(sHost, sPort);
 
             boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-            // Try each endpoint until we successfully establish a connection.
-            tcp::socket socket(io_service);
 
             CSendCommandToItself::connectionPtr_t client = CSendCommandToItself::makeNew(io_service);
             client->connect(iterator);
