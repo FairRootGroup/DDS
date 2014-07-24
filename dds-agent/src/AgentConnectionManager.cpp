@@ -90,7 +90,7 @@ void CAgentConnectionManager::start()
                 BYTEVector_t data_to_send;
                 ver_src.convertToData(&data_to_send);
                 CProtocolMessage msg;
-                msg.encode_message(cmdHANDSHAKE, data_to_send);
+                msg.encode_message(cmdHANDSHAKE_AGENT, data_to_send);
 
                 newAgent->pushMsg(msg);
                 newAgent->start();

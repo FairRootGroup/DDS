@@ -21,9 +21,10 @@ namespace dds
         // ----------- VERSION 1 --------------------
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
-        cmdHANDSHAKE,  // attachment: SVersionCmd
-        cmdSUBMIT,     // attachment: SSubmitCmd
-        cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
+        cmdHANDSHAKE,       // attachment: SVersionCmd
+        cmdHANDSHAKE_AGENT, // attachment: SVersionCmd
+        cmdSUBMIT,          // attachment: SSubmitCmd
+        cmdSIMPLE_MSG,      // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
         cmdREPLY_SUBMIT_OK,  // attachment: SSimpleMsgCmd
@@ -38,6 +39,7 @@ namespace dds
         { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
         { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
+        { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
         { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },

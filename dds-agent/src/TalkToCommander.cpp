@@ -5,6 +5,8 @@
 
 // DDS
 #include "TalkToCommander.h"
+#include "UserDefaults.h"
+#include "Process.h"
 
 using namespace MiscCommon;
 using namespace dds;
@@ -20,21 +22,35 @@ int CTalkToCommander::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
-    // Create the command's attachment
-    /*    SSubmitCmd cmd;
-        cmd.m_sTopoFile = m_sTopoFile;
-        BYTEVector_t data;
-        cmd.convertToData(&data);
-
-        CProtocolMessage msg;
-        msg.encode_message(cmdSUBMIT, data);
-        pushMsg(msg);
-        send();
-    */
     return 0;
 }
 
 int CTalkToCommander::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 {
+    return 0;
+}
+
+int CTalkToCommander::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
+{
+    // Create the command's attachment
+    string pidFileName(CUserDefaults::getDDSPath());
+    pidFileName += "dds-agent.pid";
+    pid_t pid = CPIDFile::GetPIDFromFile(pidFileName);
+
+    SHostInfoCmd cmd;
+    get_cuser_name(&cmd.m_username);
+    get_hostname(&cmd.m_host);
+    cmd.m_version = "NOT SET";
+    cmd.m_DDSPath = CUserDefaults::getDDSPath();
+    cmd.m_agentPort = 0;
+    cmd.m_agentPid = pid;
+    cmd.m_timeStamp = 0;
+
+    BYTEVector_t data;
+    cmd.convertToData(&data);
+
+    CProtocolMessage msg;
+    msg.encode_message(cmdREPLY_HOST_INFO, data);
+    pushMsg(msg);
     return 0;
 }

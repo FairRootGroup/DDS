@@ -22,13 +22,17 @@ namespace dds
       public:
         BEGIN_MSG_MAP(CTalkToAgent)
         MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
+        MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
+        MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
         END_MSG_MAP()
 
       private:
         // Message Handlers
         int on_cmdHANDSHAKE(const CProtocolMessage& _msg);
+        int on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg);
         int on_cmdSUBMIT(const CProtocolMessage& _msg);
+        int on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
 
       private:
         bool m_isHandShakeOK;

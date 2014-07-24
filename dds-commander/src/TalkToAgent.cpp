@@ -38,6 +38,37 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
     return 0;
 }
 
+int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
+{
+    SVersionCmd ver;
+    ver.convertFromData(_msg.bodyToContainer());
+    // send shutdown if versions are incompatible
+    if (ver != SVersionCmd())
+    {
+        m_isHandShakeOK = false;
+        // Send reply that the version of the protocol is incompatible
+        LOG(warning) << "Client's protocol version is incompatable. Client: "
+                     << socket().remote_endpoint().address().to_string();
+        CProtocolMessage msg;
+        msg.encode_message(cmdREPLY_ERR_BAD_PROTOCOL_VERSION, BYTEVector_t());
+        pushMsg(msg);
+    }
+    else
+    {
+        m_isHandShakeOK = true;
+        // everything is OK, we can work with this agent
+        LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+                  << "] has succesfully connected.";
+        CProtocolMessage msg;
+        msg.encode_message(cmdREPLY_HANDSHAKE_OK, BYTEVector_t());
+        pushMsg(msg);
+        CProtocolMessage msgHostInfo;
+        msgHostInfo.encode_message(cmdGET_HOST_INFO, BYTEVector_t());
+        pushMsg(msgHostInfo);
+    }
+    return 0;
+}
+
 int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
 {
     SSubmitCmd cmd;
@@ -49,6 +80,17 @@ int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
     CProtocolMessage msg;
     msg.encode_message(cmdREPLY_SUBMIT_OK, BYTEVector_t());
     pushMsg(msg);
+
+    return 0;
+}
+
+int CTalkToAgent::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
+{
+    SHostInfoCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a HostInfo [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
 
     return 0;
 }
