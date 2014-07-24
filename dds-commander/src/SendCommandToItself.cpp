@@ -28,7 +28,6 @@ int CSendCommandToItself::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     CProtocolMessage msg;
     msg.encode_message(cmdSUBMIT, data);
     pushMsg(msg);
-    send();
 
     return 0;
 }

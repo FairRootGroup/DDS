@@ -34,7 +34,6 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
         CProtocolMessage msg;
         msg.encode_message(cmdREPLY_HANDSHAKE_OK, BYTEVector_t());
         pushMsg(msg);
-        send();
     }
     return 0;
 }
@@ -50,7 +49,6 @@ int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
     CProtocolMessage msg;
     msg.encode_message(cmdREPLY_SUBMIT_OK, BYTEVector_t());
     pushMsg(msg);
-    send();
 
     return 0;
 }
