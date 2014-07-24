@@ -132,7 +132,7 @@ namespace dds
                                        {
                 if (!ec)
                 {
-                    LOG(MiscCommon::log_stdout) << "Connection established.";
+                    LOG(MiscCommon::debug) << "Connection established.";
                     start();
                 }
                 else
