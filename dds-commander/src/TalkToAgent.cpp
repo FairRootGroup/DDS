@@ -77,8 +77,12 @@ int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
     // TODO: Implement me. So far we always send OK
+    SSimpleMsgCmd msg_cmd;
+    msg_cmd.m_sMsg = "Dummy job info, JOBIds";
+    BYTEVector_t data;
+    msg_cmd.convertToData(&data);
     CProtocolMessage msg;
-    msg.encode_message(cmdREPLY_SUBMIT_OK, BYTEVector_t());
+    msg.encode_message(cmdREPLY_SUBMIT_OK, data);
     pushMsg(msg);
 
     return 0;
