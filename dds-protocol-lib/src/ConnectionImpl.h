@@ -80,10 +80,7 @@ namespace dds
 
             m_started = true;
 
-            if (m_outputMessageQueue.empty())
-                readHeader();
-            else
-                send();
+            readHeader();
         }
 
         void stop()
@@ -92,11 +89,6 @@ namespace dds
                 return;
             m_started = false;
             close();
-        }
-
-        void send()
-        {
-            //      writeMessages();
         }
 
         void close()
