@@ -10,28 +10,31 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-int CTalkToCommander::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
+CTalkToCommander::CTalkToCommander(boost::asio::io_service& _service)
+    : CConnectionImpl<CTalkToCommander>(_service)
+    , m_isHandShakeOK(false)
 {
-    SVersionCmd ver;
-    ver.convertFromData(_msg.bodyToContainer());
-    // send shutdown if versions are incompatible
-    if (ver != SVersionCmd())
-    {
-        // Send reply that the version of the protocol is incompatible
-        LOG(warning) << "Client's protocol version is incompatable. Client: "
-                     << socket().remote_endpoint().address().to_string();
+}
+
+int CTalkToCommander::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+{
+    m_isHandShakeOK = true;
+
+    // Create the command's attachment
+    /*    SSubmitCmd cmd;
+        cmd.m_sTopoFile = m_sTopoFile;
+        BYTEVector_t data;
+        cmd.convertToData(&data);
+
         CProtocolMessage msg;
-        msg.encode_message(cmdREPLY_ERR_BAD_PROTOCOL_VERSION, BYTEVector_t());
+        msg.encode_message(cmdSUBMIT, data);
         pushMsg(msg);
-    }
-    else
-    {
-        // everything is OK, we can work with this agent
-        LOG(warning) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                     << "] has succesfully connected.";
-        CProtocolMessage msg;
-        msg.encode_message(cmdREPLY_HANDSHAKE_OK, BYTEVector_t());
-        pushMsg(msg);
-    }
+        send();
+    */
+    return 0;
+}
+
+int CTalkToCommander::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+{
     return 0;
 }

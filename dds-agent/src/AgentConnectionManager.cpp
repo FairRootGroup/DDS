@@ -77,7 +77,7 @@ void CAgentConnectionManager::start()
         boost::asio::ip::tcp::resolver::query query(sHost, sPort);
         boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-        // Create new agent and push nadshake message
+        // Create new agent and push hadshake message
         CTalkToCommander::connectionPtr_t newAgent = CTalkToCommander::makeNew(m_service);
         boost::asio::async_connect(newAgent->socket(),
                                    endpoint_iterator,
@@ -97,7 +97,7 @@ void CAgentConnectionManager::start()
             }
             else
             {
-                LOG(fatal) << "Can not connect to dds-commander.";
+                LOG(fatal) << "Can not connect to server: " << ec.message();
             }
         });
 
