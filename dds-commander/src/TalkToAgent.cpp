@@ -59,12 +59,8 @@ int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
-        CProtocolMessage msg;
-        msg.encode_message(cmdREPLY_HANDSHAKE_OK, BYTEVector_t());
-        pushMsg(msg);
-        CProtocolMessage msgHostInfo;
-        msgHostInfo.encode_message(cmdGET_HOST_INFO, BYTEVector_t());
-        pushMsg(msgHostInfo);
+        pushMsg(cmdREPLY_HANDSHAKE_OK);
+        pushMsg(cmdGET_HOST_INFO);
     }
     return 0;
 }

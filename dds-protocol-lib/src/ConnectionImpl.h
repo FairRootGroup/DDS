@@ -123,6 +123,13 @@ namespace dds
                               });
         }
 
+        void pushMsg(ECmdType _cmd)
+        {
+            CProtocolMessage msg;
+            msg.encode_message(_cmd, MiscCommon::BYTEVector_t());
+            pushMsg(msg);
+        }
+
       private:
         void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
         {
@@ -275,9 +282,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:
