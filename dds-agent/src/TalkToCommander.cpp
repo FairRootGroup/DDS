@@ -40,7 +40,7 @@ int CTalkToCommander::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);
     get_hostname(&cmd.m_host);
-    cmd.m_version = "NOT SET";
+    cmd.m_version = PROJECT_VERSION_STRING;
     cmd.m_DDSPath = CUserDefaults::getDDSPath();
     cmd.m_agentPort = 0;
     cmd.m_agentPid = pid;
@@ -52,5 +52,12 @@ int CTalkToCommander::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
     CProtocolMessage msg;
     msg.encode_message(cmdREPLY_HOST_INFO, data);
     pushMsg(msg);
+    return 0;
+}
+
+int CTalkToCommander::on_cmdDISCONNECT(const CProtocolMessage& _msg)
+{
+    stop();
+    LOG(info) << "Agent disconnected...Bye";
     return 0;
 }

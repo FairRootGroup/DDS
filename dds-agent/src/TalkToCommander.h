@@ -22,6 +22,7 @@ namespace dds
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
+        MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
         END_MSG_MAP()
 
       private:
@@ -29,6 +30,7 @@ namespace dds
         int on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
         int on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
         int on_cmdGET_HOST_INFO(const CProtocolMessage& _msg);
+        int on_cmdDISCONNECT(const CProtocolMessage& _msg);
 
       private:
         bool m_isHandShakeOK;

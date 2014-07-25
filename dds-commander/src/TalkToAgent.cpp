@@ -91,5 +91,7 @@ int CTalkToAgent::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a HostInfo [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
+    pushMsg(cmdDISCONNECT);
+
     return 0;
 }

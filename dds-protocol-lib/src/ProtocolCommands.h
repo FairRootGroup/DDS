@@ -30,7 +30,8 @@ namespace dds
         cmdREPLY_SUBMIT_OK,  // attachment: SSimpleMsgCmd
         cmdREPLY_ERR_SUBMIT, // attachment: SSimpleMsgCmd
         cmdGET_HOST_INFO,
-        cmdREPLY_HOST_INFO // attachment: SHostInfoCmd
+        cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
+        cmdDISCONNECT
 
         // ----------- VERSION 2 --------------------
     };
@@ -46,7 +47,8 @@ namespace dds
         { cmdREPLY_SUBMIT_OK, NAME_TO_STRING(cmdREPLY_SUBMIT_OK) },
         { cmdREPLY_ERR_SUBMIT, NAME_TO_STRING(cmdREPLY_ERR_SUBMIT) },
         { cmdGET_HOST_INFO, NAME_TO_STRING(cmdGET_HOST_INFO) },
-        { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) }
+        { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) },
+        { cmdDISCONNECT, NAME_TO_STRING(cmdDISCONNECT) }
     };
 
     //----------------------------------------------------------------------
