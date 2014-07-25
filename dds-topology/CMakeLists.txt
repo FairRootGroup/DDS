@@ -78,13 +78,20 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
     add_library(dds-topology SHARED ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
-#target_link_libraries (
-#    dds-topology
-#    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-#)
+target_link_libraries ( dds-topology
+	dds-user-defaults-lib
+)
 
 # API headers
-target_include_directories(dds-topology INTERFACE ${dds-topology_SOURCE_DIR}/src)
+#target_include_directories(dds-topology INTERFACE ${dds-topology_SOURCE_DIR}/src)
+
+
+target_include_directories(dds-topology
+    INTERFACE
+        ${dds-topology_SOURCE_DIR}/src
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+)
 
 install(TARGETS dds-topology DESTINATION lib)
 
@@ -97,4 +104,6 @@ if (BUILD_TESTS)
 else (BUILD_TESTS)
     message (STATUS "Build dds-topology unit tests - NO")
 endif (BUILD_TESTS)
+
+
 

@@ -22,6 +22,7 @@ fi
 
 }
 
+export DDS_LOCATION=$1
 # TODO: pass DDS_LOCATION as an argument to the script
 eval DDS_LOCATION=$1
 if [ -z "${LD_LIBRARY_PATH}" ]; then
@@ -52,12 +53,21 @@ exec_test "MiscCommon_test_MiscUtils"
 #  we use --catch_system_errors=no here to prevent BOOST catching SIGCHLD
 exec_test "MiscCommon_test_Process" "--catch_system_errors=no"
 exec_test "MiscCommon_test_SysHelper"
-exec_test "MiscCommon_test_FindCfgFile"
+#exec_test "MiscCommon_test_FindCfgFile"
+exec_test "MiscCommon_test_Logger"
 
 echo "----------------------"
 echo "dds-topology UNIT-TESTs"
 echo "----------------------"
-exec_test "dds-topology_tests"
+exec_test "dds-topology_tests" "--catch_system_errors=no"
+
+echo "----------------------"
+echo "Protocol UNIT-TESTs"
+echo "----------------------"
+exec_test "dds-protocol-lib-ProtocolMessage-tests"
+#exec_test "dds-protocol-lib-client-tests"
+#exec_test "dds-protocol-lib-server-tests"
+
 
 popd
 
