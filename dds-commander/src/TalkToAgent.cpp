@@ -21,9 +21,8 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
         // Send reply that the version of the protocol is incompatible
         LOG(warning) << "Client's protocol version is incompatable. Client: "
                      << socket().remote_endpoint().address().to_string();
-        CProtocolMessage msg;
-        msg.encode_message(cmdREPLY_ERR_BAD_PROTOCOL_VERSION, BYTEVector_t());
-        pushMsg(msg);
+
+        pushMsg(cmdREPLY_ERR_BAD_PROTOCOL_VERSION);
     }
     else
     {
@@ -31,9 +30,8 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
-        CProtocolMessage msg;
-        msg.encode_message(cmdREPLY_HANDSHAKE_OK, BYTEVector_t());
-        pushMsg(msg);
+
+        pushMsg(cmdREPLY_HANDSHAKE_OK);
     }
     return 0;
 }
@@ -59,6 +57,7 @@ int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
+
         pushMsg(cmdREPLY_HANDSHAKE_OK);
         pushMsg(cmdGET_HOST_INFO);
     }
