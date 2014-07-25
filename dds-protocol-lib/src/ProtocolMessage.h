@@ -6,6 +6,7 @@
 #define __DDS__ProtocolMessage__
 // DDS
 #include "def.h"
+#include "ProtocolCommands.h"
 
 namespace dds
 {
@@ -68,6 +69,23 @@ namespace dds
         CProtocolMessage();
 
       public:
+        template <ECmdType _cmd, typename A>
+        void encodeWithAttachment(A& _cmdAttachment)
+        {
+            // compile time check that command is being encodded with the proper attahcment class
+            validate_command_attachment<A, _cmd>()();
+
+            MiscCommon::BYTEVector_t data;
+            _cmdAttachment.convertToData(&data);
+            _encode_message(_cmd, data);
+        }
+        template <ECmdType _cmd>
+        void encode()
+        {
+            MiscCommon::BYTEVector_t data;
+            _encode_message(_cmd, data);
+        }
+
         void clear();
         const data_t* data() const;
         data_t* data();
@@ -76,7 +94,6 @@ namespace dds
         data_t* body();
         size_t body_length() const;
         bool decode_header();
-        void encode_message(uint16_t _cmd, const dataContainer_t& _data);
         const SMessageHeader header() const;
         std::string toString() const;
         const dataContainer_t dataToContainer() const
@@ -88,6 +105,9 @@ namespace dds
             dataContainer_t buf(body(), body() + body_length());
             return buf;
         }
+
+      private:
+        void _encode_message(uint16_t _cmd, const dataContainer_t& _data);
 
       private:
         dataContainer_t m_data; /// the whole data buffer, whcih includes the header and the msg body

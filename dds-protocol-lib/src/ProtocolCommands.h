@@ -6,12 +6,24 @@
 #define PROTOCOLCOMMANDS_H_
 // STD
 #include <iterator>
+#include <type_traits>
 // MiscCommon
 #include "def.h"
 
 #define NAME_TO_STRING(NAME) #NAME
 
-// v1
+#define REG_CMD_WITH_ATTACHMENT(cmd, attachment_class)                                                     \
+    template <typename A>                                                                                  \
+    struct validate_command_attachment<A, cmd>                                                             \
+    {                                                                                                      \
+        void operator()()                                                                                  \
+        {                                                                                                  \
+            static_assert(std::is_same<attachment_class, A>::value,                                        \
+                          "Bad attachment to the protocol command: " #cmd " requires " #attachment_class); \
+        }                                                                                                  \
+    };
+
+// define current protocol version version
 const uint16_t g_protocolCommandsVersion = 1;
 
 namespace dds
@@ -50,6 +62,16 @@ namespace dds
         { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) },
         { cmdDISCONNECT, NAME_TO_STRING(cmdDISCONNECT) }
     };
+
+    //----------------------------------------------------------------------
+    struct SVersionCmd;
+    struct SSubmitCmd;
+
+    template <typename A, ECmdType>
+    struct validate_command_attachment;
+
+    REG_CMD_WITH_ATTACHMENT(cmdHANDSHAKE, SVersionCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdSUBMIT, SSubmitCmd);
 
     //----------------------------------------------------------------------
 

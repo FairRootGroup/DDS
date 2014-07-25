@@ -27,10 +27,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
     // Create a message
     SVersionCmd ver_src;
     ver_src.m_version = 444;
-    BYTEVector_t data_to_send;
-    ver_src.convertToData(&data_to_send);
     CProtocolMessage msg_src;
-    msg_src.encode_message(cmdHANDSHAKE, data_to_send);
+    msg_src.encodeWithAttachment<cmdHANDSHAKE>(ver_src);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE);
 
@@ -86,10 +84,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
     // Create a message
     SSubmitCmd cmd_src;
     cmd_src.m_sTopoFile = sTestPath;
-    BYTEVector_t data_to_send;
-    cmd_src.convertToData(&data_to_send);
     CProtocolMessage msg_src;
-    msg_src.encode_message(cmdSUBMIT, data_to_send);
+    msg_src.encodeWithAttachment<cmdSUBMIT>(cmd_src);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdSUBMIT);
 

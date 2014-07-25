@@ -90,7 +90,7 @@ bool CProtocolMessage::decode_header()
     return true;
 }
 
-void CProtocolMessage::encode_message(uint16_t _cmd, const CProtocolMessage::dataContainer_t& _data)
+void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::dataContainer_t& _data)
 {
     // prepare data for transport
     SMessageHeader header;
