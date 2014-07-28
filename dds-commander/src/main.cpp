@@ -11,6 +11,7 @@
 #include "UserDefaults.h"
 #include "SysHelper.h"
 #include "SubmitChannel.h"
+#include "InfoChannel.h"
 #include "INet.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
@@ -137,10 +138,10 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Checking for "submit" option
-    if (SOptions_t::cmd_submit == options.m_Command)
+    try
     {
-        try
+        // Checking for the "submit" command
+        if (SOptions_t::cmd_submit == options.m_Command)
         {
             // Read server info file
             const string sSrvCfg(CUserDefaults::getServerInfoFile());
@@ -175,11 +176,51 @@ int main(int argc, char* argv[])
 
             io_service.run();
         }
-        catch (exception& e)
+        // Checking for the "info" commands
+        else if (SOptions_t::cmd_info == options.m_Command && options.m_needCommanderPid)
         {
-            LOG(log_stderr) << e.what();
-            return EXIT_FAILURE;
+            // Read server info file
+            const string sSrvCfg(CUserDefaults::getServerInfoFile());
+            LOG(info) << "Reading server info from: " << sSrvCfg;
+            if (sSrvCfg.empty())
+                throw runtime_error("Can't find server info file.");
+
+            boost::property_tree::ptree pt;
+            boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
+            const string sHost(pt.get<string>("server.host"));
+            const string sPort(pt.get<string>("server.port"));
+
+            // TODO: show this only with verbosity flag switched on
+            //  LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
+
+            boost::asio::io_service io_service;
+
+            boost::asio::ip::tcp::resolver resolver(io_service);
+            boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+
+            boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+
+            CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_service);
+            client->connect(iterator);
+
+            // Prepare a hand shake message
+            SVersionCmd cmd;
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
+            client->pushMsg(msg);
+
+            if (options.m_needCommanderPid)
+            {
+                client->pushMsg<cmdGED_PID>();
+            }
+
+            io_service.run();
         }
+    }
+    catch (exception& e)
+    {
+        LOG(log_stderr) << e.what();
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

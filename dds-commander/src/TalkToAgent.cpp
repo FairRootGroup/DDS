@@ -93,3 +93,17 @@ int CTalkToAgent::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
 
     return 0;
 }
+
+int CTalkToAgent::on_cmdGED_PID(const CProtocolMessage& _msg)
+{
+    pid_t pid = getpid();
+    SSimpleMsgCmd cmd_attachment;
+    stringstream ss;
+    ss << pid;
+    cmd_attachment.m_sMsg = ss.str();
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdREPLY_PID>(cmd_attachment);
+    pushMsg(msg);
+
+    return 0;
+}

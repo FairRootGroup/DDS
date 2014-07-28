@@ -32,10 +32,12 @@ namespace dds
             cmd_start,
             cmd_stop,
             cmd_status,
-            cmd_submit
+            cmd_submit,
+            cmd_info
         };
         SOptions()
             : m_Command(cmd_start)
+            , m_needCommanderPid(false)
         {
         }
 
@@ -49,6 +51,8 @@ namespace dds
                 return cmd_status;
             if ("submit" == _name)
                 return cmd_submit;
+            if ("info" == _name)
+                return cmd_info;
 
             return cmd_unknown;
         }
@@ -56,6 +60,7 @@ namespace dds
         ECommands m_Command;
         CUserDefaults m_userDefaults;
         std::string m_sTopoFile;
+        bool m_needCommanderPid;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -75,7 +80,12 @@ namespace dds
         bpo::options_description options("dds-commander options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("topo,t", bpo::value<std::string>(&_options->m_sTopoFile), "A topology file.");
+        options.add_options()("topo,t",
+                              bpo::value<std::string>(&_options->m_sTopoFile),
+                              "A topology file. The option can only be used with the submit command");
+        options.add_options()(
+            "commanderPid",
+            "Return the pid of the commander server. The option can only be used with the info command");
         options.add_options()(
             "command",
             bpo::value<std::string>(),
@@ -128,6 +138,12 @@ namespace dds
                 LOG(MiscCommon::log_stderr) << "specify a topo file"
                                             << "\n\n" << options;
                 return false;
+            }
+
+            if (SOptions::cmd_info == SOptions::getCommandByName(vm["command"].as<std::string>()) &&
+                vm.count("commanderPid"))
+            {
+                _options->m_needCommanderPid = true;
             }
         }
         else

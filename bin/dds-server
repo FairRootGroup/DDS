@@ -192,7 +192,7 @@ _start()
 # ************************************************************************
 start() 
 {
-   local commander_pid=$($cmd_dds_info --commanderPid)
+   local commander_pid=$(dds-commander info --commanderPid 2>/dev/null)
    # don't need to do anything
    if [ -n "$commander_pid" ]; then
       echo "DDS Commander is running already."

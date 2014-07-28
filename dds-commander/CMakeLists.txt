@@ -30,6 +30,7 @@ set( SOURCE_FILES
 	./src/ConnectionManager.cpp
 	./src/TalkToAgent.cpp
 	./src/SubmitChannel.cpp
+	./src/InfoChannel.cpp
 )
 
 #
@@ -40,6 +41,7 @@ set( HEADER_FILES
 	./src/ConnectionManager.h
 	./src/TalkToAgent.h
 	./src/SubmitChannel.h
+	./src/InfoChannel.h
 )
 
 include_directories(

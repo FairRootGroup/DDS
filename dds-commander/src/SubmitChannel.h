@@ -13,7 +13,7 @@ namespace dds
     class CSubmitChannel : public CConnectionImpl<CSubmitChannel>
     {
         CSubmitChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CSendCommandToItself>(_service)
+            : CConnectionImpl<CSubmitChannel>(_service)
             , m_isHandShakeOK(false)
         {
         }

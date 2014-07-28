@@ -23,8 +23,12 @@ namespace dds
         BEGIN_MSG_MAP(CTalkToAgent)
         MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
         MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
-        MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
         MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
+        // replay on the "submit" command request
+        MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
+        // replay on the "info" command request
+        // - get pid of the commander server
+        MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
         END_MSG_MAP()
 
       private:
@@ -33,6 +37,7 @@ namespace dds
         int on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg);
         int on_cmdSUBMIT(const CProtocolMessage& _msg);
         int on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
+        int on_cmdGED_PID(const CProtocolMessage& _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

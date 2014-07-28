@@ -43,8 +43,9 @@
 #define WRN BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::warning)
 #define ERR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::error)
 #define FAT BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::fatal)
-#define STDOUT BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::stdout)
-#define STDERR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::stderr)
+#define STDOUT BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::log_stdout)
+#define STDOUT_CLEAN BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::log_stdout_clean)
+#define STDERR BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::log_stderr)
 
 namespace MiscCommon
 {
@@ -57,13 +58,14 @@ namespace MiscCommon
         error = 3,
         fatal = 4,
         log_stdout = 5,
-        log_stderr = 6
+        log_stdout_clean = 6, // nothing will be pre-append to the output
+        log_stderr = 7
     };
 
     /// The operator puts a human-friendly representation of the severity level to the stream
     inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)
     {
-        static const char* strings[] = { "DBG", "INF", "WRN", "ERR", "FAT", "COUT", "CERR" };
+        static const char* strings[] = { "DBG", "INF", "WRN", "ERR", "FAT", "COUT", "COUT", "CERR" };
 
         if (static_cast<std::size_t>(level) < sizeof(strings) / sizeof(*strings))
             strm << strings[level];
@@ -135,10 +137,13 @@ namespace MiscCommon
             // Logging to console
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTSink =
                 add_console_log(std::cout, boost::log::keywords::format = ">> %Process%: %Message%");
+            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTCleanSink =
+                add_console_log(std::cout, boost::log::keywords::format = "%Message%");
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDERRSink =
                 add_console_log(std::cerr, boost::log::keywords::format = ">> %Process%: error: %Message%");
 
             consoleSTDOUTSink->set_filter(severity == log_stdout && hasConsoleOutput);
+            consoleSTDOUTCleanSink->set_filter(severity == log_stdout_clean && hasConsoleOutput);
             consoleSTDERRSink->set_filter(severity == log_stderr && hasConsoleOutput);
 
             add_common_attributes();
