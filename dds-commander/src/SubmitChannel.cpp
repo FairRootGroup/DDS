@@ -4,18 +4,18 @@
 //
 
 // DDS
-#include "SendCommandToItself.h"
+#include "SubmitChannel.h"
 
 using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CSendCommandToItself::setTopoFile(const string& _topoFile)
+void CSubmitChannel::setTopoFile(const string& _topoFile)
 {
     m_sTopoFile = _topoFile;
 }
 
-int CSendCommandToItself::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+int CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
@@ -30,7 +30,7 @@ int CSendCommandToItself::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CSendCommandToItself::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+int CSubmitChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 {
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -39,7 +39,7 @@ int CSendCommandToItself::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CSendCommandToItself::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
+int CSubmitChannel::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
 {
     LOG(log_stdout) << "Successfully done.";
 
@@ -50,7 +50,7 @@ int CSendCommandToItself::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CSendCommandToItself::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
+int CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
 {
     LOG(log_stderr) << "Submission has failed.";
 

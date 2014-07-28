@@ -3,23 +3,23 @@
 //
 //
 
-#ifndef __DDS__SendCommandToItself__
-#define __DDS__SendCommandToItself__
+#ifndef __DDS__SubmitChannel__
+#define __DDS__SubmitChannel__
 // DDS
 #include "ConnectionImpl.h"
 
 namespace dds
 {
-    class CSendCommandToItself : public CConnectionImpl<CSendCommandToItself>
+    class CSubmitChannel : public CConnectionImpl<CSubmitChannel>
     {
-        CSendCommandToItself(boost::asio::io_service& _service)
+        CSubmitChannel(boost::asio::io_service& _service)
             : CConnectionImpl<CSendCommandToItself>(_service)
             , m_isHandShakeOK(false)
         {
         }
 
       public:
-        BEGIN_MSG_MAP(CSendCommandToItself)
+        BEGIN_MSG_MAP(CSubmitChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdREPLY_SUBMIT_OK, on_cmdREPLY_SUBMIT_OK)

@@ -10,7 +10,7 @@
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
-#include "SendCommandToItself.h"
+#include "SubmitChannel.h"
 #include "INet.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 
             boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-            CSendCommandToItself::connectionPtr_t client = CSendCommandToItself::makeNew(io_service);
+            CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
             client->connect(iterator);
 
             // Prepare a hand shake message

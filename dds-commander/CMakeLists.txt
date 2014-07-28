@@ -29,7 +29,7 @@ set( SOURCE_FILES
 	./src/main.cpp
 	./src/ConnectionManager.cpp
 	./src/TalkToAgent.cpp
-	./src/SendCommandToItself.cpp
+	./src/SubmitChannel.cpp
 )
 
 #
@@ -39,7 +39,7 @@ set( HEADER_FILES
 	./src/Options.h
 	./src/ConnectionManager.h
 	./src/TalkToAgent.h
-	./src/SendCommandToItself.h
+	./src/SubmitChannel.h
 )
 
 include_directories(
