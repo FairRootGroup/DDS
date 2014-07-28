@@ -54,10 +54,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
     // Create a message
     SVersionCmd ver_src;
     ver_src.m_version = 777;
-    BYTEVector_t data_to_send;
-    ver_src.convertToData(&data_to_send);
     CProtocolMessage msg_src;
-    msg_src.encode_message(cmdHANDSHAKE_AGENT, data_to_send);
+    msg_src.encodeWithAttachment<cmdHANDSHAKE_AGENT>(ver_src);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE_AGENT);
 
@@ -126,11 +124,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     cmd_src.m_agentPort = nAgentPort;
     cmd_src.m_agentPid = nAgentPid;
     cmd_src.m_timeStamp = nTimeStamp;
-
-    BYTEVector_t data_to_send;
-    cmd_src.convertToData(&data_to_send);
     CProtocolMessage msg_src;
-    msg_src.encode_message(cmdREPLY_HOST_INFO, data_to_send);
+    msg_src.encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd_src);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_HOST_INFO);
 

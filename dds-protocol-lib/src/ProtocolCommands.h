@@ -66,12 +66,19 @@ namespace dds
     //----------------------------------------------------------------------
     struct SVersionCmd;
     struct SSubmitCmd;
+    struct SSimpleMsgCmd;
+    struct SHostInfoCmd;
 
     template <typename A, ECmdType>
     struct validate_command_attachment;
 
     REG_CMD_WITH_ATTACHMENT(cmdHANDSHAKE, SVersionCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdHANDSHAKE_AGENT, SVersionCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSUBMIT, SSubmitCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdSIMPLE_MSG, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdREPLY_SUBMIT_OK, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdREPLY_ERR_SUBMIT, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdREPLY_HOST_INFO, SHostInfoCmd);
 
     //----------------------------------------------------------------------
 
