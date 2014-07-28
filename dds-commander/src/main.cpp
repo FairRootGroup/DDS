@@ -166,14 +166,9 @@ int main(int argc, char* argv[])
             client->connect(iterator);
 
             // Prepare a hand shake message
-            SSimpleMsgCmd cmd;
-            //            BYTEVector_t data;
-            //            cmd.convertToData(&data);
-            //            CProtocolMessage msg;
-            //            msg.encode_message(cmdHANDSHAKE, data);
-
+            SVersionCmd cmd;
             CProtocolMessage msg;
-            msg.encodeMessage(cmdHANDSHAKE, cmd);
+            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
             client->pushMsg(msg);
 
             client->setTopoFile(options.m_sTopoFile);

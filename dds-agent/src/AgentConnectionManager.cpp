@@ -86,11 +86,9 @@ void CAgentConnectionManager::start()
             if (!ec)
             {
                 // Create handshake message which is the first one for all agents
-                SVersionCmd ver_src;
-                BYTEVector_t data_to_send;
-                ver_src.convertToData(&data_to_send);
+                SVersionCmd ver;
                 CProtocolMessage msg;
-                msg.encode_message(cmdHANDSHAKE_AGENT, data_to_send);
+                msg.encodeWithAttachment<cmdHANDSHAKE_AGENT>(ver);
 
                 newAgent->pushMsg(msg);
                 newAgent->start();

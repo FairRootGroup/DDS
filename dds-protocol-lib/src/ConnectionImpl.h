@@ -123,10 +123,11 @@ namespace dds
                               });
         }
 
-        void pushMsg(ECmdType _cmd)
+        template <ECmdType _cmd>
+        void pushMsg()
         {
             CProtocolMessage msg;
-            msg.encode_message(_cmd, MiscCommon::BYTEVector_t());
+            msg.encode<_cmd>();
             pushMsg(msg);
         }
 

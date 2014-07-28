@@ -22,11 +22,9 @@ int CSendCommandToItself::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     // Create the command's attachment
     SSubmitCmd cmd;
     cmd.m_sTopoFile = m_sTopoFile;
-    BYTEVector_t data;
-    cmd.convertToData(&data);
 
     CProtocolMessage msg;
-    msg.encode_message(cmdSUBMIT, data);
+    msg.encodeWithAttachment<cmdSUBMIT>(cmd);
     pushMsg(msg);
 
     return 0;

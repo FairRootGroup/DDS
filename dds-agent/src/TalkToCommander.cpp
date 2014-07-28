@@ -46,11 +46,8 @@ int CTalkToCommander::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
     cmd.m_agentPid = pid;
     cmd.m_timeStamp = 0;
 
-    BYTEVector_t data;
-    cmd.convertToData(&data);
-
     CProtocolMessage msg;
-    msg.encode_message(cmdREPLY_HOST_INFO, data);
+    msg.encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
     pushMsg(msg);
     return 0;
 }

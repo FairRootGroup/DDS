@@ -22,7 +22,7 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
         LOG(warning) << "Client's protocol version is incompatable. Client: "
                      << socket().remote_endpoint().address().to_string();
 
-        pushMsg(cmdREPLY_ERR_BAD_PROTOCOL_VERSION);
+        pushMsg<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
     }
     else
     {
@@ -31,7 +31,7 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
 
-        pushMsg(cmdREPLY_HANDSHAKE_OK);
+        pushMsg<cmdREPLY_HANDSHAKE_OK>();
     }
     return 0;
 }
@@ -48,7 +48,7 @@ int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         LOG(warning) << "Client's protocol version is incompatable. Client: "
                      << socket().remote_endpoint().address().to_string();
         CProtocolMessage msg;
-        msg.encode_message(cmdREPLY_ERR_BAD_PROTOCOL_VERSION, BYTEVector_t());
+        msg.encode<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
         pushMsg(msg);
     }
     else
@@ -58,8 +58,8 @@ int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
 
-        pushMsg(cmdREPLY_HANDSHAKE_OK);
-        pushMsg(cmdGET_HOST_INFO);
+        pushMsg<cmdREPLY_HANDSHAKE_OK>();
+        pushMsg<cmdGET_HOST_INFO>();
     }
     return 0;
 }
@@ -74,10 +74,8 @@ int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
     // TODO: Implement me. So far we always send OK
     SSimpleMsgCmd msg_cmd;
     msg_cmd.m_sMsg = "Dummy job info, JOBIds";
-    BYTEVector_t data;
-    msg_cmd.convertToData(&data);
     CProtocolMessage msg;
-    msg.encode_message(cmdREPLY_SUBMIT_OK, data);
+    msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
     pushMsg(msg);
 
     return 0;
@@ -91,7 +89,7 @@ int CTalkToAgent::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a HostInfo [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    pushMsg(cmdDISCONNECT);
+    pushMsg<cmdDISCONNECT>();
 
     return 0;
 }
