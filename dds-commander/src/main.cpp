@@ -3,7 +3,6 @@
 //
 //
 // DDS
-#include "Options.h"
 #include "Process.h"
 #include "ErrorCode.h"
 #include "ConnectionManager.h"
@@ -16,9 +15,6 @@
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/asio.hpp>
-// STD
-#include <iterator>
 
 using namespace std;
 using namespace MiscCommon;

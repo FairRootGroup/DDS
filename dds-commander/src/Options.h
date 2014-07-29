@@ -5,17 +5,11 @@
 #ifndef DDSOPTIONS_H
 #define DDSOPTIONS_H
 //=============================================================================
-// STD
-#include <stdexcept>
-#include <iostream>
-#include <string>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "version.h"
 #include "Res.h"
-#include "UserDefaults.h"
 #include "Logger.h"
 //=============================================================================
 using namespace std;
@@ -27,14 +21,12 @@ namespace dds
     typedef struct SOptions
     {
         enum ECommands
-        {
-            cmd_unknown,
-            cmd_start,
-            cmd_stop,
-            cmd_status,
-            cmd_submit,
-            cmd_info
-        };
+        { cmd_unknown,
+          cmd_start,
+          cmd_stop,
+          cmd_status,
+          cmd_submit,
+          cmd_info };
         SOptions()
             : m_Command(cmd_start)
             , m_needCommanderPid(false)

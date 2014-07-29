@@ -2,15 +2,8 @@
 //
 //
 //
-
-// STD
-#include <iostream>
-// BOOST
-#include <boost/asio.hpp>
 // DDS
 #include "ConnectionManager.h"
-#include "TalkToAgent.h"
-#include "Logger.h"
 
 using namespace boost::asio;
 using namespace std;
