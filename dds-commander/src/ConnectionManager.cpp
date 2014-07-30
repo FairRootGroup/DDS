@@ -4,6 +4,7 @@
 //
 // DDS
 #include "ConnectionManager.h"
+#include "MonitoringThread.h"
 
 using namespace boost::asio;
 using namespace std;
@@ -51,6 +52,16 @@ void CConnectionManager::start()
 {
     try
     {
+        // Start monitoring thread
+        CUserDefaults ud;
+        ud.init(true);
+        const float maxIdleTime = std::stof(ud.getValueForKey("general.idle_time"));
+
+        CMonitoringThread::instance().start(maxIdleTime,
+                                            []()
+                                            { LOG(info) << "Idle callback called"; });
+        //
+
         m_acceptor.listen();
         CTalkToAgent::connectionPtr_t client = CTalkToAgent::makeNew(m_acceptor.get_io_service());
         m_acceptor.async_accept(client->socket(), std::bind(&CConnectionManager::acceptHandler, this, client, sp::_1));
