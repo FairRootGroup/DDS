@@ -11,7 +11,6 @@
 // DDS
 #include "TalkToCommander.h"
 #include "Options.h"
-#include "MonitoringThread.h"
 
 namespace dds
 {
@@ -25,7 +24,6 @@ namespace dds
         void stop();
 
       private:
-        // void acceptHandler(CTalkToAgent::connectionPtr_t _agent, const boost::system::error_code& _ec);
         void doAwaitStop();
 
       private:

@@ -13,6 +13,7 @@
 #include "AgentConnectionManager.h"
 #include "TalkToCommander.h"
 #include "Logger.h"
+#include "MonitoringThread.h"
 // API
 //#include <signal.h>
 
@@ -47,19 +48,19 @@ CAgentConnectionManager::~CAgentConnectionManager()
 void CAgentConnectionManager::doAwaitStop()
 {
     m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
-                         {
-                             // The server is stopped by cancelling all outstanding asynchronous
-                             // operations. Once all operations have finished the io_service::run()
-                             // call will exit.
-                             stop();
-                         });
+                         { stop(); });
 }
 
 void CAgentConnectionManager::start()
 {
     try
     {
-        CMonitoringThread::instance().start([]()
+        CUserDefaults ud;
+        ud.init(true);
+        const float maxIdleTime = std::stof(ud.getValueForKey("general.idle_time"));
+
+        CMonitoringThread::instance().start(maxIdleTime,
+                                            []()
                                             { LOG(info) << "Idle callback called"; });
 
         // Read server info file
