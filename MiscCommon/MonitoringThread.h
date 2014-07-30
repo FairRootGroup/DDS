@@ -22,8 +22,8 @@ namespace dds
     class CMonitoringThread
     {
       private:
-        CMonitoringThread() {};
-        ~CMonitoringThread() {};
+        CMonitoringThread(){};
+        ~CMonitoringThread(){};
 
       public:
         /// \brief Return singleton instance
