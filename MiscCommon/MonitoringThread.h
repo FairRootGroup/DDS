@@ -49,14 +49,16 @@ namespace dds
                           {
                               while (true)
                               {
-                                  std::chrono::steady_clock::time_point currentTime = chrono::steady_clock::now();
+                                  std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
                                   std::chrono::duration<double> elapsedTime =
-                                      std::chrono::duration_cast<chrono::duration<double>>(currentTime - m_startTime);
+                                      std::chrono::duration_cast<std::chrono::duration<double>>(currentTime -
+                                                                                                m_startTime);
                                   LOG(MiscCommon::info) << "time since start [s]: " << elapsedTime.count();
 
                                   // Check if process is idle.
-                                  chrono::duration<double> idleTime =
-                                      chrono::duration_cast<chrono::duration<double>>(currentTime - m_startTime);
+                                  std::chrono::duration<double> idleTime =
+                                      std::chrono::duration_cast<std::chrono::duration<double>>(currentTime -
+                                                                                                m_startTime);
                                   if (idleTime.count() > _idleTime)
                                   {
                                       // First call idle callback
@@ -83,7 +85,7 @@ namespace dds
         void updateIdle()
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            m_startIdleTime = chrono::steady_clock::now();
+            m_startIdleTime = std::chrono::steady_clock::now();
         }
 
       private:
@@ -104,7 +106,7 @@ namespace dds
                 {
                     if (!MiscCommon::IsProcessExist(pidToKill))
                     {
-                        cout << endl;
+                        LOG(MiscCommon::log_stdout) << std::endl;
                         break;
                     }
                     LOG(MiscCommon::log_stdout) << ".";

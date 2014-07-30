@@ -14,12 +14,14 @@
 #include "ProtocolMessage.h"
 #include "ProtocolCommands.h"
 #include "Logger.h"
+#include "MonitoringThread.h"
 
 #define BEGIN_MSG_MAP(theClass)                                          \
   public:                                                                \
     friend CConnectionImpl<theClass>;                                    \
     void processMessage(const CProtocolMessage& _currentMsg, int& _nRes) \
     {                                                                    \
+        dds::CMonitoringThread::instance().updateIdle();                 \
         switch (_currentMsg.header().m_cmd)                              \
         {
 
@@ -283,9 +285,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:
