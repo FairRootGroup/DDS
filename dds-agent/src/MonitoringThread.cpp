@@ -86,11 +86,7 @@ void CMonitoringThread::updateIdle()
 
 void CMonitoringThread::killProcess()
 {
-    string pidFileName(CUserDefaults::getDDSPath());
-    pidFileName += "dds-agent.pid";
-
-    // TODO: make wait for the process here to check for errors
-    const pid_t pidToKill = CPIDFile::GetPIDFromFile(pidFileName);
+    pid_t pidToKill(::getpid());
     if (pidToKill > 0 && IsProcessExist(pidToKill))
     {
         LOG(log_stdout) << PROJECT_NAME << ": self exiting (" << pidToKill << ")...";
