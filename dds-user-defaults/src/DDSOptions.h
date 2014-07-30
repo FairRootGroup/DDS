@@ -18,6 +18,7 @@ namespace dds
         unsigned int m_logSeverityLevel; //!< Log severity level
         unsigned int m_logRotationSize;  //!< Log rotation size in bytes
         bool m_logHasConsoleOutput;      //!< True if output log also to console
+        unsigned int m_idleTime;         //!< Idle time in [s] after which process will be killed by monitoring thread
     } SDDSGeneralOptions_t;
 
     typedef struct SDDSUserDefaultOptions

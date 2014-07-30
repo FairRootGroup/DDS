@@ -35,13 +35,16 @@ CMonitoringThread& CMonitoringThread::instance()
 void CMonitoringThread::start(const std::function<void(void)>& _idleCallback)
 {
     static const float LOOP_TIME_DELAY = 5.f;
-    static const float IDLE_TIME = 30.f;
     static const float WAITING_TIME = 20.f;
+
+    CUserDefaults ud;
+    ud.init(true);
+    const float maxIdleTime = std::stof(ud.getValueForKey("general.idle_time"));
 
     m_startTime = chrono::steady_clock::now();
     m_startIdleTime = chrono::steady_clock::now();
 
-    thread t([this, &_idleCallback]()
+    thread t([this, &_idleCallback, maxIdleTime]()
              {
                  while (true)
                  {
@@ -55,7 +58,7 @@ void CMonitoringThread::start(const std::function<void(void)>& _idleCallback)
                      // process.
                      chrono::duration<double> idleTime =
                          chrono::duration_cast<chrono::duration<double>>(currentTime - m_startTime);
-                     if (idleTime.count() > IDLE_TIME)
+                     if (idleTime.count() > maxIdleTime)
                      {
                          // First call idle callback
                          LOG(info) << "Process is idle call idle callback";

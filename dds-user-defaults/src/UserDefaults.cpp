@@ -44,6 +44,10 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
                                       boost::program_options::value<unsigned int>(
                                           &m_options.m_general.m_ddsCommanderPortRangeMax)->default_value(21000),
                                       "");
+    config_file_options.add_options()(
+        "general.idle_time",
+        boost::program_options::value<unsigned int>(&m_options.m_general.m_idleTime)->default_value(30));
+
     if (!_get_default)
     {
         ifstream ifs(_cfgFileName.c_str());
@@ -90,7 +94,8 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
             << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
             << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
-            << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n";
+            << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
+            << "idle_time=" << ud.getValueForKey("general.idle_time") << "\n";
 }
 
 // TODO: we use boost 1.32. This is the only method I found to convert boost::any to string.
