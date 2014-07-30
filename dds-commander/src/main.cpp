@@ -197,6 +197,7 @@ int main(int argc, char* argv[])
             boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
             CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_service);
+            client->setNeedCommanderPid(options.m_needCommanderPid);
             client->connect(iterator);
 
             // Prepare a hand shake message
@@ -204,11 +205,6 @@ int main(int argc, char* argv[])
             CProtocolMessage msg;
             msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
             client->pushMsg(msg);
-
-            if (options.m_needCommanderPid)
-            {
-                client->pushMsg<cmdGED_PID>();
-            }
 
             io_service.run();
         }

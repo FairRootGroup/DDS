@@ -7,6 +7,7 @@
 #define __DDS__InfoChannel__
 // DDS
 #include "ConnectionImpl.h"
+#include "Options.h"
 
 namespace dds
 {
@@ -15,6 +16,7 @@ namespace dds
         CInfoChannel(boost::asio::io_service& _service)
             : CConnectionImpl<CInfoChannel>(_service)
             , m_isHandShakeOK(false)
+            , m_bNeedCommanderPid(false)
         {
         }
 
@@ -26,6 +28,11 @@ namespace dds
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdREPLY_PID, on_cmdREPLY_PID)
         END_MSG_MAP()
+
+        void setNeedCommanderPid(bool _val = true)
+        {
+            m_bNeedCommanderPid = _val;
+        }
 
       private:
         // Message Handlers
@@ -44,7 +51,7 @@ namespace dds
 
       private:
         bool m_isHandShakeOK;
-        std::string m_sTopoFile;
+        bool m_bNeedCommanderPid;
     };
 }
 

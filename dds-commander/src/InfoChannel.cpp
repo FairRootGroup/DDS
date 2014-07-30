@@ -14,13 +14,9 @@ int CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
-    // Create the command's attachment
-    SSubmitCmd cmd;
-    cmd.m_sTopoFile = m_sTopoFile;
-
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdSUBMIT>(cmd);
-    pushMsg(msg);
+    // ask the server what we wnated to ask :)
+    if (m_bNeedCommanderPid)
+        pushMsg<cmdGED_PID>();
 
     return 0;
 }
