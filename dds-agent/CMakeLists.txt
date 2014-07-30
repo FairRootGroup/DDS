@@ -29,6 +29,7 @@ set( SOURCE_FILES
 	./src/main.cpp
     ./src/TalkToCommander.cpp
     ./src/AgentConnectionManager.cpp
+    ./src/MonitoringThread.cpp
 )
 
 #
@@ -38,6 +39,7 @@ set( HEADER_FILES
     ./src/Options.h
     ./src/TalkToCommander.h
     ./src/AgentConnectionManager.h
+    ./src/MonitoringThread.h
 )
 
 include_directories(

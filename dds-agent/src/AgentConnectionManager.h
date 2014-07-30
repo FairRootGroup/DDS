@@ -11,6 +11,7 @@
 // DDS
 #include "TalkToCommander.h"
 #include "Options.h"
+#include "MonitoringThread.h"
 
 namespace dds
 {

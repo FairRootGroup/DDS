@@ -59,6 +59,9 @@ void CAgentConnectionManager::start()
 {
     try
     {
+        CMonitoringThread::instance().start([]()
+                                            { LOG(info) << "Idle callback called"; });
+
         // Read server info file
         const string sSrvCfg(CUserDefaults::getServerInfoFile());
         LOG(info) << "Reading server info from: " << sSrvCfg;
