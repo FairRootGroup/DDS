@@ -49,40 +49,39 @@ namespace dds
             m_startTime = std::chrono::steady_clock::now();
             m_startIdleTime = std::chrono::steady_clock::now();
 
-            std::thread t([this, &_idleCallback, _idleTime]()
-                          {
-                              while (true)
-                              {
-                                  std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
-                                  std::chrono::duration<double> elapsedTime =
-                                      std::chrono::duration_cast<std::chrono::duration<double>>(currentTime -
-                                                                                                m_startTime);
-                                  LOG(MiscCommon::info) << "time since start [s]: " << elapsedTime.count();
+            std::thread t(
+                [this, &_idleCallback, _idleTime]()
+                {
+                    while (true)
+                    {
+                        std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+                        std::chrono::duration<double> elapsedTime =
+                            std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - m_startTime);
+                        LOG(MiscCommon::info) << "time since start [s]: " << elapsedTime.count();
 
-                                  // Check if process is idle.
-                                  std::chrono::duration<double> idleTime =
-                                      std::chrono::duration_cast<std::chrono::duration<double>>(currentTime -
-                                                                                                m_startTime);
-                                  if (idleTime.count() > _idleTime)
-                                  {
-                                      // First call idle callback
-                                      LOG(MiscCommon::info) << "Process is idle call idle callback";
-                                      _idleCallback();
-                                      sleep(WAITING_TIME);
+                        // Check if process is idle.
+                        std::chrono::duration<double> idleTime =
+                            std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - m_startTime);
+                        if (idleTime.count() > _idleTime)
+                        {
+                            // First call idle callback
+                            LOG(MiscCommon::info) << "Process is idle call idle callback";
+                            _idleCallback();
+                            sleep(WAITING_TIME);
 
-                                      // Call terminate
-                                      // LOG(error) << "Process is idle call terminate";
-                                      // terminate();
-                                      // sleep(WAITING_TIME);
+                            // Call terminate
+                            // LOG(error) << "Process is idle call terminate";
+                            // terminate();
+                            // sleep(WAITING_TIME);
 
-                                      // Kill process
-                                      LOG(MiscCommon::error) << "Process is idle try to kill the process";
-                                      killProcess();
-                                  }
+                            // Kill process
+                            LOG(MiscCommon::error) << "Process is idle try to kill the process";
+                            killProcess();
+                        }
 
-                                  sleep(LOOP_TIME_DELAY);
-                              }
-                          });
+                        sleep(LOOP_TIME_DELAY);
+                    }
+                });
             t.detach();
         }
 

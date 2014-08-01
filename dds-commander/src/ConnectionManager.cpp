@@ -57,7 +57,9 @@ void CConnectionManager::start()
 
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
-                                            { LOG(info) << "Idle callback called"; });
+                                            {
+            LOG(info) << "Idle callback called";
+        });
         //
 
         m_acceptor.listen();
