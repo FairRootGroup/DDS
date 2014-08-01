@@ -27,6 +27,7 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
     else
     {
         m_isHandShakeOK = true;
+        m_type = ETalkToAgentType::UI;
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
@@ -54,6 +55,7 @@ int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
     else
     {
         m_isHandShakeOK = true;
+        m_type = ETalkToAgentType::AGENT;
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";

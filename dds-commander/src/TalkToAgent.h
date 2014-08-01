@@ -9,11 +9,19 @@
 
 namespace dds
 {
+    enum class ETalkToAgentType
+    {
+        UNDEFINED,
+        AGENT,
+        UI
+    };
+
     class CTalkToAgent : public CConnectionImpl<CTalkToAgent>
     {
         CTalkToAgent(boost::asio::io_service& _service)
             : CConnectionImpl<CTalkToAgent>(_service)
             , m_isHandShakeOK(false)
+            , m_type(ETalkToAgentType::UNDEFINED)
         {
         }
 
@@ -46,6 +54,7 @@ namespace dds
 
       private:
         bool m_isHandShakeOK;
+        ETalkToAgentType m_type;
     };
 }
 #endif /* defined(__DDS__TalkToAgent__) */
