@@ -7,7 +7,7 @@
 // BOOST
 #include <boost/program_options/variables_map.hpp>
 // DDS
-#include "DDSOptions.h"
+#include "Options.h"
 // STD
 #include <string>
 
@@ -15,7 +15,16 @@ namespace dds
 {
     class CUserDefaults
     {
+      private:
+        CUserDefaults();
+        ~CUserDefaults();
+
       public:
+        // \brief Return singleton instance
+        static CUserDefaults& instance();
+        void reinit(const std::string& _cfgFileName, bool _get_default = false);
+
+      private:
         void init(bool _get_default = false);
         void init(const std::string& _cfgFileName, bool _get_default = false);
 
@@ -24,10 +33,7 @@ namespace dds
         static std::string currentUDFile();
         static void printDefaults(std::ostream& _stream);
         static std::string getDDSPath();
-        const SDDSUserDefaultsOptions_t getOptions() const
-        {
-            return m_options;
-        }
+        const SDDSUserDefaultsOptions_t getOptions() const;
         static std::string getServerInfoFile();
 
       private:

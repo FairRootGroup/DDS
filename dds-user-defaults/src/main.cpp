@@ -78,8 +78,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     }
     if (vm.count("path"))
     {
-        CUserDefaults ud;
-        cout << ud.currentUDFile() << endl;
+        cout << CUserDefaults::currentUDFile() << endl;
         return true;
     }
 
@@ -110,29 +109,32 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
           << "#\n"
           << "# Please use DDS User's Manual to find out more details on\n"
           << "# keys and values of this configuration file.\n"
-          << "# PoD User's Manual can be found in $DDS_LOCATION/doc folder or\n"
+          << "# DDS User's Manual can be found in $DDS_LOCATION/doc folder or\n"
           << "# by the following address: http://dds.gsi.de/documentation.html\n";
         CUserDefaults::printDefaults(f);
         cout << "Generating a default DDS configuration file - DONE." << endl;
         return false;
     }
 
-    // Check UD
-    CUserDefaults user_defaults;
-    try
-    {
-        user_defaults.init(sCfgFileName);
-    }
-    catch (std::exception& _e)
-    {
-        stringstream ss;
-        ss << "DDS user defaults \"" << sCfgFileName << "\" is illformed: " << _e.what();
-        throw runtime_error(ss.str());
-    }
+    //    // Check UD
+    //    CUserDefaults user_defaults;
+    //    try
+    //    {
+    //        user_defaults.init(sCfgFileName);
+    //    }
+    //    catch (std::exception& _e)
+    //    {
+    //        stringstream ss;
+    //        ss << "DDS user defaults \"" << sCfgFileName << "\" is illformed: " << _e.what();
+    //        throw runtime_error(ss.str());
+    //    }
+
+    CUserDefaults& userDefaults = CUserDefaults::instance();
+    userDefaults.reinit(sCfgFileName);
 
     if (vm.count("key"))
     {
-        cout << user_defaults.getValueForKey(vm["key"].as<string>()) << endl;
+        cout << userDefaults.getValueForKey(vm["key"].as<string>()) << endl;
     }
 
     *_verbose = vm.count("verbose");

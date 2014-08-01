@@ -53,9 +53,7 @@ void CConnectionManager::start()
     try
     {
         // Start monitoring thread
-        CUserDefaults ud;
-        ud.init(true);
-        const float maxIdleTime = std::stof(ud.getValueForKey("general.idle_time"));
+        const float maxIdleTime = std::stof(CUserDefaults::instance().getValueForKey("general.idle_time"));
 
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()

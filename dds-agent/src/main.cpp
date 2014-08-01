@@ -27,8 +27,8 @@ using namespace dds;
 
 int main(int argc, char* argv[])
 {
-    Logger::instance().init();
-    LOG(info) << "Starting dds-agent...";
+    Logger::instance().init(); // Initialize log
+    CUserDefaults::instance(); // Initialize user defaults
 
     // Command line parser
     SOptions_t options;

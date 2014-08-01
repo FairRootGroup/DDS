@@ -51,7 +51,6 @@ namespace dds
         }
 
         ECommands m_Command;
-        CUserDefaults m_userDefaults;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -102,9 +101,6 @@ namespace dds
             PrintVersion();
             return false;
         }
-
-        // initilize DDS user defaults
-        _options->m_userDefaults.init();
 
         // Command
         if (vm.count("command"))

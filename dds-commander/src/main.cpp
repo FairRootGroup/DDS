@@ -25,7 +25,8 @@ using boost::asio::ip::tcp;
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    Logger::instance().init();
+    Logger::instance().init(); // Initialize log
+    CUserDefaults::instance(); // Initialize user defaults
 
     vector<std::string> arguments(argv + 1, argv + argc);
     ostringstream ss;
@@ -46,7 +47,7 @@ int main(int argc, char* argv[])
     }
 
     // resolving user's home dir from (~/ or $HOME, if present)
-    string sWorkDir(options.m_userDefaults.getOptions().m_general.m_workDir);
+    string sWorkDir(CUserDefaults::instance().getOptions().m_general.m_workDir);
     smart_path(&sWorkDir);
     // We need to be sure that there is "/" always at the end of the path
     smart_append<string>(&sWorkDir, '/');
@@ -112,10 +113,11 @@ int main(int argc, char* argv[])
             CPIDFile pidfile(pidfile_name, ::getpid());
 
             boost::asio::io_service io_service;
+            const CUserDefaults& userDefaults = CUserDefaults::instance();
             // get a free port from a given range
-            int nSrvPort = MiscCommon::INet::get_free_port(
-                options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
-                options.m_userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+            int nSrvPort =
+                MiscCommon::INet::get_free_port(userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
+                                                userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 

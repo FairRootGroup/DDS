@@ -52,7 +52,6 @@ namespace dds
         }
 
         ECommands m_Command;
-        CUserDefaults m_userDefaults;
         std::string m_sTopoFile;
         bool m_needCommanderPid;
     } SOptions_t;
@@ -112,9 +111,6 @@ namespace dds
             PrintVersion();
             return false;
         }
-
-        // initilize DDS user defaults
-        _options->m_userDefaults.init();
 
         // Command
         if (vm.count("command"))

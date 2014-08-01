@@ -15,6 +15,26 @@ using namespace std;
 using namespace dds;
 using namespace MiscCommon;
 
+CUserDefaults::CUserDefaults()
+{
+    init();
+}
+
+CUserDefaults::~CUserDefaults()
+{
+}
+
+CUserDefaults& CUserDefaults::instance()
+{
+    static CUserDefaults instance;
+    return instance;
+}
+
+void CUserDefaults::reinit(const std::string& _cfgFileName, bool _get_default)
+{
+    init(_cfgFileName, _get_default);
+}
+
 void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
 {
     m_keys.clear();
@@ -136,6 +156,11 @@ string CUserDefaults::getUnifiedBoolValueForBoolKey(const string& _Key) const
         return ("");
 
     return (m_keys[_Key].as<bool>() ? "yes" : "no");
+}
+
+const SDDSUserDefaultsOptions_t CUserDefaults::getOptions() const
+{
+    return m_options;
 }
 
 string CUserDefaults::currentUDFile()

@@ -99,10 +99,8 @@ namespace MiscCommon
         {
             using namespace boost::log;
 
-            // Get the path to log file
-            dds::CUserDefaults userDefaults;
-            std::string sCfgFile(dds::CUserDefaults::currentUDFile());
-            userDefaults.init(sCfgFile);
+            const dds::CUserDefaults& userDefaults = dds::CUserDefaults::instance();
+
             std::string sLogDir(userDefaults.getOptions().m_general.m_logDir);
             smart_append<std::string>(&sLogDir, '/');
             std::string sLogFile(sLogDir);
