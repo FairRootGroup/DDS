@@ -113,7 +113,7 @@ void CConnectionManager::acceptHandler(CTalkToAgent::connectionPtr_t _client, co
 
 void CConnectionManager::createServerInfoFile() const
 {
-    const string sSrvCfg(CUserDefaults::getServerInfoFile());
+    const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
     LOG(info) << "Createing a server info file: " << sSrvCfg;
     ofstream f(sSrvCfg.c_str());
     if (!f.is_open() || !f.good())
@@ -136,7 +136,7 @@ void CConnectionManager::createServerInfoFile() const
 
 void CConnectionManager::deleteServerInfoFile() const
 {
-    const string sSrvCfg(CUserDefaults::getServerInfoFile());
+    const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
     if (sSrvCfg.empty())
         return;
 

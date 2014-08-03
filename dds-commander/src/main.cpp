@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     }
 
     // resolving user's home dir from (~/ or $HOME, if present)
-    string sWorkDir(CUserDefaults::instance().getOptions().m_general.m_workDir);
+    string sWorkDir(CUserDefaults::instance().getOptions().m_server.m_workDir);
     smart_path(&sWorkDir);
     // We need to be sure that there is "/" always at the end of the path
     smart_append<string>(&sWorkDir, '/');
@@ -116,8 +116,8 @@ int main(int argc, char* argv[])
             const CUserDefaults& userDefaults = CUserDefaults::instance();
             // get a free port from a given range
             int nSrvPort =
-                MiscCommon::INet::get_free_port(userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMin,
-                                                userDefaults.getOptions().m_general.m_ddsCommanderPortRangeMax);
+                MiscCommon::INet::get_free_port(userDefaults.getOptions().m_server.m_ddsCommanderPortRangeMin,
+                                                userDefaults.getOptions().m_server.m_ddsCommanderPortRangeMax);
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
         if (SOptions_t::cmd_submit == options.m_Command)
         {
             // Read server info file
-            const string sSrvCfg(CUserDefaults::getServerInfoFile());
+            const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
             LOG(info) << "Reading server info from: " << sSrvCfg;
             if (sSrvCfg.empty())
                 throw runtime_error("Can't find server info file.");
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
         else if (SOptions_t::cmd_info == options.m_Command && options.m_needCommanderPid)
         {
             // Read server info file
-            const string sSrvCfg(CUserDefaults::getServerInfoFile());
+            const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
             LOG(info) << "Reading server info from: " << sSrvCfg;
             if (sSrvCfg.empty())
                 throw runtime_error("Can't find server info file.");

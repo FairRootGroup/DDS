@@ -51,16 +51,14 @@ namespace MiscCommon
 {
     /// Severity levels
     enum ELogSeverityLevel
-    {
-        debug = 0,
-        info = 1,
-        warning = 2,
-        error = 3,
-        fatal = 4,
-        log_stdout = 5,
-        log_stdout_clean = 6, // nothing will be pre-append to the output
-        log_stderr = 7
-    };
+    { debug = 0,
+      info = 1,
+      warning = 2,
+      error = 3,
+      fatal = 4,
+      log_stdout = 5,
+      log_stdout_clean = 6, // nothing will be pre-append to the output
+      log_stderr = 7 };
 
     /// The operator puts a human-friendly representation of the severity level to the stream
     inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)
@@ -101,15 +99,15 @@ namespace MiscCommon
 
             const dds::CUserDefaults& userDefaults = dds::CUserDefaults::instance();
 
-            std::string sLogDir(userDefaults.getOptions().m_general.m_logDir);
+            std::string sLogDir(userDefaults.getOptions().m_server.m_logDir);
             smart_append<std::string>(&sLogDir, '/');
             std::string sLogFile(sLogDir);
             sLogFile += std::string(PROJECT_NAME) + ".log";
             smart_path<std::string>(&sLogFile);
 
-            unsigned int rotationSize = userDefaults.getOptions().m_general.m_logRotationSize;
-            unsigned int severityLevel = userDefaults.getOptions().m_general.m_logSeverityLevel;
-            unsigned int hasConsoleOutput = userDefaults.getOptions().m_general.m_logHasConsoleOutput;
+            unsigned int rotationSize = userDefaults.getOptions().m_server.m_logRotationSize;
+            unsigned int severityLevel = userDefaults.getOptions().m_server.m_logSeverityLevel;
+            unsigned int hasConsoleOutput = userDefaults.getOptions().m_server.m_logHasConsoleOutput;
 
             // Default format for logger
             boost::log::formatter formatter =
