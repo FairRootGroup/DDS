@@ -216,12 +216,12 @@ string CUserDefaults::getWrkPkgDir()
 
 string CUserDefaults::getWrkPkgPath()
 {
-    return (getWrkPkgDir() + "pod-worker");
+    return (getWrkPkgDir() + "dds-worker");
 }
 
 string CUserDefaults::getWrkScriptPath()
 {
-    return (getWrkPkgDir() + "PoDWorker.sh");
+    return (getWrkPkgDir() + "DDSWorker.sh");
 }
 
 string CUserDefaults::getUserEnvScript()

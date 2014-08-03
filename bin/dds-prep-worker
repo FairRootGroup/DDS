@@ -1,0 +1,264 @@
+#!/usr/bin/env bash
+# Copyright 2014 GSI, Inc. All rights reserved.
+#
+# a script to prepare a worker package - all elements of DDS which need to be uploaded to a worker
+#
+#
+# Usage: dds-prep-worker 
+#
+# Comment:
+#    The worker package is saved to DDS server working directory.
+#
+#=============================================================================
+# ***** USAGE *****
+#=============================================================================
+usage() {
+    cat <<EOF
+DDS command line utility to prepare a worker package - all elements of DDS which need to be uploaded to a worker
+   Copyright 2014 GSI, Inc. All rights reserved.
+
+Usage: $(basename $0) [OPTION]
+     -i 			Re-pack user_worker_env.sh (for internal use only).
+     -h          		Show summary of options.
+
+Report bugs to http://dds.gsi.de
+EOF
+}
+#=============================================================================
+# ***** OPTARG *****
+#=============================================================================
+REPACK_WRK_PKG=""
+while getopts ":ih" opt; do
+  case $opt in
+  i)
+    REPACK_WRK_PKG="YES"
+    ;;
+  h) 
+    usage
+    exit 0
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+#=============================================================================
+# ***** vars  *****
+#=============================================================================
+TOOL_NAME="$(basename $0)"
+
+PRIVATE_TOOLS="$DDS_LOCATION/bin/private"
+
+echo "preparing DDS worker package..."
+DDS_CFG=$(dds-user-defaults -p)
+if [ -z "$DDS_CFG" ]; then
+   echo "error: can't find DDS user defaults"
+   exit 1
+fi
+
+eval WRK_DIR=$(dds-user-defaults --key server.work_dir)
+eval ARC_NAME=$(dds-user-defaults --wrkpkg)
+eval WRK_SCRIPT=$(dds-user-defaults --wrkscript)
+eval USER_SCRIPT=$(dds-user-defaults --user-env-script)
+eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --wrkscript))/user_worker_env.sh"
+eval SERVER_INFO_FILE=$(dds-user-defaults --server-info-file)
+eval DDS_WRK_SCRIPT_IN=$DDS_LOCATION/etc/DDSWorker.sh.in
+
+# create a tmp working directory
+eval DDS_WRK_TMP_DIR="$WRK_DIR/tmp"
+mkdir -p $DDS_WRK_TMP_DIR
+eval DDS_WRK_SCRIPT_TMP=$DDS_WRK_TMP_DIR/DDSWorker.sh
+
+
+WN_BINS="$POD_LOCATION/bin/wn_bins/*"
+XPD_CFG="$WRK_DIR/etc/xpd.cf"
+
+CACHE_DIR="$WRK_DIR/tmp/wpkg_cache"
+mkdir -p "$CACHE_DIR"
+
+# check that all needed components are available
+COMPONENTS_ETC=( "$DDS_CFG"
+                 "$DDS_LOCATION/etc/version"
+                 "$SERVER_INFO_FILE" )
+
+COMPONENTS=( "${COMPONENTS_ETC[@]}" )
+#=============================================================================
+# ***** clean_up *****
+#=============================================================================
+clean_up()
+{
+  rm -f $ARC_NAME $ARC_NAME.tar $ARC_NAME.tgz
+  rm -f $WRK_SCRIPT
+  # don't remove inline script if internal re-pack is called
+  if [ -z "$REPACK_WRK_PKG" ]; then
+     rm -f $INLINEBASH_SCRIPT
+  fi
+}
+
+##------------- re-pack inline BASH script
+#if [ -n "$REPACK_WRK_PKG" ]; then
+#   echo "$TOOL_NAME: it was requested to repack worker package"
+#   WRK_PKG_DIR=$(dirname $ARC_NAME)
+   
+#   pushd $(pwd) &> /dev/null
+#   cd $WRK_PKG_DIR
+#   gzip -d -c pod-worker > pod-worker.tar
+#   if (( $? != 0 )) ; then
+#      echo "$TOOL_NAME: error: failed to repack worker package. The package is broken. Please restart pod-server."
+#      exit 1
+#   fi
+#   tar -uf pod-worker.tar user_worker_env.sh
+#   if (( $? != 0 )) ; then
+#      echo "$TOOL_NAME: error: failed to update worker package."
+#      exit 1
+#   fi
+#   gzip -9 -c pod-worker.tar > pod-worker
+#   popd
+#   exit 0
+#fi
+#-------------------------------------------------
+
+# clean before create
+clean_up
+
+# prefer inline shell script over user environment script
+if [ -r "$INLINEBASH_SCRIPT" ]; then # inline bash script (SSH plug-in)
+   echo "inline shell script is found and will be added to the package..."
+   COMPONENTS=( "${COMPONENTS[@]}" "$INLINEBASH_SCRIPT" )
+elif [ -r "$USER_SCRIPT" ]; then # add user's script if present
+   echo "select user defined environment script to be added to worker package..."
+   COMPONENTS=( "${COMPONENTS[@]}" "$USER_SCRIPT" )
+fi
+
+# add all pre-compiled bins
+echo "selecting pre-compiled bins to be added to worker package..."
+for i in ${WN_BINS[@]} 
+do
+   COMPONENTS=( "${COMPONENTS[@]}" "$i" )
+done
+
+
+# check that all components are exists
+for i in "${COMPONENTS[@]}"
+do
+   if [ ! -r "$i" ]; then
+      echo "Failed to create the package. There is a missing component: \"$i\"" >&2
+      exit 1
+   fi
+done
+#=============================================================================
+# ***** is there a need to recreate the package  *****
+#=============================================================================
+need_update()
+{
+   # TODO: rewrite this algorithms using checksums
+   ##
+     return 1
+   ##
+   ##
+   if [ -n "$REPACK_WRK_PKG" ]; then
+      echo "$TOOL_NAME: it was requested to repack worker package"
+      return 1
+   fi
+
+   local _os=$(uname -s 2>&1)
+   local pkg_time=0
+   if [ -f $ARC_NAME ]; then
+      # the last modified time of <file> as timestamp format
+      if [ "$_os" = "Darwin" ]; then
+         pkg_time=$(stat -f "%m" -t "%s" "$ARC_NAME") 2>/dev/null         
+      else
+         pkg_time=$(stat --format='%Z' "$ARC_NAME") 2>/dev/null
+      fi
+   fi
+
+   for i in "${COMPONENTS[@]}"
+   do
+      local ts=0
+      if [ "$_os" = "Darwin" ]; then
+         ts=$(stat -f "%m" -t "%s" "$i") 2>/dev/null
+      else
+         ts=$(stat --format='%Z' "$i") 2>/dev/null
+      fi
+ 
+      if (( $ts > $pkg_time )); then
+         # if timestamp is different, than compare to a cached file
+         d=$(diff $i "$CACHE_DIR/$(basename $i)" 2>/dev/null)
+         if (( 0 != $? )); then
+            echo "DDS worker package will be repacked because \"$i\" was updated"
+            return 1 
+         fi
+      fi
+   done
+   
+   return 0
+}
+#=============================================================================
+# ***** MAIN *****
+#=============================================================================
+need_update
+if (( 0 == $? )); then
+   echo "DDS worker package is up-to-dat."
+   echo "DDS worker package: "$ARC_NAME
+   exit 0
+else
+   clean_up
+fi
+
+# create an empty archive first
+tar cvf $ARC_NAME --files-from=/dev/null 
+
+# add all default components
+for i in "${COMPONENTS[@]}"
+do
+   if [ -f $i ]; then
+      tar --append --file=$ARC_NAME -C $(dirname $i) $(basename $i)
+      RET_VAL=$?
+      if [ "X$RET_VAL" = "X0" ]; then
+         # copy the file to cache
+         # TODO: revise the algorithm of the cache using md5
+         cp $i $CACHE_DIR/
+         chmod u+w "$CACHE_DIR/$(basename $i)"
+	 continue
+      else
+	 echo "failed. Exit code: $RET_VAL" >&2
+	 exit 1
+      fi
+   else
+      echo "Error: missing component: $i" >&2
+      clean_up
+      exit 1
+   fi
+done
+
+
+# compress the archive
+gzip -9 $ARC_NAME
+# remove the .gz suffix
+mv "$ARC_NAME.gz" $ARC_NAME
+
+# add payload to the wrk script
+$PRIVATE_TOOLS/dds-addpayload --uuencode $ARC_NAME "$DDS_WRK_SCRIPT_IN" "$DDS_WRK_SCRIPT_TMP"
+if (( 0 != $? )); then
+   echo "$TOOL_NAME: error: failed to add payload to the wrk script."
+   return 1 
+fi
+
+# update WN submit timestampt
+regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\1$(date +%s)/g"
+LANG=C # to silence: "sed: RE error: illegal byte sequence"
+sed -e "$regexpr_wn_submit_time" $DDS_WRK_SCRIPT_TMP > "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp"
+mv "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp" $DDS_WRK_SCRIPT_TMP 
+
+# copy worker script to the sandbox directory
+cp "$DDS_WRK_SCRIPT_TMP" "$WRK_SCRIPT" || { echo "error: Can't copy the worker script to the sandbox." >&2 ; exit 1; }
+chmod u+wx "$WRK_SCRIPT"
+
+echo "PoD worker package: "$WRK_SCRIPT
+
+# remove artifacts
+rm -f $ARC_NAME $ARC_NAME.tar $ARC_NAME.tgz
+
+exit 0
+

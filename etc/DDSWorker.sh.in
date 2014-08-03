@@ -435,7 +435,7 @@ export POD_PROOFCFG_FILE
 # This timestamp is automatically set when PoD job is submitted to RMS
 # The pod-prep-worker is responsible to set it
 #
-export POD_WN_SUBMIT_TIMESTAMP=0000
+export DDS_WN_SUBMIT_TIMESTAMP=0000
 
 # Using eval to force variable substitution
 # changing _G_WRK_DIR to a working directory in the following files:
