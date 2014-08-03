@@ -56,10 +56,10 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
                           "Show the full path of the RMS sandbox directory. It returns "
                           "server.sandbox_dir if it is not empty, otherwise server.work_dir is "
                           "returned. The path must be evaluated before use");
-    /*    (
-            "userenvscript", "Show the full path of user's environment script for workers (if present). The path must be
-       evaluated before use")(
-    */
+    visible.add_options()("userenvscript",
+                          "Show the full path of user's environment script for workers (if present). "
+                          "The path must be evaluated before use");
+
     // Parsing command-line
     bpo::variables_map vm;
     bpo::store(bpo::command_line_parser(_Argc, _Argv).options(visible).run(), vm);
@@ -151,6 +151,11 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
         if (sandbox.empty())
             sandbox = userDefaults.getValueForKey("server.work_dir");
         cout << sandbox << endl;
+        return false;
+    }
+    if (vm.count("userenvscript"))
+    {
+        cout << userDefaults.getUserEnvScript() << endl;
         return false;
     }
 

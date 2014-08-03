@@ -170,7 +170,7 @@ const SDDSUserDefaultsOptions_t CUserDefaults::getOptions() const
 
 string CUserDefaults::currentUDFile()
 {
-    MiscCommon::CFindCfgFile<string> cfg;
+    CFindCfgFile<string> cfg;
     cfg.SetOrder("$HOME/.DDS/DDS.cfg")("$DDS_LOCATION/etc/DDS.cfg")("$DDS_LOCATION/DDS.cfg");
     string val;
     cfg.GetCfg(&val);
@@ -204,13 +204,13 @@ string CUserDefaults::getServerInfoFile()
 
 string CUserDefaults::getWrkPkgDir()
 {
-    std::string sSandboxDir;
+    string sSandboxDir;
     sSandboxDir = getValueForKey("server.sandbox_dir");
     if (sSandboxDir.empty())
         sSandboxDir = getValueForKey("server.work_dir");
 
-    MiscCommon::smart_path(&sSandboxDir);
-    MiscCommon::smart_append(&sSandboxDir, '/');
+    smart_path(&sSandboxDir);
+    smart_append(&sSandboxDir, '/');
     return (sSandboxDir + "wrk/");
 }
 
@@ -222,4 +222,14 @@ string CUserDefaults::getWrkPkgPath()
 string CUserDefaults::getWrkScriptPath()
 {
     return (getWrkPkgDir() + "PoDWorker.sh");
+}
+
+string CUserDefaults::getUserEnvScript()
+{
+    CFindCfgFile<std::string> cfg;
+    cfg.SetOrder("$HOME/.DDS/user_worker_env.sh")("$DDS_LOCATION/etc/user_worker_env.sh");
+    std::string val;
+    cfg.GetCfg(&val);
+    smart_path(&val);
+    return val;
 }
