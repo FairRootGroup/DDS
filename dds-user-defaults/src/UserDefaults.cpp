@@ -41,32 +41,36 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     boost::program_options::options_description config_file_options("DDS user defaults options");
     config_file_options.add_options()(
         "server.work_dir",
-        boost::program_options::value<string>(&m_options.m_general.m_workDir)->default_value("$HOME/.DDS"),
+        boost::program_options::value<string>(&m_options.m_server.m_workDir)->default_value("$HOME/.DDS"),
+        "");
+    config_file_options.add_options()(
+        "server.sandbox_dir",
+        boost::program_options::value<string>(&m_options.m_server.m_sandboxDir)->default_value("$HOME/.DDS"),
         "");
     config_file_options.add_options()(
         "server.log_dir",
-        boost::program_options::value<string>(&m_options.m_general.m_logDir)->default_value("$HOME/.DDS/log"),
+        boost::program_options::value<string>(&m_options.m_server.m_logDir)->default_value("$HOME/.DDS/log"),
         "");
     config_file_options.add_options()(
         "server.log_severity_level",
-        boost::program_options::value<unsigned int>(&m_options.m_general.m_logSeverityLevel)->default_value(0));
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_logSeverityLevel)->default_value(0));
     config_file_options.add_options()("server.log_rotation_size",
-                                      boost::program_options::value<unsigned int>(
-                                          &m_options.m_general.m_logRotationSize)->default_value(10 * 1024 * 1024));
+                                      boost::program_options::value<unsigned int>(&m_options.m_server.m_logRotationSize)
+                                          ->default_value(10 * 1024 * 1024));
     config_file_options.add_options()(
         "server.log_has_console_output",
-        boost::program_options::value<bool>(&m_options.m_general.m_logHasConsoleOutput)->default_value(true));
+        boost::program_options::value<bool>(&m_options.m_server.m_logHasConsoleOutput)->default_value(true));
     config_file_options.add_options()("server.commander_port_range_min",
                                       boost::program_options::value<unsigned int>(
-                                          &m_options.m_general.m_ddsCommanderPortRangeMin)->default_value(20000),
+                                          &m_options.m_server.m_ddsCommanderPortRangeMin)->default_value(20000),
                                       "");
     config_file_options.add_options()("server.commander_port_range_max",
                                       boost::program_options::value<unsigned int>(
-                                          &m_options.m_general.m_ddsCommanderPortRangeMax)->default_value(21000),
+                                          &m_options.m_server.m_ddsCommanderPortRangeMax)->default_value(21000),
                                       "");
     config_file_options.add_options()(
         "general.idle_time",
-        boost::program_options::value<unsigned int>(&m_options.m_general.m_idleTime)->default_value(30));
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(30));
 
     if (!_get_default)
     {
@@ -109,6 +113,7 @@ void CUserDefaults::printDefaults(ostream& _stream)
 
     _stream << "[server]\n"
             << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
+            << "sandbox_dir=" << ud.getValueForKey("server.sandbox_dir") << "\n"
             << "log_dir=" << ud.getValueForKey("server.log_dir") << "\n"
             << "log_severity_level=" << ud.getValueForKey("server.log_severity_level") << "\n"
             << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
@@ -190,11 +195,31 @@ string CUserDefaults::getDDSPath()
 
 string CUserDefaults::getServerInfoFile()
 {
-    CUserDefaults ud;
-    ud.init();
     const string sFileName("server_info.cfg");
-    string sWrkDir(ud.getValueForKey("server.work_dir"));
+    string sWrkDir(getValueForKey("server.work_dir"));
     smart_path(&sWrkDir);
     smart_append(&sWrkDir, '/');
     return (sWrkDir + sFileName);
+}
+
+string CUserDefaults::getWrkPkgDir()
+{
+    std::string sSandboxDir;
+    sSandboxDir = getValueForKey("server.sandbox_dir");
+    if (sSandboxDir.empty())
+        sSandboxDir = getValueForKey("server.work_dir");
+
+    MiscCommon::smart_path(&sSandboxDir);
+    MiscCommon::smart_append(&sSandboxDir, '/');
+    return (sSandboxDir + "wrk/");
+}
+
+string CUserDefaults::getWrkPkgPath()
+{
+    return (getWrkPkgDir() + "pod-worker");
+}
+
+string CUserDefaults::getWrkScriptPath()
+{
+    return (getWrkPkgDir() + "PoDWorker.sh");
 }

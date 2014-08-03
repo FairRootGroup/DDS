@@ -34,7 +34,10 @@ namespace dds
         static void printDefaults(std::ostream& _stream);
         static std::string getDDSPath();
         const SDDSUserDefaultsOptions_t getOptions() const;
-        static std::string getServerInfoFile();
+        std::string getServerInfoFile();
+        std::string getWrkPkgDir();
+        std::string getWrkPkgPath();
+        std::string getWrkScriptPath();
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;
