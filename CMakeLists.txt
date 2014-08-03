@@ -75,6 +75,61 @@ add_custom_target( format-code
        COMMAND ${CMAKE_SOURCE_DIR}/utils/update_format.sh ${CMAKE_SOURCE_DIR}
        COMMENT "Updating source code formatting.")
 
+# WN bin package custom target
+# Because of $<TARGET_FILE:tgt> it works only in cmake 2.8.4
+if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
+   if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+     set(TRG_ARCH x86)
+   else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+     set(TRG_ARCH amd64)
+   endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+   
+   if(APPLE)
+       set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-universal" )
+   elseif(UNIX)
+        set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-${TRG_ARCH}" )
+   endif(APPLE)
+
+   set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
+   set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
+   set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
+
+   if(APPLE)
+     set( lib_cmd "bash" )
+     set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{ system( \"cp \" $1 \" ${WN_PKG_DIR}\") }'" )
+   elseif(UNIX)
+     set( lib_cmd "bash" )
+     set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
+   endif(APPLE)
+   
+   add_custom_target( wn_bin
+                      COMMAND -mkdir -p ${WN_PKG_DIR}
+                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
+                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
+		      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
+                      ####### <<<<<<
+		      COMMAND ${lib_cmd} ${lib_cmd_args}
+                      COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
+                      COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
+                      COMMENT "Generate WN binary package" 
+                      VERBATIM )
+   add_dependencies( wn_bin
+			dds-agent
+			dds-user-defaults-lib 
+			dds-protocol-lib)
+
+   add_custom_target( wn_bin_upload
+		      COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"                      
+                      COMMAND scp -p ${WN_PKG_NAME_ARCH} ddswww@lxi001:${WN_PKG_REMOTE_DIR}
+                      COMMENT "Uploading WN binary package to DDS binary repository" 
+                      VERBATIM )
+
+   add_dependencies( wn_bin_upload
+                     wn_bin )
+
+endif(${CMAKE_VERSION} VERSION_GREATER 2.8.3)
+
+
 #
 # Install directory
 #

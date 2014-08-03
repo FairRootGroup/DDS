@@ -27,17 +27,17 @@ configure_file( ${dds-agent_SOURCE_DIR}/src/version.h.in ${dds-agent_BINARY_DIR}
 #
 set( SOURCE_FILES
 	./src/main.cpp
-    ./src/TalkToCommander.cpp
-    ./src/AgentConnectionManager.cpp
+	./src/TalkToCommander.cpp
+	./src/AgentConnectionManager.cpp
 )
 
 #
 # Header files
 #
 set( HEADER_FILES
-    ./src/Options.h
-    ./src/TalkToCommander.h
-    ./src/AgentConnectionManager.h
+	./src/Options.h
+	./src/TalkToCommander.h
+	./src/AgentConnectionManager.h
 )
 
 include_directories(
