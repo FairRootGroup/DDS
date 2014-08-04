@@ -340,12 +340,21 @@ namespace dds
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SBinaryAttachmentCmd& _val) const
         {
+            bool isSameData = true;
+            unsigned int i = 0;
+            for (auto c : _val.m_fileData)
+            {
+                isSameData = m_fileData[i] == c;
+                if (!isSameData)
+                    return false;
+                i++;
+            }
             return (m_crc32 == _val.m_crc32 && m_fileName == _val.m_fileName && m_fileSize == _val.m_fileSize);
         }
 
-        uint32_t m_crc32;                    ///> File checksum
         std::string m_fileName;              ///> Name of the file
         uint32_t m_fileSize;                 ///> File size in bytes
+        uint32_t m_crc32;                    ///> File checksum
         MiscCommon::BYTEVector_t m_fileData; ///> Binary data
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)

@@ -157,4 +157,50 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     BOOST_CHECK(nTimeStamp == cmd_dest.m_timeStamp);
 }
 
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
+{
+    const uint32_t crc32 = 1000;
+    const string fileName = "filename.exe";
+    const uint32_t fileSize = 26;
+    const MiscCommon::BYTEVector_t fileData{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                                             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+
+    // Create a message
+    SBinaryAttachmentCmd cmd_src;
+    cmd_src.m_crc32 = crc32;
+    cmd_src.m_fileName = fileName;
+    cmd_src.m_fileSize = fileSize;
+    cmd_src.m_fileData = fileData;
+    CProtocolMessage msg_src;
+    msg_src.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd_src);
+
+    BOOST_CHECK(msg_src.header().m_cmd == cmdBINARY_ATTACHMENT);
+
+    // "Send" message
+    CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
+    memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
+
+    // Decode the message
+    BOOST_CHECK(msg_dest.decode_header());
+
+    // Check that we got the proper command ID
+    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
+
+    // Read the message
+    SBinaryAttachmentCmd cmd_dest;
+    cmd_dest.convertFromData(msg_dest.bodyToContainer());
+
+    BOOST_CHECK(cmd_src == cmd_dest);
+    BOOST_CHECK(crc32 == cmd_dest.m_crc32);
+    BOOST_CHECK(fileName == cmd_dest.m_fileName);
+    BOOST_CHECK(fileSize == cmd_dest.m_fileSize);
+    unsigned int i = 0;
+    for (auto c : fileData)
+    {
+        BOOST_CHECK(c == cmd_dest.m_fileData[i]);
+        i++;
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();
