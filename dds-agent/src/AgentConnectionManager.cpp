@@ -48,22 +48,18 @@ CAgentConnectionManager::~CAgentConnectionManager()
 void CAgentConnectionManager::doAwaitStop()
 {
     m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
-                         {
-                             stop();
-                         });
+                         { stop(); });
 }
 
 void CAgentConnectionManager::start()
 {
     try
     {
-        const float maxIdleTime = std::stof(CUserDefaults::instance().getValueForKey("general.idle_time"));
+        const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
-                                            {
-            LOG(info) << "Idle callback called";
-        });
+                                            { LOG(info) << "Idle callback called"; });
 
         // Read server info file
         const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());

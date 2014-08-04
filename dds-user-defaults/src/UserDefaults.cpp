@@ -69,8 +69,8 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
                                           &m_options.m_server.m_ddsCommanderPortRangeMax)->default_value(21000),
                                       "");
     config_file_options.add_options()(
-        "general.idle_time",
-        boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(30));
+        "server.idle_time",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(1800));
 
     if (!_get_default)
     {

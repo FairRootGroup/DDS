@@ -53,13 +53,11 @@ void CConnectionManager::start()
     try
     {
         // Start monitoring thread
-        const float maxIdleTime = std::stof(CUserDefaults::instance().getValueForKey("general.idle_time"));
+        const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
-                                            {
-            LOG(info) << "Idle callback called";
-        });
+                                            { LOG(info) << "Idle callback called"; });
         //
 
         m_acceptor.listen();

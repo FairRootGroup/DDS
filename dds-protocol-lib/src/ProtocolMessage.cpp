@@ -13,7 +13,7 @@ using namespace MiscCommon;
 using namespace MiscCommon::INet;
 
 CProtocolMessage::CProtocolMessage()
-    : m_data(header_length + max_body_length)
+    : m_data(header_length)
 {
 }
 
@@ -21,7 +21,12 @@ void CProtocolMessage::clear()
 {
     m_header.clear();
     m_data.clear();
-    m_data.resize(header_length + max_body_length);
+    m_data.resize(header_length);
+}
+
+void CProtocolMessage::resize(size_t _size)
+{
+    m_data.resize(_size);
 }
 
 const CProtocolMessage::data_t* CProtocolMessage::data() const

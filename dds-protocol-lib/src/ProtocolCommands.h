@@ -45,7 +45,8 @@ namespace dds
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
         cmdGED_PID,
-        cmdREPLY_PID // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
+        cmdREPLY_PID,        // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
+        cmdBINARY_ATTACHMENT // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
 
         // ----------- VERSION 2 --------------------
     };
@@ -65,6 +66,7 @@ namespace dds
         { cmdDISCONNECT, NAME_TO_STRING(cmdDISCONNECT) },
         { cmdGED_PID, NAME_TO_STRING(cmdGED_PID) },
         { cmdREPLY_PID, NAME_TO_STRING(cmdREPLY_PID) },
+        { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },
     };
 
     //----------------------------------------------------------------------
@@ -72,6 +74,7 @@ namespace dds
     struct SSubmitCmd;
     struct SSimpleMsgCmd;
     struct SHostInfoCmd;
+    struct SBinaryAttachmentCmd;
 
     template <typename A, ECmdType>
     struct validate_command_attachment;
@@ -84,6 +87,7 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_ERR_SUBMIT, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_HOST_INFO, SHostInfoCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
 
     //----------------------------------------------------------------------
 
@@ -312,6 +316,45 @@ namespace dds
     {
         std::ostream_iterator<std::string> output(_stream, "\n");
         std::copy(val.m_container.begin(), val.m_container.end(), output);
+        return _stream;
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SBinaryAttachmentCmd : public SBasicCmd<SBinaryAttachmentCmd>
+    {
+        SBinaryAttachmentCmd()
+            : m_crc32(0)
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            size_t size(sizeof(m_crc32));
+            size += m_fileName.size() + 1;
+            size += sizeof(m_fileSize);
+            return size;
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SBinaryAttachmentCmd& _val) const
+        {
+            return (m_crc32 == _val.m_crc32 && m_fileName == _val.m_fileName && m_fileSize == _val.m_fileSize);
+        }
+
+        uint32_t m_crc32;                    ///> File checksum
+        std::string m_fileName;              ///> Name of the file
+        uint32_t m_fileSize;                 ///> File size in bytes
+        MiscCommon::BYTEVector_t m_fileData; ///> Binary data
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)
+    {
+        _stream << _val.m_crc32 << " " << _val.m_fileName << " " << _val.m_fileSize << " ";
+        for (const auto& c : _val.m_fileData)
+        {
+            _stream << c;
+        }
         return _stream;
     }
 }

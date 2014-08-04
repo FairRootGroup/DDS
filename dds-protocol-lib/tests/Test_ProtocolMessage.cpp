@@ -34,6 +34,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 
     // "Send" message
     CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
     memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
 
     // Decode the message
@@ -61,6 +62,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
 
     // "Send" message
     CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
     memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
 
     // Decode the message
@@ -89,6 +91,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 
     // "Send" message
     CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
     memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
 
     // Decode the message
@@ -131,6 +134,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
 
     // "Send" message
     CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
     memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
 
     // Decode the message

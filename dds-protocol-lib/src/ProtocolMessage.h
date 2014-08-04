@@ -60,10 +60,10 @@ namespace dds
         {
             header_length = sizeof(SMessageHeader)
         };
-        enum
-        {
-            max_body_length = 512
-        };
+        /*  enum
+          {
+              max_body_length = 512
+          };*/
 
       public:
         CProtocolMessage();
@@ -87,6 +87,7 @@ namespace dds
         }
 
         void clear();
+        void resize(size_t _size); // FIXME: Used in tests to allocate memory for m_data.
         const data_t* data() const;
         data_t* data();
         size_t length() const;
