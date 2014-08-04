@@ -45,8 +45,9 @@ namespace dds
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
         cmdGED_PID,
-        cmdREPLY_PID,        // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
-        cmdBINARY_ATTACHMENT // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
+        cmdREPLY_PID,           // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
+        cmdBINARY_ATTACHMENT,   // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
+        cmdBINARY_DOWNLOAD_STAT // attachment: SBinaryDownloadStatCmd.
 
         // ----------- VERSION 2 --------------------
     };
@@ -67,6 +68,7 @@ namespace dds
         { cmdGED_PID, NAME_TO_STRING(cmdGED_PID) },
         { cmdREPLY_PID, NAME_TO_STRING(cmdREPLY_PID) },
         { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },
+        { cmdBINARY_DOWNLOAD_STAT, NAME_TO_STRING(cmdBINARY_DOWNLOAD_STAT) },
     };
 
     //----------------------------------------------------------------------
@@ -75,6 +77,7 @@ namespace dds
     struct SSimpleMsgCmd;
     struct SHostInfoCmd;
     struct SBinaryAttachmentCmd;
+    struct SBinaryDownloadStatCmd;
 
     template <typename A, ECmdType>
     struct validate_command_attachment;
@@ -88,6 +91,7 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_HOST_INFO, SHostInfoCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT, SBinaryDownloadStatCmd);
 
     //----------------------------------------------------------------------
 
@@ -324,46 +328,88 @@ namespace dds
     struct SBinaryAttachmentCmd : public SBasicCmd<SBinaryAttachmentCmd>
     {
         SBinaryAttachmentCmd()
-            : m_crc32(0)
+            : m_fileName()
+            , m_fileSize(0)
+            , m_crc32(0)
+            , m_timestamp(0)
+            , m_fileData()
         {
         }
         void normalizeToLocal();
         void normalizeToRemote();
         size_t size() const
         {
-            size_t size(sizeof(m_crc32));
-            size += m_fileName.size() + 1;
+            size_t size(m_fileName.size() + 1);
             size += sizeof(m_fileSize);
+            size += sizeof(m_crc32);
+            size += sizeof(m_timestamp);
+            size += m_fileData.size();
             return size;
         }
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SBinaryAttachmentCmd& _val) const
         {
-            bool isSameData = true;
             unsigned int i = 0;
             for (auto c : _val.m_fileData)
             {
-                isSameData = m_fileData[i] == c;
-                if (!isSameData)
+                if (m_fileData[i++] != c)
                     return false;
-                i++;
             }
-            return (m_crc32 == _val.m_crc32 && m_fileName == _val.m_fileName && m_fileSize == _val.m_fileSize);
+            return (m_crc32 == _val.m_crc32 && m_fileName == _val.m_fileName && m_fileSize == _val.m_fileSize &&
+                    m_timestamp == _val.m_timestamp);
         }
 
         std::string m_fileName;              ///> Name of the file
         uint32_t m_fileSize;                 ///> File size in bytes
         uint32_t m_crc32;                    ///> File checksum
+        uint32_t m_timestamp;                ///> Start time
         MiscCommon::BYTEVector_t m_fileData; ///> Binary data
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)
     {
-        _stream << _val.m_crc32 << " " << _val.m_fileName << " " << _val.m_fileSize << " ";
+        _stream << _val.m_fileName << " " << _val.m_fileSize << " " << _val.m_crc32 << " " << _val.m_timestamp << " ";
         for (const auto& c : _val.m_fileData)
         {
             _stream << c;
         }
+        return _stream;
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SBinaryDownloadStatCmd : public SBasicCmd<SBinaryDownloadStatCmd>
+    {
+        SBinaryDownloadStatCmd()
+            : m_recievedFileSize(0)
+            , m_recievedCrc32(0)
+            , m_downloadTime(0)
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            size_t size(sizeof(m_recievedFileSize));
+            size += sizeof(m_recievedCrc32);
+            size += sizeof(m_downloadTime);
+            return size;
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SBinaryDownloadStatCmd& _val) const
+        {
+            return (m_recievedFileSize == _val.m_recievedFileSize && m_recievedCrc32 == _val.m_recievedCrc32 &&
+                    m_downloadTime == _val.m_downloadTime);
+        }
+
+        uint32_t m_recievedFileSize; ///> Number of recieved bytes
+        uint32_t m_recievedCrc32;    ///>
+        uint32_t m_downloadTime;     ///> Time spent to download file
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SBinaryDownloadStatCmd& _val)
+    {
+        _stream << _val.m_recievedFileSize << " " << _val.m_recievedCrc32 << " " << _val.m_downloadTime;
         return _stream;
     }
 }
