@@ -70,8 +70,7 @@ eval DDS_WRK_TMP_DIR="$WRK_DIR/tmp"
 mkdir -p $DDS_WRK_TMP_DIR
 eval DDS_WRK_SCRIPT_TMP=$DDS_WRK_TMP_DIR/DDSWorker.sh
 
-
-WN_BINS="$POD_LOCATION/bin/wn_bins/*"
+WN_BINS="$DDS_LOCATION/bin/wn_bins/*"
 XPD_CFG="$WRK_DIR/etc/xpd.cf"
 
 CACHE_DIR="$WRK_DIR/tmp/wpkg_cache"
