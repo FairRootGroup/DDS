@@ -38,9 +38,9 @@ int CTestChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 
         sendTestBinaryAttachment(1000);
         sendTestBinaryAttachment(10000);
-        // sendTestBinaryAttachment(100000);
-        // sendTestBinaryAttachment(1000000);
-        // sendTestBinaryAttachment(10000000);
+        sendTestBinaryAttachment(100000);
+        sendTestBinaryAttachment(1000000);
+        sendTestBinaryAttachment(10000000);
     }
     return 0;
 }

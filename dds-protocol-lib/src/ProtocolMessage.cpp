@@ -123,6 +123,16 @@ string CProtocolMessage::toString() const
 {
     stringstream ss;
     ss << "[" << g_cmdToString[m_header.m_cmd] << "] "
-       << "data size: " << length() << "\n" << BYTEVectorHexView_t(m_data);
+       << "data size: " << length() << "\n";
+    static const size_t maxDataSize = 128;
+    if (m_data.size() > maxDataSize)
+    {
+        dataContainer_t tmp_data(m_data.begin(), m_data.begin() + maxDataSize);
+        ss << BYTEVectorHexView_t(tmp_data);
+    }
+    else
+    {
+        ss << BYTEVectorHexView_t(m_data);
+    }
     return ss.str();
 }

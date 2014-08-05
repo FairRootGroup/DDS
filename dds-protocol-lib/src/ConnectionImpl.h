@@ -165,7 +165,8 @@ namespace dds
                                     [this](boost::system::error_code ec, std::size_t length)
                                     {
                 LOG(MiscCommon::debug) << "readHeader received: " << length << " bytes, expected "
-                                       << CProtocolMessage::header_length;
+                                       << CProtocolMessage::header_length << ", from "
+                                       << socket().remote_endpoint().address().to_string();
                 if (!ec && m_currentMsg.decode_header())
                 {
                     // If the header is ok, receive the body of the message
@@ -285,9 +286,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:

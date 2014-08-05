@@ -32,7 +32,8 @@ namespace dds
         // On connection handles
         void onRemoteEndDissconnected()
         {
-            LOG(MiscCommon::info) << "The Agent has closed the connection.";
+            LOG(MiscCommon::info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+                                  << "] has closed the connection.";
         }
 
       private:
