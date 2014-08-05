@@ -36,6 +36,9 @@ namespace dds
         }
 
       private:
+        void sendTestBinaryAttachment(size_t _binarySize);
+
+      private:
         bool m_isHandShakeOK;
     };
 }

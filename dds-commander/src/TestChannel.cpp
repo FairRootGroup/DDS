@@ -36,24 +36,11 @@ int CTestChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 
         pushMsg<cmdREPLY_HANDSHAKE_OK>();
 
-        // Send test binary attachment command
-        const MiscCommon::BYTEVector_t testData1{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                                                  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-
-        // Calculate CRC32 of the test file data
-        boost::crc_32_type crc;
-        crc.process_bytes(&testData1[0], testData1.size());
-
-        SBinaryAttachmentCmd bin_cmd;
-        bin_cmd.m_crc32 = crc.checksum();
-        bin_cmd.m_fileData = testData1;
-        bin_cmd.m_fileName = "test_data_1.bin";
-        bin_cmd.m_fileSize = testData1.size();
-        bin_cmd.m_timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdBINARY_ATTACHMENT>(bin_cmd);
-        pushMsg(msg);
+        sendTestBinaryAttachment(1000);
+        sendTestBinaryAttachment(10000);
+        // sendTestBinaryAttachment(100000);
+        // sendTestBinaryAttachment(1000000);
+        // sendTestBinaryAttachment(10000000);
     }
     return 0;
 }
@@ -67,4 +54,28 @@ int CTestChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
     return 0;
+}
+
+void CTestChannel::sendTestBinaryAttachment(size_t _binarySize)
+{
+    SBinaryAttachmentCmd cmd;
+
+    for (size_t i = 0; i < _binarySize; ++i)
+    {
+        char c = rand() % 256;
+        cmd.m_fileData.push_back(c);
+    }
+
+    // Calculate CRC32 of the test file data
+    boost::crc_32_type crc;
+    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+    cmd.m_crc32 = crc.checksum();
+    cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
+    cmd.m_fileSize = cmd.m_fileData.size();
+    cmd.m_timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
+    pushMsg(msg);
 }
