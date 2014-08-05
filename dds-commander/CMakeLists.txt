@@ -31,6 +31,7 @@ set( SOURCE_FILES
 	./src/TalkToAgent.cpp
 	./src/SubmitChannel.cpp
 	./src/InfoChannel.cpp
+    ./src/TestChannel.cpp
 )
 
 #
@@ -42,6 +43,7 @@ set( HEADER_FILES
 	./src/TalkToAgent.h
 	./src/SubmitChannel.h
 	./src/InfoChannel.h
+    ./src/TestChannel.h
 )
 
 include_directories(

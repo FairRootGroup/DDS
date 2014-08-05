@@ -120,7 +120,7 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
             << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
             << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
-            << "idle_time=" << ud.getValueForKey("general.idle_time") << "\n";
+            << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n";
 }
 
 // TODO: we use boost 1.32. This is the only method I found to convert boost::any to string.

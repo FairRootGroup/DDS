@@ -37,6 +37,7 @@ namespace dds
         // replay on the "info" command request
         // - get pid of the commander server
         MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
+        MESSAGE_HANDLER(cmdBINARY_DOWNLOAD_STAT, on_cmdBINARY_DOWNLOAD_STAT)
         END_MSG_MAP()
 
       private:
@@ -46,6 +47,7 @@ namespace dds
         int on_cmdSUBMIT(const CProtocolMessage& _msg);
         int on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
         int on_cmdGED_PID(const CProtocolMessage& _msg);
+        int on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

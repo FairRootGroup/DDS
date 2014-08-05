@@ -27,7 +27,8 @@ namespace dds
             cmd_stop,
             cmd_status,
             cmd_submit,
-            cmd_info
+            cmd_info,
+            cmd_test
         };
         SOptions()
             : m_Command(cmd_start)
@@ -47,6 +48,8 @@ namespace dds
                 return cmd_submit;
             if ("info" == _name)
                 return cmd_info;
+            if ("test" == _name)
+                return cmd_test;
 
             return cmd_unknown;
         }

@@ -109,3 +109,14 @@ int CTalkToAgent::on_cmdGED_PID(const CProtocolMessage& _msg)
 
     return 0;
 }
+
+int CTalkToAgent::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+{
+    SBinaryDownloadStatCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a DownloadStat [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
+
+    return 0;
+}

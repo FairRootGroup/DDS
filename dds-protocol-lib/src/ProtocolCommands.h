@@ -404,7 +404,7 @@ namespace dds
         }
 
         uint32_t m_recievedFileSize; ///> Number of recieved bytes
-        uint32_t m_recievedCrc32;    ///>
+        uint32_t m_recievedCrc32;    ///> CRC32 checksum of the recieved file
         uint32_t m_downloadTime;     ///> Time spent to download file
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryDownloadStatCmd& _val)

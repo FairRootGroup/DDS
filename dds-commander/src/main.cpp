@@ -6,6 +6,8 @@
 #include "Process.h"
 #include "ErrorCode.h"
 #include "ConnectionManager.h"
+#include "TalkToAgent.h"
+#include "TestChannel.h"
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
@@ -121,7 +123,7 @@ int main(int argc, char* argv[])
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
-            CConnectionManager server(options, io_service, endpoint);
+            CConnectionManager<CTalkToAgent> server(options, io_service, endpoint);
             server.start();
         }
         catch (exception& e)
@@ -215,6 +217,37 @@ int main(int argc, char* argv[])
     {
         LOG(log_stderr) << e.what();
         return EXIT_FAILURE;
+    }
+
+    // Checking for "test" option
+    if (SOptions_t::cmd_test == options.m_Command)
+    {
+        try
+        {
+            CPIDFile pidfile(pidfile_name, ::getpid());
+
+            boost::asio::io_service io_service;
+            const CUserDefaults& userDefaults = CUserDefaults::instance();
+            // get a free port from a given range
+            int nSrvPort =
+                MiscCommon::INet::get_free_port(userDefaults.getOptions().m_server.m_ddsCommanderPortRangeMin,
+                                                userDefaults.getOptions().m_server.m_ddsCommanderPortRangeMax);
+
+            tcp::endpoint endpoint(tcp::v4(), nSrvPort);
+
+            CConnectionManager<CTestChannel> server(options, io_service, endpoint);
+            server.start();
+        }
+        catch (exception& e)
+        {
+            LOG(fatal) << e.what();
+            return EXIT_FAILURE;
+        }
+        catch (...)
+        {
+            LOG(fatal) << "Unexpected Exception occurred.";
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;
