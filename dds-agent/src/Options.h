@@ -30,8 +30,6 @@ namespace dds
         {
             cmd_unknown,
             cmd_start,
-            cmd_stop,
-            cmd_status
         };
         SOptions()
             : m_Command(cmd_start)
@@ -42,10 +40,6 @@ namespace dds
         {
             if ("start" == _name)
                 return cmd_start;
-            if ("stop" == _name)
-                return cmd_stop;
-            if ("status" == _name)
-                return cmd_status;
 
             return cmd_unknown;
         }
@@ -70,17 +64,14 @@ namespace dds
         bpo::options_description options("dds-agent options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()(
-            "command",
-            bpo::value<std::string>(),
-            "The command is a name of dds-agent command."
-            " Can be one of the following: start, stop, status.\n"
-            "For user's convenience it is allowed to call dds-agent without \"--command\" option"
-            " by just specifying the command name directly, like:\ndds-agent start or dds-agent status.\n\n"
-            "Commands:\n"
-            "   start: \tStart dds-agent daemon\n"
-            "   stop: \tStop dds-agent daemon\n"
-            "   status: \tQuery current status of dds-agent daemon\n");
+        options.add_options()("command",
+                              bpo::value<std::string>(),
+                              "The command is a name of dds-agent command."
+                              " Can be one of the following: start.\n"
+                              "For user's convenience it is allowed to call dds-agent without \"--command\" option"
+                              " by just specifying the command name directly, like:\ndds-agent start.\n\n"
+                              "Commands:\n"
+                              "   start: \tStart dds-agent\n");
 
         //...positional
         bpo::positional_options_description pd;
@@ -112,14 +103,6 @@ namespace dds
                                             << options;
                 return false;
             }
-
-            //  if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) &&
-            //  !vm.count("topo"))
-            //  {
-            //      LOG(MiscCommon::log_stderr) << PROJECT_NAME << " error: specify a topo file"
-            //                                  << "\n\n" << options;
-            //      return false;
-            //  }
         }
         else
         {
