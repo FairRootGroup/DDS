@@ -35,6 +35,7 @@ namespace dds
             LOG(MiscCommon::info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                                   << "] has closed the connection.";
         }
+        void onHeaderRead();
 
       private:
         void sendTestBinaryAttachment(size_t _binarySize);

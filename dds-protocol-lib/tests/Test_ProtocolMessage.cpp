@@ -177,7 +177,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     const uint32_t crc32 = 1000;
     const string fileName = "filename.exe";
     const uint32_t fileSize = 26;
-    const uint32_t timestamp = 22938293;
     const MiscCommon::BYTEVector_t fileData{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                                              'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
     const unsigned int cmdSize = 51;
@@ -188,7 +187,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     cmd_src.m_fileName = fileName;
     cmd_src.m_fileSize = fileSize;
     cmd_src.m_fileData = fileData;
-    cmd_src.m_timestamp = timestamp;
     CProtocolMessage msg_src;
     msg_src.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd_src);
 
@@ -215,7 +213,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     BOOST_CHECK(crc32 == cmd_dest.m_crc32);
     BOOST_CHECK(fileName == cmd_dest.m_fileName);
     BOOST_CHECK(fileSize == cmd_dest.m_fileSize);
-    BOOST_CHECK(timestamp == cmd_src.m_timestamp);
     unsigned int i = 0;
     for (auto c : fileData)
     {

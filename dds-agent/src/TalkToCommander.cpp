@@ -27,6 +27,11 @@ int CTalkToCommander::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     return 0;
 }
 
+void CTalkToCommander::onHeaderRead()
+{
+    m_headerReadTime = std::chrono::steady_clock::now();
+}
+
 int CTalkToCommander::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 {
     return 0;
@@ -66,8 +71,10 @@ int CTalkToCommander::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
     SBinaryAttachmentCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
 
-    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    uint32_t downloadTime = now - cmd.m_timestamp;
+    // std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    // uint32_t downloadTime = now - cmd.m_timestamp;
+    chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
 
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc;
@@ -77,7 +84,7 @@ int CTalkToCommander::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
     SBinaryDownloadStatCmd reply_cmd;
     reply_cmd.m_recievedCrc32 = crc.checksum();
     reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
-    reply_cmd.m_downloadTime = downloadTime;
+    reply_cmd.m_downloadTime = downloadTime.count();
 
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);

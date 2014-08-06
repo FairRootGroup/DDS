@@ -21,6 +21,7 @@ namespace dds
         }
 
         REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
+        REGISTER_DEFAULT_ON_HEADER_READ_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CInfoChannel)

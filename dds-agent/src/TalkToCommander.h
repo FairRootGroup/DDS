@@ -15,7 +15,8 @@ namespace dds
     {
         CTalkToCommander(boost::asio::io_service& _service);
 
-        REGISTER_ALL_DEFAULT_CALLBACKS
+        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
+        REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CTalkToCommander)
@@ -35,7 +36,11 @@ namespace dds
         int on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg);
 
       private:
+        void onHeaderRead();
+
+      private:
         bool m_isHandShakeOK;
+        std::chrono::steady_clock::time_point m_headerReadTime;
     };
 }
 

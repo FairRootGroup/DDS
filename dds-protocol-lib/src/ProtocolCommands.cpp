@@ -308,14 +308,12 @@ void SBinaryAttachmentCmd::normalizeToLocal()
 {
     m_crc32 = inet::_normalizeRead32(m_crc32);
     m_fileSize = inet::_normalizeRead32(m_fileSize);
-    m_timestamp = inet::_normalizeRead32(m_timestamp);
 }
 
 void SBinaryAttachmentCmd::normalizeToRemote()
 {
     m_crc32 = inet::_normalizeWrite32(m_crc32);
     m_fileSize = inet::_normalizeWrite32(m_fileSize);
-    m_timestamp = inet::_normalizeWrite32(m_timestamp);
 }
 
 void SBinaryAttachmentCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -346,11 +344,6 @@ void SBinaryAttachmentCmd::_convertFromData(const MiscCommon::BYTEVector_t& _dat
     m_crc32 += (_data[idx++] << 16);
     m_crc32 += (_data[idx++] << 24);
 
-    m_timestamp = _data[idx++];
-    m_timestamp += (_data[idx++] << 8);
-    m_timestamp += (_data[idx++] << 16);
-    m_timestamp += (_data[idx++] << 24);
-
     m_fileData.assign(_data.begin() + idx, _data.end());
 }
 
@@ -368,11 +361,6 @@ void SBinaryAttachmentCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back((m_crc32 >> 8) & 0xFF);
     _data->push_back((m_crc32 >> 16) & 0xFF);
     _data->push_back((m_crc32 >> 24) & 0xFF);
-
-    _data->push_back(m_timestamp & 0xFF);
-    _data->push_back((m_timestamp >> 8) & 0xFF);
-    _data->push_back((m_timestamp >> 16) & 0xFF);
-    _data->push_back((m_timestamp >> 24) & 0xFF);
 
     std::copy(m_fileData.begin(), m_fileData.end(), std::back_inserter(*_data));
 }

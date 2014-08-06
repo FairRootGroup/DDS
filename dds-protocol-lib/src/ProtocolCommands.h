@@ -331,7 +331,6 @@ namespace dds
             : m_fileName()
             , m_fileSize(0)
             , m_crc32(0)
-            , m_timestamp(0)
             , m_fileData()
         {
         }
@@ -342,7 +341,6 @@ namespace dds
             size_t size(m_fileName.size() + 1);
             size += sizeof(m_fileSize);
             size += sizeof(m_crc32);
-            size += sizeof(m_timestamp);
             size += m_fileData.size();
             return size;
         }
@@ -356,19 +354,17 @@ namespace dds
                 if (m_fileData[i++] != c)
                     return false;
             }
-            return (m_crc32 == _val.m_crc32 && m_fileName == _val.m_fileName && m_fileSize == _val.m_fileSize &&
-                    m_timestamp == _val.m_timestamp);
+            return (m_crc32 == _val.m_crc32 && m_fileName == _val.m_fileName && m_fileSize == _val.m_fileSize);
         }
 
         std::string m_fileName;              ///> Name of the file
         uint32_t m_fileSize;                 ///> File size in bytes
         uint32_t m_crc32;                    ///> File checksum
-        uint32_t m_timestamp;                ///> Start time
         MiscCommon::BYTEVector_t m_fileData; ///> Binary data
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)
     {
-        _stream << _val.m_fileName << " " << _val.m_fileSize << " " << _val.m_crc32 << " " << _val.m_timestamp << " ";
+        _stream << _val.m_fileName << " " << _val.m_fileSize << " " << _val.m_crc32 << " ";
         for (const auto& c : _val.m_fileData)
         {
             _stream << c;

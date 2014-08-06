@@ -49,6 +49,9 @@ namespace dds
         {
             LOG(MiscCommon::log_stderr) << "Server has closed the coinnection.";
         }
+        void onHeaderRead()
+        {
+        }
 
       private:
         bool m_isHandShakeOK;

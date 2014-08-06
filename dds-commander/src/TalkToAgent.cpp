@@ -10,6 +10,10 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
+void CTalkToAgent::onHeaderRead()
+{
+}
+
 int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;

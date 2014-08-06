@@ -12,6 +12,10 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
+void CTestChannel::onHeaderRead()
+{
+}
+
 int CTestChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
@@ -73,7 +77,6 @@ void CTestChannel::sendTestBinaryAttachment(size_t _binarySize)
     cmd.m_crc32 = crc.checksum();
     cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
     cmd.m_fileSize = cmd.m_fileData.size();
-    cmd.m_timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);

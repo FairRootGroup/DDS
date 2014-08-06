@@ -53,6 +53,8 @@ namespace dds
         {
             LOG(MiscCommon::info) << "The Agent has closed the connection.";
         }
+        // On header read handle
+        void onHeaderRead();
 
       private:
         bool m_isHandShakeOK;

@@ -49,7 +49,14 @@
     {                                            \
     }
 
-#define REGISTER_ALL_DEFAULT_CALLBACKS REGISTER_DEFAULT_ON_CONNECT_CALLBACKS REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
+#define REGISTER_DEFAULT_ON_HEADER_READ_CALLBACKS \
+    void onHeaderRead()                           \
+    {                                             \
+    }
+
+#define REGISTER_ALL_DEFAULT_CALLBACKS                                             \
+    REGISTER_DEFAULT_ON_CONNECT_CALLBACKS REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS \
+        REGISTER_DEFAULT_ON_HEADER_READ_CALLBACKS
 
 namespace dds
 {
@@ -169,6 +176,10 @@ namespace dds
                                        << socket().remote_endpoint().address().to_string();
                 if (!ec && m_currentMsg.decode_header())
                 {
+                    // give a chance to child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onHeaderRead();
+
                     // If the header is ok, receive the body of the message
                     readBody();
                 }
