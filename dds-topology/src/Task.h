@@ -25,13 +25,15 @@ namespace dds
         virtual ~CTask();
 
         /// Accessors
-        std::string getExec() const;
+        const std::string& getExec() const;
+        const std::string& getEnv() const;
         size_t getNofPorts() const;
         PortPtr_t getPort(size_t _i) const;
         const PortPtrVector_t& getPorts() const;
 
         /// Modifiers
         void setExec(const std::string& _exec);
+        void setEnv(const std::string& _env);
         void setPorts(const PortPtrVector_t& _ports);
         void addPort(PortPtr_t& _port);
 
@@ -58,6 +60,7 @@ namespace dds
 
       private:
         std::string m_exec;      ///> Path to executable
+        std::string m_env;       ///> Path to environmtnt file
         PortPtrVector_t m_ports; ///> Ports
     };
 

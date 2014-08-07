@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     const uint32_t fileSize = 26;
     const MiscCommon::BYTEVector_t fileData{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                                              'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-    const unsigned int cmdSize = 51;
+    const unsigned int cmdSize = 47;
 
     // Create a message
     SBinaryAttachmentCmd cmd_src;

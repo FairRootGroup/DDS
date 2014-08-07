@@ -6,7 +6,7 @@
 	<port name="port4" min="20000" max="22000" type="client"/>
 	<port name="port5" min="20000" max="22000" type="client"/>
 	
-  	<task name="task1" exec="app1">
+  	<task name="task1" exec="app1" env="env1">
 		<port name="port1"/>
 		<port name="port5"/>
 	</task>

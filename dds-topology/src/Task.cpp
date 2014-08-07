@@ -20,6 +20,7 @@ using namespace dds;
 CTask::CTask()
     : CTopoElement()
     , m_exec()
+    , m_env()
     , m_ports()
 {
     setType(ETopoType::TASK);
@@ -32,6 +33,11 @@ CTask::~CTask()
 void CTask::setExec(const string& _exec)
 {
     m_exec = _exec;
+}
+
+void CTask::setEnv(const string& _env)
+{
+    m_env = _env;
 }
 
 void CTask::setPorts(const PortPtrVector_t& _ports)
@@ -54,9 +60,14 @@ size_t CTask::getTotalNofTasks() const
     return 1;
 }
 
-string CTask::getExec() const
+const string& CTask::getExec() const
 {
     return m_exec;
+}
+
+const string& CTask::getEnv() const
+{
+    return m_env;
 }
 
 size_t CTask::getNofPorts() const
@@ -89,6 +100,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 
         setName(taskPT.get<string>("<xmlattr>.name"));
         setExec(taskPT.get<string>("<xmlattr>.exec"));
+        setEnv(taskPT.get<string>("<xmlattr>.env", ""));
         for (const auto& port : taskPT)
         {
             if (port.first == "<xmlattr>")
