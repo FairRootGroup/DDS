@@ -28,7 +28,7 @@ configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BIN
 set( SOURCE_FILES
 	./src/main.cpp
 	./src/ConnectionManager.cpp
-	./src/TalkToAgent.cpp
+	./src/AgentChannel.cpp
 	./src/SubmitChannel.cpp
 	./src/InfoChannel.cpp
     ./src/TestChannel.cpp
@@ -40,7 +40,7 @@ set( SOURCE_FILES
 set( HEADER_FILES
 	./src/Options.h
 	./src/ConnectionManager.h
-	./src/TalkToAgent.h
+	./src/AgentChannel.h
 	./src/SubmitChannel.h
 	./src/InfoChannel.h
     ./src/TestChannel.h

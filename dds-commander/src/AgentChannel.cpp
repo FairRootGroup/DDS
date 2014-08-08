@@ -4,17 +4,17 @@
 //
 
 // DDS
-#include "TalkToAgent.h"
+#include "AgentChannel.h"
 
 using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CTalkToAgent::onHeaderRead()
+void CAgentChannel::onHeaderRead()
 {
 }
 
-int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
+int CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
     ver.convertFromData(_msg.bodyToContainer());
@@ -41,7 +41,7 @@ int CTalkToAgent::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
+int CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
     ver.convertFromData(_msg.bodyToContainer());
@@ -70,7 +70,7 @@ int CTalkToAgent::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
+int CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
 {
     SSubmitCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -87,7 +87,7 @@ int CTalkToAgent::on_cmdSUBMIT(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToAgent::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
+int CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
 {
     SHostInfoCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -100,7 +100,7 @@ int CTalkToAgent::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToAgent::on_cmdGED_PID(const CProtocolMessage& _msg)
+int CAgentChannel::on_cmdGED_PID(const CProtocolMessage& _msg)
 {
     pid_t pid = getpid();
     SSimpleMsgCmd cmd_attachment;
@@ -114,7 +114,7 @@ int CTalkToAgent::on_cmdGED_PID(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToAgent::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+int CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
 {
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());

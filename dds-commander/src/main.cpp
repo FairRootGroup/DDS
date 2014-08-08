@@ -6,7 +6,7 @@
 #include "Process.h"
 #include "ErrorCode.h"
 #include "ConnectionManager.h"
-#include "TalkToAgent.h"
+#include "AgentChannel.h"
 #include "TestChannel.h"
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
-            CConnectionManager<CTalkToAgent> server(options, io_service, endpoint);
+            CConnectionManager<CAgentChannel> server(options, io_service, endpoint);
             server.start();
         }
         catch (exception& e)

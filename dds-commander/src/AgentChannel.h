@@ -16,10 +16,10 @@ namespace dds
         UI
     };
 
-    class CTalkToAgent : public CConnectionImpl<CTalkToAgent>
+    class CAgentChannel : public CConnectionImpl<CAgentChannel>
     {
-        CTalkToAgent(boost::asio::io_service& _service)
-            : CConnectionImpl<CTalkToAgent>(_service)
+        CAgentChannel(boost::asio::io_service& _service)
+            : CConnectionImpl<CAgentChannel>(_service)
             , m_isHandShakeOK(false)
             , m_type(ETalkToAgentType::UNDEFINED)
         {
@@ -28,7 +28,7 @@ namespace dds
         REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
-        BEGIN_MSG_MAP(CTalkToAgent)
+        BEGIN_MSG_MAP(CAgentChannel)
         MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
         MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
         MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
