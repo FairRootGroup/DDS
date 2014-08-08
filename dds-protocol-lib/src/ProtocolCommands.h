@@ -9,6 +9,9 @@
 #include <type_traits>
 // MiscCommon
 #include "def.h"
+// BOOST
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 #define NAME_TO_STRING(NAME) #NAME
 
@@ -45,9 +48,10 @@ namespace dds
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
         cmdGED_PID,
-        cmdREPLY_PID,           // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
-        cmdBINARY_ATTACHMENT,   // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
-        cmdBINARY_DOWNLOAD_STAT // attachment: SBinaryDownloadStatCmd.
+        cmdREPLY_PID,            // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
+        cmdBINARY_ATTACHMENT,    // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
+        cmdBINARY_DOWNLOAD_STAT, // attachment: SBinaryDownloadStatCmd.
+        cmdSET_UUID              // attachment: SSetUUIDCmd.
 
         // ----------- VERSION 2 --------------------
     };
@@ -69,6 +73,7 @@ namespace dds
         { cmdREPLY_PID, NAME_TO_STRING(cmdREPLY_PID) },
         { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },
         { cmdBINARY_DOWNLOAD_STAT, NAME_TO_STRING(cmdBINARY_DOWNLOAD_STAT) },
+        { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
     };
 
     //----------------------------------------------------------------------
@@ -78,6 +83,7 @@ namespace dds
     struct SHostInfoCmd;
     struct SBinaryAttachmentCmd;
     struct SBinaryDownloadStatCmd;
+    struct SUUIDCmd;
 
     template <typename A, ECmdType>
     struct validate_command_attachment;
@@ -92,6 +98,7 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT, SBinaryDownloadStatCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
 
     //----------------------------------------------------------------------
 
@@ -406,6 +413,36 @@ namespace dds
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryDownloadStatCmd& _val)
     {
         _stream << _val.m_recievedFileSize << " " << _val.m_recievedCrc32 << " " << _val.m_downloadTime;
+        return _stream;
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SUUIDCmd : public SBasicCmd<SUUIDCmd>
+    {
+        SUUIDCmd()
+            : m_id()
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            size_t size(boost::uuids::uuid::static_size());
+            return size;
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SUUIDCmd& _val) const
+        {
+            return (m_id == _val.m_id);
+        }
+
+        boost::uuids::uuid m_id;
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SUUIDCmd& _val)
+    {
+        _stream << _val.m_id;
         return _stream;
     }
 }

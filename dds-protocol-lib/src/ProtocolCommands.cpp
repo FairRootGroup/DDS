@@ -417,3 +417,23 @@ void SBinaryDownloadStatCmd::_convertToData(MiscCommon::BYTEVector_t* _data) con
     _data->push_back((m_downloadTime >> 16) & 0xFF);
     _data->push_back((m_downloadTime >> 24) & 0xFF);
 }
+
+//----------------------------------------------------------------------
+
+void SUUIDCmd::normalizeToLocal()
+{
+}
+
+void SUUIDCmd::normalizeToRemote()
+{
+}
+
+void SUUIDCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+{
+    std::copy(_data.begin(), _data.end(), m_id.begin());
+}
+
+void SUUIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+{
+    std::copy(m_id.begin(), m_id.end(), std::back_inserter(*_data));
+}

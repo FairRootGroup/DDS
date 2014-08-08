@@ -9,6 +9,8 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 // DDS
 #include "ProtocolMessage.h"
 #include "ProtocolCommands.h"
@@ -259,6 +261,40 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_DOWNLOAD_STAT)
     BOOST_CHECK(recievedCrc32 == cmd_dest.m_recievedCrc32);
     BOOST_CHECK(recievedFileSize == cmd_dest.m_recievedFileSize);
     BOOST_CHECK(downloadTime == cmd_src.m_downloadTime);
+}
+
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_UUID)
+{
+    const boost::uuids::uuid id = boost::uuids::random_generator()();
+    const unsigned int cmdSize = 16;
+
+    // Create a message
+    SUUIDCmd cmd_src;
+    cmd_src.m_id = id;
+    CProtocolMessage msg_src;
+    msg_src.encodeWithAttachment<cmdSET_UUID>(cmd_src);
+
+    BOOST_CHECK(msg_src.header().m_cmd == cmdSET_UUID);
+
+    BOOST_CHECK(cmd_src.size() == cmdSize);
+
+    // "Send" message
+    CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
+    memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
+
+    // Decode the message
+    BOOST_CHECK(msg_dest.decode_header());
+
+    // Check that we got the proper command ID
+    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
+
+    // Read the message
+    SUUIDCmd cmd_dest;
+    cmd_dest.convertFromData(msg_dest.bodyToContainer());
+
+    BOOST_CHECK(cmd_src == cmd_dest);
+    BOOST_CHECK(id == cmd_dest.m_id);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
