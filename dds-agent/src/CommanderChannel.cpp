@@ -4,7 +4,7 @@
 //
 
 // DDS
-#include "TalkToCommander.h"
+#include "CommanderChannel.h"
 #include "UserDefaults.h"
 #include "Process.h"
 // BOOST
@@ -14,30 +14,30 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-CTalkToCommander::CTalkToCommander(boost::asio::io_service& _service)
-    : CConnectionImpl<CTalkToCommander>(_service)
+CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
+    : CConnectionImpl<CCommanderChannel>(_service)
     , m_isHandShakeOK(false)
 {
 }
 
-void CTalkToCommander::onHeaderRead()
+void CCommanderChannel::onHeaderRead()
 {
     m_headerReadTime = std::chrono::steady_clock::now();
 }
 
-int CTalkToCommander::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+int CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
     return 0;
 }
 
-int CTalkToCommander::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+int CCommanderChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 {
     return 0;
 }
 
-int CTalkToCommander::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
+int CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
 {
     // Create the command's attachment
     string pidFileName(CUserDefaults::getDDSPath());
@@ -59,14 +59,14 @@ int CTalkToCommander::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToCommander::on_cmdDISCONNECT(const CProtocolMessage& _msg)
+int CCommanderChannel::on_cmdDISCONNECT(const CProtocolMessage& _msg)
 {
     stop();
     LOG(info) << "The Agent disconnected...Bye";
     return 0;
 }
 
-int CTalkToCommander::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
+int CCommanderChannel::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
 {
     stop();
     LOG(info) << "The Agent exited.";
@@ -74,7 +74,7 @@ int CTalkToCommander::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
     return 0;
 }
 
-int CTalkToCommander::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
+int CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
 {
     SBinaryAttachmentCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());

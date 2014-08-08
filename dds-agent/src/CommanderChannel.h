@@ -3,23 +3,23 @@
 //
 //
 
-#ifndef __DDS__CTalkToCommander__
-#define __DDS__CTalkToCommander__
+#ifndef __DDS__CCommanderChannel__
+#define __DDS__CCommanderChannel__
 
 // DDS
 #include "ConnectionImpl.h"
 
 namespace dds
 {
-    class CTalkToCommander : public CConnectionImpl<CTalkToCommander>
+    class CCommanderChannel : public CConnectionImpl<CCommanderChannel>
     {
-        CTalkToCommander(boost::asio::io_service& _service);
+        CCommanderChannel(boost::asio::io_service& _service);
 
         REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
         REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
 
       public:
-        BEGIN_MSG_MAP(CTalkToCommander)
+        BEGIN_MSG_MAP(CCommanderChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
@@ -46,4 +46,4 @@ namespace dds
     };
 }
 
-#endif /* defined(__DDS__CTalkToCommander__) */
+#endif /* defined(__DDS__CCommanderChannel__) */

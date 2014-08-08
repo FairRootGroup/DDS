@@ -15,7 +15,7 @@
 #include "Process.h"
 #include "ErrorCode.h"
 #include "AgentConnectionManager.h"
-#include "TalkToCommander.h"
+#include "CommanderChannel.h"
 #include "BOOSTHelper.h"
 #include "Logger.h"
 #include "UserDefaults.h"

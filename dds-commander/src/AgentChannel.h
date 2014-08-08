@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef __DDS__TalkToAgent__
-#define __DDS__TalkToAgent__
+#ifndef __DDS__CAgentChannel__
+#define __DDS__CAgentChannel__
 // DDS
 #include "ConnectionImpl.h"
 
@@ -61,4 +61,4 @@ namespace dds
         ETalkToAgentType m_type;
     };
 }
-#endif /* defined(__DDS__TalkToAgent__) */
+#endif /* defined(__DDS__CAgentChannel__) */

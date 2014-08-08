@@ -11,7 +11,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 // DDS
 #include "AgentConnectionManager.h"
-#include "TalkToCommander.h"
+#include "CommanderChannel.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 // API
@@ -48,9 +48,7 @@ CAgentConnectionManager::~CAgentConnectionManager()
 void CAgentConnectionManager::doAwaitStop()
 {
     m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
-                         {
-                             stop();
-                         });
+                         { stop(); });
 }
 
 void CAgentConnectionManager::start()
@@ -61,9 +59,7 @@ void CAgentConnectionManager::start()
 
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
-                                            {
-            LOG(info) << "Idle callback called";
-        });
+                                            { LOG(info) << "Idle callback called"; });
 
         // Read server info file
         const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
@@ -84,7 +80,7 @@ void CAgentConnectionManager::start()
         boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new agent and push hadshake message
-        CTalkToCommander::connectionPtr_t newAgent = CTalkToCommander::makeNew(m_service);
+        CCommanderChannel::connectionPtr_t newAgent = CCommanderChannel::makeNew(m_service);
         boost::asio::async_connect(newAgent->socket(),
                                    endpoint_iterator,
                                    [this, &newAgent](boost::system::error_code ec, ip::tcp::resolver::iterator)

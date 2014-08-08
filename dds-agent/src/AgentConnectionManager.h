@@ -9,7 +9,7 @@
 // BOOST
 #include <boost/asio.hpp>
 // DDS
-#include "TalkToCommander.h"
+#include "CommanderChannel.h"
 #include "Options.h"
 
 namespace dds
@@ -30,7 +30,7 @@ namespace dds
         boost::asio::io_service& m_service;
         boost::asio::signal_set m_signals;
         dds::SOptions_t m_options;
-        CTalkToCommander::connectionPtrVector_t m_agents;
+        CCommanderChannel::connectionPtrVector_t m_agents;
     };
 }
 
