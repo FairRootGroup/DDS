@@ -5,6 +5,8 @@
 
 // DDS
 #include "AgentChannel.h"
+// BOOST
+#include <boost/uuid/uuid_generators.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -65,6 +67,14 @@ int CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
                   << "] has succesfully connected.";
 
         pushMsg<cmdREPLY_HANDSHAKE_OK>();
+
+        m_id = boost::uuids::random_generator()();
+        SUUIDCmd msg_cmd;
+        msg_cmd.m_id = m_id;
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdSET_UUID>(msg_cmd);
+        pushMsg(msg);
+
         pushMsg<cmdGET_HOST_INFO>();
     }
     return 0;

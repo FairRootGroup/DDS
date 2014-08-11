@@ -59,6 +59,7 @@ namespace dds
       private:
         bool m_isHandShakeOK;
         ETalkToAgentType m_type;
+        boost::uuids::uuid m_id;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

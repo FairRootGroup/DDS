@@ -103,3 +103,20 @@ int CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
 
     return 0;
 }
+
+int CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
+{
+    SUUIDCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    m_id = cmd.m_id;
+
+    // Write this UUID to file
+    //
+    //
+
+    LOG(info) << "Recieved a cmdSET_UUID [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
+
+    return 0;
+}
