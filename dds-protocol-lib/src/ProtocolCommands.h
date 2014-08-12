@@ -199,20 +199,24 @@ namespace dds
         void normalizeToRemote();
         size_t size() const
         {
-            return (m_sTopoFile.size() + 1);
+            size_t s = (m_sTopoFile.size() + 1) + (m_sRMS.size() + 1) + (m_sSSHCfgFile.size() + 1);
+            return s;
         }
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SSubmitCmd& val) const
         {
-            return (m_sTopoFile == val.m_sTopoFile);
+            return (m_sTopoFile == val.m_sTopoFile && m_sRMS == val.m_sRMS && m_sSSHCfgFile == val.m_sSSHCfgFile);
         }
 
         std::string m_sTopoFile;
+        std::string m_sRMS;
+        std::string m_sSSHCfgFile;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val)
     {
-        return _stream << val.m_sTopoFile;
+        return _stream << "topo: " << val.m_sTopoFile << "; RMS: " << val.m_sRMS
+                       << "; SSH Hosts config: " << val.m_sSSHCfgFile;
     }
     inline bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
     {
@@ -250,14 +254,14 @@ namespace dds
                     m_DDSPath == val.m_DDSPath && m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid &&
                     m_timeStamp == val.m_timeStamp);
         }
-
+        
+        uint16_t m_agentPort;
+        uint32_t m_agentPid;
+        uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
         std::string m_username;
         std::string m_host;
         std::string m_version;
         std::string m_DDSPath;
-        uint16_t m_agentPort;
-        uint32_t m_agentPid;
-        uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SHostInfoCmd& val)
     {

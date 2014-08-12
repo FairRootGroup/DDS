@@ -16,10 +16,10 @@ namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds
 {
+    // a list of supported RMS
     enum ERmsType
     {
-        SSH,
-        LSF
+        SSH
     };
     //=============================================================================
     // A custom streamer to help boost program options to convert string options to ERmsType
@@ -104,6 +104,7 @@ namespace dds
             bpo::value<ERmsType>(&_options->m_RMS),
             "Resource Management System. The option can only be used with the \"submit\" command (default: ssh)");
         options.add_options()("ssh-rms-cfg",
+                              bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
         options.add_options()(

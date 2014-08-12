@@ -91,11 +91,15 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 {
     const string sTestPath = "/Users/dummy/Documents/workspace/dummy.xml";
-    const unsigned int cmdSize = 43;
+    const string sTestRMS = "ssh";
+    const string sTestSSHCfgFile = "/Users/dummy/dummy.cfg";
+    const unsigned int cmdSize = 70;
 
     // Create a message
     SSubmitCmd cmd_src;
     cmd_src.m_sTopoFile = sTestPath;
+    cmd_src.m_sRMS = sTestRMS;
+    cmd_src.m_sSSHCfgFile = sTestSSHCfgFile;
     CProtocolMessage msg_src;
     msg_src.encodeWithAttachment<cmdSUBMIT>(cmd_src);
 

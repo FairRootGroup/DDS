@@ -31,7 +31,7 @@ void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     {
         stringstream ss;
         ss << "VersionCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw std::runtime_error(ss.str());
+        throw runtime_error(ss.str());
     }
 
     m_version = _data[0];
@@ -60,15 +60,35 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     {
         stringstream ss;
         ss << "SubmitCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw std::runtime_error(ss.str());
+        throw runtime_error(ss.str());
     }
 
-    m_sTopoFile.assign((string::value_type*)&_data[0]);
+    vector<string> v;
+    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
+    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
+    for (; iter != iter_end;)
+    {
+        string tmp((string::value_type*)(&(*iter)));
+        v.push_back(tmp);
+        advance(iter, tmp.size() + 1);
+    }
+
+    // there are so far only 3 fields in this msg container
+    if (v.size() != 3)
+        throw runtime_error("SubmitCmd: can't import data. Number of fields doesn't match.");
+
+    m_sTopoFile.assign(v[0]);
+    m_sRMS.assign(v[1]);
+    m_sSSHCfgFile.assign(v[2]);
 }
 
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    std::copy(m_sTopoFile.begin(), m_sTopoFile.end(), std::back_inserter(*_data));
+    copy(m_sTopoFile.begin(), m_sTopoFile.end(), back_inserter(*_data));
+    _data->push_back('\0');
+    copy(m_sRMS.begin(), m_sRMS.end(), back_inserter(*_data));
+    _data->push_back('\0');
+    copy(m_sSSHCfgFile.begin(), m_sSSHCfgFile.end(), back_inserter(*_data));
     _data->push_back('\0');
 }
 
@@ -88,7 +108,7 @@ void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     {
         stringstream ss;
         ss << "SimpleMsgCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw std::runtime_error(ss.str());
+        throw runtime_error(ss.str());
     }
 
     m_sMsg.assign((string::value_type*)&_data[0]);
@@ -96,7 +116,7 @@ void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
 void SSimpleMsgCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    std::copy(m_sMsg.begin(), m_sMsg.end(), std::back_inserter(*_data));
+    copy(m_sMsg.begin(), m_sMsg.end(), back_inserter(*_data));
     _data->push_back('\0');
 }
 
@@ -118,65 +138,14 @@ void SHostInfoCmd::normalizeToRemote()
 
 void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    size_t idx(0);
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end; ++iter, ++idx)
-    {
-        char c(*iter);
-        if ('\0' == c)
-        {
-            ++iter;
-            ++idx;
-            break;
-        }
-        m_username.push_back(c);
-    }
-
-    for (; iter != iter_end; ++iter, ++idx)
-    {
-        char c(*iter);
-        if ('\0' == c)
-        {
-            ++iter;
-            ++idx;
-            break;
-        }
-        m_host.push_back(c);
-    }
-
-    for (; iter != iter_end; ++iter, ++idx)
-    {
-        char c(*iter);
-        if ('\0' == c)
-        {
-            ++iter;
-            ++idx;
-            break;
-        }
-        m_version.push_back(c);
-    }
-
-    for (; iter != iter_end; ++iter, ++idx)
-    {
-        char c(*iter);
-        if ('\0' == c)
-        {
-            ++iter;
-            ++idx;
-            break;
-        }
-        m_DDSPath.push_back(c);
-    }
-
     if (_data.size() < size())
     {
         stringstream ss;
         ss << "HostInfoCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw std::runtime_error(ss.str());
+        throw runtime_error(ss.str());
     }
 
-    //    ++idx;
+    size_t idx(0);
     m_agentPort = _data[idx++];
     m_agentPort += (_data[idx] << 8);
 
@@ -191,19 +160,31 @@ void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     m_timeStamp += (_data[idx++] << 8);
     m_timeStamp += (_data[idx++] << 16);
     m_timeStamp += (_data[idx] << 24);
+
+    ++idx;
+    vector<string> v;
+    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
+    advance(iter, idx);
+    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
+    for (; iter != iter_end;)
+    {
+        string tmp((string::value_type*)(&(*iter)));
+        v.push_back(tmp);
+        advance(iter, tmp.size() + 1);
+    }
+
+    // there are so far only 4 fields in this msg container
+    if (v.size() != 4)
+        throw runtime_error("HostInfoCmd: can't import data. Number of fields doesn't match.");
+
+    m_username.assign(v[0]);
+    m_host.assign(v[1]);
+    m_version.assign(v[2]);
+    m_DDSPath.assign(v[3]);
 }
 
 void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    std::copy(m_username.begin(), m_username.end(), std::back_inserter(*_data));
-    _data->push_back('\0');
-    std::copy(m_host.begin(), m_host.end(), std::back_inserter(*_data));
-    _data->push_back('\0');
-    std::copy(m_version.begin(), m_version.end(), std::back_inserter(*_data));
-    _data->push_back('\0');
-    std::copy(m_DDSPath.begin(), m_DDSPath.end(), std::back_inserter(*_data));
-    _data->push_back('\0');
-
     _data->push_back(m_agentPort & 0xFF);
     _data->push_back(m_agentPort >> 8);
 
@@ -216,6 +197,15 @@ void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back((m_timeStamp >> 8) & 0xFF);
     _data->push_back((m_timeStamp >> 16) & 0xFF);
     _data->push_back((m_timeStamp >> 24) & 0xFF);
+
+    copy(m_username.begin(), m_username.end(), back_inserter(*_data));
+    _data->push_back('\0');
+    copy(m_host.begin(), m_host.end(), back_inserter(*_data));
+    _data->push_back('\0');
+    copy(m_version.begin(), m_version.end(), back_inserter(*_data));
+    _data->push_back('\0');
+    copy(m_DDSPath.begin(), m_DDSPath.end(), back_inserter(*_data));
+    _data->push_back('\0');
 }
 
 //----------------------------------------------------------------------
@@ -236,7 +226,7 @@ void SIdCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     {
         stringstream ss;
         ss << "IdCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw std::runtime_error(ss.str());
+        throw runtime_error(ss.str());
     }
 
     m_id = _data[0];
@@ -287,7 +277,7 @@ void SWnListCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     {
         stringstream ss;
         ss << "WnListCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw std::runtime_error(ss.str());
+        throw runtime_error(ss.str());
     }
 }
 
@@ -297,7 +287,7 @@ void SWnListCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     MiscCommon::StringVector_t::const_iterator iter_end = m_container.end();
     for (; iter != iter_end; ++iter)
     {
-        std::copy(iter->begin(), iter->end(), std::back_inserter(*_data));
+        copy(iter->begin(), iter->end(), back_inserter(*_data));
         _data->push_back('\0');
     }
 }
@@ -349,7 +339,7 @@ void SBinaryAttachmentCmd::_convertFromData(const MiscCommon::BYTEVector_t& _dat
 
 void SBinaryAttachmentCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    std::copy(m_fileName.begin(), m_fileName.end(), std::back_inserter(*_data));
+    copy(m_fileName.begin(), m_fileName.end(), back_inserter(*_data));
     _data->push_back('\0');
 
     _data->push_back(m_fileSize & 0xFF);
@@ -362,7 +352,7 @@ void SBinaryAttachmentCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back((m_crc32 >> 16) & 0xFF);
     _data->push_back((m_crc32 >> 24) & 0xFF);
 
-    std::copy(m_fileData.begin(), m_fileData.end(), std::back_inserter(*_data));
+    copy(m_fileData.begin(), m_fileData.end(), back_inserter(*_data));
 }
 
 //----------------------------------------------------------------------
@@ -430,10 +420,10 @@ void SUUIDCmd::normalizeToRemote()
 
 void SUUIDCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    std::copy(_data.begin(), _data.end(), m_id.begin());
+    copy(_data.begin(), _data.end(), m_id.begin());
 }
 
 void SUUIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    std::copy(m_id.begin(), m_id.end(), std::back_inserter(*_data));
+    copy(m_id.begin(), m_id.end(), back_inserter(*_data));
 }
