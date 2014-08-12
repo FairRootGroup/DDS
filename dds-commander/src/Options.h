@@ -41,6 +41,7 @@ namespace dds
             cmd_status,
             cmd_submit,
             cmd_info,
+            cmd_getlog,
             cmd_test
         };
         SOptions()
@@ -62,6 +63,8 @@ namespace dds
                 return cmd_submit;
             if ("info" == _name)
                 return cmd_info;
+            if ("getlog" == _name)
+                return cmd_getlog;
             if ("test" == _name)
                 return cmd_test;
 
@@ -118,7 +121,8 @@ namespace dds
             "   stop: \tStop dds-commander daemon\n"
             "   status: \tQuery current status of dds-command daemon\n"
             "   submit: \tSubmit a topology to a defined RMS\n"
-            "   info: \tThe info command can be used to request different kinds of information from DDS.\n");
+            "   info: \tThe info command can be used to request different kinds of information from DDS.\n"
+            "   getlog: \tGet logs from agents.\n");
 
         //...positional
         bpo::positional_options_description pd;

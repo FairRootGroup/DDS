@@ -101,10 +101,10 @@ int CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
     SHostInfoCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
 
-    LOG(info) << "Recieved a HostInfo [" << cmd
+    LOG(info) << "Recieved a cmdREPLY_HOST_INFO [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    pushMsg<cmdDISCONNECT>();
+    // pushMsg<cmdDISCONNECT>();
 
     return 0;
 }
@@ -128,7 +128,7 @@ int CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
 
-    LOG(info) << "Recieved a DownloadStat [" << cmd
+    LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
     return 0;
@@ -156,6 +156,13 @@ int CAgentChannel::on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg)
     {
         m_id = cmd.m_id;
     }
+
+    return 0;
+}
+
+int CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
+{
+    LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
     return 0;
 }

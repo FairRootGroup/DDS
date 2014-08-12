@@ -53,7 +53,8 @@ namespace dds
         cmdBINARY_DOWNLOAD_STAT, // attachment: SBinaryDownloadStatCmd.
         cmdGET_UUID,
         cmdREPLY_GET_UUID, // attachment: SUUIDCmd
-        cmdSET_UUID        // attachment: SUUIDCmd.
+        cmdSET_UUID,       // attachment: SUUIDCmd
+        cmdGET_LOG
 
         // ----------- VERSION 2 --------------------
     };
@@ -78,6 +79,7 @@ namespace dds
         { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
         { cmdREPLY_GET_UUID, NAME_TO_STRING(cmdREPLY_GET_UUID) },
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
+        { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) },
     };
 
     //----------------------------------------------------------------------

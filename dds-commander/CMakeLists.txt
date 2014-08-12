@@ -32,6 +32,7 @@ set( SOURCE_FILES
 	./src/SubmitChannel.cpp
 	./src/InfoChannel.cpp
     ./src/TestChannel.cpp
+    ./src/GetLogChannel.cpp
 )
 
 #
@@ -44,6 +45,7 @@ set( HEADER_FILES
 	./src/SubmitChannel.h
 	./src/InfoChannel.h
     ./src/TestChannel.h
+    ./src/GetLogChannel.h
 )
 
 include_directories(
