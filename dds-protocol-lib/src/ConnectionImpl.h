@@ -171,9 +171,13 @@ namespace dds
                                     boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length),
                                     [this](boost::system::error_code ec, std::size_t length)
                                     {
-                LOG(MiscCommon::debug) << "readHeader received: " << length << " bytes, expected "
-                                       << CProtocolMessage::header_length << ", from "
-                                       << socket().remote_endpoint().address().to_string();
+
+                if (!ec)
+                {
+                    LOG(MiscCommon::debug) << "readHeader received: " << length << " bytes, expected "
+                                           << CProtocolMessage::header_length << ", from "
+                                           << socket().remote_endpoint().address().to_string();
+                }
                 if (!ec && m_currentMsg.decode_header())
                 {
                     // give a chance to child to execute something

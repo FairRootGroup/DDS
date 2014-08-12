@@ -73,7 +73,7 @@ namespace dds
 
                 m_acceptor.get_io_service().run();
             }
-            catch (exception& e)
+            catch (std::exception& e)
             {
                 LOG(MiscCommon::fatal) << e.what();
             }
@@ -91,7 +91,7 @@ namespace dds
                 }
                 m_channels.clear();
             }
-            catch (exception& e)
+            catch (std::exception& e)
             {
                 LOG(MiscCommon::fatal) << e.what();
             }
@@ -117,30 +117,30 @@ namespace dds
 
         void createServerInfoFile() const
         {
-            const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
+            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
             LOG(MiscCommon::info) << "Createing a server info file: " << sSrvCfg;
-            ofstream f(sSrvCfg.c_str());
+            std::ofstream f(sSrvCfg.c_str());
             if (!f.is_open() || !f.good())
             {
-                string msg("Could not open a server info configuration file: ");
+                std::string msg("Could not open a server info configuration file: ");
                 msg += sSrvCfg;
-                throw runtime_error(msg);
+                throw std::runtime_error(msg);
             }
 
-            string srvHost;
+            std::string srvHost;
             MiscCommon::get_hostname(&srvHost);
-            string srvUser;
+            std::string srvUser;
             MiscCommon::get_cuser_name(&srvUser);
 
             f << "[server]\n"
               << "host=" << srvHost << "\n"
               << "user=" << srvUser << "\n"
-              << "port=" << m_acceptor.local_endpoint().port() << "\n" << endl;
+              << "port=" << m_acceptor.local_endpoint().port() << "\n" << std::endl;
         }
 
         void deleteServerInfoFile() const
         {
-            const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
+            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
             if (sSrvCfg.empty())
                 return;
 

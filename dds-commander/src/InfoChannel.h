@@ -47,7 +47,7 @@ namespace dds
         }
         void onFailedToConnect()
         {
-            LOG(MiscCommon::log_stdout) << "Failed to connect to commander server.";
+            LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
         }
 
       private:

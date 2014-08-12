@@ -12,11 +12,28 @@
 #include "Res.h"
 #include "Logger.h"
 //=============================================================================
-using namespace std;
 namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds
 {
+    enum ERmsType
+    {
+        SSH,
+        LSF
+    };
+    //=============================================================================
+    // A custom streamer to help boost program options to convert string options to ERmsType
+    inline std::istream& operator>>(std::istream& _in, ERmsType& _rms)
+    {
+        std::string token;
+        _in >> token;
+        if (token == "ssh")
+            _rms = SSH;
+        else
+            throw bpo::invalid_option_value("Invalid RMS");
+        return _in;
+    }
+
     /// \brief dds-commander's container of options
     typedef struct SOptions
     {
@@ -33,6 +50,7 @@ namespace dds
         SOptions()
             : m_Command(cmd_start)
             , m_needCommanderPid(false)
+            , m_RMS(SSH)
         {
         }
 
@@ -57,6 +75,8 @@ namespace dds
         ECommands m_Command;
         std::string m_sTopoFile;
         bool m_needCommanderPid;
+        ERmsType m_RMS;
+        std::string m_sSSHCfgFile;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -78,22 +98,30 @@ namespace dds
         options.add_options()("version,v", "Version information");
         options.add_options()("topo,t",
                               bpo::value<std::string>(&_options->m_sTopoFile),
-                              "A topology file. The option can only be used with the submit command");
+                              "A topology file. The option can only be used with the \"submit\" command");
+        options.add_options()(
+            "rms,r",
+            bpo::value<ERmsType>(&_options->m_RMS),
+            "Resource Management System. The option can only be used with the \"submit\" command (default: ssh)");
+        options.add_options()("ssh-rms-cfg",
+                              "A DDS's ssh plug-in configuration file. The option can only be used "
+                              "with the submit command when \'ssh\' is used as RMS");
         options.add_options()(
             "commanderPid",
-            "Return the pid of the commander server. The option can only be used with the info command");
+            "Return the pid of the commander server. The option can only be used with the \"info\" command");
         options.add_options()(
             "command",
             bpo::value<std::string>(),
             "The command is a name of dds-commander command."
-            " Can be one of the following: start, stop, status.\n"
+            " Can be one of the following: start, stop, status, and info.\n"
             "For user's convenience it is allowed to call dds-commander without \"--command\" option"
             " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
             "Commands:\n"
             "   start: \tStart dds-commander daemon\n"
             "   stop: \tStop dds-commander daemon\n"
             "   status: \tQuery current status of dds-command daemon\n"
-            "   submit: \tSubmit a topology to a defined RMS\n");
+            "   submit: \tSubmit a topology to a defined RMS\n"
+            "   info: \tThe info command can be used to request different kinds of information from DDS.\n");
 
         //...positional
         bpo::positional_options_description pd;
@@ -125,12 +153,22 @@ namespace dds
                 return false;
             }
 
-            if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()) &&
-                !vm.count("topo"))
+            if (SOptions::cmd_submit == SOptions::getCommandByName(vm["command"].as<std::string>()))
             {
-                LOG(MiscCommon::log_stderr) << "specify a topo file"
-                                            << "\n\n" << options;
-                return false;
+                if (!vm.count("topo"))
+                {
+                    LOG(MiscCommon::log_stderr) << "specify a topo file"
+                                                << "\n\n" << options;
+                    return false;
+                }
+
+                if (_options->m_RMS == SSH && !vm.count("ssh-rms-cfg"))
+                {
+                    LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
+                                                   "--ssh-rms-cfg to specify a desired configuration file."
+                                                << "\n\n" << options;
+                    return false;
+                }
             }
 
             if (SOptions::cmd_info == SOptions::getCommandByName(vm["command"].as<std::string>()) &&
