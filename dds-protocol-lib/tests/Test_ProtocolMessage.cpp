@@ -297,4 +297,38 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_UUID)
     BOOST_CHECK(id == cmd_dest.m_id);
 }
 
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_UUID)
+{
+    const boost::uuids::uuid id = boost::uuids::random_generator()();
+    const unsigned int cmdSize = 16;
+
+    // Create a message
+    SUUIDCmd cmd_src;
+    cmd_src.m_id = id;
+    CProtocolMessage msg_src;
+    msg_src.encodeWithAttachment<cmdREPLY_GET_UUID>(cmd_src);
+
+    BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_GET_UUID);
+
+    BOOST_CHECK(cmd_src.size() == cmdSize);
+
+    // "Send" message
+    CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
+    memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
+
+    // Decode the message
+    BOOST_CHECK(msg_dest.decode_header());
+
+    // Check that we got the proper command ID
+    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
+
+    // Read the message
+    SUUIDCmd cmd_dest;
+    cmd_dest.convertFromData(msg_dest.bodyToContainer());
+
+    BOOST_CHECK(cmd_src == cmd_dest);
+    BOOST_CHECK(id == cmd_dest.m_id);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
