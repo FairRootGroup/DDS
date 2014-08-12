@@ -77,8 +77,14 @@ int CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
 {
     SSubmitCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
-    LOG(info) << "Recieved a Submit of the topo [" << cmd.m_sTopoFile
-              << "] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(info) << "Recieved a Submit command of the topo [" << cmd.m_sTopoFile
+              << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode]
+              << " from: " << socket().remote_endpoint().address().to_string();
+
+    if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
+    {
+        LOG(info) << "SSH RMS is defined by: [" << cmd.m_sSSHCfgFile << "]";
+    }
 
     // TODO: Implement me. So far we always send OK
     SSimpleMsgCmd msg_cmd;

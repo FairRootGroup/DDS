@@ -173,6 +173,8 @@ int main(int argc, char* argv[])
             client->pushMsg(msg);
 
             client->setTopoFile(options.m_sTopoFile);
+            client->setSSHCfgFile(options.m_sSSHCfgFile);
+            client->setRMSTypeCode(options.m_RMS);
 
             io_service.run();
         }

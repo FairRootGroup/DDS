@@ -11,24 +11,20 @@
 // DDS
 #include "Res.h"
 #include "Logger.h"
+#include "ProtocolCommands.h"
 //=============================================================================
 namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds
 {
-    // a list of supported RMS
-    enum ERmsType
-    {
-        SSH
-    };
     //=============================================================================
     // A custom streamer to help boost program options to convert string options to ERmsType
-    inline std::istream& operator>>(std::istream& _in, ERmsType& _rms)
+    inline std::istream& operator>>(std::istream& _in, SSubmitCmd::ERmsType& _rms)
     {
         std::string token;
         _in >> token;
         if (token == "ssh")
-            _rms = SSH;
+            _rms = SSubmitCmd::SSH;
         else
             throw bpo::invalid_option_value("Invalid RMS");
         return _in;
@@ -50,7 +46,7 @@ namespace dds
         SOptions()
             : m_Command(cmd_start)
             , m_needCommanderPid(false)
-            , m_RMS(SSH)
+            , m_RMS(SSubmitCmd::SSH)
         {
         }
 
@@ -75,7 +71,7 @@ namespace dds
         ECommands m_Command;
         std::string m_sTopoFile;
         bool m_needCommanderPid;
-        ERmsType m_RMS;
+        SSubmitCmd::ERmsType m_RMS;
         std::string m_sSSHCfgFile;
     } SOptions_t;
     //=============================================================================
@@ -101,7 +97,7 @@ namespace dds
                               "A topology file. The option can only be used with the \"submit\" command");
         options.add_options()(
             "rms,r",
-            bpo::value<ERmsType>(&_options->m_RMS),
+            bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
             "Resource Management System. The option can only be used with the \"submit\" command (default: ssh)");
         options.add_options()("ssh-rms-cfg",
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
@@ -163,7 +159,7 @@ namespace dds
                     return false;
                 }
 
-                if (_options->m_RMS == SSH && !vm.count("ssh-rms-cfg"))
+                if (_options->m_RMS == SSubmitCmd::SSH && !vm.count("ssh-rms-cfg"))
                 {
                     LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
                                                    "--ssh-rms-cfg to specify a desired configuration file."

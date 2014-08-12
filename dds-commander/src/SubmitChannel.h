@@ -27,7 +27,9 @@ namespace dds
         END_MSG_MAP()
 
       public:
-        void setTopoFile(const std::string& _topoFile);
+        void setTopoFile(const std::string& _val);
+        void setSSHCfgFile(const std::string& _val);
+        void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
 
       private:
         // Message Handlers
@@ -56,6 +58,8 @@ namespace dds
       private:
         bool m_isHandShakeOK;
         std::string m_sTopoFile;
+        std::string m_sSSHCfgFile;
+        SSubmitCmd::ERmsType m_RMS;
     };
 }
 

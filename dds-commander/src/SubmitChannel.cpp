@@ -10,9 +10,19 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CSubmitChannel::setTopoFile(const string& _topoFile)
+void CSubmitChannel::setTopoFile(const string& _val)
 {
-    m_sTopoFile = _topoFile;
+    m_sTopoFile = _val;
+}
+
+void CSubmitChannel::setSSHCfgFile(const string& _val)
+{
+    m_sSSHCfgFile = _val;
+}
+
+void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
+{
+    m_RMS = _val;
 }
 
 int CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
@@ -22,6 +32,8 @@ int CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     // Create the command's attachment
     SSubmitCmd cmd;
     cmd.m_sTopoFile = m_sTopoFile;
+    cmd.m_nRMSTypeCode = m_RMS;
+    cmd.m_sSSHCfgFile = m_sSSHCfgFile;
 
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdSUBMIT>(cmd);

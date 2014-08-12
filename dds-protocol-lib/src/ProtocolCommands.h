@@ -192,6 +192,16 @@ namespace dds
 
     struct SSubmitCmd : public SBasicCmd<SSubmitCmd>
     {
+        // a list of supported RMS
+        // We define this enum here to make a strong binding between protocol and RMS type code.
+        // Just in case if code of any of the supported RMS is changed (enum was re-ordered), then protocol version
+        // should also be changed.
+        enum ERmsType
+        {
+            SSH = 0
+        };
+        std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" } };
+
         SSubmitCmd()
             : m_nRMSTypeCode(0)
         {
