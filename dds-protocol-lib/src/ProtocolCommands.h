@@ -51,7 +51,9 @@ namespace dds
         cmdREPLY_PID,            // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
         cmdBINARY_ATTACHMENT,    // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
         cmdBINARY_DOWNLOAD_STAT, // attachment: SBinaryDownloadStatCmd.
-        cmdSET_UUID              // attachment: SSetUUIDCmd.
+        cmdGET_UUID,
+        cmdREPLY_GET_UUID, // attachment: SUUIDCmd
+        cmdSET_UUID        // attachment: SUUIDCmd.
 
         // ----------- VERSION 2 --------------------
     };
@@ -73,6 +75,8 @@ namespace dds
         { cmdREPLY_PID, NAME_TO_STRING(cmdREPLY_PID) },
         { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },
         { cmdBINARY_DOWNLOAD_STAT, NAME_TO_STRING(cmdBINARY_DOWNLOAD_STAT) },
+        { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
+        { cmdREPLY_GET_UUID, NAME_TO_STRING(cmdREPLY_GET_UUID) },
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
     };
 
@@ -98,6 +102,7 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT, SBinaryDownloadStatCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdREPLY_GET_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
 
     //----------------------------------------------------------------------

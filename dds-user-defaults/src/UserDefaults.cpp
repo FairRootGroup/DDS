@@ -233,3 +233,9 @@ string CUserDefaults::getUserEnvScript()
     smart_path(&val);
     return val;
 }
+
+string CUserDefaults::getAgentUUIDFile()
+{
+    const string sFileName("dds-agent.client.id");
+    return (getDDSPath() + sFileName);
+}

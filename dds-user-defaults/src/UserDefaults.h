@@ -39,6 +39,7 @@ namespace dds
         std::string getWrkPkgPath();
         std::string getWrkScriptPath();
         std::string getUserEnvScript();
+        static std::string getAgentUUIDFile();
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;

@@ -8,7 +8,9 @@
 #include "UserDefaults.h"
 #include "Process.h"
 // BOOST
-#include "boost/crc.hpp"
+#include <boost/crc.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -69,6 +71,7 @@ int CCommanderChannel::on_cmdDISCONNECT(const CProtocolMessage& _msg)
 int CCommanderChannel::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
 {
     stop();
+    deleteAgentUUIDFile();
     LOG(info) << "The Agent exited.";
     exit(EXIT_SUCCESS);
     return 0;
@@ -104,19 +107,82 @@ int CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
     return 0;
 }
 
+int CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
+{
+    LOG(info) << "Recieved a cmdGET_UUID command from: " << socket().remote_endpoint().address().to_string();
+
+    // If file exist return uuid from file.
+    // If file does not exist than return uuid_nil.
+
+    const string sAgentUUIDFile(CUserDefaults::instance().getAgentUUIDFile());
+    if (MiscCommon::file_exists(sAgentUUIDFile))
+    {
+        readAgentUUIDFile();
+    }
+    else
+    {
+        m_id = boost::uuids::nil_uuid();
+    }
+
+    SUUIDCmd msg_cmd;
+    msg_cmd.m_id = m_id;
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdREPLY_GET_UUID>(msg_cmd);
+    pushMsg(msg);
+
+    return 0;
+}
+
 int CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
 {
     SUUIDCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
 
-    m_id = cmd.m_id;
-
-    // Write this UUID to file
-    //
-    //
-
     LOG(info) << "Recieved a cmdSET_UUID [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
+    m_id = cmd.m_id;
+
+    createAgentUUIDFile();
+
     return 0;
+}
+
+void CCommanderChannel::readAgentUUIDFile()
+{
+    const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
+    LOG(MiscCommon::info) << "Reading an agent UUID file: " << sAgentUUIDFile;
+    ifstream f(sAgentUUIDFile.c_str());
+    if (!f.is_open() || !f.good())
+    {
+        string msg("Could not open an agent UUID file: ");
+        msg += sAgentUUIDFile;
+        throw runtime_error(msg);
+    }
+    f >> m_id;
+}
+
+void CCommanderChannel::createAgentUUIDFile() const
+{
+    const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
+    LOG(MiscCommon::info) << "Creating an agent UUID file: " << sAgentUUIDFile;
+    ofstream f(sAgentUUIDFile.c_str());
+    if (!f.is_open() || !f.good())
+    {
+        string msg("Could not open an agent UUID file: ");
+        msg += sAgentUUIDFile;
+        throw runtime_error(msg);
+    }
+
+    f << m_id;
+}
+
+void CCommanderChannel::deleteAgentUUIDFile() const
+{
+    const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
+    if (sAgentUUIDFile.empty())
+        return;
+
+    // TODO: check error code
+    unlink(sAgentUUIDFile.c_str());
 }

@@ -26,6 +26,7 @@ namespace dds
         MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT, on_cmdBINARY_ATTACHMENT)
+        MESSAGE_HANDLER(cmdGET_UUID, on_cmdGET_UUID)
         MESSAGE_HANDLER(cmdSET_UUID, on_cmdSET_UUID)
         END_MSG_MAP()
 
@@ -37,10 +38,14 @@ namespace dds
         int on_cmdDISCONNECT(const CProtocolMessage& _msg);
         int on_cmdSHUTDOWN(const CProtocolMessage& _msg);
         int on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg);
+        int on_cmdGET_UUID(const CProtocolMessage& _msg);
         int on_cmdSET_UUID(const CProtocolMessage& _msg);
 
       private:
         void onHeaderRead();
+        void readAgentUUIDFile();
+        void createAgentUUIDFile() const;
+        void deleteAgentUUIDFile() const;
 
       private:
         bool m_isHandShakeOK;

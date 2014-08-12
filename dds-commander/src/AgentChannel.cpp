@@ -67,14 +67,7 @@ int CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
                   << "] has succesfully connected.";
 
         pushMsg<cmdREPLY_HANDSHAKE_OK>();
-
-        m_id = boost::uuids::random_generator()();
-        SUUIDCmd msg_cmd;
-        msg_cmd.m_id = m_id;
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdSET_UUID>(msg_cmd);
-        pushMsg(msg);
-
+        pushMsg<cmdGET_UUID>();
         pushMsg<cmdGET_HOST_INFO>();
     }
     return 0;
@@ -131,6 +124,32 @@ int CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
 
     LOG(info) << "Recieved a DownloadStat [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
+
+    return 0;
+}
+
+int CAgentChannel::on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg)
+{
+    SUUIDCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a cmdREPLY_GET_UUID [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
+
+    if (cmd.m_id.is_nil())
+    {
+        // If UUID was not assigned to agent than generate new UUID and send it to agent
+        m_id = boost::uuids::random_generator()();
+        SUUIDCmd msg_cmd;
+        msg_cmd.m_id = m_id;
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdSET_UUID>(msg_cmd);
+        pushMsg(msg);
+    }
+    else
+    {
+        m_id = cmd.m_id;
+    }
 
     return 0;
 }
