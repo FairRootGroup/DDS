@@ -193,29 +193,31 @@ namespace dds
     struct SSubmitCmd : public SBasicCmd<SSubmitCmd>
     {
         SSubmitCmd()
+            : m_nRMSTypeCode(0)
         {
         }
         void normalizeToLocal();
         void normalizeToRemote();
         size_t size() const
         {
-            size_t s = (m_sTopoFile.size() + 1) + (m_sRMS.size() + 1) + (m_sSSHCfgFile.size() + 1);
+            size_t s = (m_sTopoFile.size() + 1) + (m_sSSHCfgFile.size() + 1) + sizeof(m_nRMSTypeCode);
             return s;
         }
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SSubmitCmd& val) const
         {
-            return (m_sTopoFile == val.m_sTopoFile && m_sRMS == val.m_sRMS && m_sSSHCfgFile == val.m_sSSHCfgFile);
+            return (m_sTopoFile == val.m_sTopoFile && m_sSSHCfgFile == val.m_sSSHCfgFile &&
+                    m_nRMSTypeCode == val.m_nRMSTypeCode);
         }
 
+        uint16_t m_nRMSTypeCode;
         std::string m_sTopoFile;
-        std::string m_sRMS;
         std::string m_sSSHCfgFile;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val)
     {
-        return _stream << "topo: " << val.m_sTopoFile << "; RMS: " << val.m_sRMS
+        return _stream << "topo: " << val.m_sTopoFile << "; RMS type code: " << val.m_nRMSTypeCode
                        << "; SSH Hosts config: " << val.m_sSSHCfgFile;
     }
     inline bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
@@ -254,7 +256,7 @@ namespace dds
                     m_DDSPath == val.m_DDSPath && m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid &&
                     m_timeStamp == val.m_timeStamp);
         }
-        
+
         uint16_t m_agentPort;
         uint32_t m_agentPid;
         uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
