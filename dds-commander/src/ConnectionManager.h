@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 // DDS
 #include "MonitoringThread.h"
+#include "ProtocolMessage.h"
 #include "Options.h"
 
 namespace dds
@@ -57,9 +58,7 @@ namespace dds
 
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
-                                                    {
-                    LOG(MiscCommon::info) << "Idle callback called";
-                });
+                                                    { LOG(MiscCommon::info) << "Idle callback called"; });
                 //
 
                 m_acceptor.listen();
@@ -106,6 +105,9 @@ namespace dds
                 m_channels.push_back(_client);
 
                 typename T::connectionPtr_t newClient = T::makeNew(m_acceptor.get_io_service());
+                newClient->registerMessageHandler(cmdGET_LOG,
+                                                  [this](const CProtocolMessage& _msg)->bool
+                                                  { return this->getLogHandler(_msg); });
                 m_acceptor.async_accept(
                     newClient->socket(),
                     std::bind(&CConnectionManager::acceptHandler, this, newClient, std::placeholders::_1));
@@ -118,7 +120,7 @@ namespace dds
         void createServerInfoFile() const
         {
             const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
-            LOG(MiscCommon::info) << "Createing a server info file: " << sSrvCfg;
+            LOG(MiscCommon::info) << "Creating a server info file: " << sSrvCfg;
             std::ofstream f(sSrvCfg.c_str());
             if (!f.is_open() || !f.good())
             {
@@ -146,6 +148,12 @@ namespace dds
 
             // TODO: check error code
             unlink(sSrvCfg.c_str());
+        }
+
+        bool getLogHandler(const CProtocolMessage& _msg)
+        {
+            LOG(MiscCommon::debug) << "Call getLogHandler callback";
+            return true;
         }
 
       private:

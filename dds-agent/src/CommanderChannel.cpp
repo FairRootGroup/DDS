@@ -27,19 +27,19 @@ void CCommanderChannel::onHeaderRead()
     m_headerReadTime = std::chrono::steady_clock::now();
 }
 
-int CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
-    return 0;
+    return true;
 }
 
-int CCommanderChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 {
-    return 0;
+    return true;
 }
 
-int CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
 {
     // Create the command's attachment
     string pidFileName(CUserDefaults::getDDSPath());
@@ -58,26 +58,29 @@ int CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
     pushMsg(msg);
-    return 0;
+
+    return true;
 }
 
-int CCommanderChannel::on_cmdDISCONNECT(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdDISCONNECT(const CProtocolMessage& _msg)
 {
     stop();
-    LOG(info) << "The Agent disconnected...Bye";
-    return 0;
+    LOG(info) << "The Agent [" << m_id << "] disconnected...Bye";
+
+    return true;
 }
 
-int CCommanderChannel::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
 {
     stop();
     deleteAgentUUIDFile();
-    LOG(info) << "The Agent exited.";
+    LOG(info) << "The Agent [" << m_id << "] exited.";
     exit(EXIT_SUCCESS);
-    return 0;
+
+    return true;
 }
 
-int CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
 {
     SBinaryAttachmentCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -104,10 +107,10 @@ int CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
     msg.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
     pushMsg(msg);
 
-    return 0;
+    return true;
 }
 
-int CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved a cmdGET_UUID command from: " << socket().remote_endpoint().address().to_string();
 
@@ -130,10 +133,10 @@ int CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
     msg.encodeWithAttachment<cmdREPLY_GET_UUID>(msg_cmd);
     pushMsg(msg);
 
-    return 0;
+    return true;
 }
 
-int CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
 {
     SUUIDCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -145,7 +148,7 @@ int CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
 
     createAgentUUIDFile();
 
-    return 0;
+    return true;
 }
 
 void CCommanderChannel::readAgentUUIDFile()

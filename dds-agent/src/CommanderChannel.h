@@ -32,14 +32,14 @@ namespace dds
 
       private:
         // Message Handlers
-        int on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
-        int on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
-        int on_cmdGET_HOST_INFO(const CProtocolMessage& _msg);
-        int on_cmdDISCONNECT(const CProtocolMessage& _msg);
-        int on_cmdSHUTDOWN(const CProtocolMessage& _msg);
-        int on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg);
-        int on_cmdGET_UUID(const CProtocolMessage& _msg);
-        int on_cmdSET_UUID(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
+        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
+        bool on_cmdGET_HOST_INFO(const CProtocolMessage& _msg);
+        bool on_cmdDISCONNECT(const CProtocolMessage& _msg);
+        bool on_cmdSHUTDOWN(const CProtocolMessage& _msg);
+        bool on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg);
+        bool on_cmdGET_UUID(const CProtocolMessage& _msg);
+        bool on_cmdSET_UUID(const CProtocolMessage& _msg);
 
       private:
         void onHeaderRead();

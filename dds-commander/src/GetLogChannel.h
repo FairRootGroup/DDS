@@ -28,8 +28,8 @@ namespace dds
 
       private:
         // Message Handlers
-        int on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
-        int on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
+        bool on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

@@ -25,7 +25,7 @@ void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
     m_RMS = _val;
 }
 
-int CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
@@ -39,19 +39,19 @@ int CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     msg.encodeWithAttachment<cmdSUBMIT>(cmd);
     pushMsg(msg);
 
-    return 0;
+    return true;
 }
 
-int CSubmitChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 {
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
     if (!cmd.m_sMsg.empty())
         LOG(log_stdout) << "Server reports: " << cmd.m_sMsg;
-    return 0;
+    return true;
 }
 
-int CSubmitChannel::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
 {
     LOG(log_stdout) << "Successfully done.";
 
@@ -59,10 +59,10 @@ int CSubmitChannel::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
 
     // Close communication channel
     stop();
-    return 0;
+    return true;
 }
 
-int CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
 {
     LOG(log_stderr) << "Submission has failed.";
 
@@ -70,5 +70,5 @@ int CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
 
     // Close communication channel
     stop();
-    return 0;
+    return true;
 }

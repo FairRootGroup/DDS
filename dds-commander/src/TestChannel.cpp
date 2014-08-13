@@ -16,7 +16,7 @@ void CTestChannel::onHeaderRead()
 {
 }
 
-int CTestChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
+bool CTestChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
     ver.convertFromData(_msg.bodyToContainer());
@@ -46,10 +46,10 @@ int CTestChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         sendTestBinaryAttachment(1000000);
         sendTestBinaryAttachment(10000000);
     }
-    return 0;
+    return true;
 }
 
-int CTestChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+bool CTestChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
 {
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -57,7 +57,7 @@ int CTestChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a DownloadStat [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    return 0;
+    return true;
 }
 
 void CTestChannel::sendTestBinaryAttachment(size_t _binarySize)

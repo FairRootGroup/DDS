@@ -7,6 +7,7 @@
 // STD
 #include <iostream>
 #include <deque>
+#include <map>
 // BOOST
 #include "boost/noncopyable.hpp"
 #include "boost/asio.hpp"
@@ -16,24 +17,42 @@
 #include "Logger.h"
 #include "MonitoringThread.h"
 
-#define BEGIN_MSG_MAP(theClass)                                          \
-  public:                                                                \
-    friend CConnectionImpl<theClass>;                                    \
-    void processMessage(const CProtocolMessage& _currentMsg, int& _nRes) \
-    {                                                                    \
-        dds::CMonitoringThread::instance().updateIdle();                 \
-        switch (_currentMsg.header().m_cmd)                              \
+#define BEGIN_MSG_MAP(theClass)                              \
+  public:                                                    \
+    friend CConnectionImpl<theClass>;                        \
+    void processMessage(const CProtocolMessage& _currentMsg) \
+    {                                                        \
+        dds::CMonitoringThread::instance().updateIdle();     \
+        bool processed = true;                               \
+        switch (_currentMsg.header().m_cmd)                  \
         {
 
-#define MESSAGE_HANDLER(msg, func) \
-    case msg:                      \
-        _nRes = func(_currentMsg); \
+#define MESSAGE_HANDLER(msg, func)     \
+    case msg:                          \
+        processed = func(_currentMsg); \
         break;
 
-#define END_MSG_MAP()                                                                                        \
-    default:                                                                                                 \
-        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg.toString(); \
-        }                                                                                                    \
+#define END_MSG_MAP()                                                                                              \
+    default:                                                                                                       \
+        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg.toString();       \
+        }                                                                                                          \
+        if (!processed)                                                                                            \
+        {                                                                                                          \
+            ECmdType currentCmd = static_cast<ECmdType>(_currentMsg.header().m_cmd);                               \
+            if (m_registeredMessageHandlers.count(currentCmd) == 0)                                                \
+            {                                                                                                      \
+                LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
+                                       << _currentMsg.toString();                                                  \
+            }                                                                                                      \
+            else                                                                                                   \
+            {                                                                                                      \
+                auto functions = m_registeredMessageHandlers.equal_range(currentCmd);                              \
+                for (auto it = functions.first; it != functions.second; ++it)                                      \
+                {                                                                                                  \
+                    it->second(_currentMsg);                                                                       \
+                }                                                                                                  \
+            }                                                                                                      \
+        }                                                                                                          \
         }
 
 #define REGISTER_DEFAULT_ON_CONNECT_CALLBACKS \
@@ -63,6 +82,8 @@ namespace dds
     template <class T>
     class CConnectionImpl : public boost::noncopyable
     {
+        typedef std::function<bool(const CProtocolMessage&)> handlerFunction_t;
+
       protected:
         CConnectionImpl<T>(boost::asio::io_service& _service)
             : m_io_service(_service)
@@ -140,6 +161,11 @@ namespace dds
             pushMsg(msg);
         }
 
+        void registerMessageHandler(ECmdType _type, handlerFunction_t _handler)
+        {
+            m_registeredMessageHandlers.insert(std::pair<ECmdType, handlerFunction_t>(_type, _handler));
+        }
+
       private:
         void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
         {
@@ -214,9 +240,8 @@ namespace dds
             {
                 LOG(MiscCommon::debug) << "readBody: the message has no attachment: " << m_currentMsg.toString();
                 // process received message
-                int nRes(0);
                 T* pThis = static_cast<T*>(this);
-                pThis->processMessage(m_currentMsg, nRes);
+                pThis->processMessage(m_currentMsg);
                 // Read next message
                 m_currentMsg.clear();
                 readHeader();
@@ -231,9 +256,8 @@ namespace dds
                 {
                     LOG(MiscCommon::debug) << "Received from Agent: " << m_currentMsg.toString();
                     // process received message
-                    int nRes(0);
                     T* pThis = static_cast<T*>(this);
-                    pThis->processMessage(m_currentMsg, nRes);
+                    pThis->processMessage(m_currentMsg);
                     // Read next message
                     m_currentMsg.clear();
                     readHeader();
@@ -259,6 +283,7 @@ namespace dds
             });
         }
 
+      public:
         void writeMessages()
         {
             LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
@@ -301,9 +326,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:
@@ -312,6 +335,9 @@ namespace dds
         bool m_started;
         CProtocolMessage m_currentMsg;
         messageQueue_t m_outputMessageQueue;
+
+      protected:
+        std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;
     };
 }
 

@@ -16,7 +16,7 @@ void CAgentChannel::onHeaderRead()
 {
 }
 
-int CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
     ver.convertFromData(_msg.bodyToContainer());
@@ -40,10 +40,10 @@ int CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
 
         pushMsg<cmdREPLY_HANDSHAKE_OK>();
     }
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
     ver.convertFromData(_msg.bodyToContainer());
@@ -70,10 +70,10 @@ int CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         pushMsg<cmdGET_UUID>();
         pushMsg<cmdGET_HOST_INFO>();
     }
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
 {
     SSubmitCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -93,10 +93,10 @@ int CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
     msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
     pushMsg(msg);
 
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
 {
     SHostInfoCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -106,10 +106,10 @@ int CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
 
     // pushMsg<cmdDISCONNECT>();
 
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdGED_PID(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdGED_PID(const CProtocolMessage& _msg)
 {
     pid_t pid = getpid();
     SSimpleMsgCmd cmd_attachment;
@@ -120,10 +120,10 @@ int CAgentChannel::on_cmdGED_PID(const CProtocolMessage& _msg)
     msg.encodeWithAttachment<cmdREPLY_PID>(cmd_attachment);
     pushMsg(msg);
 
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
 {
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -131,10 +131,10 @@ int CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg)
 {
     SUUIDCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -157,12 +157,12 @@ int CAgentChannel::on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg)
         m_id = cmd.m_id;
     }
 
-    return 0;
+    return true;
 }
 
-int CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
-    return 0;
+    return false;
 }

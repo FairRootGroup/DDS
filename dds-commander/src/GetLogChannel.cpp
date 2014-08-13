@@ -12,16 +12,16 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-int CGetLogChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+bool CGetLogChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
     pushMsg<cmdGET_LOG>();
 
-    return 0;
+    return true;
 }
 
-int CGetLogChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+bool CGetLogChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
 {
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -29,5 +29,5 @@ int CGetLogChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    return 0;
+    return true;
 }
