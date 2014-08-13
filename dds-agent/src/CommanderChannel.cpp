@@ -11,6 +11,7 @@
 #include <boost/crc.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -147,6 +148,45 @@ bool CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
     m_id = cmd.m_id;
 
     createAgentUUIDFile();
+
+    return true;
+}
+
+bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
+{
+    LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
+
+    // FIXME: send real LOG files.
+    SBinaryAttachmentCmd cmd;
+
+    for (size_t i = 0; i < 12345; ++i)
+    {
+        char c = rand() % 256;
+        cmd.m_fileData.push_back(c);
+    }
+
+    // Calculate CRC32 of the test file data
+    boost::crc_32_type crc;
+    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+    cmd.m_crc32 = crc.checksum();
+    cmd.m_fileName = "log_" + boost::uuids::to_string(m_id) + ".log";
+    cmd.m_fileSize = cmd.m_fileData.size();
+
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
+    pushMsg(msg);
+
+    return true;
+}
+
+bool CCommanderChannel::on_cmdBINARY_DOWNLOAD_STAT_LOG(const CProtocolMessage& _msg)
+{
+    SBinaryDownloadStatCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT_LOG [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
 
     return true;
 }

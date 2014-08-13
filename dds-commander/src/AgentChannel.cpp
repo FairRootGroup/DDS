@@ -7,6 +7,7 @@
 #include "AgentChannel.h"
 // BOOST
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/crc.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -165,4 +166,40 @@ bool CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
     return false;
+}
+
+bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
+{
+    SBinaryAttachmentCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a cmdBINARY_ATTACHMENT_LOG [" << cmd
+              << "] command from : " << socket().remote_endpoint().address().to_string();
+
+    //    chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    //    chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
+
+    // Calculate CRC32 of the recieved file data
+    boost::crc_32_type crc32;
+    crc32.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+    if (crc32.checksum() == cmd.m_crc32)
+    {
+        // Do something if file is correctly downloaded
+    }
+    else
+    {
+    }
+
+    // Form reply command
+    SBinaryDownloadStatCmd reply_cmd;
+    reply_cmd.m_recievedCrc32 = crc32.checksum();
+    reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
+    //    reply_cmd.m_downloadTime = downloadTime.count();
+
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT_LOG>(reply_cmd);
+    pushMsg(msg);
+
+    return true;
 }

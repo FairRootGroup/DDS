@@ -153,6 +153,10 @@ namespace dds
         bool getLogHandler(const CProtocolMessage& _msg)
         {
             LOG(MiscCommon::debug) << "Call getLogHandler callback";
+            for (auto& v : m_channels)
+            {
+               // v->pushMsg<cmdGET_LOG>();
+            }
             return true;
         }
 
