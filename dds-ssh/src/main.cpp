@@ -11,31 +11,33 @@
 #include <fstream>
 #include <stdexcept>
 #include <list>
-// MiscCommon
+// DDS
 #include "BOOSTHelper.h"
 #include "SysHelper.h"
-#include "DDSUserDefaultsOptions.h"
 #include "DDSSysFiles.h"
-// dds-ssh
 #include "version.h"
 #include "config.h"
 #include "worker.h"
-#include "logEngine.h"
 #include "Process.h"
 #include "local_types.h"
+#include "UserDefaults.h"
+#include "Logger.h"
+#include "Res.h"
 
 using namespace std;
+using namespace dds;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
 //=============================================================================
-const LPCSTR g_pipeName = ".dds_ssh_pipe";
+// const LPCSTR g_pipeName = ".dds_ssh_pipe";
 typedef list<CWorker> workersList_t;
 typedef CThreadPool<CWorker, ETaskType> threadPool_t;
 //=============================================================================
 void printVersion()
 {
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << endl;
+    LOG(log_stdout) << " v" << PROJECT_VERSION_STRING << "DDS configuration"
+                    << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
 }
 //=============================================================================
 enum ECommands
@@ -103,7 +105,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
 
     if (vm.count("help") || vm.empty())
     {
-        cout << visible << endl;
+        LOG(log_stdout) << visible;
         return false;
     }
     if (vm.count("version"))
@@ -117,14 +119,13 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
     {
         if (getCommandByName(vm["command"].as<string>()) == cmd_unknown)
         {
-            cout << PROJECT_NAME << " error: unknown command: " << vm["command"].as<string>() << "\n\n" << visible
-                 << endl;
+            LOG(log_stdout) << " error: unknown command: " << vm["command"].as<string>() << "\n\n" << visible;
             return false;
         }
     }
     else
     {
-        cout << PROJECT_NAME << ": Nothing to do\n\n" << visible << endl;
+        LOG(log_stdout) << ": Nothing to do\n\n" << visible;
         return false;
     }
 
@@ -174,6 +175,9 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
 //=============================================================================
 int main(int argc, char* argv[])
 {
+    Logger::instance().init(); // Initialize log
+    CUserDefaults::instance(); // Initialize user defaults
+
     bpo::variables_map vm;
     try
     {
@@ -182,32 +186,18 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        cerr << PROJECT_NAME << ": " << e.what() << endl;
+        LOG(log_stderr) << ": " << e.what();
         return 1;
     }
 
-    CLogEngine slog(vm.count("debug"));
     try
     {
-        // convert log engine's functor to a free call-back function
-        // this is needed to pass the logger further to other objects
-        log_func_t log_fun_ptr = boost::bind(&CLogEngine::operator(), &slog, _1, _2, _3);
-
-        CPoDEnvironment env;
-        env.init();
-
-        // Collect workers list
-        string pipeName(env.getUD().m_server.m_common.m_workDir);
-        smart_append(&pipeName, '/');
-        pipeName += g_pipeName;
-        slog.start(pipeName);
-
         string configFile;
         if (!vm.count("config"))
         {
-            DDS::SDDSSSHOptions opt_file;
-            opt_file.load(env.pod_sshCfgFile());
-            configFile = opt_file.m_config;
+            //   DDS::SDDSSSHOptions opt_file;
+            //   opt_file.load(env.pod_sshCfgFile());
+            //   configFile = opt_file.m_config;
         }
         else
         {
@@ -260,7 +250,7 @@ int main(int argc, char* argv[])
             StringVector_t::const_iterator iter = vec.begin();
             StringVector_t::const_iterator iter_end = vec.end();
             for (; iter != iter_end; ++iter)
-                slog.debug_msg(*iter + '\n');
+                LOG(debug) << (*iter + '\n');
         }
 
         size_t wrkCount(0);
@@ -285,7 +275,7 @@ int main(int argc, char* argv[])
             for (; iter != iter_end; ++iter)
             {
                 configRecord_t rec(*iter);
-                CWorker wrk(rec, &log_fun_ptr, options);
+                CWorker wrk(rec, options);
                 workers.push_back(wrk);
 
                 if (0 == rec->m_nWorkers)
@@ -299,9 +289,8 @@ int main(int argc, char* argv[])
         // in order to insert a user defined shell script
         if (cmd_submit == command && !inlineShellScripCmds.empty())
         {
-            slog.debug_msg(
-                "dds-ssh config contains an inline shell script. It will be injected it into wrk. package\n");
-            string scriptFileName(DDS::showWrkPackageDir());
+            LOG(debug) << "dds-ssh config contains an inline shell script. It will be injected it into wrk. package";
+            string scriptFileName(CUserDefaults::instance().getWrkPkgDir());
             scriptFileName += "user_worker_env.sh";
             smart_path(&scriptFileName);
 
@@ -324,7 +313,7 @@ int main(int argc, char* argv[])
             StringVector_t::const_iterator iter = vec.begin();
             StringVector_t::const_iterator iter_end = vec.end();
             for (; iter != iter_end; ++iter)
-                slog.debug_msg(*iter + '\n');
+                LOG(debug) << (*iter + '\n');
         }
         else if (cmd_submit == command)
         {
@@ -349,24 +338,18 @@ int main(int argc, char* argv[])
         // Protection for a number of threads
         if (nThreads <= 0 || nThreads > (getNCores() * 2))
         {
-            slog.debug_msg("Warning: bad number of threads. The default will be used.\n");
+            LOG(debug) << "Warning: bad number of threads. The default will be used.";
             nThreads = 5;
         }
         // some control information
-        ostringstream ss;
-        ss << "There are " << nThreads << " threads in the tread-pool.\n";
-        slog.debug_msg(ss.str());
-        ss.str("");
-        ss << "Number of DDS workers: " << workers.size() << "\n";
-        slog.debug_msg(ss.str());
-        ss.str("");
+        LOG(debug) << "There are " << nThreads << " threads in the tread-pool.";
+        LOG(debug) << "Number of DDS workers: " << workers.size();
         //        if (dynWrk)
         //            ss << "Number of PROOF workers: on some workers is dynamic, according to a number of CPU cores\n";
         //        else
         //            ss << "Number of PROOF workers: " << wrkCount << "\n";
-        slog.debug_msg(ss.str());
 
-        slog.debug_msg("Workers list:\n");
+        LOG(debug) << "Workers list:\n";
 
         // start thread-pool and push tasks into it
         threadPool_t threadPool(nThreads);
@@ -389,8 +372,7 @@ int main(int argc, char* argv[])
 
             ostringstream ss;
             iter->printInfo(ss);
-            ss << "\n";
-            slog.debug_msg(ss.str().c_str());
+            LOG(debug) << ss.str();
 
             // pash pre-tasks
             if (vm.count("exec"))
@@ -417,26 +399,23 @@ int main(int argc, char* argv[])
 
         // Check the status of all tasks Failed
         size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
-        ostringstream msg;
-        msg << "\n*******************\n"
-            << "Successfully processed tasks: " << threadPool.successfulTasks() << '\n'
-            << "Failed tasks: " << badFailedCount << '\n' << "*******************\n";
-        slog.debug_msg(msg.str());
+        LOG(debug) << "\n*******************\n"
+                   << "Successfully processed tasks: " << threadPool.successfulTasks() << '\n'
+                   << "Failed tasks: " << badFailedCount << '\n' << "*******************";
 
         if (badFailedCount > 0 && !vm.count("debug"))
-            slog("WARNING: some tasks have failed. Please use the \"--debug\""
-                 " option to print debugging messages.\n");
+            LOG(error) << ("WARNING: some tasks have failed.");
 
         if (!vm.count("debug") && cmd_submit == command)
-            slog("DDS jobs have been submitted. Use \"dds-ssh status\" to check the status.\n");
+            LOG(info) << "DDS jobs have been submitted.";
 
-        DDS::SDDDSSSHOptions opt_file;
-        opt_file.m_config = configFile;
-        opt_file.save(env.pod_sshCfgFile());
+        //        DDS::SDDDSSSHOptions opt_file;
+        //        opt_file.m_config = configFile;
+        //        opt_file.save(env.pod_sshCfgFile());
     }
     catch (exception& e)
     {
-        slog(e.what() + string("\n"));
+        LOG(log_stderr) << e.what();
         return 1;
     }
 

@@ -1,10 +1,15 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
 #ifndef _VERSION_H
 #define _VERSION_H
 
 #define PROJECT_NAME "@PROJECT_NAME@"
 #define PROJECT_VERSION_STRING "@DDS_VERSION@"
+#define USER_DEFAULTS_CFG_VERSION "@USER_DEFAULTS_CFG_VERSION@"
 
+#define INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
+#define INSTALL_PREFIX_TESTS "@CMAKE_INSTALL_PREFIX@/tests"
 #endif
-
-
 

@@ -8,15 +8,16 @@
 // MiscCommon
 #include "SysHelper.h"
 #include "Process.h"
+#include "Logger.h"
 //=============================================================================
 using namespace std;
+using namespace dds;
 using namespace MiscCommon;
 //=============================================================================
 const size_t g_cmdTimeout = 35; // in sec.
 //=============================================================================
-CWorker::CWorker(configRecord_t _rec, log_func_t* _log, const SWNOptions& _options)
+CWorker::CWorker(configRecord_t _rec, const SWNOptions& _options)
     : m_rec(_rec)
-    , m_log(_log)
     , m_options(_options)
     , m_mutex(mutexPtr_t(new boost::mutex()))
 {
@@ -113,5 +114,5 @@ bool CWorker::exec_command(const string& _cmd, const StringVector_t& _params) co
 //=============================================================================
 void CWorker::log(const std::string& _msg) const
 {
-    (*m_log)(_msg, m_rec->m_id, true);
+    LOG(debug) << "[" << m_rec->m_id << "]" << _msg;
 }

@@ -58,7 +58,9 @@ namespace dds
 
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
-                                                    { LOG(MiscCommon::info) << "Idle callback called"; });
+                                                    {
+                    LOG(MiscCommon::info) << "Idle callback called";
+                });
                 //
 
                 m_acceptor.listen();
@@ -106,8 +108,10 @@ namespace dds
 
                 typename T::connectionPtr_t newClient = T::makeNew(m_acceptor.get_io_service());
                 newClient->registerMessageHandler(cmdGET_LOG,
-                                                  [this](const CProtocolMessage& _msg)->bool
-                                                  { return this->getLogHandler(_msg); });
+                                                  [this](const CProtocolMessage& _msg) -> bool
+                                                  {
+                    return this->getLogHandler(_msg);
+                });
                 m_acceptor.async_accept(
                     newClient->socket(),
                     std::bind(&CConnectionManager::acceptHandler, this, newClient, std::placeholders::_1));
@@ -155,7 +159,7 @@ namespace dds
             LOG(MiscCommon::debug) << "Call getLogHandler callback";
             for (auto& v : m_channels)
             {
-               // v->pushMsg<cmdGET_LOG>();
+                // v->pushMsg<cmdGET_LOG>();
             }
             return true;
         }

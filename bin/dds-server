@@ -45,9 +45,14 @@ DDS_URL=" http://dds.gsi.de/releases/add"
 # ************************************************************************
 server_status()
 {
-#   $cmd_dds_info -s
-#
-   return 0
+   commander_pid=$(dds-commander info  --commanderPid  2>/dev/null)
+   if [ -n "$commander_pid" ]; then
+      echo "DDS commander server: $commander_pid"
+      return 0
+   else
+      echo "DDS commander server is NOT running"
+      return 1
+   fi
 }
 # ************************************************************************
 # ***** returns a free port from a given range  *****
@@ -180,6 +185,9 @@ _start()
       return 1
    fi
    
+   # give a chance the commander to start
+   sleep 1
+
    # show status
    echo "------------------------"
    status
@@ -275,6 +283,7 @@ status()
 status_err()
 {
    server_status
+
    return $?
 }
 # ************************************************************************

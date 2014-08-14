@@ -25,22 +25,21 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 # Source files
 #
 set( SOURCE_FILES
-    ./src/main.cpp
-    ./src/config.cpp
-    ./src/worker.cpp
+	./src/main.cpp
+	./src/config.cpp
+	./src/worker.cpp
 )
 set( SRC_HDRS
-     ./src/config.h
-     ./src/local_types.h
-     ./src/threadPool.h
-     ./src/worker.h
+	./src/config.h
+	./src/local_types.h
+	./src/threadPool.h
+	./src/worker.h
 )
 
 
 include_directories(
     ${PROJECT_BINARY_DIR}/src
     ${MiscCommon_LOCATION}
-    ${MiscCommon_LOCATION}/pipe_log_engine
     ${Boost_INCLUDE_DIRS} )
 
 #
@@ -53,12 +52,20 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-    dds-ssh
-    pipe_log_engine
-    dds_sys_files
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
+	dds-ssh
+	dds-user-defaults-lib
+	dds_sys_files
+	${Boost_PROGRAM_OPTIONS_LIBRARY}
+	${Boost_LOG_LIBRARY}
+	${Boost_LOG_SETUP_LIBRARY}
+	${Boost_THREAD_LIBRARY}
 )
+
+target_include_directories(dds-ssh
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
 
 install(TARGETS dds-ssh DESTINATION bin)
 

@@ -31,8 +31,8 @@ set( SOURCE_FILES
 	./src/AgentChannel.cpp
 	./src/SubmitChannel.cpp
 	./src/InfoChannel.cpp
-    ./src/TestChannel.cpp
-    ./src/GetLogChannel.cpp
+	./src/TestChannel.cpp
+	./src/GetLogChannel.cpp
 )
 
 #
@@ -44,8 +44,8 @@ set( HEADER_FILES
 	./src/AgentChannel.h
 	./src/SubmitChannel.h
 	./src/InfoChannel.h
-    ./src/TestChannel.h
-    ./src/GetLogChannel.h
+	./src/TestChannel.h
+	./src/GetLogChannel.h
 )
 
 include_directories(
@@ -80,10 +80,10 @@ target_link_libraries (
 target_include_directories(dds-commander
 	PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
-    PRIVATE
-        $<TARGET_PROPERTY:dds-topology,INTERFACE_INCLUDE_DIRECTORIES>
-    PRIVATE
-        $<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
+	PRIVATE
+		$<TARGET_PROPERTY:dds-topology,INTERFACE_INCLUDE_DIRECTORIES>
+	PRIVATE
+		$<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-commander DESTINATION bin)

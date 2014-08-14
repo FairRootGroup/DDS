@@ -35,5 +35,3 @@ set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build" FORCE )
 #
 set( BUILD_TESTS ON CACHE BOOL "Build DDS tests" FORCE )
 
-set( BUILD_dds-ssh OFF CACHE BOOL "Do not build dds-ssh" FORCE )
-

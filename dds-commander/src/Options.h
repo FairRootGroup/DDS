@@ -80,7 +80,7 @@ namespace dds
     //=============================================================================
     inline void PrintVersion()
     {
-        LOG(MiscCommon::log_stdout) << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
+        LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
                                     << "DDS configuration"
                                     << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
     }
