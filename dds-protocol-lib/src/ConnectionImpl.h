@@ -286,6 +286,8 @@ namespace dds
       public:
         void writeMessages()
         {
+            if (m_outputMessageQueue.empty())
+                return;
             LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
             boost::asio::async_write(
                 m_socket,
@@ -326,9 +328,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:

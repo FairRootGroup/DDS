@@ -7,6 +7,7 @@
 #define __DDS__ConnectionManagerImpl__
 // BOOST
 #include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 // DDS
 #include "MonitoringThread.h"
 #include "Options.h"
@@ -81,7 +82,14 @@ namespace dds
                 // Create a server info file
                 createServerInfoFile();
 
-                m_acceptor.get_io_service().run();
+                // m_acceptor.get_io_service().run();
+                boost::thread_group worker_threads;
+                for (int x = 0; x < 4; ++x)
+                {
+                    worker_threads.create_thread(
+                        boost::bind(&boost::asio::io_service::run, &(m_acceptor.get_io_service())));
+                }
+                worker_threads.join_all();
             }
             catch (std::exception& e)
             {

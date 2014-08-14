@@ -179,6 +179,7 @@ int main(int argc, char* argv[])
     Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
 
+    LOG(info) << "test";
     bpo::variables_map vm;
     try
     {

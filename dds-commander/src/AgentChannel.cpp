@@ -5,6 +5,7 @@
 
 // DDS
 #include "AgentChannel.h"
+#include "Process.h"
 // BOOST
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/crc.hpp>
@@ -91,14 +92,54 @@ bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
     if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
     {
         LOG(info) << "SSH RMS is defined by: [" << cmd.m_sSSHCfgFile << "]";
-    }
 
-    // TODO: Implement me. So far we always send OK
-    SSimpleMsgCmd msg_cmd;
-    msg_cmd.m_sMsg = "Dummy job info, JOBIds";
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
-    pushMsg(msg);
+        // TODO: Job submission should be moved from here
+        // -------
+        // TODO: Resolve topology
+
+        // Submitting the job
+        string outPut;
+        string sCommand("$DDS_LOCATION/bin/dds-ssh");
+        smart_path(&sCommand);
+        StringVector_t params;
+        const size_t nCmdTimeout = 35; // in sec.
+        params.push_back("-c" + cmd.m_sSSHCfgFile);
+        params.push_back("submit");
+        try
+        {
+            do_execv(sCommand, params, nCmdTimeout, &outPut);
+
+            SSimpleMsgCmd msg_cmd;
+            msg_cmd.m_sMsg = "Dummy job info, JOBIds";
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
+            pushMsg(msg);
+        }
+        catch (exception& e)
+        {
+            ostringstream ss;
+            ss << "Failed to process the task: " << e.what();
+            LOG(error) << ss.str();
+            SSimpleMsgCmd msg_cmd;
+            msg_cmd.m_sMsg = ss.str();
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
+            pushMsg(msg);
+        }
+        if (!outPut.empty())
+        {
+            ostringstream ss;
+            ss << "Cmnd Output: " << outPut;
+            LOG(info) << ss.str();
+            SSimpleMsgCmd msg_cmd;
+            msg_cmd.m_sMsg = ss.str();
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
+            pushMsg(msg);
+        }
+
+        // -------
+    }
 
     return true;
 }

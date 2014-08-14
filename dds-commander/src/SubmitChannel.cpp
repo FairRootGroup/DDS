@@ -5,6 +5,9 @@
 
 // DDS
 #include "SubmitChannel.h"
+// BOOST
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -29,11 +32,15 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
+    // make absolute path
+    boost::filesystem::path pathTopoFile(m_sTopoFile);
+    boost::filesystem::path pathSSHCfgFile(m_sSSHCfgFile);
+
     // Create the command's attachment
     SSubmitCmd cmd;
-    cmd.m_sTopoFile = m_sTopoFile;
+    cmd.m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
     cmd.m_nRMSTypeCode = m_RMS;
-    cmd.m_sSSHCfgFile = m_sSSHCfgFile;
+    cmd.m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
 
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdSUBMIT>(cmd);
