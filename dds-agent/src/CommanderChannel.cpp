@@ -244,3 +244,11 @@ void CCommanderChannel::deleteAgentUUIDFile() const
     // TODO: check error code
     unlink(sAgentUUIDFile.c_str());
 }
+
+void CCommanderChannel::onRemoteEndDissconnected()
+{
+    stop();
+    deleteAgentUUIDFile();
+    LOG(info) << "The Agent [" << m_id << "] exited.";
+    exit(EXIT_SUCCESS);
+}

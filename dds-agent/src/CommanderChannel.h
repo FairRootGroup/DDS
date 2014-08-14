@@ -16,7 +16,6 @@ namespace dds
         CCommanderChannel(boost::asio::io_service& _service);
 
         REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
-        REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CCommanderChannel)
@@ -44,6 +43,7 @@ namespace dds
         bool on_cmdSET_UUID(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG(const CProtocolMessage& _msg);
         bool on_cmdBINARY_DOWNLOAD_STAT_LOG(const CProtocolMessage& _msg);
+        void onRemoteEndDissconnected();
 
       private:
         void onHeaderRead();

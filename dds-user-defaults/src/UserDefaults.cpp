@@ -244,12 +244,9 @@ string CUserDefaults::getAgentUUIDFile()
 
 string CUserDefaults::getLogFile() const
 {
-    std::string sLogDir("$DDS_LOG_LOCATION");
-    smart_path(&sLogDir);
-    if (sLogDir.empty())
-    {
-        sLogDir = getDDSPath();
-    }
+    char* dds_log_location;
+    dds_log_location = getenv("DDS_LOG_LOCATION");
+    string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
     smart_append<std::string>(&sLogDir, '/');
     std::string sLogFile(sLogDir);
     sLogFile += "dds.log";

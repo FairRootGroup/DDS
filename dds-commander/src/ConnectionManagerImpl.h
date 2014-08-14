@@ -36,11 +36,22 @@ namespace dds
             m_signals.add(SIGQUIT);
 #endif // defined(SIGQUIT)
 
-            m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
+            m_signals.async_wait([this](boost::system::error_code /*ec*/, int signo)
                                  {
                                      // The server is stopped by cancelling all outstanding asynchronous
                                      // operations. Once all operations have finished the io_service::run()
                                      // call will exit.
+                                     LOG(MiscCommon::info) << "Received a signal: " << signo;
+                                     LOG(MiscCommon::info) << "Sopping DDS commander server";
+
+                                     // Send shutdown signal to all client connections.
+                                     for (const auto& v : m_channels)
+                                     {
+                                         CProtocolMessage msg;
+                                         msg.encode<cmdSHUTDOWN>();
+                                         v->pushMsg(msg);
+                                     }
+
                                      stop();
                                  });
         }
@@ -60,9 +71,7 @@ namespace dds
 
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
-                                                    {
-                    LOG(MiscCommon::info) << "Idle callback called";
-                });
+                                                    { LOG(MiscCommon::info) << "Idle callback called"; });
                 //
 
                 m_acceptor.listen();
