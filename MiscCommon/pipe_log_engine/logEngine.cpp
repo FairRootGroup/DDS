@@ -8,10 +8,12 @@
 #include <boost/bind.hpp>
 // MiscCommon
 #include "SysHelper.h"
+#include "Logger.h"
 // API
 #include <limits.h> // for PIPE_BUF
 //=============================================================================
 using namespace std;
+using namespace dds;
 using namespace MiscCommon;
 //=============================================================================
 CLogEngine::~CLogEngine()
@@ -145,7 +147,7 @@ void CLogEngine::thread_worker(int _fd, const string& _pipename)
 
         if (retval < 0)
         {
-            cerr << "Problem in the log engine: " << errno2str() << endl;
+            LOG(error) << "Problem in the log engine: " << errno2str();
             break;
         }
 
@@ -162,11 +164,10 @@ void CLogEngine::thread_worker(int _fd, const string& _pipename)
                 if (m_stopLogEngine && 1 == numread)
                     break;
                 if (numread > 0)
-                    cout << string(buf, numread);
+                    LOG(info) << string(buf, numread);
                 else
                     break;
             }
-            cout.flush();
         }
     }
 }

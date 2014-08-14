@@ -65,7 +65,7 @@ bool CWorker::runTask(ETaskType _param) const
             stringstream ss;
             ss << "-n" << m_rec->m_nWorkers;
             params.push_back(ss.str());
-            cmd = "$POD_LOCATION/bin/private/pod-ssh-submit-worker";
+            cmd = "$DDS_LOCATION/bin/private/pod-ssh-submit-worker";
             break;
         }
         case task_clean:
@@ -75,15 +75,15 @@ bool CWorker::runTask(ETaskType _param) const
             if (m_options.m_fastClean)
                 params.push_back("-f");
 
-            cmd = "$POD_LOCATION/bin/private/pod-ssh-clean-worker";
+            cmd = "$DDS_LOCATION/bin/private/pod-ssh-clean-worker";
             break;
         }
         case task_status:
-            cmd = "$POD_LOCATION/bin/private/pod-ssh-status-worker";
+            cmd = "$DDS_LOCATION/bin/private/pod-ssh-status-worker";
             break;
         case task_exec:
             params.push_back("-e " + m_options.m_scriptName);
-            cmd = "$POD_LOCATION/bin/private/pod-ssh-exec-worker";
+            cmd = "$DDS_LOCATION/bin/private/pod-ssh-exec-worker";
             break;
     }
 

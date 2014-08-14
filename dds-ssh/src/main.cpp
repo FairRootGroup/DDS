@@ -19,6 +19,7 @@
 #include "config.h"
 #include "worker.h"
 #include "Process.h"
+#include "logEngine.h"
 #include "local_types.h"
 #include "UserDefaults.h"
 #include "Logger.h"
@@ -30,7 +31,7 @@ using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
 //=============================================================================
-// const LPCSTR g_pipeName = ".dds_ssh_pipe";
+const LPCSTR g_pipeName = ".dds_ssh_pipe";
 typedef list<CWorker> workersList_t;
 typedef CThreadPool<CWorker, ETaskType> threadPool_t;
 //=============================================================================
@@ -190,8 +191,15 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    CLogEngine slog(vm.count("debug"));
     try
     {
+        // Collect workers list
+        string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
+        smart_append(&pipeName, '/');
+        pipeName += g_pipeName;
+        slog.start(pipeName);
+
         string configFile;
         if (!vm.count("config"))
         {
@@ -279,7 +287,7 @@ int main(int argc, char* argv[])
                 workers.push_back(wrk);
 
                 if (0 == rec->m_nWorkers)
-                    dynWrk = true; // user wants us to dynamicly decide on how many PROOF workers to create
+                    dynWrk = true; // user wants us to dynamicly decide on how many job slots to create
 
                 wrkCount += rec->m_nWorkers;
             }

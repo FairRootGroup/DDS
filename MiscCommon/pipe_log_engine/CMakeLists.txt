@@ -1,17 +1,6 @@
-#************************************************************************
+# Copyright 2014 GSI, Inc. All rights reserved.
 #
-# CMakeLists.txt
-# 
-# Anar Manafov A.Manafov@gsi.de
-# 
 #
-#        version number:    $LastChangedRevision$
-#        created by:        Anar Manafov
-#                           2011-03-07
-#        last changed by:   $LastChangedBy$ $LastChangedDate$
-#
-#        Copyright (c) 2011 GSI, Scientific Computing group. All rights reserved.
-#*************************************************************************
 project( pipe_log_engine )
 
 #
@@ -48,9 +37,18 @@ else (CMAKE_GENERATOR STREQUAL "Xcode")
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-    pipe_log_engine
-    ${Boost_libs_for_pipe_log} 
+	pipe_log_engine
+	dds-user-defaults-lib
+	${Boost_LOG_LIBRARY}
+	${Boost_LOG_SETUP_LIBRARY}
+	${Boost_libs_for_pipe_log} 
 )
+
+target_include_directories(pipe_log_engine
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
 
 install(TARGETS pipe_log_engine DESTINATION lib)
 

@@ -38,9 +38,10 @@ set( SRC_HDRS
 
 
 include_directories(
-    ${PROJECT_BINARY_DIR}/src
-    ${MiscCommon_LOCATION}
-    ${Boost_INCLUDE_DIRS} )
+	${PROJECT_BINARY_DIR}/src
+	${MiscCommon_LOCATION}
+	${MiscCommon_LOCATION}/pipe_log_engine
+	${Boost_INCLUDE_DIRS} )
 
 #
 # dds-ssh executable
@@ -55,6 +56,7 @@ target_link_libraries (
 	dds-ssh
 	dds-user-defaults-lib
 	dds_sys_files
+	pipe_log_engine
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_LOG_LIBRARY}
 	${Boost_LOG_SETUP_LIBRARY}

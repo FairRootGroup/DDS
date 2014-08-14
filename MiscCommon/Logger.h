@@ -30,7 +30,7 @@
 #include <fstream>
 
 // DDS
-#include "version.h"
+//#include "version.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
 
@@ -104,7 +104,7 @@ namespace MiscCommon
             std::string sLogDir(userDefaults.getOptions().m_server.m_logDir);
             smart_append<std::string>(&sLogDir, '/');
             std::string sLogFile(sLogDir);
-            sLogFile += std::string(PROJECT_NAME) + ".log";
+            sLogFile += /*std::string(PROJECT_NAME)*/expressions::attr<std::string>("Process") + ".log";
             smart_path<std::string>(&sLogFile);
 
             unsigned int rotationSize = userDefaults.getOptions().m_server.m_logRotationSize;

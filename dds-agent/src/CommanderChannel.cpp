@@ -7,6 +7,7 @@
 #include "CommanderChannel.h"
 #include "UserDefaults.h"
 #include "Process.h"
+#include "version.h"
 // BOOST
 #include <boost/crc.hpp>
 #include <boost/uuid/uuid.hpp>

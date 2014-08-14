@@ -100,7 +100,7 @@ namespace dds
             pid_t pidToKill(::getpid());
             if (pidToKill > 0 && MiscCommon::IsProcessExist(pidToKill))
             {
-                LOG(MiscCommon::log_stdout) << PROJECT_NAME << ": self exiting (" << pidToKill << ")...";
+                LOG(MiscCommon::log_stdout) << " self exiting (" << pidToKill << ")...";
                 // TODO: Maybe we need more validations of the process before
                 // sending a signal. We don't want to kill someone else.
                 kill(pidToKill, SIGTERM);
