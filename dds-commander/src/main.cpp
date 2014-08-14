@@ -6,6 +6,7 @@
 #include "Process.h"
 #include "ErrorCode.h"
 #include "ConnectionManager.h"
+#include "TestConnectionManager.h"
 #include "AgentChannel.h"
 #include "TestChannel.h"
 #include "BOOSTHelper.h"
@@ -124,7 +125,7 @@ int main(int argc, char* argv[])
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
-            CConnectionManager<CAgentChannel> server(options, io_service, endpoint);
+            CConnectionManager server(options, io_service, endpoint);
             server.start();
         }
         catch (exception& e)
@@ -272,7 +273,7 @@ int main(int argc, char* argv[])
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
-            CConnectionManager<CTestChannel> server(options, io_service, endpoint);
+            CTestConnectionManager server(options, io_service, endpoint);
             server.start();
         }
         catch (exception& e)
