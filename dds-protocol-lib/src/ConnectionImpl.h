@@ -142,15 +142,12 @@ namespace dds
 
         void pushMsg(const CProtocolMessage& _msg)
         {
-            m_io_service.post([this, _msg]()
-                              {
-                                  bool write_in_progress = !m_outputMessageQueue.empty();
-                                  m_outputMessageQueue.push_back(_msg);
-                                  if (!write_in_progress)
-                                  {
-                                      writeMessages();
-                                  }
-                              });
+            bool write_in_progress = !m_outputMessageQueue.empty();
+            m_outputMessageQueue.push_back(_msg);
+            if (!write_in_progress)
+            {
+                writeMessages();
+            }
         }
 
         template <ECmdType _cmd>
@@ -288,6 +285,7 @@ namespace dds
         {
             if (m_outputMessageQueue.empty())
                 return;
+
             LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
             boost::asio::async_write(
                 m_socket,
@@ -328,9 +326,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:
