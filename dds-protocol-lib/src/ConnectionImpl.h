@@ -328,7 +328,9 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              { m_socket.close(); });
+                              {
+                                  m_socket.close();
+                              });
         }
 
       private:
