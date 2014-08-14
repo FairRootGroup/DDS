@@ -30,16 +30,17 @@ namespace dds
 
       public:
         std::string getValueForKey(const std::string& _Key) const;
-        static std::string currentUDFile();
         static void printDefaults(std::ostream& _stream);
-        static std::string getDDSPath();
         const SDDSUserDefaultsOptions_t getOptions() const;
-        std::string getServerInfoFile();
-        std::string getWrkPkgDir();
-        std::string getWrkPkgPath();
-        std::string getWrkScriptPath();
-        std::string getUserEnvScript();
+        static std::string currentUDFile();
+        static std::string getDDSPath();
+        std::string getServerInfoFile() const;
+        std::string getWrkPkgDir() const;
+        std::string getWrkPkgPath() const;
+        std::string getWrkScriptPath() const;
+        std::string getUserEnvScript() const;
         static std::string getAgentUUIDFile();
+        std::string getLogFile() const;
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;

@@ -160,11 +160,25 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     // FIXME: send real LOG files.
     SBinaryAttachmentCmd cmd;
 
-    for (size_t i = 0; i < 12345; ++i)
+    //  for (size_t i = 0; i < 12345; ++i)
+    //  {
+    //      char c = rand() % 256;
+    //      cmd.m_fileData.push_back(c);
+    //  }
+
+    const string sLogFile(CUserDefaults::instance().getLogFile());
+    // LOG(MiscCommon::info) << "Reading an agent UUID file: " << sAgentUUIDFile;
+    ifstream f(sLogFile.c_str());
+    if (!f.is_open() || !f.good())
     {
-        char c = rand() % 256;
-        cmd.m_fileData.push_back(c);
+        string msg("Could not open an agent LOG file: ");
+        msg += sLogFile;
+        throw runtime_error(msg);
     }
+    f.seekg(0, std::ios::end);
+    cmd.m_fileData.reserve(f.tellg());
+    f.seekg(0, std::ios::beg);
+    cmd.m_fileData.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
     // Calculate CRC32 of the test file data
     boost::crc_32_type crc;

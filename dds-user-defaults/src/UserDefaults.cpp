@@ -10,6 +10,8 @@
 #include <boost/property_tree/ini_parser.hpp>
 // MiscCommon
 #include "FindCfgFile.h"
+// DDS
+#include "version.h"
 
 using namespace std;
 using namespace dds;
@@ -193,7 +195,7 @@ string CUserDefaults::getDDSPath()
     return sDDSPath;
 }
 
-string CUserDefaults::getServerInfoFile()
+string CUserDefaults::getServerInfoFile() const
 {
     const string sFileName("server_info.cfg");
     string sWrkDir(getValueForKey("server.work_dir"));
@@ -202,7 +204,7 @@ string CUserDefaults::getServerInfoFile()
     return (sWrkDir + sFileName);
 }
 
-string CUserDefaults::getWrkPkgDir()
+string CUserDefaults::getWrkPkgDir() const
 {
     string sSandboxDir;
     sSandboxDir = getValueForKey("server.sandbox_dir");
@@ -214,17 +216,17 @@ string CUserDefaults::getWrkPkgDir()
     return (sSandboxDir + "wrk/");
 }
 
-string CUserDefaults::getWrkPkgPath()
+string CUserDefaults::getWrkPkgPath() const
 {
     return (getWrkPkgDir() + "dds-worker");
 }
 
-string CUserDefaults::getWrkScriptPath()
+string CUserDefaults::getWrkScriptPath() const
 {
     return (getWrkPkgDir() + "DDSWorker.sh");
 }
 
-string CUserDefaults::getUserEnvScript()
+string CUserDefaults::getUserEnvScript() const
 {
     CFindCfgFile<std::string> cfg;
     cfg.SetOrder("$HOME/.DDS/user_worker_env.sh")("$DDS_LOCATION/etc/user_worker_env.sh");
@@ -238,4 +240,16 @@ string CUserDefaults::getAgentUUIDFile()
 {
     const string sFileName("dds-agent.client.id");
     return (getDDSPath() + sFileName);
+}
+
+string CUserDefaults::getLogFile() const
+{
+    // std::string sLogDir(m_options.m_server.m_logDir);
+    std::string sLogDir(CUserDefaults::getDDSPath());
+    smart_append<std::string>(&sLogDir, '/');
+    std::string sLogFile(sLogDir);
+    // sLogFile += std::string(PROJECT_NAME) + ".log";
+    sLogFile += "log.log";
+    smart_path<std::string>(&sLogFile);
+    return sLogFile;
 }

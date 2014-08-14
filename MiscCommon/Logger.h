@@ -101,11 +101,7 @@ namespace MiscCommon
 
             const dds::CUserDefaults& userDefaults = dds::CUserDefaults::instance();
 
-            std::string sLogDir(userDefaults.getOptions().m_server.m_logDir);
-            smart_append<std::string>(&sLogDir, '/');
-            std::string sLogFile(sLogDir);
-            sLogFile += /*std::string(PROJECT_NAME)*/expressions::attr<std::string>("Process") + ".log";
-            smart_path<std::string>(&sLogFile);
+            std::string sLogFile = userDefaults.getLogFile();
 
             unsigned int rotationSize = userDefaults.getOptions().m_server.m_logRotationSize;
             unsigned int severityLevel = userDefaults.getOptions().m_server.m_logSeverityLevel;

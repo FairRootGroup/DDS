@@ -8,6 +8,7 @@
 // BOOST
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/crc.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -15,6 +16,11 @@ using namespace std;
 
 void CAgentChannel::onHeaderRead()
 {
+}
+
+EAgentChannelType CAgentChannel::getType() const
+{
+    return m_type;
 }
 
 bool CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
@@ -34,7 +40,7 @@ bool CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
     else
     {
         m_isHandShakeOK = true;
-        m_type = ETalkToAgentType::UI;
+        m_type = EAgentChannelType::UI;
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
@@ -62,7 +68,7 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
     else
     {
         m_isHandShakeOK = true;
-        m_type = ETalkToAgentType::AGENT;
+        m_type = EAgentChannelType::AGENT;
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
@@ -173,8 +179,8 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
     SBinaryAttachmentCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
 
-    LOG(info) << "Recieved a cmdBINARY_ATTACHMENT_LOG [" << cmd
-              << "] command from : " << socket().remote_endpoint().address().to_string();
+    // LOG(info) << "Recieved a cmdBINARY_ATTACHMENT_LOG [" << cmd
+    //          << "] command from : " << socket().remote_endpoint().address().to_string();
 
     //    chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     //    chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
@@ -185,10 +191,34 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
 
     if (crc32.checksum() == cmd.m_crc32)
     {
-        // Do something if file is correctly downloaded
+        std::string sLogDir(CUserDefaults::getDDSPath() + "agent_logs");
+        smart_append<std::string>(&sLogDir, '/');
+        boost::filesystem::path dir(sLogDir);
+        if (!boost::filesystem::exists(dir) && !boost::filesystem::create_directories(dir))
+        {
+            string msg("Could not create directory " + sLogDir + " to save log files.");
+            throw runtime_error(msg);
+        }
+
+        const string logFileName(sLogDir + cmd.m_fileName);
+        LOG(MiscCommon::info) << "Saving an agent LOG file: " << logFileName;
+        ofstream f(logFileName.c_str());
+        if (!f.is_open() || !f.good())
+        {
+            string msg("Could not open an agent LOG file: ");
+            msg += logFileName;
+            throw runtime_error(msg);
+        }
+
+        for (const auto& v : cmd.m_fileData)
+        {
+            f << v;
+        }
     }
     else
     {
+        LOG(error) << "Recieved LOG file with wrong CRC32 checksum: " << crc32.checksum() << " instead of "
+                   << cmd.m_crc32;
     }
 
     // Form reply command

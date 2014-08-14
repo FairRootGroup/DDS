@@ -9,7 +9,7 @@
 
 namespace dds
 {
-    enum class ETalkToAgentType
+    enum class EAgentChannelType
     {
         UNDEFINED,
         AGENT,
@@ -21,7 +21,7 @@ namespace dds
         CAgentChannel(boost::asio::io_service& _service)
             : CConnectionImpl<CAgentChannel>(_service)
             , m_isHandShakeOK(false)
-            , m_type(ETalkToAgentType::UNDEFINED)
+            , m_type(EAgentChannelType::UNDEFINED)
         {
         }
 
@@ -42,6 +42,9 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_LOG, on_cmdBINARY_ATTACHMENT_LOG)
         END_MSG_MAP()
+
+      public:
+        EAgentChannelType getType() const;
 
       private:
         // Message Handlers
@@ -64,7 +67,7 @@ namespace dds
 
       private:
         bool m_isHandShakeOK;
-        ETalkToAgentType m_type;
+        EAgentChannelType m_type;
         boost::uuids::uuid m_id;
     };
 }
