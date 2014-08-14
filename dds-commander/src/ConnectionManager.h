@@ -154,6 +154,7 @@ namespace dds
 
         bool getLogHandler(const CProtocolMessage& _msg)
         {
+            // FIXME : temporary work around to get the working version.
             LOG(MiscCommon::debug) << "Call getLogHandler callback";
             for (const auto& v : m_channels)
             {

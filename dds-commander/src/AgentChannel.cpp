@@ -205,8 +205,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
         ofstream f(logFileName.c_str());
         if (!f.is_open() || !f.good())
         {
-            string msg("Could not open an agent LOG file: ");
-            msg += logFileName;
+            string msg("Could not open an agent LOG file: " + logFileName);
             throw runtime_error(msg);
         }
 
