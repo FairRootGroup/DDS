@@ -238,7 +238,12 @@ gzip -9 $ARC_NAME
 mv "$ARC_NAME.gz" $ARC_NAME
 
 # add payload to the wrk script
-$PRIVATE_TOOLS/dds-addpayload --uuencode $ARC_NAME "$DDS_WRK_SCRIPT_IN" "$DDS_WRK_SCRIPT_TMP"
+
+# UUENCODE
+#$PRIVATE_TOOLS/dds-addpayload --uuencode $ARC_NAME "$DDS_WRK_SCRIPT_IN" "$DDS_WRK_SCRIPT_TMP"
+# BINARY
+$PRIVATE_TOOLS/dds-addpayload --binary $ARC_NAME "$DDS_WRK_SCRIPT_IN" "$DDS_WRK_SCRIPT_TMP"
+
 if (( 0 != $? )); then
    echo "$TOOL_NAME: error: failed to add payload to the wrk script."
    return 1 

@@ -105,6 +105,7 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    add_custom_target( wn_bin
                       COMMAND -mkdir -p ${WN_PKG_DIR}
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
+		      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
 		      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
                       ####### <<<<<<
@@ -183,7 +184,8 @@ SET(DDS_BIN_FILES
 )
 
 SET(DDS_BIN_PRIVATE_FILES
-    ${CMAKE_SOURCE_DIR}/bin/private/dds-addpayload
+	${CMAKE_SOURCE_DIR}/bin/private/dds-addpayload
+	${CMAKE_SOURCE_DIR}/bin/private/dds-ssh-submit-worker
 )
 #
 # "etc" files

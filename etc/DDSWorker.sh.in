@@ -97,7 +97,7 @@ clean_up()
     # remove lock file
     rm -f $LOCK_FILE
     rm -f $PID_FILE
-    # remove pod-agent ID file
+    # remove dds-agent ID file
     rm -f $DDS_AGENT_ID_FILE
 
     logMsg "done cleaning up."
@@ -244,7 +244,7 @@ chmod +x $WD/dds-agent
 chmod +x $WD/dds-user-defaults
 
 user_defaults="$WD/dds-user-defaults"
-pod_agent="$WD/dds-agent"
+dds_agent="$WD/dds-agent"
 
 # check binary
 $dds_agent --version
@@ -278,7 +278,7 @@ do
    # we try for 10 times to detect/start xpd
    # it is needed in case when several DDS workers are started in the same time on one machine
 
-   $dds_agent&
+   $dds_agent start&
    # wait for dds-agent's process
    DDSAGENT_PID=$!
    wait $DDSAGENT_PID
