@@ -244,12 +244,15 @@ string CUserDefaults::getAgentUUIDFile()
 
 string CUserDefaults::getLogFile() const
 {
-    // std::string sLogDir(m_options.m_server.m_logDir);
-    std::string sLogDir(CUserDefaults::getDDSPath());
+    std::string sLogDir("$DDS_LOG_LOCATION");
+    smart_path(&sLogDir);
+    if (sLogDir.empty())
+    {
+        sLogDir = getDDSPath();
+    }
     smart_append<std::string>(&sLogDir, '/');
     std::string sLogFile(sLogDir);
-    // sLogFile += std::string(PROJECT_NAME) + ".log";
-    sLogFile += "log.log";
+    sLogFile += "dds.log";
     smart_path<std::string>(&sLogFile);
     return sLogFile;
 }

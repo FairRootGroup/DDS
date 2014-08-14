@@ -56,6 +56,9 @@ DDS_CFG=$(dds-user-defaults -p)
 if [ -z "$DDS_CFG" ]; then
    dds-user-defaults -d -c "$LOCAL_DDS/DDS.cfg"
 fi
+
+## set log directory for the server
+eval DDS_LOG_LOCATION=$(dds-user-defaults --key server.log_dir); export DDS_LOG_LOCATION
 #
 ## create working dir for custom locations
 #eval WORK_DIR=$(pod-user-defaults -V --key server.work_dir)

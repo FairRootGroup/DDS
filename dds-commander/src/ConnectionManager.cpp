@@ -21,8 +21,10 @@ CConnectionManager::~CConnectionManager()
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
     _newClient->registerMessageHandler(cmdGET_LOG,
-                                       [this](const CProtocolMessage& _msg)->bool
-                                       { return this->getLogHandler(_msg); });
+                                       [this](const CProtocolMessage& _msg) -> bool
+                                       {
+        return this->getLogHandler(_msg);
+    });
 }
 
 bool CConnectionManager::getLogHandler(const CProtocolMessage& _msg)

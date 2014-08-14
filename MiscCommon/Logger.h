@@ -30,7 +30,6 @@
 #include <fstream>
 
 // DDS
-//#include "version.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
 
