@@ -168,8 +168,8 @@ create_dir_hierarchy()
 #   create_dir "$WORK_DIR/etc"
 #   create_dir "$DDS_SRV_LOGDIR"
 #   # create workers' sandbox
-#   local dir=$(eval dirname $(dds-user-defaults --wrkscript))
-#   create_dir "$dir"
+   local dir=$(eval dirname $(dds-user-defaults --wrkscript))
+   create_dir "$dir"
    return 0
 }
 # ************************************************************************
