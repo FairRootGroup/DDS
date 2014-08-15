@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Copyright 2014 GSI, Inc. All rights reserved.
+#
+#
+#=============================================================================
+# ***** USAGE *****
+#=============================================================================
+usage() {
+    cat <<EOF
+DDS command line utility, which is used to submit a DDS worker via ssh. It's used by dds-ssh utility.
+   Copyright (C) 2010-2014 GSI.
+
+Usage: $(basename $0) [OPTION]
+     -i id			ID of the worker.
+     -l ssh login@host.fqdn 	SSH connection string.
+     -w dir      		Remote working directory.
+     -n X        		Desired number of workers.
+     -o SSH_Opt			Additinal SSH parameters.
+     -d				Verbose mode. Causes dds-ssh-submit-worker to print debugging messages about its progress.
+     -h          		Show summary of options.
+
+Report bugs to http://dds.gsi.de
+EOF
+}
+#=============================================================================
+# ***** OPTARG *****
+#=============================================================================
+WORKER_ID=""
+SSH_CON_STR=""
+RDIR=""
+NWORKERS=1
+SSHOPT=""
+DEBUG=""
+while getopts ":i:l:w:n:o:dh" opt; do
+  case $opt in
+  i)
+    WORKER_ID="$OPTARG"
+    ;;
+  l)
+    SSH_CON_STR="$OPTARG"
+    ;;
+  w) 
+    RDIR="$OPTARG"
+    ;;
+  n)
+    NWORKERS=$OPTARG
+    ;;
+  o)
+    SSHOPT="$OPTARG"
+    ;;
+  d)
+    DEBUG="YES"
+    ;;
+  h) 
+    usage
+    exit 0
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+
+if [ -z "$SSH_CON_STR" ]; then
+   usage
+   exit 1
+fi
+
+#=============================================================================
+# ***** VARS *****
+#=============================================================================
+TOOL_NAME="$(basename $0)"
+eval WORK_DIR=$(dds-user-defaults --key server.work_dir)
+eval WRK_S_L=$(dds-user-defaults --wrkscript)
+WRK_S_R="$(basename "$WRK_S_L") $NWORKERS"
+
+SSH_OPT_INT="-o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectionAttempts=5 -o FallBackToRsh=no -o PasswordAuthentication=no"
+SSH_CMD="ssh $SSH_OPT_INT -q $SSH_CON_STR $SSHOPT"
+#=============================================================================
+# ***** POD-SSH NAMED PIPE *****
+#=============================================================================
+# a dds-ssh communication pipe (log engine)
+eval pipe_dir="$WORK_DIR"
+pipe="$pipe_dir/.dds_ssh_pipe"
+if [[ ! -p $pipe ]]; then
+    echo "$TOOL_NAME error: dds-ssh log engine is not running"
+    exit 1
+fi
+#=============================================================================
+# ***** LOG *****
+#=============================================================================
+# function read input from stdin and write output to the stdout
+# caller must take care about where come stdin and where go stdout
+logMsgPipe() 
+{
+  while read data
+  do
+      logMsg "$data" 
+  done
+}
+logMsg()
+{
+# date format
+#RFC-2822:
+# *    www, dd mmm yyyy hh:mm:ss +zzzz
+#
+# Don't use date -R since it's a GNU specific implementation (doesn't work on Mac, for example)
+   if [ -n "$DEBUG" ]; then
+      echo -e "$WORKER_ID\t[$(date '+%a, %d %b %Y %T %z')]\t$1" > $pipe
+   fi
+}
+#=============================================================================
+# ***** MAIN *****
+#=============================================================================
+logMsg "$TOOL_NAME is started for $SSH_CON_STR (dir: $RDIR, nworkers: $NWORKERS, sshopt: $SSHOPT)"
+
+# check that the worker package is ready
+if [ ! -r $WRK_S_L ]; then
+   logMsg "$TOOL_NAME error: can't find DDS worker package \"$WRK_S_L\""
+   exit 1
+fi
+
+# send a worker package and worker's script
+# use rsync since it can automatically create a remote working dir
+rsync -aq -e "ssh $SSH_OPT_INT $SSHOPT" $WRK_S_L $SSH_CON_STR:$RDIR/ 2>&1 | logMsgPipe
+if (( ${PIPESTATUS[0]} != 0 )); then
+    logMsg "$TOOL_NAME error: failed to send worker's package"
+    exit 1
+fi
+
+# execute the worker script
+$SSH_CMD "nohup bash -c \"cd $RDIR && ./$WRK_S_R &> $RDIR/ssh_worker.log \" &> $RDIR/ssh_worker.log  < /dev/null &" 2>&1 | logMsgPipe
+if (( ${PIPESTATUS[0]} != 0 )); then
+    logMsg "$TOOL_NAME error: failed to start DDS worker"
+    exit 1
+fi
+
+exit 0
+
