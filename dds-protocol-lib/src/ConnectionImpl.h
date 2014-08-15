@@ -90,7 +90,6 @@ namespace dds
             , m_socket(_service)
             , m_started(false)
             , m_currentMsg()
-            , m_outputMessageQueue()
         {
         }
 
@@ -103,7 +102,6 @@ namespace dds
       public:
         typedef std::shared_ptr<T> connectionPtr_t;
         typedef std::vector<connectionPtr_t> connectionPtrVector_t;
-        typedef std::deque<CProtocolMessage> messageQueue_t;
 
       public:
         static connectionPtr_t makeNew(boost::asio::io_service& _service)
@@ -142,12 +140,7 @@ namespace dds
 
         void pushMsg(const CProtocolMessage& _msg)
         {
-            bool write_in_progress = !m_outputMessageQueue.empty();
-            m_outputMessageQueue.push_back(_msg);
-            if (!write_in_progress)
-            {
-                writeMessages();
-            }
+            writeMessage(_msg);
         }
 
         template <ECmdType _cmd>
@@ -160,12 +153,7 @@ namespace dds
 
         void syncPushMsg(const CProtocolMessage& _msg)
         {
-            bool write_in_progress = !m_outputMessageQueue.empty();
-            m_outputMessageQueue.push_back(_msg);
-            if (!write_in_progress)
-            {
-                syncWriteMessages();
-            }
+            syncWriteMessage(_msg);
         }
 
         template <ECmdType _cmd>
@@ -299,56 +287,30 @@ namespace dds
         }
 
       private:
-        void writeMessages()
+        void writeMessage(const CProtocolMessage& _msg)
         {
-            if (m_outputMessageQueue.empty())
-                return;
-
-            LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
-            boost::asio::async_write(
-                m_socket,
-                boost::asio::buffer(m_outputMessageQueue.front().data(), m_outputMessageQueue.front().length()),
-                [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
-                {
-                    writeHandler(_ec,
-                                 _bytesTransferred,
-                                 [this]()
-                                 { writeMessages(); });
-                });
+            LOG(MiscCommon::debug) << "Sending message: " << _msg.toString();
+            boost::asio::async_write(m_socket,
+                                     boost::asio::buffer(_msg.data(), _msg.length()),
+                                     [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
+                                     { writeHandler(_ec, _bytesTransferred); });
         }
 
-        void syncWriteMessages()
+        void syncWriteMessage(const CProtocolMessage& _msg)
         {
-            if (m_outputMessageQueue.empty())
-                return;
-
-            LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
-
+            LOG(MiscCommon::debug) << "Sending message: " << _msg.toString();
             boost::system::error_code ec;
             size_t bytesTransfered = boost::asio::write(
-                m_socket,
-                boost::asio::buffer(m_outputMessageQueue.front().data(), m_outputMessageQueue.front().length()),
-                boost::asio::transfer_all(),
-                ec);
+                m_socket, boost::asio::buffer(_msg.data(), _msg.length()), boost::asio::transfer_all(), ec);
 
-            writeHandler(ec,
-                         bytesTransfered,
-                         [this]()
-                         { syncWriteMessages(); });
+            writeHandler(ec, bytesTransfered);
         }
 
-        void writeHandler(boost::system::error_code _ec,
-                          std::size_t _bytesTransferred,
-                          std::function<void()> _recursiveFunction)
+        void writeHandler(boost::system::error_code _ec, std::size_t _bytesTransferred)
         {
             if (!_ec)
             {
-                LOG(MiscCommon::debug) << "Data successfully sent";
-                m_outputMessageQueue.pop_front();
-                if (!m_outputMessageQueue.empty())
-                {
-                    _recursiveFunction();
-                }
+                LOG(MiscCommon::debug) << "Data successfully sent: " << _bytesTransferred << " bytes transferred.";
             }
             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
             {
@@ -382,7 +344,6 @@ namespace dds
         boost::asio::ip::tcp::socket m_socket;
         bool m_started;
         CProtocolMessage m_currentMsg;
-        messageQueue_t m_outputMessageQueue;
 
       protected:
         std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;
