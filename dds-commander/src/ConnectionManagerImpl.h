@@ -45,14 +45,6 @@ namespace dds
                                      LOG(MiscCommon::info) << "Received a signal: " << signo;
                                      LOG(MiscCommon::info) << "Sopping DDS commander server";
 
-                                     // Send shutdown signal to all client connections.
-                                     for (const auto& v : m_channels)
-                                     {
-                                         CProtocolMessage msg;
-                                         msg.encode<cmdSHUTDOWN>();
-                                         v->pushMsg(msg);
-                                     }
-
                                      stop();
                                  });
         }
@@ -72,9 +64,7 @@ namespace dds
 
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
-                                                    {
-                    LOG(MiscCommon::info) << "Idle callback called";
-                });
+                                                    { LOG(MiscCommon::info) << "Idle callback called"; });
                 //
 
                 m_acceptor.listen();
@@ -103,6 +93,14 @@ namespace dds
         {
             try
             {
+                // Send shutdown signal to all client connections.
+                for (const auto& v : m_channels)
+                {
+                    CProtocolMessage msg;
+                    msg.encode<cmdSHUTDOWN>();
+                    v->syncPushMsg(msg);
+                }
+
                 m_acceptor.close();
                 m_acceptor.get_io_service().stop();
                 for (const auto& v : m_channels)

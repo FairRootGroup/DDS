@@ -158,6 +158,24 @@ namespace dds
             pushMsg(msg);
         }
 
+        void syncPushMsg(const CProtocolMessage& _msg)
+        {
+            bool write_in_progress = !m_outputMessageQueue.empty();
+            m_outputMessageQueue.push_back(_msg);
+            if (!write_in_progress)
+            {
+                syncWriteMessages();
+            }
+        }
+
+        template <ECmdType _cmd>
+        void syncPushMsg()
+        {
+            CProtocolMessage msg;
+            msg.encode<_cmd>();
+            syncPushMsg(msg);
+        }
+
         void registerMessageHandler(ECmdType _type, handlerFunction_t _handler)
         {
             m_registeredMessageHandlers.insert(std::pair<ECmdType, handlerFunction_t>(_type, _handler));
@@ -280,7 +298,7 @@ namespace dds
             });
         }
 
-      public:
+      private:
         void writeMessages()
         {
             if (m_outputMessageQueue.empty())
@@ -290,36 +308,66 @@ namespace dds
             boost::asio::async_write(
                 m_socket,
                 boost::asio::buffer(m_outputMessageQueue.front().data(), m_outputMessageQueue.front().length()),
-                [this](boost::system::error_code ec, std::size_t /*_bytesTransferred*/)
+                [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                 {
-                    if (!ec)
-                    {
-                        LOG(MiscCommon::debug) << "Data successfully sent";
-                        m_outputMessageQueue.pop_front();
-                        if (!m_outputMessageQueue.empty())
-                        {
-                            writeMessages();
-                        }
-                    }
-                    else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
-                    {
-                        LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
-                        // give a chance to child to execute something
-                        T* pThis = static_cast<T*>(this);
-                        pThis->onRemoteEndDissconnected();
-                    }
-                    else
-                    {
-                        // don't show error if service is closed
-                        if (m_started)
-                            LOG(MiscCommon::error) << "Error sending data: " << ec.message();
-                        else
-                            LOG(MiscCommon::info)
-                                << "The stop signal is received, aborting current operation and closing the connection."
-                                << ec.message();
-                        stop();
-                    }
+                    writeHandler(_ec,
+                                 _bytesTransferred,
+                                 [this]()
+                                 { writeMessages(); });
                 });
+        }
+
+        void syncWriteMessages()
+        {
+            if (m_outputMessageQueue.empty())
+                return;
+
+            LOG(MiscCommon::debug) << "Sending message: " << m_outputMessageQueue.front().toString();
+
+            boost::system::error_code ec;
+            size_t bytesTransfered = boost::asio::write(
+                m_socket,
+                boost::asio::buffer(m_outputMessageQueue.front().data(), m_outputMessageQueue.front().length()),
+                boost::asio::transfer_all(),
+                ec);
+
+            writeHandler(ec,
+                         bytesTransfered,
+                         [this]()
+                         { syncWriteMessages(); });
+        }
+
+        void writeHandler(boost::system::error_code _ec,
+                          std::size_t _bytesTransferred,
+                          std::function<void()> _recursiveFunction)
+        {
+            if (!_ec)
+            {
+                LOG(MiscCommon::debug) << "Data successfully sent";
+                m_outputMessageQueue.pop_front();
+                if (!m_outputMessageQueue.empty())
+                {
+                    _recursiveFunction();
+                }
+            }
+            else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
+            {
+                LOG(MiscCommon::debug) << "The session was disconnected by the remote end.";
+                // give a chance to child to execute something
+                T* pThis = static_cast<T*>(this);
+                pThis->onRemoteEndDissconnected();
+            }
+            else
+            {
+                // don't show error if service is closed
+                if (m_started)
+                    LOG(MiscCommon::error) << "Error sending data: " << _ec.message();
+                else
+                    LOG(MiscCommon::info)
+                        << "The stop signal is received, aborting current operation and closing the connection."
+                        << _ec.message();
+                stop();
+            }
         }
 
       private:
