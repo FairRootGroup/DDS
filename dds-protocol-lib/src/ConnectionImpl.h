@@ -123,6 +123,12 @@ namespace dds
 
             m_started = true;
             readHeader();
+
+            // Prepare a hand shake message
+            SVersionCmd cmd;
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
+            pushMsg(msg);
         }
 
         void stop()
@@ -178,7 +184,7 @@ namespace dds
                                        {
                 if (!ec)
                 {
-                    // give a chance to child to execute something
+                    // give a chance child to execute something
                     T* pThis = static_cast<T*>(this);
                     pThis->onConnected();
 
@@ -187,7 +193,7 @@ namespace dds
                 }
                 else
                 {
-                    // give a chance to child to execute something
+                    // give a chance child to execute something
                     T* pThis = static_cast<T*>(this);
                     pThis->onFailedToConnect();
                 }
@@ -200,7 +206,6 @@ namespace dds
                                     boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length),
                                     [this](boost::system::error_code ec, std::size_t length)
                                     {
-
                 if (!ec)
                 {
                     LOG(MiscCommon::debug) << "readHeader received: " << length << " bytes, expected "
@@ -229,7 +234,7 @@ namespace dds
                         LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
                     else
                         LOG(MiscCommon::info)
-                            << "The stop signal is received, aborting current operation and closing the connection."
+                            << "The stop signal is received, aborting current operation and closing the connection: "
                             << ec.message();
 
                     stop();
@@ -279,7 +284,7 @@ namespace dds
                         LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
                     else
                         LOG(MiscCommon::info)
-                            << "The stop signal is received, aborting current operation and closing the connection."
+                            << "The stop signal is received, aborting current operation and closing the connection: "
                             << ec.message();
                     stop();
                 }
@@ -326,7 +331,7 @@ namespace dds
                     LOG(MiscCommon::error) << "Error sending data: " << _ec.message();
                 else
                     LOG(MiscCommon::info)
-                        << "The stop signal is received, aborting current operation and closing the connection."
+                        << "The stop signal is received, aborting current operation and closing the connection: "
                         << _ec.message();
                 stop();
             }

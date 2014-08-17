@@ -44,6 +44,7 @@ namespace dds
         // On connection handles
         void onConnected()
         {
+            LOG(MiscCommon::info) << "Connected to the commander server";
         }
         void onFailedToConnect()
         {

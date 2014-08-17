@@ -168,12 +168,6 @@ int main(int argc, char* argv[])
             CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
             client->connect(iterator);
 
-            // Prepare a hand shake message
-            SVersionCmd cmd;
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
-            client->pushMsg(msg);
-
             client->setTopoFile(options.m_sTopoFile);
             client->setSSHCfgFile(options.m_sSSHCfgFile);
             client->setRMSTypeCode(options.m_RMS);
@@ -208,12 +202,6 @@ int main(int argc, char* argv[])
             client->setNeedCommanderPid(options.m_needCommanderPid);
             client->connect(iterator);
 
-            // Prepare a hand shake message
-            SVersionCmd cmd;
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
-            client->pushMsg(msg);
-
             io_service.run();
         }
         // Checking for the "getlog" command
@@ -241,12 +229,6 @@ int main(int argc, char* argv[])
 
             CGetLogChannel::connectionPtr_t client = CGetLogChannel::makeNew(io_service);
             client->connect(iterator);
-
-            // Prepare a hand shake message
-            SVersionCmd cmd;
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
-            client->pushMsg(msg);
 
             io_service.run();
         }
