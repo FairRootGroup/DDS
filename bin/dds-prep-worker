@@ -251,8 +251,8 @@ fi
 
 # update WN submit timestampt
 regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\1$(date +%s)/g"
-LANG=C # to silence: "sed: RE error: illegal byte sequence"
-sed -e "$regexpr_wn_submit_time" $DDS_WRK_SCRIPT_TMP > "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp"
+# LANG is to silence: "sed: RE error: illegal byte sequence"
+LANG=C LC_ALL=C sed -e "$regexpr_wn_submit_time" $DDS_WRK_SCRIPT_TMP > "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp"
 mv "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp" $DDS_WRK_SCRIPT_TMP 
 
 # copy worker script to the sandbox directory
