@@ -298,7 +298,9 @@ namespace dds
             boost::asio::async_write(m_socket,
                                      boost::asio::buffer(_msg.data(), _msg.length()),
                                      [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
-                                     { writeHandler(_ec, _bytesTransferred); });
+                                     {
+                writeHandler(_ec, _bytesTransferred);
+            });
         }
 
         void syncWriteMessage(const CProtocolMessage& _msg)
@@ -341,7 +343,9 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              { m_socket.close(); });
+                              {
+                                  m_socket.close();
+                              });
         }
 
       private:

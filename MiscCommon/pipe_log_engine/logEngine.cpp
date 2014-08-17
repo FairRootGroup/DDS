@@ -147,7 +147,8 @@ void CLogEngine::thread_worker(int _fd, const string& _pipename)
 
         if (retval < 0)
         {
-            LOG(error) << "Problem in the log engine: " << errno2str();
+            LOG(error) << "pipe log engine: "
+                       << "Problem in the log engine: " << errno2str();
             break;
         }
 
@@ -164,7 +165,7 @@ void CLogEngine::thread_worker(int _fd, const string& _pipename)
                 if (m_stopLogEngine && 1 == numread)
                     break;
                 if (numread > 0)
-                    LOG(info) << string(buf, numread);
+                    LOG(info) << "pipe log engine: " << string(buf, numread);
                 else
                     break;
             }

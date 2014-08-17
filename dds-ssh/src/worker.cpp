@@ -100,7 +100,7 @@ bool CWorker::exec_command(const string& _cmd, const StringVector_t& _params) co
     }
     catch (exception& e)
     {
-        log("Failed to process the task.\n");
+        log(string("Failed to process the task: ") + e.what());
         return false;
     }
     if (!outPut.empty())
