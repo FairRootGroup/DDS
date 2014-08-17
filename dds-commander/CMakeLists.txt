@@ -43,8 +43,8 @@ set( SOURCE_FILES
 set( HEADER_FILES
 	./src/Options.h
 	./src/ConnectionManager.h
-    ./src/ConnectionManagerImpl.h
-    ./src/TestConnectionManager.h
+	./src/ConnectionManagerImpl.h
+	./src/TestConnectionManager.h
 	./src/AgentChannel.h
 	./src/SubmitChannel.h
 	./src/InfoChannel.h
@@ -80,7 +80,7 @@ target_link_libraries (
 	${Boost_LOG_LIBRARY}
 	${Boost_LOG_SETUP_LIBRARY}
 	${Boost_THREAD_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
+	${Boost_FILESYSTEM_LIBRARY}
 )
 
 target_include_directories(dds-commander

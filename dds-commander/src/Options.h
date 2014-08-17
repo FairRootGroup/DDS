@@ -41,13 +41,11 @@ namespace dds
             cmd_stop,
             cmd_status,
             cmd_submit,
-            cmd_info,
             cmd_getlog,
             cmd_test
         };
         SOptions()
             : m_Command(cmd_start)
-            , m_needCommanderPid(false)
             , m_RMS(SSubmitCmd::SSH)
         {
         }
@@ -62,8 +60,6 @@ namespace dds
                 return cmd_status;
             if ("submit" == _name)
                 return cmd_submit;
-            if ("info" == _name)
-                return cmd_info;
             if ("getlog" == _name)
                 return cmd_getlog;
             if ("test" == _name)
@@ -108,9 +104,6 @@ namespace dds
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
         options.add_options()(
-            "commanderPid",
-            "Return the pid of the commander server. The option can only be used with the \"info\" command");
-        options.add_options()(
             "command",
             bpo::value<std::string>(),
             "The command is a name of dds-commander command."
@@ -122,7 +115,6 @@ namespace dds
             "   stop: \tStop dds-commander daemon\n"
             "   status: \tQuery current status of dds-command daemon\n"
             "   submit: \tSubmit a topology to a defined RMS\n"
-            "   info: \tThe info command can be used to request different kinds of information from DDS.\n"
             "   getlog: \tGet logs from agents.\n");
 
         //...positional
@@ -171,12 +163,6 @@ namespace dds
                                                 << "\n\n" << options;
                     return false;
                 }
-            }
-
-            if (SOptions::cmd_info == SOptions::getCommandByName(vm["command"].as<std::string>()) &&
-                vm.count("commanderPid"))
-            {
-                _options->m_needCommanderPid = true;
             }
         }
         else
