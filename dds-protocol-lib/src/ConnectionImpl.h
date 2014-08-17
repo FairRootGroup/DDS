@@ -123,12 +123,6 @@ namespace dds
 
             m_started = true;
             readHeader();
-
-            // Prepare a hand shake message
-            SVersionCmd cmd;
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
-            pushMsg(msg);
         }
 
         void stop()
@@ -190,6 +184,12 @@ namespace dds
 
                     // start the communication channel
                     start();
+
+                    // Prepare a hand shake message
+                    SVersionCmd cmd;
+                    CProtocolMessage msg;
+                    msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
+                    pushMsg(msg);
                 }
                 else
                 {
