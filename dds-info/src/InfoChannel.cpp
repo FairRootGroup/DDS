@@ -42,7 +42,7 @@ bool CInfoChannel::on_cmdREPLY_PID(const CProtocolMessage& _msg)
     if (m_bNeedDDSStatus)
     {
         if (!cmd.m_sMsg.empty())
-            LOG(log_stdout_clean) << " DDS commander server process (" << cmd.m_sMsg << ") is running...";
+            LOG(log_stdout_clean) << "DDS commander server process (" << cmd.m_sMsg << ") is running...";
         else
             LOG(log_stdout_clean) << "DDS commander server is not running.";
     }
