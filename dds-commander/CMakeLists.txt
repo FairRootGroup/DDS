@@ -32,7 +32,6 @@ set( SOURCE_FILES
 	./src/TestConnectionManager.cpp
 	./src/AgentChannel.cpp
 	./src/TestChannel.cpp
-	./src/GetLogChannel.cpp
 )
 
 #
@@ -45,7 +44,6 @@ set( HEADER_FILES
 	./src/TestConnectionManager.h
 	./src/AgentChannel.h
 	./src/TestChannel.h
-	./src/GetLogChannel.h
 )
 
 include_directories(

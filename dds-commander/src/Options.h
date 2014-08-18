@@ -25,7 +25,6 @@ namespace dds
             cmd_unknown,
             cmd_start,
             cmd_stop,
-            cmd_getlog,
             cmd_test
         };
         SOptions()
@@ -40,8 +39,6 @@ namespace dds
                 return cmd_start;
             if ("stop" == _name)
                 return cmd_stop;
-            if ("getlog" == _name)
-                return cmd_getlog;
             if ("test" == _name)
                 return cmd_test;
 
@@ -81,8 +78,7 @@ namespace dds
             " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
             "Commands:\n"
             "   start: \tStart dds-commander daemon\n"
-            "   stop: \tStop dds-commander daemon\n"
-            "   getlog: \tGet logs from agents.\n");
+            "   stop: \tStop dds-commander daemon\n");
 
         //...positional
         bpo::positional_options_description pd;
