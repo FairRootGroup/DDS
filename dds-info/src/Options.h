@@ -21,14 +21,13 @@ namespace dds
     typedef struct SOptions
     {
         SOptions()
-            : m_needCommanderPid(false)
+            : m_bNeedCommanderPid(false)
+            , m_bNeedDDSStatus(false)
         {
         }
 
-        std::string m_sTopoFile;
-        bool m_needCommanderPid;
-        SSubmitCmd::ERmsType m_RMS;
-        std::string m_sSSHCfgFile;
+        bool m_bNeedCommanderPid;
+        bool m_bNeedDDSStatus;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -51,6 +50,7 @@ namespace dds
         options.add_options()(
             "commanderPid",
             "Return the pid of the commander server. The option can only be used with the \"info\" command");
+        options.add_options()("status", "Query current status of DDS commander server\n");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -70,7 +70,11 @@ namespace dds
 
         if (vm.count("commanderPid"))
         {
-            _options->m_needCommanderPid = true;
+            _options->m_bNeedCommanderPid = true;
+        }
+        else if (vm.count("status"))
+        {
+            _options->m_bNeedDDSStatus = true;
         }
         else
         {

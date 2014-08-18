@@ -34,6 +34,10 @@ namespace dds
         {
             m_bNeedCommanderPid = _val;
         }
+        void setNeedDDSStatus(bool _val = true)
+        {
+            m_bNeedDDSStatus = _val;
+        }
 
       private:
         // Message Handlers
@@ -54,6 +58,7 @@ namespace dds
       private:
         bool m_isHandShakeOK;
         bool m_bNeedCommanderPid;
+        bool m_bNeedDDSStatus;
     };
 }
 

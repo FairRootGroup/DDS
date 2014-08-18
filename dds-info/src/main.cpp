@@ -68,14 +68,19 @@ int main(int argc, char* argv[])
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
         CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_service);
-        client->setNeedCommanderPid(options.m_needCommanderPid);
+        client->setNeedCommanderPid(options.m_bNeedCommanderPid);
+        client->setNeedDDSStatus(options.m_bNeedDDSStatus);
         client->connect(iterator);
 
         io_service.run();
     }
     catch (exception& e)
     {
-        LOG(log_stderr) << e.what();
+        if (options.m_bNeedDDSStatus)
+        {
+            LOG(log_stdout_clean) << "DDS commander server is not running.";
+        }
+        LOG(error) << e.what();
         return EXIT_FAILURE;
     }
 

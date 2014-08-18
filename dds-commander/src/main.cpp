@@ -59,22 +59,6 @@ int main(int argc, char* argv[])
     string pidfile_name(sWorkDir);
     pidfile_name += "dds-commander.pid";
 
-    // Checking for "status" option
-    if (SOptions_t::cmd_status == options.m_Command)
-    {
-        pid_t pid = CPIDFile::GetPIDFromFile(pidfile_name);
-        if (pid > 0 && IsProcessExist(pid))
-        {
-            LOG(log_stdout) << " process (" << pid << ") is running...";
-        }
-        else
-        {
-            LOG(log_stdout) << " is not running...";
-        }
-
-        return EXIT_SUCCESS;
-    }
-
     // Checking for "stop" option
     if (SOptions_t::cmd_stop == options.m_Command)
     {

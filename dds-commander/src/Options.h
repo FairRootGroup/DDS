@@ -39,7 +39,6 @@ namespace dds
             cmd_unknown,
             cmd_start,
             cmd_stop,
-            cmd_status,
             cmd_submit,
             cmd_getlog,
             cmd_test
@@ -56,8 +55,6 @@ namespace dds
                 return cmd_start;
             if ("stop" == _name)
                 return cmd_stop;
-            if ("status" == _name)
-                return cmd_status;
             if ("submit" == _name)
                 return cmd_submit;
             if ("getlog" == _name)
@@ -113,7 +110,6 @@ namespace dds
             "Commands:\n"
             "   start: \tStart dds-commander daemon\n"
             "   stop: \tStop dds-commander daemon\n"
-            "   status: \tQuery current status of dds-command daemon\n"
             "   submit: \tSubmit a topology to a defined RMS\n"
             "   getlog: \tGet logs from agents.\n");
 
