@@ -143,6 +143,7 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
 {
     // re-create the worker package if needed
     string out;
+    string err;
     try
     {
         // invoking a new bash process can in some case overwrite env. vars
@@ -162,13 +163,13 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
         params.push_back("-c");
         params.push_back(arg);
         // 10 sec time-out for this command
-        do_execv("/bin/bash", params, 10, &out);
+        do_execv("/bin/bash", params, 10, &out, &err);
     }
     catch (exception& e)
     {
-        string msg("Can't create DDS worker package: ");
-        msg += out;
-        throw runtime_error(msg);
+        stringstream ss;
+        ss << "Can't create DDS worker package:\nSTDOUT:" << out << ";\n STDERR: " << err;
+        throw runtime_error(ss.str());
     }
     if (_cmdOutput)
         *_cmdOutput = out;
@@ -179,7 +180,11 @@ int main(int argc, char* argv[])
     Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
 
-    LOG(info) << "test";
+    vector<std::string> arguments(argv + 1, argv + argc);
+    ostringstream ss;
+    copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
+    LOG(info) << "Starting with arguments: " << ss.str();
+
     bpo::variables_map vm;
     try
     {

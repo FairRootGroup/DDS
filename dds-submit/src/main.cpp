@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     vector<std::string> arguments(argv + 1, argv + argc);
     ostringstream ss;
     copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-    LOG(info) << "Starting dds-commander with arguments: " << ss.str();
+    LOG(info) << "Starting with arguments: " << ss.str();
 
     // Command line parser
     SOptions_t options;
