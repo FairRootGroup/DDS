@@ -1,7 +1,7 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-commander )
+project( dds-submit )
 
 #
 # Where to lookup modules
@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # configure files
 # 
-configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BINARY_DIR}/version.h @ONLY )
+configure_file( ${dds-submit_SOURCE_DIR}/src/version.h.in ${dds-submit_BINARY_DIR}/version.h @ONLY )
 
 #
 # API Docs
@@ -27,12 +27,7 @@ configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BIN
 #
 set( SOURCE_FILES
 	./src/main.cpp
-	./src/ConnectionManager.cpp
-	./src/ConnectionManagerImpl.cpp
-	./src/TestConnectionManager.cpp
-	./src/AgentChannel.cpp
-	./src/TestChannel.cpp
-	./src/GetLogChannel.cpp
+	./src/SubmitChannel.cpp
 )
 
 #
@@ -40,16 +35,11 @@ set( SOURCE_FILES
 #
 set( HEADER_FILES
 	./src/Options.h
-	./src/ConnectionManager.h
-	./src/ConnectionManagerImpl.h
-	./src/TestConnectionManager.h
-	./src/AgentChannel.h
-	./src/TestChannel.h
-	./src/GetLogChannel.h
+	./src/SubmitChannel.h
 )
 
 include_directories(
-	${dds-commander_BINARY_DIR}
+	${dds-submit_BINARY_DIR}
 	${MiscCommon_LOCATION}
 	${Boost_INCLUDE_DIRS} 
 )
@@ -58,18 +48,17 @@ include_directories(
 # dds-commander executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-commander ${SOURCE_FILES} ${HEADER_FILES})
+    add_executable(dds-submit ${SOURCE_FILES} ${HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-commander ${SOURCE_FILES})
+    add_executable(dds-submit ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 #message(STATUS "LOG_LIBRARY=${Boost_LOG_LIBRARY}")
 #message(STATUS "FILESYSTEM_LIBRARY=${Boost_FILESYSTEM_LIBRARY}")
 
 target_link_libraries (
-	dds-commander
+	dds-submit
 	dds-user-defaults-lib
-	dds-topology
 	dds-protocol-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
@@ -79,23 +68,21 @@ target_link_libraries (
 	${Boost_FILESYSTEM_LIBRARY}
 )
 
-target_include_directories(dds-commander
+target_include_directories(dds-submit
 	PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
-	PRIVATE
-		$<TARGET_PROPERTY:dds-topology,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
 		$<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-install(TARGETS dds-commander DESTINATION bin)
+install(TARGETS dds-submit DESTINATION bin)
 
 #
 # Unit tests
 #
 #if (BUILD_TESTS)
-#    message (STATUS "Build dds-commander unit tests - YES")
-#    add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests ) 
+#    message (STATUS "Build dds-submit unit tests - YES")
+#    add_subdirectory ( ${dds-submit_SOURCE_DIR}/tests ) 
 #else (BUILD_TESTS)
-#    message (STATUS "Build dds-commander unit tests - NO")
+#    message (STATUS "Build dds-submmit unit tests - NO")
 #endif (BUILD_TESTS)

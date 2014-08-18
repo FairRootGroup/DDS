@@ -8,7 +8,8 @@
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
-#include "InfoChannel.h"
+#include "SubmitChannel.h"
+#include "Options.h"
 #include "INet.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
@@ -28,7 +29,7 @@ int main(int argc, char* argv[])
     vector<std::string> arguments(argv + 1, argv + argc);
     ostringstream ss;
     copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-    LOG(info) << "Starting dds-info with arguments: " << ss.str();
+    LOG(info) << "Starting dds-commander with arguments: " << ss.str();
 
     // Command line parser
     SOptions_t options;
@@ -56,8 +57,7 @@ int main(int argc, char* argv[])
         const string sHost(pt.get<string>("server.host"));
         const string sPort(pt.get<string>("server.port"));
 
-        // TODO: show this only with verbosity flag switched on
-        //  LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
+        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
 
         boost::asio::io_service io_service;
 
@@ -66,20 +66,18 @@ int main(int argc, char* argv[])
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_service);
-        client->setNeedCommanderPid(options.m_bNeedCommanderPid);
-        client->setNeedDDSStatus(options.m_bNeedDDSStatus);
+        CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
         client->connect(iterator);
+
+        client->setTopoFile(options.m_sTopoFile);
+        client->setSSHCfgFile(options.m_sSSHCfgFile);
+        client->setRMSTypeCode(options.m_RMS);
 
         io_service.run();
     }
     catch (exception& e)
     {
-        if (options.m_bNeedDDSStatus)
-        {
-            LOG(log_stdout_clean) << "DDS commander server is not running.";
-        }
-        LOG(error) << e.what();
+        LOG(log_stderr) << e.what();
         return EXIT_FAILURE;
     }
 

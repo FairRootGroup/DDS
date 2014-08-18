@@ -12,8 +12,6 @@
 #include "BOOSTHelper.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
-#include "SubmitChannel.h"
-#include "InfoChannel.h"
 #include "GetLogChannel.h"
 #include "INet.h"
 // BOOST
@@ -22,7 +20,6 @@
 
 using namespace std;
 using namespace MiscCommon;
-namespace bpo = boost::program_options;
 using namespace dds;
 using boost::asio::ip::tcp;
 
@@ -126,40 +123,8 @@ int main(int argc, char* argv[])
 
     try
     {
-        // Checking for the "submit" command
-        if (SOptions_t::cmd_submit == options.m_Command)
-        {
-            // Read server info file
-            const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
-            LOG(info) << "Reading server info from: " << sSrvCfg;
-            if (sSrvCfg.empty())
-                throw runtime_error("Can't find server info file.");
-
-            boost::property_tree::ptree pt;
-            boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
-            const string sHost(pt.get<string>("server.host"));
-            const string sPort(pt.get<string>("server.port"));
-
-            LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
-
-            boost::asio::io_service io_service;
-
-            boost::asio::ip::tcp::resolver resolver(io_service);
-            boost::asio::ip::tcp::resolver::query query(sHost, sPort);
-
-            boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-
-            CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
-            client->connect(iterator);
-
-            client->setTopoFile(options.m_sTopoFile);
-            client->setSSHCfgFile(options.m_sSSHCfgFile);
-            client->setRMSTypeCode(options.m_RMS);
-
-            io_service.run();
-        }
         // Checking for the "getlog" command
-        else if (SOptions_t::cmd_getlog == options.m_Command)
+        if (SOptions_t::cmd_getlog == options.m_Command)
         {
             // Read server info file
             const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
