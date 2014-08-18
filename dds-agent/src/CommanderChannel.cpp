@@ -160,12 +160,6 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     // FIXME: send real LOG files.
     SBinaryAttachmentCmd cmd;
 
-    //  for (size_t i = 0; i < 12345; ++i)
-    //  {
-    //      char c = rand() % 256;
-    //      cmd.m_fileData.push_back(c);
-    //  }
-
     const string sLogFile(CUserDefaults::instance().getLogFile());
     // LOG(MiscCommon::info) << "Reading an agent UUID file: " << sAgentUUIDFile;
     ifstream f(sLogFile.c_str());

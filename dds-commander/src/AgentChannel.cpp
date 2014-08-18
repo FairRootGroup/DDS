@@ -212,6 +212,7 @@ bool CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
+    // Return false. This message will be processed by ConnectionManager.
     return false;
 }
 
@@ -219,12 +220,6 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
 {
     SBinaryAttachmentCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
-
-    // LOG(info) << "Recieved a cmdBINARY_ATTACHMENT_LOG [" << cmd
-    //          << "] command from : " << socket().remote_endpoint().address().to_string();
-
-    //    chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    //    chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
 
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
@@ -260,16 +255,6 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
         LOG(error) << "Recieved LOG file with wrong CRC32 checksum: " << crc32.checksum() << " instead of "
                    << cmd.m_crc32;
     }
-
-    // Form reply command
-    SBinaryDownloadStatCmd reply_cmd;
-    reply_cmd.m_recievedCrc32 = crc32.checksum();
-    reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
-    //    reply_cmd.m_downloadTime = downloadTime.count();
-
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT_LOG>(reply_cmd);
-    pushMsg(msg);
 
     return true;
 }
