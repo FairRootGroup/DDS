@@ -49,7 +49,7 @@
                 auto functions = m_registeredMessageHandlers.equal_range(currentCmd);                              \
                 for (auto it = functions.first; it != functions.second; ++it)                                      \
                 {                                                                                                  \
-                    it->second(_currentMsg);                                                                       \
+                    it->second(_currentMsg, this);                                                                 \
                 }                                                                                                  \
             }                                                                                                      \
         }                                                                                                          \
@@ -82,7 +82,7 @@ namespace dds
     template <class T>
     class CConnectionImpl : public boost::noncopyable
     {
-        typedef std::function<bool(const CProtocolMessage&)> handlerFunction_t;
+        typedef std::function<bool(const CProtocolMessage&, T*)> handlerFunction_t;
 
       protected:
         CConnectionImpl<T>(boost::asio::io_service& _service)
@@ -298,9 +298,7 @@ namespace dds
             boost::asio::async_write(m_socket,
                                      boost::asio::buffer(_msg.data(), _msg.length()),
                                      [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
-                                     {
-                writeHandler(_ec, _bytesTransferred);
-            });
+                                     { writeHandler(_ec, _bytesTransferred); });
         }
 
         void syncWriteMessage(const CProtocolMessage& _msg)
@@ -343,9 +341,7 @@ namespace dds
         void close()
         {
             m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+                              { m_socket.close(); });
         }
 
       private:

@@ -256,5 +256,8 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
                    << cmd.m_crc32;
     }
 
-    return true;
+    // Return false.
+    // Give possibility to further process this message.
+    // For example, send information to UI.
+    return false;
 }

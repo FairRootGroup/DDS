@@ -86,7 +86,7 @@ namespace dds
         { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
         { cmdREPLY_GET_UUID, NAME_TO_STRING(cmdREPLY_GET_UUID) },
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
-        { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) },
+        { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) }
     };
 
     //----------------------------------------------------------------------
@@ -115,7 +115,6 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT_LOG, SBinaryDownloadStatCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_GET_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
-
     //----------------------------------------------------------------------
 
     template <class _Owner>

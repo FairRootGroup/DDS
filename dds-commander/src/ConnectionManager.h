@@ -24,7 +24,10 @@ namespace dds
         void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
 
       private:
-        bool getLogHandler(const CProtocolMessage& _msg);
+        bool getLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool binaryAttachmentLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
+
+        CAgentChannel* m_uiChannel;
     };
 }
 #endif /* defined(__DDS__ConnectionManager__) */
