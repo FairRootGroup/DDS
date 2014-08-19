@@ -302,8 +302,10 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    add_dependencies( wn_bin_upload
                      wn_bin )
 
-endif(${CMAKE_VERSION} VERSION_GREATER 2.8.3)
 
+   INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
+
+endif(${CMAKE_VERSION} VERSION_GREATER 2.8.3)
 
 #
 # Package
