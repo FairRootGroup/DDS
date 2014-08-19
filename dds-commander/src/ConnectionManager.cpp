@@ -21,11 +21,15 @@ CConnectionManager::~CConnectionManager()
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
     _newClient->registerMessageHandler(cmdGET_LOG,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
-                                       { return this->getLogHandler(_msg, _channel); });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->getLogHandler(_msg, _channel);
+    });
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
-                                       { return this->binaryAttachmentLogHandler(_msg, _channel); });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->binaryAttachmentLogHandler(_msg, _channel);
+    });
 }
 
 bool CConnectionManager::getLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
