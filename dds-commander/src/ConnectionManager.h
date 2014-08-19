@@ -27,6 +27,9 @@ namespace dds
         bool getLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
         bool binaryAttachmentLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
 
+        // FIXME: Make it thread safe
+        size_t m_nofLogRequests;
+        size_t m_nofRecievedLogs;
         CAgentChannel* m_uiChannel;
     };
 }

@@ -169,6 +169,11 @@ namespace dds
             m_registeredMessageHandlers.insert(std::pair<ECmdType, handlerFunction_t>(_type, _handler));
         }
 
+        bool started()
+        {
+            return m_started;
+        }
+
       private:
         void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
         {

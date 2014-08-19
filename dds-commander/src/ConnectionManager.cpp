@@ -30,14 +30,16 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 
 bool CConnectionManager::getLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
-    // FIXME : temporary work around to get the working version.
+    m_nofLogRequests = 0;
+    m_nofRecievedLogs = 0;
     for (const auto& v : m_channels)
     {
-        if (v->getType() == EAgentChannelType::AGENT)
+        if (v->getType() == EAgentChannelType::AGENT && v->started())
         {
             CProtocolMessage msg;
             msg.encode<cmdGET_LOG>();
             v->pushMsg(msg);
+            m_nofLogRequests++;
         }
     }
     m_uiChannel = _channel;
@@ -46,10 +48,30 @@ bool CConnectionManager::getLogHandler(const CProtocolMessage& _msg, CAgentChann
 
 bool CConnectionManager::binaryAttachmentLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
+    // LOG(MiscCommon::debug) << "CConnectionManager::binaryAttachmentLogHandler";
+    SBinaryAttachmentCmd recieved_cmd;
+    recieved_cmd.convertFromData(_msg.bodyToContainer());
+
+    //  LOG(MiscCommon::debug) << "CConnectionManager::binaryAttachmentLogHandler " << recieved_cmd;
+
+    // Form reply command
+    SBinaryDownloadStatCmd cmd;
+    cmd.m_recievedCrc32 = 0; // crc32.checksum();
+    cmd.m_recievedFileSize = recieved_cmd.m_fileData.size();
+    cmd.m_downloadTime = 0;
 
     CProtocolMessage msg;
-    msg.encode<cmdGET_LOG>();
+    msg.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT_LOG>(cmd);
     m_uiChannel->pushMsg(msg);
+
+    //  LOG(MiscCommon::debug) << "CConnectionManager::binaryAttachmentLogHandler "
+    //                         << " sending response " << cmd;
+
+    m_nofRecievedLogs++;
+    if (m_nofRecievedLogs == m_nofLogRequests)
+    {
+        m_uiChannel->pushMsg<cmdALL_LOGS_RECIEVED>();
+    }
 
     return true;
 }
