@@ -152,8 +152,6 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
     LOG(info) << "Recieved a cmdREPLY_HOST_INFO [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    // pushMsg<cmdDISCONNECT>();
-
     return true;
 }
 
@@ -227,8 +225,11 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
 
     if (crc32.checksum() == cmd.m_crc32)
     {
-        std::string sLogDir(CUserDefaults::getDDSPath() + "agent_logs");
-        smart_append<std::string>(&sLogDir, '/');
+        const string sAgentLogDir("log/agents/");
+        string sLogDir(CUserDefaults::instance().getValueForKey("server.work_dir"));
+        smart_path(&sLogDir);
+        smart_append(&sLogDir, '/');
+        sLogDir += sAgentLogDir;
         boost::filesystem::path dir(sLogDir);
         if (!boost::filesystem::exists(dir) && !boost::filesystem::create_directories(dir))
         {
