@@ -23,11 +23,13 @@ namespace dds
         SOptions()
             : m_bNeedCommanderPid(false)
             , m_bNeedDDSStatus(false)
+            , m_bNeedAgentsNumber(false)
         {
         }
 
         bool m_bNeedCommanderPid;
         bool m_bNeedDDSStatus;
+        bool m_bNeedAgentsNumber;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -48,9 +50,10 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()(
-            "commanderPid",
+            "commander-pid",
             "Return the pid of the commander server. The option can only be used with the \"info\" command");
-        options.add_options()("status", "Query current status of DDS commander server\n");
+        options.add_options()("status", "Query current status of DDS commander server");
+        options.add_options()("agents-number,n", "Returns a number of active agents");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -68,14 +71,12 @@ namespace dds
             return false;
         }
 
-        if (vm.count("commanderPid"))
-        {
+        if (vm.count("commander-pid"))
             _options->m_bNeedCommanderPid = true;
-        }
         else if (vm.count("status"))
-        {
             _options->m_bNeedDDSStatus = true;
-        }
+        else if (vm.count("agents-number"))
+            _options->m_bNeedAgentsNumber = true;
         else
         {
             LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;

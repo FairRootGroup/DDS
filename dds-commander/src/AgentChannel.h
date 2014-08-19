@@ -32,13 +32,16 @@ namespace dds
         MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
         MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
         MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
-        // replay on the "submit" command request
+        //====> replay on the "submit" command request
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
-        // replay on the "info" command request
+        //====> replay on the "info" command request
         // - get pid of the commander server
         MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
+        // - get Agents Info command
+        MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
+
         MESSAGE_HANDLER(cmdBINARY_DOWNLOAD_STAT, on_cmdBINARY_DOWNLOAD_STAT)
-        MESSAGE_HANDLER(cmdREPLY_GET_UUID, on_cmdREPLY_GET_UUID)
+        MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_GET_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_LOG, on_cmdBINARY_ATTACHMENT_LOG)
         END_MSG_MAP()
@@ -57,6 +60,7 @@ namespace dds
         bool on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG(const CProtocolMessage& _msg);
         bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg);
+        bool on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

@@ -132,7 +132,7 @@ bool CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
     SUUIDCmd msg_cmd;
     msg_cmd.m_id = m_id;
     CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdREPLY_GET_UUID>(msg_cmd);
+    msg.encodeWithAttachment<cmdREPLY_UUID>(msg_cmd);
     pushMsg(msg);
 
     return true;

@@ -433,3 +433,34 @@ void SUUIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     copy(m_id.begin(), m_id.end(), back_inserter(*_data));
 }
+
+//----------------------------------------------------------------------
+
+void SAgentsInfoCmd::normalizeToLocal()
+{
+    m_nActiveAgents = inet::_normalizeRead16(m_nActiveAgents);
+}
+
+void SAgentsInfoCmd::normalizeToRemote()
+{
+    m_nActiveAgents = inet::_normalizeWrite16(m_nActiveAgents);
+}
+
+void SAgentsInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+{
+    if (_data.size() < size())
+    {
+        stringstream ss;
+        ss << "AgentsInfoCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
+        throw runtime_error(ss.str());
+    }
+
+    m_nActiveAgents = _data[0];
+    m_nActiveAgents += (_data[1] << 8);
+}
+
+void SAgentsInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+{
+    _data->push_back(m_nActiveAgents & 0xFF);
+    _data->push_back(m_nActiveAgents >> 8);
+}

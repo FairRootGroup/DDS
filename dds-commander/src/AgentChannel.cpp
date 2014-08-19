@@ -262,3 +262,13 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
     // For example, send information to UI.
     return false;
 }
+
+bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
+{
+    LOG(info) << "Recieved a cmdGET_AGENTS_INFO command from: " << socket().remote_endpoint().address().to_string();
+
+    // Return false.
+    // Give possibility to further process this message.
+    // For example, send information to UI.
+    return false;
+}

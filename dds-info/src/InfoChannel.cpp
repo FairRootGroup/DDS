@@ -17,6 +17,8 @@ bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     // ask the server what we wnated to ask :)
     if (m_bNeedCommanderPid || m_bNeedDDSStatus)
         pushMsg<cmdGED_PID>();
+    else if (m_bNeedAgentsNumber)
+        pushMsg<cmdGET_AGENTS_INFO>();
 
     return true;
 }
@@ -46,6 +48,19 @@ bool CInfoChannel::on_cmdREPLY_PID(const CProtocolMessage& _msg)
         else
             LOG(log_stdout_clean) << "DDS commander server is not running.";
     }
+
+    // Close communication channel
+    stop();
+    return true;
+}
+
+bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(const CProtocolMessage& _msg)
+{
+    SAgentsInfoCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+    LOG(debug) << "UI agent has recieved Agents Info from the commander server.";
+    if (m_bNeedAgentsNumber)
+        LOG(log_stdout_clean) << cmd.m_nActiveAgents;
 
     // Close communication channel
     stop();

@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
         CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_service);
         client->setNeedCommanderPid(options.m_bNeedCommanderPid);
         client->setNeedDDSStatus(options.m_bNeedDDSStatus);
+        client->setNeedAgentsNumber(options.m_bNeedAgentsNumber);
         client->connect(iterator);
 
         io_service.run();

@@ -28,6 +28,7 @@ namespace dds
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdREPLY_PID, on_cmdREPLY_PID)
+        MESSAGE_HANDLER(cmdREPLY_AGENTS_INFO, on_cmdREPLY_AGENTS_INFO)
         END_MSG_MAP()
 
         void setNeedCommanderPid(bool _val = true)
@@ -38,12 +39,17 @@ namespace dds
         {
             m_bNeedDDSStatus = _val;
         }
+        void setNeedAgentsNumber(bool _val = true)
+        {
+            m_bNeedAgentsNumber = _val;
+        }
 
       private:
         // Message Handlers
         bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
         bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
         bool on_cmdREPLY_PID(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_AGENTS_INFO(const CProtocolMessage& _msg);
 
         // On connection handles
         void onConnected()
@@ -59,6 +65,7 @@ namespace dds
         bool m_isHandShakeOK;
         bool m_bNeedCommanderPid;
         bool m_bNeedDDSStatus;
+        bool m_bNeedAgentsNumber;
     };
 }
 

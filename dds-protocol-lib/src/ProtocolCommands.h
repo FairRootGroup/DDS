@@ -57,10 +57,12 @@ namespace dds
         cmdBINARY_ATTACHMENT_LOG,    // attachment: SBinanryAttachmentCmd.
         cmdBINARY_DOWNLOAD_STAT_LOG, // attachment: SBinaryDownloadStatCmd.
         cmdGET_UUID,
-        cmdREPLY_GET_UUID, // attachment: SUUIDCmd
-        cmdSET_UUID,       // attachment: SUUIDCmd
+        cmdREPLY_UUID, // attachment: SUUIDCmd
+        cmdSET_UUID,   // attachment: SUUIDCmd
         cmdGET_LOG,
-        cmdALL_LOGS_RECIEVED
+        cmdALL_LOGS_RECIEVED,
+        cmdGET_AGENTS_INFO,
+        cmdREPLY_AGENTS_INFO // attachment: SAgentsInfoCmd
 
         // ----------- VERSION 2 --------------------
     };
@@ -85,10 +87,12 @@ namespace dds
         { cmdBINARY_ATTACHMENT_LOG, NAME_TO_STRING(cmdBINARY_ATTACHMENT_LOG) },
         { cmdBINARY_DOWNLOAD_STAT_LOG, NAME_TO_STRING(cmdBINARY_DOWNLOAD_STAT_LOG) },
         { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
-        { cmdREPLY_GET_UUID, NAME_TO_STRING(cmdREPLY_GET_UUID) },
+        { cmdREPLY_UUID, NAME_TO_STRING(cmdREPLY_GET_UUID) },
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
         { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) },
-        { cmdALL_LOGS_RECIEVED, NAME_TO_STRING(cmdALL_LOGS_RECIEVED) }
+        { cmdALL_LOGS_RECIEVED, NAME_TO_STRING(cmdALL_LOGS_RECIEVED) },
+        { cmdGET_AGENTS_INFO, NAME_TO_STRING(cmdGET_AGENTS_INFO) },
+        { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) }
     };
 
     //----------------------------------------------------------------------
@@ -99,6 +103,7 @@ namespace dds
     struct SBinaryAttachmentCmd;
     struct SBinaryDownloadStatCmd;
     struct SUUIDCmd;
+    struct SAgentsInfoCmd;
 
     template <typename A, ECmdType>
     struct validate_command_attachment;
@@ -115,8 +120,9 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT, SBinaryDownloadStatCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT_LOG, SBinaryAttachmentCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT_LOG, SBinaryDownloadStatCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_GET_UUID, SUUIDCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdREPLY_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdREPLY_AGENTS_INFO, SAgentsInfoCmd);
     //----------------------------------------------------------------------
 
     template <class _Owner>
@@ -477,6 +483,38 @@ namespace dds
     {
         _stream << _val.m_id;
         return _stream;
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SAgentsInfoCmd : public SBasicCmd<SAgentsInfoCmd>
+    {
+        SAgentsInfoCmd()
+            : m_nActiveAgents(0)
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            return sizeof(m_nActiveAgents);
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SAgentsInfoCmd& _val) const
+        {
+            return (m_nActiveAgents == _val.m_nActiveAgents);
+        }
+
+        uint16_t m_nActiveAgents;
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val)
+    {
+        return _stream << _val.m_nActiveAgents;
+    }
+    inline bool operator!=(const SAgentsInfoCmd& _lhs, const SAgentsInfoCmd& _rhs)
+    {
+        return !(_lhs == _rhs);
     }
 }
 

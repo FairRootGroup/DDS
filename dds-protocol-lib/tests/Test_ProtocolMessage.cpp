@@ -316,9 +316,9 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_UUID)
     SUUIDCmd cmd_src;
     cmd_src.m_id = id;
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdREPLY_GET_UUID>(cmd_src);
+    msg_src.encodeWithAttachment<cmdREPLY_UUID>(cmd_src);
 
-    BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_GET_UUID);
+    BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_UUID);
 
     BOOST_CHECK(cmd_src.size() == cmdSize);
 

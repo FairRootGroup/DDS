@@ -45,7 +45,7 @@ DDS_URL=" http://dds.gsi.de/releases/add"
 # ************************************************************************
 server_status()
 {
-   commander_pid=$(dds-info  --commanderPid  2>/dev/null)
+   commander_pid=$(dds-info  --commander-pid  2>/dev/null)
    if [ -n "$commander_pid" ]; then
       echo "DDS commander server: $commander_pid"
       return 0
@@ -200,7 +200,7 @@ _start()
 # ************************************************************************
 start() 
 {
-   local commander_pid=$(dds-info --commanderPid 2>/dev/null)
+   local commander_pid=$(dds-info --commander-pid 2>/dev/null)
    # don't need to do anything
    if [ -n "$commander_pid" ]; then
       echo "DDS Commander is running already."
@@ -253,7 +253,7 @@ stop()
 { 
    $DDS_LOCATION/bin/dds-commander stop
 
-   local commander_pid=$(dds-info --commanderPid 2>/dev/null)
+   local commander_pid=$(dds-info --commander-pid 2>/dev/null)
    
    if [ -z "$commander_pid" ]; then
       return 0
