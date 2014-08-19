@@ -99,9 +99,13 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    if(APPLE)
      set( lib_cmd "bash" )
      set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{ system( \"cp \" $1 \" ${WN_PKG_DIR}\") }'" )
+     # the log library needs a special handling as it depends on many other boost libraries
+     set( lib_cmd_args "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep boost | awk '{ system( \"cp \" $1 \" ${WN_PKG_DIR}\") }'" )
    elseif(UNIX)
      set( lib_cmd "bash" )
      set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
+     # the log library needs a special handling as it depends on many other boost libraries
+     set( lib_cmd_args "-c" "ldd ${Boost_LOG_LIBRARY} | grep boost | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
    endif(APPLE)
    
    add_custom_target( wn_bin
