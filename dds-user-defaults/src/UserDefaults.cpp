@@ -195,13 +195,33 @@ string CUserDefaults::getDDSPath()
     return sDDSPath;
 }
 
-string CUserDefaults::getServerInfoFile() const
+string CUserDefaults::getServerInfoFileLocationSrv() const
 {
-    const string sFileName("server_info.cfg");
+    const string sFileName(getServerInfoFileName());
     string sWrkDir(getValueForKey("server.work_dir"));
     smart_path(&sWrkDir);
     smart_append(&sWrkDir, '/');
     return (sWrkDir + sFileName);
+}
+
+string CUserDefaults::getServerInfoFileName() const
+{
+    return ("server_info.cfg");
+}
+
+string CUserDefaults::getServerInfoFileLocation() const
+{
+    const string sFileName(getServerInfoFileName());
+    CFindCfgFile<string> cfg;
+    const string p1("$DDS_LOCATION/" + sFileName);
+    const string p2(getServerInfoFileLocationSrv());
+
+    cfg.SetOrder(p1)(p2);
+    string val;
+    cfg.GetCfg(&val);
+
+    smart_path(&val);
+    return val;
 }
 
 string CUserDefaults::getWrkPkgDir() const

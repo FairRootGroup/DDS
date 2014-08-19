@@ -64,9 +64,7 @@ namespace dds
 
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
-                                                    {
-                    LOG(MiscCommon::info) << "Idle callback called";
-                });
+                                                    { LOG(MiscCommon::info) << "Idle callback called"; });
                 //
 
                 m_acceptor.listen();
@@ -146,7 +144,7 @@ namespace dds
 
         void createServerInfoFile() const
         {
-            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
+            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
             LOG(MiscCommon::info) << "Creating a server info file: " << sSrvCfg;
             std::ofstream f(sSrvCfg.c_str());
             if (!f.is_open() || !f.good())
@@ -169,7 +167,7 @@ namespace dds
 
         void deleteServerInfoFile() const
         {
-            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
+            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
             if (sSrvCfg.empty())
                 return;
 

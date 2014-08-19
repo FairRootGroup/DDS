@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     try
     {
         // Read server info file
-        const string sSrvCfg(CUserDefaults::instance().getServerInfoFile());
+        const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
         LOG(info) << "Reading server info from: " << sSrvCfg;
         if (sSrvCfg.empty())
             throw runtime_error("Can't find server info file.");

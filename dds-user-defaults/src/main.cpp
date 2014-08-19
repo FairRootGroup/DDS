@@ -162,7 +162,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     }
     if (vm.count("server-info-file"))
     {
-        cout << userDefaults.getServerInfoFile() << endl;
+        cout << userDefaults.getServerInfoFileLocation() << endl;
         return false;
     }
 
