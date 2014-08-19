@@ -30,6 +30,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 
 bool CConnectionManager::getLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
+    m_uiChannel = _channel;
     m_nofLogRequests = 0;
     m_nofRecievedLogs = 0;
     for (const auto& v : m_channels)
@@ -42,7 +43,6 @@ bool CConnectionManager::getLogHandler(const CProtocolMessage& _msg, CAgentChann
             m_nofLogRequests++;
         }
     }
-    m_uiChannel = _channel;
     return true;
 }
 
