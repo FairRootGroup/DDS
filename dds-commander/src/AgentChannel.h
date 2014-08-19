@@ -41,13 +41,15 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
 
         MESSAGE_HANDLER(cmdBINARY_DOWNLOAD_STAT, on_cmdBINARY_DOWNLOAD_STAT)
-        MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_GET_UUID)
+        MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_LOG, on_cmdBINARY_ATTACHMENT_LOG)
+        MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
         END_MSG_MAP()
 
       public:
         EAgentChannelType getType() const;
+        const boost::uuids::uuid& getId() const;
 
       private:
         // Message Handlers
@@ -57,10 +59,12 @@ namespace dds
         bool on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
         bool on_cmdGED_PID(const CProtocolMessage& _msg);
         bool on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg);
-        bool on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_UUID(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG(const CProtocolMessage& _msg);
         bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg);
         bool on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg);
+        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg);
+
         // On connection handles
         void onRemoteEndDissconnected()
         {

@@ -24,6 +24,11 @@ EAgentChannelType CAgentChannel::getType() const
     return m_type;
 }
 
+const boost::uuids::uuid& CAgentChannel::getId() const
+{
+    return m_id;
+}
+
 bool CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
 {
     SVersionCmd ver;
@@ -180,7 +185,7 @@ bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY_GET_UUID(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdREPLY_UUID(const CProtocolMessage& _msg)
 {
     SUUIDCmd cmd;
     cmd.convertFromData(_msg.bodyToContainer());
@@ -270,5 +275,17 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
     // Return false.
     // Give possibility to further process this message.
     // For example, send information to UI.
+    return false;
+}
+
+bool CAgentChannel::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg)
+{
+    SBinaryAttachmentCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a cmdGET_LOG_ERROR [" << cmd
+              << " ] command from: " << socket().remote_endpoint().address().to_string();
+
+    // Return false. This message will be processed by ConnectionManager.
     return false;
 }

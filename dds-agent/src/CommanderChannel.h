@@ -28,7 +28,6 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_UUID, on_cmdGET_UUID)
         MESSAGE_HANDLER(cmdSET_UUID, on_cmdSET_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
-        MESSAGE_HANDLER(cmdBINARY_DOWNLOAD_STAT_LOG, on_cmdBINARY_DOWNLOAD_STAT_LOG)
         END_MSG_MAP()
 
       private:
@@ -42,7 +41,6 @@ namespace dds
         bool on_cmdGET_UUID(const CProtocolMessage& _msg);
         bool on_cmdSET_UUID(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG(const CProtocolMessage& _msg);
-        bool on_cmdBINARY_DOWNLOAD_STAT_LOG(const CProtocolMessage& _msg);
         void onRemoteEndDissconnected();
 
       private:

@@ -157,16 +157,22 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
-    // FIXME: send real LOG files.
     SBinaryAttachmentCmd cmd;
 
     const string sLogFile(CUserDefaults::instance().getLogFile());
-    // LOG(MiscCommon::info) << "Reading an agent UUID file: " << sAgentUUIDFile;
     ifstream f(sLogFile.c_str());
     if (!f.is_open() || !f.good())
     {
         string msg("Could not open an agent LOG file: ");
         msg += sLogFile;
+
+        // Send error message
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = msg;
+        CProtocolMessage pm;
+        pm.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
+        syncPushMsg(pm);
+
         throw runtime_error(msg);
     }
     f.seekg(0, std::ios::end);
@@ -185,17 +191,6 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
     pushMsg(msg);
-
-    return true;
-}
-
-bool CCommanderChannel::on_cmdBINARY_DOWNLOAD_STAT_LOG(const CProtocolMessage& _msg)
-{
-    SBinaryDownloadStatCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
-
-    LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT_LOG [" << cmd
-              << "] command from: " << socket().remote_endpoint().address().to_string();
 
     return true;
 }

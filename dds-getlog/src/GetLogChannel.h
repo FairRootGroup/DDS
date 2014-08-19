@@ -23,15 +23,17 @@ namespace dds
       public:
         BEGIN_MSG_MAP(CGetLogChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
-        MESSAGE_HANDLER(cmdBINARY_DOWNLOAD_STAT_LOG, on_cmdBINARY_DOWNLOAD_STAT_LOG)
+        MESSAGE_HANDLER(cmdLOG_RECIEVED, on_cmdLOG_RECIEVED)
         MESSAGE_HANDLER(cmdALL_LOGS_RECIEVED, on_cmdALL_LOGS_RECIEVED)
+        MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
         END_MSG_MAP()
 
       private:
         // Message Handlers
         bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
-        bool on_cmdBINARY_DOWNLOAD_STAT_LOG(const CProtocolMessage& _msg);
+        bool on_cmdLOG_RECIEVED(const CProtocolMessage& _msg);
         bool on_cmdALL_LOGS_RECIEVED(const CProtocolMessage& _msg);
+        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

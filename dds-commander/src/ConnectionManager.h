@@ -8,6 +8,8 @@
 // DDS
 #include "ConnectionManagerImpl.h"
 #include "AgentChannel.h"
+// STD
+#include <mutex>
 
 namespace dds
 {
@@ -24,14 +26,39 @@ namespace dds
         void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
 
       private:
-        bool getLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool binaryAttachmentLogHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
         bool agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
 
-        // FIXME: Make it thread safe
-        size_t m_nofLogRequests;
-        size_t m_nofRecievedLogs;
-        CAgentChannel* m_uiChannel;
+        void checkAllRecieved();
+
+        struct SGetLogInfo
+        {
+            size_t nofRecieved() const
+            {
+                return (m_nofRecieved + m_nofRecievedErrors);
+            }
+
+            bool allRecieved() const
+            {
+                return (nofRecieved() == m_nofRequests);
+            }
+
+            void zeroCounters()
+            {
+                m_nofRequests = 0;
+                m_nofRecieved = 0;
+                m_nofRecievedErrors = 0;
+            }
+            size_t m_nofRequests;
+            size_t m_nofRecieved;
+            size_t m_nofRecievedErrors;
+            CAgentChannel* m_channel;
+            std::mutex m_mutex;
+        };
+
+        SGetLogInfo m_getLog;
     };
 }
 #endif /* defined(__DDS__ConnectionManager__) */
