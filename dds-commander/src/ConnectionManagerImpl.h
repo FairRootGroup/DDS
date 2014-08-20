@@ -5,15 +5,17 @@
 
 #ifndef __DDS__ConnectionManagerImpl__
 #define __DDS__ConnectionManagerImpl__
-// BOOST
-#include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
 // DDS
 #include "MonitoringThread.h"
 #include "Options.h"
+// STD
+#include <mutex>
+// BOOST
+#include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 
 #include "ProtocolMessage.h"
-#include "AgentChannel.h"
+//#include "AgentChannel.h"
 
 namespace dds
 {
@@ -123,8 +125,10 @@ namespace dds
             if (!_ec) // FIXME: Add proper error processing
             {
                 _client->start();
-                m_channels.push_back(_client);
-
+                {
+                    std::lock_guard<std::mutex> lock(m_mutex);
+                    m_channels.push_back(_client);
+                }
                 createClientAndStartAccept();
             }
             else
@@ -138,6 +142,12 @@ namespace dds
 
             A* pThis = static_cast<A*>(this);
             pThis->newClientCreated(newClient);
+
+            // Subscribe on dissconnect event
+            newClient->registerDissconnectEventHandler([this](T* _channel) -> void
+                                                       {
+                return this->removeClient(_channel);
+            });
 
             m_acceptor.async_accept(
                 newClient->socket(),
@@ -177,11 +187,25 @@ namespace dds
             unlink(sSrvCfg.c_str());
         }
 
+        void removeClient(T* _client)
+        {
+            LOG(MiscCommon::debug) << "Removing agent from the list of active";
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_channels.erase(remove_if(m_channels.begin(),
+                                       m_channels.end(),
+                                       [&](typename T::connectionPtr_t& i)
+                                       {
+                                 return (i.get() == _client);
+                             }),
+                             m_channels.end());
+        }
+
       private:
         boost::asio::ip::tcp::acceptor m_acceptor;
         boost::asio::ip::tcp::endpoint m_endpoint;
         /// The signal_set is used to register for process termination notifications.
         boost::asio::signal_set m_signals;
+        std::mutex m_mutex;
 
       protected:
         typename T::connectionPtrVector_t m_channels;

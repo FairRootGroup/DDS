@@ -83,6 +83,7 @@ namespace dds
     class CConnectionImpl : public boost::noncopyable
     {
         typedef std::function<bool(const CProtocolMessage&, T*)> handlerFunction_t;
+        typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
 
       protected:
         CConnectionImpl<T>(boost::asio::io_service& _service)
@@ -169,6 +170,11 @@ namespace dds
             m_registeredMessageHandlers.insert(std::pair<ECmdType, handlerFunction_t>(_type, _handler));
         }
 
+        void registerDissconnectEventHandler(handlerDisconnectEventFunction_t _handler)
+        {
+            m_dissconnectEventHandler = _handler;
+        }
+
         bool started()
         {
             return m_started;
@@ -228,10 +234,7 @@ namespace dds
                 }
                 else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                 {
-                    LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
-                    // give a chance to child to execute something
-                    T* pThis = static_cast<T*>(this);
-                    pThis->onRemoteEndDissconnected();
+                    onDissconnect();
                 }
                 else
                 {
@@ -277,10 +280,7 @@ namespace dds
                 }
                 else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                 {
-                    LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
-                    // give a chance to child to execute something
-                    T* pThis = static_cast<T*>(this);
-                    pThis->onRemoteEndDissconnected();
+                    onDissconnect();
                 }
                 else
                 {
@@ -326,10 +326,7 @@ namespace dds
             }
             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
             {
-                LOG(MiscCommon::debug) << "The session was disconnected by the remote end.";
-                // give a chance to child to execute something
-                T* pThis = static_cast<T*>(this);
-                pThis->onRemoteEndDissconnected();
+                onDissconnect();
             }
             else
             {
@@ -342,6 +339,20 @@ namespace dds
                         << _ec.message();
                 stop();
             }
+        }
+        void onDissconnect()
+        {
+            // stop the channel
+            stop();
+
+            LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
+            // give a chance to child to execute something
+            T* pThis = static_cast<T*>(this);
+            pThis->onRemoteEndDissconnected();
+
+            // Call external event handler
+            if (m_dissconnectEventHandler)
+                m_dissconnectEventHandler(pThis);
         }
 
       private:
@@ -361,6 +372,7 @@ namespace dds
 
       protected:
         std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;
+        handlerDisconnectEventFunction_t m_dissconnectEventHandler;
     };
 }
 
