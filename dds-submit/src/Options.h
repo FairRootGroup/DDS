@@ -35,12 +35,14 @@ namespace dds
     {
         SOptions()
             : m_RMS(SSubmitCmd::SSH)
+            , m_bStart(false)
         {
         }
 
         std::string m_sTopoFile;
         SSubmitCmd::ERmsType m_RMS;
         std::string m_sSSHCfgFile;
+        bool m_bStart;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -71,6 +73,8 @@ namespace dds
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
+        options.add_options()(
+            "start", bpo::bool_switch(&_options->m_bStart), "Start distributing user tasks on the deployed DDS agents");
 
         // Parsing command-line
         bpo::variables_map vm;

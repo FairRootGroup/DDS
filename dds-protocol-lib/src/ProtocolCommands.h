@@ -42,7 +42,8 @@ namespace dds
         cmdHANDSHAKE,       // attachment: SVersionCmd
         cmdHANDSHAKE_AGENT, // attachment: SVersionCmd
         cmdSUBMIT,          // attachment: SSubmitCmd
-        cmdSIMPLE_MSG,      // attachment: SSimpleMsgCmd
+        cmdSUBMIT_START,
+        cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
         cmdREPLY_SUBMIT_OK,  // attachment: SSimpleMsgCmd
@@ -75,6 +76,7 @@ namespace dds
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
         { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
+        { cmdSUBMIT_START, NAME_TO_STRING(cmdSUBMIT_START) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
         { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },
         { cmdREPLY_SUBMIT_OK, NAME_TO_STRING(cmdREPLY_SUBMIT_OK) },
@@ -223,6 +225,7 @@ namespace dds
         // should also be changed.
         enum ERmsType
         {
+            UNKNOWN = -1,
             SSH = 0
         };
         std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" } };

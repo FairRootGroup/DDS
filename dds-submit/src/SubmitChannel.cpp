@@ -32,19 +32,27 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
 {
     m_isHandShakeOK = true;
 
-    // make absolute path
-    boost::filesystem::path pathTopoFile(m_sTopoFile);
-    boost::filesystem::path pathSSHCfgFile(m_sSSHCfgFile);
+    if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS)
+    {
+        // make absolute path
+        boost::filesystem::path pathTopoFile(m_sTopoFile);
+        boost::filesystem::path pathSSHCfgFile(m_sSSHCfgFile);
 
-    // Create the command's attachment
-    SSubmitCmd cmd;
-    cmd.m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
-    cmd.m_nRMSTypeCode = m_RMS;
-    cmd.m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
+        // Create the command's attachment
+        SSubmitCmd cmd;
+        cmd.m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
+        cmd.m_nRMSTypeCode = m_RMS;
+        cmd.m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
 
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdSUBMIT>(cmd);
-    pushMsg(msg);
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdSUBMIT>(cmd);
+        pushMsg(msg);
+    }
+    // Check wheather we need to start distribuiting tasks
+    if (m_bSendStart)
+    {
+        pushMsg<cmdSUBMIT_START>();
+    }
 
     return true;
 }

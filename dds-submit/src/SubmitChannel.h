@@ -15,6 +15,8 @@ namespace dds
         CSubmitChannel(boost::asio::io_service& _service)
             : CConnectionImpl<CSubmitChannel>(_service)
             , m_isHandShakeOK(false)
+            , m_RMS(SSubmitCmd::UNKNOWN)
+            , m_bSendStart(false)
         {
         }
 
@@ -30,6 +32,11 @@ namespace dds
         void setTopoFile(const std::string& _val);
         void setSSHCfgFile(const std::string& _val);
         void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
+
+        void setSendStart(bool _val = false)
+        {
+            m_bSendStart = _val;
+        }
 
       private:
         // Message Handlers
@@ -60,6 +67,7 @@ namespace dds
         std::string m_sTopoFile;
         std::string m_sSSHCfgFile;
         SSubmitCmd::ERmsType m_RMS;
+        bool m_bSendStart;
     };
 }
 
