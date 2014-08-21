@@ -26,6 +26,7 @@ namespace dds
         MESSAGE_HANDLER(cmdLOG_RECIEVED, on_cmdLOG_RECIEVED)
         MESSAGE_HANDLER(cmdALL_LOGS_RECIEVED, on_cmdALL_LOGS_RECIEVED)
         MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
+        MESSAGE_HANDLER(cmdGET_LOG_FATAL, on_cmdGET_LOG_FATAL)
         END_MSG_MAP()
 
       private:
@@ -34,6 +35,7 @@ namespace dds
         bool on_cmdLOG_RECIEVED(const CProtocolMessage& _msg);
         bool on_cmdALL_LOGS_RECIEVED(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg);
+        bool on_cmdGET_LOG_FATAL(const CProtocolMessage& _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

@@ -64,6 +64,7 @@ target_link_libraries (
 	${Boost_LOG_LIBRARY}
 	${Boost_LOG_SETUP_LIBRARY}
 	${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
 )
 
 target_include_directories(dds-commander

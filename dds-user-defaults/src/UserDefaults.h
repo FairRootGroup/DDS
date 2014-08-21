@@ -43,6 +43,7 @@ namespace dds
         std::string getUserEnvScript() const;
         static std::string getAgentUUIDFile();
         std::string getLogFile() const;
+        std::string getAgentLogStorageDir() const;
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;

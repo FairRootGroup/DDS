@@ -229,25 +229,14 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
 
     if (crc32.checksum() == cmd.m_crc32)
     {
-        const string sAgentLogDir("log/agents/");
-        string sLogDir(CUserDefaults::instance().getValueForKey("server.work_dir"));
-        smart_path(&sLogDir);
-        smart_append(&sLogDir, '/');
-        sLogDir += sAgentLogDir;
-        boost::filesystem::path dir(sLogDir);
-        if (!boost::filesystem::exists(dir) && !boost::filesystem::create_directories(dir))
-        {
-            string msg("Could not create directory " + sLogDir + " to save log files.");
-            throw runtime_error(msg);
-        }
-
-        const string logFileName(sLogDir + cmd.m_fileName);
-        LOG(MiscCommon::info) << "Saving an agent LOG file: " << logFileName;
+        const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+        const string logFileName(sLogStorageDir + cmd.m_fileName);
         ofstream f(logFileName.c_str());
         if (!f.is_open() || !f.good())
         {
-            string msg("Could not open an agent LOG file: " + logFileName);
-            throw runtime_error(msg);
+            string msg("Could not open log archive: " + logFileName);
+            LOG(error) << msg;
+            return false;
         }
 
         for (const auto& v : cmd.m_fileData)
@@ -267,6 +256,18 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
     return false;
 }
 
+bool CAgentChannel::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg)
+{
+    SSimpleMsgCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a cmdGET_LOG_ERROR [" << cmd
+              << " ] command from: " << socket().remote_endpoint().address().to_string();
+
+    // Return false. This message will be processed by ConnectionManager.
+    return false;
+}
+
 bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved a cmdGET_AGENTS_INFO command from: " << socket().remote_endpoint().address().to_string();
@@ -274,17 +275,5 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
     // Return false.
     // Give possibility to further process this message.
     // For example, send information to UI.
-    return false;
-}
-
-bool CAgentChannel::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg)
-{
-    SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
-
-    LOG(info) << "Recieved a cmdGET_LOG_ERROR [" << cmd
-              << " ] command from: " << socket().remote_endpoint().address().to_string();
-
-    // Return false. This message will be processed by ConnectionManager.
     return false;
 }

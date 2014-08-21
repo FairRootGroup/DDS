@@ -7,6 +7,8 @@
 #include "CommanderChannel.h"
 #include "UserDefaults.h"
 #include "version.h"
+// MiscCommon
+#include "FindCfgFile.h"
 // BOOST
 #include <boost/crc.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -16,6 +18,33 @@
 using namespace MiscCommon;
 using namespace dds;
 using namespace std;
+namespace fs = boost::filesystem;
+
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
+#undef BOOST_NO_CXX11_SCOPED_ENUMS
+
+//#include <boost/filesystem.hpp>
+
+void get_files_by_extension(const fs::path& root, const string& ext, vector<fs::path>& ret)
+{
+    if (!fs::exists(root))
+        return;
+
+    if (fs::is_directory(root))
+    {
+        fs::recursive_directory_iterator it(root);
+        fs::recursive_directory_iterator endit;
+        while (it != endit)
+        {
+            if (fs::is_regular_file(*it) && it->path().extension() == ext)
+            {
+                ret.push_back(it->path());
+            }
+            ++it;
+        }
+    }
+}
 
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CConnectionImpl<CCommanderChannel>(_service)
@@ -153,42 +182,85 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
-    SBinaryAttachmentCmd cmd;
-
-    const string sLogFile(CUserDefaults::instance().getLogFile());
-    ifstream f(sLogFile.c_str());
-    if (!f.is_open() || !f.good())
+    try
     {
-        string msg("Could not open an agent LOG file: ");
-        msg += sLogFile;
+        string logDir(CUserDefaults::getDDSPath());
+        string archiveName = boost::uuids::to_string(m_id);
 
-        // Send error message
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = msg;
-        CProtocolMessage pm;
-        pm.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
-        syncPushMsg(pm);
+        fs::path archiveDir(logDir + archiveName);
+        if (!fs::exists(archiveDir) && !fs::create_directory(archiveDir))
+        {
+            string msg("Could not create directory: " + archiveDir.string());
+            sendGetLogError(msg);
+            return true;
+        }
 
-        throw runtime_error(msg);
+        vector<fs::path> logFiles;
+        get_files_by_extension(logDir, ".log", logFiles);
+
+        for (const auto& v : logFiles)
+        {
+            fs::path dest(archiveDir.string() + "/" + v.filename().string());
+            fs::copy_file(v, dest, fs::copy_option::overwrite_if_exists);
+        }
+
+        CFindCfgFile<string> cfg;
+        cfg.SetOrder("/usr/bin/tar")("/usr/local/bin/tar")("/opt/local/bin/tar");
+        string tarPath;
+        cfg.GetCfg(&tarPath);
+
+        string archiveDirName = logDir + archiveName;
+        string archiveFileName = archiveDirName + ".tar.gz";
+        StringVector_t params{ "czf", archiveFileName, "-C", logDir, archiveName };
+        string output;
+
+        do_execv(tarPath, params, 60, &output);
+
+        SBinaryAttachmentCmd cmd;
+
+        ifstream f(archiveFileName.c_str());
+        if (!f.is_open() || !f.good())
+        {
+            string msg("Could not open archive with log files: " + archiveFileName);
+            sendGetLogError(msg);
+            return true;
+        }
+        f.seekg(0, ios::end);
+        cmd.m_fileData.reserve(f.tellg());
+        f.seekg(0, ios::beg);
+        cmd.m_fileData.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+
+        boost::crc_32_type crc;
+        crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+        cmd.m_crc32 = crc.checksum();
+        cmd.m_fileName = archiveName + ".tar.gz";
+        cmd.m_fileSize = cmd.m_fileData.size();
+
+        f.close();
+        fs::remove(archiveFileName);
+        fs::remove_all(archiveDirName);
+
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
+        pushMsg(msg);
     }
-    f.seekg(0, std::ios::end);
-    cmd.m_fileData.reserve(f.tellg());
-    f.seekg(0, std::ios::beg);
-    cmd.m_fileData.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-
-    // Calculate CRC32 of the test file data
-    boost::crc_32_type crc;
-    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
-
-    cmd.m_crc32 = crc.checksum();
-    cmd.m_fileName = "log_" + boost::uuids::to_string(m_id) + ".log";
-    cmd.m_fileSize = cmd.m_fileData.size();
-
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
-    pushMsg(msg);
+    catch (exception& e)
+    {
+        LOG(info) << e.what();
+        sendGetLogError(e.what());
+    }
 
     return true;
+}
+
+void CCommanderChannel::sendGetLogError(const string& _msg)
+{
+    SSimpleMsgCmd cmd;
+    cmd.m_sMsg = _msg;
+    CProtocolMessage pm;
+    pm.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
+    pushMsg(pm);
 }
 
 void CCommanderChannel::readAgentUUIDFile()

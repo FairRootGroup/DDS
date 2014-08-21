@@ -273,3 +273,12 @@ string CUserDefaults::getLogFile() const
     smart_path<std::string>(&sLogFile);
     return sLogFile;
 }
+
+string CUserDefaults::getAgentLogStorageDir() const
+{
+    const string sAgentLogDir("log/agents/");
+    string sWrkDir(getValueForKey("server.work_dir"));
+    smart_path(&sWrkDir);
+    smart_append(&sWrkDir, '/');
+    return (sWrkDir + sAgentLogDir);
+}

@@ -48,3 +48,13 @@ bool CGetLogChannel::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg)
 
     return true;
 }
+
+bool CGetLogChannel::on_cmdGET_LOG_FATAL(const CProtocolMessage& _msg)
+{
+    SSimpleMsgCmd recieved_cmd;
+    recieved_cmd.convertFromData(_msg.bodyToContainer());
+    LOG(log_stdout) << recieved_cmd.m_sMsg;
+
+    stop();
+    exit(EXIT_FAILURE);
+}
