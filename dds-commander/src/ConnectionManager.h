@@ -30,6 +30,7 @@ namespace dds
         bool on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel);
         bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel);
         bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel* _channel);
 
         void checkAllRecieved();
 

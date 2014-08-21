@@ -149,6 +149,13 @@ bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
     return true;
 }
 
+bool CAgentChannel::on_cmdSUBMIT_START(const CProtocolMessage& _msg)
+{
+    LOG(info) << "Recieved request to start distribuiting user tasks from: "
+              << socket().remote_endpoint().address().to_string();
+    return false;
+}
+
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
 {
     m_remoteHostInfo.convertFromData(_msg.bodyToContainer());

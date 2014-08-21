@@ -34,6 +34,7 @@ namespace dds
         MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
         //====> replay on the "submit" command request
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
+        MESSAGE_HANDLER(cmdSUBMIT_START, on_cmdSUBMIT_START)
         //====> replay on the "info" command request
         // - get pid of the commander server
         MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
@@ -60,6 +61,7 @@ namespace dds
         bool on_cmdHANDSHAKE(const CProtocolMessage& _msg);
         bool on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg);
         bool on_cmdSUBMIT(const CProtocolMessage& _msg);
+        bool on_cmdSUBMIT_START(const CProtocolMessage& _msg);
         bool on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
         bool on_cmdGED_PID(const CProtocolMessage& _msg);
         bool on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg);

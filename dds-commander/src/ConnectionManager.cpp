@@ -50,6 +50,12 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
                                        {
         return this->agentsInfoHandler(_msg, _channel);
     });
+
+    _newClient->registerMessageHandler(cmdSUBMIT_START,
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->on_cmdSUBMIT_START(_msg, _channel);
+    });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
@@ -143,6 +149,14 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
 
     m_getLog.m_nofRecievedErrors++;
     checkAllRecieved();
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel* _channel)
+{
+    // Start distirbuiting user tasks between agents
+    // TODO: We might need to create a thread here to avoid blocking a thread of the transport
 
     return true;
 }
