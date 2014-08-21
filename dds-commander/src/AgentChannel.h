@@ -50,6 +50,10 @@ namespace dds
       public:
         EAgentChannelType getType() const;
         const boost::uuids::uuid& getId() const;
+        const SHostInfoCmd getRemoteHostInfo() const
+        {
+            return m_remoteHostInfo;
+        }
 
       private:
         // Message Handlers
@@ -77,6 +81,7 @@ namespace dds
         bool m_isHandShakeOK;
         EAgentChannelType m_type;
         boost::uuids::uuid m_id;
+        SHostInfoCmd m_remoteHostInfo;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

@@ -123,12 +123,27 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
 
 bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
+    uint16_t m_agentPort;
+    uint32_t m_agentPid;
+    uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
+    std::string m_username;
+    std::string m_host;
+    std::string m_version;
+    std::string m_DDSPath;
+
     SAgentsInfoCmd cmd;
+    stringstream ss;
     for (const auto& v : m_channels)
     {
         if (v->getType() == EAgentChannelType::AGENT && v->started())
+        {
             ++cmd.m_nActiveAgents;
+            ss << v->getId() << " " << v->getRemoteHostInfo().m_username << "@" << v->getRemoteHostInfo().m_host << ":"
+               << v->getRemoteHostInfo().m_DDSPath << " (pid:" << v->getRemoteHostInfo().m_agentPid << ")\n";
+        }
     }
+    cmd.m_sListOfAgents = ss.str();
+
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdREPLY_AGENTS_INFO>(cmd);
     _channel->pushMsg(msg);

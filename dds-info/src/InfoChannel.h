@@ -16,7 +16,6 @@ namespace dds
         CInfoChannel(boost::asio::io_service& _service)
             : CConnectionImpl<CInfoChannel>(_service)
             , m_isHandShakeOK(false)
-            , m_bNeedCommanderPid(false)
         {
         }
 
@@ -31,17 +30,9 @@ namespace dds
         MESSAGE_HANDLER(cmdREPLY_AGENTS_INFO, on_cmdREPLY_AGENTS_INFO)
         END_MSG_MAP()
 
-        void setNeedCommanderPid(bool _val = true)
+        void setOptions(const dds::SOptions& _options)
         {
-            m_bNeedCommanderPid = _val;
-        }
-        void setNeedDDSStatus(bool _val = true)
-        {
-            m_bNeedDDSStatus = _val;
-        }
-        void setNeedAgentsNumber(bool _val = true)
-        {
-            m_bNeedAgentsNumber = _val;
+            m_options = _options;
         }
 
       private:
@@ -63,9 +54,7 @@ namespace dds
 
       private:
         bool m_isHandShakeOK;
-        bool m_bNeedCommanderPid;
-        bool m_bNeedDDSStatus;
-        bool m_bNeedAgentsNumber;
+        dds::SOptions m_options;
     };
 }
 

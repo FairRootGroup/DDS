@@ -151,10 +151,9 @@ bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
 
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
 {
-    SHostInfoCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    m_remoteHostInfo.convertFromData(_msg.bodyToContainer());
 
-    LOG(info) << "Recieved a cmdREPLY_HOST_INFO [" << cmd
+    LOG(info) << "Recieved a cmdREPLY_HOST_INFO [" << m_remoteHostInfo
               << "] command from: " << socket().remote_endpoint().address().to_string();
 
     return true;

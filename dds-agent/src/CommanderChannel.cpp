@@ -6,7 +6,6 @@
 // DDS
 #include "CommanderChannel.h"
 #include "UserDefaults.h"
-#include "Process.h"
 #include "version.h"
 // BOOST
 #include <boost/crc.hpp>
@@ -43,10 +42,7 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
 
 bool CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
 {
-    // Create the command's attachment
-    string pidFileName(CUserDefaults::getDDSPath());
-    pidFileName += "dds-agent.pid";
-    pid_t pid = CPIDFile::GetPIDFromFile(pidFileName);
+    pid_t pid = getpid();
 
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);

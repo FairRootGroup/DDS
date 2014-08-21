@@ -258,7 +258,6 @@ namespace dds
     }
 
     //----------------------------------------------------------------------
-
     struct SHostInfoCmd : public SBasicCmd<SHostInfoCmd>
     {
         SHostInfoCmd()
@@ -511,6 +510,7 @@ namespace dds
         }
 
         uint16_t m_nActiveAgents;
+        std::string m_sListOfAgents;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val)
     {
