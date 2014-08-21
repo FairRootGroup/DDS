@@ -28,28 +28,20 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 {
     // Subscribe on protocol messages
     _newClient->registerMessageHandler(cmdGET_LOG,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdGET_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_LOG_ERROR,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG_ERROR(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdGET_LOG_ERROR(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_AGENTS_INFO,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->agentsInfoHandler(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->agentsInfoHandler(_msg, _channel); });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
@@ -149,14 +141,6 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
 
 bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
-    uint16_t m_agentPort;
-    uint32_t m_agentPid;
-    uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
-    std::string m_username;
-    std::string m_host;
-    std::string m_version;
-    std::string m_DDSPath;
-
     SAgentsInfoCmd cmd;
     stringstream ss;
     for (const auto& v : m_channels)
