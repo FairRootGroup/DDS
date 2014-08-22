@@ -5,6 +5,7 @@
 
 // DDS
 #include "ConnectionManager.h"
+#include "Topology.h"
 // BOOST
 #include <boost/filesystem.hpp>
 
@@ -29,33 +30,27 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     // Subscribe on protocol messages
     _newClient->registerMessageHandler(cmdGET_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG(_msg, _channel);
-    });
+                                       { return this->on_cmdGET_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel);
-    });
+                                       { return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_LOG_ERROR,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG_ERROR(_msg, _channel);
-    });
+                                       { return this->on_cmdGET_LOG_ERROR(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_AGENTS_INFO,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->agentsInfoHandler(_msg, _channel);
-    });
+                                       { return this->agentsInfoHandler(_msg, _channel); });
+
+    _newClient->registerMessageHandler(cmdSUBMIT,
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       { return this->on_cmdSUBMIT(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdSUBMIT_START,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdSUBMIT_START(_msg, _channel);
-    });
+                                       { return this->on_cmdSUBMIT_START(_msg, _channel); });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
@@ -149,6 +144,72 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
 
     m_getLog.m_nofRecievedErrors++;
     checkAllRecieved();
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel* _channel)
+{
+    try
+    {
+        SSubmitCmd cmd;
+        cmd.convertFromData(_msg.bodyToContainer());
+
+        if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
+        {
+            LOG(info) << "SSH RMS is defined by: [" << cmd.m_sSSHCfgFile << "]";
+
+            // TODO: Job submission should be moved from here to a thread
+            // Resolve topology
+            CTopology topology;
+            topology.init(cmd.m_sTopoFile);
+            // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
+
+            // Submitting the job
+            string outPut;
+            string sCommand("$DDS_LOCATION/bin/dds-ssh");
+            smart_path(&sCommand);
+            StringVector_t params;
+            const size_t nCmdTimeout = 35; // in sec.
+            params.push_back("-c" + cmd.m_sSSHCfgFile);
+            params.push_back("submit");
+            try
+            {
+                do_execv(sCommand, params, nCmdTimeout, &outPut);
+
+                SSimpleMsgCmd msg_cmd;
+                msg_cmd.m_sMsg = "Dummy job info, JOBIds";
+                CProtocolMessage msg;
+                msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
+                _channel->pushMsg(msg);
+            }
+            catch (exception& e)
+            {
+                string sMsg("Failed to process the task: ");
+                sMsg += cmd.m_sTopoFile;
+                throw runtime_error(sMsg);
+            }
+            if (!outPut.empty())
+            {
+                ostringstream ss;
+                ss << "Cmnd Output: " << outPut;
+                LOG(info) << ss.str();
+                SSimpleMsgCmd msg_cmd;
+                msg_cmd.m_sMsg = ss.str();
+                CProtocolMessage msg;
+                msg.encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
+                _channel->pushMsg(msg);
+            }
+        }
+    }
+    catch (exception& e)
+    {
+        SSimpleMsgCmd msg_cmd;
+        msg_cmd.m_sMsg = e.what();
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
+        _channel->pushMsg(msg);
+    }
 
     return true;
 }
