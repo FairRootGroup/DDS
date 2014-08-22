@@ -79,7 +79,9 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
                   << "] has succesfully connected.";
 
-        pushMsg<cmdREPLY_HANDSHAKE_OK>();
+        // replay on handshake in sync push, to preserver order of messages. Otherwise the replay could be send after
+        // other requests are sent and other will be ignored by the agent as there were no handshake ok received yet.
+        syncPushMsg<cmdREPLY_HANDSHAKE_OK>();
         pushMsg<cmdGET_UUID>();
         pushMsg<cmdGET_HOST_INFO>();
     }
