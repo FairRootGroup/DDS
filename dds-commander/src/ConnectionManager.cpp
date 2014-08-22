@@ -30,39 +30,27 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     // Subscribe on protocol messages
     _newClient->registerMessageHandler(cmdGET_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG(_msg, _channel);
-    });
+                                       { return this->on_cmdGET_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel);
-    });
+                                       { return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_LOG_ERROR,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG_ERROR(_msg, _channel);
-    });
+                                       { return this->on_cmdGET_LOG_ERROR(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_AGENTS_INFO,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->agentsInfoHandler(_msg, _channel);
-    });
+                                       { return this->agentsInfoHandler(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdSUBMIT,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdSUBMIT(_msg, _channel);
-    });
+                                       { return this->on_cmdSUBMIT(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdSUBMIT_START,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdSUBMIT_START(_msg, _channel);
-    });
+                                       { return this->on_cmdSUBMIT_START(_msg, _channel); });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
@@ -174,7 +162,8 @@ bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChanne
             // TODO: Job submission should be moved from here to a thread
             // Resolve topology
             CTopology topology;
-            topology.init(cmd.m_sTopoFile);
+            m_sCurrentTopoFile = cmd.m_sTopoFile;
+            topology.init(m_sCurrentTopoFile);
             // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
 
             // Submitting the job
@@ -230,7 +219,17 @@ bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgent
 {
     // Start distirbuiting user tasks between agents
     // TODO: We might need to create a thread here to avoid blocking a thread of the transport
+    CTopology topology;
+    topology.init(m_sCurrentTopoFile);
 
+    // Send binaries of user jobs to all active agents.
+    // Send activate signal to all agents. This will trigger start of user jobs on the agents.
+    for (const auto& v : m_channels)
+    {
+        if (v->getType() == EAgentChannelType::AGENT && v->started())
+        {
+        }
+    }
     return true;
 }
 

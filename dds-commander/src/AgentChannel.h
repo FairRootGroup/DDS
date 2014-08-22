@@ -84,6 +84,7 @@ namespace dds
         EAgentChannelType m_type;
         boost::uuids::uuid m_id;
         SHostInfoCmd m_remoteHostInfo;
+        std::string m_sCurrentTopoFile;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

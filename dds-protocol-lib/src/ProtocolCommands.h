@@ -65,7 +65,9 @@ namespace dds
         cmdGET_LOG_FATAL,     // attachment: SSimpleMsgCmd
         cmdLOG_RECIEVED,      // attachment: SSimpleMsgCmd
         cmdGET_AGENTS_INFO,
-        cmdREPLY_AGENTS_INFO // attachment: SAgentsInfoCmd
+        cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
+        cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
+        cmdACTIVATE_AGENT     // this command activates a given agent and triggers a start of an assgined user task
 
         // ----------- VERSION 2 --------------------
     };
@@ -98,7 +100,9 @@ namespace dds
         { cmdGET_LOG_FATAL, NAME_TO_STRING(cmdGET_LOG_FATAL) },
         { cmdLOG_RECIEVED, NAME_TO_STRING(cmdLOG_RECIEVED) },
         { cmdGET_AGENTS_INFO, NAME_TO_STRING(cmdGET_AGENTS_INFO) },
-        { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) }
+        { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },
+        { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
+        { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) }
     };
 
     //----------------------------------------------------------------------
@@ -110,6 +114,7 @@ namespace dds
     struct SBinaryDownloadStatCmd;
     struct SUUIDCmd;
     struct SAgentsInfoCmd;
+    struct SAssignUserTaskCmd;
 
     template <typename A, ECmdType>
     struct validate_command_attachment;
@@ -132,6 +137,7 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdGET_LOG_FATAL, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdLOG_RECIEVED, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdALL_LOGS_RECIEVED, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdASSIGN_USER_TASK, SAssignUserTaskCmd);
     //----------------------------------------------------------------------
 
     template <class _Owner>
@@ -224,10 +230,8 @@ namespace dds
         // Just in case if code of any of the supported RMS is changed (enum was re-ordered), then protocol version
         // should also be changed.
         enum ERmsType
-        {
-            UNKNOWN = -1,
-            SSH = 0
-        };
+        { UNKNOWN = -1,
+          SSH = 0 };
         std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" } };
 
         SSubmitCmd()
@@ -525,6 +529,37 @@ namespace dds
     inline bool operator!=(const SAgentsInfoCmd& _lhs, const SAgentsInfoCmd& _rhs)
     {
         return !(_lhs == _rhs);
+    }
+
+    //----------------------------------------------------------------------
+
+    struct SAssignUserTaskCmd : public SBasicCmd<SSimpleMsgCmd>
+    {
+        SAssignUserTaskCmd()
+        {
+        }
+        void normalizeToLocal();
+        void normalizeToRemote();
+        size_t size() const
+        {
+            return (m_sExeFile.size() + 1);
+        }
+        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        bool operator==(const SAssignUserTaskCmd& val) const
+        {
+            return (m_sExeFile == val.m_sExeFile);
+        }
+
+        std::string m_sExeFile;
+    };
+    inline std::ostream& operator<<(std::ostream& _stream, const SAssignUserTaskCmd& val)
+    {
+        return _stream << val.m_sExeFile;
+    }
+    inline bool operator!=(const SAssignUserTaskCmd& lhs, const SAssignUserTaskCmd& rhs)
+    {
+        return !(lhs == rhs);
     }
 }
 
