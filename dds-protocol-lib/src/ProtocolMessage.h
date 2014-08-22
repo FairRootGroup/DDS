@@ -7,6 +7,8 @@
 // DDS
 #include "def.h"
 #include "ProtocolCommands.h"
+// STD
+#include <cstring>
 
 namespace dds
 {

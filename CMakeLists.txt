@@ -101,13 +101,15 @@ set(MiscCommon_LOCATION
     ${MiscCommon_LOCATION}/dds_sys_files
 )
 #
-# additional compiler flags for C++11
+# additional compiler and linker flags for C++11
 #
+if(APPLE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-#
-# additional linker flags for C++11
-#
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
+elseif(UNIX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+endif(APPLE)
+
 #
 # global variables
 #
@@ -156,7 +158,7 @@ SET(DDS_SHARE_FILES
 #
 # Search for BOOST
 #
-find_package(Boost 1.55 REQUIRED)
+find_package(Boost 1.54 REQUIRED)
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
@@ -165,7 +167,7 @@ if(Boost_FOUND)
     set(Boost_Components ${Boost_Components} unit_test_framework)
   endif( BUILD_TESTS)
   
-  find_package( Boost 1.55 REQUIRED COMPONENTS  ${Boost_Components} )
+  find_package( Boost 1.54 REQUIRED COMPONENTS  ${Boost_Components} )
 endif(Boost_FOUND)
 
 # DDS Misc Common
