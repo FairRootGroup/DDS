@@ -46,6 +46,7 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_LOG, on_cmdBINARY_ATTACHMENT_LOG)
         MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
+        MESSAGE_HANDLER(cmdSTART_DOWNLOAD_TEST, on_cmdSTART_DOWNLOAD_TEST)
         END_MSG_MAP()
 
       public:
@@ -70,6 +71,7 @@ namespace dds
         bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg);
         bool on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg);
+        bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg);
 
         // On connection handles
         void onRemoteEndDissconnected()
@@ -78,6 +80,8 @@ namespace dds
         }
         // On header read handle
         void onHeaderRead();
+
+        void sendTestBinaryAttachment(size_t _binarySize);
 
       private:
         bool m_isHandShakeOK;

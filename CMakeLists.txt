@@ -48,6 +48,7 @@ option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
 option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
 option(BUILD_dds-getlog "Build dds-getlog" ON)
+option(BUILD_dds-test "Build dds-test" ON)
 #
 # Documentation output directory
 #
@@ -229,6 +230,12 @@ if(BUILD_dds-getlog)
     message(STATUS "Build dds-getlog - YES")
     add_subdirectory ( dds-getlog )
 endif(BUILD_dds-getlog)
+
+# dds-test
+if(BUILD_dds-test)
+    message(STATUS "Build dds-test - YES")
+    add_subdirectory ( dds-test )
+endif(BUILD_dds-test)
 
 #
 # Install

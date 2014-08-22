@@ -256,3 +256,47 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
     // For example, send information to UI.
     return false;
 }
+
+bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg)
+{
+    sendTestBinaryAttachment(1000);
+    sendTestBinaryAttachment(10000);
+    sendTestBinaryAttachment(100000);
+    sendTestBinaryAttachment(1000000);
+    sendTestBinaryAttachment(10000000);
+    return true;
+}
+
+// bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+//{
+//    SBinaryDownloadStatCmd cmd;
+//    cmd.convertFromData(_msg.bodyToContainer());
+//
+//    LOG(info) << "Recieved a DownloadStat [" << cmd
+//              << "] command from: " << socket().remote_endpoint().address().to_string();
+//
+//    return true;
+//}
+
+void CAgentChannel::sendTestBinaryAttachment(size_t _binarySize)
+{
+    SBinaryAttachmentCmd cmd;
+
+    for (size_t i = 0; i < _binarySize; ++i)
+    {
+        char c = rand() % 256;
+        cmd.m_fileData.push_back(c);
+    }
+
+    // Calculate CRC32 of the test file data
+    boost::crc_32_type crc;
+    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+    cmd.m_crc32 = crc.checksum();
+    cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
+    cmd.m_fileSize = cmd.m_fileData.size();
+
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
+    pushMsg(msg);
+}

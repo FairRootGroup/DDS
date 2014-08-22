@@ -67,7 +67,8 @@ namespace dds
         cmdGET_AGENTS_INFO,
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
-        cmdACTIVATE_AGENT     // this command activates a given agent and triggers a start of an assgined user task
+        cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
+        cmdSTART_DOWNLOAD_TEST
 
         // ----------- VERSION 2 --------------------
     };
@@ -102,7 +103,8 @@ namespace dds
         { cmdGET_AGENTS_INFO, NAME_TO_STRING(cmdGET_AGENTS_INFO) },
         { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
-        { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) }
+        { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
+        { cmdSTART_DOWNLOAD_TEST, NAME_TO_STRING(cmdSTART_DOWNLOAD_TEST) }
     };
 
     //----------------------------------------------------------------------
@@ -230,8 +232,10 @@ namespace dds
         // Just in case if code of any of the supported RMS is changed (enum was re-ordered), then protocol version
         // should also be changed.
         enum ERmsType
-        { UNKNOWN = -1,
-          SSH = 0 };
+        {
+            UNKNOWN = -1,
+            SSH = 0
+        };
         std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" } };
 
         SSubmitCmd()

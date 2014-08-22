@@ -342,9 +342,6 @@ namespace dds
         }
         void onDissconnect()
         {
-            // stop the channel
-            stop();
-
             LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
             // give a chance to child to execute something
             T* pThis = static_cast<T*>(this);
@@ -358,10 +355,7 @@ namespace dds
       private:
         void close()
         {
-            m_io_service.post([this]()
-                              {
-                                  m_socket.close();
-                              });
+            m_socket.close();
         }
 
       private:
