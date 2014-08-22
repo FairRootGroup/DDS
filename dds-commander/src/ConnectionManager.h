@@ -57,7 +57,8 @@ namespace dds
             size_t m_nofRecieved;
             size_t m_nofRecievedErrors;
             CAgentChannel* m_channel;
-            std::mutex m_mutex;
+            std::mutex m_mutexGetLog;
+            std::mutex m_mutexReceive;
         };
 
         SGetLogInfo m_getLog;

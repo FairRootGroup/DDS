@@ -30,32 +30,44 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     // Subscribe on protocol messages
     _newClient->registerMessageHandler(cmdGET_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       { return this->on_cmdGET_LOG(_msg, _channel); });
+                                       {
+        return this->on_cmdGET_LOG(_msg, _channel);
+    });
 
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       { return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel); });
+                                       {
+        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel);
+    });
 
     _newClient->registerMessageHandler(cmdGET_LOG_ERROR,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       { return this->on_cmdGET_LOG_ERROR(_msg, _channel); });
+                                       {
+        return this->on_cmdGET_LOG_ERROR(_msg, _channel);
+    });
 
     _newClient->registerMessageHandler(cmdGET_AGENTS_INFO,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       { return this->agentsInfoHandler(_msg, _channel); });
+                                       {
+        return this->agentsInfoHandler(_msg, _channel);
+    });
 
     _newClient->registerMessageHandler(cmdSUBMIT,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       { return this->on_cmdSUBMIT(_msg, _channel); });
+                                       {
+        return this->on_cmdSUBMIT(_msg, _channel);
+    });
 
     _newClient->registerMessageHandler(cmdSUBMIT_START,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       { return this->on_cmdSUBMIT_START(_msg, _channel); });
+                                       {
+        return this->on_cmdSUBMIT_START(_msg, _channel);
+    });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
-    std::lock_guard<std::mutex> lock(m_getLog.m_mutex);
+    std::lock_guard<std::mutex> lock(m_getLog.m_mutexGetLog);
 
     if (m_getLog.m_channel != nullptr)
     {
@@ -113,17 +125,23 @@ bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _ms
     SBinaryAttachmentCmd recieved_cmd;
     recieved_cmd.convertFromData(_msg.bodyToContainer());
 
-    // Form reply command
-    SSimpleMsgCmd cmd;
-    cmd.m_sMsg = to_string(m_getLog.nofRecieved()) + "/" + to_string(m_getLog.m_nofRequests) + " Log from agent [" +
-                 to_string(_channel->getId()) + "] saved to file " + recieved_cmd.m_fileName;
+    {
+        std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
 
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdLOG_RECIEVED>(cmd);
-    m_getLog.m_channel->pushMsg(msg);
+        m_getLog.m_nofRecieved++;
+        string reply_msg(to_string(m_getLog.nofRecieved()) + "/" + to_string(m_getLog.m_nofRequests) +
+                         " Log from agent [" + to_string(_channel->getId()) + "] saved to file " +
+                         recieved_cmd.m_fileName);
 
-    m_getLog.m_nofRecieved++;
-    checkAllRecieved();
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = reply_msg;
+
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdLOG_RECIEVED>(cmd);
+        m_getLog.m_channel->syncPushMsg(msg);
+
+        checkAllRecieved();
+    }
 
     return true;
 }
@@ -133,17 +151,22 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
     SSimpleMsgCmd recieved_cmd;
     recieved_cmd.convertFromData(_msg.bodyToContainer());
 
-    string str("Error from agent [" + to_string(_channel->getId()) + "]: ");
-    str += recieved_cmd.m_sMsg;
+    {
+        std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
 
-    SSimpleMsgCmd cmd;
-    cmd.m_sMsg = str;
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
-    m_getLog.m_channel->pushMsg(msg);
+        m_getLog.m_nofRecievedErrors++;
+        string reply_msg(to_string(m_getLog.nofRecieved()) + "/" + to_string(m_getLog.m_nofRequests) +
+                         " Error from agent [" + to_string(_channel->getId()) + "]: ");
+        reply_msg += recieved_cmd.m_sMsg;
 
-    m_getLog.m_nofRecievedErrors++;
-    checkAllRecieved();
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = reply_msg;
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
+        m_getLog.m_channel->syncPushMsg(msg);
+
+        checkAllRecieved();
+    }
 
     return true;
 }
