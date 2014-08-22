@@ -7,6 +7,7 @@
 #include "CommanderChannel.h"
 #include "UserDefaults.h"
 #include "version.h"
+#include "BOOST_FILESYSTEM.h"
 // MiscCommon
 #include "FindCfgFile.h"
 // BOOST
@@ -19,32 +20,6 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 namespace fs = boost::filesystem;
-
-#define BOOST_NO_CXX11_SCOPED_ENUMS
-#include <boost/filesystem.hpp>
-#undef BOOST_NO_CXX11_SCOPED_ENUMS
-
-//#include <boost/filesystem.hpp>
-
-void get_files_by_extension(const fs::path& root, const string& ext, vector<fs::path>& ret)
-{
-    if (!fs::exists(root))
-        return;
-
-    if (fs::is_directory(root))
-    {
-        fs::recursive_directory_iterator it(root);
-        fs::recursive_directory_iterator endit;
-        while (it != endit)
-        {
-            if (fs::is_regular_file(*it) && it->path().extension() == ext)
-            {
-                ret.push_back(it->path());
-            }
-            ++it;
-        }
-    }
-}
 
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CConnectionImpl<CCommanderChannel>(_service)
@@ -196,7 +171,7 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
         }
 
         vector<fs::path> logFiles;
-        get_files_by_extension(logDir, ".log", logFiles);
+        BOOSTHelper::get_files_by_extension(logDir, ".log", logFiles);
 
         for (const auto& v : logFiles)
         {

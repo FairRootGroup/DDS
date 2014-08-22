@@ -6,9 +6,12 @@
 #define BOOST_FILESYSTEM_H_
 
 // BOOST
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/exception.hpp"
+//#include "boost/filesystem/operations.hpp"
+//#include "boost/filesystem/path.hpp"
+//#include "boost/filesystem/exception.hpp"
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
+#undef BOOST_NO_CXX11_SCOPED_ENUMS
 // MiscCommon
 #include "MiscUtils.h"
 
@@ -18,6 +21,35 @@ namespace MiscCommon
 {
     namespace BOOSTHelper
     {
+
+        /**
+         *
+         * @brief The function return a list of files in the deirectory with specified extension.
+         * @param[in] _root - root of the directory to process.
+         * @param[in] _ext - extension, for example ".log".
+         * @param[out] _ret - vector of pathes to files.
+         *
+         */
+        void get_files_by_extension(const fs::path& _root, const std::string& _ext, std::vector<fs::path>& _ret)
+        {
+            if (!fs::exists(_root))
+                return;
+
+            if (fs::is_directory(_root))
+            {
+                fs::recursive_directory_iterator it(_root);
+                fs::recursive_directory_iterator endit;
+                while (it != endit)
+                {
+                    if (fs::is_regular_file(*it) && it->path().extension() == _ext)
+                    {
+                        _ret.push_back(it->path());
+                    }
+                    ++it;
+                }
+            }
+        }
+
         /**
          *
          * @brief The normalize_path() function removes '/' characters at the end of the of the input pathname
@@ -44,7 +76,7 @@ namespace MiscCommon
 
             try
             {
-                fs::path cp(normalize_path(_pathname), fs::native);
+                fs::path cp(normalize_path(_pathname)); //, fs::native);
                 is_valid = !(fs::is_directory(cp));
             }
             catch (const fs::filesystem_error& _ex)
@@ -65,7 +97,7 @@ namespace MiscCommon
             bool is_valid = false;
             try
             {
-                fs::path cp(normalize_path(_pathname), fs::native);
+                fs::path cp(normalize_path(_pathname)); //, fs::native);
                 is_valid = fs::is_directory(cp);
             }
             catch (const fs::filesystem_error& _ex)
