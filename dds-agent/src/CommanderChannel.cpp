@@ -160,7 +160,17 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     try
     {
         string logDir(CUserDefaults::getDDSPath());
-        string archiveName = boost::uuids::to_string(m_id);
+
+        string hostname;
+        get_hostname(&hostname);
+
+        std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+        struct std::tm* ptm = std::localtime(&now);
+
+        stringstream ss;
+        ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
+
+        string archiveName(ss.str());
 
         fs::path archiveDir(logDir + archiveName);
         if (!fs::exists(archiveDir) && !fs::create_directory(archiveDir))
