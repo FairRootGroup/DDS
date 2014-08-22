@@ -88,62 +88,75 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
 
 bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
 {
-    SSubmitCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
-    LOG(info) << "Recieved a Submit command of the topo [" << cmd.m_sTopoFile
-              << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode]
-              << " from: " << socket().remote_endpoint().address().to_string();
-
-    if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
+    try
     {
-        LOG(info) << "SSH RMS is defined by: [" << cmd.m_sSSHCfgFile << "]";
+        SSubmitCmd cmd;
+        cmd.convertFromData(_msg.bodyToContainer());
+        LOG(info) << "Recieved a Submit command of the topo [" << cmd.m_sTopoFile
+                  << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode]
+                  << " from: " << socket().remote_endpoint().address().to_string();
 
-        // TODO: Job submission should be moved from here
-        // -------
-        // TODO: Resolve topology
-
-        // Submitting the job
-        string outPut;
-        string sCommand("$DDS_LOCATION/bin/dds-ssh");
-        smart_path(&sCommand);
-        StringVector_t params;
-        const size_t nCmdTimeout = 35; // in sec.
-        params.push_back("-c" + cmd.m_sSSHCfgFile);
-        params.push_back("submit");
-        try
+        if (!boost::filesystem::exists(cmd.m_sTopoFile))
         {
-            do_execv(sCommand, params, nCmdTimeout, &outPut);
-
-            SSimpleMsgCmd msg_cmd;
-            msg_cmd.m_sMsg = "Dummy job info, JOBIds";
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
-            pushMsg(msg);
-        }
-        catch (exception& e)
-        {
-            ostringstream ss;
-            ss << "Failed to process the task: " << e.what();
-            LOG(error) << ss.str();
-            SSimpleMsgCmd msg_cmd;
-            msg_cmd.m_sMsg = ss.str();
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
-            pushMsg(msg);
-        }
-        if (!outPut.empty())
-        {
-            ostringstream ss;
-            ss << "Cmnd Output: " << outPut;
-            LOG(info) << ss.str();
-            SSimpleMsgCmd msg_cmd;
-            msg_cmd.m_sMsg = ss.str();
-            CProtocolMessage msg;
-            msg.encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
-            pushMsg(msg);
+            string sMsg("Can't find the topo file: ");
+            sMsg += cmd.m_sTopoFile;
+            throw runtime_error(sMsg);
         }
 
-        // -------
+        if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
+        {
+            LOG(info) << "SSH RMS is defined by: [" << cmd.m_sSSHCfgFile << "]";
+
+            // TODO: Job submission should be moved from here
+            // -------
+            // TODO: Resolve topology
+
+            // Submitting the job
+            string outPut;
+            string sCommand("$DDS_LOCATION/bin/dds-ssh");
+            smart_path(&sCommand);
+            StringVector_t params;
+            const size_t nCmdTimeout = 35; // in sec.
+            params.push_back("-c" + cmd.m_sSSHCfgFile);
+            params.push_back("submit");
+            try
+            {
+                do_execv(sCommand, params, nCmdTimeout, &outPut);
+
+                SSimpleMsgCmd msg_cmd;
+                msg_cmd.m_sMsg = "Dummy job info, JOBIds";
+                CProtocolMessage msg;
+                msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
+                pushMsg(msg);
+            }
+            catch (exception& e)
+            {
+                string sMsg("Failed to process the task: ");
+                sMsg += cmd.m_sTopoFile;
+                throw runtime_error(sMsg);
+            }
+            if (!outPut.empty())
+            {
+                ostringstream ss;
+                ss << "Cmnd Output: " << outPut;
+                LOG(info) << ss.str();
+                SSimpleMsgCmd msg_cmd;
+                msg_cmd.m_sMsg = ss.str();
+                CProtocolMessage msg;
+                msg.encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
+                pushMsg(msg);
+            }
+
+            // -------
+        }
+    }
+    catch (exception& e)
+    {
+        SSimpleMsgCmd msg_cmd;
+        msg_cmd.m_sMsg = e.what();
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
+        pushMsg(msg);
     }
 
     return true;
