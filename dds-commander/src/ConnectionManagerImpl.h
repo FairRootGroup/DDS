@@ -8,14 +8,12 @@
 // DDS
 #include "MonitoringThread.h"
 #include "Options.h"
+#include "ProtocolMessage.h"
 // STD
 #include <mutex>
 // BOOST
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
-
-#include "ProtocolMessage.h"
-//#include "AgentChannel.h"
 
 namespace dds
 {
