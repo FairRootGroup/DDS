@@ -14,12 +14,32 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 set( SOURCE_FILES
 	./src/ProtocolCommands.cpp
 	./src/ProtocolMessage.cpp
+	./src/BasicCmd.cpp
+	./src/AgentsInfoCmd.cpp
+	./src/BinaryDownloadStatCmd.cpp
+	./src/SimpleMsgCmd.cpp
+	./src/UUIDCmd.cpp
+	./src/AssignUserTaskCmd.cpp
+	./src/BinaryAttachmentCmd.cpp
+	./src/HostInfoCmd.cpp
+	./src/SubmitCmd.cpp
+	./src/VersionCmd.cpp
 )
 
 set( SRC_HDRS
 	./src/ProtocolCommands.h
 	./src/ProtocolMessage.h
 	./src/ConnectionImpl.h
+	./src/BasicCmd.h
+	./src/AgentsInfoCmd.h
+	./src/BinaryDownloadStatCmd.h
+	./src/SimpleMsgCmd.h
+	./src/UUIDCmd.h
+	./src/AssignUserTaskCmd.h
+	./src/BinaryAttachmentCmd.h
+	./src/HostInfoCmd.h
+	./src/SubmitCmd.h
+	./src/VersionCmd.h
 )
 
 include_directories(
