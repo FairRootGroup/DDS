@@ -62,6 +62,7 @@ namespace dds
         };
 
         SGetLogInfo m_getLog;
+        std::string m_sCurrentTopoFile;
     };
 }
 #endif /* defined(__DDS__ConnectionManager__) */
