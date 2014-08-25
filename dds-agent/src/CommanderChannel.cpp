@@ -169,12 +169,12 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
 
         std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
         struct std::tm* ptm = std::localtime(&now);
-        char buffer [20];
-        std::strftime (buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
+        char buffer[20];
+        std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
 
         stringstream ss;
         // We do not use put_time for the moment as gcc4.9 does not support it.
-        //ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
+        // ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
         ss << buffer << "_" << hostname << "_" << m_id;
 
         string archiveName(ss.str());
