@@ -125,6 +125,8 @@ bool CAgentChannel::on_cmdSUBMIT_START(const CProtocolMessage& _msg)
 {
     LOG(info) << "Recieved request to start distribuiting user tasks from: "
               << socket().remote_endpoint().address().to_string();
+
+    // The agent channel can't activate all agents. Let others to process this message.
     return false;
 }
 

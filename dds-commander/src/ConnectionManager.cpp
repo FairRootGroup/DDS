@@ -29,40 +29,28 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 {
     // Subscribe on protocol messages
     _newClient->registerMessageHandler(cmdGET_LOG,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdGET_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_LOG_ERROR,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdGET_LOG_ERROR(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdGET_LOG_ERROR(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdGET_AGENTS_INFO,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->agentsInfoHandler(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->agentsInfoHandler(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdSUBMIT,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdSUBMIT(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdSUBMIT(_msg, _channel); });
 
     _newClient->registerMessageHandler(cmdSUBMIT_START,
-                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
-                                       {
-        return this->on_cmdSUBMIT_START(_msg, _channel);
-    });
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel)->bool
+                                       { return this->on_cmdSUBMIT_START(_msg, _channel); });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
@@ -251,6 +239,15 @@ bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgent
     {
         if (v->getType() == EAgentChannelType::AGENT && v->started())
         {
+            // Assgin user's tasks to agents
+            SAssignUserTaskCmd msg_cmd;
+            msg_cmd.m_sExeFile = "Test.sh";
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
+            v->pushMsg(msg);
+
+            // Active agents.
+            v->pushMsg<cmdACTIVATE_AGENT>();
         }
     }
     return true;
