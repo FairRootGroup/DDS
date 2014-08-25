@@ -16,7 +16,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 // STD
-#include <iomanip>
+//#include <iomanip>
+#include <ctime>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -168,9 +169,13 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
 
         std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
         struct std::tm* ptm = std::localtime(&now);
+        char buffer [20];
+        std::strftime (buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
 
         stringstream ss;
-        ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
+        // We do not use put_time for the moment as gcc4.9 does not support it.
+        //ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
+        ss << buffer << "_" << hostname << "_" << m_id;
 
         string archiveName(ss.str());
 
@@ -192,7 +197,7 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
         }
 
         CFindCfgFile<string> cfg;
-        cfg.SetOrder("/usr/bin/tar")("/usr/local/bin/tar")("/opt/local/bin/tar");
+        cfg.SetOrder("/usr/bin/tar")("/usr/local/bin/tar")("/opt/local/bin/tar")("/bin/tar");
         string tarPath;
         cfg.GetCfg(&tarPath);
 

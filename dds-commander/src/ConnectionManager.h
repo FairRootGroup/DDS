@@ -37,6 +37,15 @@ namespace dds
 
         struct SGetLogInfo
         {
+            SGetLogInfo() : m_nofRequests(0),
+		m_nofRecieved(0), 
+		m_nofRecievedErrors(0), 
+		m_channel(nullptr), 
+		m_mutexGetLog(), 
+		m_mutexReceive() 
+		{
+		}
+
             size_t nofRecieved() const
             {
                 return (m_nofRecieved + m_nofRecievedErrors);
