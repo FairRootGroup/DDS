@@ -69,7 +69,13 @@ namespace dds
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
-        cmdSTART_DOWNLOAD_TEST
+        cmdSTART_DOWNLOAD_TEST,
+        cmdALL_DOWNLOAD_TESTS_RECIEVED, // attachment: SSimpleMsgCmd
+        cmdDOWNLOAD_TEST_ERROR,         // attachment: SSimpleMsgCmd
+        cmdDOWNLOAD_TEST_FATAL,         // attachment: SSimpleMsgCmd
+        cmdDOWNLOAD_TEST_RECIEVED,      // attachment: SSimpleMsgCmd
+        cmdDOWNLOAD_TEST,               // attachment: SBinanryAttachmentCmd
+        cmdDOWNLOAD_TEST_STAT,          // attachment: SBinaryDownloadStatCmd
 
         // ----------- VERSION 2 --------------------
     };
@@ -105,7 +111,13 @@ namespace dds
         { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
-        { cmdSTART_DOWNLOAD_TEST, NAME_TO_STRING(cmdSTART_DOWNLOAD_TEST) }
+        { cmdSTART_DOWNLOAD_TEST, NAME_TO_STRING(cmdSTART_DOWNLOAD_TEST) },
+        { cmdALL_DOWNLOAD_TESTS_RECIEVED, NAME_TO_STRING(cmdALL_DOWNLOAD_TESTS_RECIEVED) },
+        { cmdDOWNLOAD_TEST_ERROR, NAME_TO_STRING(cmdDOWNLOAD_TEST_ERROR) },
+        { cmdDOWNLOAD_TEST_FATAL, NAME_TO_STRING(cmdDOWNLOAD_TEST_FATAL) },
+        { cmdDOWNLOAD_TEST_RECIEVED, NAME_TO_STRING(cmdDOWNLOAD_TEST_RECIEVED) },
+        { cmdDOWNLOAD_TEST, NAME_TO_STRING(cmdDOWNLOAD_TEST) },
+        { cmdDOWNLOAD_TEST_STAT, NAME_TO_STRING(cmdDOWNLOAD_TEST_STAT) }
     };
 
     //----------------------------------------------------------------------
@@ -131,6 +143,12 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdLOG_RECIEVED, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdALL_LOGS_RECIEVED, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdASSIGN_USER_TASK, SAssignUserTaskCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_ERROR, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_FATAL, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_RECIEVED, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdALL_DOWNLOAD_TESTS_RECIEVED, SSimpleMsgCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_STAT, SBinaryDownloadStatCmd);
+    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST, SBinaryAttachmentCmd);
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

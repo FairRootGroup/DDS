@@ -236,20 +236,20 @@ int main(int argc, char* argv[])
         // Check that DDS server is running
         if (cmd_submit == command)
         {
-            try
-            {
-                string cmd("$DDS_LOCATION/bin/dds-server");
-                smart_path(&cmd);
-                StringVector_t params;
-                params.push_back("status_with_code");
-                string output;
-                string errout;
-                do_execv(cmd, params, 2, &output, &errout);
-            }
-            catch (exception& e)
-            {
-                throw runtime_error("DDS server is NOT running. Please, start DDS server first.");
-            }
+            //            try
+            //            {
+            //                string cmd("$DDS_LOCATION/bin/dds-server");
+            //                smart_path(&cmd);
+            //                StringVector_t params;
+            //                params.push_back("status_with_code");
+            //                string output;
+            //                string errout;
+            //                do_execv(cmd, params, 2, &output, &errout);
+            //            }
+            //            catch (exception& e)
+            //            {
+            //                throw runtime_error("DDS server is NOT running. Please, start DDS server first.");
+            //            }
 
             // re-pack PoD worker package if needed
             // We will call repack once again if there is an inline bash script

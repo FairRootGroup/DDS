@@ -261,44 +261,33 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
 
 bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg)
 {
-    sendTestBinaryAttachment(1000);
-    sendTestBinaryAttachment(10000);
-    sendTestBinaryAttachment(100000);
-    sendTestBinaryAttachment(1000000);
-    sendTestBinaryAttachment(10000000);
-    return true;
+    LOG(info) << "Recieved a cmdSTART_DOWNLOAD_TEST command from: " << socket().remote_endpoint().address().to_string();
+
+    // Return false.
+    // Give possibility to further process this message.
+    // For example, send information to UI.
+    return false;
 }
 
-// bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
-//{
-//    SBinaryDownloadStatCmd cmd;
-//    cmd.convertFromData(_msg.bodyToContainer());
-//
-//    LOG(info) << "Recieved a DownloadStat [" << cmd
-//              << "] command from: " << socket().remote_endpoint().address().to_string();
-//
-//    return true;
-//}
-
-void CAgentChannel::sendTestBinaryAttachment(size_t _binarySize)
+bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg)
 {
-    SBinaryAttachmentCmd cmd;
+    SBinaryDownloadStatCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
 
-    for (size_t i = 0; i < _binarySize; ++i)
-    {
-        char c = rand() % 256;
-        cmd.m_fileData.push_back(c);
-    }
+    LOG(info) << "Recieved a cmdDOWNLOAD_TEST_STAT [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
 
-    // Calculate CRC32 of the test file data
-    boost::crc_32_type crc;
-    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+    return false;
+}
 
-    cmd.m_crc32 = crc.checksum();
-    cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
-    cmd.m_fileSize = cmd.m_fileData.size();
+bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg)
+{
+    SSimpleMsgCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
 
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
-    pushMsg(msg);
+    LOG(info) << "Recieved a cmdDOWNLOAD_TEST_ERROR [" << cmd
+              << " ] command from: " << socket().remote_endpoint().address().to_string();
+
+    // Return false. This message will be processed by ConnectionManager.
+    return false;
 }

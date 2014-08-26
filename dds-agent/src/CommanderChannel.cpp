@@ -255,6 +255,44 @@ void CCommanderChannel::sendGetLogError(const string& _msg)
     pushMsg(pm);
 }
 
+bool CCommanderChannel::on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg)
+{
+    SBinaryAttachmentCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    // Calculate CRC32 of the recieved file data
+    boost::crc_32_type crc32;
+    crc32.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+    if (crc32.checksum() == cmd.m_crc32)
+    {
+        chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
+
+        // Form reply command
+        SBinaryDownloadStatCmd reply_cmd;
+        reply_cmd.m_recievedCrc32 = crc32.checksum();
+        reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
+        reply_cmd.m_downloadTime = downloadTime.count();
+
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdDOWNLOAD_TEST_STAT>(reply_cmd);
+        pushMsg(msg);
+    }
+    else
+    {
+        stringstream ss;
+        ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << cmd.m_crc32;
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = ss.str();
+        CProtocolMessage pm;
+        pm.encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
+        pushMsg(pm);
+    }
+
+    return true;
+}
+
 void CCommanderChannel::readAgentUUIDFile()
 {
     const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());

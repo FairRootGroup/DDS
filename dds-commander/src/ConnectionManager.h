@@ -32,46 +32,52 @@ namespace dds
         bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
         bool on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel* _channel);
         bool on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
 
-        void checkAllRecieved();
+        void checkAllLogsReceived();
 
-        struct SGetLogInfo
+        void sendTestBinaryAttachment(size_t _binarySize, CAgentChannel::connectionPtr_t _channel);
+
+        struct SChannelInfo
         {
-            SGetLogInfo()
+            SChannelInfo()
                 : m_nofRequests(0)
-                , m_nofRecieved(0)
-                , m_nofRecievedErrors(0)
+                , m_nofReceived(0)
+                , m_nofReceivedErrors(0)
                 , m_channel(nullptr)
-                , m_mutexGetLog()
+                , m_mutexStart()
                 , m_mutexReceive()
             {
             }
 
-            size_t nofRecieved() const
+            size_t nofReceived() const
             {
-                return (m_nofRecieved + m_nofRecievedErrors);
+                return (m_nofReceived + m_nofReceivedErrors);
             }
 
-            bool allRecieved() const
+            bool allReceived() const
             {
-                return (nofRecieved() == m_nofRequests);
+                return (nofReceived() == m_nofRequests);
             }
 
             void zeroCounters()
             {
                 m_nofRequests = 0;
-                m_nofRecieved = 0;
-                m_nofRecievedErrors = 0;
+                m_nofReceived = 0;
+                m_nofReceivedErrors = 0;
             }
             size_t m_nofRequests;
-            size_t m_nofRecieved;
-            size_t m_nofRecievedErrors;
+            size_t m_nofReceived;
+            size_t m_nofReceivedErrors;
             CAgentChannel* m_channel;
-            std::mutex m_mutexGetLog;
+            std::mutex m_mutexStart;
             std::mutex m_mutexReceive;
         };
 
-        SGetLogInfo m_getLog;
+        SChannelInfo m_getLog;
+        SChannelInfo m_downloadTest;
         std::string m_sCurrentTopoFile;
     };
 }

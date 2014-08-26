@@ -234,7 +234,7 @@ endif(BUILD_dds-getlog)
 # dds-test
 if(BUILD_dds-test)
     message(STATUS "Build dds-test - YES")
- #   add_subdirectory ( dds-test )
+    add_subdirectory ( dds-test )
 endif(BUILD_dds-test)
 
 #

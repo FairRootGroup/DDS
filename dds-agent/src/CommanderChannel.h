@@ -30,6 +30,7 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdASSIGN_USER_TASK, on_cmdASSIGN_USER_TASK)
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
+        MESSAGE_HANDLER(cmdDOWNLOAD_TEST, on_cmdDOWNLOAD_TEST)
         END_MSG_MAP()
 
       private:
@@ -45,6 +46,7 @@ namespace dds
         bool on_cmdGET_LOG(const CProtocolMessage& _msg);
         bool on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg);
         bool on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg);
+        bool on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg);
         void onRemoteEndDissconnected();
 
       private:

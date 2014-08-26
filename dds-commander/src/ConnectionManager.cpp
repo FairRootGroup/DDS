@@ -8,6 +8,7 @@
 #include "Topology.h"
 // BOOST
 #include <boost/filesystem.hpp>
+#include <boost/crc.hpp>
 
 using namespace dds;
 using namespace std;
@@ -63,11 +64,29 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
                                        {
         return this->on_cmdSUBMIT_START(_msg, _channel);
     });
+
+    _newClient->registerMessageHandler(cmdSTART_DOWNLOAD_TEST,
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->on_cmdSTART_DOWNLOAD_TEST(_msg, _channel);
+    });
+
+    _newClient->registerMessageHandler(cmdDOWNLOAD_TEST_STAT,
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->on_cmdDOWNLOAD_TEST_STAT(_msg, _channel);
+    });
+
+    _newClient->registerMessageHandler(cmdDOWNLOAD_TEST_ERROR,
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->on_cmdDOWNLOAD_TEST_ERROR(_msg, _channel);
+    });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
-    std::lock_guard<std::mutex> lock(m_getLog.m_mutexGetLog);
+    std::lock_guard<std::mutex> lock(m_getLog.m_mutexStart);
 
     if (m_getLog.m_channel != nullptr)
     {
@@ -128,19 +147,19 @@ bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _ms
     {
         std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
 
-        m_getLog.m_nofRecieved++;
-        string reply_msg(to_string(m_getLog.nofRecieved()) + "/" + to_string(m_getLog.m_nofRequests) +
-                         " Log from agent [" + to_string(_channel->getId()) + "] saved to file " +
-                         recieved_cmd.m_fileName);
+        m_getLog.m_nofReceived++;
+        stringstream ss;
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " [" << _channel->getId() << "] -> "
+           << recieved_cmd.m_fileName;
 
         SSimpleMsgCmd cmd;
-        cmd.m_sMsg = reply_msg;
+        cmd.m_sMsg = ss.str();
 
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdLOG_RECIEVED>(cmd);
         m_getLog.m_channel->syncPushMsg(msg);
 
-        checkAllRecieved();
+        checkAllLogsReceived();
     }
 
     return true;
@@ -154,21 +173,41 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
     {
         std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
 
-        m_getLog.m_nofRecievedErrors++;
-        string reply_msg(to_string(m_getLog.nofRecieved()) + "/" + to_string(m_getLog.m_nofRequests) +
-                         " Error from agent [" + to_string(_channel->getId()) + "]: ");
-        reply_msg += recieved_cmd.m_sMsg;
+        m_getLog.m_nofReceivedErrors++;
+        stringstream ss;
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " Error from agent [" << _channel->getId()
+           << "]: " << recieved_cmd.m_sMsg;
 
         SSimpleMsgCmd cmd;
-        cmd.m_sMsg = reply_msg;
+        cmd.m_sMsg = ss.str();
+
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
         m_getLog.m_channel->syncPushMsg(msg);
 
-        checkAllRecieved();
+        checkAllLogsReceived();
     }
 
     return true;
+}
+
+void CConnectionManager::checkAllLogsReceived()
+{
+    if (m_getLog.allReceived())
+    {
+        stringstream ss;
+        ss << "recieved: " << m_getLog.nofReceived() << ", total: " << m_getLog.m_nofRequests
+           << ", errors: " << m_getLog.m_nofReceivedErrors;
+
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = ss.str();
+
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdALL_LOGS_RECIEVED>(cmd);
+        m_getLog.m_channel->pushMsg(msg);
+
+        m_getLog.m_channel = nullptr;
+    }
 }
 
 bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel* _channel)
@@ -287,17 +326,117 @@ bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentC
     return true;
 }
 
-void CConnectionManager::checkAllRecieved()
+bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel* _channel)
 {
-    if (m_getLog.allRecieved())
+    std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexStart);
+
+    if (m_downloadTest.m_channel != nullptr)
     {
         SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "recieved: " + to_string(m_getLog.nofRecieved()) + ", total: " +
-                     to_string(m_getLog.m_nofRequests) + ", errors: " + to_string(m_getLog.m_nofRecievedErrors);
+        cmd.m_sMsg = "Can not process the request. dds-test already in progress.";
         CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdALL_LOGS_RECIEVED>(cmd);
-        m_getLog.m_channel->pushMsg(msg);
-
-        m_getLog.m_channel = nullptr;
+        msg.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
+        m_downloadTest.m_channel->pushMsg(msg);
+        return true;
     }
+    m_downloadTest.m_channel = _channel;
+    m_downloadTest.zeroCounters();
+
+    // Send messages to all agents
+    for (const auto& v : m_channels)
+    {
+        if (v->getType() == EAgentChannelType::AGENT && v->started())
+        {
+            sendTestBinaryAttachment(1000, v);
+            sendTestBinaryAttachment(10000, v);
+            sendTestBinaryAttachment(100000, v);
+            sendTestBinaryAttachment(1000000, v);
+            sendTestBinaryAttachment(10000000, v);
+            m_downloadTest.m_nofRequests += 5;
+        }
+    }
+
+    if (m_downloadTest.m_nofRequests == 0)
+    {
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = "There are no connecting agents.";
+        CProtocolMessage pm;
+        pm.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
+        m_downloadTest.m_channel->pushMsg(pm);
+    }
+    return true;
+}
+
+void CConnectionManager::sendTestBinaryAttachment(size_t _binarySize, CAgentChannel::connectionPtr_t _channel)
+{
+    SBinaryAttachmentCmd cmd;
+
+    for (size_t i = 0; i < _binarySize; ++i)
+    {
+        char c = rand() % 256;
+        cmd.m_fileData.push_back(c);
+    }
+
+    // Calculate CRC32 of the test file data
+    boost::crc_32_type crc;
+    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+
+    cmd.m_crc32 = crc.checksum();
+    cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
+    cmd.m_fileSize = cmd.m_fileData.size();
+
+    CProtocolMessage msg;
+    msg.encodeWithAttachment<cmdDOWNLOAD_TEST>(cmd);
+    _channel->pushMsg(msg);
+}
+
+bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel* _channel)
+{
+    SBinaryDownloadStatCmd recieved_cmd;
+    recieved_cmd.convertFromData(_msg.bodyToContainer());
+
+    {
+        std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
+
+        m_getLog.m_nofReceived++;
+        stringstream ss;
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " [" << _channel->getId() << "] -> "
+           << recieved_cmd;
+
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = ss.str();
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdDOWNLOAD_TEST_RECIEVED>(cmd);
+        m_getLog.m_channel->syncPushMsg(msg);
+
+        checkAllLogsReceived();
+    }
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel)
+{
+    SSimpleMsgCmd recieved_cmd;
+    recieved_cmd.convertFromData(_msg.bodyToContainer());
+
+    {
+        std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
+
+        m_getLog.m_nofReceivedErrors++;
+        stringstream ss;
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " Error from agent [" << _channel->getId()
+           << "]: " << recieved_cmd.m_sMsg;
+
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = ss.str();
+
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
+        m_getLog.m_channel->syncPushMsg(msg);
+
+        checkAllLogsReceived();
+    }
+
+    return true;
 }
