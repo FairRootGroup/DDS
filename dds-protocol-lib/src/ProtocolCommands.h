@@ -62,9 +62,11 @@ namespace dds
         cmdBINARY_ATTACHMENT_LOG, // attachment: SBinanryAttachmentCmd.
         cmdGET_LOG,
         cmdALL_LOGS_RECIEVED, // attachment: SSimpleMsgCmd
-        cmdGET_LOG_ERROR,     // attachment: SSimpleMsgCmd
-        cmdGET_LOG_FATAL,     // attachment: SSimpleMsgCmd
-        cmdLOG_RECIEVED,      // attachment: SSimpleMsgCmd
+
+        // TODO: Use cmdSIMPLE_MSG instead of cmdGET_LOG_ERROR, cmdGET_LOG_FATAL
+        cmdGET_LOG_ERROR, // attachment: SSimpleMsgCmd
+        cmdGET_LOG_FATAL, // attachment: SSimpleMsgCmd
+        cmdLOG_RECIEVED,  // attachment: SSimpleMsgCmd
         cmdGET_AGENTS_INFO,
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd

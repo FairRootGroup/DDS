@@ -67,8 +67,6 @@ namespace dds
                                                     {
                     LOG(MiscCommon::info) << "Idle callback called";
                 });
-                //
-
                 m_acceptor.listen();
 
                 createClientAndStartAccept();
@@ -76,7 +74,7 @@ namespace dds
                 // Create a server info file
                 createServerInfoFile();
 
-                // m_acceptor.get_io_service().run();
+                // TODO: Use number of cors as the maximum number of threads. The minimum should be at least 4.
                 boost::thread_group worker_threads;
                 for (int x = 0; x < 4; ++x)
                 {
@@ -115,6 +113,17 @@ namespace dds
             {
                 LOG(MiscCommon::fatal) << e.what();
             }
+        }
+
+      protected:
+        typename T::weakConnectionPtr_t useRawPtr(T* _client) const
+        {
+            for (auto& v : m_channels)
+            {
+                if (v.get() == _client)
+                    return v;
+            }
+            return typename T::weakConnectionPtr_t();
         }
 
       private:

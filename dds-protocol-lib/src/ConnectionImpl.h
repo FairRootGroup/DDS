@@ -102,6 +102,7 @@ namespace dds
 
       public:
         typedef std::shared_ptr<T> connectionPtr_t;
+        typedef std::weak_ptr<T> weakConnectionPtr_t;
         typedef std::vector<connectionPtr_t> connectionPtrVector_t;
 
       public:

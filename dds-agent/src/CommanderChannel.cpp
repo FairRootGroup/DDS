@@ -367,8 +367,11 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg)
     {
         LOG(error) << e.what();
 
+        // Send response back to server
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = e.what();
+        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_srcCommand = cmdACTIVATE_AGENT;
         CProtocolMessage pm;
         pm.encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         pushMsg(pm);

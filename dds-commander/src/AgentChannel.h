@@ -49,6 +49,7 @@ namespace dds
         MESSAGE_HANDLER(cmdSTART_DOWNLOAD_TEST, on_cmdSTART_DOWNLOAD_TEST)
         MESSAGE_HANDLER(cmdDOWNLOAD_TEST_STAT, on_cmdDOWNLOAD_TEST_STAT)
         MESSAGE_HANDLER(cmdDOWNLOAD_TEST_ERROR, on_cmdDOWNLOAD_TEST_ERROR)
+        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         END_MSG_MAP()
 
       public:
@@ -76,6 +77,7 @@ namespace dds
         bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg);
         bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg);
         bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg);
+        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
 
         // On connection handles
         void onRemoteEndDissconnected()

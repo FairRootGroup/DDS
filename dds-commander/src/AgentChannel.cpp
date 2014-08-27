@@ -291,3 +291,23 @@ bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg)
     // Return false. This message will be processed by ConnectionManager.
     return false;
 }
+
+bool CAgentChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+{
+    SSimpleMsgCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    LOG(info) << "Recieved a on_cmdSIMPLE_MSG [" << cmd
+              << "] command from: " << socket().remote_endpoint().address().to_string();
+
+    switch (cmd.m_srcCommand)
+    {
+        case cmdACTIVATE_AGENT:
+
+            return true;
+
+        default:
+            LOG(static_cast<ELogSeverityLevel>(cmd.m_msgSeverity)) << "remote: " << cmd.m_sMsg;
+            return true;
+    }
+}

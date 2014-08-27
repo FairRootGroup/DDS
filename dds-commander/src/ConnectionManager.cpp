@@ -32,132 +32,144 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler(cmdGET_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdGET_LOG(_msg, _channel);
+        return this->on_cmdGET_LOG(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdBINARY_ATTACHMENT_LOG,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, _channel);
+        return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdGET_LOG_ERROR,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdGET_LOG_ERROR(_msg, _channel);
+        return this->on_cmdGET_LOG_ERROR(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdGET_AGENTS_INFO,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->agentsInfoHandler(_msg, _channel);
+        return this->agentsInfoHandler(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdSUBMIT,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdSUBMIT(_msg, _channel);
+        return this->on_cmdSUBMIT(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdSUBMIT_START,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdSUBMIT_START(_msg, _channel);
+        return this->on_cmdSUBMIT_START(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdSTART_DOWNLOAD_TEST,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdSTART_DOWNLOAD_TEST(_msg, _channel);
+        return this->on_cmdSTART_DOWNLOAD_TEST(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdDOWNLOAD_TEST_STAT,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdDOWNLOAD_TEST_STAT(_msg, _channel);
+        return this->on_cmdDOWNLOAD_TEST_STAT(_msg, useRawPtr(_channel));
     });
 
     _newClient->registerMessageHandler(cmdDOWNLOAD_TEST_ERROR,
                                        [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
                                        {
-        return this->on_cmdDOWNLOAD_TEST_ERROR(_msg, _channel);
+        return this->on_cmdDOWNLOAD_TEST_ERROR(_msg, useRawPtr(_channel));
     });
 }
 
-bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
 {
     std::lock_guard<std::mutex> lock(m_getLog.m_mutexStart);
-
-    if (m_getLog.m_channel != nullptr)
+    try
     {
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "Can not process the request. dds-getlog already in progress.";
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
-        m_getLog.m_channel->pushMsg(msg);
-        return true;
-    }
-    m_getLog.m_channel = _channel;
-    m_getLog.zeroCounters();
 
-    // Create directory to store logs
-    const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-    fs::path dir(sLogStorageDir);
-    if (!fs::exists(dir) && !fs::create_directory(dir))
-    {
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "Could not create directory " + sLogStorageDir + " to save log files.";
-        CProtocolMessage pm;
-        pm.encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
-        m_getLog.m_channel->pushMsg(pm);
-
-        m_getLog.m_channel = nullptr;
-
-        return true;
-    }
-
-    // Calculate number of requests
-    for (const auto& v : m_channels)
-    {
-        if (v->getType() == EAgentChannelType::AGENT && v->started())
+        if (!m_getLog.m_channel.expired())
         {
-            m_getLog.m_nofRequests++;
-        }
-    }
-
-    // Send messages to all agents
-    for (const auto& v : m_channels)
-    {
-        if (v->getType() == EAgentChannelType::AGENT && v->started())
-        {
+            SSimpleMsgCmd cmd;
+            cmd.m_sMsg = "Can not process the request. dds-getlog already in progress.";
             CProtocolMessage msg;
-            msg.encode<cmdGET_LOG>();
-            v->pushMsg(msg);
+            msg.encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
+            auto p = _channel.lock();
+            p->pushMsg(msg);
+            return true;
+        }
+        m_getLog.m_channel = _channel;
+        auto p = m_getLog.m_channel.lock();
+        m_getLog.zeroCounters();
+
+        // Create directory to store logs
+        const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+        fs::path dir(sLogStorageDir);
+        if (!fs::exists(dir) && !fs::create_directory(dir))
+        {
+            SSimpleMsgCmd cmd;
+            cmd.m_sMsg = "Could not create directory " + sLogStorageDir + " to save log files.";
+            CProtocolMessage pm;
+            pm.encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
+            p->pushMsg(pm);
+
+            m_getLog.m_channel.reset();
+
+            return true;
+        }
+
+        // Calculate number of requests
+        for (const auto& v : m_channels)
+        {
+            if (v->getType() == EAgentChannelType::AGENT && v->started())
+            {
+                m_getLog.m_nofRequests++;
+            }
+        }
+
+        // Send messages to all agents
+        for (const auto& v : m_channels)
+        {
+            if (v->getType() == EAgentChannelType::AGENT && v->started())
+            {
+                CProtocolMessage msg;
+                msg.encode<cmdGET_LOG>();
+                v->pushMsg(msg);
+            }
+        }
+
+        if (m_getLog.m_nofRequests == 0)
+        {
+            SSimpleMsgCmd cmd;
+            cmd.m_sMsg = "There are no connecting agents.";
+            CProtocolMessage pm;
+            pm.encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
+            p->pushMsg(pm);
         }
     }
-
-    if (m_getLog.m_nofRequests == 0)
+    catch (bad_weak_ptr& e)
     {
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "There are no connecting agents.";
-        CProtocolMessage pm;
-        pm.encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
-        m_getLog.m_channel->pushMsg(pm);
+        // TODO: Do we need to log something here?
     }
     return true;
 }
 
-bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg,
+                                                     CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SBinaryAttachmentCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg.bodyToContainer());
-
+    try
     {
+        SBinaryAttachmentCmd recieved_cmd;
+        recieved_cmd.convertFromData(_msg.bodyToContainer());
+
         std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
 
         m_getLog.m_nofReceived++;
         stringstream ss;
-        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " [" << _channel->getId() << "] -> "
+        auto ptrChannel = _channel.lock();
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " [" << ptrChannel->getId() << "] -> "
            << recieved_cmd.m_fileName;
 
         SSimpleMsgCmd cmd;
@@ -165,25 +177,32 @@ bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _ms
 
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdLOG_RECIEVED>(cmd);
-        m_getLog.m_channel->syncPushMsg(msg);
+        auto p = m_getLog.m_channel.lock();
+        p->syncPushMsg(msg);
 
         checkAllLogsReceived();
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
     }
 
     return true;
 }
 
-bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg.bodyToContainer());
-
+    try
     {
+        SSimpleMsgCmd recieved_cmd;
+        recieved_cmd.convertFromData(_msg.bodyToContainer());
+
         std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
 
         m_getLog.m_nofReceivedErrors++;
         stringstream ss;
-        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " Error from agent [" << _channel->getId()
+        auto ptrChannel = _channel.lock();
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " Error from agent [" << ptrChannel->getId()
            << "]: " << recieved_cmd.m_sMsg;
 
         SSimpleMsgCmd cmd;
@@ -191,9 +210,14 @@ bool CConnectionManager::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgen
 
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
-        m_getLog.m_channel->syncPushMsg(msg);
+        auto p = m_getLog.m_channel.lock();
+        p->syncPushMsg(msg);
 
         checkAllLogsReceived();
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
     }
 
     return true;
@@ -212,18 +236,28 @@ void CConnectionManager::checkAllLogsReceived()
 
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdALL_LOGS_RECIEVED>(cmd);
-        m_getLog.m_channel->pushMsg(msg);
+        try
+        {
+            auto p = m_getLog.m_channel.lock();
+            p->pushMsg(msg);
 
-        m_getLog.m_channel = nullptr;
+            m_getLog.m_channel.reset();
+        }
+        catch (bad_weak_ptr& e)
+        {
+            // TODO: Do we need to log something here?
+        }
     }
 }
 
-bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
     {
         SSubmitCmd cmd;
         cmd.convertFromData(_msg.bodyToContainer());
+
+        auto p = _channel.lock();
 
         if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
         {
@@ -252,7 +286,7 @@ bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChanne
                 msg_cmd.m_sMsg = "Dummy job info, JOBIds";
                 CProtocolMessage msg;
                 msg.encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
-                _channel->pushMsg(msg);
+                p->pushMsg(msg);
             }
             catch (exception& e)
             {
@@ -269,9 +303,13 @@ bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChanne
                 msg_cmd.m_sMsg = ss.str();
                 CProtocolMessage msg;
                 msg.encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
-                _channel->pushMsg(msg);
+                p->pushMsg(msg);
             }
         }
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
     }
     catch (exception& e)
     {
@@ -279,13 +317,17 @@ bool CConnectionManager::on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChanne
         msg_cmd.m_sMsg = e.what();
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
-        _channel->pushMsg(msg);
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            p->pushMsg(msg);
+        }
     }
 
     return true;
 }
 
-bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
 {
     // Start distirbuiting user tasks between agents
     // TODO: We might need to create a thread here to avoid blocking a thread of the transport
@@ -312,7 +354,7 @@ bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgent
     return true;
 }
 
-bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
 {
     SAgentsInfoCmd cmd;
     stringstream ss;
@@ -329,22 +371,28 @@ bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentC
 
     CProtocolMessage msg;
     msg.encodeWithAttachment<cmdREPLY_AGENTS_INFO>(cmd);
-    _channel->pushMsg(msg);
+    if (!_channel.expired())
+    {
+        auto p = _channel.lock();
+        p->pushMsg(msg);
+    }
 
     return true;
 }
 
-bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg,
+                                                   CAgentChannel::weakConnectionPtr_t _channel)
 {
     std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexStart);
 
-    if (m_downloadTest.m_channel != nullptr)
+    if (!m_downloadTest.m_channel.expired())
     {
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = "Can not process the request. dds-test already in progress.";
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
-        m_downloadTest.m_channel->pushMsg(msg);
+        auto p = _channel.lock();
+        p->pushMsg(msg);
         return true;
     }
     m_downloadTest.m_channel = _channel;
@@ -375,10 +423,14 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg,
     if (m_downloadTest.m_nofRequests == 0)
     {
         SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "There are no connecting agents.";
+        cmd.m_sMsg = "There are no active agents.";
         CProtocolMessage pm;
         pm.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
-        m_downloadTest.m_channel->pushMsg(pm);
+        if (!m_downloadTest.m_channel.expired())
+        {
+            auto p = m_downloadTest.m_channel.lock();
+            p->pushMsg(pm);
+        }
     }
     return true;
 }
@@ -406,7 +458,8 @@ void CConnectionManager::sendTestBinaryAttachment(size_t _binarySize, CAgentChan
     _channel->pushMsg(msg);
 }
 
-bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg,
+                                                  CAgentChannel::weakConnectionPtr_t _channel)
 {
     SBinaryDownloadStatCmd recieved_cmd;
     recieved_cmd.convertFromData(_msg.bodyToContainer());
@@ -416,14 +469,19 @@ bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, 
 
         m_downloadTest.m_nofReceived++;
         stringstream ss;
-        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " [" << _channel->getId()
-           << "] -> " << recieved_cmd;
+        auto p = _channel.lock();
+        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " [" << p->getId() << "] -> "
+           << recieved_cmd;
 
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = ss.str();
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdDOWNLOAD_TEST_RECIEVED>(cmd);
-        m_downloadTest.m_channel->syncPushMsg(msg);
+        if (!m_downloadTest.m_channel.expired())
+        {
+            auto pDownloadUI = m_downloadTest.m_channel.lock();
+            pDownloadUI->pushMsg(msg);
+        }
 
         checkAllDownloadTestsReceived();
     }
@@ -431,7 +489,8 @@ bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, 
     return true;
 }
 
-bool CConnectionManager::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel)
+bool CConnectionManager::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg,
+                                                   CAgentChannel::weakConnectionPtr_t _channel)
 {
     SSimpleMsgCmd recieved_cmd;
     recieved_cmd.convertFromData(_msg.bodyToContainer());
@@ -441,15 +500,20 @@ bool CConnectionManager::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg,
 
         m_downloadTest.m_nofReceivedErrors++;
         stringstream ss;
-        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " Error from agent ["
-           << _channel->getId() << "]: " << recieved_cmd.m_sMsg;
+        auto p = _channel.lock();
+        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " Error from agent [" << p->getId()
+           << "]: " << recieved_cmd.m_sMsg;
 
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = ss.str();
 
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
-        m_downloadTest.m_channel->syncPushMsg(msg);
+        if (!m_downloadTest.m_channel.expired())
+        {
+            auto pDownloadUI = m_downloadTest.m_channel.lock();
+            pDownloadUI->syncPushMsg(msg);
+        }
 
         checkAllDownloadTestsReceived();
     }
@@ -470,8 +534,12 @@ void CConnectionManager::checkAllDownloadTestsReceived()
 
         CProtocolMessage msg;
         msg.encodeWithAttachment<cmdALL_DOWNLOAD_TESTS_RECIEVED>(cmd);
-        m_downloadTest.m_channel->pushMsg(msg);
+        if (!m_downloadTest.m_channel.expired())
+        {
+            auto pDownloadUI = m_downloadTest.m_channel.lock();
+            pDownloadUI->pushMsg(msg);
 
-        m_downloadTest.m_channel = nullptr;
+            m_downloadTest.m_channel.reset();
+        }
     }
 }

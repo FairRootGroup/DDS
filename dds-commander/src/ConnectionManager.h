@@ -26,15 +26,15 @@ namespace dds
         void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
 
       private:
-        bool agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel* _channel);
-        bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
+        bool agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
         void checkAllLogsReceived();
         void checkAllDownloadTestsReceived();
@@ -47,7 +47,6 @@ namespace dds
                 : m_nofRequests(0)
                 , m_nofReceived(0)
                 , m_nofReceivedErrors(0)
-                , m_channel(nullptr)
                 , m_mutexStart()
                 , m_mutexReceive()
             {
@@ -69,10 +68,11 @@ namespace dds
                 m_nofReceived = 0;
                 m_nofReceivedErrors = 0;
             }
+
             size_t m_nofRequests;
             size_t m_nofReceived;
             size_t m_nofReceivedErrors;
-            CAgentChannel* m_channel;
+            CAgentChannel::weakConnectionPtr_t m_channel;
             std::mutex m_mutexStart;
             std::mutex m_mutexReceive;
         };
