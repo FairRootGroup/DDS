@@ -13,10 +13,8 @@ namespace dds
     struct SBinaryAttachmentCmd : public SBasicCmd<SBinaryAttachmentCmd>
     {
         SBinaryAttachmentCmd()
-            : m_fileName()
-            , m_fileSize(0)
+            : m_fileSize(0)
             , m_crc32(0)
-            , m_fileData()
         {
         }
         void normalizeToLocal();

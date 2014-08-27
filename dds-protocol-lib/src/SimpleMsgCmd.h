@@ -13,6 +13,8 @@ namespace dds
     struct SSimpleMsgCmd : public SBasicCmd<SSimpleMsgCmd>
     {
         SSimpleMsgCmd()
+            : m_msgSeverity(0)
+            , m_srcCommand(0)
         {
         }
         void normalizeToLocal();
