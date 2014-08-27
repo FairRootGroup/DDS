@@ -30,6 +30,7 @@
 #include <fstream>
 
 // DDS
+#include "def.h"
 #include "UserDefaults.h"
 #include "SysHelper.h"
 
@@ -48,19 +49,6 @@
 
 namespace MiscCommon
 {
-    /// Severity levels
-    enum ELogSeverityLevel
-    {
-        debug = 0,
-        info = 1,
-        warning = 2,
-        error = 3,
-        fatal = 4,
-        log_stdout = 5,
-        log_stdout_clean = 6, // nothing will be pre-append to the output
-        log_stderr = 7
-    };
-
     /// The operator puts a human-friendly representation of the severity level to the stream
     inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)
     {

@@ -48,9 +48,7 @@ CAgentConnectionManager::~CAgentConnectionManager()
 void CAgentConnectionManager::doAwaitStop()
 {
     m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
-                         {
-                             stop();
-                         });
+                         { stop(); });
 }
 
 void CAgentConnectionManager::start()
@@ -61,15 +59,13 @@ void CAgentConnectionManager::start()
 
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
-                                            {
-            LOG(info) << "Idle callback called";
-        });
+                                            { LOG(info) << "Idle callback called"; });
 
         // Read server info file
         const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocation());
         LOG(info) << "Reading server info from: " << sSrvCfg;
         if (sSrvCfg.empty())
-            throw runtime_error("Can't find server info file.");
+            throw runtime_error("Cannot find server info file.");
 
         boost::property_tree::ptree pt;
         boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
@@ -101,7 +97,7 @@ void CAgentConnectionManager::start()
             }
             else
             {
-                LOG(fatal) << "Can not connect to server: " << ec.message();
+                LOG(fatal) << "Cannot connect to server: " << ec.message();
             }
         });
 

@@ -34,7 +34,7 @@ namespace dds
     typedef struct SOptions
     {
         SOptions()
-            : m_RMS(SSubmitCmd::SSH)
+            : m_RMS(SSubmitCmd::UNKNOWN)
             , m_bStart(false)
         {
         }
@@ -65,10 +65,9 @@ namespace dds
         options.add_options()("topo,t",
                               bpo::value<std::string>(&_options->m_sTopoFile),
                               "A topology file. The option can only be used with the \"submit\" command");
-        options.add_options()(
-            "rms,r",
-            bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
-            "Resource Management System. The option can only be used with the \"submit\" command (default: ssh)");
+        options.add_options()("rms,r",
+                              bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
+                              "Resource Management System. The option can only be used with the \"submit\" command");
         options.add_options()("ssh-rms-cfg",
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
@@ -92,14 +91,14 @@ namespace dds
             return false;
         }
 
-        if (!vm.count("topo"))
+        if (vm.count("rms") && !vm.count("topo"))
         {
             LOG(MiscCommon::log_stderr) << "specify a topo file"
                                         << "\n\n" << options;
             return false;
         }
 
-        if (_options->m_RMS == SSubmitCmd::SSH && !vm.count("ssh-rms-cfg"))
+        if (vm.count("rms") && (_options->m_RMS == SSubmitCmd::SSH && !vm.count("ssh-rms-cfg")))
         {
             LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
                                            "--ssh-rms-cfg to specify a desired configuration file."

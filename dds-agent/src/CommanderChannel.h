@@ -28,6 +28,8 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_UUID, on_cmdGET_UUID)
         MESSAGE_HANDLER(cmdSET_UUID, on_cmdSET_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
+        MESSAGE_HANDLER(cmdASSIGN_USER_TASK, on_cmdASSIGN_USER_TASK)
+        MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
         END_MSG_MAP()
 
       private:
@@ -41,6 +43,8 @@ namespace dds
         bool on_cmdGET_UUID(const CProtocolMessage& _msg);
         bool on_cmdSET_UUID(const CProtocolMessage& _msg);
         bool on_cmdGET_LOG(const CProtocolMessage& _msg);
+        bool on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg);
+        bool on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg);
         void onRemoteEndDissconnected();
 
       private:
@@ -54,6 +58,7 @@ namespace dds
         bool m_isHandShakeOK;
         std::chrono::steady_clock::time_point m_headerReadTime;
         boost::uuids::uuid m_id;
+        std::string m_sUsrExe;
     };
 }
 

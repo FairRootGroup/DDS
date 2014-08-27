@@ -20,6 +20,7 @@
 // DDS
 #include "ProtocolMessage.h"
 #include "ProtocolCommands.h"
+#include "def.h"
 
 using boost::unit_test::test_suite;
 using namespace MiscCommon;
@@ -339,6 +340,40 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_UUID)
 
     BOOST_CHECK(cmd_src == cmd_dest);
     BOOST_CHECK(id == cmd_dest.m_id);
+}
+
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSIMPLE_MSG)
+{
+    const unsigned int cmdSize = 17;
+
+    // Create a message
+    SSimpleMsgCmd cmd_src;
+    cmd_src.m_srcCommand = cmdSIMPLE_MSG;
+    cmd_src.m_msgSeverity = MiscCommon::error;
+    cmd_src.m_sMsg = "Test Message";
+    CProtocolMessage msg_src;
+    msg_src.encodeWithAttachment<cmdSIMPLE_MSG>(cmd_src);
+
+    BOOST_CHECK(msg_src.header().m_cmd == cmdSIMPLE_MSG);
+
+    BOOST_CHECK(cmd_src.size() == cmdSize);
+
+    // "Send" message
+    CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
+    memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
+
+    // Decode the message
+    BOOST_CHECK(msg_dest.decode_header());
+
+    // Check that we got the proper command ID
+    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
+
+    // Read the message
+    SSimpleMsgCmd cmd_dest;
+    cmd_dest.convertFromData(msg_dest.bodyToContainer());
+
+    BOOST_CHECK(cmd_src == cmd_dest);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

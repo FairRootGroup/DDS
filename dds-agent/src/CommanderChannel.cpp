@@ -239,7 +239,7 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     }
     catch (exception& e)
     {
-        LOG(info) << e.what();
+        LOG(error) << e.what();
         sendGetLogError(e.what());
     }
 
@@ -300,4 +300,41 @@ void CCommanderChannel::onRemoteEndDissconnected()
     deleteAgentUUIDFile();
     LOG(info) << "The Agent [" << m_id << "] exited.";
     exit(EXIT_SUCCESS);
+}
+
+bool CCommanderChannel::on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg)
+{
+    SAssignUserTaskCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+    LOG(MiscCommon::info) << "Recieved a user task assigment. User's task: " << cmd.m_sExeFile;
+
+    m_sUsrExe = cmd.m_sExeFile;
+
+    return true;
+}
+
+bool CCommanderChannel::on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg)
+{
+    try
+    {
+        string sUsrExe(m_sUsrExe);
+        smart_path(&sUsrExe);
+        StringVector_t params;
+        string output;
+
+        LOG(MiscCommon::info) << "Executing user task: " << sUsrExe;
+        do_execv(sUsrExe, params, 60, &output);
+    }
+    catch (exception& e)
+    {
+        LOG(error) << e.what();
+
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = e.what();
+        CProtocolMessage pm;
+        pm.encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+        pushMsg(pm);
+    }
+
+    return true;
 }
