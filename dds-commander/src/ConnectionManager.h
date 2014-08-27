@@ -37,6 +37,7 @@ namespace dds
         bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel* _channel);
 
         void checkAllLogsReceived();
+        void checkAllDownloadTestsReceived();
 
         void sendTestBinaryAttachment(size_t _binarySize, CAgentChannel::connectionPtr_t _channel);
 
