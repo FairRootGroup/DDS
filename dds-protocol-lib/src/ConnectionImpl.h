@@ -104,6 +104,7 @@ namespace dds
         typedef std::shared_ptr<T> connectionPtr_t;
         typedef std::weak_ptr<T> weakConnectionPtr_t;
         typedef std::vector<connectionPtr_t> connectionPtrVector_t;
+        typedef std::vector<weakConnectionPtr_t> weakConnectionPtrVector_t;
 
       public:
         static connectionPtr_t makeNew(boost::asio::io_service& _service)

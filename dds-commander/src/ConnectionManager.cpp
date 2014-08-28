@@ -126,24 +126,24 @@ bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChann
             return true;
         }
 
-        // Calculate number of requests
-        for (const auto& v : m_channels)
-        {
-            if (v->getType() == EAgentChannelType::AGENT && v->started())
-            {
-                m_getLog.m_nofRequests++;
-            }
-        }
+        CAgentChannel::weakConnectionPtrVector_t channels(
+            getChannels([](CAgentChannel::connectionPtr_t _v)
+                        {
+                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                        }));
+
+        m_getLog.m_nofRequests = channels.size();
 
         // Send messages to all agents
-        for (const auto& v : m_channels)
+        for (const auto& v : channels)
         {
-            if (v->getType() == EAgentChannelType::AGENT && v->started())
-            {
-                CProtocolMessage msg;
-                msg.encode<cmdGET_LOG>();
-                v->pushMsg(msg);
-            }
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+
+            CProtocolMessage msg;
+            msg.encode<cmdGET_LOG>();
+            ptr->pushMsg(msg);
         }
 
         if (m_getLog.m_nofRequests == 0)
@@ -343,47 +343,81 @@ bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgent
     // remember the UI channel, which requested to submit the job
     m_chSubmitUI = _channel;
 
-    // Send binaries of user jobs to all active agents.
-    // Send activate signal to all agents. This will trigger start of user jobs on the agents.
-    for (const auto& v : m_channels)
+    try
     {
-        if (v->getType() == EAgentChannelType::AGENT && v->started())
+        // Start distirbuiting user tasks between agents
+        // TODO: We might need to create a thread here to avoid blocking a thread of the transport
+        CTopology topology;
+        topology.init(m_sCurrentTopoFile);
+
+        // Send binaries of user jobs to all active agents.
+        // Send activate signal to all agents. This will trigger start of user jobs on the agents.
+        CAgentChannel::weakConnectionPtrVector_t channels(
+            getChannels([](CAgentChannel::connectionPtr_t _v)
+                        {
+                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                        }));
+
+        for (const auto& v : channels)
         {
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+
             // Assgin user's tasks to agents
             SAssignUserTaskCmd msg_cmd;
             msg_cmd.m_sExeFile = "/Users/anar/Test.sh";
             CProtocolMessage msg;
             msg.encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
-            v->pushMsg(msg);
+            ptr->pushMsg(msg);
 
             // Active agents.
-            v->pushMsg<cmdACTIVATE_AGENT>();
+            ptr->pushMsg<cmdACTIVATE_AGENT>();
         }
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
     }
     return true;
 }
 
 bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SAgentsInfoCmd cmd;
-    stringstream ss;
-    for (const auto& v : m_channels)
+    try
     {
-        if (v->getType() == EAgentChannelType::AGENT && v->started())
+        SAgentsInfoCmd cmd;
+        stringstream ss;
+
+        CAgentChannel::weakConnectionPtrVector_t channels(
+            getChannels([](CAgentChannel::connectionPtr_t _v)
+                        {
+                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                        }));
+
+        for (const auto& v : channels)
         {
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+
             ++cmd.m_nActiveAgents;
-            ss << v->getId() << " " << v->getRemoteHostInfo().m_username << "@" << v->getRemoteHostInfo().m_host << ":"
-               << v->getRemoteHostInfo().m_DDSPath << " (pid:" << v->getRemoteHostInfo().m_agentPid << ")\n";
+            ss << ptr->getId() << " " << ptr->getRemoteHostInfo().m_username << "@" << ptr->getRemoteHostInfo().m_host
+               << ":" << ptr->getRemoteHostInfo().m_DDSPath << " (pid:" << ptr->getRemoteHostInfo().m_agentPid << ")\n";
+        }
+        cmd.m_sListOfAgents = ss.str();
+
+        CProtocolMessage msg;
+        msg.encodeWithAttachment<cmdREPLY_AGENTS_INFO>(cmd);
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            p->pushMsg(msg);
         }
     }
-    cmd.m_sListOfAgents = ss.str();
-
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdREPLY_AGENTS_INFO>(cmd);
-    if (!_channel.expired())
+    catch (bad_weak_ptr& e)
     {
-        auto p = _channel.lock();
-        p->pushMsg(msg);
+        // TODO: Do we need to log something here?
     }
 
     return true;
@@ -392,56 +426,64 @@ bool CConnectionManager::agentsInfoHandler(const CProtocolMessage& _msg, CAgentC
 bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg,
                                                    CAgentChannel::weakConnectionPtr_t _channel)
 {
-    std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexStart);
-
-    if (!m_downloadTest.m_channel.expired())
+    try
     {
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "Can not process the request. dds-test already in progress.";
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
-        auto p = _channel.lock();
-        p->pushMsg(msg);
-        return true;
-    }
-    m_downloadTest.m_channel = _channel;
-    m_downloadTest.zeroCounters();
+        std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexStart);
 
-    // First calculate number of requests
-    for (const auto& v : m_channels)
-    {
-        if (v->getType() == EAgentChannelType::AGENT && v->started())
-        {
-            m_downloadTest.m_nofRequests += 6;
-        }
-    }
-
-    // Send messages to aganets
-    for (const auto& v : m_channels)
-    {
-        if (v->getType() == EAgentChannelType::AGENT && v->started())
-        {
-            sendTestBinaryAttachment(1000, v);
-            sendTestBinaryAttachment(10000, v);
-            sendTestBinaryAttachment(100000, v);
-            sendTestBinaryAttachment(1000000, v);
-            sendTestBinaryAttachment(10000000, v);
-            sendTestBinaryAttachment(20000000, v);
-        }
-    }
-
-    if (m_downloadTest.m_nofRequests == 0)
-    {
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "There are no active agents.";
-        CProtocolMessage pm;
-        pm.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
         if (!m_downloadTest.m_channel.expired())
         {
-            auto p = m_downloadTest.m_channel.lock();
-            p->pushMsg(pm);
+            SSimpleMsgCmd cmd;
+            cmd.m_sMsg = "Can not process the request. dds-test already in progress.";
+            CProtocolMessage msg;
+            msg.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
+            auto p = _channel.lock();
+            p->pushMsg(msg);
+            return true;
+        }
+        m_downloadTest.m_channel = _channel;
+        m_downloadTest.zeroCounters();
+
+        CAgentChannel::weakConnectionPtrVector_t channels(
+            getChannels([](CAgentChannel::connectionPtr_t _v)
+                        {
+                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                        }));
+
+        m_downloadTest.m_nofRequests = 6 * channels.size();
+
+        // Send messages to aganets
+        for (const auto& v : channels)
+        {
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+
+            sendTestBinaryAttachment(1000, ptr);
+            sendTestBinaryAttachment(10000, ptr);
+            sendTestBinaryAttachment(100000, ptr);
+            sendTestBinaryAttachment(1000000, ptr);
+            sendTestBinaryAttachment(10000000, ptr);
+            sendTestBinaryAttachment(20000000, ptr);
+        }
+
+        if (m_downloadTest.m_nofRequests == 0)
+        {
+            SSimpleMsgCmd cmd;
+            cmd.m_sMsg = "There are no active agents.";
+            CProtocolMessage pm;
+            pm.encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
+            if (!m_downloadTest.m_channel.expired())
+            {
+                auto p = m_downloadTest.m_channel.lock();
+                p->pushMsg(pm);
+            }
         }
     }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
+    }
+
     return true;
 }
 

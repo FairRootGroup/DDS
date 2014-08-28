@@ -93,6 +93,7 @@ namespace dds
         {
             try
             {
+                // TODO: Use mutex
                 // Send shutdown signal to all client connections.
                 for (const auto& v : m_channels)
                 {
@@ -118,12 +119,29 @@ namespace dds
       protected:
         typename T::weakConnectionPtr_t useRawPtr(T* _client) const
         {
+            // TODO: Use mutex
             for (auto& v : m_channels)
             {
                 if (v.get() == _client)
                     return v;
             }
             return typename T::weakConnectionPtr_t();
+        }
+
+        typename T::weakConnectionPtrVector_t getChannels(
+            std::function<bool(typename T::connectionPtr_t)> _condition = nullptr) const
+        {
+            // TODO: Use mutex
+            typename T::weakConnectionPtrVector_t result;
+            result.reserve(m_channels.size());
+            for (auto& v : m_channels)
+            {
+                if (_condition == nullptr || _condition(v))
+                {
+                    result.push_back(v);
+                }
+            }
+            return result;
         }
 
       private:
@@ -213,9 +231,9 @@ namespace dds
         /// The signal_set is used to register for process termination notifications.
         boost::asio::signal_set m_signals;
         std::mutex m_mutex;
+        typename T::connectionPtrVector_t m_channels;
 
       protected:
-        typename T::connectionPtrVector_t m_channels;
         dds::SOptions_t m_options;
     };
 }
