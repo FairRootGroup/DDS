@@ -24,8 +24,7 @@ namespace dds
         {
             cmd_unknown,
             cmd_start,
-            cmd_stop,
-            cmd_test
+            cmd_stop
         };
         SOptions()
             : m_Command(cmd_start)
@@ -39,8 +38,6 @@ namespace dds
                 return cmd_start;
             if ("stop" == _name)
                 return cmd_stop;
-            if ("test" == _name)
-                return cmd_test;
 
             return cmd_unknown;
         }

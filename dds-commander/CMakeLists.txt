@@ -29,9 +29,7 @@ set( SOURCE_FILES
 	./src/main.cpp
 	./src/ConnectionManager.cpp
 	./src/ConnectionManagerImpl.cpp
-	./src/TestConnectionManager.cpp
 	./src/AgentChannel.cpp
-	./src/TestChannel.cpp
 )
 
 #
@@ -41,9 +39,7 @@ set( HEADER_FILES
 	./src/Options.h
 	./src/ConnectionManager.h
 	./src/ConnectionManagerImpl.h
-	./src/TestConnectionManager.h
 	./src/AgentChannel.h
-	./src/TestChannel.h
 )
 
 include_directories(
