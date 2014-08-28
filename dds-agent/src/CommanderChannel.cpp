@@ -91,7 +91,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
     cmd.convertFromData(_msg.bodyToContainer());
 
     chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
+    chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
 
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
@@ -267,7 +267,7 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg)
     if (crc32.checksum() == cmd.m_crc32)
     {
         chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-        chrono::milliseconds downloadTime = chrono::duration_cast<chrono::milliseconds>(now - m_headerReadTime);
+        chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
 
         // Form reply command
         SBinaryDownloadStatCmd reply_cmd;

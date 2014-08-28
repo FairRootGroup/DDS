@@ -77,8 +77,20 @@ namespace dds
             std::mutex m_mutexReceive;
         };
 
+        struct SDownloadStat
+        {
+            SDownloadStat()
+                : m_totalReceived(0)
+                , m_totalTime(0)
+            {
+            }
+            size_t m_totalReceived; // [bytes]
+            size_t m_totalTime;     // [ms]
+        };
+
         SChannelInfo m_getLog;
         SChannelInfo m_downloadTest;
+        SDownloadStat m_downloadTestStat;
         std::string m_sCurrentTopoFile;
     };
 }

@@ -403,7 +403,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg,
     {
         if (v->getType() == EAgentChannelType::AGENT && v->started())
         {
-            m_downloadTest.m_nofRequests += 5;
+            m_downloadTest.m_nofRequests += 6;
         }
     }
 
@@ -417,6 +417,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg,
             sendTestBinaryAttachment(100000, v);
             sendTestBinaryAttachment(1000000, v);
             sendTestBinaryAttachment(10000000, v);
+            sendTestBinaryAttachment(20000000, v);
         }
     }
 
@@ -470,8 +471,13 @@ bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg,
         m_downloadTest.m_nofReceived++;
         stringstream ss;
         auto p = _channel.lock();
-        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " [" << p->getId() << "] -> "
-           << recieved_cmd;
+        float downloadTime = 0.000001 * recieved_cmd.m_downloadTime; // micros->s
+        float speed = (downloadTime != 0.) ? 0.001 * recieved_cmd.m_recievedFileSize / downloadTime : 0;
+        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " [" << p->getId()
+           << "]: " << recieved_cmd.m_recievedFileSize << " bytes in " << downloadTime << " s (" << speed << " KB/s)";
+
+        m_downloadTestStat.m_totalReceived += recieved_cmd.m_recievedFileSize;
+        m_downloadTestStat.m_totalTime += recieved_cmd.m_downloadTime;
 
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = ss.str();
@@ -527,7 +533,12 @@ void CConnectionManager::checkAllDownloadTestsReceived()
     {
         stringstream ss;
         ss << "recieved: " << m_downloadTest.nofReceived() << ", total: " << m_downloadTest.m_nofRequests
-           << ", errors: " << m_downloadTest.m_nofReceivedErrors;
+           << ", errors: " << m_downloadTest.m_nofReceivedErrors << " | ";
+
+        float downloadTime = 0.000001 * m_downloadTestStat.m_totalTime; // micros->s
+        float speed = (downloadTime != 0.) ? 0.001 * m_downloadTestStat.m_totalReceived / downloadTime : 0;
+        ss << "download " << m_downloadTestStat.m_totalReceived << " bytes in " << downloadTime << " s (" << speed
+           << " KB/s)";
 
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = ss.str();
