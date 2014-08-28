@@ -353,13 +353,13 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg)
 
 bool CCommanderChannel::on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg)
 {
+    string sUsrExe(m_sUsrExe);
+    smart_path(&sUsrExe);
+    StringVector_t params;
+    string output;
+
     try
     {
-        string sUsrExe(m_sUsrExe);
-        smart_path(&sUsrExe);
-        StringVector_t params;
-        string output;
-
         LOG(MiscCommon::info) << "Executing user task: " << sUsrExe;
         do_execv(sUsrExe, params, 60, &output);
     }

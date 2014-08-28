@@ -82,6 +82,12 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
                                        {
         return this->on_cmdDOWNLOAD_TEST_ERROR(_msg, useRawPtr(_channel));
     });
+
+    _newClient->registerMessageHandler(cmdSIMPLE_MSG,
+                                       [this](const CProtocolMessage& _msg, CAgentChannel* _channel) -> bool
+                                       {
+        return this->on_cmdSIMPLE_MSG(_msg, useRawPtr(_channel));
+    });
 }
 
 bool CConnectionManager::on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
@@ -334,6 +340,9 @@ bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgent
     CTopology topology;
     topology.init(m_sCurrentTopoFile);
 
+    // remember the UI channel, which requested to submit the job
+    m_chSubmitUI = _channel;
+
     // Send binaries of user jobs to all active agents.
     // Send activate signal to all agents. This will trigger start of user jobs on the agents.
     for (const auto& v : m_channels)
@@ -342,7 +351,7 @@ bool CConnectionManager::on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgent
         {
             // Assgin user's tasks to agents
             SAssignUserTaskCmd msg_cmd;
-            msg_cmd.m_sExeFile = "Test.sh";
+            msg_cmd.m_sExeFile = "/Users/anar/Test.sh";
             CProtocolMessage msg;
             msg.encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
             v->pushMsg(msg);
@@ -553,4 +562,25 @@ void CConnectionManager::checkAllDownloadTestsReceived()
             m_downloadTest.m_channel.reset();
         }
     }
+}
+
+bool CConnectionManager::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel)
+{
+    SSimpleMsgCmd cmd;
+    cmd.convertFromData(_msg.bodyToContainer());
+
+    switch (cmd.m_srcCommand)
+    {
+        case cmdACTIVATE_AGENT:
+            if (!m_chSubmitUI.expired())
+            {
+                auto p = m_chSubmitUI.lock();
+                p->pushMsg(_msg);
+                // close connection
+                // p->pushMsg<cmdSHUTDOWN>();
+                m_chSubmitUI.reset();
+            }
+            return true; // let others to process this message
+    }
+    return false;
 }

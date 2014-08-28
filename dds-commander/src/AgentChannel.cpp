@@ -303,8 +303,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
     switch (cmd.m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
-
-            return true;
+            return false; // let others to process this message
 
         default:
             LOG(static_cast<ELogSeverityLevel>(cmd.m_msgSeverity)) << "remote: " << cmd.m_sMsg;

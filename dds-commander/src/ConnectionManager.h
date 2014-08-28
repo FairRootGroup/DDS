@@ -35,6 +35,7 @@ namespace dds
         bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
         void checkAllLogsReceived();
         void checkAllDownloadTestsReceived();
@@ -90,6 +91,7 @@ namespace dds
 
         SChannelInfo m_getLog;
         SChannelInfo m_downloadTest;
+        CAgentChannel::weakConnectionPtr_t m_chSubmitUI;
         SDownloadStat m_downloadTestStat;
         std::string m_sCurrentTopoFile;
     };
