@@ -10,7 +10,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     m_isHandShakeOK = true;
 
@@ -23,19 +23,19 @@ bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CInfoChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+bool CInfoChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
     if (!cmd.m_sMsg.empty())
         LOG(log_stdout) << "Server reports: " << cmd.m_sMsg;
     return true;
 }
 
-bool CInfoChannel::on_cmdREPLY_PID(const CProtocolMessage& _msg)
+bool CInfoChannel::on_cmdREPLY_PID(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
     LOG(debug) << "UI agent has recieved pid of the commander server: " << cmd.m_sMsg;
     if (m_options.m_bNeedCommanderPid)
         LOG(log_stdout_clean) << cmd.m_sMsg;
@@ -54,10 +54,10 @@ bool CInfoChannel::on_cmdREPLY_PID(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(const CProtocolMessage& _msg)
+bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SAgentsInfoCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
     LOG(debug) << "UI agent has recieved Agents Info from the commander server.";
     if (m_options.m_bNeedAgentsNumber)
         LOG(log_stdout_clean) << cmd.m_nActiveAgents;

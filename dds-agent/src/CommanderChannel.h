@@ -35,18 +35,18 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
-        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
-        bool on_cmdGET_HOST_INFO(const CProtocolMessage& _msg);
-        bool on_cmdDISCONNECT(const CProtocolMessage& _msg);
-        bool on_cmdSHUTDOWN(const CProtocolMessage& _msg);
-        bool on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg);
-        bool on_cmdGET_UUID(const CProtocolMessage& _msg);
-        bool on_cmdSET_UUID(const CProtocolMessage& _msg);
-        bool on_cmdGET_LOG(const CProtocolMessage& _msg);
-        bool on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg);
-        bool on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg);
-        bool on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_UUID(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSET_UUID(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdASSIGN_USER_TASK(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg);
         void onRemoteEndDissconnected();
 
       private:

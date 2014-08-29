@@ -40,10 +40,10 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
-        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
-        bool on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg);
-        bool on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdREPLY_SUBMIT_OK(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdREPLY_ERR_SUBMIT(CProtocolMessage::protocolMessagePtr_t _msg);
         // On connection handles
         void onConnected()
         {

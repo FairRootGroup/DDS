@@ -62,22 +62,22 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdHANDSHAKE(const CProtocolMessage& _msg);
-        bool on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg);
-        bool on_cmdSUBMIT(const CProtocolMessage& _msg);
-        bool on_cmdSUBMIT_START(const CProtocolMessage& _msg);
-        bool on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg);
-        bool on_cmdGED_PID(const CProtocolMessage& _msg);
-        bool on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg);
-        bool on_cmdREPLY_UUID(const CProtocolMessage& _msg);
-        bool on_cmdGET_LOG(const CProtocolMessage& _msg);
-        bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg);
-        bool on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg);
-        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg);
-        bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg);
-        bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg);
-        bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg);
-        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg);
+        bool on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdHANDSHAKE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdREPLY_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGED_PID(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdBINARY_DOWNLOAD_STAT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
 
         // On connection handles
         void onRemoteEndDissconnected()

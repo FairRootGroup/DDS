@@ -31,11 +31,11 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg);
-        bool on_cmdLOG_RECIEVED(const CProtocolMessage& _msg);
-        bool on_cmdALL_LOGS_RECIEVED(const CProtocolMessage& _msg);
-        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg);
-        bool on_cmdGET_LOG_FATAL(const CProtocolMessage& _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdLOG_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdALL_LOGS_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdGET_LOG_FATAL(CProtocolMessage::protocolMessagePtr_t _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

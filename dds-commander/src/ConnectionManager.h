@@ -26,16 +26,23 @@ namespace dds
         void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
 
       private:
-        bool agentsInfoHandler(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdGET_LOG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdSUBMIT(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdSUBMIT_START(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdSIMPLE_MSG(const CProtocolMessage& _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool agentsInfoHandler(CProtocolMessage::protocolMessagePtr_t _msg,
+                               CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg,
+                                         CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg,
+                                 CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg,
+                                CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg,
+                                       CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg,
+                                      CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg,
+                                       CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
         void checkAllLogsReceived();
         void checkAllDownloadTestsReceived();

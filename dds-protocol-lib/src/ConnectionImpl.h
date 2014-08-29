@@ -17,14 +17,14 @@
 #include "Logger.h"
 #include "MonitoringThread.h"
 
-#define BEGIN_MSG_MAP(theClass)                              \
-  public:                                                    \
-    friend CConnectionImpl<theClass>;                        \
-    void processMessage(const CProtocolMessage& _currentMsg) \
-    {                                                        \
-        dds::CMonitoringThread::instance().updateIdle();     \
-        bool processed = true;                               \
-        switch (_currentMsg.header().m_cmd)                  \
+#define BEGIN_MSG_MAP(theClass)                                             \
+  public:                                                                   \
+    friend CConnectionImpl<theClass>;                                       \
+    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg) \
+    {                                                                       \
+        dds::CMonitoringThread::instance().updateIdle();                    \
+        bool processed = true;                                              \
+        switch (_currentMsg->header().m_cmd)                                \
         {
 
 #define MESSAGE_HANDLER(msg, func)     \
@@ -34,15 +34,15 @@
 
 #define END_MSG_MAP()                                                                                              \
     default:                                                                                                       \
-        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg.toString();       \
+        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString();      \
         }                                                                                                          \
         if (!processed)                                                                                            \
         {                                                                                                          \
-            ECmdType currentCmd = static_cast<ECmdType>(_currentMsg.header().m_cmd);                               \
+            ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                              \
             if (m_registeredMessageHandlers.count(currentCmd) == 0)                                                \
             {                                                                                                      \
                 LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
-                                       << _currentMsg.toString();                                                  \
+                                       << _currentMsg->toString();                                                 \
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
@@ -82,7 +82,7 @@ namespace dds
     template <class T>
     class CConnectionImpl : public boost::noncopyable
     {
-        typedef std::function<bool(const CProtocolMessage&, T*)> handlerFunction_t;
+        typedef std::function<bool(CProtocolMessage::protocolMessagePtr_t, T*)> handlerFunction_t;
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
 
       protected:
@@ -90,7 +90,7 @@ namespace dds
             : m_io_service(_service)
             , m_socket(_service)
             , m_started(false)
-            , m_currentMsg()
+            , m_currentMsg(std::make_shared<CProtocolMessage>())
         {
         }
 
@@ -141,20 +141,21 @@ namespace dds
             return m_socket;
         }
 
-        void pushMsg(const CProtocolMessage& _msg)
+        void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg)
         {
+            m_writeMsg.push_back(_msg);
             writeMessage(_msg);
         }
 
         template <ECmdType _cmd>
         void pushMsg()
         {
-            CProtocolMessage msg;
-            msg.encode<_cmd>();
+            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+            msg->encode<_cmd>();
             pushMsg(msg);
         }
 
-        void syncPushMsg(const CProtocolMessage& _msg)
+        void syncPushMsg(CProtocolMessage::protocolMessagePtr_t _msg)
         {
             syncWriteMessage(_msg);
         }
@@ -162,8 +163,8 @@ namespace dds
         template <ECmdType _cmd>
         void syncPushMsg()
         {
-            CProtocolMessage msg;
-            msg.encode<_cmd>();
+            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+            msg->encode<_cmd>();
             syncPushMsg(msg);
         }
 
@@ -200,8 +201,8 @@ namespace dds
 
                     // Prepare a hand shake message
                     SVersionCmd cmd;
-                    CProtocolMessage msg;
-                    msg.encodeWithAttachment<cmdHANDSHAKE>(cmd);
+                    CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+                    msg->encodeWithAttachment<cmdHANDSHAKE>(cmd);
                     pushMsg(msg);
                 }
                 else
@@ -216,7 +217,7 @@ namespace dds
         void readHeader()
         {
             boost::asio::async_read(m_socket,
-                                    boost::asio::buffer(m_currentMsg.data(), CProtocolMessage::header_length),
+                                    boost::asio::buffer(m_currentMsg->data(), CProtocolMessage::header_length),
                                     [this](boost::system::error_code ec, std::size_t length)
                                     {
                 if (!ec)
@@ -225,7 +226,7 @@ namespace dds
                                            << CProtocolMessage::header_length << ", from "
                                            << socket().remote_endpoint().address().to_string();
                 }
-                if (!ec && m_currentMsg.decode_header())
+                if (!ec && m_currentMsg->decode_header())
                 {
                     // give a chance to child to execute something
                     T* pThis = static_cast<T*>(this);
@@ -254,30 +255,30 @@ namespace dds
 
         void readBody()
         {
-            if (m_currentMsg.body_length() == 0)
+            if (m_currentMsg->body_length() == 0)
             {
-                LOG(MiscCommon::debug) << "readBody: the message has no attachment: " << m_currentMsg.toString();
+                LOG(MiscCommon::debug) << "readBody: the message has no attachment: " << m_currentMsg->toString();
                 // process received message
                 T* pThis = static_cast<T*>(this);
                 pThis->processMessage(m_currentMsg);
                 // Read next message
-                m_currentMsg.clear();
+                m_currentMsg->clear();
                 readHeader();
                 return;
             }
 
             boost::asio::async_read(m_socket,
-                                    boost::asio::buffer(m_currentMsg.body(), m_currentMsg.body_length()),
+                                    boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
                                     [this](boost::system::error_code ec, std::size_t length)
                                     {
                 if (!ec)
                 {
-                    LOG(MiscCommon::debug) << "Received from Agent: " << m_currentMsg.toString();
+                    LOG(MiscCommon::debug) << "Received from Agent: " << m_currentMsg->toString();
                     // process received message
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
                     // Read next message
-                    m_currentMsg.clear();
+                    m_currentMsg->clear();
                     readHeader();
                 }
                 else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
@@ -299,23 +300,23 @@ namespace dds
         }
 
       private:
-        void writeMessage(const CProtocolMessage& _msg)
+        void writeMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
-            LOG(MiscCommon::debug) << "Sending message: " << _msg.toString();
+            LOG(MiscCommon::debug) << "Sending message: " << _msg->toString();
             boost::asio::async_write(m_socket,
-                                     boost::asio::buffer(_msg.data(), _msg.length()),
+                                     boost::asio::buffer(_msg->data(), _msg->length()),
                                      [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                                      {
                 writeHandler(_ec, _bytesTransferred);
             });
         }
 
-        void syncWriteMessage(const CProtocolMessage& _msg)
+        void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
-            LOG(MiscCommon::debug) << "Sending message: " << _msg.toString();
+            LOG(MiscCommon::debug) << "Sending message: " << _msg->toString();
             boost::system::error_code ec;
             size_t bytesTransfered = boost::asio::write(
-                m_socket, boost::asio::buffer(_msg.data(), _msg.length()), boost::asio::transfer_all(), ec);
+                m_socket, boost::asio::buffer(_msg->data(), _msg->length()), boost::asio::transfer_all(), ec);
 
             writeHandler(ec, bytesTransfered);
         }
@@ -364,7 +365,8 @@ namespace dds
         boost::asio::io_service& m_io_service;
         boost::asio::ip::tcp::socket m_socket;
         bool m_started;
-        CProtocolMessage m_currentMsg;
+        CProtocolMessage::protocolMessagePtr_t m_currentMsg;
+        CProtocolMessage::protocolMessagePtrVector_t m_writeMsg;
 
       protected:
         std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;

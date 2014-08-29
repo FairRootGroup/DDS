@@ -29,10 +29,10 @@ const boost::uuids::uuid& CAgentChannel::getId() const
     return m_id;
 }
 
-bool CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SVersionCmd ver;
-    ver.convertFromData(_msg.bodyToContainer());
+    ver.convertFromData(_msg->bodyToContainer());
     // send shutdown if versions are incompatible
     if (ver != SVersionCmd())
     {
@@ -56,10 +56,10 @@ bool CAgentChannel::on_cmdHANDSHAKE(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdHANDSHAKE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SVersionCmd ver;
-    ver.convertFromData(_msg.bodyToContainer());
+    ver.convertFromData(_msg->bodyToContainer());
     // send shutdown if versions are incompatible
     if (ver != SVersionCmd())
     {
@@ -67,8 +67,8 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
         // Send reply that the version of the protocol is incompatible
         LOG(warning) << "Client's protocol version is incompatable. Client: "
                      << socket().remote_endpoint().address().to_string();
-        CProtocolMessage msg;
-        msg.encode<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encode<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
         pushMsg(msg);
     }
     else
@@ -88,12 +88,12 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     try
     {
         SSubmitCmd cmd;
-        cmd.convertFromData(_msg.bodyToContainer());
+        cmd.convertFromData(_msg->bodyToContainer());
         LOG(info) << "Recieved a Submit command of the topo [" << cmd.m_sTopoFile
                   << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode]
                   << " from: " << socket().remote_endpoint().address().to_string();
@@ -110,8 +110,8 @@ bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
     {
         SSimpleMsgCmd msg_cmd;
         msg_cmd.m_sMsg = e.what();
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
         pushMsg(msg);
 
         return true;
@@ -121,7 +121,7 @@ bool CAgentChannel::on_cmdSUBMIT(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdSUBMIT_START(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(info) << "Recieved request to start distribuiting user tasks from: "
               << socket().remote_endpoint().address().to_string();
@@ -130,9 +130,9 @@ bool CAgentChannel::on_cmdSUBMIT_START(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdREPLY_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    m_remoteHostInfo.convertFromData(_msg.bodyToContainer());
+    m_remoteHostInfo.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdREPLY_HOST_INFO [" << m_remoteHostInfo
               << "] command from: " << socket().remote_endpoint().address().to_string();
@@ -140,24 +140,24 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdGED_PID(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdGED_PID(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     pid_t pid = getpid();
     SSimpleMsgCmd cmd_attachment;
     stringstream ss;
     ss << pid;
     cmd_attachment.m_sMsg = ss.str();
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdREPLY_PID>(cmd_attachment);
+    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+    msg->encodeWithAttachment<cmdREPLY_PID>(cmd_attachment);
     pushMsg(msg);
 
     return true;
 }
 
-bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SBinaryDownloadStatCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
@@ -165,10 +165,10 @@ bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY_UUID(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SUUIDCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdREPLY_GET_UUID [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
@@ -179,8 +179,8 @@ bool CAgentChannel::on_cmdREPLY_UUID(const CProtocolMessage& _msg)
         m_id = boost::uuids::random_generator()();
         SUUIDCmd msg_cmd;
         msg_cmd.m_id = m_id;
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdSET_UUID>(msg_cmd);
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdSET_UUID>(msg_cmd);
         pushMsg(msg);
     }
     else
@@ -191,7 +191,7 @@ bool CAgentChannel::on_cmdREPLY_UUID(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
@@ -199,10 +199,10 @@ bool CAgentChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
@@ -237,10 +237,10 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdGET_LOG_ERROR [" << cmd
               << " ] command from: " << socket().remote_endpoint().address().to_string();
@@ -249,7 +249,7 @@ bool CAgentChannel::on_cmdGET_LOG_ERROR(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(info) << "Recieved a cmdGET_AGENTS_INFO command from: " << socket().remote_endpoint().address().to_string();
 
@@ -259,7 +259,7 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(info) << "Recieved a cmdSTART_DOWNLOAD_TEST command from: " << socket().remote_endpoint().address().to_string();
 
@@ -269,10 +269,10 @@ bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SBinaryDownloadStatCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdDOWNLOAD_TEST_STAT [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
@@ -280,10 +280,10 @@ bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdDOWNLOAD_TEST_ERROR [" << cmd
               << " ] command from: " << socket().remote_endpoint().address().to_string();
@@ -292,10 +292,10 @@ bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(const CProtocolMessage& _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a on_cmdSIMPLE_MSG [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();

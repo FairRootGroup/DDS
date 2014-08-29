@@ -35,19 +35,19 @@ void CCommanderChannel::onHeaderRead()
     m_headerReadTime = std::chrono::steady_clock::now();
 }
 
-bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     m_isHandShakeOK = true;
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     pid_t pid = getpid();
 
@@ -60,14 +60,14 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(const CProtocolMessage& _msg)
     cmd.m_agentPid = pid;
     cmd.m_timeStamp = 0;
 
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
+    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+    msg->encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
     pushMsg(msg);
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdDISCONNECT(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     stop();
     LOG(info) << "The Agent [" << m_id << "] disconnected...Bye";
@@ -75,7 +75,7 @@ bool CCommanderChannel::on_cmdDISCONNECT(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CCommanderChannel::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     stop();
     deleteAgentUUIDFile();
@@ -85,10 +85,10 @@ bool CCommanderChannel::on_cmdSHUTDOWN(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
@@ -108,14 +108,14 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(const CProtocolMessage& _msg)
     reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
     reply_cmd.m_downloadTime = downloadTime.count();
 
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
+    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+    msg->encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
     pushMsg(msg);
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdGET_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(info) << "Recieved a cmdGET_UUID command from: " << socket().remote_endpoint().address().to_string();
 
@@ -134,17 +134,17 @@ bool CCommanderChannel::on_cmdGET_UUID(const CProtocolMessage& _msg)
 
     SUUIDCmd msg_cmd;
     msg_cmd.m_id = m_id;
-    CProtocolMessage msg;
-    msg.encodeWithAttachment<cmdREPLY_UUID>(msg_cmd);
+    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+    msg->encodeWithAttachment<cmdREPLY_UUID>(msg_cmd);
     pushMsg(msg);
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdSET_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SUUIDCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     LOG(info) << "Recieved a cmdSET_UUID [" << cmd
               << "] command from: " << socket().remote_endpoint().address().to_string();
@@ -156,7 +156,7 @@ bool CCommanderChannel::on_cmdSET_UUID(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
 
@@ -233,8 +233,8 @@ bool CCommanderChannel::on_cmdGET_LOG(const CProtocolMessage& _msg)
         fs::remove(archiveFileName);
         fs::remove_all(archiveDirName);
 
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
         pushMsg(msg);
     }
     catch (exception& e)
@@ -250,15 +250,15 @@ void CCommanderChannel::sendGetLogError(const string& _msg)
 {
     SSimpleMsgCmd cmd;
     cmd.m_sMsg = _msg;
-    CProtocolMessage pm;
-    pm.encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
+    CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
+    pm->encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
     pushMsg(pm);
 }
 
-bool CCommanderChannel::on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
 
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
@@ -275,8 +275,8 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg)
         reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
         reply_cmd.m_downloadTime = downloadTime.count();
 
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdDOWNLOAD_TEST_STAT>(reply_cmd);
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdDOWNLOAD_TEST_STAT>(reply_cmd);
         pushMsg(msg);
     }
     else
@@ -286,8 +286,8 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg)
            << " | size: " << cmd.m_fileData.size() << " name: " << cmd.m_fileName;
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = ss.str();
-        CProtocolMessage pm;
-        pm.encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
+        CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
+        pm->encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
         pushMsg(pm);
     }
 
@@ -341,10 +341,10 @@ void CCommanderChannel::onRemoteEndDissconnected()
     exit(EXIT_SUCCESS);
 }
 
-bool CCommanderChannel::on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdASSIGN_USER_TASK(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SAssignUserTaskCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
     LOG(MiscCommon::info) << "Recieved a user task assigment. User's task: " << cmd.m_sExeFile;
 
     m_sUsrExe = cmd.m_sExeFile;
@@ -352,7 +352,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CCommanderChannel::on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg)
+bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     string sUsrExe(m_sUsrExe);
     smart_path(&sUsrExe);
@@ -373,8 +373,8 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(const CProtocolMessage& _msg)
         cmd.m_sMsg = e.what();
         cmd.m_msgSeverity = MiscCommon::error;
         cmd.m_srcCommand = cmdACTIVATE_AGENT;
-        CProtocolMessage pm;
-        pm.encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+        CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
+        pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         pushMsg(pm);
     }
 

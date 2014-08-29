@@ -28,7 +28,7 @@ void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
     m_RMS = _val;
 }
 
-bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     m_isHandShakeOK = true;
 
@@ -44,8 +44,8 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
         cmd.m_nRMSTypeCode = m_RMS;
         cmd.m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
 
-        CProtocolMessage msg;
-        msg.encodeWithAttachment<cmdSUBMIT>(cmd);
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdSUBMIT>(cmd);
         pushMsg(msg);
     }
     // Check wheather we need to start distribuiting tasks
@@ -57,16 +57,16 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CSubmitChannel::on_cmdSIMPLE_MSG(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg.bodyToContainer());
+    cmd.convertFromData(_msg->bodyToContainer());
     if (!cmd.m_sMsg.empty())
         LOG(log_stdout) << "Server reports: " << cmd.m_sMsg;
     return true;
 }
 
-bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(log_stdout) << "Successfully done.";
 
@@ -77,7 +77,7 @@ bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(const CProtocolMessage& _msg)
     return true;
 }
 
-bool CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(const CProtocolMessage& _msg)
+bool CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     LOG(log_stderr) << "Submission has failed.";
 

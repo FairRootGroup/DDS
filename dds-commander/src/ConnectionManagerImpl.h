@@ -76,7 +76,7 @@ namespace dds
 
                 // TODO: Use number of cors as the maximum number of threads. The minimum should be at least 4.
                 boost::thread_group worker_threads;
-                for (int x = 0; x < 4; ++x)
+                for (int x = 0; x < 2; ++x)
                 {
                     worker_threads.create_thread(
                         boost::bind(&boost::asio::io_service::run, &(m_acceptor.get_io_service())));
@@ -97,8 +97,8 @@ namespace dds
                 // Send shutdown signal to all client connections.
                 for (const auto& v : m_channels)
                 {
-                    CProtocolMessage msg;
-                    msg.encode<cmdSHUTDOWN>();
+                    CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+                    msg->encode<cmdSHUTDOWN>();
                     v->syncPushMsg(msg);
                 }
 
