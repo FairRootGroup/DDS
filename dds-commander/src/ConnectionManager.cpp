@@ -477,7 +477,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
             // sendTestBinaryAttachment(10000, ptr);
             // sendTestBinaryAttachment(100000, ptr);
             // sendTestBinaryAttachment(1000000, ptr);
-            sendTestBinaryAttachment(10000000, ptr);
+            sendTestBinaryAttachment(193000, ptr);
             sendTestBinaryAttachment(1000, ptr);
             //  sendTestBinaryAttachment(12000000, ptr);
         }
@@ -509,7 +509,8 @@ void CConnectionManager::sendTestBinaryAttachment(size_t _binarySize, CAgentChan
 
     for (size_t i = 0; i < _binarySize; ++i)
     {
-        char c = rand() % 256;
+        // char c = rand() % 256;
+        char c = 1;
         cmd.m_fileData.push_back(c);
     }
 
@@ -535,7 +536,7 @@ bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMess
     {
         std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexReceive);
 
-        m_downloadTest.m_nofReceived++;
+        ++m_downloadTest.m_nofReceived;
         stringstream ss;
         auto p = _channel.lock();
         float downloadTime = 0.000001 * recieved_cmd.m_downloadTime; // micros->s
