@@ -282,7 +282,8 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(const CProtocolMessage& _msg)
     else
     {
         stringstream ss;
-        ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << cmd.m_crc32;
+        ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << cmd.m_crc32
+           << " | size: " << cmd.m_fileData.size() << " name: " << cmd.m_fileName;
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = ss.str();
         CProtocolMessage pm;
