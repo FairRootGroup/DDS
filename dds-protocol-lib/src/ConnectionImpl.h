@@ -277,6 +277,29 @@ namespace dds
                 if (!ec)
                 {
                     LOG(MiscCommon::debug) << "Received (" << length << ") from Agent: " << m_currentMsg->toString();
+
+                    // DEBUG
+                    //                    if (m_currentMsg->header().m_cmd == cmdDOWNLOAD_TEST)
+                    //                    {
+                    //                        SBinaryAttachmentCmd cmd;
+                    //                        cmd.convertFromData(m_currentMsg->bodyToContainer());
+                    //
+                    //                        LOG(MiscCommon::debug) << "ConnectionImpl::readBody: fileData.size()=" <<
+                    //                        cmd.m_fileData.size();
+                    //                        int cnt = 0;
+                    //                        for (auto v : cmd.m_fileData)
+                    //                        {
+                    //                            cnt++;
+                    //                            if (v != 'x')
+                    //                            {
+                    //                                LOG(MiscCommon::debug) << "ConnectionImpl::readBody: v != x at
+                    //                                cnt=" << cnt
+                    //                                                       << " v=" << v;
+                    //                            }
+                    //                        }
+                    //                    }
+                    //
+
                     // process received message
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
@@ -306,12 +329,17 @@ namespace dds
         void writeMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
             LOG(MiscCommon::debug) << "Sending message: " << _msg->toString();
-            boost::asio::async_write(m_socket,
-                                     boost::asio::buffer(_msg->data(), _msg->length()),
-                                     [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
-                                     {
-                writeHandler(_ec, _bytesTransferred);
-            });
+            //            boost::asio::async_write(m_socket,
+            //                                     boost::asio::buffer(_msg->data(), _msg->length()),
+            //                                     [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
+            //                                     {
+            //                writeHandler(_ec, _bytesTransferred);
+            //            });
+
+            boost::asio::async_write(
+                m_socket,
+                boost::asio::buffer(_msg->data(), _msg->length()),
+                std::bind(&CConnectionImpl::writeHandler, this, _msg, std::placeholders::_1, std::placeholders::_2));
         }
 
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
@@ -321,11 +349,35 @@ namespace dds
             size_t bytesTransfered = boost::asio::write(
                 m_socket, boost::asio::buffer(_msg->data(), _msg->length()), boost::asio::transfer_all(), ec);
 
-            writeHandler(ec, bytesTransfered);
+            writeHandler(_msg, ec, bytesTransfered);
         }
 
-        void writeHandler(boost::system::error_code _ec, std::size_t _bytesTransferred)
+        void writeHandler(CProtocolMessage::protocolMessagePtr_t _msg,
+                          boost::system::error_code _ec,
+                          std::size_t _bytesTransferred)
         {
+
+            // DEBUG
+            //            if (_msg->decode_header() && _msg->header().m_cmd == cmdDOWNLOAD_TEST)
+            //            {
+            //                SBinaryAttachmentCmd cmd;
+            //                cmd.convertFromData(_msg->bodyToContainer());
+            //
+            //                LOG(MiscCommon::debug) << "ConnectionImpl::writeHandler: fileData.size()=" <<
+            //                cmd.m_fileData.size();
+            //                int cnt = 0;
+            //                for (auto v : cmd.m_fileData)
+            //                {
+            //                    cnt++;
+            //                    if (v != 'x')
+            //                    {
+            //                        LOG(MiscCommon::debug) << "ConnectionImpl::writeHandler: v != x at cnt=" << cnt <<
+            //                        " v=" << v;
+            //                    }
+            //                }
+            //            }
+            //
+
             if (!_ec)
             {
                 LOG(MiscCommon::debug) << "Data successfully sent: " << _bytesTransferred << " bytes transferred.";
