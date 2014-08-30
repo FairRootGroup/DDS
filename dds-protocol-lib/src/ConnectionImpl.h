@@ -143,7 +143,10 @@ namespace dds
 
         void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg)
         {
+            // it can be called from multiple IO threads
+            std::lock_guard<std::mutex> lock(m_mutex);
             m_writeMsg.push_back(_msg);
+
             writeMessage(_msg);
         }
 
@@ -273,7 +276,7 @@ namespace dds
                                     {
                 if (!ec)
                 {
-                    LOG(MiscCommon::debug) << "Received from Agent: " << m_currentMsg->toString();
+                    LOG(MiscCommon::debug) << "Received (" << length << ") from Agent: " << m_currentMsg->toString();
                     // process received message
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
@@ -367,6 +370,7 @@ namespace dds
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
         CProtocolMessage::protocolMessagePtrVector_t m_writeMsg;
+        std::mutex m_mutex;
 
       protected:
         std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;

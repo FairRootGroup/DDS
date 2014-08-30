@@ -477,7 +477,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
             // sendTestBinaryAttachment(10000, ptr);
             // sendTestBinaryAttachment(100000, ptr);
             // sendTestBinaryAttachment(1000000, ptr);
-            sendTestBinaryAttachment(193000, ptr);
+            sendTestBinaryAttachment(500000, ptr);
             sendTestBinaryAttachment(1000, ptr);
             //  sendTestBinaryAttachment(12000000, ptr);
         }
