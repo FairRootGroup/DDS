@@ -473,13 +473,15 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
                 continue;
             auto ptr = v.lock();
 
-            // sendTestBinaryAttachment(1000, ptr);
-            // sendTestBinaryAttachment(10000, ptr);
-            // sendTestBinaryAttachment(100000, ptr);
-            // sendTestBinaryAttachment(1000000, ptr);
-            sendTestBinaryAttachment(500000, ptr);
             sendTestBinaryAttachment(1000, ptr);
-            //  sendTestBinaryAttachment(12000000, ptr);
+            sendTestBinaryAttachment(10000, ptr);
+            sendTestBinaryAttachment(1000, ptr);
+            sendTestBinaryAttachment(100000, ptr);
+            sendTestBinaryAttachment(1000, ptr);
+            sendTestBinaryAttachment(1000000, ptr);
+            sendTestBinaryAttachment(1000, ptr);
+            sendTestBinaryAttachment(10000000, ptr);
+            sendTestBinaryAttachment(1000, ptr);
         }
 
         if (m_downloadTest.m_nofRequests == 0)

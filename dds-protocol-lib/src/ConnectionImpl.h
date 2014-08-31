@@ -84,6 +84,7 @@ namespace dds
     {
         typedef std::function<bool(CProtocolMessage::protocolMessagePtr_t, T*)> handlerFunction_t;
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
+        typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
 
       protected:
         CConnectionImpl<T>(boost::asio::io_service& _service)
@@ -145,9 +146,14 @@ namespace dds
         {
             // it can be called from multiple IO threads
             std::lock_guard<std::mutex> lock(m_mutex);
-            m_writeMsg.push_back(_msg);
+            // Do not execute writeMessage if older messages are being processed.
+            // We must not register more, than async_write in the same time (different threads).
+            // Only one async_write is allowed at time per socket to avoid messages corruption.
+            bool bWriteInProgress = !m_writeMsgQueue.empty();
+            m_writeMsgQueue.push_back(_msg);
 
-            writeMessage(_msg);
+            if (!bWriteInProgress)
+                writeMessage();
         }
 
         template <ECmdType _cmd>
@@ -278,28 +284,6 @@ namespace dds
                 {
                     LOG(MiscCommon::debug) << "Received (" << length << ") from Agent: " << m_currentMsg->toString();
 
-                    // DEBUG
-                    //                    if (m_currentMsg->header().m_cmd == cmdDOWNLOAD_TEST)
-                    //                    {
-                    //                        SBinaryAttachmentCmd cmd;
-                    //                        cmd.convertFromData(m_currentMsg->bodyToContainer());
-                    //
-                    //                        LOG(MiscCommon::debug) << "ConnectionImpl::readBody: fileData.size()=" <<
-                    //                        cmd.m_fileData.size();
-                    //                        int cnt = 0;
-                    //                        for (auto v : cmd.m_fileData)
-                    //                        {
-                    //                            cnt++;
-                    //                            if (v != 'x')
-                    //                            {
-                    //                                LOG(MiscCommon::debug) << "ConnectionImpl::readBody: v != x at
-                    //                                cnt=" << cnt
-                    //                                                       << " v=" << v;
-                    //                            }
-                    //                        }
-                    //                    }
-                    //
-
                     // process received message
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
@@ -326,20 +310,42 @@ namespace dds
         }
 
       private:
-        void writeMessage(CProtocolMessage::protocolMessagePtr_t _msg)
+        void writeMessage()
         {
-            LOG(MiscCommon::debug) << "Sending message: " << _msg->toString();
-            //            boost::asio::async_write(m_socket,
-            //                                     boost::asio::buffer(_msg->data(), _msg->length()),
-            //                                     [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
-            //                                     {
-            //                writeHandler(_ec, _bytesTransferred);
-            //            });
+            LOG(MiscCommon::debug) << "Sending message: " << m_writeMsgQueue.front()->toString();
+            boost::asio::async_write(m_socket,
+                                     boost::asio::buffer(m_writeMsgQueue.front()->data(),
+                                                         m_writeMsgQueue.front()->length()),
+                                     [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
+                                     {
+                if (!_ec)
+                {
+                    LOG(MiscCommon::debug) << "Data successfully sent: " << _bytesTransferred << " bytes transferred.";
 
-            boost::asio::async_write(
-                m_socket,
-                boost::asio::buffer(_msg->data(), _msg->length()),
-                std::bind(&CConnectionImpl::writeHandler, this, _msg, std::placeholders::_1, std::placeholders::_2));
+                    // lock the modification of the container
+                    std::lock_guard<std::mutex> lock(m_mutex);
+                    m_writeMsgQueue.pop_front();
+
+                    // process next message if the queue is not empty
+                    if (!m_writeMsgQueue.empty())
+                        writeMessage();
+                }
+                else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
+                {
+                    onDissconnect();
+                }
+                else
+                {
+                    // don't show error if service is closed
+                    if (m_started)
+                        LOG(MiscCommon::error) << "Error sending data: " << _ec.message();
+                    else
+                        LOG(MiscCommon::info)
+                            << "The stop signal is received, aborting current operation and closing the connection: "
+                            << _ec.message();
+                    stop();
+                }
+            });
         }
 
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
@@ -349,35 +355,11 @@ namespace dds
             size_t bytesTransfered = boost::asio::write(
                 m_socket, boost::asio::buffer(_msg->data(), _msg->length()), boost::asio::transfer_all(), ec);
 
-            writeHandler(_msg, ec, bytesTransfered);
+            writeHandler(ec, bytesTransfered);
         }
 
-        void writeHandler(CProtocolMessage::protocolMessagePtr_t _msg,
-                          boost::system::error_code _ec,
-                          std::size_t _bytesTransferred)
+        void writeHandler(boost::system::error_code _ec, std::size_t _bytesTransferred)
         {
-
-            // DEBUG
-            //            if (_msg->decode_header() && _msg->header().m_cmd == cmdDOWNLOAD_TEST)
-            //            {
-            //                SBinaryAttachmentCmd cmd;
-            //                cmd.convertFromData(_msg->bodyToContainer());
-            //
-            //                LOG(MiscCommon::debug) << "ConnectionImpl::writeHandler: fileData.size()=" <<
-            //                cmd.m_fileData.size();
-            //                int cnt = 0;
-            //                for (auto v : cmd.m_fileData)
-            //                {
-            //                    cnt++;
-            //                    if (v != 'x')
-            //                    {
-            //                        LOG(MiscCommon::debug) << "ConnectionImpl::writeHandler: v != x at cnt=" << cnt <<
-            //                        " v=" << v;
-            //                    }
-            //                }
-            //            }
-            //
-
             if (!_ec)
             {
                 LOG(MiscCommon::debug) << "Data successfully sent: " << _bytesTransferred << " bytes transferred.";
@@ -398,6 +380,7 @@ namespace dds
                 stop();
             }
         }
+
         void onDissconnect()
         {
             LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
@@ -416,17 +399,17 @@ namespace dds
             m_socket.close();
         }
 
+      protected:
+        std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;
+        handlerDisconnectEventFunction_t m_dissconnectEventHandler;
+
       private:
         boost::asio::io_service& m_io_service;
         boost::asio::ip::tcp::socket m_socket;
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
-        CProtocolMessage::protocolMessagePtrVector_t m_writeMsg;
+        protocolMessagePtrQueue_t m_writeMsgQueue;
         std::mutex m_mutex;
-
-      protected:
-        std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;
-        handlerDisconnectEventFunction_t m_dissconnectEventHandler;
     };
 }
 

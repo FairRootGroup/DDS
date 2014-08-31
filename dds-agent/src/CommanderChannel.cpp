@@ -263,17 +263,6 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr
     boost::crc_32_type crc32;
     crc32.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
 
-    //    LOG(debug) << "on_cmdDOWNLOAD_TEST: cmd.m_fileData.size()=" << cmd.m_fileData.size();
-    //    int cnt = 0;
-    //    for (auto v : cmd.m_fileData)
-    //    {
-    //        cnt++;
-    //        if (v != 'x')
-    //        {
-    //            LOG(debug) << "on_cmdDOWNLOAD_TEST: v != x at cnt=" << cnt << " v=" << v;
-    //        }
-    //    }
-
     if (crc32.checksum() == cmd.m_crc32)
     {
         chrono::steady_clock::time_point now = std::chrono::steady_clock::now();

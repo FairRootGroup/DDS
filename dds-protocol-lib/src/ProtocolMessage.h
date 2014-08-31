@@ -54,7 +54,6 @@ namespace dds
         typedef MiscCommon::BYTEVector_t dataContainer_t;
         typedef dataContainer_t::value_type data_t;
         typedef std::shared_ptr<CProtocolMessage> protocolMessagePtr_t;
-        typedef std::vector<protocolMessagePtr_t> protocolMessagePtrVector_t;
 
         enum
         {
