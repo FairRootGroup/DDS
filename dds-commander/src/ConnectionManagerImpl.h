@@ -74,9 +74,16 @@ namespace dds
                 // Create a server info file
                 createServerInfoFile();
 
-                // TODO: Use number of cors as the maximum number of threads. The minimum should be at least 4.
+                // a thread pool for the DDS transport engine
+                // may return 0 when not able to detect
+                unsigned int concurrentThreads = std::thread::hardware_concurrency();
+                // we need at least 4 threads
+                if (concurrentThreads < 4)
+                    concurrentThreads = 4;
                 boost::thread_group worker_threads;
-                for (int x = 0; x < 2; ++x)
+                LOG(MiscCommon::info) << "Starting DDS transport engine using " << concurrentThreads
+                                      << " concurrent threads.";
+                for (int x = 0; x < concurrentThreads; ++x)
                 {
                     worker_threads.create_thread(
                         boost::bind(&boost::asio::io_service::run, &(m_acceptor.get_io_service())));
