@@ -117,11 +117,11 @@ namespace MiscCommon
 
             // Logging to console
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTSink =
-                add_console_log(std::cout, boost::log::keywords::format = ">> %Process%: %Message%");
+                add_console_log(std::cout, boost::log::keywords::format = "%Process%: %Message%");
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTCleanSink =
                 add_console_log(std::cout, boost::log::keywords::format = "%Message%");
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDERRSink =
-                add_console_log(std::cerr, boost::log::keywords::format = ">> %Process%: error: %Message%");
+                add_console_log(std::cerr, boost::log::keywords::format = "%Process%: error: %Message%");
 
             consoleSTDOUTSink->set_filter(severity == log_stdout && hasConsoleOutput);
             consoleSTDOUTCleanSink->set_filter(severity == log_stdout_clean && hasConsoleOutput);
