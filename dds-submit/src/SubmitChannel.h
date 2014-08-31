@@ -20,6 +20,8 @@ namespace dds
         {
         }
 
+        REGISTER_DEFAULT_REMOTE_ID_STRING
+
       public:
         BEGIN_MSG_MAP(CSubmitChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)

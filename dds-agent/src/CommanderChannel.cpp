@@ -69,7 +69,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr
 bool CCommanderChannel::on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     stop();
-    LOG(info) << "The Agent [" << m_id << "] disconnected...Bye";
+    LOG(info) << "The Agent [" << m_id << "] disconnected... Bye";
 
     return true;
 }
@@ -116,8 +116,6 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessag
 
 bool CCommanderChannel::on_cmdGET_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(info) << "Recieved a cmdGET_UUID command from: " << socket().remote_endpoint().address().to_string();
-
     // If file exist return uuid from file.
     // If file does not exist than return uuid_nil.
 
@@ -145,8 +143,7 @@ bool CCommanderChannel::on_cmdSET_UUID(CProtocolMessage::protocolMessagePtr_t _m
     SUUIDCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
 
-    LOG(info) << "Recieved a cmdSET_UUID [" << cmd
-              << "] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(info) << "cmdSET_UUID attachment [" << cmd << "] from " << remoteEndIDString();
 
     m_id = cmd.m_id;
 
@@ -157,8 +154,6 @@ bool CCommanderChannel::on_cmdSET_UUID(CProtocolMessage::protocolMessagePtr_t _m
 
 bool CCommanderChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
-
     try
     {
         string logDir(CUserDefaults::getDDSPath());

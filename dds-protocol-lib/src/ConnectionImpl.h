@@ -27,9 +27,10 @@
         switch (_currentMsg->header().m_cmd)                                \
         {
 
-#define MESSAGE_HANDLER(msg, func)     \
-    case msg:                          \
-        processed = func(_currentMsg); \
+#define MESSAGE_HANDLER(msg, func)                                                                                 \
+    case msg:                                                                                                      \
+        LOG(MiscCommon::debug) << "Processing " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
+        processed = func(_currentMsg);                                                                             \
         break;
 
 #define END_MSG_MAP()                                                                                              \
@@ -76,6 +77,12 @@
 #define REGISTER_ALL_DEFAULT_CALLBACKS                                             \
     REGISTER_DEFAULT_ON_CONNECT_CALLBACKS REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS \
         REGISTER_DEFAULT_ON_HEADER_READ_CALLBACKS
+
+#define REGISTER_DEFAULT_REMOTE_ID_STRING \
+    std::string _remoteEndIDString()      \
+    {                                     \
+        return "DDS Server";              \
+    }
 
 namespace dds
 {
@@ -192,6 +199,15 @@ namespace dds
             return m_started;
         }
 
+        std::string remoteEndIDString()
+        {
+            // give a chance child to execute something
+            T* pThis = static_cast<T*>(this);
+            std::stringstream ss;
+            ss << pThis->_remoteEndIDString() << " [" << socket().remote_endpoint().address().to_string() << "]";
+            return ss.str();
+        }
+
       private:
         void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
         {
@@ -231,9 +247,8 @@ namespace dds
                                     {
                 if (!ec)
                 {
-                    LOG(MiscCommon::debug) << "readHeader received: " << length << " bytes, expected "
-                                           << CProtocolMessage::header_length << ", from "
-                                           << socket().remote_endpoint().address().to_string();
+                    LOG(MiscCommon::debug) << "Received message HEADER from " << remoteEndIDString() << ": " << length
+                                           << " bytes, expected " << CProtocolMessage::header_length;
                 }
                 if (!ec && m_currentMsg->decode_header())
                 {
@@ -266,7 +281,8 @@ namespace dds
         {
             if (m_currentMsg->body_length() == 0)
             {
-                LOG(MiscCommon::debug) << "readBody: the message has no attachment: " << m_currentMsg->toString();
+                LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString()
+                                       << ": no attachment: " << m_currentMsg->toString();
                 // process received message
                 T* pThis = static_cast<T*>(this);
                 pThis->processMessage(m_currentMsg);
@@ -282,7 +298,8 @@ namespace dds
                                     {
                 if (!ec)
                 {
-                    LOG(MiscCommon::debug) << "Received (" << length << ") from Agent: " << m_currentMsg->toString();
+                    LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString() << " (" << length
+                                           << " bytes): " << m_currentMsg->toString();
 
                     // process received message
                     T* pThis = static_cast<T*>(this);
@@ -312,7 +329,8 @@ namespace dds
       private:
         void writeMessage()
         {
-            LOG(MiscCommon::debug) << "Sending message: " << m_writeMsgQueue.front()->toString();
+            LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString()
+                                   << " a message: " << m_writeMsgQueue.front()->toString();
             boost::asio::async_write(m_socket,
                                      boost::asio::buffer(m_writeMsgQueue.front()->data(),
                                                          m_writeMsgQueue.front()->length()),
@@ -320,7 +338,8 @@ namespace dds
                                      {
                 if (!_ec)
                 {
-                    LOG(MiscCommon::debug) << "Data successfully sent: " << _bytesTransferred << " bytes transferred.";
+                    LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
+                                           << _bytesTransferred << " bytes)";
 
                     // lock the modification of the container
                     std::lock_guard<std::mutex> lock(m_mutex);
@@ -338,7 +357,7 @@ namespace dds
                 {
                     // don't show error if service is closed
                     if (m_started)
-                        LOG(MiscCommon::error) << "Error sending data: " << _ec.message();
+                        LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
                     else
                         LOG(MiscCommon::info)
                             << "The stop signal is received, aborting current operation and closing the connection: "
@@ -350,7 +369,7 @@ namespace dds
 
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
-            LOG(MiscCommon::debug) << "Sending message: " << _msg->toString();
+            LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
             boost::system::error_code ec;
             size_t bytesTransfered = boost::asio::write(
                 m_socket, boost::asio::buffer(_msg->data(), _msg->length()), boost::asio::transfer_all(), ec);
@@ -362,7 +381,8 @@ namespace dds
         {
             if (!_ec)
             {
-                LOG(MiscCommon::debug) << "Data successfully sent: " << _bytesTransferred << " bytes transferred.";
+                LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
+                                       << _bytesTransferred << " bytes)";
             }
             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
             {
@@ -372,7 +392,7 @@ namespace dds
             {
                 // don't show error if service is closed
                 if (m_started)
-                    LOG(MiscCommon::error) << "Error sending data: " << _ec.message();
+                    LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
                 else
                     LOG(MiscCommon::info)
                         << "The stop signal is received, aborting current operation and closing the connection: "
@@ -383,7 +403,7 @@ namespace dds
 
         void onDissconnect()
         {
-            LOG(MiscCommon::debug) << "The session was disconnected by the remote end";
+            LOG(MiscCommon::debug) << "The session was disconnected by the remote end: " << remoteEndIDString();
             // give a chance to child to execute something
             T* pThis = static_cast<T*>(this);
             pThis->onRemoteEndDissconnected();

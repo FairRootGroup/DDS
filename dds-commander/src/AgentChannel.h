@@ -86,6 +86,13 @@ namespace dds
         }
         // On header read handle
         void onHeaderRead();
+        std::string _remoteEndIDString()
+        {
+            if (EAgentChannelType::AGENT == m_type)
+                return boost::uuids::to_string(m_id);
+            else
+                return "UI client";
+        }
 
       private:
         bool m_isHandShakeOK;

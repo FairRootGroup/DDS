@@ -15,6 +15,7 @@ namespace dds
     {
         CCommanderChannel(boost::asio::io_service& _service);
 
+        REGISTER_DEFAULT_REMOTE_ID_STRING
         REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:

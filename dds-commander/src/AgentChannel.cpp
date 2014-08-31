@@ -38,9 +38,7 @@ bool CAgentChannel::on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg)
     {
         m_isHandShakeOK = false;
         // Send reply that the version of the protocol is incompatible
-        LOG(warning) << "Client's protocol version is incompatable. Client: "
-                     << socket().remote_endpoint().address().to_string();
-
+        LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
         pushMsg<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
     }
     else
@@ -49,7 +47,7 @@ bool CAgentChannel::on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg)
         m_type = EAgentChannelType::UI;
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                  << "] has succesfully connected.";
+                  << "] has successfully connected.";
 
         pushMsg<cmdREPLY_HANDSHAKE_OK>();
     }
@@ -65,8 +63,7 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(CProtocolMessage::protocolMessagePtr_t
     {
         m_isHandShakeOK = false;
         // Send reply that the version of the protocol is incompatible
-        LOG(warning) << "Client's protocol version is incompatable. Client: "
-                     << socket().remote_endpoint().address().to_string();
+        LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
         msg->encode<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
         pushMsg(msg);
@@ -95,8 +92,7 @@ bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
         SSubmitCmd cmd;
         cmd.convertFromData(_msg->bodyToContainer());
         LOG(info) << "Recieved a Submit command of the topo [" << cmd.m_sTopoFile
-                  << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode]
-                  << " from: " << socket().remote_endpoint().address().to_string();
+                  << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode] << " from: " << remoteEndIDString();
 
         // check, that topo file exists
         if (!boost::filesystem::exists(cmd.m_sTopoFile))
@@ -123,9 +119,6 @@ bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
 
 bool CAgentChannel::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(info) << "Recieved request to start distribuiting user tasks from: "
-              << socket().remote_endpoint().address().to_string();
-
     // The agent channel can't activate all agents. Let others to process this message.
     return false;
 }
@@ -133,10 +126,7 @@ bool CAgentChannel::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _m
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     m_remoteHostInfo.convertFromData(_msg->bodyToContainer());
-
-    LOG(info) << "Recieved a cmdREPLY_HOST_INFO [" << m_remoteHostInfo
-              << "] command from: " << socket().remote_endpoint().address().to_string();
-
+    LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << m_remoteHostInfo << "] received from: " << remoteEndIDString();
     return true;
 }
 
@@ -159,8 +149,7 @@ bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(CProtocolMessage::protocolMessage
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
 
-    LOG(info) << "Recieved a cmdBINARY_DOWNLOAD_STAT [" << cmd
-              << "] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(debug) << "cmdBINARY_DOWNLOAD_STAT attachment [" << cmd << "] received from: " << remoteEndIDString();
 
     return true;
 }
@@ -170,8 +159,7 @@ bool CAgentChannel::on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg
     SUUIDCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
 
-    LOG(info) << "Recieved a cmdREPLY_GET_UUID [" << cmd
-              << "] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(debug) << "cmdREPLY_GET_UUID attachment [" << cmd << "] received from: " << remoteEndIDString();
 
     if (cmd.m_id.is_nil())
     {
@@ -193,8 +181,6 @@ bool CAgentChannel::on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg
 
 bool CAgentChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(info) << "Recieved a cmdGET_LOG command from: " << socket().remote_endpoint().address().to_string();
-
     // Return false. This message will be processed by ConnectionManager.
     return false;
 }
@@ -241,9 +227,7 @@ bool CAgentChannel::on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _
 {
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
-
-    LOG(info) << "Recieved a cmdGET_LOG_ERROR [" << cmd
-              << " ] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(debug) << "cmdGET_LOG_ERROR attachment [" << cmd << "] received from: " << remoteEndIDString();
 
     // Return false. This message will be processed by ConnectionManager.
     return false;
@@ -251,8 +235,6 @@ bool CAgentChannel::on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _
 
 bool CAgentChannel::on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(info) << "Recieved a cmdGET_AGENTS_INFO command from: " << socket().remote_endpoint().address().to_string();
-
     // Return false.
     // Give possibility to further process this message.
     // For example, send information to UI.
@@ -261,8 +243,6 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t
 
 bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(info) << "Recieved a cmdSTART_DOWNLOAD_TEST command from: " << socket().remote_endpoint().address().to_string();
-
     // Return false.
     // Give possibility to further process this message.
     // For example, send information to UI.
@@ -274,8 +254,7 @@ bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePt
     SBinaryDownloadStatCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
 
-    LOG(info) << "Recieved a cmdDOWNLOAD_TEST_STAT [" << cmd
-              << "] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(info) << "cmdDOWNLOAD_TEST_STAT attachment [" << cmd << "] command from " << remoteEndIDString();
 
     return false;
 }
@@ -285,8 +264,7 @@ bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessageP
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
 
-    LOG(info) << "Recieved a cmdDOWNLOAD_TEST_ERROR [" << cmd
-              << " ] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(info) << "cmdDOWNLOAD_TEST_ERROR attachment [" << cmd << " ] command from " << remoteEndIDString();
 
     // Return false. This message will be processed by ConnectionManager.
     return false;
@@ -297,8 +275,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
 
-    LOG(info) << "Recieved a on_cmdSIMPLE_MSG [" << cmd
-              << "] command from: " << socket().remote_endpoint().address().to_string();
+    LOG(info) << "on_cmdSIMPLE_MSG attachment [" << cmd << "] command from " << remoteEndIDString();
 
     switch (cmd.m_srcCommand)
     {
