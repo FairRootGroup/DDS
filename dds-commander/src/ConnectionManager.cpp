@@ -464,7 +464,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
                             return (_v->getType() == EAgentChannelType::AGENT && _v->started());
                         }));
 
-        m_downloadTest.m_nofRequests = 2 * channels.size();
+        m_downloadTest.m_nofRequests = 9 * channels.size();
 
         // Send messages to aganets
         for (const auto& v : channels)
