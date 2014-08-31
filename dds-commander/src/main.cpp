@@ -90,6 +90,14 @@ int main(int argc, char* argv[])
     // Checking for "start" option
     if (SOptions_t::cmd_start == options.m_Command)
     {
+        // a viusual log marker for a new DDS session
+        LOG(info) << "\n"
+                  << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+                  << "+++++++++ N E W  D D S  C O M M A N D E R  S E R V E R  S E S S I O N +++++++++\n"
+                  << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+        // a parasable log marker for a new DDS session
+        LOG(info) << "---> DDS commander session <---";
+
         try
         {
             CPIDFile pidfile(pidfile_name, ::getpid());
