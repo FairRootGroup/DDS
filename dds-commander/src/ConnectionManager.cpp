@@ -464,24 +464,21 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
                             return (_v->getType() == EAgentChannelType::AGENT && _v->started());
                         }));
 
-        m_downloadTest.m_nofRequests = 9 * channels.size();
+        vector<size_t> binarySizes{ 1000, 10000, 1000, 100000, 1000, 1000000, 1000, 10000000, 1000 };
 
-        // Send messages to aganets
+        m_downloadTest.m_nofRequests = binarySizes.size() * channels.size();
+
+        // Send messages to agents
         for (const auto& v : channels)
         {
             if (v.expired())
                 continue;
             auto ptr = v.lock();
 
-            sendTestBinaryAttachment(1000, ptr);
-            sendTestBinaryAttachment(10000, ptr);
-            sendTestBinaryAttachment(1000, ptr);
-            sendTestBinaryAttachment(100000, ptr);
-            sendTestBinaryAttachment(1000, ptr);
-            sendTestBinaryAttachment(1000000, ptr);
-            sendTestBinaryAttachment(1000, ptr);
-            sendTestBinaryAttachment(10000000, ptr);
-            sendTestBinaryAttachment(1000, ptr);
+            for (size_t size : binarySizes)
+            {
+                sendTestBinaryAttachment(size, ptr);
+            }
         }
 
         if (m_downloadTest.m_nofRequests == 0)
