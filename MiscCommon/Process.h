@@ -491,7 +491,9 @@ namespace MiscCommon
         }
 
         if (0 == _Delay)
+        {
             return child_pid;
+        }
 
         // parent
         if (_output)

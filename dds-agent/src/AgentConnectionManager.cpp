@@ -141,11 +141,29 @@ void CAgentConnectionManager::stop()
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
+    LOG(info) << "Starting a watchdog for user task pid = " << _pid;
+
+    // Register the user task's watchdog
     CMonitoringThread::instance().registerCallbackFunction([this, _pid]() -> bool
                                                            {
         if (!IsProcessExist(_pid))
         {
             LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
+            LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+            return false;
+        }
+
+        // We must call "wait" to check exist status of a child process, otherwise we will crate a zombie :)
+        int status;
+        if (_pid == ::waitpid(_pid, &status, WNOHANG))
+        {
+            if (WIFEXITED(status))
+                LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
+                          << WEXITSTATUS(status);
+            if (WIFSTOPPED(status))
+                LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
+
+            LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
             return false;
         }
 
