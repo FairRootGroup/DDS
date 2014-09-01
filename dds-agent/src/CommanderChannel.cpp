@@ -352,11 +352,12 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePt
     smart_path(&sUsrExe);
     StringVector_t params;
     string output;
+    pid_t child_pid(0);
 
     try
     {
         LOG(MiscCommon::info) << "Executing user task: " << sUsrExe;
-        do_execv(sUsrExe, params, 60, &output);
+        child_pid = do_execv(sUsrExe, params, 0, &output);
     }
     catch (exception& e)
     {
@@ -371,6 +372,8 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePt
         pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         pushMsg(pm);
     }
+
+    LOG(MiscCommon::info) << "User task pid = " << child_pid;
 
     return true;
 }

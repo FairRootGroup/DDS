@@ -425,11 +425,13 @@ namespace MiscCommon
     }
 
     // TODO: Document me!
-    inline void do_execv(const std::string& _Command,
-                         const StringVector_t& _Params,
-                         size_t _Delay,
-                         std::string* _output,
-                         std::string* _errout = NULL) throw(std::exception)
+    // If _Delay is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
+    // return value is 0.
+    inline pid_t do_execv(const std::string& _Command,
+                          const StringVector_t& _Params,
+                          size_t _Delay,
+                          std::string* _output,
+                          std::string* _errout = NULL) throw(std::exception)
     {
         pid_t child_pid;
         std::vector<const char*> cargs; // careful with c_str()!!!
@@ -509,6 +511,10 @@ namespace MiscCommon
 
             *_errout = ss.str();
         }
+
+        if (0 == _Delay)
+            return child_pid;
+
         for (size_t i = 0; i < _Delay; ++i)
         {
             int stat;
@@ -521,7 +527,7 @@ namespace MiscCommon
                     std::copy(_Params.begin(), _Params.end(), std::ostream_iterator<std::string>(ss, " "));
                     throw std::runtime_error(ss.str());
                 }
-                return;
+                return 0;
             }
             // TODO: Needs to be fixed! Implement time-function based timeout measurements instead
             sleep(1);
@@ -529,6 +535,7 @@ namespace MiscCommon
         throw std::runtime_error("do_execv: Timeout has been reached, command execution will be terminated now.");
         // kills the child
         kill(child_pid, SIGKILL);
+        return 0;
     }
 };
 

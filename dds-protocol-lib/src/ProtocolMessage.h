@@ -13,7 +13,7 @@
 namespace dds
 {
     // a very simple protocol
-    // | <DDS> (6) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA (LEN) unsigned char |
+    // | <DDS> (6) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA BLOCK (size of LEN) unsigned char |
     const char* const g_CmdSign = "<DDS>";
     enum
     {
