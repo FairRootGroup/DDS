@@ -352,12 +352,12 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePt
     smart_path(&sUsrExe);
     StringVector_t params;
     string output;
-    pid_t child_pid(0);
+    pid_t pidUsrTask(0);
 
     try
     {
         LOG(MiscCommon::info) << "Executing user task: " << sUsrExe;
-        child_pid = do_execv(sUsrExe, params, 0, &output);
+        pidUsrTask = do_execv(sUsrExe, params, 0, &output);
     }
     catch (exception& e)
     {
@@ -373,7 +373,9 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePt
         pushMsg(pm);
     }
 
-    LOG(MiscCommon::info) << "User task pid = " << child_pid;
+    LOG(MiscCommon::info) << "User task pid = " << pidUsrTask;
+
+    m_onNewUserTaskCallback(pidUsrTask);
 
     return true;
 }

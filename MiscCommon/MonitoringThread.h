@@ -21,6 +21,8 @@ namespace dds
 {
     class CMonitoringThread
     {
+        typedef std::function<bool()> callbackFunction_t;
+
       private:
         CMonitoringThread()
         {
@@ -62,6 +64,13 @@ namespace dds
                                   // Check if process is idle.
                                   std::chrono::seconds idleTime =
                                       std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startTime);
+
+                                  // Call registred callback functions
+                                  for (auto i : m_registeredCallbackFunctions)
+                                  {
+                                      i();
+                                  }
+
                                   if (idleTime.count() > _idleTime)
                                   {
                                       // First call idle callback
@@ -92,6 +101,11 @@ namespace dds
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             m_startIdleTime = std::chrono::steady_clock::now();
+        }
+
+        void registerCallbackFunction(callbackFunction_t _handler)
+        {
+            m_registeredCallbackFunctions.push_back(_handler);
         }
 
       private:
@@ -129,6 +143,7 @@ namespace dds
         std::chrono::steady_clock::time_point m_startIdleTime;
 
         std::function<void(void)> m_idleCallback;
+        std::vector<callbackFunction_t> m_registeredCallbackFunctions;
 
         std::mutex m_mutex; // Mutex for updateIdle call
     };

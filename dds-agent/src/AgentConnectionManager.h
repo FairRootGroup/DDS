@@ -25,6 +25,7 @@ namespace dds
 
       private:
         void doAwaitStop();
+        void onNewUserTask(pid_t _pid);
 
       private:
         boost::asio::io_service& m_service;

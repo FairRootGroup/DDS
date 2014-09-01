@@ -49,6 +49,9 @@ void CAgentConnectionManager::doAwaitStop()
 {
     m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
                          {
+                             // TODO: terminate user process, if any
+
+                             // Stop transport engine
                              stop();
                          });
 }
@@ -83,8 +86,14 @@ void CAgentConnectionManager::start()
         boost::asio::ip::tcp::resolver::query query(sHost, sPort);
         boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-        // Create new agent and push hadshake message
+        // Create new agent and push handshake message
         CCommanderChannel::connectionPtr_t newAgent = CCommanderChannel::makeNew(m_service);
+        // Call this callback when a user process is activated
+        newAgent->registerOnNewUserTaskCallback([this](pid_t _pid)
+                                                {
+                                                    return this->onNewUserTask(_pid);
+                                                });
+
         boost::asio::async_connect(newAgent->socket(),
                                    endpoint_iterator,
                                    [this, &newAgent](boost::system::error_code ec, ip::tcp::resolver::iterator)
@@ -128,4 +137,18 @@ void CAgentConnectionManager::stop()
     {
         LOG(fatal) << e.what();
     }
+}
+
+void CAgentConnectionManager::onNewUserTask(pid_t _pid)
+{
+    CMonitoringThread::instance().registerCallbackFunction([this, _pid]() -> bool
+                                                           {
+        if (!IsProcessExist(_pid))
+        {
+            LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
+            return false;
+        }
+
+        return true;
+    });
 }

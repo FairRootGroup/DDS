@@ -13,6 +13,9 @@ namespace dds
 {
     class CCommanderChannel : public CConnectionImpl<CCommanderChannel>
     {
+        typedef std::function<void(pid_t)> handlerOnNewUserTaks_t;
+
+      private:
         CCommanderChannel(boost::asio::io_service& _service);
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
@@ -33,6 +36,12 @@ namespace dds
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
         MESSAGE_HANDLER(cmdDOWNLOAD_TEST, on_cmdDOWNLOAD_TEST)
         END_MSG_MAP()
+
+        // gives the possibility to register a callback, which will be called when a user task is executed
+        void registerOnNewUserTaskCallback(handlerOnNewUserTaks_t _callback)
+        {
+            m_onNewUserTaskCallback = _callback;
+        }
 
       private:
         // Message Handlers
@@ -62,6 +71,7 @@ namespace dds
         std::chrono::steady_clock::time_point m_headerReadTime;
         boost::uuids::uuid m_id;
         std::string m_sUsrExe;
+        handlerOnNewUserTaks_t m_onNewUserTaskCallback;
     };
 }
 

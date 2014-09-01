@@ -490,6 +490,9 @@ namespace MiscCommon
                 exit(1);
         }
 
+        if (0 == _Delay)
+            return child_pid;
+
         // parent
         if (_output)
         {
@@ -511,9 +514,6 @@ namespace MiscCommon
 
             *_errout = ss.str();
         }
-
-        if (0 == _Delay)
-            return child_pid;
 
         for (size_t i = 0; i < _Delay; ++i)
         {
