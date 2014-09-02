@@ -278,9 +278,11 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr
         ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << cmd.m_crc32
            << " | size: " << cmd.m_fileData.size() << " name: " << cmd.m_fileName;
         SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
         cmd.m_sMsg = ss.str();
         CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-        pm->encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
+        pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         pushMsg(pm);
     }
 

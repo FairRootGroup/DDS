@@ -86,13 +86,6 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         });
 
     _newClient->registerMessageHandler(
-        cmdDOWNLOAD_TEST_ERROR,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdDOWNLOAD_TEST_ERROR(_msg, useRawPtr(_channel));
-        });
-
-    _newClient->registerMessageHandler(
         cmdSIMPLE_MSG,
         [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
         {
@@ -424,9 +417,11 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
         if (!m_downloadTest.m_channel.expired())
         {
             SSimpleMsgCmd cmd;
+            cmd.m_msgSeverity = MiscCommon::fatal;
+            cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
             cmd.m_sMsg = "Can not process the request. dds-test already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
+            msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
             p->pushMsg(msg);
             return true;
@@ -460,9 +455,11 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
         if (m_downloadTest.m_nofRequests == 0)
         {
             SSimpleMsgCmd cmd;
+            cmd.m_msgSeverity = MiscCommon::fatal;
+            cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
             cmd.m_sMsg = "There are no active agents.";
             CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-            pm->encodeWithAttachment<cmdDOWNLOAD_TEST_FATAL>(cmd);
+            pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             if (!m_downloadTest.m_channel.expired())
             {
                 auto p = m_downloadTest.m_channel.lock();
@@ -523,45 +520,15 @@ bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMess
         m_downloadTestStat.m_totalTime += recieved_cmd.m_downloadTime;
 
         SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::info;
+        cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
         cmd.m_sMsg = ss.str();
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdDOWNLOAD_TEST_RECIEVED>(cmd);
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         if (!m_downloadTest.m_channel.expired())
         {
             auto pDownloadUI = m_downloadTest.m_channel.lock();
             pDownloadUI->pushMsg(msg);
-        }
-
-        checkAllDownloadTestsReceived();
-    }
-
-    return true;
-}
-
-bool CConnectionManager::on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg,
-                                                   CAgentChannel::weakConnectionPtr_t _channel)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-
-    {
-        std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexReceive);
-
-        m_downloadTest.m_nofReceivedErrors++;
-        stringstream ss;
-        auto p = _channel.lock();
-        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " Error from agent [" << p->getId()
-           << "]: " << recieved_cmd.m_sMsg;
-
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = ss.str();
-
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdDOWNLOAD_TEST_ERROR>(cmd);
-        if (!m_downloadTest.m_channel.expired())
-        {
-            auto pDownloadUI = m_downloadTest.m_channel.lock();
-            pDownloadUI->syncPushMsg(msg);
         }
 
         checkAllDownloadTestsReceived();
@@ -584,10 +551,12 @@ void CConnectionManager::checkAllDownloadTestsReceived()
            << " KB/s)";
 
         SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::fatal;
+        cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
         cmd.m_sMsg = ss.str();
 
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdALL_DOWNLOAD_TESTS_RECIEVED>(cmd);
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         if (!m_downloadTest.m_channel.expired())
         {
             auto pDownloadUI = m_downloadTest.m_channel.lock();
@@ -626,6 +595,9 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t
 
         case cmdGET_LOG:
             return processSimpleMsgGetLog(cmd, _channel);
+
+        case cmdSTART_DOWNLOAD_TEST:
+            return processSimpleMsgStartDownloadTest(cmd, _channel);
     }
     return false;
 }
@@ -649,10 +621,49 @@ bool CConnectionManager::processSimpleMsgGetLog(const SSimpleMsgCmd& _cmd, CAgen
 
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
         msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-        auto p = m_getLog.m_channel.lock();
-        p->syncPushMsg(msg);
+        if (!m_getLog.m_channel.expired())
+        {
+            auto p = m_getLog.m_channel.lock();
+            p->syncPushMsg(msg);
+        }
 
         checkAllLogsReceived();
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
+    }
+
+    return true;
+}
+
+bool CConnectionManager::processSimpleMsgStartDownloadTest(const SSimpleMsgCmd& _cmd,
+                                                           CAgentChannel::weakConnectionPtr_t _channel)
+{
+    try
+    {
+        std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexReceive);
+
+        m_downloadTest.m_nofReceivedErrors++;
+        stringstream ss;
+        auto p = _channel.lock();
+        ss << m_downloadTest.nofReceived() << "/" << m_downloadTest.m_nofRequests << " Error from agent [" << p->getId()
+           << "]: " << _cmd.m_sMsg;
+
+        SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
+        cmd.m_sMsg = ss.str();
+
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+        if (!m_downloadTest.m_channel.expired())
+        {
+            auto pDownloadUI = m_downloadTest.m_channel.lock();
+            pDownloadUI->syncPushMsg(msg);
+        }
+
+        checkAllDownloadTestsReceived();
     }
     catch (bad_weak_ptr& e)
     {

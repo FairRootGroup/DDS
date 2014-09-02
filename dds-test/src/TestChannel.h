@@ -24,19 +24,14 @@ namespace dds
       public:
         BEGIN_MSG_MAP(CTestChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
-        MESSAGE_HANDLER(cmdDOWNLOAD_TEST_RECIEVED, on_cmdDOWNLOAD_TEST_RECIEVED)
-        MESSAGE_HANDLER(cmdALL_DOWNLOAD_TESTS_RECIEVED, on_cmdALL_DOWNLOAD_TESTS_RECIEVED)
-        MESSAGE_HANDLER(cmdDOWNLOAD_TEST_ERROR, on_cmdDOWNLOAD_TEST_ERROR)
-        MESSAGE_HANDLER(cmdDOWNLOAD_TEST_FATAL, on_cmdDOWNLOAD_TEST_FATAL)
+        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         END_MSG_MAP()
 
       private:
         // Message Handlers
         bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDOWNLOAD_TEST_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdALL_DOWNLOAD_TESTS_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDOWNLOAD_TEST_FATAL(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
+
         // On connection handles
         void onRemoteEndDissconnected()
         {

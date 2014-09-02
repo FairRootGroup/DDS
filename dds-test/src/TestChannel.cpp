@@ -19,40 +19,22 @@ bool CTestChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr
     return true;
 }
 
-bool CTestChannel::on_cmdDOWNLOAD_TEST_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CTestChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
+    SSimpleMsgCmd cmd;
+    cmd.convertFromData(_msg->bodyToContainer());
+
+    LOG(log_stdout) << cmd.m_sMsg;
+
+    if (cmd.m_srcCommand != cmdSTART_DOWNLOAD_TEST)
+        return true;
+
+    if (cmd.m_msgSeverity == MiscCommon::fatal)
+    {
+        stop();
+        // TODO: Move exit from here to main
+        exit(EXIT_SUCCESS);
+    }
 
     return true;
-}
-
-bool CTestChannel::on_cmdALL_DOWNLOAD_TESTS_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
-
-    stop();
-    exit(EXIT_SUCCESS);
-}
-
-bool CTestChannel::on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
-
-    return true;
-}
-
-bool CTestChannel::on_cmdDOWNLOAD_TEST_FATAL(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
-
-    stop();
-    exit(EXIT_FAILURE);
 }

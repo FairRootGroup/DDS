@@ -48,7 +48,6 @@ namespace dds
         // MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
         MESSAGE_HANDLER(cmdSTART_DOWNLOAD_TEST, on_cmdSTART_DOWNLOAD_TEST)
         MESSAGE_HANDLER(cmdDOWNLOAD_TEST_STAT, on_cmdDOWNLOAD_TEST_STAT)
-        MESSAGE_HANDLER(cmdDOWNLOAD_TEST_ERROR, on_cmdDOWNLOAD_TEST_ERROR)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         END_MSG_MAP()
 
@@ -75,7 +74,6 @@ namespace dds
         bool on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
 
         // On connection handles

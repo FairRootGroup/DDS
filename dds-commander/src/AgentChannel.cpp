@@ -248,17 +248,6 @@ bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePt
     return false;
 }
 
-bool CAgentChannel::on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
-    LOG(info) << "cmdDOWNLOAD_TEST_ERROR attachment [" << cmd << " ] command from " << remoteEndIDString();
-
-    // Return false. This message will be processed by ConnectionManager.
-    return false;
-}
-
 bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
@@ -273,6 +262,9 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg
 
         case cmdGET_LOG:
             return false; // let others to process this message
+
+        case cmdSTART_DOWNLOAD_TEST:
+            return false;
 
         default:
             LOG(static_cast<ELogSeverityLevel>(cmd.m_msgSeverity)) << "remote: " << cmd.m_sMsg;

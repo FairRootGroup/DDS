@@ -38,11 +38,12 @@ namespace dds
                                        CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg,
                                       CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg,
-                                       CAgentChannel::weakConnectionPtr_t _channel);
+
         bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
         bool processSimpleMsgGetLog(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel);
+        bool processSimpleMsgStartDownloadTest(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel);
+
         void checkAllLogsReceived();
         void checkAllDownloadTestsReceived();
 
