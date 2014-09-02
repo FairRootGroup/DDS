@@ -24,19 +24,13 @@ namespace dds
       public:
         BEGIN_MSG_MAP(CGetLogChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
-        MESSAGE_HANDLER(cmdLOG_RECIEVED, on_cmdLOG_RECIEVED)
-        MESSAGE_HANDLER(cmdALL_LOGS_RECIEVED, on_cmdALL_LOGS_RECIEVED)
-        MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
-        MESSAGE_HANDLER(cmdGET_LOG_FATAL, on_cmdGET_LOG_FATAL)
+        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG);
         END_MSG_MAP()
 
       private:
         // Message Handlers
         bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdLOG_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdALL_LOGS_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_LOG_FATAL(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
         // On connection handles
         void onRemoteEndDissconnected()
         {

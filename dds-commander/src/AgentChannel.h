@@ -45,7 +45,7 @@ namespace dds
         MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_LOG, on_cmdBINARY_ATTACHMENT_LOG)
-        MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
+        // MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
         MESSAGE_HANDLER(cmdSTART_DOWNLOAD_TEST, on_cmdSTART_DOWNLOAD_TEST)
         MESSAGE_HANDLER(cmdDOWNLOAD_TEST_STAT, on_cmdDOWNLOAD_TEST_STAT)
         MESSAGE_HANDLER(cmdDOWNLOAD_TEST_ERROR, on_cmdDOWNLOAD_TEST_ERROR)
@@ -73,7 +73,6 @@ namespace dds
         bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg);
         bool on_cmdDOWNLOAD_TEST_ERROR(CProtocolMessage::protocolMessagePtr_t _msg);

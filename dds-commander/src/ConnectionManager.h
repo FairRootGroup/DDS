@@ -31,8 +31,6 @@ namespace dds
         bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg,
                                          CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg,
-                                 CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg,
                                 CAgentChannel::weakConnectionPtr_t _channel);
@@ -44,6 +42,7 @@ namespace dds
                                        CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
+        bool processSimpleMsgGetLog(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel);
         void checkAllLogsReceived();
         void checkAllDownloadTestsReceived();
 

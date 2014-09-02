@@ -43,12 +43,12 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
             return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, useRawPtr(_channel));
         });
 
-    _newClient->registerMessageHandler(
-        cmdGET_LOG_ERROR,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdGET_LOG_ERROR(_msg, useRawPtr(_channel));
-        });
+    //    _newClient->registerMessageHandler(
+    //        cmdGET_LOG_ERROR,
+    //        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
+    //        {
+    //            return this->on_cmdGET_LOG_ERROR(_msg, useRawPtr(_channel));
+    //        });
 
     _newClient->registerMessageHandler(
         cmdGET_AGENTS_INFO,
@@ -110,9 +110,11 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
         if (!m_getLog.m_channel.expired())
         {
             SSimpleMsgCmd cmd;
+            cmd.m_msgSeverity = MiscCommon::fatal;
+            cmd.m_srcCommand = cmdGET_LOG;
             cmd.m_sMsg = "Can not process the request. dds-getlog already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
+            msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
             p->pushMsg(msg);
             return true;
@@ -127,9 +129,11 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
         if (!fs::exists(dir) && !fs::create_directory(dir))
         {
             SSimpleMsgCmd cmd;
+            cmd.m_msgSeverity = MiscCommon::fatal;
+            cmd.m_srcCommand = cmdGET_LOG;
             cmd.m_sMsg = "Could not create directory " + sLogStorageDir + " to save log files.";
             CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-            pm->encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
+            pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             p->pushMsg(pm);
 
             m_getLog.m_channel.reset();
@@ -160,9 +164,11 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
         if (m_getLog.m_nofRequests == 0)
         {
             SSimpleMsgCmd cmd;
+            cmd.m_msgSeverity = MiscCommon::fatal;
+            cmd.m_srcCommand = cmdGET_LOG;
             cmd.m_sMsg = "There are no connecting agents.";
             CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-            pm->encodeWithAttachment<cmdGET_LOG_FATAL>(cmd);
+            pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             p->pushMsg(pm);
         }
     }
@@ -190,44 +196,12 @@ bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolM
            << recieved_cmd.m_fileName;
 
         SSimpleMsgCmd cmd;
+        cmd.m_srcCommand = cmdGET_LOG;
+        cmd.m_msgSeverity = MiscCommon::info;
         cmd.m_sMsg = ss.str();
 
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdLOG_RECIEVED>(cmd);
-        auto p = m_getLog.m_channel.lock();
-        p->syncPushMsg(msg);
-
-        checkAllLogsReceived();
-    }
-    catch (bad_weak_ptr& e)
-    {
-        // TODO: Do we need to log something here?
-    }
-
-    return true;
-}
-
-bool CConnectionManager::on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg,
-                                             CAgentChannel::weakConnectionPtr_t _channel)
-{
-    try
-    {
-        SSimpleMsgCmd recieved_cmd;
-        recieved_cmd.convertFromData(_msg->bodyToContainer());
-
-        std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
-
-        m_getLog.m_nofReceivedErrors++;
-        stringstream ss;
-        auto ptrChannel = _channel.lock();
-        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " Error from agent [" << ptrChannel->getId()
-           << "]: " << recieved_cmd.m_sMsg;
-
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = ss.str();
-
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         auto p = m_getLog.m_channel.lock();
         p->syncPushMsg(msg);
 
@@ -250,10 +224,12 @@ void CConnectionManager::checkAllLogsReceived()
            << ", errors: " << m_getLog.m_nofReceivedErrors;
 
         SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::fatal;
+        cmd.m_srcCommand = cmdGET_LOG;
         cmd.m_sMsg = ss.str();
 
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdALL_LOGS_RECIEVED>(cmd);
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         try
         {
             auto p = m_getLog.m_channel.lock();
@@ -647,6 +623,41 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t
                 // m_chSubmitUI.reset();
             }
             return true; // let others to process this message
+
+        case cmdGET_LOG:
+            return processSimpleMsgGetLog(cmd, _channel);
     }
     return false;
+}
+
+bool CConnectionManager::processSimpleMsgGetLog(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
+{
+    try
+    {
+        std::lock_guard<std::mutex> lock(m_getLog.m_mutexReceive);
+
+        m_getLog.m_nofReceivedErrors++;
+        stringstream ss;
+        auto ptrChannel = _channel.lock();
+        ss << m_getLog.nofReceived() << "/" << m_getLog.m_nofRequests << " Error from agent [" << ptrChannel->getId()
+           << "]: " << _cmd.m_sMsg;
+
+        SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_srcCommand = cmdGET_LOG;
+        cmd.m_sMsg = ss.str();
+
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+        auto p = m_getLog.m_channel.lock();
+        p->syncPushMsg(msg);
+
+        checkAllLogsReceived();
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
+    }
+
+    return true;
 }

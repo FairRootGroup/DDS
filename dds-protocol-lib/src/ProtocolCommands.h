@@ -61,12 +61,6 @@ namespace dds
         cmdSET_UUID,              // attachment: SUUIDCmd
         cmdBINARY_ATTACHMENT_LOG, // attachment: SBinanryAttachmentCmd.
         cmdGET_LOG,
-        cmdALL_LOGS_RECIEVED, // attachment: SSimpleMsgCmd
-
-        // TODO: Use cmdSIMPLE_MSG instead of cmdGET_LOG_ERROR, cmdGET_LOG_FATAL
-        cmdGET_LOG_ERROR, // attachment: SSimpleMsgCmd
-        cmdGET_LOG_FATAL, // attachment: SSimpleMsgCmd
-        cmdLOG_RECIEVED,  // attachment: SSimpleMsgCmd
         cmdGET_AGENTS_INFO,
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
@@ -106,10 +100,6 @@ namespace dds
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
         { cmdBINARY_ATTACHMENT_LOG, NAME_TO_STRING(cmdBINARY_ATTACHMENT_LOG) },
         { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) },
-        { cmdALL_LOGS_RECIEVED, NAME_TO_STRING(cmdALL_LOGS_RECIEVED) },
-        { cmdGET_LOG_ERROR, NAME_TO_STRING(cmdGET_LOG_ERROR) },
-        { cmdGET_LOG_FATAL, NAME_TO_STRING(cmdGET_LOG_FATAL) },
-        { cmdLOG_RECIEVED, NAME_TO_STRING(cmdLOG_RECIEVED) },
         { cmdGET_AGENTS_INFO, NAME_TO_STRING(cmdGET_AGENTS_INFO) },
         { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
@@ -141,10 +131,6 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_AGENTS_INFO, SAgentsInfoCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdGET_LOG_ERROR, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdGET_LOG_FATAL, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdLOG_RECIEVED, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdALL_LOGS_RECIEVED, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdASSIGN_USER_TASK, SAssignUserTaskCmd);
     REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_ERROR, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_FATAL, SSimpleMsgCmd);

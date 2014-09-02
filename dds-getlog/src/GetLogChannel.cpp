@@ -21,40 +21,22 @@ bool CGetLogChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessageP
     return true;
 }
 
-bool CGetLogChannel::on_cmdLOG_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CGetLogChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
+    SSimpleMsgCmd cmd;
+    cmd.convertFromData(_msg->bodyToContainer());
+
+    LOG(log_stdout) << cmd.m_sMsg;
+
+    if (cmd.m_srcCommand != cmdGET_LOG)
+        return true;
+
+    if (cmd.m_msgSeverity == MiscCommon::fatal)
+    {
+        stop();
+        // TODO: Move exit from here to main
+        exit(EXIT_SUCCESS);
+    }
 
     return true;
-}
-
-bool CGetLogChannel::on_cmdALL_LOGS_RECIEVED(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
-
-    stop();
-    exit(EXIT_SUCCESS);
-}
-
-bool CGetLogChannel::on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
-
-    return true;
-}
-
-bool CGetLogChannel::on_cmdGET_LOG_FATAL(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << recieved_cmd.m_sMsg;
-
-    stop();
-    exit(EXIT_FAILURE);
 }

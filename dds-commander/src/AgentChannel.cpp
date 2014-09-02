@@ -222,16 +222,6 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessag
     return false;
 }
 
-bool CAgentChannel::on_cmdGET_LOG_ERROR(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-    LOG(debug) << "cmdGET_LOG_ERROR attachment [" << cmd << "] received from: " << remoteEndIDString();
-
-    // Return false. This message will be processed by ConnectionManager.
-    return false;
-}
-
 bool CAgentChannel::on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     // Return false.
@@ -279,6 +269,9 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg
     switch (cmd.m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
+            return false; // let others to process this message
+
+        case cmdGET_LOG:
             return false; // let others to process this message
 
         default:

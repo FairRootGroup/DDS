@@ -240,9 +240,11 @@ bool CCommanderChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _ms
 void CCommanderChannel::sendGetLogError(const string& _msg)
 {
     SSimpleMsgCmd cmd;
+    cmd.m_srcCommand = cmdGET_LOG;
+    cmd.m_msgSeverity = MiscCommon::error;
     cmd.m_sMsg = _msg;
     CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-    pm->encodeWithAttachment<cmdGET_LOG_ERROR>(cmd);
+    pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
     pushMsg(pm);
 }
 
