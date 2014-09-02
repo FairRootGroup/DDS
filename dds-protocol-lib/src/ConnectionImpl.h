@@ -93,6 +93,12 @@ namespace dds
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
 
+      public:
+        typedef std::shared_ptr<T> connectionPtr_t;
+        typedef std::weak_ptr<T> weakConnectionPtr_t;
+        typedef std::vector<connectionPtr_t> connectionPtrVector_t;
+        typedef std::vector<weakConnectionPtr_t> weakConnectionPtrVector_t;
+
       protected:
         CConnectionImpl<T>(boost::asio::io_service& _service)
             : m_io_service(_service)
@@ -108,13 +114,6 @@ namespace dds
             stop();
         }
 
-      public:
-        typedef std::shared_ptr<T> connectionPtr_t;
-        typedef std::weak_ptr<T> weakConnectionPtr_t;
-        typedef std::vector<connectionPtr_t> connectionPtrVector_t;
-        typedef std::vector<weakConnectionPtr_t> weakConnectionPtrVector_t;
-
-      public:
         static connectionPtr_t makeNew(boost::asio::io_service& _service)
         {
             connectionPtr_t newObject(new T(_service));

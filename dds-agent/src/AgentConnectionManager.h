@@ -16,6 +16,8 @@ namespace dds
 {
     class CAgentConnectionManager
     {
+        typedef std::vector<pid_t> childrenPidContainer_t;
+
       public:
         CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _service);
         virtual ~CAgentConnectionManager();
@@ -26,12 +28,18 @@ namespace dds
       private:
         void doAwaitStop();
         void onNewUserTask(pid_t _pid);
+        void terminateChildrenProcesses();
+        bool on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg,
+                            CCommanderChannel::weakConnectionPtr_t _channel);
 
       private:
         boost::asio::io_service& m_service;
         boost::asio::signal_set m_signals;
         dds::SOptions_t m_options;
         CCommanderChannel::connectionPtrVector_t m_agents;
+        childrenPidContainer_t m_children;
+        std::mutex m_childrenContainerMutex;
+        bool m_bStarted;
     };
 }
 

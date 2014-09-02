@@ -64,5 +64,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    LOG(info) << "DDS agent is Done. Bye, Bye!";
+
     return EXIT_SUCCESS;
 }

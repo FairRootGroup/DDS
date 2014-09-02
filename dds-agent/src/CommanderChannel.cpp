@@ -68,20 +68,20 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr
 
 bool CCommanderChannel::on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    stop();
     LOG(info) << "The Agent [" << m_id << "] disconnected... Bye";
+    stop();
 
     return true;
 }
 
 bool CCommanderChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    stop();
     deleteAgentUUIDFile();
     LOG(info) << "The Agent [" << m_id << "] exited.";
-    exit(EXIT_SUCCESS);
+    stop();
 
-    return true;
+    // return false to let connection manager to catch this message as weel
+    return false;
 }
 
 bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessagePtr_t _msg)
