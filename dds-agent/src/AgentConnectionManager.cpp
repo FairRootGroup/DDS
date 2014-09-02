@@ -3,8 +3,6 @@
 //
 //
 
-// STD
-#include <iostream>
 // BOOST
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -14,8 +12,6 @@
 #include "CommanderChannel.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
-// API
-//#include <signal.h>
 
 using namespace boost::asio;
 using namespace std;

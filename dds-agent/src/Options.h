@@ -7,7 +7,6 @@
 //=============================================================================
 // STD
 #include <stdexcept>
-#include <iostream>
 #include <string>
 // BOOST
 #include <boost/program_options/options_description.hpp>

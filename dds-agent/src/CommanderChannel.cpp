@@ -4,9 +4,8 @@
 //
 
 // DDS
-#include "CommanderChannel.h"
-#include "UserDefaults.h"
 #include "version.h"
+#include "CommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
 // MiscCommon
 #include "FindCfgFile.h"
@@ -15,8 +14,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-// STD
-#include <ctime>
 
 using namespace MiscCommon;
 using namespace dds;

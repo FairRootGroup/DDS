@@ -3,26 +3,15 @@
 //
 //
 
-// STD
-#include <iostream>
-// BOOST
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/program_options/options_description.hpp>
 // DDS
 #include "version.h"
 #include "Options.h"
-#include "Process.h"
 #include "ErrorCode.h"
 #include "AgentConnectionManager.h"
-#include "CommanderChannel.h"
-#include "BOOSTHelper.h"
 #include "Logger.h"
-#include "UserDefaults.h"
 
 using namespace std;
 using namespace MiscCommon;
-namespace bpo = boost::program_options;
 using namespace dds;
 
 int main(int argc, char* argv[])
