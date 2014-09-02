@@ -637,10 +637,17 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t
             if (!m_chSubmitUI.expired())
             {
                 auto p = m_chSubmitUI.lock();
-                p->pushMsg(_msg);
+
+                SSimpleMsgCmd sm;
+                sm.m_sMsg = cmd.m_sMsg;
+
+                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+                msg->encodeWithAttachment<cmdSIMPLE_MSG>(sm);
+
+                p->pushMsg(msg);
                 // close connection
                 // p->pushMsg<cmdSHUTDOWN>();
-                m_chSubmitUI.reset();
+                // m_chSubmitUI.reset();
             }
             return true; // let others to process this message
     }

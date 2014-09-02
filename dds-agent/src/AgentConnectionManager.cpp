@@ -138,7 +138,7 @@ void CAgentConnectionManager::stop()
 
     m_bStarted = false;
 
-    LOG(info) << "Finalizing DDS transport execution ...";
+    LOG(info) << "Shutting down DDS transport...";
     // terminate external children processes (like user tasks, for example)
     terminateChildrenProcesses();
 
@@ -155,7 +155,7 @@ void CAgentConnectionManager::stop()
     {
         LOG(fatal) << e.what();
     }
-    LOG(info) << "DDS transport execution is OFF";
+    LOG(info) << "Shutting down DDS transport - DONE";
 }
 
 void CAgentConnectionManager::terminateChildrenProcesses()

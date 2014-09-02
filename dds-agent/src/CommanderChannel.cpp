@@ -370,9 +370,20 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePt
         pushMsg(pm);
     }
 
-    LOG(MiscCommon::info) << "User task pid = " << pidUsrTask;
+    stringstream ss;
+    ss << "User task (pid:" << pidUsrTask << ") is activated.";
+    LOG(MiscCommon::info) << ss.str();
 
     m_onNewUserTaskCallback(pidUsrTask);
+
+    // Send response back to server
+    SSimpleMsgCmd cmd;
+    cmd.m_sMsg = ss.str();
+    cmd.m_msgSeverity = MiscCommon::info;
+    cmd.m_srcCommand = cmdACTIVATE_AGENT;
+    CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
+    pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+    pushMsg(pm);
 
     return true;
 }
