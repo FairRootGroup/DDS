@@ -5,7 +5,6 @@
 
 // DDS
 #include "AgentChannel.h"
-#include "Process.h"
 // BOOST
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/crc.hpp>
