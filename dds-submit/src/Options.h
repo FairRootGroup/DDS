@@ -72,8 +72,9 @@ namespace dds
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
-        options.add_options()(
-            "start", bpo::bool_switch(&_options->m_bStart), "Start distributing user tasks on the deployed DDS agents");
+        options.add_options()("activate",
+                              bpo::bool_switch(&_options->m_bStart),
+                              "Activate DDS agents. This will trigger user tasks distribution on the deployed agents");
 
         // Parsing command-line
         bpo::variables_map vm;

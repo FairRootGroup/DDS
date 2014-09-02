@@ -3,14 +3,9 @@
 //
 //
 // DDS
-#include "Process.h"
 #include "ErrorCode.h"
-#include "BOOSTHelper.h"
-#include "UserDefaults.h"
-#include "SysHelper.h"
 #include "SubmitChannel.h"
 #include "Options.h"
-#include "INet.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -18,7 +13,6 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using boost::asio::ip::tcp;
 
 //=============================================================================
 int main(int argc, char* argv[])
