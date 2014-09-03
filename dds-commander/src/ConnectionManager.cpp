@@ -342,15 +342,31 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
                             return (_v->getType() == EAgentChannelType::AGENT && _v->started());
                         }));
 
+        if (topology.getMainGroup()->getTotalNofTasks() > channels.size())
+        {
+            SSimpleMsgCmd cmd;
+            cmd.m_msgSeverity = MiscCommon::fatal;
+            cmd.m_srcCommand = cmdSUBMIT_START;
+            cmd.m_sMsg = "The number of active agents is not sufficient for this topology.";
+            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+            msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+            auto p = _channel.lock();
+            p->pushMsg(msg);
+            return true;
+        }
+
+        size_t index(0);
+        TopoElementPtrVector_t tasks(topology.getMainGroup()->getElementsByType(ETopoType::TASK));
         for (const auto& v : channels)
         {
             if (v.expired())
                 continue;
             auto ptr = v.lock();
 
-            // Assgin user's tasks to agents
+            // Assign user's tasks to agents
             SAssignUserTaskCmd msg_cmd;
-            msg_cmd.m_sExeFile = "/Users/anar/Test.sh";
+            TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(tasks[index++]);
+            msg_cmd.m_sExeFile = topoTask->getExec();
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
             msg->encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
             ptr->pushMsg(msg);

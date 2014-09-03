@@ -6,10 +6,11 @@
 #ifndef __DDS__Topology__
 #define __DDS__Topology__
 
-// DDS
+// DDS Topo
 #include "Index.h"
 #include "TaskGroup.h"
 #include "TopoElement.h"
+#include "Task.h"
 // STD
 #include <ostream>
 #include <string>
