@@ -8,6 +8,7 @@
 // DDS
 #include "ConnectionManagerImpl.h"
 #include "AgentChannel.h"
+#include "UIChannelInfo.h"
 // STD
 #include <mutex>
 
@@ -41,65 +42,11 @@ namespace dds
 
         bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
-        bool processSimpleMsgGetLog(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel);
-        bool processSimpleMsgStartDownloadTest(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel);
-
-        void checkAllLogsReceived();
-        void checkAllDownloadTestsReceived();
-
         void sendTestBinaryAttachment(size_t _binarySize, CAgentChannel::connectionPtr_t _channel);
 
-        struct SChannelInfo
-        {
-            SChannelInfo()
-                : m_nofRequests(0)
-                , m_nofReceived(0)
-                , m_nofReceivedErrors(0)
-                , m_mutexStart()
-                , m_mutexReceive()
-            {
-            }
-
-            size_t nofReceived() const
-            {
-                return (m_nofReceived + m_nofReceivedErrors);
-            }
-
-            bool allReceived() const
-            {
-                return (nofReceived() == m_nofRequests);
-            }
-
-            void zeroCounters()
-            {
-                m_nofRequests = 0;
-                m_nofReceived = 0;
-                m_nofReceivedErrors = 0;
-            }
-
-            size_t m_nofRequests;
-            size_t m_nofReceived;
-            size_t m_nofReceivedErrors;
-            CAgentChannel::weakConnectionPtr_t m_channel;
-            std::mutex m_mutexStart;
-            std::mutex m_mutexReceive;
-        };
-
-        struct SDownloadStat
-        {
-            SDownloadStat()
-                : m_totalReceived(0)
-                , m_totalTime(0)
-            {
-            }
-            size_t m_totalReceived; // [bytes]
-            size_t m_totalTime;     // [ms]
-        };
-
-        SChannelInfo m_getLog;
-        SChannelInfo m_downloadTest;
+        CGetLogChannelInfo m_getLog;
+        CTestChannelInfo m_downloadTest;
         CAgentChannel::weakConnectionPtr_t m_chSubmitUI;
-        SDownloadStat m_downloadTestStat;
         std::string m_sCurrentTopoFile;
     };
 }

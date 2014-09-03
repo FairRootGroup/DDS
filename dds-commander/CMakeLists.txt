@@ -30,6 +30,7 @@ set( SOURCE_FILES
 	./src/ConnectionManager.cpp
 	./src/ConnectionManagerImpl.cpp
 	./src/AgentChannel.cpp
+    ./src/UIChannelInfo.cpp
 )
 
 #
@@ -40,6 +41,7 @@ set( HEADER_FILES
 	./src/ConnectionManager.h
 	./src/ConnectionManagerImpl.h
 	./src/AgentChannel.h
+    ./src/UIChannelInfo.h
 )
 
 include_directories(
