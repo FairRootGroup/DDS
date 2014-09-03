@@ -1,11 +1,12 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-# to build PoD issue the following commands:
+# issue the following commands in order to build DDS from source:
 #  1) mkdir build
 #  2) cd build
 #  3) cmake -C ../BuildSetup.cmake ..
-#  4) make install
+#  4) make [-j] wn_bin  /This step is optional. Only if you need to generate WN package on your local system./
+#  5) make [-j] install
 #
 
 #
