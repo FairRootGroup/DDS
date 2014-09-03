@@ -9,6 +9,7 @@
 #include "ProtocolCommands.h"
 // STD
 #include <cstring>
+#include <memory>
 
 namespace dds
 {

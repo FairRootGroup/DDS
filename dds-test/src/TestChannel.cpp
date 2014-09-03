@@ -23,18 +23,12 @@ bool CTestChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
-
     LOG(log_stdout) << cmd.m_sMsg;
+    return true;
+}
 
-    if (cmd.m_srcCommand != cmdSTART_DOWNLOAD_TEST)
-        return true;
-
-    if (cmd.m_msgSeverity == MiscCommon::fatal)
-    {
-        stop();
-        // TODO: Move exit from here to main
-        exit(EXIT_SUCCESS);
-    }
-
+bool CTestChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
+{
+    stop();
     return true;
 }

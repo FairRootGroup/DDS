@@ -5,8 +5,6 @@
 
 // DDS
 #include "GetLogChannel.h"
-// BOOST
-//#include <boost/crc.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -25,18 +23,12 @@ bool CGetLogChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _ms
 {
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
-
     LOG(log_stdout) << cmd.m_sMsg;
+    return true;
+}
 
-    if (cmd.m_srcCommand != cmdGET_LOG)
-        return true;
-
-    if (cmd.m_msgSeverity == MiscCommon::fatal)
-    {
-        stop();
-        // TODO: Move exit from here to main
-        exit(EXIT_SUCCESS);
-    }
-
+bool CGetLogChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
+{
+    stop();
     return true;
 }

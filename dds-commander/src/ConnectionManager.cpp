@@ -217,7 +217,7 @@ void CConnectionManager::checkAllLogsReceived()
            << ", errors: " << m_getLog.m_nofReceivedErrors;
 
         SSimpleMsgCmd cmd;
-        cmd.m_msgSeverity = MiscCommon::fatal;
+        cmd.m_msgSeverity = MiscCommon::info;
         cmd.m_srcCommand = cmdGET_LOG;
         cmd.m_sMsg = ss.str();
 
@@ -226,7 +226,8 @@ void CConnectionManager::checkAllLogsReceived()
         try
         {
             auto p = m_getLog.m_channel.lock();
-            p->pushMsg(msg);
+            p->syncPushMsg(msg);
+            p->pushMsg<cmdSHUTDOWN>();
 
             m_getLog.m_channel.reset();
         }
@@ -560,7 +561,8 @@ void CConnectionManager::checkAllDownloadTestsReceived()
         if (!m_downloadTest.m_channel.expired())
         {
             auto pDownloadUI = m_downloadTest.m_channel.lock();
-            pDownloadUI->pushMsg(msg);
+            pDownloadUI->syncPushMsg(msg);
+            pDownloadUI->pushMsg<cmdSHUTDOWN>();
 
             m_downloadTest.m_channel.reset();
         }
