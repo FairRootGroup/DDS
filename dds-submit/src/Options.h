@@ -81,7 +81,7 @@ namespace dds
         bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
         bpo::notify(vm);
 
-        if (vm.count("help") || vm.empty())
+        if (vm.count("help") || vm.empty() || (_options->m_RMS == SSubmitCmd::UNKNOWN && !_options->m_bStart))
         {
             LOG(MiscCommon::log_stdout) << options;
             return false;

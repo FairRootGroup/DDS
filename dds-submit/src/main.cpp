@@ -6,9 +6,7 @@
 #include "ErrorCode.h"
 #include "SubmitChannel.h"
 #include "Options.h"
-// BOOST
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
+#include "DDSHelper.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -38,19 +36,22 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    string sHost;
+    string sPort;
     try
     {
-        // Read server info file
-        const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
-        LOG(info) << "Reading server info from: " << sSrvCfg;
-        if (sSrvCfg.empty())
-            throw runtime_error("Can't find server info file.");
+        // Process server info file.
+        findCommanderServer(&sHost, &sPort);
+    }
+    catch (exception& e)
+    {
+        LOG(log_stderr) << e.what();
+        LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
+        return EXIT_FAILURE;
+    }
 
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
-        const string sHost(pt.get<string>("server.host"));
-        const string sPort(pt.get<string>("server.port"));
-
+    try
+    {
         LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
 
         boost::asio::io_service io_service;
