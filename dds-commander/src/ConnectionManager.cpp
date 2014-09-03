@@ -256,14 +256,6 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
 bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg,
                                             CAgentChannel::weakConnectionPtr_t _channel)
 {
-    // Start distirbuiting user tasks between agents
-    // TODO: We might need to create a thread here to avoid blocking a thread of the transport
-    CTopology topology;
-    topology.init(m_sCurrentTopoFile);
-
-    // remember the UI channel, which requested to submit the job
-    m_chSubmitUI = _channel;
-
     try
     {
         // Start distirbuiting user tasks between agents
@@ -271,50 +263,63 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
         CTopology topology;
         topology.init(m_sCurrentTopoFile);
 
-        // Send binaries of user jobs to all active agents.
-        // Send activate signal to all agents. This will trigger start of user jobs on the agents.
-        CAgentChannel::weakConnectionPtrVector_t channels(
-            getChannels([](CAgentChannel::connectionPtr_t _v)
-                        {
-                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
-                        }));
+        // remember the UI channel, which requested to submit the job
+        m_chSubmitUI = _channel;
 
-        if (topology.getMainGroup()->getTotalNofTasks() > channels.size())
+        try
         {
-            SSimpleMsgCmd cmd;
-            cmd.m_msgSeverity = MiscCommon::fatal;
-            cmd.m_srcCommand = cmdSUBMIT_START;
-            cmd.m_sMsg = "The number of active agents is not sufficient for this topology.";
-            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-            auto p = _channel.lock();
-            p->pushMsg(msg);
-            return true;
+            // Start distirbuiting user tasks between agents
+            // TODO: We might need to create a thread here to avoid blocking a thread of the transport
+            CTopology topology;
+            topology.init(m_sCurrentTopoFile);
+
+            // Send binaries of user jobs to all active agents.
+            // Send activate signal to all agents. This will trigger start of user jobs on the agents.
+            CAgentChannel::weakConnectionPtrVector_t channels(
+                getChannels([](CAgentChannel::connectionPtr_t _v)
+                            {
+                                return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                            }));
+
+            if (topology.getMainGroup()->getTotalNofTasks() > channels.size())
+                throw runtime_error("The number of active agents is not sufficient for this topology.");
+
+            size_t index(0);
+            TopoElementPtrVector_t tasks(topology.getMainGroup()->getElementsByType(ETopoType::TASK));
+            for (const auto& v : channels)
+            {
+                if (v.expired())
+                    continue;
+                auto ptr = v.lock();
+
+                // Assign user's tasks to agents
+                SAssignUserTaskCmd msg_cmd;
+                TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(tasks[index++]);
+                msg_cmd.m_sExeFile = topoTask->getExec();
+                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+                msg->encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
+                ptr->pushMsg(msg);
+
+                // Active agents.
+                ptr->pushMsg<cmdACTIVATE_AGENT>();
+            }
         }
-
-        size_t index(0);
-        TopoElementPtrVector_t tasks(topology.getMainGroup()->getElementsByType(ETopoType::TASK));
-        for (const auto& v : channels)
+        catch (bad_weak_ptr& _e)
         {
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
-
-            // Assign user's tasks to agents
-            SAssignUserTaskCmd msg_cmd;
-            TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(tasks[index++]);
-            msg_cmd.m_sExeFile = topoTask->getExec();
-            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
-            ptr->pushMsg(msg);
-
-            // Active agents.
-            ptr->pushMsg<cmdACTIVATE_AGENT>();
+            // TODO: Do we need to log something here?
         }
     }
-    catch (bad_weak_ptr& e)
+    catch (exception& _e)
     {
-        // TODO: Do we need to log something here?
+        SSimpleMsgCmd cmd;
+        cmd.m_msgSeverity = MiscCommon::fatal;
+        cmd.m_srcCommand = cmdSUBMIT_START;
+        cmd.m_sMsg = _e.what();
+        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+        auto p = _channel.lock();
+        p->pushMsg(msg);
+        return true;
     }
     return true;
 }

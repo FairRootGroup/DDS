@@ -17,6 +17,7 @@
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace boost::property_tree;
 using namespace std;
@@ -60,8 +61,15 @@ bool CTopologyParserXML::isValid(const std::string& _fileName)
 
 void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main)
 {
-    // FIXME: Do we really need seperate try{} catch{} blocks?
-    //        Or we have to put everything in one big try{} catch{} block in this function.
+    if (_fileName.empty())
+        throw runtime_error("topo file is not defined.");
+
+    if (!boost::filesystem::exists("myfile.txt"))
+    {
+        stringstream ss;
+        ss << "Cannot locate the given topo file: " << _fileName;
+        throw runtime_error(ss.str());
+    }
 
     if (_main == nullptr)
         throw runtime_error("NULL input pointer.");

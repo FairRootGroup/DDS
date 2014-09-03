@@ -28,9 +28,10 @@ set( SOURCE_FILES
 add_executable(dds-topology_tests ${SOURCE_FILES} )
 
 target_link_libraries (
-    dds-topology_tests
-    dds-user-defaults-lib
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+	dds-topology_tests
+	dds-user-defaults-lib
+	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+	${Boost_FILESYSTEM_LIBRARY}
 )
 
 install(TARGETS dds-topology_tests DESTINATION tests)

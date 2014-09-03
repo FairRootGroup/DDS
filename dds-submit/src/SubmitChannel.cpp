@@ -62,7 +62,12 @@ bool CSubmitChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _ms
     SSimpleMsgCmd cmd;
     cmd.convertFromData(_msg->bodyToContainer());
     if (!cmd.m_sMsg.empty())
-        LOG(log_stdout) << "Server reports: " << cmd.m_sMsg;
+        LOG((cmd.m_msgSeverity == fatal || cmd.m_msgSeverity == error) ? log_stderr : log_stdout)
+            << "Server reports: " << cmd.m_sMsg;
+
+    // stop communication if a fatal error is recieved
+    if (cmd.m_msgSeverity == fatal)
+        stop();
     return true;
 }
 
