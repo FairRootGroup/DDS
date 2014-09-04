@@ -97,7 +97,7 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
             SSimpleMsgCmd cmd;
             // cmd.m_msgSeverity = MiscCommon::fatal;
             // cmd.m_srcCommand = cmdGET_LOG;
-            cmd.m_sMsg = "Can not process the request. dds-getlog is already in progress.";
+            cmd.m_sMsg = "Can not process the request. The getlog command is already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
             msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
@@ -190,36 +190,43 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
             string sCommand("$DDS_LOCATION/bin/dds-ssh");
             smart_path(&sCommand);
             StringVector_t params;
-            const size_t nCmdTimeout = 35; // in sec.
+            const size_t nCmdTimeout = 60; // in sec.
             params.push_back("-c" + cmd.m_sSSHCfgFile);
             params.push_back("submit");
+            int nDdsSSHExitCode(0);
             try
             {
-                do_execv(sCommand, params, nCmdTimeout, &outPut);
-
-                SSimpleMsgCmd msg_cmd;
-                msg_cmd.m_sMsg = "Dummy job info, JOBIds";
-                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
-                p->pushMsg(msg);
+                do_execv(sCommand, params, nCmdTimeout, &outPut, nullptr, &nDdsSSHExitCode);
             }
             catch (exception& e)
             {
-                string sMsg("Failed to process the task: ");
-                sMsg += cmd.m_sTopoFile;
+                if (!outPut.empty())
+                {
+                    ostringstream ss;
+                    ss << outPut;
+                    LOG(info) << ss.str();
+                    p->push_SimpleMsgFromString(ss.str());
+                }
+
+                string sMsg("Failed to deploy agents from the given setup: ");
+                sMsg += cmd.m_sSSHCfgFile;
                 throw runtime_error(sMsg);
             }
             if (!outPut.empty())
             {
                 ostringstream ss;
-                ss << "Cmnd Output: " << outPut;
+                ss << outPut;
                 LOG(info) << ss.str();
-                SSimpleMsgCmd msg_cmd;
-                msg_cmd.m_sMsg = ss.str();
-                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
-                p->pushMsg(msg);
+                p->push_SimpleMsgFromString(ss.str());
             }
+
+            SSimpleMsgCmd msg_cmd;
+            msg_cmd.m_sMsg = (0 == nDdsSSHExitCode) ? "Agents were successfully deployed."
+                                                    : "Looks like we had problems to deploy agents using DDS ssh "
+                                                      "plug-in. Check dds.log for more information.";
+            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+            msg->encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
+            p->pushMsg(msg);
         }
     }
     catch (bad_weak_ptr& e)
@@ -256,14 +263,14 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
         m_ActivateAgents.zeroCounters();
 
         auto p = m_ActivateAgents.m_channel.lock();
-        // Start distirbuiting user tasks between agents
+        // Start distributing user tasks between agents
         // TODO: We might need to create a thread here to avoid blocking a thread of the transport
         CTopology topology;
         topology.init(m_sCurrentTopoFile);
 
         try
         {
-            // Start distirbuiting user tasks between agents
+            // Start distributing user tasks between agents
             // TODO: We might need to create a thread here to avoid blocking a thread of the transport
             CTopology topology;
             topology.init(m_sCurrentTopoFile);
@@ -379,7 +386,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
             SSimpleMsgCmd cmd;
             cmd.m_msgSeverity = MiscCommon::fatal;
             cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
-            cmd.m_sMsg = "Can not process the request. dds-test is already in progress.";
+            cmd.m_sMsg = "Can not process the request. The test command is already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
             msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();

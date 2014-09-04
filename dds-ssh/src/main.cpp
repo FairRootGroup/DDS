@@ -68,32 +68,33 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
 {
     // Generic options
     bpo::options_description visible("Options");
-    visible.add_options()("help,h", "Produce help message")("version,v", "Version information")(
-        "command",
-        bpo::value<string>(),
-        "The command is a name of dds-ssh command."
-        " Can be one of the following: submit, status, clean, fast-clean.\n"
-        "For user's convenience it is allowed to call dds-ssh without \"--command\" option"
-        " by just specifying the command name directly, like:\ndds-ssh submit or dds-ssh clean.\n\n"
-        "Commands:\n"
-        "   submit: \tSubmit workers\n"
-        "   status: \tRequest status of the workers\n"
-        "   clean: \tClean all workers\n"
-        "   fast-clean: \tThe fast version of the clean procedure."
-        " It shuts worker nodes down. It doesn't actually clean workers' directories.\n\n")(
-        "config,c", bpo::value<string>(), "DDS's ssh plug-in configuration file")(
-        "exec,e", bpo::value<string>(), "Execute a local shell script on the remote worker nodes")(
-        "logs", "Download all log files from the worker nodes. Can be used only together with the clean option")(
-        "for-worker",
-        bpo::value<vector<string>>()->multitoken(),
-        "Perform an action on defined worker nodes. (arg is a space separated list of WN names)"
-        " Can only be used in connection with \"submit\", \"clean\", \"fast-clean\", \"exec\".")(
-        "debug,d", "Verbose mode. Causes dds-ssh to print debugging messages about its progress")(
-        "threads,t",
-        bpo::value<size_t>()->default_value(5),
-        "It defines a number of threads in dds-ssh's thread pool."
-        " Min value is 1, max value is (Core*2)."
-        " Default: 5");
+    visible.add_options()("help,h", "Produce help message");
+    visible.add_options()("version,v", "Version information");
+    visible.add_options()("command",
+                          bpo::value<string>(),
+                          "The command is a name of dds-ssh command."
+                          " Can be one of the following: submit, status, clean, fast-clean.\n"
+                          "For user's convenience it is allowed to call dds-ssh without \"--command\" option"
+                          " by just specifying the command name directly, like:\ndds-ssh submit or dds-ssh clean.\n\n"
+                          "Commands:\n"
+                          "   submit: \tSubmit workers\n"
+                          "   status: \tRequest status of the workers\n"
+                          "   clean: \tClean all workers\n"
+                          "   fast-clean: \tThe fast version of the clean procedure."
+                          " It shuts worker nodes down. It doesn't actually clean workers' directories.\n\n");
+    visible.add_options()("config,c", bpo::value<string>(), "DDS's ssh plug-in configuration file");
+    visible.add_options()("exec,e", bpo::value<string>(), "Execute a local shell script on the remote worker nodes");
+    visible.add_options()(
+        "logs", "Download all log files from the worker nodes. Can be used only together with the clean option");
+    visible.add_options()("for-worker",
+                          bpo::value<vector<string>>()->multitoken(),
+                          "Perform an action on defined worker nodes. (arg is a space separated list of WN names)"
+                          " Can only be used in connection with \"submit\", \"clean\", \"fast-clean\", \"exec\".");
+    visible.add_options()("threads,t",
+                          bpo::value<size_t>()->default_value(5),
+                          "It defines a number of threads in dds-ssh's thread pool."
+                          " Min value is 1, max value is (Core*2)."
+                          " Default: 5");
 
     //...positional
     bpo::positional_options_description pd;
@@ -197,7 +198,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    CLogEngine slog(vm.count("debug"));
+    CLogEngine slog(true);
     try
     {
         // Collect workers list
@@ -270,7 +271,7 @@ int main(int argc, char* argv[])
         size_t wrkCount(0);
         bool dynWrk(false);
         SWNOptions options;
-        options.m_debug = vm.count("debug");
+        options.m_debug = true;
         options.m_logs = vm.count("logs");
         options.m_fastClean = vm.count("fast-clean");
         if (vm.count("exec"))
@@ -413,15 +414,18 @@ int main(int argc, char* argv[])
 
         // Check the status of all tasks Failed
         size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
-        LOG(debug) << "\n*******************\n"
-                   << "Successfully processed tasks: " << threadPool.successfulTasks() << '\n'
-                   << "Failed tasks: " << badFailedCount << '\n' << "*******************";
+        LOG(log_stdout) << "\n*******************\n"
+                        << "Successfully processed tasks: " << threadPool.successfulTasks() << '\n'
+                        << "Failed tasks: " << badFailedCount << '\n' << "*******************";
 
-        if (badFailedCount > 0 && !vm.count("debug"))
-            LOG(error) << ("WARNING: some tasks have failed.");
+        if (badFailedCount > 0)
+        {
+            LOG(log_stdout) << ("WARNING: some tasks have failed. Check dds.log for more information.");
+            return 1;
+        }
 
-        if (!vm.count("debug") && cmd_submit == command)
-            LOG(info) << "DDS jobs have been submitted.";
+        if (cmd_submit == command)
+            LOG(log_stdout) << "DDS jobs have been submitted.";
 
         //        DDS::SDDDSSSHOptions opt_file;
         //        opt_file.m_config = configFile;

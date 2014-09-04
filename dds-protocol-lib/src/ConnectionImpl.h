@@ -183,6 +183,15 @@ namespace dds
             syncPushMsg(msg);
         }
 
+        void push_SimpleMsgFromString(const std::string& _msg)
+        {
+            SSimpleMsgCmd msg_cmd;
+            msg_cmd.m_sMsg = _msg;
+            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+            msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
+            pushMsg(msg);
+        }
+
         void registerMessageHandler(ECmdType _type, handlerFunction_t _handler)
         {
             m_registeredMessageHandlers.insert(std::pair<ECmdType, handlerFunction_t>(_type, _handler));

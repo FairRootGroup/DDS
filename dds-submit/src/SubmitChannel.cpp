@@ -73,10 +73,7 @@ bool CSubmitChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _ms
 
 bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(log_stdout) << "Successfully done.";
-
     on_cmdSIMPLE_MSG(_msg);
-
     // Close communication channel
     stop();
     return true;
@@ -84,10 +81,7 @@ bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(CProtocolMessage::protocolMessagePtr_
 
 bool CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
 {
-    LOG(log_stderr) << "Submission has failed.";
-
     on_cmdSIMPLE_MSG(_msg);
-
     // Close communication channel
     stop();
     return true;

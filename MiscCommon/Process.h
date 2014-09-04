@@ -431,7 +431,8 @@ namespace MiscCommon
                           const StringVector_t& _Params,
                           size_t _Delay,
                           std::string* _output,
-                          std::string* _errout = NULL) throw(std::exception)
+                          std::string* _errout = nullptr,
+                          int* _exitCode = nullptr) throw(std::exception)
     {
         pid_t child_pid;
         std::vector<const char*> cargs; // careful with c_str()!!!
@@ -522,6 +523,11 @@ namespace MiscCommon
             int stat;
             if (child_pid == ::waitpid(child_pid, &stat, WNOHANG))
             {
+                // check if the caller wants the exit code of the process
+                if (_exitCode != nullptr)
+                {
+                    *_exitCode = WEXITSTATUS(stat);
+                }
                 if (!is_status_ok(stat))
                 {
                     std::stringstream ss;
