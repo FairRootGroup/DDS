@@ -127,25 +127,14 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
             return true;
         }
 
-        CAgentChannel::weakConnectionPtrVector_t channels(
-            getChannels([](CAgentChannel::connectionPtr_t _v)
-                        {
-                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
-                        }));
-
-        m_getLog.m_nofRequests = channels.size();
-
-        // Send messages to all agents
-        for (const auto& v : channels)
+        auto condition = [](CAgentChannel::connectionPtr_t _v)
         {
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
+            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+        };
 
-            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encode<cmdGET_LOG>();
-            ptr->pushMsg(msg);
-        }
+        m_getLog.m_nofRequests = countNofChannels(condition);
+
+        broadcastMsg<cmdGET_LOG>(condition);
 
         if (m_getLog.m_nofRequests == 0)
         {

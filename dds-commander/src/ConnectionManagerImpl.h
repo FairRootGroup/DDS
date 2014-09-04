@@ -151,6 +151,41 @@ namespace dds
             return result;
         }
 
+        void broadcastMsg(CProtocolMessage::protocolMessagePtr_t _msg,
+                          std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+        {
+            for (auto& v : m_channels)
+            {
+                if (_condition == nullptr || _condition(v))
+                {
+                    v->pushMsg(_msg);
+                }
+            }
+        }
+
+        template <ECmdType _cmd>
+        void broadcastMsg(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+        {
+            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+            msg->encode<_cmd>();
+            broadcastMsg(msg, _condition);
+        }
+
+        size_t countNofChannels(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+        {
+            if (_condition == nullptr)
+                return m_channels.size();
+            size_t counter = 0;
+            for (auto& v : m_channels)
+            {
+                if (_condition(v))
+                {
+                    counter++;
+                }
+            }
+            return counter;
+        }
+
       private:
         void acceptHandler(typename T::connectionPtr_t _client, const boost::system::error_code& _ec)
         {
