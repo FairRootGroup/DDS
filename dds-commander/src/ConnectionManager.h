@@ -42,7 +42,7 @@ namespace dds
 
         bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
 
-        void sendTestBinaryAttachment(size_t _binarySize, CAgentChannel::connectionPtr_t _channel);
+        CProtocolMessage::protocolMessagePtr_t getTestBinaryAttachment(size_t _binarySize);
 
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_downloadTest;

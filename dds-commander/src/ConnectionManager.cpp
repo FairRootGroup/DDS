@@ -92,7 +92,6 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
     std::lock_guard<std::mutex> lock(m_getLog.m_mutexStart);
     try
     {
-
         if (!m_getLog.m_channel.expired())
         {
             SSimpleMsgCmd cmd;
@@ -106,9 +105,9 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
             return true;
         }
         m_getLog.m_channel = _channel;
-        auto p = m_getLog.m_channel.lock();
         m_getLog.zeroCounters();
 
+        auto p = m_getLog.m_channel.lock();
         // Create directory to store logs
         const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
         fs::path dir(sLogStorageDir);
@@ -377,27 +376,19 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
         m_downloadTest.m_channel = _channel;
         m_downloadTest.zeroCounters();
 
-        CAgentChannel::weakConnectionPtrVector_t channels(
-            getChannels([](CAgentChannel::connectionPtr_t _v)
-                        {
-                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
-                        }));
+        auto condition = [](CAgentChannel::connectionPtr_t _v)
+        {
+            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+        };
 
         vector<size_t> binarySizes{ 1000, 10000, 1000, 100000, 1000, 1000000, 1000, 10000000, 1000 };
 
-        m_downloadTest.m_nofRequests = binarySizes.size() * channels.size();
+        m_downloadTest.m_nofRequests = binarySizes.size() * countNofChannels(condition);
 
-        // Send messages to agents
-        for (const auto& v : channels)
+        for (size_t size : binarySizes)
         {
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
-
-            for (size_t size : binarySizes)
-            {
-                sendTestBinaryAttachment(size, ptr);
-            }
+            CProtocolMessage::protocolMessagePtr_t msg = getTestBinaryAttachment(size);
+            broadcastMsg(msg, condition);
         }
 
         if (m_downloadTest.m_nofRequests == 0)
@@ -423,7 +414,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
     return true;
 }
 
-void CConnectionManager::sendTestBinaryAttachment(size_t _binarySize, CAgentChannel::connectionPtr_t _channel)
+CProtocolMessage::protocolMessagePtr_t CConnectionManager::getTestBinaryAttachment(size_t _binarySize)
 {
     SBinaryAttachmentCmd cmd;
 
@@ -444,7 +435,8 @@ void CConnectionManager::sendTestBinaryAttachment(size_t _binarySize, CAgentChan
 
     CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
     msg->encodeWithAttachment<cmdDOWNLOAD_TEST>(cmd);
-    _channel->pushMsg(msg);
+
+    return msg;
 }
 
 bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg,
