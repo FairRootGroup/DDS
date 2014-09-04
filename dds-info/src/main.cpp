@@ -41,22 +41,13 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    string sHost;
-    string sPort;
     try
     {
+        string sHost;
+        string sPort;
         // Process server info file.
         findCommanderServer(&sHost, &sPort);
-    }
-    catch (exception& e)
-    {
-        LOG(log_stderr) << e.what();
-        LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
-        return EXIT_FAILURE;
-    }
 
-    try
-    {
         boost::asio::io_service io_service;
 
         boost::asio::ip::tcp::resolver resolver(io_service);
