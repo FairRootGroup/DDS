@@ -104,9 +104,7 @@ namespace dds
                 // Send shutdown signal to all client connections.
                 for (const auto& v : m_channels)
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-                    msg->encode<cmdSHUTDOWN>();
-                    v->syncPushMsg(msg);
+                    v->template syncPushMsg<cmdSHUTDOWN>();
                 }
 
                 m_acceptor.close();

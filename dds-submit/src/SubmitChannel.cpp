@@ -92,3 +92,10 @@ bool CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(CProtocolMessage::protocolMessagePtr
     stop();
     return true;
 }
+
+bool CSubmitChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
+{
+    // Close communication channel
+    stop();
+    return true;
+}

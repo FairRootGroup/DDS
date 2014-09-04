@@ -97,7 +97,7 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
             SSimpleMsgCmd cmd;
             // cmd.m_msgSeverity = MiscCommon::fatal;
             // cmd.m_srcCommand = cmdGET_LOG;
-            cmd.m_sMsg = "Can not process the request. dds-getlog already in progress.";
+            cmd.m_sMsg = "Can not process the request. dds-getlog is already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
             msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
@@ -122,7 +122,6 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
             p->pushMsg(pm);
 
             m_getLog.m_channel.reset();
-
             return true;
         }
 
@@ -133,18 +132,20 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
 
         m_getLog.m_nofRequests = countNofChannels(condition);
 
-        broadcastMsg<cmdGET_LOG>(condition);
-
         if (m_getLog.m_nofRequests == 0)
         {
             SSimpleMsgCmd cmd;
             // cmd.m_msgSeverity = MiscCommon::fatal;
             // cmd.m_srcCommand = cmdGET_LOG;
-            cmd.m_sMsg = "There are no connecting agents.";
+            cmd.m_sMsg = "There are no connected agents.";
             CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
             pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             p->pushMsg(pm);
+
+            return true;
         }
+
+        broadcastMsg<cmdGET_LOG>(condition);
     }
     catch (bad_weak_ptr& e)
     {
@@ -244,15 +245,21 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
 bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg,
                                             CAgentChannel::weakConnectionPtr_t _channel)
 {
+    std::lock_guard<std::mutex> lock(m_ActivateAgents.m_mutexStart);
     try
     {
+        if (!m_ActivateAgents.m_channel.expired())
+            throw runtime_error("Can not process the request. Activation of the agents is already in progress.");
+
+        // remember the UI channel, which requested to submit the job
+        m_ActivateAgents.m_channel = _channel;
+        m_ActivateAgents.zeroCounters();
+
+        auto p = m_ActivateAgents.m_channel.lock();
         // Start distirbuiting user tasks between agents
         // TODO: We might need to create a thread here to avoid blocking a thread of the transport
         CTopology topology;
         topology.init(m_sCurrentTopoFile);
-
-        // remember the UI channel, which requested to submit the job
-        m_chSubmitUI = _channel;
 
         try
         {
@@ -263,15 +270,19 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
 
             // Send binaries of user jobs to all active agents.
             // Send activate signal to all agents. This will trigger start of user jobs on the agents.
-            CAgentChannel::weakConnectionPtrVector_t channels(
-                getChannels([](CAgentChannel::connectionPtr_t _v)
-                            {
-                                return (_v->getType() == EAgentChannelType::AGENT && _v->started());
-                            }));
+            auto condition = [](CAgentChannel::connectionPtr_t _v)
+            {
+                return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+            };
 
-            if (topology.getMainGroup()->getTotalNofTasks() > channels.size())
+            m_ActivateAgents.m_nofRequests = countNofChannels(condition);
+
+            if (m_ActivateAgents.m_nofRequests == 0)
+                throw runtime_error("There are no connected agents.");
+            if (topology.getMainGroup()->getTotalNofTasks() > m_ActivateAgents.m_nofRequests)
                 throw runtime_error("The number of active agents is not sufficient for this topology.");
 
+            CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
             size_t index(0);
             TopoElementPtrVector_t tasks(topology.getMainGroup()->getElementsByType(ETopoType::TASK));
             for (const auto& v : channels)
@@ -287,10 +298,10 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
                 CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
                 msg->encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
                 ptr->pushMsg(msg);
-
-                // Active agents.
-                ptr->pushMsg<cmdACTIVATE_AGENT>();
             }
+
+            // Active agents.
+            broadcastMsg<cmdACTIVATE_AGENT>(condition);
         }
         catch (bad_weak_ptr& _e)
         {
@@ -307,6 +318,8 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
         msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         auto p = _channel.lock();
         p->pushMsg(msg);
+
+        m_ActivateAgents.m_channel.reset();
         return true;
     }
     return true;
@@ -366,7 +379,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMes
             SSimpleMsgCmd cmd;
             cmd.m_msgSeverity = MiscCommon::fatal;
             cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
-            cmd.m_sMsg = "Can not process the request. dds-test already in progress.";
+            cmd.m_sMsg = "Can not process the request. dds-test is already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
             msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
@@ -462,20 +475,15 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t
     switch (cmd.m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
-            if (!m_chSubmitUI.expired())
+            switch (cmd.m_msgSeverity)
             {
-                auto p = m_chSubmitUI.lock();
-
-                SSimpleMsgCmd sm;
-                sm.m_sMsg = cmd.m_sMsg;
-
-                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdSIMPLE_MSG>(sm);
-
-                p->pushMsg(msg);
-                // close connection
-                // p->pushMsg<cmdSHUTDOWN>();
-                // m_chSubmitUI.reset();
+                case info:
+                    m_ActivateAgents.processMessage<SSimpleMsgCmd>(cmd, _channel);
+                    break;
+                case error:
+                case fatal:
+                    m_ActivateAgents.processErrorMessage<SSimpleMsgCmd>(cmd, _channel);
+                    break;
             }
             return true; // let others to process this message
 

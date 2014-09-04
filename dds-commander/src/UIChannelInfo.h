@@ -63,7 +63,7 @@ namespace dds
                 std::string userMessage = pThis->getMessage(_cmd, _channel);
 
                 SSimpleMsgCmd cmd;
-                // cmd.m_msgSeverity = MiscCommon::info;
+                cmd.m_msgSeverity = MiscCommon::info;
                 // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                 cmd.m_sMsg = userMessage;
 
@@ -98,7 +98,7 @@ namespace dds
                 std::string userMessage = pThis->getErrorMessage(_cmd, _channel);
 
                 SSimpleMsgCmd cmd;
-                // cmd.m_msgSeverity = MiscCommon::info;
+                cmd.m_msgSeverity = MiscCommon::error;
                 // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                 cmd.m_sMsg = userMessage;
 
@@ -131,7 +131,7 @@ namespace dds
                     std::string userMessage = pThis->getAllReceivedMessage();
 
                     SSimpleMsgCmd cmd;
-                    // cmd.m_msgSeverity = MiscCommon::info;
+                    cmd.m_msgSeverity = MiscCommon::info;
                     // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                     cmd.m_sMsg = userMessage;
 
@@ -141,10 +141,7 @@ namespace dds
                     {
                         auto pUI = m_channel.lock();
                         pUI->syncPushMsg(msg);
-                        // pUI->pushMsg<cmdSHUTDOWN>();
-                        CProtocolMessage::protocolMessagePtr_t shutdownMsg = std::make_shared<CProtocolMessage>();
-                        shutdownMsg->encode<cmdSHUTDOWN>();
-                        pUI->pushMsg(shutdownMsg);
+                        pUI->template pushMsg<cmdSHUTDOWN>();
 
                         m_channel.reset();
                     }
@@ -235,6 +232,34 @@ namespace dds
 
         size_t m_totalReceived; // [bytes]
         size_t m_totalTime;     // [ms]
+    };
+
+    class CActivateAgentsChannelInfo : public CUIChannelInfo<CActivateAgentsChannelInfo>
+    {
+      public:
+        std::string getMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+        {
+            std::stringstream ss;
+            auto p = _channel.lock();
+            ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> Activated";
+            return ss.str();
+        }
+
+        std::string getErrorMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+        {
+            std::stringstream ss;
+            auto p = _channel.lock();
+            ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
+            return ss.str();
+        }
+
+        std::string getAllReceivedMessage() const
+        {
+            std::stringstream ss;
+            ss << "total: " << m_nofRequests << ", activations: " << nofReceived()
+               << ", errors: " << m_nofReceivedErrors;
+            return ss.str();
+        }
     };
 }
 

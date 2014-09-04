@@ -46,7 +46,7 @@ namespace dds
 
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_downloadTest;
-        CAgentChannel::weakConnectionPtr_t m_chSubmitUI;
+        CActivateAgentsChannelInfo m_ActivateAgents;
         std::string m_sCurrentTopoFile;
     };
 }
