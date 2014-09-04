@@ -9,7 +9,7 @@ Modified: Stop server communication channel if a fatal error is received from th
 Added: Properly reflect server messages to stdout when agents are submitted/activated.   
 Added: Show more informative messages in case if the ssh plug-in failed to deploy agents.   
 
-### DDS
+### DDS common
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   
 
 ## v0.2 (2014-09-03)
