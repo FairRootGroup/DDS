@@ -64,7 +64,7 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main)
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");
 
-    if (!boost::filesystem::exists("myfile.txt"))
+    if (!boost::filesystem::exists(_fileName))
     {
         stringstream ss;
         ss << "Cannot locate the given topo file: " << _fileName;
