@@ -8,10 +8,14 @@
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 // DDS
 #include "version.h"
 #include "Res.h"
 #include "ProtocolCommands.h"
+#include "SysHelper.h"
+#include "MiscUtils.h"
 //=============================================================================
 namespace bpo = boost::program_options;
 //=============================================================================
@@ -39,11 +43,68 @@ namespace dds
         {
         }
 
+        std::string defaultConfigFile() const
+        {
+            std::string sWorkDir(CUserDefaults::instance().getOptions().m_server.m_workDir);
+            MiscCommon::smart_path(&sWorkDir);
+            // We need to be sure that there is "/" always at the end of the path
+            MiscCommon::smart_append<std::string>(&sWorkDir, '/');
+            std::string sCfgFile(sWorkDir);
+            sCfgFile += "dds-ssh.cfg";
+            return sCfgFile;
+        }
+
+        void load(std::string* _filename = nullptr)
+        {
+            std::string sCfgFile((_filename == nullptr) ? defaultConfigFile() : *_filename);
+
+            // Create an empty property tree object
+            using boost::property_tree::ptree;
+            ptree pt;
+
+            try
+            {
+                LOG(MiscCommon::info) << "Loading default options from: " << sCfgFile;
+                read_ini(sCfgFile, pt);
+                m_sTopoFile = pt.get<std::string>("dds-submit.TopoFile");
+                m_RMS << pt.get<std::string>("dds-submit.RMS");
+                m_sSSHCfgFile = pt.get<std::string>("dds-submit.SSHPlugIn-ConfigFile");
+                m_bStart = pt.get<bool>("dds-submit.ActivateAgents");
+                LOG(MiscCommon::info) << *this;
+            }
+            catch (...)
+            {
+                // ignore missing nodes
+            }
+        }
+        void save(std::string* _filename = nullptr)
+        {
+            std::string sCfgFile((_filename == nullptr) ? defaultConfigFile() : *_filename);
+
+            // Create an empty property tree object
+            using boost::property_tree::ptree;
+            ptree pt;
+
+            pt.put("dds-submit.TopoFile", m_sTopoFile);
+            pt.put("dds-submit.RMS", m_RMS);
+            pt.put("dds-submit.SSHPlugIn-ConfigFile", m_sSSHCfgFile);
+            pt.put("dds-submit.ActivateAgents", m_bStart);
+
+            // Write the property tree to the XML file.
+            write_ini(sCfgFile, pt);
+        }
+
         std::string m_sTopoFile;
         SSubmitCmd::ERmsType m_RMS;
         std::string m_sSSHCfgFile;
         bool m_bStart;
     } SOptions_t;
+    //=============================================================================
+    inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
+    {
+        return _stream << "\nTopoFile: " << val.m_sTopoFile << "\nRMS: " << val.m_RMS << "\nSSHPlugIn-ConfigFile"
+                       << val.m_sSSHCfgFile << "\nActivateAgents: " << val.m_bStart;
+    }
     //=============================================================================
     inline void PrintVersion()
     {
@@ -57,6 +118,9 @@ namespace dds
     {
         if (nullptr == _options)
             throw std::runtime_error("Internal error: options' container is empty.");
+
+        // Init options from the default config file
+        _options->load();
 
         // Generic options
         bpo::options_description options("dds-submit options");
@@ -81,7 +145,7 @@ namespace dds
         bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
         bpo::notify(vm);
 
-        if (vm.count("help") || vm.empty() || (_options->m_RMS == SSubmitCmd::UNKNOWN && !_options->m_bStart))
+        if (vm.count("help") || (_options->m_RMS == SSubmitCmd::UNKNOWN && !_options->m_bStart))
         {
             LOG(MiscCommon::log_stdout) << options;
             return false;
@@ -106,6 +170,9 @@ namespace dds
                                         << "\n\n" << options;
             return false;
         }
+
+        // Save options to the config file
+        _options->save();
 
         return true;
     }
