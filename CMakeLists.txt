@@ -8,8 +8,8 @@ set(USER_DEFAULTS_CFG_VERSION "0.1")
 #
 # Check if cmake has the required version
 #
-# we need cmake v. < v2.6.2 in order to use VERSION_EQUAL and other VERSION_*
-cmake_minimum_required( VERSION 2.6.2 FATAL_ERROR )
+# we need cmake v2.8.11+ in order to use target_include_directories
+cmake_minimum_required( VERSION 2.8.11 FATAL_ERROR )
 
 # Version
 #
