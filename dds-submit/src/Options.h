@@ -10,6 +10,8 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 // DDS
 #include "version.h"
 #include "Res.h"
@@ -30,8 +32,20 @@ namespace dds
         if (token == "ssh")
             _rms = SSubmitCmd::SSH;
         else
-            throw bpo::invalid_option_value("Invalid RMS");
+            throw bpo::invalid_option_value(token);
         return _in;
+    }
+
+    inline std::ostream& operator<<(std::ostream& _out, SSubmitCmd::ERmsType& _rms)
+    {
+        switch (_rms)
+        {
+            case SSubmitCmd::SSH:
+                _out << "ssh";
+            case SSubmitCmd::UNKNOWN:
+                break;
+        }
+        return _out;
     }
 
     /// \brief dds-commander's container of options
@@ -50,7 +64,7 @@ namespace dds
             // We need to be sure that there is "/" always at the end of the path
             MiscCommon::smart_append<std::string>(&sWorkDir, '/');
             std::string sCfgFile(sWorkDir);
-            sCfgFile += "dds-ssh.cfg";
+            sCfgFile += "dds-submit.cfg";
             return sCfgFile;
         }
 
@@ -64,12 +78,15 @@ namespace dds
 
             try
             {
-                LOG(MiscCommon::info) << "Loading default options from: " << sCfgFile;
+                LOG(MiscCommon::info) << "Loading options from: " << sCfgFile;
                 read_ini(sCfgFile, pt);
                 m_sTopoFile = pt.get<std::string>("dds-submit.TopoFile");
-                m_RMS << pt.get<std::string>("dds-submit.RMS");
+
+                std::stringstream ssRMS;
+                ssRMS << pt.get<std::string>("dds-submit.RMS");
+                ssRMS >> m_RMS;
+
                 m_sSSHCfgFile = pt.get<std::string>("dds-submit.SSHPlugIn-ConfigFile");
-                m_bStart = pt.get<bool>("dds-submit.ActivateAgents");
                 LOG(MiscCommon::info) << *this;
             }
             catch (...)
@@ -86,9 +103,12 @@ namespace dds
             ptree pt;
 
             pt.put("dds-submit.TopoFile", m_sTopoFile);
-            pt.put("dds-submit.RMS", m_RMS);
+
+            std::stringstream ssRMS;
+            ssRMS << m_RMS;
+            pt.put("dds-submit.RMS", ssRMS.str());
+
             pt.put("dds-submit.SSHPlugIn-ConfigFile", m_sSSHCfgFile);
-            pt.put("dds-submit.ActivateAgents", m_bStart);
 
             // Write the property tree to the XML file.
             write_ini(sCfgFile, pt);
@@ -126,6 +146,7 @@ namespace dds
         bpo::options_description options("dds-submit options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
+        options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
         options.add_options()("topo,t",
                               bpo::value<std::string>(&_options->m_sTopoFile),
                               "A topology file. The option can only be used with the \"submit\" command");
@@ -144,6 +165,19 @@ namespace dds
         bpo::variables_map vm;
         bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
         bpo::notify(vm);
+
+        if (vm.count("config"))
+        {
+            // Init options from the given config file
+            std::string sCfg(vm["config"].as<std::string>());
+            MiscCommon::smart_path(&sCfg);
+            if (!boost::filesystem::exists(sCfg))
+            {
+                LOG(MiscCommon::log_stderr) << "Config file is missing: " << sCfg;
+                return false;
+            }
+            _options->load(&sCfg);
+        }
 
         if (vm.count("help") || (_options->m_RMS == SSubmitCmd::UNKNOWN && !_options->m_bStart))
         {
@@ -170,6 +204,12 @@ namespace dds
                                         << "\n\n" << options;
             return false;
         }
+
+        // make absolute path
+        boost::filesystem::path pathTopoFile(_options->m_sTopoFile);
+        boost::filesystem::path pathSSHCfgFile(_options->m_sSSHCfgFile);
+        _options->m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
+        _options->m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
 
         // Save options to the config file
         _options->save();

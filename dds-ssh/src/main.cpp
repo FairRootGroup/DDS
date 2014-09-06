@@ -11,6 +11,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <list>
+#include <thread>
 // DDS
 #include "BOOSTHelper.h"
 #include "SysHelper.h"
@@ -90,12 +91,6 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
                           bpo::value<vector<string>>()->multitoken(),
                           "Perform an action on defined worker nodes. (arg is a space separated list of WN names)"
                           " Can only be used in connection with \"submit\", \"clean\", \"fast-clean\", \"exec\".");
-    visible.add_options()("threads,t",
-                          bpo::value<size_t>()->default_value(5),
-                          "It defines a number of threads in dds-ssh's thread pool."
-                          " Min value is 1, max value is (Core*2)."
-                          " Default: 5");
-
     //...positional
     bpo::positional_options_description pd;
     pd.add("command", 1);
@@ -347,27 +342,22 @@ int main(int argc, char* argv[])
             //            slog(ssWarning.str());
         }
 
-        // a number of threads in the thread-pool
-        // size_t nThreads( env.getUD().m_server.m_agentThreads );
-        size_t nThreads(vm["threads"].as<size_t>());
-        // Protection for a number of threads
-        if (nThreads <= 0 || nThreads > (getNCores() * 2))
-        {
-            LOG(debug) << "Warning: bad number of threads. The default will be used.";
-            nThreads = 5;
-        }
-        // some control information
-        LOG(debug) << "There are " << nThreads << " threads in the tread-pool.";
-        LOG(debug) << "Number of DDS workers: " << workers.size();
-        //        if (dynWrk)
-        //            ss << "Number of PROOF workers: on some workers is dynamic, according to a number of CPU cores\n";
-        //        else
-        //            ss << "Number of PROOF workers: " << wrkCount << "\n";
+        // a thread pool for the DDS transport engine
+        // may return 0 when not able to detect
+        unsigned int concurrentThreads = thread::hardware_concurrency();
+        // we need at least 4 threads
+        if (concurrentThreads < 4)
+            concurrentThreads = 4;
 
-        LOG(debug) << "Workers list:\n";
+        concurrentThreads *= 2;
+        LOG(info) << "Starting dds-ssh thread pool using " << concurrentThreads << " concurrent threads.";
+
+        LOG(info) << "Number of DDS slots: " << workers.size();
+
+        LOG(info) << "Workers list:\n";
 
         // start thread-pool and push tasks into it
-        threadPool_t threadPool(nThreads);
+        threadPool_t threadPool(concurrentThreads);
 
         // Did user requested some specific worker nodes
         StringVector_t defined_wns;

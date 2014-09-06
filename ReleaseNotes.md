@@ -8,6 +8,8 @@ Fixed: respond with an error if the given topo file is missing.
 Modified: Stop server communication channel if a fatal error is received from the server.   
 Added: Properly reflect server messages to stdout when agents are submitted/activated.   
 Added: Show more informative messages in case if the ssh plug-in failed to deploy agents.   
+Added: The command remembers now all options of the last successful call.
+Added: The command learned a new command line option "--config". IT gives the possibility to specify a configuration file with predefined dds-submit options.
 
 ### DDS common
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   
