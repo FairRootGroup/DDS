@@ -9,7 +9,7 @@ Modified: Stop server communication channel if a fatal error is received from th
 Added: Properly reflect server messages to stdout when agents are submitted/activated.   
 Added: Show more informative messages in case if the ssh plug-in failed to deploy agents.   
 Added: The command remembers now all options of the last successful call.   
-Added: The command learned a new command line option "--config". IT gives the possibility to specify a configuration file with predefined dds-submit options.   
+Added: The command learned a new command line option "--config". It gives the possibility to specify a configuration file with predefined dds-submit options.   
 
 ### dds-protocol-lib
 Improved: The protocol message header size has been reduced from 12 to 8 bytes.   
