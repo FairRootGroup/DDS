@@ -16,10 +16,9 @@
 namespace dds
 {
     // a very simple protocol
-    // | HEADER CRC (2) uint16_t | CMD (2) uint16_t | LEN (4) uint32_t | DATA BLOCK (size of LEN) unsigned char |
-    //
+    // |>>>>>>>>>>>>>>>>>>>>>>>>>>>> HEADER <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<|>>>>>>>>>>>>>>>> DATA <<<<<<<<<<<<<<<<<<|
+    // | HEADER CHECKSUM(2) uint16_t | CMD (2) uint16_t | LEN (4) uint32_t | DATA BLOCK (size of LEN) unsigned char |
     //----------------------------------------------------------------------
-
     struct SMessageHeader
     {
         SMessageHeader()
@@ -49,7 +48,8 @@ namespace dds
             m_len = 0;
         }
 
-        // !!! IMPORTANT. The checksum member should be always on the very first in the member's list !!!
+        // !!! IMPORTANT. The checksum member should be always on the top of the member's list !!!
+        // we exclude it from checksum calculations.
         uint16_t m_crc;
         ////////////////
         uint16_t m_cmd;
