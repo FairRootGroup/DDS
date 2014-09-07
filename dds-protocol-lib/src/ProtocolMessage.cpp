@@ -72,15 +72,16 @@ bool CProtocolMessage::decode_header()
         return false;
 
     memcpy(&header, &m_data[0], header_length);
+    header.m_crc = _normalizeRead16(header.m_crc);
+    header.m_cmd = _normalizeRead16(header.m_cmd);
+    header.m_len = _normalizeRead32(header.m_len);
+
     if (!header.isValid())
     {
         stringstream ss;
         ss << "the protocol message is bad or corrupted. Invalid header:\n" << BYTEVectorHexView_t(m_data);
         throw runtime_error(ss.str());
     }
-
-    header.m_cmd = _normalizeRead16(header.m_cmd);
-    header.m_len = _normalizeRead32(header.m_len);
 
     m_header = header;
 
@@ -97,16 +98,16 @@ bool CProtocolMessage::decode_header()
 
 void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::dataContainer_t& _data)
 {
-    // prepare data for transport
-    SMessageHeader header;
-    strncpy(header.m_sign, g_CmdSign, sizeof(header.m_sign));
-    header.m_cmd = _normalizeWrite16(_cmd);
-    header.m_len = _normalizeWrite32(_data.size());
-
     // local copy
-    strncpy(m_header.m_sign, g_CmdSign, sizeof(m_header.m_sign));
     m_header.m_cmd = _cmd;
     m_header.m_len = _data.size();
+    m_header.m_crc = m_header.getChecksum();
+
+    // prepare data for transport
+    SMessageHeader header;
+    header.m_crc = _normalizeWrite16(m_header.m_crc);
+    header.m_cmd = _normalizeWrite16(m_header.m_cmd);
+    header.m_len = _normalizeWrite32(m_header.m_len);
 
     BYTEVector_t ret_val(header_length);
     memcpy(&ret_val[0], reinterpret_cast<unsigned char*>(&header), header_length);

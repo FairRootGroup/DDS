@@ -10,17 +10,14 @@
 // STD
 #include <cstring>
 #include <memory>
+// BOOST
+#include <boost/crc.hpp>
 
 namespace dds
 {
     // a very simple protocol
-    // | <DDS> (6) char | CMD (2) uint16_t | LEN (4) uint32_t | DATA BLOCK (size of LEN) unsigned char |
-    const char* const g_CmdSign = "<DDS>";
-    enum
-    {
-        header_sign_length = 6
-    };
-
+    // | HEADER CRC (2) uint16_t | CMD (2) uint16_t | LEN (4) uint32_t | DATA BLOCK (size of LEN) unsigned char |
+    //
     //----------------------------------------------------------------------
 
     struct SMessageHeader
@@ -29,22 +26,34 @@ namespace dds
             : m_cmd(0)
             , m_len(0)
         {
-            m_sign[0] = '\0';
         }
-        char m_sign[header_sign_length];
-        uint16_t m_cmd;
-        uint32_t m_len;
 
         bool isValid() const
         {
-            return (strcmp(m_sign, g_CmdSign) == 0);
+            return (getChecksum() == m_crc);
         }
+        uint16_t getChecksum() const
+        {
+            // Calculate header's checksum.
+            // In order to do that, we of course should exclude m_crc from the calculation.
+            unsigned char const* buf = reinterpret_cast<unsigned char const*>(this);
+            boost::crc_16_type crc16;
+            crc16.process_bytes(buf + sizeof(uint16_t), sizeof(SMessageHeader) - sizeof(uint16_t));
+
+            return crc16.checksum();
+        }
+
         void clear()
         {
-            m_sign[0] = '\0';
             m_cmd = 0;
             m_len = 0;
         }
+
+        // !!! IMPORTANT. The checksum member should be always on the very first in the member's list !!!
+        uint16_t m_crc;
+        ////////////////
+        uint16_t m_cmd;
+        uint32_t m_len;
     };
 
     //----------------------------------------------------------------------
