@@ -224,9 +224,12 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
             msg_cmd.m_sMsg = (0 == nDdsSSHExitCode) ? "Agents were successfully deployed."
                                                     : "Looks like we had problems to deploy agents using DDS ssh "
                                                       "plug-in. Check dds.log for more information.";
+            msg_cmd.m_srcCommand = cmdSUBMIT;
+            msg_cmd.m_msgSeverity = (0 == nDdsSSHExitCode) ? info : warning;
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdREPLY_SUBMIT_OK>(msg_cmd);
+            msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
             p->pushMsg(msg);
+            p->pushMsg<cmdSHUTDOWN>();
         }
     }
     catch (bad_weak_ptr& e)
@@ -237,8 +240,10 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
     {
         SSimpleMsgCmd msg_cmd;
         msg_cmd.m_sMsg = e.what();
+        msg_cmd.m_srcCommand = cmdSUBMIT;
+        msg_cmd.m_msgSeverity = fatal;
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
         if (!_channel.expired())
         {
             auto p = _channel.lock();

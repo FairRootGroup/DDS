@@ -105,8 +105,10 @@ bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
     {
         SSimpleMsgCmd msg_cmd;
         msg_cmd.m_sMsg = e.what();
+        msg_cmd.m_srcCommand = cmdSUBMIT;
+        msg_cmd.m_msgSeverity = fatal;
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdREPLY_ERR_SUBMIT>(msg_cmd);
+        msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
         pushMsg(msg);
 
         return true;

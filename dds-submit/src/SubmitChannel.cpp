@@ -64,22 +64,6 @@ bool CSubmitChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _ms
     return true;
 }
 
-bool CSubmitChannel::on_cmdREPLY_SUBMIT_OK(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    on_cmdSIMPLE_MSG(_msg);
-    // Close communication channel
-    stop();
-    return true;
-}
-
-bool CSubmitChannel::on_cmdREPLY_ERR_SUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
-{
-    on_cmdSIMPLE_MSG(_msg);
-    // Close communication channel
-    stop();
-    return true;
-}
-
 bool CSubmitChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     // Close communication channel

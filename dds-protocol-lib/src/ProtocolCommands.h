@@ -47,8 +47,6 @@ namespace dds
         cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
-        cmdREPLY_SUBMIT_OK,  // attachment: SSimpleMsgCmd
-        cmdREPLY_ERR_SUBMIT, // attachment: SSimpleMsgCmd
         cmdGET_HOST_INFO,
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
@@ -82,8 +80,6 @@ namespace dds
         { cmdSIMPLE_MSG, NAME_TO_STRING(cmdSIMPLE_MSG) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
         { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },
-        { cmdREPLY_SUBMIT_OK, NAME_TO_STRING(cmdREPLY_SUBMIT_OK) },
-        { cmdREPLY_ERR_SUBMIT, NAME_TO_STRING(cmdREPLY_ERR_SUBMIT) },
         { cmdGET_HOST_INFO, NAME_TO_STRING(cmdGET_HOST_INFO) },
         { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) },
         { cmdDISCONNECT, NAME_TO_STRING(cmdDISCONNECT) },
@@ -113,8 +109,6 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdHANDSHAKE_AGENT, SVersionCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSUBMIT, SSubmitCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSIMPLE_MSG, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_SUBMIT_OK, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_ERR_SUBMIT, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_HOST_INFO, SHostInfoCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
