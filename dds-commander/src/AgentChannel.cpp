@@ -116,7 +116,7 @@ bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdAGENT_ACTIVATE(CProtocolMessage::protocolMessagePtr_t _msg)
 {
     // The agent channel can't activate all agents. Let others to process this message.
     return false;

@@ -58,10 +58,10 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         });
 
     _newClient->registerMessageHandler(
-        cmdSUBMIT_START,
+        cmdAGENT_ACTIVATE,
         [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
         {
-            return this->on_cmdSUBMIT_START(_msg, useRawPtr(_channel));
+            return this->on_cmdAGENT_ACTIVATE(_msg, useRawPtr(_channel));
         });
 
     _newClient->registerMessageHandler(
@@ -249,8 +249,8 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
     return true;
 }
 
-bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr_t _msg,
-                                            CAgentChannel::weakConnectionPtr_t _channel)
+bool CConnectionManager::on_cmdAGENT_ACTIVATE(CProtocolMessage::protocolMessagePtr_t _msg,
+                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
     std::lock_guard<std::mutex> lock(m_ActivateAgents.m_mutexStart);
     try
@@ -319,7 +319,7 @@ bool CConnectionManager::on_cmdSUBMIT_START(CProtocolMessage::protocolMessagePtr
     {
         SSimpleMsgCmd cmd;
         cmd.m_msgSeverity = MiscCommon::fatal;
-        cmd.m_srcCommand = cmdSUBMIT_START;
+        cmd.m_srcCommand = cmdAGENT_ACTIVATE;
         cmd.m_sMsg = _e.what();
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
         msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);

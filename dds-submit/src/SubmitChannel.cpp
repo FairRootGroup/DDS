@@ -44,7 +44,7 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessageP
     // Check wheather we need to start distribuiting tasks
     if (m_bSendStart)
     {
-        pushMsg<cmdSUBMIT_START>();
+        pushMsg<cmdAGENT_ACTIVATE>();
     }
 
     return true;
