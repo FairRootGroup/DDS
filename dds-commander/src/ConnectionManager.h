@@ -33,7 +33,7 @@ namespace dds
         bool on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg,
                                          CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdAGENT_ACTIVATE(CProtocolMessage::protocolMessagePtr_t _msg,
+        bool on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg,
                                   CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg,
                                        CAgentChannel::weakConnectionPtr_t _channel);

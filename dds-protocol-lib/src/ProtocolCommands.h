@@ -43,7 +43,6 @@ namespace dds
         cmdHANDSHAKE,       // attachment: SVersionCmd
         cmdHANDSHAKE_AGENT, // attachment: SVersionCmd
         cmdSUBMIT,          // attachment: SSubmitCmd
-        cmdAGENT_ACTIVATE,
         cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
@@ -76,7 +75,6 @@ namespace dds
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
         { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
-        { cmdAGENT_ACTIVATE, NAME_TO_STRING(cmdAGENT_ACTIVATE) },
         { cmdSIMPLE_MSG, NAME_TO_STRING(cmdSIMPLE_MSG) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
         { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },
