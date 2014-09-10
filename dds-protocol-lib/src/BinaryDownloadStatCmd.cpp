@@ -15,6 +15,7 @@ void SBinaryDownloadStatCmd::normalizeToLocal()
     m_recievedFileSize = inet::_normalizeRead32(m_recievedFileSize);
     m_recievedCrc32 = inet::_normalizeRead32(m_recievedCrc32);
     m_downloadTime = inet::_normalizeRead32(m_downloadTime);
+    m_srcCommand = inet::_normalizeRead16(m_srcCommand);
 }
 
 void SBinaryDownloadStatCmd::normalizeToRemote()
@@ -22,6 +23,7 @@ void SBinaryDownloadStatCmd::normalizeToRemote()
     m_recievedFileSize = inet::_normalizeWrite32(m_recievedFileSize);
     m_recievedCrc32 = inet::_normalizeWrite32(m_recievedCrc32);
     m_downloadTime = inet::_normalizeWrite32(m_downloadTime);
+    m_srcCommand = inet::_normalizeWrite16(m_srcCommand);
 }
 
 void SBinaryDownloadStatCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -41,6 +43,9 @@ void SBinaryDownloadStatCmd::_convertFromData(const MiscCommon::BYTEVector_t& _d
     m_downloadTime += (_data[idx++] << 8);
     m_downloadTime += (_data[idx++] << 16);
     m_downloadTime += (_data[idx++] << 24);
+
+    m_srcCommand = _data[idx++];
+    m_srcCommand += (_data[idx++] << 8);
 }
 
 void SBinaryDownloadStatCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
@@ -59,4 +64,7 @@ void SBinaryDownloadStatCmd::_convertToData(MiscCommon::BYTEVector_t* _data) con
     _data->push_back((m_downloadTime >> 8) & 0xFF);
     _data->push_back((m_downloadTime >> 16) & 0xFF);
     _data->push_back((m_downloadTime >> 24) & 0xFF);
+
+    _data->push_back(m_srcCommand & 0xFF);
+    _data->push_back(m_srcCommand >> 8);
 }

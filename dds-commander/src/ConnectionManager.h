@@ -31,23 +31,23 @@ namespace dds
                                    CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
                            CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdBINARY_ATTACHMENT_LOG(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment,
-                                         CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment,
+                                     CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
                           CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment,
-                                       CAgentChannel::weakConnectionPtr_t _channel);
-        bool on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment,
-                                      CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
+                                  CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment,
+                                        CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
 
         CProtocolMessage::protocolMessagePtr_t getTestBinaryAttachment(size_t _binarySize);
 
         CGetLogChannelInfo m_getLog;
-        CTestChannelInfo m_downloadTest;
+        CTestChannelInfo m_transportTest;
         CActivateAgentsChannelInfo m_ActivateAgents;
         std::string m_sCurrentTopoFile;
     };

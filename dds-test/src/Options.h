@@ -21,11 +21,11 @@ namespace dds
     typedef struct SOptions
     {
         SOptions()
-            : m_downloadTest(false)
+            : m_transportTest(false)
         {
         }
 
-        bool m_downloadTest;
+        bool m_transportTest;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -45,7 +45,7 @@ namespace dds
         bpo::options_description options("dds-getlog options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("download,d", "Start download test");
+        options.add_options()("transport,t", "Start transport test");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -62,9 +62,9 @@ namespace dds
             PrintVersion();
             return false;
         }
-        if (vm.count("download"))
+        if (vm.count("transport"))
         {
-            _options->m_downloadTest = true;
+            _options->m_transportTest = true;
         }
 
         return true;

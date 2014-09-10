@@ -54,17 +54,14 @@ namespace dds
         cmdBINARY_ATTACHMENT,    // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
         cmdBINARY_DOWNLOAD_STAT, // attachment: SBinaryDownloadStatCmd.
         cmdGET_UUID,
-        cmdREPLY_UUID,            // attachment: SUUIDCmd
-        cmdSET_UUID,              // attachment: SUUIDCmd
-        cmdBINARY_ATTACHMENT_LOG, // attachment: SBinanryAttachmentCmd.
+        cmdREPLY_UUID, // attachment: SUUIDCmd
+        cmdSET_UUID,   // attachment: SUUIDCmd
         cmdGET_LOG,
         cmdGET_AGENTS_INFO,
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
-        cmdSTART_DOWNLOAD_TEST,
-        cmdDOWNLOAD_TEST,      // attachment: SBinanryAttachmentCmd
-        cmdDOWNLOAD_TEST_STAT, // attachment: SBinaryDownloadStatCmd
+        cmdTRANSPORT_TEST,
 
         // ----------- VERSION 2 --------------------
     };
@@ -88,15 +85,12 @@ namespace dds
         { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
         { cmdREPLY_UUID, NAME_TO_STRING(cmdREPLY_UUID) },
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
-        { cmdBINARY_ATTACHMENT_LOG, NAME_TO_STRING(cmdBINARY_ATTACHMENT_LOG) },
         { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) },
         { cmdGET_AGENTS_INFO, NAME_TO_STRING(cmdGET_AGENTS_INFO) },
         { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
-        { cmdSTART_DOWNLOAD_TEST, NAME_TO_STRING(cmdSTART_DOWNLOAD_TEST) },
-        { cmdDOWNLOAD_TEST, NAME_TO_STRING(cmdDOWNLOAD_TEST) },
-        { cmdDOWNLOAD_TEST_STAT, NAME_TO_STRING(cmdDOWNLOAD_TEST_STAT) }
+        { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
     };
 
     //----------------------------------------------------------------------
@@ -111,13 +105,10 @@ namespace dds
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
     REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT, SBinaryDownloadStatCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT_LOG, SBinaryAttachmentCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
     REG_CMD_WITH_ATTACHMENT(cmdREPLY_AGENTS_INFO, SAgentsInfoCmd);
     REG_CMD_WITH_ATTACHMENT(cmdASSIGN_USER_TASK, SAssignUserTaskCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST_STAT, SBinaryDownloadStatCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdDOWNLOAD_TEST, SBinaryAttachmentCmd);
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

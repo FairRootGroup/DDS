@@ -36,13 +36,13 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
 
-    std::function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment, CAgentChannel * _channel)>
-        fBINARY_ATTACHMENT_LOG =
-            [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    std::function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment, CAgentChannel * _channel)>
+        fBINARY_ATTACHMENT =
+            [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdBINARY_ATTACHMENT_LOG(_attachment, useRawPtr(_channel));
+        return this->on_cmdBINARY_ATTACHMENT(_attachment, useRawPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_LOG>(fBINARY_ATTACHMENT_LOG);
+    _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT>(fBINARY_ATTACHMENT);
 
     std::function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_AGENTS_INFO =
@@ -67,21 +67,21 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
-    std::function<bool(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSTART_DOWNLOAD_TEST =
-            [this](SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    std::function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
+        fTRANSPORT_TEST =
+            [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdSTART_DOWNLOAD_TEST(_attachment, useRawPtr(_channel));
+        return this->on_cmdTRANSPORT_TEST(_attachment, useRawPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdSTART_DOWNLOAD_TEST>(fSTART_DOWNLOAD_TEST);
+    _newClient->registerMessageHandler<cmdTRANSPORT_TEST>(fTRANSPORT_TEST);
 
-    std::function<bool(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fDOWNLOAD_TEST_STAT =
-            [this](SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    std::function<bool(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment, CAgentChannel * _channel)>
+        fBINARY_DOWNLOAD_STAT =
+            [this](SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdDOWNLOAD_TEST_STAT(_attachment, useRawPtr(_channel));
+        return this->on_cmdBINARY_DOWNLOAD_STAT(_attachment, useRawPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdDOWNLOAD_TEST_STAT>(fDOWNLOAD_TEST_STAT);
+    _newClient->registerMessageHandler<cmdBINARY_DOWNLOAD_STAT>(fBINARY_DOWNLOAD_STAT);
 
     std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)>
         fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
@@ -159,11 +159,15 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
     return true;
 }
 
-bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(
-    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
+bool CConnectionManager::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment,
+                                                 CAgentChannel::weakConnectionPtr_t _channel)
 {
-    m_getLog.processMessage<SBinaryAttachmentCmd>(*_attachment, _channel);
+    switch (_attachment->m_srcCommand)
+    {
+        case cmdGET_LOG:
+            m_getLog.processMessage<SBinaryAttachmentCmd>(*_attachment, _channel);
+            return true;
+    }
     return true;
 }
 
@@ -379,18 +383,18 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
     return true;
 }
 
-bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment,
-                                                   CAgentChannel::weakConnectionPtr_t _channel)
+bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
+                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
     {
-        std::lock_guard<std::mutex> lock(m_downloadTest.m_mutexStart);
+        std::lock_guard<std::mutex> lock(m_transportTest.m_mutexStart);
 
-        if (!m_downloadTest.m_channel.expired())
+        if (!m_transportTest.m_channel.expired())
         {
             SSimpleMsgCmd cmd;
             cmd.m_msgSeverity = MiscCommon::fatal;
-            cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
+            cmd.m_srcCommand = cmdTRANSPORT_TEST;
             cmd.m_sMsg = "Can not process the request. The test command is already in progress.";
             CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
             msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
@@ -398,8 +402,8 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTA
             p->pushMsg(msg);
             return true;
         }
-        m_downloadTest.m_channel = _channel;
-        m_downloadTest.zeroCounters();
+        m_transportTest.m_channel = _channel;
+        m_transportTest.zeroCounters();
 
         auto condition = [](CAgentChannel::connectionPtr_t _v)
         {
@@ -408,7 +412,7 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTA
 
         vector<size_t> binarySizes{ 1000, 10000, 1000, 100000, 1000, 1000000, 1000, 10000000, 1000 };
 
-        m_downloadTest.m_nofRequests = binarySizes.size() * countNofChannels(condition);
+        m_transportTest.m_nofRequests = binarySizes.size() * countNofChannels(condition);
 
         for (size_t size : binarySizes)
         {
@@ -416,17 +420,17 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTA
             broadcastMsg(msg, condition);
         }
 
-        if (m_downloadTest.m_nofRequests == 0)
+        if (m_transportTest.m_nofRequests == 0)
         {
             SSimpleMsgCmd cmd;
             cmd.m_msgSeverity = MiscCommon::fatal;
-            cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
+            cmd.m_srcCommand = cmdTRANSPORT_TEST;
             cmd.m_sMsg = "There are no active agents.";
             CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
             pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-            if (!m_downloadTest.m_channel.expired())
+            if (!m_transportTest.m_channel.expired())
             {
-                auto p = m_downloadTest.m_channel.lock();
+                auto p = m_transportTest.m_channel.lock();
                 p->pushMsg(pm);
             }
         }
@@ -442,36 +446,46 @@ bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTA
 CProtocolMessage::protocolMessagePtr_t CConnectionManager::getTestBinaryAttachment(size_t _binarySize)
 {
     SBinaryAttachmentCmd cmd;
+    cmd.m_srcCommand = cmdTRANSPORT_TEST;
 
     for (size_t i = 0; i < _binarySize; ++i)
     {
         // char c = rand() % 256;
         char c = 1;
-        cmd.m_fileData.push_back(c);
+        cmd.m_data.push_back(c);
     }
 
     // Calculate CRC32 of the test file data
     boost::crc_32_type crc;
-    crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+    crc.process_bytes(&cmd.m_data[0], cmd.m_data.size());
 
-    cmd.m_crc32 = crc.checksum();
+    cmd.m_fileCrc32 = crc.checksum();
     cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
-    cmd.m_fileSize = cmd.m_fileData.size();
+    cmd.m_fileSize = cmd.m_data.size();
 
     CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    msg->encodeWithAttachment<cmdDOWNLOAD_TEST>(cmd);
+    msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
 
     return msg;
 }
 
-bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment,
-                                                  CAgentChannel::weakConnectionPtr_t _channel)
+bool CConnectionManager::on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment,
+                                                    CAgentChannel::weakConnectionPtr_t _channel)
 {
-    m_downloadTest.m_totalReceived += _attachment->m_recievedFileSize;
-    m_downloadTest.m_totalTime += _attachment->m_downloadTime;
+    switch (_attachment->m_srcCommand)
+    {
+        case cmdTRANSPORT_TEST:
+        {
+            m_transportTest.m_totalReceived += _attachment->m_recievedFileSize;
+            m_transportTest.m_totalTime += _attachment->m_downloadTime;
+            m_transportTest.processMessage<SBinaryDownloadStatCmd>(*_attachment, _channel);
 
-    m_downloadTest.processMessage<SBinaryDownloadStatCmd>(*_attachment, _channel);
-
+            return true;
+        }
+        default:
+            LOG(debug) << "Received command cmdBINARY_DOWNLOAD_STAT does not have a listener";
+            return true;
+    }
     return true;
 }
 
@@ -496,8 +510,8 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
         case cmdGET_LOG:
             return m_getLog.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
 
-        case cmdSTART_DOWNLOAD_TEST:
-            return m_downloadTest.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+        case cmdTRANSPORT_TEST:
+            return m_transportTest.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
     }
     return false;
 }

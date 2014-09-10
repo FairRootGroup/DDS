@@ -83,27 +83,52 @@ bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_
 
 bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
 {
-    chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
-
-    // Calculate CRC32 of the recieved file data
-    boost::crc_32_type crc32;
-    crc32.process_bytes(&_attachment->m_fileData[0], _attachment->m_fileData.size());
-
-    if (crc32.checksum() == _attachment->m_crc32)
+    switch (_attachment->m_srcCommand)
     {
-        // Do something if file is correctly downloaded
+        case cmdTRANSPORT_TEST:
+        {
+            // Calculate CRC32 of the recieved file data
+            boost::crc_32_type crc32;
+            crc32.process_bytes(&_attachment->m_data[0], _attachment->m_data.size());
+
+            if (crc32.checksum() == _attachment->m_fileCrc32)
+            {
+                chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+                chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
+
+                // Form reply command
+                SBinaryDownloadStatCmd reply_cmd;
+                reply_cmd.m_srcCommand = cmdTRANSPORT_TEST;
+                reply_cmd.m_recievedCrc32 = crc32.checksum();
+                reply_cmd.m_recievedFileSize = _attachment->m_data.size();
+                reply_cmd.m_downloadTime = downloadTime.count();
+
+                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+                msg->encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
+                pushMsg(msg);
+            }
+            else
+            {
+                stringstream ss;
+                ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of "
+                   << _attachment->m_fileCrc32 << " | size: " << _attachment->m_data.size()
+                   << " name: " << _attachment->m_fileName;
+                SSimpleMsgCmd cmd;
+                cmd.m_msgSeverity = MiscCommon::error;
+                cmd.m_srcCommand = cmdTRANSPORT_TEST;
+                cmd.m_sMsg = ss.str();
+                CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
+                pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
+                pushMsg(pm);
+            }
+
+            return true;
+        }
+
+        default:
+            LOG(debug) << "Received command cmdBINARY_ATTACHMENT does not have a listener";
+            return true;
     }
-
-    // Form reply command
-    SBinaryDownloadStatCmd reply_cmd;
-    reply_cmd.m_recievedCrc32 = crc32.checksum();
-    reply_cmd.m_recievedFileSize = _attachment->m_fileData.size();
-    reply_cmd.m_downloadTime = downloadTime.count();
-
-    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    msg->encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
-    pushMsg(msg);
 
     return true;
 }
@@ -134,7 +159,7 @@ bool CCommanderChannel::on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_
 
 bool CCommanderChannel::on_cmdSET_UUID(SCommandAttachmentImpl<cmdSET_UUID>::ptr_t _attachment)
 {
-    LOG(info) << "cmdSET_UUID attachment [" << _attachment << "] from " << remoteEndIDString();
+    LOG(info) << "cmdSET_UUID attachment [" << *_attachment << "] from " << remoteEndIDString();
 
     m_id = _attachment->m_id;
 
@@ -194,6 +219,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         do_execv(tarPath, params, 60, &output);
 
         SBinaryAttachmentCmd cmd;
+        cmd.m_srcCommand = cmdGET_LOG;
 
         ifstream f(archiveFileName.c_str());
         if (!f.is_open() || !f.good())
@@ -203,23 +229,23 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
             return true;
         }
         f.seekg(0, ios::end);
-        cmd.m_fileData.reserve(f.tellg());
+        cmd.m_data.reserve(f.tellg());
         f.seekg(0, ios::beg);
-        cmd.m_fileData.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+        cmd.m_data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
         boost::crc_32_type crc;
-        crc.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+        crc.process_bytes(&cmd.m_data[0], cmd.m_data.size());
 
-        cmd.m_crc32 = crc.checksum();
+        cmd.m_fileCrc32 = crc.checksum();
         cmd.m_fileName = archiveName + ".tar.gz";
-        cmd.m_fileSize = cmd.m_fileData.size();
+        cmd.m_fileSize = cmd.m_data.size();
 
         f.close();
         fs::remove(archiveFileName);
         fs::remove_all(archiveDirName);
 
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdBINARY_ATTACHMENT_LOG>(cmd);
+        msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
         pushMsg(msg);
     }
     catch (exception& e)
@@ -240,44 +266,6 @@ void CCommanderChannel::sendGetLogError(const string& _msg)
     CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
     pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
     pushMsg(pm);
-}
-
-bool CCommanderChannel::on_cmdDOWNLOAD_TEST(SCommandAttachmentImpl<cmdDOWNLOAD_TEST>::ptr_t _attachment)
-{
-    // Calculate CRC32 of the recieved file data
-    boost::crc_32_type crc32;
-    crc32.process_bytes(&_attachment->m_fileData[0], _attachment->m_fileData.size());
-
-    if (crc32.checksum() == _attachment->m_crc32)
-    {
-        chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-        chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
-
-        // Form reply command
-        SBinaryDownloadStatCmd reply_cmd;
-        reply_cmd.m_recievedCrc32 = crc32.checksum();
-        reply_cmd.m_recievedFileSize = _attachment->m_fileData.size();
-        reply_cmd.m_downloadTime = downloadTime.count();
-
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdDOWNLOAD_TEST_STAT>(reply_cmd);
-        pushMsg(msg);
-    }
-    else
-    {
-        stringstream ss;
-        ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << _attachment->m_crc32
-           << " | size: " << _attachment->m_fileData.size() << " name: " << _attachment->m_fileName;
-        SSimpleMsgCmd cmd;
-        cmd.m_msgSeverity = MiscCommon::error;
-        cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
-        cmd.m_sMsg = ss.str();
-        CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-        pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-        pushMsg(pm);
-    }
-
-    return true;
 }
 
 void CCommanderChannel::readAgentUUIDFile()

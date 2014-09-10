@@ -44,10 +44,8 @@ namespace dds
         MESSAGE_HANDLER(cmdBINARY_DOWNLOAD_STAT, on_cmdBINARY_DOWNLOAD_STAT)
         MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
-        MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_LOG, on_cmdBINARY_ATTACHMENT_LOG)
-        // MESSAGE_HANDLER(cmdGET_LOG_ERROR, on_cmdGET_LOG_ERROR)
-        MESSAGE_HANDLER(cmdSTART_DOWNLOAD_TEST, on_cmdSTART_DOWNLOAD_TEST)
-        MESSAGE_HANDLER(cmdDOWNLOAD_TEST_STAT, on_cmdDOWNLOAD_TEST_STAT)
+        MESSAGE_HANDLER(cmdBINARY_ATTACHMENT, on_cmdBINARY_ATTACHMENT)
+        MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         END_MSG_MAP()
 
@@ -70,10 +68,9 @@ namespace dds
         bool on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment);
         bool on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment);
         bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
-        bool on_cmdBINARY_ATTACHMENT_LOG(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment);
+        bool on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment);
         bool on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment);
-        bool on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment);
-        bool on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment);
+        bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
 
         // On connection handles

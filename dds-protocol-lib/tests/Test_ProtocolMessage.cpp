@@ -196,10 +196,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
 
     // Create a message
     SBinaryAttachmentCmd cmd_src;
-    cmd_src.m_crc32 = crc32;
+    cmd_src.m_fileCrc32 = crc32;
     cmd_src.m_fileName = fileName;
     cmd_src.m_fileSize = fileSize;
-    cmd_src.m_fileData = fileData;
+    cmd_src.m_data = fileData;
     CProtocolMessage msg_src;
     msg_src.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd_src);
 
@@ -223,13 +223,13 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     cmd_dest.convertFromData(msg_dest.bodyToContainer());
 
     BOOST_CHECK(cmd_src == cmd_dest);
-    BOOST_CHECK(crc32 == cmd_dest.m_crc32);
+    BOOST_CHECK(crc32 == cmd_dest.m_fileCrc32);
     BOOST_CHECK(fileName == cmd_dest.m_fileName);
     BOOST_CHECK(fileSize == cmd_dest.m_fileSize);
     unsigned int i = 0;
     for (auto c : fileData)
     {
-        BOOST_CHECK(c == cmd_dest.m_fileData[i]);
+        BOOST_CHECK(c == cmd_dest.m_data[i]);
         i++;
     }
 }

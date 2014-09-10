@@ -169,6 +169,20 @@ namespace dds
             broadcastMsg(msg, _condition);
         }
 
+        void broadcastBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
+                                          const std::string& _fileName,
+                                          uint16_t _cmdSource,
+                                          std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+        {
+            for (auto& v : m_channels)
+            {
+                if (_condition == nullptr || _condition(v))
+                {
+                    v->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource);
+                }
+            }
+        }
+
         size_t countNofChannels(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
             if (_condition == nullptr)

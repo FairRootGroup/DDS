@@ -34,7 +34,6 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdASSIGN_USER_TASK, on_cmdASSIGN_USER_TASK)
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
-        MESSAGE_HANDLER(cmdDOWNLOAD_TEST, on_cmdDOWNLOAD_TEST)
         END_MSG_MAP()
 
         // gives the possibility to register a callback, which will be called when a user task is executed
@@ -56,7 +55,6 @@ namespace dds
         bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
         bool on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment);
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
-        bool on_cmdDOWNLOAD_TEST(SCommandAttachmentImpl<cmdDOWNLOAD_TEST>::ptr_t _attachment);
         void onRemoteEndDissconnected();
 
       private:

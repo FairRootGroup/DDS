@@ -140,13 +140,6 @@ bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _att
     return true;
 }
 
-bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment)
-{
-    LOG(debug) << "cmdBINARY_DOWNLOAD_STAT attachment [" << *_attachment << "] received from: " << remoteEndIDString();
-
-    return true;
-}
-
 bool CAgentChannel::on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment)
 {
     LOG(debug) << "cmdREPLY_GET_UUID attachment [" << *_attachment << "] received from: " << remoteEndIDString();
@@ -175,39 +168,69 @@ bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _att
     return false;
 }
 
-bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment)
+bool CAgentChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
 {
-    // Calculate CRC32 of the recieved file data
-    boost::crc_32_type crc32;
-    crc32.process_bytes(&_attachment->m_fileData[0], _attachment->m_fileData.size());
-
-    if (crc32.checksum() == _attachment->m_crc32)
+    switch (_attachment->m_srcCommand)
     {
-        const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-        const string logFileName(sLogStorageDir + _attachment->m_fileName);
-        ofstream f(logFileName.c_str());
-        if (!f.is_open() || !f.good())
+        case cmdGET_LOG:
         {
-            string msg("Could not open log archive: " + logFileName);
-            LOG(error) << msg;
+            // Calculate CRC32 of the recieved file data
+            boost::crc_32_type crc32;
+            crc32.process_bytes(&_attachment->m_data[0], _attachment->m_data.size());
+
+            if (crc32.checksum() == _attachment->m_fileCrc32)
+            {
+                const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+                const string logFileName(sLogStorageDir + _attachment->m_fileName);
+                ofstream f(logFileName.c_str());
+                if (!f.is_open() || !f.good())
+                {
+                    string msg("Could not open log archive: " + logFileName);
+                    LOG(error) << msg;
+                    return false;
+                }
+
+                for (const auto& v : _attachment->m_data)
+                {
+                    f << v;
+                }
+            }
+            else
+            {
+                LOG(error) << "Recieved LOG file with wrong CRC32 checksum: " << crc32.checksum() << " instead of "
+                           << _attachment->m_fileCrc32;
+            }
+
+            // Return false.
+            // Give possibility to further process this message.
             return false;
         }
 
-        for (const auto& v : _attachment->m_fileData)
-        {
-            f << v;
-        }
+        default:
+            LOG(debug) << "Received BINARY_ATTACHMENT has no listener.";
+            return true;
     }
-    else
+    return true;
+}
+
+bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment)
+{
+    switch (_attachment->m_srcCommand)
     {
-        LOG(error) << "Recieved LOG file with wrong CRC32 checksum: " << crc32.checksum() << " instead of "
-                   << _attachment->m_crc32;
+        case cmdTRANSPORT_TEST:
+        {
+            LOG(info) << "cmdDOWNLOAD_TEST_STAT attachment [" << *_attachment << "] command from "
+                      << remoteEndIDString();
+
+            return false;
+        }
+
+        default:
+            LOG(debug) << "Received command cmdBINARY_DOWNLOAD_STAT does not have a listener";
+            return true;
     }
 
-    // Return false.
-    // Give possibility to further process this message.
-    // For example, send information to UI.
-    return false;
+    return true;
 }
 
 bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment)
@@ -218,18 +241,11 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_I
     return false;
 }
 
-bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment)
+bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment)
 {
     // Return false.
     // Give possibility to further process this message.
     // For example, send information to UI.
-    return false;
-}
-
-bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment)
-{
-    LOG(info) << "cmdDOWNLOAD_TEST_STAT attachment [" << *_attachment << "] command from " << remoteEndIDString();
-
     return false;
 }
 
@@ -245,7 +261,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
         case cmdGET_LOG:
             return false; // let others to process this message
 
-        case cmdSTART_DOWNLOAD_TEST:
+        case cmdTRANSPORT_TEST:
             return false;
 
         default:

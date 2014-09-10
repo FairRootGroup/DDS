@@ -16,6 +16,7 @@ namespace dds
             : m_recievedFileSize(0)
             , m_recievedCrc32(0)
             , m_downloadTime(0)
+            , m_srcCommand(0)
         {
         }
         void normalizeToLocal();
@@ -25,6 +26,7 @@ namespace dds
             size_t size(sizeof(m_recievedFileSize));
             size += sizeof(m_recievedCrc32);
             size += sizeof(m_downloadTime);
+            size += sizeof(m_srcCommand);
             return size;
         }
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
@@ -38,6 +40,7 @@ namespace dds
         uint32_t m_recievedFileSize; ///> Number of recieved bytes
         uint32_t m_recievedCrc32;    ///> CRC32 checksum of the recieved file
         uint32_t m_downloadTime;     ///> Time spent to download file [microseconds]
+        uint16_t m_srcCommand;       ///> Source command which initiated file transport
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryDownloadStatCmd& _val)
     {

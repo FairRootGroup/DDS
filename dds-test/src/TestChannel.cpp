@@ -14,7 +14,7 @@ bool CTestChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HAND
 {
     m_isHandShakeOK = true;
 
-    pushMsg<cmdSTART_DOWNLOAD_TEST>();
+    pushMsg<cmdTRANSPORT_TEST>();
 
     return true;
 }

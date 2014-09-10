@@ -143,19 +143,6 @@ namespace dds
     };
     //----------------------------------------------------------------------
     template <>
-    struct SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>
-    {
-        typedef std::shared_ptr<SBinaryAttachmentCmd> ptr_t;
-
-        static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)
-        {
-            ptr_t p = std::make_shared<SBinaryAttachmentCmd>();
-            p->convertFromData(_msg->bodyToContainer());
-            return p;
-        }
-    };
-    //----------------------------------------------------------------------
-    template <>
     struct SCommandAttachmentImpl<cmdREPLY_UUID>
     {
         typedef std::shared_ptr<SUUIDCmd> ptr_t;
@@ -208,20 +195,7 @@ namespace dds
     };
     //----------------------------------------------------------------------
     template <>
-    struct SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>
-    {
-        typedef std::shared_ptr<SBinaryDownloadStatCmd> ptr_t;
-
-        static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)
-        {
-            ptr_t p = std::make_shared<SBinaryDownloadStatCmd>();
-            p->convertFromData(_msg->bodyToContainer());
-            return p;
-        }
-    };
-    //----------------------------------------------------------------------
-    template <>
-    struct SCommandAttachmentImpl<cmdDOWNLOAD_TEST>
+    struct SCommandAttachmentImpl<cmdTRANSPORT_TEST>
     {
         typedef std::shared_ptr<SBinaryAttachmentCmd> ptr_t;
 

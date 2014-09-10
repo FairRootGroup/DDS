@@ -9,8 +9,10 @@
 #include <deque>
 #include <map>
 // BOOST
-#include "boost/noncopyable.hpp"
-#include "boost/asio.hpp"
+#include <boost/noncopyable.hpp>
+#include <boost/asio.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 // DDS
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
@@ -133,6 +135,21 @@ namespace dds
     }
     // ------------------------------------
 
+    struct SBinaryAttachmentInfo
+    {
+        SBinaryAttachmentInfo()
+            : m_data()
+            , m_bytesReceived(0)
+            , m_mutex()
+        {
+        }
+        MiscCommon::BYTEVector_t m_data;
+        uint32_t m_bytesReceived;
+        std::mutex m_mutex;
+    };
+
+    typedef std::shared_ptr<SBinaryAttachmentInfo> binaryAttachmentInfoPtr_t;
+
     template <class T>
     class CConnectionImpl : public boost::noncopyable
     {
@@ -151,6 +168,8 @@ namespace dds
             , m_socket(_service)
             , m_started(false)
             , m_currentMsg(std::make_shared<CProtocolMessage>())
+            , m_binaryAttachmentMap()
+            , m_binaryAttachmentMutex()
         {
         }
 
@@ -238,6 +257,138 @@ namespace dds
             pushMsg(msg);
         }
 
+        void pushBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
+                                     const std::string& _fileName,
+                                     uint16_t _cmdSource)
+        {
+            static const int maxCommandSize = 65536;
+            int nofParts = (_data.size() % maxCommandSize == 0) ? (_data.size() / maxCommandSize)
+                                                                : (_data.size() / maxCommandSize + 1);
+            boost::crc_32_type fileCrc32;
+            fileCrc32.process_bytes(&_data[0], _data.size());
+
+            boost::uuids::uuid fileId = boost::uuids::random_generator()();
+
+            for (size_t i = 0; i < nofParts; ++i)
+            {
+                SBinaryAttachmentCmd cmd;
+                cmd.m_fileId = fileId;
+                cmd.m_srcCommand = _cmdSource;
+                cmd.m_fileName = _fileName;
+                cmd.m_fileSize = _data.size();
+                cmd.m_fileCrc32 = fileCrc32.checksum();
+
+                size_t offset = i * maxCommandSize;
+                size_t size = (i != (nofParts - 1)) ? maxCommandSize : (_data.size() - offset);
+
+                auto iter_begin = _data.begin() + offset;
+                auto iter_end = iter_begin + size;
+                std::copy(iter_begin, iter_end, cmd.m_data.end());
+
+                cmd.m_size = size;
+                cmd.m_offset = offset;
+
+                boost::crc_32_type crc32;
+                crc32.process_bytes(&(*iter_begin), size);
+
+                cmd.m_crc32 = crc32.checksum();
+
+                CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+                msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
+            }
+        }
+
+        void processBinaryAttachmentCmd(CProtocolMessage::protocolMessagePtr_t _msg)
+        {
+            SBinaryAttachmentCmd cmd;
+            cmd.convertFromData(_msg->bodyToContainer());
+
+            boost::crc_32_type crc32;
+            crc32.process_bytes(&cmd.m_data[0], cmd.m_data.size());
+
+            if (crc32.checksum() == cmd.m_crc32)
+            {
+            }
+            else
+            {
+                // TODO: Remove file from map?
+                // Send error?
+                LOG(MiscCommon::error) << "Received binary attachment with wrong CRC32 checksum: " << crc32.checksum()
+                                       << " instead of " << cmd.m_crc32;
+            }
+
+            boost::uuids::uuid fileId = cmd.m_fileId;
+            binaryAttachmentInfoPtr_t info;
+            binaryAttachmentMap_t::iterator iter_info;
+
+            {
+                // Lock with global map mutex
+                std::lock_guard<std::mutex> lock(m_binaryAttachmentMutex);
+
+                auto iter_info = m_binaryAttachmentMap.find(fileId);
+                bool exists = iter_info != m_binaryAttachmentMap.end();
+
+                if (!exists)
+                {
+                    m_binaryAttachmentMap[fileId] = std::make_shared<SBinaryAttachmentInfo>();
+                    iter_info = m_binaryAttachmentMap.find(fileId);
+                    iter_info->second->m_data.resize(cmd.m_fileSize);
+                }
+                info = iter_info->second;
+            }
+
+            bool allBytesReceived = false;
+            {
+                // Lock with local mutex for each file
+                std::lock_guard<std::mutex> lock(info->m_mutex);
+
+                info->m_bytesReceived += cmd.m_size;
+                std::copy(cmd.m_data.begin(), cmd.m_data.end(), info->m_data.begin() + cmd.m_offset);
+
+                allBytesReceived = info->m_bytesReceived == cmd.m_fileSize;
+                if (allBytesReceived)
+                {
+                    // Check file CRC32
+                    boost::crc_32_type crc32;
+                    crc32.process_bytes(&info->m_data[0], info->m_data.size());
+
+                    if (crc32.checksum() == cmd.m_crc32)
+                    {
+                    }
+                    else
+                    {
+                        // TODO: Remove file from map?
+                        // Send error?
+                        LOG(MiscCommon::error) << "Received file has wrong CRC32 checksum: " << crc32.checksum()
+                                               << " instead of " << cmd.m_fileCrc32;
+                    }
+
+                    const std::string dir(CUserDefaults::getDDSPath());
+                    const std::string fileName(dir + to_string(fileId));
+                    std::ofstream f(fileName.c_str());
+                    if (!f.is_open() || !f.good())
+                    {
+                        std::string msg("Could not open file: " + fileName);
+                        LOG(MiscCommon::error) << msg;
+                        return;
+                    }
+
+                    for (const auto& v : info->m_data)
+                    {
+                        f << v;
+                    }
+                }
+            }
+
+            if (allBytesReceived)
+            {
+                // Lock with global map mutex
+                std::lock_guard<std::mutex> lock(m_binaryAttachmentMutex);
+                // Remove info from map
+                m_binaryAttachmentMap.erase(iter_info);
+            }
+        }
+
         template <ECmdType _cmd, typename Func>
         void registerMessageHandler(Func _handler)
         {
@@ -323,9 +474,8 @@ namespace dds
                     if (m_started)
                         LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
                     else
-                        LOG(MiscCommon::info)
-                            << "The stop signal is received, aborting current operation and closing the connection: "
-                            << ec.message();
+                        LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                 "closing the connection: " << ec.message();
 
                     stop();
                 }
@@ -373,9 +523,8 @@ namespace dds
                     if (m_started)
                         LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
                     else
-                        LOG(MiscCommon::info)
-                            << "The stop signal is received, aborting current operation and closing the connection: "
-                            << ec.message();
+                        LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                 "closing the connection: " << ec.message();
                     stop();
                 }
             });
@@ -414,9 +563,8 @@ namespace dds
                     if (m_started)
                         LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
                     else
-                        LOG(MiscCommon::info)
-                            << "The stop signal is received, aborting current operation and closing the connection: "
-                            << _ec.message();
+                        LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                 "closing the connection: " << _ec.message();
                     stop();
                 }
             });
@@ -485,6 +633,11 @@ namespace dds
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
         protocolMessagePtrQueue_t m_writeMsgQueue;
         std::mutex m_mutex;
+
+        // BinaryAttachment
+        typedef std::map<boost::uuids::uuid, binaryAttachmentInfoPtr_t> binaryAttachmentMap_t;
+        binaryAttachmentMap_t m_binaryAttachmentMap;
+        std::mutex m_binaryAttachmentMutex;
     };
 }
 
