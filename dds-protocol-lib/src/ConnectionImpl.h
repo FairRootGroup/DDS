@@ -12,48 +12,48 @@
 #include "boost/noncopyable.hpp"
 #include "boost/asio.hpp"
 // DDS
-#include "ProtocolMessage.h"
-#include "ProtocolCommands.h"
+#include "CommandAttachmentImpl.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 
-#define BEGIN_MSG_MAP(theClass)                                             \
-  public:                                                                   \
-    friend CConnectionImpl<theClass>;                                       \
-    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg) \
-    {                                                                       \
-        dds::CMonitoringThread::instance().updateIdle();                    \
-        bool processed = true;                                              \
-        switch (_currentMsg->header().m_cmd)                                \
+#define BEGIN_MSG_MAP(theClass)                                                   \
+  public:                                                                         \
+    friend CConnectionImpl<theClass>;                                             \
+    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)       \
+    {                                                                             \
+        using namespace dds;                                                      \
+        CMonitoringThread::instance().updateIdle();                               \
+        bool processed = true;                                                    \
+        ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd); \
+        switch (currentCmd)                                                       \
         {
 
 #define MESSAGE_HANDLER(msg, func)                                                                                 \
     case msg:                                                                                                      \
+    {                                                                                                              \
+        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                       \
+        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                          \
         LOG(MiscCommon::debug) << "Processing " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
-        processed = func(_currentMsg);                                                                             \
-        break;
-
-#define END_MSG_MAP()                                                                                              \
-    default:                                                                                                       \
-        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString();      \
-        }                                                                                                          \
+        processed = func(attachmentPtr);                                                                           \
         if (!processed)                                                                                            \
         {                                                                                                          \
-            ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                              \
-            if (m_registeredMessageHandlers.count(currentCmd) == 0)                                                \
+            if (m_registeredMessageHandlers.count(msg) == 0)                                                       \
             {                                                                                                      \
                 LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
                                        << _currentMsg->toString();                                                 \
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                auto functions = m_registeredMessageHandlers.equal_range(currentCmd);                              \
-                for (auto it = functions.first; it != functions.second; ++it)                                      \
-                {                                                                                                  \
-                    it->second(_currentMsg, this);                                                                 \
-                }                                                                                                  \
+                dispatch(msg, m_registeredMessageHandlers, attachmentPtr, this);                                   \
             }                                                                                                      \
         }                                                                                                          \
+        break;                                                                                                     \
+    }
+
+#define END_MSG_MAP()                                                                                         \
+    default:                                                                                                  \
+        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString(); \
+        }                                                                                                     \
         }
 
 #define REGISTER_DEFAULT_ON_CONNECT_CALLBACKS \
@@ -86,10 +86,56 @@
 
 namespace dds
 {
+    // --- Helpers for events dispatching ---
+    // TODO: Move to a seporate header
+    struct SHandlerHlpFunc
+    {
+    };
+    template <typename T>
+    struct SHandlerHlpBaseFunc : SHandlerHlpFunc
+    {
+        T m_function;
+
+        SHandlerHlpBaseFunc(T _function)
+            : m_function(_function)
+        {
+        }
+    };
+
+    // Generic container of listeners for any type of function
+    typedef std::multimap<ECmdType, std::unique_ptr<SHandlerHlpFunc>> Listeners_t;
+
+    template <ECmdType _cmd, typename Func>
+    static void addListener(Listeners_t& _listeners, Func _function)
+    {
+        std::unique_ptr<SHandlerHlpFunc> func_ptr(new SHandlerHlpBaseFunc<Func>(_function));
+        _listeners.insert(Listeners_t::value_type(_cmd, std::move(func_ptr)));
+    }
+
+    template <typename... Args>
+    static void callListeners(ECmdType _cmd, const Listeners_t& listeners, Args&&... args)
+    {
+        // typedef bool Func(Args...);
+        typedef std::function<bool(Args...)> Func_t;
+        auto functions = listeners.equal_range(_cmd);
+        for (auto it = functions.first; it != functions.second; ++it)
+        {
+            const SHandlerHlpFunc& f = *it->second;
+            Func_t func = static_cast<const SHandlerHlpBaseFunc<Func_t>&>(f).m_function;
+            func(std::forward<Args>(args)...);
+        }
+    }
+
+    template <class... Args>
+    void dispatch(ECmdType _cmd, Listeners_t& _listeneres, Args&&... args)
+    {
+        callListeners(_cmd, _listeneres, std::forward<Args>(args)...);
+    }
+    // ------------------------------------
+
     template <class T>
     class CConnectionImpl : public boost::noncopyable
     {
-        typedef std::function<bool(CProtocolMessage::protocolMessagePtr_t, T*)> handlerFunction_t;
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
 
@@ -192,9 +238,10 @@ namespace dds
             pushMsg(msg);
         }
 
-        void registerMessageHandler(ECmdType _type, handlerFunction_t _handler)
+        template <ECmdType _cmd, typename Func>
+        void registerMessageHandler(Func _handler)
         {
-            m_registeredMessageHandlers.insert(std::pair<ECmdType, handlerFunction_t>(_type, _handler));
+            addListener<_cmd, Func>(m_registeredMessageHandlers, _handler);
         }
 
         void registerDissconnectEventHandler(handlerDisconnectEventFunction_t _handler)
@@ -428,7 +475,7 @@ namespace dds
         }
 
       protected:
-        std::multimap<ECmdType, handlerFunction_t> m_registeredMessageHandlers;
+        Listeners_t m_registeredMessageHandlers;
         handlerDisconnectEventFunction_t m_dissconnectEventHandler;
 
       private:

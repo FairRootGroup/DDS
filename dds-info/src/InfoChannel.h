@@ -38,10 +38,10 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdREPLY_PID(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdREPLY_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
+        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+        bool on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment);
+        bool on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
 
         // On connection handles
         void onConnected()

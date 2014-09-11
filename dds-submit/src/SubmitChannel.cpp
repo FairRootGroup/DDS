@@ -25,7 +25,7 @@ void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
     m_RMS = _val;
 }
 
-bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/)
 {
     m_isHandShakeOK = true;
 
@@ -50,21 +50,19 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessageP
     return true;
 }
 
-bool CSubmitChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-    if (!cmd.m_sMsg.empty())
-        LOG((cmd.m_msgSeverity == fatal || cmd.m_msgSeverity == error) ? log_stderr : log_stdout)
-            << "Server reports: " << cmd.m_sMsg;
+    if (!_attachment->m_sMsg.empty())
+        LOG((_attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error) ? log_stderr : log_stdout)
+            << "Server reports: " << _attachment->m_sMsg;
 
     // stop communication if a fatal error is recieved
-    if (cmd.m_msgSeverity == fatal)
+    if (_attachment->m_msgSeverity == fatal)
         stop();
     return true;
 }
 
-bool CSubmitChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CSubmitChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/)
 {
     // Close communication channel
     stop();

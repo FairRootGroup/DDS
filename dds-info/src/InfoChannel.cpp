@@ -10,7 +10,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
 {
     m_isHandShakeOK = true;
 
@@ -23,28 +23,24 @@ bool CInfoChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr
     return true;
 }
 
-bool CInfoChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-    if (!cmd.m_sMsg.empty())
-        LOG(log_stdout) << "Server reports: " << cmd.m_sMsg;
+    if (!_attachment->m_sMsg.empty())
+        LOG(log_stdout) << "Server reports: " << _attachment->m_sMsg;
     return true;
 }
 
-bool CInfoChannel::on_cmdREPLY_PID(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CInfoChannel::on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment)
 {
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-    LOG(debug) << "UI agent has recieved pid of the commander server: " << cmd.m_sMsg;
+    LOG(debug) << "UI agent has recieved pid of the commander server: " << _attachment->m_sMsg;
     if (m_options.m_bNeedCommanderPid)
-        LOG(log_stdout_clean) << cmd.m_sMsg;
+        LOG(log_stdout_clean) << _attachment->m_sMsg;
 
     // Checking for "status" option
     if (m_options.m_bNeedDDSStatus)
     {
-        if (!cmd.m_sMsg.empty())
-            LOG(log_stdout_clean) << "DDS commander server process (" << cmd.m_sMsg << ") is running...";
+        if (!_attachment->m_sMsg.empty())
+            LOG(log_stdout_clean) << "DDS commander server process (" << _attachment->m_sMsg << ") is running...";
         else
             LOG(log_stdout_clean) << "DDS commander server is not running.";
     }
@@ -54,15 +50,13 @@ bool CInfoChannel::on_cmdREPLY_PID(CProtocolMessage::protocolMessagePtr_t _msg)
     return true;
 }
 
-bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment)
 {
-    SAgentsInfoCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
     LOG(debug) << "UI agent has recieved Agents Info from the commander server.";
     if (m_options.m_bNeedAgentsNumber)
-        LOG(log_stdout_clean) << cmd.m_nActiveAgents;
-    if (m_options.m_bNeedAgentsList && !cmd.m_sListOfAgents.empty())
-        LOG(log_stdout_clean) << cmd.m_sListOfAgents;
+        LOG(log_stdout_clean) << _attachment->m_nActiveAgents;
+    if (m_options.m_bNeedAgentsList && !_attachment->m_sListOfAgents.empty())
+        LOG(log_stdout_clean) << _attachment->m_sListOfAgents;
 
     // Close communication channel
     stop();

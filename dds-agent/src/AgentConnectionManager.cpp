@@ -89,13 +89,13 @@ void CAgentConnectionManager::start()
         // Create new agent and push handshake message
         CCommanderChannel::connectionPtr_t newAgent = CCommanderChannel::makeNew(m_service);
         // Subscribe to Shutdown command
-        newAgent->registerMessageHandler(
-            cmdSHUTDOWN,
-            [this, newAgent](CProtocolMessage::protocolMessagePtr_t _msg, CCommanderChannel* _channel) -> bool
+        newAgent->registerMessageHandler<cmdSHUTDOWN>(
+            [this, newAgent](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel* _channel)
+                -> bool
             {
                 // TODO: adjust the algorithm if we would need to support several agents
                 // we have only one agent (newAgent) at the moment
-                return this->on_cmdSHUTDOWN(_msg, newAgent);
+                return this->on_cmdSHUTDOWN(_attachment, newAgent);
             });
         // Call this callback when a user process is activated
         newAgent->registerOnNewUserTaskCallback([this](pid_t _pid)
@@ -208,7 +208,7 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     }
 }
 
-bool CAgentConnectionManager::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CCommanderChannel::weakConnectionPtr_t _channel)
 {
     stop();

@@ -31,19 +31,19 @@ void CCommanderChannel::onHeaderRead()
     m_headerReadTime = std::chrono::steady_clock::now();
 }
 
-bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
 {
     m_isHandShakeOK = true;
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment)
 {
     pid_t pid = getpid();
 
@@ -63,7 +63,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr
     return true;
 }
 
-bool CCommanderChannel::on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment)
 {
     LOG(info) << "The Agent [" << m_id << "] disconnected... Bye";
     stop();
@@ -71,7 +71,7 @@ bool CCommanderChannel::on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t 
     return true;
 }
 
-bool CCommanderChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
 {
     deleteAgentUUIDFile();
     LOG(info) << "The Agent [" << m_id << "] exited.";
@@ -81,19 +81,16 @@ bool CCommanderChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _m
     return false;
 }
 
-bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
 {
-    SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
     chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
 
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
-    crc32.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+    crc32.process_bytes(&_attachment->m_fileData[0], _attachment->m_fileData.size());
 
-    if (crc32.checksum() == cmd.m_crc32)
+    if (crc32.checksum() == _attachment->m_crc32)
     {
         // Do something if file is correctly downloaded
     }
@@ -101,7 +98,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessag
     // Form reply command
     SBinaryDownloadStatCmd reply_cmd;
     reply_cmd.m_recievedCrc32 = crc32.checksum();
-    reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
+    reply_cmd.m_recievedFileSize = _attachment->m_fileData.size();
     reply_cmd.m_downloadTime = downloadTime.count();
 
     CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
@@ -111,7 +108,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessag
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_t _attachment)
 {
     // If file exist return uuid from file.
     // If file does not exist than return uuid_nil.
@@ -135,21 +132,18 @@ bool CCommanderChannel::on_cmdGET_UUID(CProtocolMessage::protocolMessagePtr_t _m
     return true;
 }
 
-bool CCommanderChannel::on_cmdSET_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdSET_UUID(SCommandAttachmentImpl<cmdSET_UUID>::ptr_t _attachment)
 {
-    SUUIDCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
+    LOG(info) << "cmdSET_UUID attachment [" << _attachment << "] from " << remoteEndIDString();
 
-    LOG(info) << "cmdSET_UUID attachment [" << cmd << "] from " << remoteEndIDString();
-
-    m_id = cmd.m_id;
+    m_id = _attachment->m_id;
 
     createAgentUUIDFile();
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment)
 {
     try
     {
@@ -248,16 +242,13 @@ void CCommanderChannel::sendGetLogError(const string& _msg)
     pushMsg(pm);
 }
 
-bool CCommanderChannel::on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdDOWNLOAD_TEST(SCommandAttachmentImpl<cmdDOWNLOAD_TEST>::ptr_t _attachment)
 {
-    SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
-    crc32.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+    crc32.process_bytes(&_attachment->m_fileData[0], _attachment->m_fileData.size());
 
-    if (crc32.checksum() == cmd.m_crc32)
+    if (crc32.checksum() == _attachment->m_crc32)
     {
         chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
         chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
@@ -265,7 +256,7 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr
         // Form reply command
         SBinaryDownloadStatCmd reply_cmd;
         reply_cmd.m_recievedCrc32 = crc32.checksum();
-        reply_cmd.m_recievedFileSize = cmd.m_fileData.size();
+        reply_cmd.m_recievedFileSize = _attachment->m_fileData.size();
         reply_cmd.m_downloadTime = downloadTime.count();
 
         CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
@@ -275,8 +266,8 @@ bool CCommanderChannel::on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr
     else
     {
         stringstream ss;
-        ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << cmd.m_crc32
-           << " | size: " << cmd.m_fileData.size() << " name: " << cmd.m_fileName;
+        ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of " << _attachment->m_crc32
+           << " | size: " << _attachment->m_fileData.size() << " name: " << _attachment->m_fileName;
         SSimpleMsgCmd cmd;
         cmd.m_msgSeverity = MiscCommon::error;
         cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
@@ -336,18 +327,16 @@ void CCommanderChannel::onRemoteEndDissconnected()
     exit(EXIT_SUCCESS);
 }
 
-bool CCommanderChannel::on_cmdASSIGN_USER_TASK(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
 {
-    SAssignUserTaskCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-    LOG(MiscCommon::info) << "Recieved a user task assigment. User's task: " << cmd.m_sExeFile;
+    LOG(MiscCommon::info) << "Recieved a user task assigment. User's task: " << _attachment->m_sExeFile;
 
-    m_sUsrExe = cmd.m_sExeFile;
+    m_sUsrExe = _attachment->m_sExeFile;
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment)
 {
     string sUsrExe(m_sUsrExe);
     smart_path(&sUsrExe);

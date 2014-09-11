@@ -61,20 +61,20 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdHANDSHAKE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdREPLY_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGED_PID(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdBINARY_DOWNLOAD_STAT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment);
+        bool on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AGENT>::ptr_t _attachment);
+        bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment);
+        bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
+        bool on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment);
+        bool on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment);
+        bool on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment);
+        bool on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment);
+        bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
+        bool on_cmdBINARY_ATTACHMENT_LOG(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment);
+        bool on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment);
+        bool on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment);
+        bool on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment);
+        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
 
         // On connection handles
         void onRemoteEndDissconnected()

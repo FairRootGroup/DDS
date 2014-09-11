@@ -29,64 +29,69 @@ CConnectionManager::~CConnectionManager()
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
     // Subscribe on protocol messages
-    _newClient->registerMessageHandler(
-        cmdGET_LOG,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdGET_LOG(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
+        [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdGET_LOG(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
 
-    _newClient->registerMessageHandler(
-        cmdBINARY_ATTACHMENT_LOG,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdBINARY_ATTACHMENT_LOG(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment, CAgentChannel * _channel)>
+        fBINARY_ATTACHMENT_LOG =
+            [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdBINARY_ATTACHMENT_LOG(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_LOG>(fBINARY_ATTACHMENT_LOG);
 
-    _newClient->registerMessageHandler(
-        cmdGET_AGENTS_INFO,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->agentsInfoHandler(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
+        fGET_AGENTS_INFO =
+            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdGET_AGENTS_INFO(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
-    _newClient->registerMessageHandler(
-        cmdSUBMIT,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdSUBMIT(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
+        [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdSUBMIT(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
-    _newClient->registerMessageHandler(
-        cmdACTIVATE_AGENT,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdACTIVATE_AGENT(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
+        fACTIVATE_AGENT =
+            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdACTIVATE_AGENT(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
-    _newClient->registerMessageHandler(
-        cmdSTART_DOWNLOAD_TEST,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdSTART_DOWNLOAD_TEST(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
+        fSTART_DOWNLOAD_TEST =
+            [this](SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdSTART_DOWNLOAD_TEST(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdSTART_DOWNLOAD_TEST>(fSTART_DOWNLOAD_TEST);
 
-    _newClient->registerMessageHandler(
-        cmdDOWNLOAD_TEST_STAT,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdDOWNLOAD_TEST_STAT(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment, CAgentChannel * _channel)>
+        fDOWNLOAD_TEST_STAT =
+            [this](SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdDOWNLOAD_TEST_STAT(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdDOWNLOAD_TEST_STAT>(fDOWNLOAD_TEST_STAT);
 
-    _newClient->registerMessageHandler(
-        cmdSIMPLE_MSG,
-        [this](CProtocolMessage::protocolMessagePtr_t _msg, CAgentChannel* _channel) -> bool
-        {
-            return this->on_cmdSIMPLE_MSG(_msg, useRawPtr(_channel));
-        });
+    std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)>
+        fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdSIMPLE_MSG(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 }
 
-bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
                                        CAgentChannel::weakConnectionPtr_t _channel)
 {
     std::lock_guard<std::mutex> lock(m_getLog.m_mutexStart);
@@ -154,34 +159,29 @@ bool CConnectionManager::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _m
     return true;
 }
 
-bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg,
-                                                     CAgentChannel::weakConnectionPtr_t _channel)
+bool CConnectionManager::on_cmdBINARY_ATTACHMENT_LOG(
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SBinaryAttachmentCmd recieved_cmd;
-    recieved_cmd.convertFromData(_msg->bodyToContainer());
-    m_getLog.processMessage<SBinaryAttachmentCmd>(recieved_cmd, _channel);
-
+    m_getLog.processMessage<SBinaryAttachmentCmd>(*_attachment, _channel);
     return true;
 }
 
-bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
                                       CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
     {
-        SSubmitCmd cmd;
-        cmd.convertFromData(_msg->bodyToContainer());
-
         auto p = _channel.lock();
 
-        if (cmd.m_nRMSTypeCode == SSubmitCmd::SSH)
+        if (_attachment->m_nRMSTypeCode == SSubmitCmd::SSH)
         {
-            LOG(info) << "SSH RMS is defined by: [" << cmd.m_sSSHCfgFile << "]";
+            LOG(info) << "SSH RMS is defined by: [" << _attachment->m_sSSHCfgFile << "]";
 
             // TODO: Job submission should be moved from here to a thread
             // Resolve topology
             CTopology topology;
-            m_sCurrentTopoFile = cmd.m_sTopoFile;
+            m_sCurrentTopoFile = _attachment->m_sTopoFile;
             topology.init(m_sCurrentTopoFile);
             // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
 
@@ -191,7 +191,7 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
             smart_path(&sCommand);
             StringVector_t params;
             const size_t nCmdTimeout = 60; // in sec.
-            params.push_back("-c" + cmd.m_sSSHCfgFile);
+            params.push_back("-c" + _attachment->m_sSSHCfgFile);
             params.push_back("submit");
             int nDdsSSHExitCode(0);
             try
@@ -209,7 +209,7 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
                 }
 
                 string sMsg("Failed to deploy agents from the given setup: ");
-                sMsg += cmd.m_sSSHCfgFile;
+                sMsg += _attachment->m_sSSHCfgFile;
                 throw runtime_error(sMsg);
             }
             if (!outPut.empty())
@@ -254,7 +254,7 @@ bool CConnectionManager::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _ms
     return true;
 }
 
-bool CConnectionManager::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     std::lock_guard<std::mutex> lock(m_ActivateAgents.m_mutexStart);
@@ -337,8 +337,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessageP
     return true;
 }
 
-bool CConnectionManager::agentsInfoHandler(CProtocolMessage::protocolMessagePtr_t _msg,
-                                           CAgentChannel::weakConnectionPtr_t _channel)
+bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
+                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
     {
@@ -379,7 +379,7 @@ bool CConnectionManager::agentsInfoHandler(CProtocolMessage::protocolMessagePtr_
     return true;
 }
 
-bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CConnectionManager::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment,
                                                    CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
@@ -464,46 +464,40 @@ CProtocolMessage::protocolMessagePtr_t CConnectionManager::getTestBinaryAttachme
     return msg;
 }
 
-bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CConnectionManager::on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment,
                                                   CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SBinaryDownloadStatCmd received_cmd;
-    received_cmd.convertFromData(_msg->bodyToContainer());
+    m_downloadTest.m_totalReceived += _attachment->m_recievedFileSize;
+    m_downloadTest.m_totalTime += _attachment->m_downloadTime;
 
-    m_downloadTest.m_totalReceived += received_cmd.m_recievedFileSize;
-    m_downloadTest.m_totalTime += received_cmd.m_downloadTime;
-
-    m_downloadTest.processMessage<SBinaryDownloadStatCmd>(received_cmd, _channel);
+    m_downloadTest.processMessage<SBinaryDownloadStatCmd>(*_attachment, _channel);
 
     return true;
 }
 
-bool CConnectionManager::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg,
+bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
-    switch (cmd.m_srcCommand)
+    switch (_attachment->m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
-            switch (cmd.m_msgSeverity)
+            switch (_attachment->m_msgSeverity)
             {
                 case info:
-                    m_ActivateAgents.processMessage<SSimpleMsgCmd>(cmd, _channel);
+                    m_ActivateAgents.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
                 case error:
                 case fatal:
-                    m_ActivateAgents.processErrorMessage<SSimpleMsgCmd>(cmd, _channel);
+                    m_ActivateAgents.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
             }
             return true; // let others to process this message
 
         case cmdGET_LOG:
-            return m_getLog.processErrorMessage<SSimpleMsgCmd>(cmd, _channel);
+            return m_getLog.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
 
         case cmdSTART_DOWNLOAD_TEST:
-            return m_downloadTest.processErrorMessage<SSimpleMsgCmd>(cmd, _channel);
+            return m_downloadTest.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
     }
     return false;
 }

@@ -43,7 +43,7 @@ namespace dds
         cmdHANDSHAKE,       // attachment: SVersionCmd
         cmdHANDSHAKE_AGENT, // attachment: SVersionCmd
         cmdSUBMIT,          // attachment: SSubmitCmd
-        cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
+        cmdSIMPLE_MSG,      // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
         cmdGET_HOST_INFO,

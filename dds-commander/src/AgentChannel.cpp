@@ -28,12 +28,10 @@ const boost::uuids::uuid& CAgentChannel::getId() const
     return m_id;
 }
 
-bool CAgentChannel::on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment)
 {
-    SVersionCmd ver;
-    ver.convertFromData(_msg->bodyToContainer());
     // send shutdown if versions are incompatible
-    if (ver != SVersionCmd())
+    if (*_attachment != SVersionCmd())
     {
         m_isHandShakeOK = false;
         // Send reply that the version of the protocol is incompatible
@@ -53,12 +51,10 @@ bool CAgentChannel::on_cmdHANDSHAKE(CProtocolMessage::protocolMessagePtr_t _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdHANDSHAKE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AGENT>::ptr_t _attachment)
 {
-    SVersionCmd ver;
-    ver.convertFromData(_msg->bodyToContainer());
     // send shutdown if versions are incompatible
-    if (ver != SVersionCmd())
+    if (*_attachment != SVersionCmd())
     {
         m_isHandShakeOK = false;
         // Send reply that the version of the protocol is incompatible
@@ -84,20 +80,19 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(CProtocolMessage::protocolMessagePtr_t
     return true;
 }
 
-bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment)
 {
     try
     {
-        SSubmitCmd cmd;
-        cmd.convertFromData(_msg->bodyToContainer());
-        LOG(info) << "Recieved a Submit command of the topo [" << cmd.m_sTopoFile
-                  << "]; RMS: " << cmd.RMSTypeCodeToString[cmd.m_nRMSTypeCode] << " from: " << remoteEndIDString();
+        LOG(info) << "Recieved a Submit command of the topo [" << _attachment->m_sTopoFile
+                  << "]; RMS: " << _attachment->RMSTypeCodeToString[_attachment->m_nRMSTypeCode]
+                  << " from: " << remoteEndIDString();
 
         // check, that topo file exists
-        if (!boost::filesystem::exists(cmd.m_sTopoFile))
+        if (!boost::filesystem::exists(_attachment->m_sTopoFile))
         {
             string sMsg("Can't find the topo file: ");
-            sMsg += cmd.m_sTopoFile;
+            sMsg += _attachment->m_sTopoFile;
             throw runtime_error(sMsg);
         }
     }
@@ -118,20 +113,20 @@ bool CAgentChannel::on_cmdSUBMIT(CProtocolMessage::protocolMessagePtr_t _msg)
     return false;
 }
 
-bool CAgentChannel::on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment)
 {
     // The agent channel can't activate all agents. Let others to process this message.
     return false;
 }
 
-bool CAgentChannel::on_cmdREPLY_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment)
 {
-    m_remoteHostInfo.convertFromData(_msg->bodyToContainer());
+    m_remoteHostInfo = *_attachment;
     LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << m_remoteHostInfo << "] received from: " << remoteEndIDString();
     return true;
 }
 
-bool CAgentChannel::on_cmdGED_PID(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment)
 {
     pid_t pid = getpid();
     SSimpleMsgCmd cmd_attachment;
@@ -145,24 +140,18 @@ bool CAgentChannel::on_cmdGED_PID(CProtocolMessage::protocolMessagePtr_t _msg)
     return true;
 }
 
-bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment)
 {
-    SBinaryDownloadStatCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
-    LOG(debug) << "cmdBINARY_DOWNLOAD_STAT attachment [" << cmd << "] received from: " << remoteEndIDString();
+    LOG(debug) << "cmdBINARY_DOWNLOAD_STAT attachment [" << *_attachment << "] received from: " << remoteEndIDString();
 
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment)
 {
-    SUUIDCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
+    LOG(debug) << "cmdREPLY_GET_UUID attachment [" << *_attachment << "] received from: " << remoteEndIDString();
 
-    LOG(debug) << "cmdREPLY_GET_UUID attachment [" << cmd << "] received from: " << remoteEndIDString();
-
-    if (cmd.m_id.is_nil())
+    if (_attachment->m_id.is_nil())
     {
         // If UUID was not assigned to agent than generate new UUID and send it to agent
         m_id = boost::uuids::random_generator()();
@@ -174,31 +163,28 @@ bool CAgentChannel::on_cmdREPLY_UUID(CProtocolMessage::protocolMessagePtr_t _msg
     }
     else
     {
-        m_id = cmd.m_id;
+        m_id = _attachment->m_id;
     }
 
     return true;
 }
 
-bool CAgentChannel::on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment)
 {
     // Return false. This message will be processed by ConnectionManager.
     return false;
 }
 
-bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_LOG>::ptr_t _attachment)
 {
-    SBinaryAttachmentCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
     // Calculate CRC32 of the recieved file data
     boost::crc_32_type crc32;
-    crc32.process_bytes(&cmd.m_fileData[0], cmd.m_fileData.size());
+    crc32.process_bytes(&_attachment->m_fileData[0], _attachment->m_fileData.size());
 
-    if (crc32.checksum() == cmd.m_crc32)
+    if (crc32.checksum() == _attachment->m_crc32)
     {
         const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-        const string logFileName(sLogStorageDir + cmd.m_fileName);
+        const string logFileName(sLogStorageDir + _attachment->m_fileName);
         ofstream f(logFileName.c_str());
         if (!f.is_open() || !f.good())
         {
@@ -207,7 +193,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessag
             return false;
         }
 
-        for (const auto& v : cmd.m_fileData)
+        for (const auto& v : _attachment->m_fileData)
         {
             f << v;
         }
@@ -215,7 +201,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessag
     else
     {
         LOG(error) << "Recieved LOG file with wrong CRC32 checksum: " << crc32.checksum() << " instead of "
-                   << cmd.m_crc32;
+                   << _attachment->m_crc32;
     }
 
     // Return false.
@@ -224,7 +210,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_LOG(CProtocolMessage::protocolMessag
     return false;
 }
 
-bool CAgentChannel::on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment)
 {
     // Return false.
     // Give possibility to further process this message.
@@ -232,7 +218,7 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(CProtocolMessage::protocolMessagePtr_t
     return false;
 }
 
-bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(SCommandAttachmentImpl<cmdSTART_DOWNLOAD_TEST>::ptr_t _attachment)
 {
     // Return false.
     // Give possibility to further process this message.
@@ -240,24 +226,18 @@ bool CAgentChannel::on_cmdSTART_DOWNLOAD_TEST(CProtocolMessage::protocolMessageP
     return false;
 }
 
-bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdDOWNLOAD_TEST_STAT(SCommandAttachmentImpl<cmdDOWNLOAD_TEST_STAT>::ptr_t _attachment)
 {
-    SBinaryDownloadStatCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-
-    LOG(info) << "cmdDOWNLOAD_TEST_STAT attachment [" << cmd << "] command from " << remoteEndIDString();
+    LOG(info) << "cmdDOWNLOAD_TEST_STAT attachment [" << *_attachment << "] command from " << remoteEndIDString();
 
     return false;
 }
 
-bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
+    LOG(info) << "on_cmdSIMPLE_MSG attachment [" << *_attachment << "] command from " << remoteEndIDString();
 
-    LOG(info) << "on_cmdSIMPLE_MSG attachment [" << cmd << "] command from " << remoteEndIDString();
-
-    switch (cmd.m_srcCommand)
+    switch (_attachment->m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
             return false; // let others to process this message
@@ -269,7 +249,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg
             return false;
 
         default:
-            LOG(static_cast<ELogSeverityLevel>(cmd.m_msgSeverity)) << "remote: " << cmd.m_sMsg;
+            LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << "remote: " << _attachment->m_sMsg;
             return true;
     }
 }

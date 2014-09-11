@@ -29,7 +29,7 @@ namespace dds
         void doAwaitStop();
         void onNewUserTask(pid_t _pid);
         void terminateChildrenProcesses();
-        bool on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg,
+        bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                             CCommanderChannel::weakConnectionPtr_t _channel);
 
       private:

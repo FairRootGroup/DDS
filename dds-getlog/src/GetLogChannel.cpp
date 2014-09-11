@@ -10,7 +10,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-bool CGetLogChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CGetLogChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
 {
     m_isHandShakeOK = true;
 
@@ -19,15 +19,13 @@ bool CGetLogChannel::on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessageP
     return true;
 }
 
-bool CGetLogChannel::on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CGetLogChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    SSimpleMsgCmd cmd;
-    cmd.convertFromData(_msg->bodyToContainer());
-    LOG(log_stdout) << cmd.m_sMsg;
+    LOG(log_stdout) << _attachment->m_sMsg;
     return true;
 }
 
-bool CGetLogChannel::on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg)
+bool CGetLogChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
 {
     stop();
     return true;

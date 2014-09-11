@@ -30,6 +30,7 @@ set( SRC_HDRS
 	./src/ProtocolCommands.h
 	./src/ProtocolMessage.h
 	./src/ConnectionImpl.h
+	./src/CommandAttachmentImpl.h
 	./src/BasicCmd.h
 	./src/AgentsInfoCmd.h
 	./src/BinaryDownloadStatCmd.h

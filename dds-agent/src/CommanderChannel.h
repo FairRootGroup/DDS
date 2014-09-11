@@ -45,18 +45,18 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSIMPLE_MSG(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_HOST_INFO(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDISCONNECT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSHUTDOWN(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdBINARY_ATTACHMENT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_UUID(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdSET_UUID(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdGET_LOG(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdASSIGN_USER_TASK(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdACTIVATE_AGENT(CProtocolMessage::protocolMessagePtr_t _msg);
-        bool on_cmdDOWNLOAD_TEST(CProtocolMessage::protocolMessagePtr_t _msg);
+        bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
+        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+        bool on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment);
+        bool on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment);
+        bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
+        bool on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment);
+        bool on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_t _attachment);
+        bool on_cmdSET_UUID(SCommandAttachmentImpl<cmdSET_UUID>::ptr_t _attachment);
+        bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
+        bool on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment);
+        bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
+        bool on_cmdDOWNLOAD_TEST(SCommandAttachmentImpl<cmdDOWNLOAD_TEST>::ptr_t _attachment);
         void onRemoteEndDissconnected();
 
       private:
