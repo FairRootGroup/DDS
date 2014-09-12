@@ -312,7 +312,7 @@ void CCommanderChannel::deleteAgentUUIDFile() const
 
 void CCommanderChannel::onRemoteEndDissconnected()
 {
-    // TODO: Send on_cmdSHUTDOWN to yourself
+    sendYourself<cmdSHUTDOWN>();
 }
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)

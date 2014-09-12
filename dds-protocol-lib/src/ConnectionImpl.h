@@ -252,6 +252,24 @@ namespace dds
             syncPushMsg(msg);
         }
 
+        void sendYourself(CProtocolMessage::protocolMessagePtr_t _msg)
+        {
+            // process received message
+            T* pThis = static_cast<T*>(this);
+            pThis->processMessage(_msg);
+        }
+
+        template <ECmdType _cmd>
+        void sendYourself()
+        {
+            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+            msg->encode<_cmd>();
+
+            // process received message
+            T* pThis = static_cast<T*>(this);
+            pThis->processMessage(msg);
+        }
+
         void push_SimpleMsgFromString(const std::string& _msg)
         {
             SSimpleMsgCmd msg_cmd;
