@@ -11,9 +11,12 @@
 #include "FindCfgFile.h"
 // BOOST
 #include <boost/crc.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#pragma clang diagnostic pop
 
 using namespace MiscCommon;
 using namespace dds;

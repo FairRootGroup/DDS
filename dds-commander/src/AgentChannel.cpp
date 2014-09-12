@@ -6,7 +6,10 @@
 // DDS
 #include "AgentChannel.h"
 // BOOST
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid_generators.hpp>
+#pragma clang diagnostic pop
 #include <boost/crc.hpp>
 #include <boost/filesystem.hpp>
 

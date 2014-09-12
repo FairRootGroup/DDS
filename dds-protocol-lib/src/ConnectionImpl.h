@@ -11,8 +11,12 @@
 // BOOST
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#pragma clang diagnostic pop
 // DDS
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
