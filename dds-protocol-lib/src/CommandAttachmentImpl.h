@@ -193,19 +193,6 @@ namespace dds
             return p;
         }
     };
-    //----------------------------------------------------------------------
-    template <>
-    struct SCommandAttachmentImpl<cmdTRANSPORT_TEST>
-    {
-        typedef std::shared_ptr<SBinaryAttachmentCmd> ptr_t;
-
-        static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)
-        {
-            ptr_t p = std::make_shared<SBinaryAttachmentCmd>();
-            p->convertFromData(_msg->bodyToContainer());
-            return p;
-        }
-    };
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

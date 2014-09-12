@@ -61,7 +61,7 @@ namespace dds
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
-        cmdTRANSPORT_TEST,
+        cmdTRANSPORT_TEST
 
         // ----------- VERSION 2 --------------------
     };
