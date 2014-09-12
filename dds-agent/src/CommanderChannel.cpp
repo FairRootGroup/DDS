@@ -309,10 +309,7 @@ void CCommanderChannel::deleteAgentUUIDFile() const
 
 void CCommanderChannel::onRemoteEndDissconnected()
 {
-    stop();
-    deleteAgentUUIDFile();
-    LOG(info) << "The Agent [" << m_id << "] exited.";
-    exit(EXIT_SUCCESS);
+    // TODO: Send on_cmdSHUTDOWN to yourself
 }
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
