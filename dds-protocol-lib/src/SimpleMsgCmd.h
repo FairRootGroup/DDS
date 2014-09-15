@@ -15,6 +15,13 @@ namespace dds
         SSimpleMsgCmd()
             : m_msgSeverity(0)
             , m_srcCommand(0)
+            , m_sMsg()
+        {
+        }
+        SSimpleMsgCmd(const std::string& _msg, uint16_t _severity = MiscCommon::info, uint16_t _command = 0)
+            : m_msgSeverity(_severity)
+            , m_srcCommand(_command)
+            , m_sMsg(_msg)
         {
         }
         void normalizeToLocal() const;

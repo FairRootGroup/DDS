@@ -116,11 +116,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY
                 ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of "
                    << _attachment->m_fileCrc32 << " | size: " << _attachment->m_data.size()
                    << " name: " << _attachment->m_fileName;
-                SSimpleMsgCmd cmd;
-                cmd.m_msgSeverity = MiscCommon::error;
-                cmd.m_srcCommand = cmdTRANSPORT_TEST;
-                cmd.m_sMsg = ss.str();
-                pushMsg<cmdSIMPLE_MSG>(cmd);
+                pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdTRANSPORT_TEST));
             }
 
             return true;
@@ -192,7 +188,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         if (!fs::exists(archiveDir) && !fs::create_directory(archiveDir))
         {
             string msg("Could not create directory: " + archiveDir.string());
-            sendGetLogError(msg);
+            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, MiscCommon::error, cmdGET_LOG));
             return true;
         }
 
@@ -224,7 +220,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         if (!f.is_open() || !f.good())
         {
             string msg("Could not open archive with log files: " + archiveFileName);
-            sendGetLogError(msg);
+            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, MiscCommon::error, cmdGET_LOG));
             return true;
         }
         f.seekg(0, ios::end);
@@ -248,19 +244,10 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
     catch (exception& e)
     {
         LOG(error) << e.what();
-        sendGetLogError(e.what());
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), MiscCommon::error, cmdGET_LOG));
     }
 
     return true;
-}
-
-void CCommanderChannel::sendGetLogError(const string& _msg)
-{
-    SSimpleMsgCmd cmd;
-    cmd.m_srcCommand = cmdGET_LOG;
-    cmd.m_msgSeverity = MiscCommon::error;
-    cmd.m_sMsg = _msg;
-    pushMsg<cmdSIMPLE_MSG>(cmd);
 }
 
 void CCommanderChannel::readAgentUUIDFile()

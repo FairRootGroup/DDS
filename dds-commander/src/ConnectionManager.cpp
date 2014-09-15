@@ -100,12 +100,9 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
     {
         if (!m_getLog.m_channel.expired())
         {
-            SSimpleMsgCmd cmd;
-            // cmd.m_msgSeverity = MiscCommon::fatal;
-            // cmd.m_srcCommand = cmdGET_LOG;
-            cmd.m_sMsg = "Can not process the request. The getlog command is already in progress.";
             auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(cmd);
+            p->pushMsg<cmdSIMPLE_MSG>(
+                SSimpleMsgCmd("Can not process the request. The getlog command is already in progress."));
             return true;
         }
         m_getLog.m_channel = _channel;
@@ -117,11 +114,9 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
         fs::path dir(sLogStorageDir);
         if (!fs::exists(dir) && !fs::create_directory(dir))
         {
-            SSimpleMsgCmd cmd;
-            // cmd.m_msgSeverity = MiscCommon::fatal;
-            // cmd.m_srcCommand = cmdGET_LOG;
-            cmd.m_sMsg = "Could not create directory " + sLogStorageDir + " to save log files.";
-            p->pushMsg<cmdSIMPLE_MSG>(cmd);
+            stringstream ss;
+            ss << "Could not create directory " << sLogStorageDir << " to save log files.";
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
 
             m_getLog.m_channel.reset();
             return true;
@@ -136,12 +131,7 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
 
         if (m_getLog.m_nofRequests == 0)
         {
-            SSimpleMsgCmd cmd;
-            // cmd.m_msgSeverity = MiscCommon::fatal;
-            // cmd.m_srcCommand = cmdGET_LOG;
-            cmd.m_sMsg = "There are no connected agents.";
-            p->pushMsg<cmdSIMPLE_MSG>(cmd);
-
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no connected agents."));
             return true;
         }
 
@@ -235,14 +225,10 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
     }
     catch (exception& e)
     {
-        SSimpleMsgCmd msg_cmd;
-        msg_cmd.m_sMsg = e.what();
-        msg_cmd.m_srcCommand = cmdSUBMIT;
-        msg_cmd.m_msgSeverity = fatal;
         if (!_channel.expired())
         {
             auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(msg_cmd);
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), fatal, cmdSUBMIT));
         }
     }
 
@@ -315,12 +301,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
     }
     catch (exception& _e)
     {
-        SSimpleMsgCmd cmd;
-        cmd.m_msgSeverity = MiscCommon::fatal;
-        cmd.m_srcCommand = cmdACTIVATE_AGENT;
-        cmd.m_sMsg = _e.what();
         auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(cmd);
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdACTIVATE_AGENT));
 
         m_ActivateAgents.m_channel.reset();
         return true;
@@ -377,12 +359,9 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
 
         if (!m_transportTest.m_channel.expired())
         {
-            SSimpleMsgCmd cmd;
-            cmd.m_msgSeverity = MiscCommon::fatal;
-            cmd.m_srcCommand = cmdTRANSPORT_TEST;
-            cmd.m_sMsg = "Can not process the request. The test command is already in progress.";
             auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(cmd);
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
+                "Can not process the request. The test command is already in progress.", fatal, cmdTRANSPORT_TEST));
             return true;
         }
         m_transportTest.m_channel = _channel;
@@ -420,17 +399,10 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
             broadcastMsg<cmdBINARY_ATTACHMENT>(cmd, condition);
         }
 
-        if (m_transportTest.m_nofRequests == 0)
+        if (m_transportTest.m_nofRequests == 0 && !m_transportTest.m_channel.expired())
         {
-            SSimpleMsgCmd cmd;
-            cmd.m_msgSeverity = MiscCommon::fatal;
-            cmd.m_srcCommand = cmdTRANSPORT_TEST;
-            cmd.m_sMsg = "There are no active agents.";
-            if (!m_transportTest.m_channel.expired())
-            {
-                auto p = m_transportTest.m_channel.lock();
-                p->pushMsg<cmdSIMPLE_MSG>(cmd);
-            }
+            auto p = m_transportTest.m_channel.lock();
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no active agents.", fatal, cmdTRANSPORT_TEST));
         }
     }
     catch (bad_weak_ptr& e)

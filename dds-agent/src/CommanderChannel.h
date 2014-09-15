@@ -58,7 +58,6 @@ namespace dds
         void onRemoteEndDissconnected();
 
       private:
-        void sendGetLogError(const std::string& _msg);
         void onHeaderRead();
         void readAgentUUIDFile();
         void createAgentUUIDFile() const;
