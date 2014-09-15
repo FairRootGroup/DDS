@@ -6,29 +6,8 @@
 #define PROTOCOLCOMMANDS_H_
 // MiscCommon
 #include "def.h"
-// DDS
-#include "AgentsInfoCmd.h"
-#include "BinaryDownloadStatCmd.h"
-#include "SimpleMsgCmd.h"
-#include "UUIDCmd.h"
-#include "AssignUserTaskCmd.h"
-#include "BinaryAttachmentCmd.h"
-#include "HostInfoCmd.h"
-#include "SubmitCmd.h"
-#include "VersionCmd.h"
 
 #define NAME_TO_STRING(NAME) #NAME
-
-#define REG_CMD_WITH_ATTACHMENT(cmd, attachment_class)                                                     \
-    template <typename A>                                                                                  \
-    struct validate_command_attachment<A, cmd>                                                             \
-    {                                                                                                      \
-        void operator()()                                                                                  \
-        {                                                                                                  \
-            static_assert(std::is_same<attachment_class, A>::value,                                        \
-                          "Bad attachment to the protocol command: " #cmd " requires " #attachment_class); \
-        }                                                                                                  \
-    };
 
 // define current protocol version version
 const uint16_t g_protocolCommandsVersion = 1;
@@ -92,23 +71,6 @@ namespace dds
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
     };
-
-    //----------------------------------------------------------------------
-    template <typename A, ECmdType>
-    struct validate_command_attachment;
-
-    REG_CMD_WITH_ATTACHMENT(cmdHANDSHAKE, SVersionCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdHANDSHAKE_AGENT, SVersionCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdSUBMIT, SSubmitCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdSIMPLE_MSG, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_HOST_INFO, SHostInfoCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_PID, SSimpleMsgCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdBINARY_ATTACHMENT, SBinaryAttachmentCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdBINARY_DOWNLOAD_STAT, SBinaryDownloadStatCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_UUID, SUUIDCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdSET_UUID, SUUIDCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdREPLY_AGENTS_INFO, SAgentsInfoCmd);
-    REG_CMD_WITH_ATTACHMENT(cmdASSIGN_USER_TASK, SAssignUserTaskCmd);
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

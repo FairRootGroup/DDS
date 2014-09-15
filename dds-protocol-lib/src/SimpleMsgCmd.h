@@ -17,8 +17,8 @@ namespace dds
             , m_srcCommand(0)
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             return (m_sMsg.size() + 1) + sizeof(m_msgSeverity) + sizeof(m_srcCommand);
@@ -30,8 +30,8 @@ namespace dds
             return (m_sMsg == val.m_sMsg && m_msgSeverity == val.m_msgSeverity && m_srcCommand == val.m_srcCommand);
         }
 
-        uint16_t m_msgSeverity;
-        uint16_t m_srcCommand;
+        mutable uint16_t m_msgSeverity;
+        mutable uint16_t m_srcCommand;
         std::string m_sMsg;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SSimpleMsgCmd& val)

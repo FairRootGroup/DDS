@@ -111,10 +111,7 @@ void CAgentConnectionManager::start()
             {
                 // Create handshake message which is the first one for all agents
                 SVersionCmd ver;
-                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdHANDSHAKE_AGENT>(ver);
-
-                newAgent->pushMsg(msg);
+                newAgent->pushMsg<cmdHANDSHAKE_AGENT>(ver);
                 newAgent->start();
             }
             else

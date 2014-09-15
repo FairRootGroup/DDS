@@ -29,8 +29,8 @@ namespace dds
             size += sizeof(m_timeStamp);
             return size;
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SHostInfoCmd& val) const
@@ -40,9 +40,9 @@ namespace dds
                     m_timeStamp == val.m_timeStamp);
         }
 
-        uint16_t m_agentPort;
-        uint32_t m_agentPid;
-        uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
+        mutable uint16_t m_agentPort;
+        mutable uint32_t m_agentPid;
+        mutable uint32_t m_timeStamp; // defines a time stamp when DDS Job was submitted
         std::string m_username;
         std::string m_host;
         std::string m_version;

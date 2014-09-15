@@ -21,8 +21,8 @@ namespace dds
             : m_id()
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             size_t size(boost::uuids::uuid::static_size());

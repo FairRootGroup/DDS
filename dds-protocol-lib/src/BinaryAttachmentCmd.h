@@ -30,8 +30,8 @@ namespace dds
             , m_data()
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             size_t size(boost::uuids::uuid::static_size());
@@ -62,12 +62,12 @@ namespace dds
 
         boost::uuids::uuid m_fileId;     ///> Unique ID of the file
         std::string m_fileName;          ///> Name of the file
-        uint32_t m_fileSize;             ///> File size in bytes
-        uint32_t m_fileCrc32;            ///> File checksum
-        uint16_t m_srcCommand;           ///> Source command which initiated file transport
-        uint32_t m_offset;               ///> Offset for this piece of binary data
-        uint32_t m_size;                 ///> Size of this piece of binary data
-        uint32_t m_crc32;                ///> CRC checksum of this piece of binary data
+        mutable uint32_t m_fileSize;     ///> File size in bytes
+        mutable uint32_t m_fileCrc32;    ///> File checksum
+        mutable uint16_t m_srcCommand;   ///> Source command which initiated file transport
+        mutable uint32_t m_offset;       ///> Offset for this piece of binary data
+        mutable uint32_t m_size;         ///> Size of this piece of binary data
+        mutable uint32_t m_crc32;        ///> CRC checksum of this piece of binary data
         MiscCommon::BYTEVector_t m_data; ///> Piece of binary data
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)

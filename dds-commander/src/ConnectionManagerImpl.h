@@ -9,6 +9,7 @@
 #include "MonitoringThread.h"
 #include "Options.h"
 #include "ProtocolMessage.h"
+#include "CommandAttachmentImpl.h"
 // STD
 #include <mutex>
 // BOOST
@@ -149,24 +150,24 @@ namespace dds
             return result;
         }
 
-        void broadcastMsg(CProtocolMessage::protocolMessagePtr_t _msg,
+        template <ECmdType _cmd, class AttachmentType>
+        void broadcastMsg(const AttachmentType& _attachment,
                           std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
             for (auto& v : m_channels)
             {
                 if (_condition == nullptr || _condition(v))
                 {
-                    v->pushMsg(_msg);
+                    v->template pushMsg<_cmd>(_attachment);
                 }
             }
         }
 
         template <ECmdType _cmd>
-        void broadcastMsg(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+        void broadcastSimpleMsg(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
-            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-            msg->encode<_cmd>();
-            broadcastMsg(msg, _condition);
+            SEmptyCmd cmd;
+            broadcastMsg<_cmd>(cmd, _condition);
         }
 
         void broadcastBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,

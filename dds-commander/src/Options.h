@@ -12,6 +12,7 @@
 #include "version.h"
 #include "Res.h"
 #include "ProtocolCommands.h"
+#include "SubmitCmd.h"
 //=============================================================================
 namespace bpo = boost::program_options;
 //=============================================================================

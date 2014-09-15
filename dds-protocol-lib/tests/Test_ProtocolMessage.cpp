@@ -20,6 +20,7 @@
 // DDS
 #include "ProtocolMessage.h"
 #include "ProtocolCommands.h"
+#include "CommandAttachmentImpl.h"
 #include "def.h"
 
 using boost::unit_test::test_suite;
@@ -38,8 +39,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
     // Create a message
     SVersionCmd ver_src;
     ver_src.m_version = 444;
+    MiscCommon::BYTEVector_t data;
+    ver_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdHANDSHAKE>(ver_src);
+    msg_src.encode(cmdHANDSHAKE, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE);
 
@@ -70,8 +73,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
     // Create a message
     SVersionCmd ver_src;
     ver_src.m_version = 777;
+    MiscCommon::BYTEVector_t data;
+    ver_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdHANDSHAKE_AGENT>(ver_src);
+    msg_src.encode(cmdHANDSHAKE_AGENT, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE_AGENT);
 
@@ -107,8 +112,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
     cmd_src.m_sTopoFile = sTestPath;
     cmd_src.m_nRMSTypeCode = nTestRMSTypeCode;
     cmd_src.m_sSSHCfgFile = sTestSSHCfgFile;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdSUBMIT>(cmd_src);
+    msg_src.encode(cmdSUBMIT, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdSUBMIT);
 
@@ -153,8 +160,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     cmd_src.m_agentPort = nAgentPort;
     cmd_src.m_agentPid = nAgentPid;
     cmd_src.m_timeStamp = nTimeStamp;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd_src);
+    msg_src.encode(cmdREPLY_HOST_INFO, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_HOST_INFO);
 
@@ -200,8 +209,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     cmd_src.m_fileName = fileName;
     cmd_src.m_fileSize = fileSize;
     cmd_src.m_data = fileData;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd_src);
+    msg_src.encode(cmdBINARY_ATTACHMENT, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdBINARY_ATTACHMENT);
 
@@ -246,8 +257,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_DOWNLOAD_STAT)
     cmd_src.m_recievedFileSize = recievedFileSize;
     cmd_src.m_recievedCrc32 = recievedCrc32;
     cmd_src.m_downloadTime = downloadTime;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(cmd_src);
+    msg_src.encode(cmdBINARY_DOWNLOAD_STAT, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdBINARY_DOWNLOAD_STAT);
 
@@ -282,8 +295,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_UUID)
     // Create a message
     SUUIDCmd cmd_src;
     cmd_src.m_id = id;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdSET_UUID>(cmd_src);
+    msg_src.encode(cmdSET_UUID, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdSET_UUID);
 
@@ -316,8 +331,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_UUID)
     // Create a message
     SUUIDCmd cmd_src;
     cmd_src.m_id = id;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdREPLY_UUID>(cmd_src);
+    msg_src.encode(cmdREPLY_UUID, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_UUID);
 
@@ -351,8 +368,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSIMPLE_MSG)
     cmd_src.m_srcCommand = cmdSIMPLE_MSG;
     cmd_src.m_msgSeverity = MiscCommon::error;
     cmd_src.m_sMsg = "Test Message";
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encodeWithAttachment<cmdSIMPLE_MSG>(cmd_src);
+    msg_src.encode(cmdSIMPLE_MSG, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdSIMPLE_MSG);
 

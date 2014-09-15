@@ -10,7 +10,7 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SBinaryAttachmentCmd::normalizeToLocal()
+void SBinaryAttachmentCmd::normalizeToLocal() const
 {
     m_fileCrc32 = inet::_normalizeRead32(m_fileCrc32);
     m_fileSize = inet::_normalizeRead32(m_fileSize);
@@ -20,7 +20,7 @@ void SBinaryAttachmentCmd::normalizeToLocal()
     m_crc32 = inet::_normalizeRead32(m_crc32);
 }
 
-void SBinaryAttachmentCmd::normalizeToRemote()
+void SBinaryAttachmentCmd::normalizeToRemote() const
 {
     m_fileCrc32 = inet::_normalizeWrite32(m_fileCrc32);
     m_fileSize = inet::_normalizeWrite32(m_fileSize);

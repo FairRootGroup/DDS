@@ -59,9 +59,12 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     cmd.m_agentPid = pid;
     cmd.m_timeStamp = 0;
 
-    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    msg->encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
-    pushMsg(msg);
+    // CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
+    // msg->encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
+    // pushMsg(msg);
+
+    pushMsg<cmdREPLY_HOST_INFO>(cmd);
+    // pushMsg<cmdSIMPLE_MSG>(cmd);
 
     return true;
 }
@@ -105,10 +108,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY
                 reply_cmd.m_recievedCrc32 = crc32.checksum();
                 reply_cmd.m_recievedFileSize = _attachment->m_data.size();
                 reply_cmd.m_downloadTime = downloadTime.count();
-
-                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
-                pushMsg(msg);
+                pushMsg<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
             }
             else
             {
@@ -120,9 +120,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY
                 cmd.m_msgSeverity = MiscCommon::error;
                 cmd.m_srcCommand = cmdTRANSPORT_TEST;
                 cmd.m_sMsg = ss.str();
-                CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-                pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-                pushMsg(pm);
+                pushMsg<cmdSIMPLE_MSG>(cmd);
             }
 
             return true;
@@ -153,9 +151,7 @@ bool CCommanderChannel::on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_
 
     SUUIDCmd msg_cmd;
     msg_cmd.m_id = m_id;
-    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    msg->encodeWithAttachment<cmdREPLY_UUID>(msg_cmd);
-    pushMsg(msg);
+    pushMsg<cmdREPLY_UUID>(msg_cmd);
 
     return true;
 }
@@ -247,9 +243,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         fs::remove(archiveFileName);
         fs::remove_all(archiveDirName);
 
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
-        pushMsg(msg);
+        pushMsg<cmdBINARY_ATTACHMENT>(cmd);
     }
     catch (exception& e)
     {
@@ -266,9 +260,7 @@ void CCommanderChannel::sendGetLogError(const string& _msg)
     cmd.m_srcCommand = cmdGET_LOG;
     cmd.m_msgSeverity = MiscCommon::error;
     cmd.m_sMsg = _msg;
-    CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-    pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-    pushMsg(pm);
+    pushMsg<cmdSIMPLE_MSG>(cmd);
 }
 
 void CCommanderChannel::readAgentUUIDFile()
@@ -346,9 +338,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         cmd.m_sMsg = e.what();
         cmd.m_msgSeverity = MiscCommon::error;
         cmd.m_srcCommand = cmdACTIVATE_AGENT;
-        CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-        pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-        pushMsg(pm);
+        pushMsg<cmdSIMPLE_MSG>(cmd);
     }
 
     stringstream ss;
@@ -362,9 +352,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     cmd.m_sMsg = ss.str();
     cmd.m_msgSeverity = MiscCommon::info;
     cmd.m_srcCommand = cmdACTIVATE_AGENT;
-    CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-    pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-    pushMsg(pm);
+    pushMsg<cmdSIMPLE_MSG>(cmd);
 
     return true;
 }

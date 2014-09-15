@@ -19,8 +19,8 @@ namespace dds
             , m_srcCommand(0)
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             size_t size(sizeof(m_recievedFileSize));
@@ -37,10 +37,10 @@ namespace dds
                     m_downloadTime == _val.m_downloadTime);
         }
 
-        uint32_t m_recievedFileSize; ///> Number of recieved bytes
-        uint32_t m_recievedCrc32;    ///> CRC32 checksum of the recieved file
-        uint32_t m_downloadTime;     ///> Time spent to download file [microseconds]
-        uint16_t m_srcCommand;       ///> Source command which initiated file transport
+        mutable uint32_t m_recievedFileSize; ///> Number of recieved bytes
+        mutable uint32_t m_recievedCrc32;    ///> CRC32 checksum of the recieved file
+        mutable uint32_t m_downloadTime;     ///> Time spent to download file [microseconds]
+        mutable uint16_t m_srcCommand;       ///> Source command which initiated file transport
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryDownloadStatCmd& _val)
     {

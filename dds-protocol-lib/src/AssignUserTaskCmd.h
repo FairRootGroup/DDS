@@ -15,8 +15,8 @@ namespace dds
         SAssignUserTaskCmd()
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             return (m_sExeFile.size() + 1);

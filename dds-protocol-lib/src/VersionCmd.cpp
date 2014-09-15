@@ -17,12 +17,12 @@ SVersionCmd::SVersionCmd()
 {
 }
 
-void SVersionCmd::normalizeToLocal()
+void SVersionCmd::normalizeToLocal() const
 {
     m_version = inet::_normalizeRead16(m_version);
 }
 
-void SVersionCmd::normalizeToRemote()
+void SVersionCmd::normalizeToRemote() const
 {
     m_version = inet::_normalizeWrite16(m_version);
 }

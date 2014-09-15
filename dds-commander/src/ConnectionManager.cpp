@@ -6,6 +6,7 @@
 // DDS
 #include "ConnectionManager.h"
 #include "Topology.h"
+#include "CommandAttachmentImpl.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/crc.hpp>
@@ -103,10 +104,8 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
             // cmd.m_msgSeverity = MiscCommon::fatal;
             // cmd.m_srcCommand = cmdGET_LOG;
             cmd.m_sMsg = "Can not process the request. The getlog command is already in progress.";
-            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
-            p->pushMsg(msg);
+            p->pushMsg<cmdSIMPLE_MSG>(cmd);
             return true;
         }
         m_getLog.m_channel = _channel;
@@ -122,9 +121,7 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
             // cmd.m_msgSeverity = MiscCommon::fatal;
             // cmd.m_srcCommand = cmdGET_LOG;
             cmd.m_sMsg = "Could not create directory " + sLogStorageDir + " to save log files.";
-            CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-            pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-            p->pushMsg(pm);
+            p->pushMsg<cmdSIMPLE_MSG>(cmd);
 
             m_getLog.m_channel.reset();
             return true;
@@ -143,14 +140,12 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
             // cmd.m_msgSeverity = MiscCommon::fatal;
             // cmd.m_srcCommand = cmdGET_LOG;
             cmd.m_sMsg = "There are no connected agents.";
-            CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-            pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
-            p->pushMsg(pm);
+            p->pushMsg<cmdSIMPLE_MSG>(cmd);
 
             return true;
         }
 
-        broadcastMsg<cmdGET_LOG>(condition);
+        broadcastSimpleMsg<cmdGET_LOG>(condition);
     }
     catch (bad_weak_ptr& e)
     {
@@ -230,9 +225,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
                                                       "plug-in. Check dds.log for more information.";
             msg_cmd.m_srcCommand = cmdSUBMIT;
             msg_cmd.m_msgSeverity = (0 == nDdsSSHExitCode) ? info : warning;
-            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
-            p->pushMsg(msg);
+            p->pushMsg<cmdSIMPLE_MSG>(msg_cmd);
             p->pushMsg<cmdSHUTDOWN>();
         }
     }
@@ -246,12 +239,10 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         msg_cmd.m_sMsg = e.what();
         msg_cmd.m_srcCommand = cmdSUBMIT;
         msg_cmd.m_msgSeverity = fatal;
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
         if (!_channel.expired())
         {
             auto p = _channel.lock();
-            p->pushMsg(msg);
+            p->pushMsg<cmdSIMPLE_MSG>(msg_cmd);
         }
     }
 
@@ -311,13 +302,11 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 SAssignUserTaskCmd msg_cmd;
                 TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(tasks[index++]);
                 msg_cmd.m_sExeFile = topoTask->getExec();
-                CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdASSIGN_USER_TASK>(msg_cmd);
-                ptr->pushMsg(msg);
+                ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
             }
 
             // Active agents.
-            broadcastMsg<cmdACTIVATE_AGENT>(condition);
+            broadcastSimpleMsg<cmdACTIVATE_AGENT>(condition);
         }
         catch (bad_weak_ptr& _e)
         {
@@ -330,10 +319,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         cmd.m_msgSeverity = MiscCommon::fatal;
         cmd.m_srcCommand = cmdACTIVATE_AGENT;
         cmd.m_sMsg = _e.what();
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
         auto p = _channel.lock();
-        p->pushMsg(msg);
+        p->pushMsg<cmdSIMPLE_MSG>(cmd);
 
         m_ActivateAgents.m_channel.reset();
         return true;
@@ -367,12 +354,10 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
         }
         cmd.m_sListOfAgents = ss.str();
 
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdREPLY_AGENTS_INFO>(cmd);
         if (!_channel.expired())
         {
             auto p = _channel.lock();
-            p->pushMsg(msg);
+            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
         }
     }
     catch (bad_weak_ptr& e)
@@ -396,10 +381,8 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
             cmd.m_msgSeverity = MiscCommon::fatal;
             cmd.m_srcCommand = cmdTRANSPORT_TEST;
             cmd.m_sMsg = "Can not process the request. The test command is already in progress.";
-            CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             auto p = _channel.lock();
-            p->pushMsg(msg);
+            p->pushMsg<cmdSIMPLE_MSG>(cmd);
             return true;
         }
         m_transportTest.m_channel = _channel;
@@ -416,8 +399,25 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
 
         for (size_t size : binarySizes)
         {
-            CProtocolMessage::protocolMessagePtr_t msg = getTestBinaryAttachment(size);
-            broadcastMsg(msg, condition);
+            SBinaryAttachmentCmd cmd;
+            cmd.m_srcCommand = cmdTRANSPORT_TEST;
+
+            for (size_t i = 0; i < size; ++i)
+            {
+                // char c = rand() % 256;
+                char c = 1;
+                cmd.m_data.push_back(c);
+            }
+
+            // Calculate CRC32 of the test file data
+            boost::crc_32_type crc;
+            crc.process_bytes(&cmd.m_data[0], cmd.m_data.size());
+
+            cmd.m_fileCrc32 = crc.checksum();
+            cmd.m_fileName = "test_data_" + std::to_string(size) + ".bin";
+            cmd.m_fileSize = cmd.m_data.size();
+
+            broadcastMsg<cmdBINARY_ATTACHMENT>(cmd, condition);
         }
 
         if (m_transportTest.m_nofRequests == 0)
@@ -426,12 +426,10 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
             cmd.m_msgSeverity = MiscCommon::fatal;
             cmd.m_srcCommand = cmdTRANSPORT_TEST;
             cmd.m_sMsg = "There are no active agents.";
-            CProtocolMessage::protocolMessagePtr_t pm = make_shared<CProtocolMessage>();
-            pm->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
             if (!m_transportTest.m_channel.expired())
             {
                 auto p = m_transportTest.m_channel.lock();
-                p->pushMsg(pm);
+                p->pushMsg<cmdSIMPLE_MSG>(cmd);
             }
         }
     }
@@ -441,32 +439,6 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
     }
 
     return true;
-}
-
-CProtocolMessage::protocolMessagePtr_t CConnectionManager::getTestBinaryAttachment(size_t _binarySize)
-{
-    SBinaryAttachmentCmd cmd;
-    cmd.m_srcCommand = cmdTRANSPORT_TEST;
-
-    for (size_t i = 0; i < _binarySize; ++i)
-    {
-        // char c = rand() % 256;
-        char c = 1;
-        cmd.m_data.push_back(c);
-    }
-
-    // Calculate CRC32 of the test file data
-    boost::crc_32_type crc;
-    crc.process_bytes(&cmd.m_data[0], cmd.m_data.size());
-
-    cmd.m_fileCrc32 = crc.checksum();
-    cmd.m_fileName = "test_data_" + std::to_string(_binarySize) + ".bin";
-    cmd.m_fileSize = cmd.m_data.size();
-
-    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
-
-    return msg;
 }
 
 bool CConnectionManager::on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment,

@@ -20,14 +20,14 @@
 namespace dds
 {
     //----------------------------------------------------------------------
-    class SEmptyCmd
+    struct SEmptyCmd
     {
     };
     //----------------------------------------------------------------------
     template <ECmdType>
     struct SCommandAttachmentImpl;
     //----------------------------------------------------------------------
-    template <ECmdType>
+    template <ECmdType _cmd>
     struct SCommandAttachmentImpl
     {
         typedef std::shared_ptr<SEmptyCmd> ptr_t;
@@ -35,6 +35,12 @@ namespace dds
         static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)
         {
             return ptr_t();
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SEmptyCmd& /*_attachment*/)
+        {
+            MiscCommon::BYTEVector_t data;
+            return std::make_shared<CProtocolMessage>(_cmd, data);
         }
     };
     //----------------------------------------------------------------------
@@ -49,6 +55,13 @@ namespace dds
             p->convertFromData(_msg->bodyToContainer());
             return p;
         }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SVersionCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdHANDSHAKE, data);
+        }
     };
     //----------------------------------------------------------------------
     template <>
@@ -61,6 +74,13 @@ namespace dds
             ptr_t p = std::make_shared<SVersionCmd>();
             p->convertFromData(_msg->bodyToContainer());
             return p;
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SVersionCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdHANDSHAKE_AGENT, data);
         }
     };
     //----------------------------------------------------------------------
@@ -75,6 +95,13 @@ namespace dds
             p->convertFromData(_msg->bodyToContainer());
             return p;
         }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SSubmitCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdSUBMIT, data);
+        }
     };
     //----------------------------------------------------------------------
     template <>
@@ -87,6 +114,13 @@ namespace dds
             ptr_t p = std::make_shared<SSimpleMsgCmd>();
             p->convertFromData(_msg->bodyToContainer());
             return p;
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SSimpleMsgCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdSIMPLE_MSG, data);
         }
     };
     //----------------------------------------------------------------------
@@ -101,6 +135,13 @@ namespace dds
             p->convertFromData(_msg->bodyToContainer());
             return p;
         }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SHostInfoCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdREPLY_HOST_INFO, data);
+        }
     };
     //----------------------------------------------------------------------
     template <>
@@ -113,6 +154,13 @@ namespace dds
             ptr_t p = std::make_shared<SSimpleMsgCmd>();
             p->convertFromData(_msg->bodyToContainer());
             return p;
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SSimpleMsgCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdREPLY_PID, data);
         }
     };
     //----------------------------------------------------------------------
@@ -127,6 +175,13 @@ namespace dds
             p->convertFromData(_msg->bodyToContainer());
             return p;
         }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SBinaryAttachmentCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdBINARY_ATTACHMENT, data);
+        }
     };
     //----------------------------------------------------------------------
     template <>
@@ -139,6 +194,13 @@ namespace dds
             ptr_t p = std::make_shared<SBinaryDownloadStatCmd>();
             p->convertFromData(_msg->bodyToContainer());
             return p;
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SBinaryDownloadStatCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdBINARY_DOWNLOAD_STAT, data);
         }
     };
     //----------------------------------------------------------------------
@@ -153,6 +215,13 @@ namespace dds
             p->convertFromData(_msg->bodyToContainer());
             return p;
         }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SUUIDCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdREPLY_UUID, data);
+        }
     };
     //----------------------------------------------------------------------
     template <>
@@ -165,6 +234,13 @@ namespace dds
             ptr_t p = std::make_shared<SUUIDCmd>();
             p->convertFromData(_msg->bodyToContainer());
             return p;
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SUUIDCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdSET_UUID, data);
         }
     };
     //----------------------------------------------------------------------
@@ -179,6 +255,13 @@ namespace dds
             p->convertFromData(_msg->bodyToContainer());
             return p;
         }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SAgentsInfoCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdREPLY_AGENTS_INFO, data);
+        }
     };
     //----------------------------------------------------------------------
     template <>
@@ -191,6 +274,13 @@ namespace dds
             ptr_t p = std::make_shared<SAssignUserTaskCmd>();
             p->convertFromData(_msg->bodyToContainer());
             return p;
+        }
+
+        static CProtocolMessage::protocolMessagePtr_t encode(const SAssignUserTaskCmd& _attachment)
+        {
+            MiscCommon::BYTEVector_t data;
+            _attachment.convertToData(&data);
+            return std::make_shared<CProtocolMessage>(cmdASSIGN_USER_TASK, data);
         }
     };
 }

@@ -19,9 +19,9 @@ namespace dds
             p->_convertFromData(_data);
             p->normalizeToLocal();
         }
-        void convertToData(MiscCommon::BYTEVector_t* _data)
+        void convertToData(MiscCommon::BYTEVector_t* _data) const
         {
-            _Owner* p = reinterpret_cast<_Owner*>(this);
+            const _Owner* p = reinterpret_cast<const _Owner*>(this);
             p->normalizeToRemote();
             p->_convertToData(_data);
             p->normalizeToLocal();

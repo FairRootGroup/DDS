@@ -217,15 +217,18 @@ namespace dds
             return m_socket;
         }
 
-        void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg)
+        template <ECmdType _cmd, class A>
+        void pushMsg(const A& _attachment)
         {
+            CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+
             // it can be called from multiple IO threads
             std::lock_guard<std::mutex> lock(m_mutex);
             // Do not execute writeMessage if older messages are being processed.
             // We must not register more, than async_write in the same time (different threads).
             // Only one async_write is allowed at time per socket to avoid messages corruption.
             bool bWriteInProgress = !m_writeMsgQueue.empty();
-            m_writeMsgQueue.push_back(_msg);
+            m_writeMsgQueue.push_back(msg);
 
             if (!bWriteInProgress)
                 writeMessage();
@@ -234,49 +237,45 @@ namespace dds
         template <ECmdType _cmd>
         void pushMsg()
         {
-            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-            msg->encode<_cmd>();
-            pushMsg(msg);
+            SEmptyCmd cmd;
+            pushMsg<_cmd>(cmd);
         }
 
-        void syncPushMsg(CProtocolMessage::protocolMessagePtr_t _msg)
+        template <ECmdType _cmd, class A>
+        void syncPushMsg(const A& _attachment)
         {
-            syncWriteMessage(_msg);
+            CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+            syncWriteMessage(msg);
         }
 
         template <ECmdType _cmd>
         void syncPushMsg()
         {
-            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-            msg->encode<_cmd>();
-            syncPushMsg(msg);
+            SEmptyCmd cmd;
+            syncPushMsg<_cmd>(cmd);
         }
 
-        void sendYourself(CProtocolMessage::protocolMessagePtr_t _msg)
+        template <ECmdType _cmd, class A>
+        void sendYourself(const A& _attachment)
         {
+            CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
             // process received message
             T* pThis = static_cast<T*>(this);
-            pThis->processMessage(_msg);
+            pThis->processMessage(msg);
         }
 
         template <ECmdType _cmd>
         void sendYourself()
         {
-            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-            msg->encode<_cmd>();
-
-            // process received message
-            T* pThis = static_cast<T*>(this);
-            pThis->processMessage(msg);
+            SEmptyCmd cmd;
+            sendYourself<_cmd>(cmd);
         }
 
         void push_SimpleMsgFromString(const std::string& _msg)
         {
             SSimpleMsgCmd msg_cmd;
             msg_cmd.m_sMsg = _msg;
-            CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-            msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
-            pushMsg(msg);
+            pushMsg<cmdSIMPLE_MSG>(msg_cmd);
         }
 
         void pushBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
@@ -315,8 +314,8 @@ namespace dds
 
                 cmd.m_crc32 = crc32.checksum();
 
-                CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
+                // CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
+                // msg->encodeWithAttachment<cmdBINARY_ATTACHMENT>(cmd);
             }
         }
 
@@ -454,9 +453,7 @@ namespace dds
 
                     // Prepare a hand shake message
                     SVersionCmd cmd;
-                    CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-                    msg->encodeWithAttachment<cmdHANDSHAKE>(cmd);
-                    pushMsg(msg);
+                    pushMsg<cmdHANDSHAKE>(cmd);
                 }
                 else
                 {

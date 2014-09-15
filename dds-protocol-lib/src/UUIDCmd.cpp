@@ -10,11 +10,11 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SUUIDCmd::normalizeToLocal()
+void SUUIDCmd::normalizeToLocal() const
 {
 }
 
-void SUUIDCmd::normalizeToRemote()
+void SUUIDCmd::normalizeToRemote() const
 {
 }
 

@@ -10,12 +10,14 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SSubmitCmd::normalizeToLocal()
+void SSubmitCmd::normalizeToLocal() const
 {
+    m_nRMSTypeCode = inet::_normalizeRead16(m_nRMSTypeCode);
 }
 
-void SSubmitCmd::normalizeToRemote()
+void SSubmitCmd::normalizeToRemote() const
 {
+    m_nRMSTypeCode = inet::_normalizeWrite16(m_nRMSTypeCode);
 }
 
 void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)

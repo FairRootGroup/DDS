@@ -10,7 +10,7 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SBinaryDownloadStatCmd::normalizeToLocal()
+void SBinaryDownloadStatCmd::normalizeToLocal() const
 {
     m_recievedFileSize = inet::_normalizeRead32(m_recievedFileSize);
     m_recievedCrc32 = inet::_normalizeRead32(m_recievedCrc32);
@@ -18,7 +18,7 @@ void SBinaryDownloadStatCmd::normalizeToLocal()
     m_srcCommand = inet::_normalizeRead16(m_srcCommand);
 }
 
-void SBinaryDownloadStatCmd::normalizeToRemote()
+void SBinaryDownloadStatCmd::normalizeToRemote() const
 {
     m_recievedFileSize = inet::_normalizeWrite32(m_recievedFileSize);
     m_recievedCrc32 = inet::_normalizeWrite32(m_recievedCrc32);

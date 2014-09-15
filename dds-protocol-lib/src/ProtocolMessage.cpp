@@ -17,6 +17,12 @@ CProtocolMessage::CProtocolMessage()
 {
 }
 
+CProtocolMessage::CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data)
+    : m_data(header_length)
+{
+    encode(_cmd, _data);
+}
+
 void CProtocolMessage::clear()
 {
     m_header.clear();

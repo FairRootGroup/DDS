@@ -10,12 +10,16 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SSimpleMsgCmd::normalizeToLocal()
+void SSimpleMsgCmd::normalizeToLocal() const
 {
+    m_msgSeverity = inet::_normalizeRead16(m_msgSeverity);
+    m_srcCommand = inet::_normalizeRead16(m_srcCommand);
 }
 
-void SSimpleMsgCmd::normalizeToRemote()
+void SSimpleMsgCmd::normalizeToRemote() const
 {
+    m_msgSeverity = inet::_normalizeWrite16(m_msgSeverity);
+    m_srcCommand = inet::_normalizeWrite16(m_srcCommand);
 }
 
 void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)

@@ -36,10 +36,7 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HA
         cmd.m_sTopoFile = m_sTopoFile;
         cmd.m_nRMSTypeCode = m_RMS;
         cmd.m_sSSHCfgFile = m_sSSHCfgFile;
-
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdSUBMIT>(cmd);
-        pushMsg(msg);
+        pushMsg<cmdSUBMIT>(cmd);
     }
     // Check wheather we need to start distribuiting tasks
     if (m_bSendStart)

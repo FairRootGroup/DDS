@@ -10,12 +10,12 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SAgentsInfoCmd::normalizeToLocal()
+void SAgentsInfoCmd::normalizeToLocal() const
 {
     m_nActiveAgents = inet::_normalizeRead16(m_nActiveAgents);
 }
 
-void SAgentsInfoCmd::normalizeToRemote()
+void SAgentsInfoCmd::normalizeToRemote() const
 {
     m_nActiveAgents = inet::_normalizeWrite16(m_nActiveAgents);
 }

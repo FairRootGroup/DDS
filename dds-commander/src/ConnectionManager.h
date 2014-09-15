@@ -44,8 +44,6 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
 
-        CProtocolMessage::protocolMessagePtr_t getTestBinaryAttachment(size_t _binarySize);
-
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;
         CActivateAgentsChannelInfo m_ActivateAgents;

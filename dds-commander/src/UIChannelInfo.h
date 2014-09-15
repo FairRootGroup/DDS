@@ -67,12 +67,10 @@ namespace dds
                 // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                 cmd.m_sMsg = userMessage;
 
-                CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
                 if (!m_channel.expired())
                 {
                     auto pUI = m_channel.lock();
-                    pUI->syncPushMsg(msg);
+                    pUI->template syncPushMsg<cmdSIMPLE_MSG>(cmd);
                 }
 
                 checkAllReceived();
@@ -102,12 +100,10 @@ namespace dds
                 // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                 cmd.m_sMsg = userMessage;
 
-                CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-                msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
                 if (!m_channel.expired())
                 {
                     auto pUI = m_channel.lock();
-                    pUI->syncPushMsg(msg);
+                    pUI->template syncPushMsg<cmdSIMPLE_MSG>(cmd);
                 }
 
                 checkAllReceived();
@@ -135,12 +131,10 @@ namespace dds
                     // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                     cmd.m_sMsg = userMessage;
 
-                    CProtocolMessage::protocolMessagePtr_t msg = std::make_shared<CProtocolMessage>();
-                    msg->encodeWithAttachment<cmdSIMPLE_MSG>(cmd);
                     if (!m_channel.expired())
                     {
                         auto pUI = m_channel.lock();
-                        pUI->syncPushMsg(msg);
+                        pUI->template syncPushMsg<cmdSIMPLE_MSG>(cmd);
                         pUI->template pushMsg<cmdSHUTDOWN>();
 
                         m_channel.reset();

@@ -10,11 +10,11 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SAssignUserTaskCmd::normalizeToLocal()
+void SAssignUserTaskCmd::normalizeToLocal() const
 {
 }
 
-void SAssignUserTaskCmd::normalizeToRemote()
+void SAssignUserTaskCmd::normalizeToRemote() const
 {
 }
 

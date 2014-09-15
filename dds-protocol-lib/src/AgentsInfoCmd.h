@@ -15,8 +15,8 @@ namespace dds
             : m_nActiveAgents(0)
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             return sizeof(m_nActiveAgents);
@@ -28,7 +28,7 @@ namespace dds
             return (m_nActiveAgents == _val.m_nActiveAgents);
         }
 
-        uint16_t m_nActiveAgents;
+        mutable uint16_t m_nActiveAgents;
         std::string m_sListOfAgents;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val)

@@ -27,8 +27,8 @@ namespace dds
             : m_nRMSTypeCode(0)
         {
         }
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             size_t s = (m_sTopoFile.size() + 1) + (m_sSSHCfgFile.size() + 1) + sizeof(m_nRMSTypeCode);
@@ -42,7 +42,7 @@ namespace dds
                     m_nRMSTypeCode == val.m_nRMSTypeCode);
         }
 
-        uint16_t m_nRMSTypeCode;
+        mutable uint16_t m_nRMSTypeCode;
         std::string m_sTopoFile;
         std::string m_sSSHCfgFile;
     };

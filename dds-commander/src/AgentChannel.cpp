@@ -62,9 +62,7 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AG
         m_isHandShakeOK = false;
         // Send reply that the version of the protocol is incompatible
         LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encode<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
-        pushMsg(msg);
+        pushMsg<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
     }
     else
     {
@@ -105,9 +103,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
         msg_cmd.m_sMsg = e.what();
         msg_cmd.m_srcCommand = cmdSUBMIT;
         msg_cmd.m_msgSeverity = fatal;
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdSIMPLE_MSG>(msg_cmd);
-        pushMsg(msg);
+        pushMsg<cmdSIMPLE_MSG>(msg_cmd);
 
         return true;
     }
@@ -136,9 +132,7 @@ bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _att
     stringstream ss;
     ss << pid;
     cmd_attachment.m_sMsg = ss.str();
-    CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    msg->encodeWithAttachment<cmdREPLY_PID>(cmd_attachment);
-    pushMsg(msg);
+    pushMsg<cmdREPLY_PID>(cmd_attachment);
 
     return true;
 }
@@ -153,9 +147,7 @@ bool CAgentChannel::on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_
         m_id = boost::uuids::random_generator()();
         SUUIDCmd msg_cmd;
         msg_cmd.m_id = m_id;
-        CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-        msg->encodeWithAttachment<cmdSET_UUID>(msg_cmd);
-        pushMsg(msg);
+        pushMsg<cmdSET_UUID>(msg_cmd);
     }
     else
     {

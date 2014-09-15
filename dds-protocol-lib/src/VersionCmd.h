@@ -15,8 +15,8 @@ namespace dds
     struct SVersionCmd : public SBasicCmd<SVersionCmd>
     {
         SVersionCmd();
-        void normalizeToLocal();
-        void normalizeToRemote();
+        void normalizeToLocal() const;
+        void normalizeToRemote() const;
         size_t size() const
         {
             return sizeof(m_version);
@@ -28,7 +28,7 @@ namespace dds
             return (m_version == val.m_version);
         }
 
-        uint16_t m_version;
+        mutable uint16_t m_version;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SVersionCmd& val)
     {

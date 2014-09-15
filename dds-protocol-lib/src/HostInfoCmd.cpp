@@ -10,14 +10,14 @@ using namespace std;
 using namespace dds;
 namespace inet = MiscCommon::INet;
 
-void SHostInfoCmd::normalizeToLocal()
+void SHostInfoCmd::normalizeToLocal() const
 {
     m_agentPort = inet::_normalizeRead16(m_agentPort);
     m_agentPid = inet::_normalizeRead32(m_agentPid);
     m_timeStamp = inet::_normalizeRead32(m_timeStamp);
 }
 
-void SHostInfoCmd::normalizeToRemote()
+void SHostInfoCmd::normalizeToRemote() const
 {
     m_agentPort = inet::_normalizeWrite16(m_agentPort);
     m_agentPid = inet::_normalizeWrite32(m_agentPid);
