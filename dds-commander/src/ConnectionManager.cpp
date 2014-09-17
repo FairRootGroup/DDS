@@ -194,7 +194,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
                     ostringstream ss;
                     ss << outPut;
                     LOG(info) << ss.str();
-                    p->push_SimpleMsgFromString(ss.str());
+                    p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
                 }
 
                 string sMsg("Failed to deploy agents from the given setup: ");
@@ -206,7 +206,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
                 ostringstream ss;
                 ss << outPut;
                 LOG(info) << ss.str();
-                p->push_SimpleMsgFromString(ss.str());
+                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
             }
 
             SSimpleMsgCmd msg_cmd;

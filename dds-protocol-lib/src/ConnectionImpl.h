@@ -271,13 +271,6 @@ namespace dds
             sendYourself<_cmd>(cmd);
         }
 
-        void push_SimpleMsgFromString(const std::string& _msg)
-        {
-            SSimpleMsgCmd msg_cmd;
-            msg_cmd.m_sMsg = _msg;
-            pushMsg<cmdSIMPLE_MSG>(msg_cmd);
-        }
-
         void pushBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
                                      const std::string& _fileName,
                                      uint16_t _cmdSource)
