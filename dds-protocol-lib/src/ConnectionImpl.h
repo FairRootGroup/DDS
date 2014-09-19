@@ -244,16 +244,26 @@ namespace dds
         {
             CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
 
-            // it can be called from multiple IO threads
-            std::lock_guard<std::mutex> lock(m_mutex);
-            // Do not execute writeMessage if older messages are being processed.
-            // We must not register more, than async_write in the same time (different threads).
-            // Only one async_write is allowed at time per socket to avoid messages corruption.
-            bool bWriteInProgress = !m_writeMsgQueue.empty();
-            m_writeMsgQueue.push_back(msg);
-
+            bool bWriteInProgress(false);
+            {
+                // it can be called from multiple IO threads
+                std::lock_guard<std::mutex> lock(m_mutex);
+                // Do not execute writeMessage if older messages are being processed.
+                // We must not register more, than async_write in the same time (different threads).
+                // Only one async_write is allowed at time per socket to avoid messages corruption.
+                bWriteInProgress = !m_writeMsgQueue.empty();
+                m_writeMsgQueue.push_back(msg);
+            }
             if (!bWriteInProgress)
+            {
+                // We need to make sure that write is not called from different threads.
+                // Only one write at time is allowed by asio.
+                // We therefore notify syncWrite about a chance to write
+                m_cvReadyToWrite.notify_one();
+
+                // process standard async writing
                 writeMessage();
+            }
         }
 
         template <ECmdType _cmd>
@@ -668,6 +678,11 @@ namespace dds
 
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            while (!m_writeMsgQueue.empty())
+            {
+                m_cvReadyToWrite.wait(lock);
+            }
             LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
             boost::system::error_code ec;
             size_t bytesTransfered = boost::asio::write(
@@ -729,6 +744,7 @@ namespace dds
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
         protocolMessagePtrQueue_t m_writeMsgQueue;
         std::mutex m_mutex;
+        std::condition_variable m_cvReadyToWrite;
 
         // BinaryAttachment
         typedef std::map<boost::uuids::uuid, binaryAttachmentInfoPtr_t> binaryAttachmentMap_t;
