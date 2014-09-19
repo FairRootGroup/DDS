@@ -658,6 +658,13 @@ namespace dds
                     // process next message if the queue is not empty
                     if (!m_writeMsgQueue.empty())
                         writeMessage();
+                    else
+                    {
+                        // We need to make sure that write is not called from different threads.
+                        // Only one write at time is allowed by asio.
+                        // We therefore notify syncWrite about a chance to write
+                        m_cvReadyToWrite.notify_one();
+                    }
                 }
                 else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                 {
