@@ -40,13 +40,10 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv0)
     // bash -c "echo test > test.test"
     const string sFile("/tmp/test.test");
 
-    StringVector_t params;
-    params.push_back("-c");
-    params.push_back("` echo test > /tmp/test.test; sleep 5; echo test2 > /tmp/test.test`");
-
     const string cmd("/bin/bash");
-
-    do_execv(cmd, params, 10, NULL);
+    stringstream ssCmd;
+    ssCmd << cmd << " -c ` echo test > /tmp/test.test; sleep 5; echo test2 > /tmp/test.test`";
+    do_execv(ssCmd.str(), 10, NULL);
 
     ifstream test_file(sFile.c_str());
     BOOST_CHECK(test_file.is_open());
@@ -61,27 +58,25 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv0)
         ::unlink(sFile.c_str());
     }
 
-    StringVector_t p;
-    p.push_back("-f");
     string output;
-    do_execv("/bin/hostname", p, 10, &output);
+    stringstream ssCmd2;
+    ssCmd2 << "/bin/hostname -f";
+    do_execv(ssCmd2.str(), 10, &output);
     BOOST_CHECK(output.size() > 0);
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv1)
 {
-    StringVector_t params;
-    params.push_back("4");
-    const string cmd("/bin/sleep");
-    BOOST_CHECK_THROW(do_execv(cmd, params, 2, NULL), runtime_error);
+    stringstream ssCmd;
+    ssCmd << "/bin/sleep 4";
+    BOOST_CHECK_THROW(do_execv(ssCmd.str(), 2, NULL), runtime_error);
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv2)
 {
-    StringVector_t params;
-    params.push_back("eee");
-    const string cmd("XXXXX");
-    BOOST_CHECK_THROW(do_execv(cmd, params, 3, NULL), runtime_error);
+    stringstream ssCmd;
+    ssCmd << "XXXXX eee";
+    BOOST_CHECK_THROW(do_execv(ssCmd.str(), 3, NULL), runtime_error);
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_getprocbyname)

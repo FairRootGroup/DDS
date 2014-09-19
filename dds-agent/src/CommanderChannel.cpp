@@ -197,10 +197,10 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
 
         string archiveDirName = logDir + archiveName;
         string archiveFileName = archiveDirName + ".tar.gz";
-        StringVector_t params{ "czf", archiveFileName, "-C", logDir, archiveName };
+        stringstream ssCmd;
+        ssCmd << tarPath << " czf " << archiveFileName << " -C" << logDir << " " << archiveName;
         string output;
-
-        do_execv(tarPath, params, 60, &output);
+        do_execv(ssCmd.str(), 60, &output);
 
         MiscCommon::BYTEVector_t data;
 
@@ -280,10 +280,8 @@ void CCommanderChannel::onRemoteEndDissconnected()
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
 {
-    LOG(MiscCommon::info) << "Recieved a user task assigment. User's task: " << _attachment->m_sExeFile;
-
+    LOG(MiscCommon::info) << "Recieved a user task assigment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
-
     return true;
 }
 
@@ -298,7 +296,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     try
     {
         LOG(MiscCommon::info) << "Executing user task: " << sUsrExe;
-        pidUsrTask = do_execv(sUsrExe, params, 0, &output);
+        pidUsrTask = do_execv(sUsrExe, 0, &output);
     }
     catch (exception& e)
     {

@@ -188,14 +188,14 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
             string outPut;
             string sCommand("$DDS_LOCATION/bin/dds-ssh");
             smart_path(&sCommand);
-            StringVector_t params;
+
+            stringstream ssCmd;
+            ssCmd << sCommand << " -c " << _attachment->m_sSSHCfgFile << " submit";
             const size_t nCmdTimeout = 60; // in sec.
-            params.push_back("-c" + _attachment->m_sSSHCfgFile);
-            params.push_back("submit");
             int nDdsSSHExitCode(0);
             try
             {
-                do_execv(sCommand, params, nCmdTimeout, &outPut, nullptr, &nDdsSSHExitCode);
+                do_execv(ssCmd.str(), nCmdTimeout, &outPut, nullptr, &nDdsSSHExitCode);
             }
             catch (exception& e)
             {
@@ -286,8 +286,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 throw runtime_error("The number of active agents is not sufficient for this topology.");
 
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-            size_t index(0);
             TopoElementPtrVector_t tasks(topology.getMainGroup()->getElementsByType(ETopoType::TASK));
+            TopoElementPtrVector_t::const_iterator it_tasks = tasks.begin();
             for (const auto& v : channels)
             {
                 if (v.expired())
@@ -295,10 +295,13 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 auto ptr = v.lock();
 
                 // Assign user's tasks to agents
+                if (it_tasks == tasks.end())
+                    break;
                 SAssignUserTaskCmd msg_cmd;
-                TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(tasks[index++]);
+                TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(*it_tasks);
                 msg_cmd.m_sExeFile = topoTask->getExec();
                 ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
+                ++it_tasks;
             }
 
             // Active agents.

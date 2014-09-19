@@ -32,7 +32,7 @@ namespace dds
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SAssignUserTaskCmd& val)
     {
-        return _stream << val.m_sExeFile;
+        return _stream << "Exe: " << val.m_sExeFile;
     }
     inline bool operator!=(const SAssignUserTaskCmd& lhs, const SAssignUserTaskCmd& rhs)
     {

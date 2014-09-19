@@ -29,7 +29,7 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HA
 {
     m_isHandShakeOK = true;
 
-    if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS)
+    if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS && !m_bSendStart)
     {
         // Create the command's attachment
         SSubmitCmd cmd;

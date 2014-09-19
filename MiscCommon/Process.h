@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <dirent.h>
+#include <wordexp.h>
 
 #if defined(__APPLE__)
 #include <sys/sysctl.h>
@@ -428,21 +429,12 @@ namespace MiscCommon
     // If _Delay is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
     // return value is 0.
     inline pid_t do_execv(const std::string& _Command,
-                          const StringVector_t& _Params,
                           size_t _Delay,
                           std::string* _output,
                           std::string* _errout = nullptr,
                           int* _exitCode = nullptr) throw(std::exception)
     {
         pid_t child_pid;
-        std::vector<const char*> cargs; // careful with c_str()!!!
-        cargs.push_back(_Command.c_str());
-        StringVector_t::const_iterator iter = _Params.begin();
-        StringVector_t::const_iterator iter_end = _Params.end();
-        for (; iter != iter_end; ++iter)
-            cargs.push_back(iter->c_str());
-        cargs.push_back(0);
-
         int fdpipe_out[2];
         int fdpipe_err[2];
         if (_output)
@@ -455,6 +447,21 @@ namespace MiscCommon
             if (pipe(fdpipe_err))
                 throw system_error("Can't create stderr pipe.");
         }
+
+        //----- Expand the string for the program to run.
+        wordexp_t result;
+        switch (wordexp(_Command.c_str(), &result, 0))
+        {
+            case 0: /* Successful.  */
+                break;
+            case WRDE_NOSPACE:
+                /* If the error was WRDE_NOSPACE,
+                 then perhaps part of the result was allocated.  */
+                wordfree(&result);
+            default: /* Some other error.  */
+                return -1;
+        }
+        ////-----
 
         switch (child_pid = fork())
         {
@@ -486,10 +493,13 @@ namespace MiscCommon
                     close(fdpipe_err[1]);
                 }
                 // child: execute the required command, on success does not return
-                execv(_Command.c_str(), const_cast<char**>(&cargs[0]));
+
+                execv(result.we_wordv[0], result.we_wordv);
                 // not usually reached
                 exit(1);
         }
+
+        wordfree(&result);
 
         if (0 == _Delay)
         {
@@ -531,8 +541,7 @@ namespace MiscCommon
                 if (!is_status_ok(stat))
                 {
                     std::stringstream ss;
-                    ss << "do_execv: Can't execute \"" << _Command << "\" with parameters: ";
-                    std::copy(_Params.begin(), _Params.end(), std::ostream_iterator<std::string>(ss, " "));
+                    ss << "do_execv: Can't execute \"" << _Command << "\"";
                     throw std::runtime_error(ss.str());
                 }
                 return 0;

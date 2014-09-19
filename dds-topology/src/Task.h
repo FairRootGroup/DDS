@@ -27,7 +27,6 @@ namespace dds
         /// Accessors
         const std::string& getExec() const;
         const std::string& getEnv() const;
-        const std::string& getArgs() const;
         size_t getNofPorts() const;
         PortPtr_t getPort(size_t _i) const;
         const PortPtrVector_t& getPorts() const;
@@ -35,7 +34,6 @@ namespace dds
         /// Modifiers
         void setExec(const std::string& _exec);
         void setEnv(const std::string& _env);
-        void setArgs(const std::string& _args);
         void setPorts(const PortPtrVector_t& _ports);
         void addPort(PortPtr_t& _port);
 
@@ -63,7 +61,6 @@ namespace dds
       private:
         std::string m_exec;      ///> Path to executable
         std::string m_env;       ///> Path to environmtnt file
-        std::string m_args;      ///> Exec arguments
         PortPtrVector_t m_ports; ///> Ports
     };
 

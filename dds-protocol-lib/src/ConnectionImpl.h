@@ -244,7 +244,7 @@ namespace dds
         {
             CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
 
-            bool bWriteInProgress(false);
+            bool bWriteInProgress(true);
             {
                 // it can be called from multiple IO threads
                 std::lock_guard<std::mutex> lock(m_mutex);

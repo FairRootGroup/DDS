@@ -88,7 +88,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->getPort(1)->getPortType() == EPortType::CLIENT);
     BOOST_CHECK(casted1->getExec() == "app1");
     BOOST_CHECK(casted1->getEnv() == "env1");
-    BOOST_CHECK(casted1->getArgs() == "-a -b -c");
 
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getName() == "collection1");

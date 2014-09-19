@@ -146,20 +146,21 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
         // To be shure that our env is there, we call DDS_env.sh
         string cmd_env("$DDS_LOCATION/DDS_env.sh");
         smart_path(&cmd_env);
+
         string cmd("$DDS_LOCATION/bin/dds-prep-worker");
+        smart_path(&cmd);
         if (_needInlineBashScript)
             cmd += " -i";
-        smart_path(&cmd);
         string arg("source ");
         arg += cmd_env;
         arg += " ; ";
         arg += cmd;
 
-        StringVector_t params;
-        params.push_back("-c");
-        params.push_back(arg);
+        stringstream ssCmd;
+        ssCmd << "/bin/bash -c \"" << arg << "\"";
+
         // 10 sec time-out for this command
-        do_execv("/bin/bash", params, 10, &out, &err);
+        do_execv(ssCmd.str(), 10, &out, &err);
     }
     catch (exception& e)
     {
@@ -236,11 +237,11 @@ int main(int argc, char* argv[])
             //            {
             //                string cmd("$DDS_LOCATION/bin/dds-server");
             //                smart_path(&cmd);
-            //                StringVector_t params;
-            //                params.push_back("status_with_code");
+            //                stringstream ssCmd;
+            //                ssCmd << cmd << " status_with_code";
             //                string output;
             //                string errout;
-            //                do_execv(cmd, params, 2, &output, &errout);
+            //                do_execv(ssCmd.str(), 2, &output, &errout);
             //            }
             //            catch (exception& e)
             //            {

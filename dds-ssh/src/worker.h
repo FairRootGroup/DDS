@@ -40,7 +40,7 @@ class CWorker : public CTaskImp<CWorker, ETaskType>
     }
 
   private:
-    bool exec_command(const std::string& _cmd, const MiscCommon::StringVector_t& _params) const;
+    bool exec_command(const std::string& _cmd) const;
     void log(const std::string& _msg) const;
 
   private:

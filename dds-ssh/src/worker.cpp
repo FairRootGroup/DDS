@@ -48,55 +48,52 @@ bool CWorker::runTask(ETaskType _param) const
     // protection: don't execute different tasks on the same worker in the same time
     boost::mutex::scoped_lock lck(*m_mutex);
 
-    StringVector_t params;
-    params.push_back("-i" + m_rec->m_id);
-    params.push_back("-l" + m_rec->m_addr);
-    params.push_back("-w" + m_rec->m_wrkDir);
+    stringstream ssParams;
+    ssParams << " -i " << m_rec->m_id << " -l " << m_rec->m_addr << " -w " << m_rec->m_wrkDir;
     if (!m_rec->m_sshOptions.empty())
-        params.push_back("-o" + m_rec->m_sshOptions);
+        ssParams << " -o " << m_rec->m_sshOptions;
     if (m_options.m_debug)
-        params.push_back("-d");
+        ssParams << " -d ";
 
-    string cmd;
+    stringstream ssCmd;
     switch (_param)
     {
         case task_submit:
         {
-            stringstream ss;
-            ss << "-n" << m_rec->m_nWorkers;
-            params.push_back(ss.str());
-            cmd = "$DDS_LOCATION/bin/private/dds-ssh-submit-worker";
+            ssParams << " -n " << m_rec->m_nWorkers;
+            string cmd("$DDS_LOCATION/bin/private/dds-ssh-submit-worker");
+            smart_path(&cmd);
+            ssCmd << cmd << " " << ssParams.str();
             break;
         }
         case task_clean:
         {
-            if (m_options.m_logs)
-                params.push_back("-m");
-            if (m_options.m_fastClean)
-                params.push_back("-f");
-
-            cmd = "$DDS_LOCATION/bin/private/dds-ssh-clean-worker";
+            //            if (m_options.m_logs)
+            //                params.push_back("-m");
+            //            if (m_options.m_fastClean)
+            //                params.push_back("-f");
+            //
+            //            cmd = "$DDS_LOCATION/bin/private/dds-ssh-clean-worker";
             break;
         }
         case task_status:
-            cmd = "$DDS_LOCATION/bin/private/dds-ssh-status-worker";
+            //            cmd = "$DDS_LOCATION/bin/private/dds-ssh-status-worker";
             break;
         case task_exec:
-            params.push_back("-e " + m_options.m_scriptName);
-            cmd = "$DDS_LOCATION/bin/private/dds-ssh-exec-worker";
+            //            params.push_back("-e " + m_options.m_scriptName);
+            //            cmd = "$DDS_LOCATION/bin/private/dds-ssh-exec-worker";
             break;
     }
 
-    smart_path(&cmd);
-    return exec_command(cmd, params);
+    return exec_command(ssCmd.str());
 }
 //=============================================================================
-bool CWorker::exec_command(const string& _cmd, const StringVector_t& _params) const
+bool CWorker::exec_command(const string& _cmd) const
 {
     string outPut;
     try
     {
-        do_execv(_cmd, _params, g_cmdTimeout, &outPut);
+        do_execv(_cmd, g_cmdTimeout, &outPut);
     }
     catch (exception& e)
     {
