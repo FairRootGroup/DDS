@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
         }
 
         size_t wrkCount(0);
-        bool dynWrk(false);
+        //   bool dynWrk(false);
         SWNOptions options;
         options.m_debug = true;
         options.m_logs = vm.count("logs");
@@ -288,8 +288,8 @@ int main(int argc, char* argv[])
                 CWorker wrk(rec, options);
                 workers.push_back(wrk);
 
-                if (0 == rec->m_nWorkers)
-                    dynWrk = true; // user wants us to dynamicly decide on how many job slots to create
+                // if (0 == rec->m_nWorkers)
+                //     dynWrk = true; // user wants us to dynamicly decide on how many job slots to create
 
                 wrkCount += rec->m_nWorkers;
             }

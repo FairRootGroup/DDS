@@ -13,7 +13,8 @@ Added: The command learned a new command line option "--config". It gives the po
 
 ### dds-protocol-lib
 Improved: The protocol message header size has been reduced from 12 to 8 bytes.   
-Improved: The protocol message header is validated now using CRC.
+Improved: The protocol message header is validated now using CRC.   
+Improved: Split binary files uploads into multiple message chunks, instead of using one message per file.
 
 ### DDS common
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   
