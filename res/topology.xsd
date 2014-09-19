@@ -63,6 +63,7 @@
   <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="exec" type="stringType" use="required"/>
   <xs:attribute name="env" type="stringType" use="optional"/>
+  <xs:attribute name="args" type="stringType" use="optional"/>
 </xs:complexType>
 
 

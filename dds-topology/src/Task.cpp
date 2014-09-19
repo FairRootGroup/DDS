@@ -40,6 +40,11 @@ void CTask::setEnv(const string& _env)
     m_env = _env;
 }
 
+void CTask::setArgs(const string& _args)
+{
+    m_args = _args;
+}
+
 void CTask::setPorts(const PortPtrVector_t& _ports)
 {
     m_ports = _ports;
@@ -68,6 +73,11 @@ const string& CTask::getExec() const
 const string& CTask::getEnv() const
 {
     return m_env;
+}
+
+const string& CTask::getArgs() const
+{
+    return m_args;
 }
 
 size_t CTask::getNofPorts() const
@@ -101,6 +111,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         setName(taskPT.get<string>("<xmlattr>.name"));
         setExec(taskPT.get<string>("<xmlattr>.exec"));
         setEnv(taskPT.get<string>("<xmlattr>.env", ""));
+        setArgs(taskPT.get<string>("<xmlattr>.args", ""));
         for (const auto& port : taskPT)
         {
             if (port.first == "<xmlattr>")
@@ -120,7 +131,8 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 string CTask::toString() const
 {
     stringstream ss;
-    ss << "Task: m_name=" << getName() << " m_exec=" << m_exec << " m_ports:\n";
+    ss << "Task: m_name=" << getName() << " m_exec=" << m_exec << " m_env=" << m_env << " m_args=" << m_args
+       << " m_ports:\n";
     for (const auto& port : m_ports)
     {
         ss << " - " << port->toString() << endl;
