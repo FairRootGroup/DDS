@@ -29,9 +29,10 @@ namespace dds
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
         cmdGED_PID,
-        cmdREPLY_PID,            // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
-        cmdBINARY_ATTACHMENT,    // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
-        cmdBINARY_DOWNLOAD_STAT, // attachment: SBinaryDownloadStatCmd.
+        cmdREPLY_PID,                  // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
+        cmdBINARY_ATTACHMENT,          // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
+        cmdBINARY_ATTACHMENT_RECEIVED, // attachment: SBinaryAttachmentReceivedCmd.
+        cmdBINARY_ATTACHMENT_START,    // attachment: SBinaryAttachmentStartCmd.
         cmdGET_UUID,
         cmdREPLY_UUID, // attachment: SUUIDCmd
         cmdSET_UUID,   // attachment: SUUIDCmd
@@ -60,7 +61,8 @@ namespace dds
         { cmdGED_PID, NAME_TO_STRING(cmdGED_PID) },
         { cmdREPLY_PID, NAME_TO_STRING(cmdREPLY_PID) },
         { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },
-        { cmdBINARY_DOWNLOAD_STAT, NAME_TO_STRING(cmdBINARY_DOWNLOAD_STAT) },
+        { cmdBINARY_ATTACHMENT_RECEIVED, NAME_TO_STRING(cmdBINARY_ATTACHMENT_RECEIVED) },
+        { cmdBINARY_ATTACHMENT_START, NAME_TO_STRING(cmdBINARY_ATTACHMENT_START) },
         { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
         { cmdREPLY_UUID, NAME_TO_STRING(cmdREPLY_UUID) },
         { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },

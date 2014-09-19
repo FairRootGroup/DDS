@@ -16,6 +16,8 @@
 #include "HostInfoCmd.h"
 #include "SubmitCmd.h"
 #include "VersionCmd.h"
+#include "BinaryAttachmentReceivedCmd.h"
+#include "BinaryAttachmentStartCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -72,11 +74,12 @@ namespace dds
     REGISTER_CMD_ATTACHMENT(SHostInfoCmd, cmdREPLY_HOST_INFO)
     REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdREPLY_PID)
     REGISTER_CMD_ATTACHMENT(SBinaryAttachmentCmd, cmdBINARY_ATTACHMENT)
-    REGISTER_CMD_ATTACHMENT(SBinaryDownloadStatCmd, cmdBINARY_DOWNLOAD_STAT)
     REGISTER_CMD_ATTACHMENT(SUUIDCmd, cmdREPLY_UUID)
     REGISTER_CMD_ATTACHMENT(SUUIDCmd, cmdSET_UUID)
     REGISTER_CMD_ATTACHMENT(SAgentsInfoCmd, cmdREPLY_AGENTS_INFO)
     REGISTER_CMD_ATTACHMENT(SAssignUserTaskCmd, cmdASSIGN_USER_TASK)
+    REGISTER_CMD_ATTACHMENT(SBinaryAttachmentReceivedCmd, cmdBINARY_ATTACHMENT_RECEIVED)
+    REGISTER_CMD_ATTACHMENT(SBinaryAttachmentStartCmd, cmdBINARY_ATTACHMENT_START)
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

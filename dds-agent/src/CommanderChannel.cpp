@@ -29,11 +29,6 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
 {
 }
 
-void CCommanderChannel::onHeaderRead()
-{
-    m_headerReadTime = std::chrono::steady_clock::now();
-}
-
 bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
 {
     m_isHandShakeOK = true;
@@ -43,6 +38,19 @@ bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY
 
 bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
+    switch (_attachment->m_srcCommand)
+    {
+        case cmdTRANSPORT_TEST:
+        {
+            pushMsg<cmdSIMPLE_MSG>(*_attachment);
+            return true;
+        }
+
+        default:
+            LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
+            return true;
+    }
+
     return true;
 }
 
@@ -87,43 +95,24 @@ bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_
     return false;
 }
 
-bool CCommanderChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
+bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment)
 {
+    LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED";
+
     switch (_attachment->m_srcCommand)
     {
         case cmdTRANSPORT_TEST:
         {
-            // Calculate CRC32 of the recieved file data
-            boost::crc_32_type crc32;
-            crc32.process_bytes(&_attachment->m_data[0], _attachment->m_data.size());
+            // Remove received file
+            boost::filesystem::remove(_attachment->m_receivedFilePath);
 
-            if (crc32.checksum() == _attachment->m_fileCrc32)
-            {
-                chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-                chrono::microseconds downloadTime = chrono::duration_cast<chrono::microseconds>(now - m_headerReadTime);
-
-                // Form reply command
-                SBinaryDownloadStatCmd reply_cmd;
-                reply_cmd.m_srcCommand = cmdTRANSPORT_TEST;
-                reply_cmd.m_recievedCrc32 = crc32.checksum();
-                reply_cmd.m_recievedFileSize = _attachment->m_data.size();
-                reply_cmd.m_downloadTime = downloadTime.count();
-                pushMsg<cmdBINARY_DOWNLOAD_STAT>(reply_cmd);
-            }
-            else
-            {
-                stringstream ss;
-                ss << "Received binary has wrong checksum: " << crc32.checksum() << " instead of "
-                   << _attachment->m_fileCrc32 << " | size: " << _attachment->m_data.size()
-                   << " name: " << _attachment->m_fileName;
-                pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdTRANSPORT_TEST));
-            }
-
+            pushMsg<cmdBINARY_ATTACHMENT_RECEIVED>(*_attachment);
             return true;
         }
 
         default:
-            LOG(debug) << "Received command cmdBINARY_ATTACHMENT does not have a listener";
+            LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
             return true;
     }
 
@@ -213,8 +202,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
 
         do_execv(tarPath, params, 60, &output);
 
-        SBinaryAttachmentCmd cmd;
-        cmd.m_srcCommand = cmdGET_LOG;
+        MiscCommon::BYTEVector_t data;
 
         ifstream f(archiveFileName.c_str());
         if (!f.is_open() || !f.good())
@@ -224,22 +212,18 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
             return true;
         }
         f.seekg(0, ios::end);
-        cmd.m_data.reserve(f.tellg());
+        data.reserve(f.tellg());
         f.seekg(0, ios::beg);
-        cmd.m_data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+        data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-        boost::crc_32_type crc;
-        crc.process_bytes(&cmd.m_data[0], cmd.m_data.size());
+        string fileName(archiveName);
+        fileName += ".tar.gz";
 
-        cmd.m_fileCrc32 = crc.checksum();
-        cmd.m_fileName = archiveName + ".tar.gz";
-        cmd.m_fileSize = cmd.m_data.size();
+        pushBinaryAttachmentCmd(data, fileName, cmdGET_LOG);
 
         f.close();
         fs::remove(archiveFileName);
         fs::remove_all(archiveDirName);
-
-        pushMsg<cmdBINARY_ATTACHMENT>(cmd);
     }
     catch (exception& e)
     {

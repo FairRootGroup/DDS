@@ -28,7 +28,7 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
         MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
-        MESSAGE_HANDLER(cmdBINARY_ATTACHMENT, on_cmdBINARY_ATTACHMENT)
+        MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
         MESSAGE_HANDLER(cmdGET_UUID, on_cmdGET_UUID)
         MESSAGE_HANDLER(cmdSET_UUID, on_cmdSET_UUID)
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
@@ -49,7 +49,7 @@ namespace dds
         bool on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment);
         bool on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
-        bool on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment);
+        bool on_cmdBINARY_ATTACHMENT_RECEIVED(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
         bool on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_t _attachment);
         bool on_cmdSET_UUID(SCommandAttachmentImpl<cmdSET_UUID>::ptr_t _attachment);
         bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
@@ -58,14 +58,12 @@ namespace dds
         void onRemoteEndDissconnected();
 
       private:
-        void onHeaderRead();
         void readAgentUUIDFile();
         void createAgentUUIDFile() const;
         void deleteAgentUUIDFile() const;
 
       private:
         bool m_isHandShakeOK;
-        std::chrono::steady_clock::time_point m_headerReadTime;
         boost::uuids::uuid m_id;
         std::string m_sUsrExe;
         handlerOnNewUserTaks_t m_onNewUserTaskCallback;

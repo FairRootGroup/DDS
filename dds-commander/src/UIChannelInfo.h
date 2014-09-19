@@ -64,7 +64,6 @@ namespace dds
 
                 SSimpleMsgCmd cmd;
                 cmd.m_msgSeverity = MiscCommon::info;
-                // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                 cmd.m_sMsg = userMessage;
 
                 if (!m_channel.expired())
@@ -97,7 +96,6 @@ namespace dds
 
                 SSimpleMsgCmd cmd;
                 cmd.m_msgSeverity = MiscCommon::error;
-                // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                 cmd.m_sMsg = userMessage;
 
                 if (!m_channel.expired())
@@ -128,7 +126,6 @@ namespace dds
 
                     SSimpleMsgCmd cmd;
                     cmd.m_msgSeverity = MiscCommon::info;
-                    // cmd.m_srcCommand = cmdSTART_DOWNLOAD_TEST;
                     cmd.m_sMsg = userMessage;
 
                     if (!m_channel.expired())
@@ -159,11 +156,12 @@ namespace dds
     class CGetLogChannelInfo : public CUIChannelInfo<CGetLogChannelInfo>
     {
       public:
-        std::string getMessage(const SBinaryAttachmentCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+        std::string getMessage(const SBinaryAttachmentReceivedCmd& _cmd,
+                               CAgentChannel::weakConnectionPtr_t _channel) const
         {
             std::stringstream ss;
             auto p = _channel.lock();
-            ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> " << _cmd.m_fileName;
+            ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> " << _cmd.m_requestedFileName;
             return ss.str();
         }
 
@@ -193,13 +191,14 @@ namespace dds
         {
         }
 
-        std::string getMessage(const SBinaryDownloadStatCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+        std::string getMessage(const SBinaryAttachmentReceivedCmd& _cmd,
+                               CAgentChannel::weakConnectionPtr_t _channel) const
         {
             std::stringstream ss;
             auto p = _channel.lock();
             float downloadTime = 0.000001 * _cmd.m_downloadTime; // micros->s
-            float speed = (downloadTime != 0.) ? 0.001 * _cmd.m_recievedFileSize / downloadTime : 0;
-            ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "]: " << _cmd.m_recievedFileSize
+            float speed = (downloadTime != 0.) ? 0.001 * _cmd.m_receivedFileSize / downloadTime : 0;
+            ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "]: " << _cmd.m_receivedFileSize
                << " bytes in " << downloadTime << " s (" << speed << " KB/s)";
             return ss.str();
         }

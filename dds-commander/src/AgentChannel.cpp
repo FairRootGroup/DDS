@@ -163,68 +163,35 @@ bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _att
     return false;
 }
 
-bool CAgentChannel::on_cmdBINARY_ATTACHMENT(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
+bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment)
 {
     switch (_attachment->m_srcCommand)
     {
         case cmdGET_LOG:
         {
-            // Calculate CRC32 of the recieved file data
-            boost::crc_32_type crc32;
-            crc32.process_bytes(&_attachment->m_data[0], _attachment->m_data.size());
+            const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+            const string logFileName(sLogStorageDir + _attachment->m_requestedFileName);
+            const boost::filesystem::path logFilePath(logFileName);
+            const boost::filesystem::path receivedFilePath(_attachment->m_receivedFilePath);
 
-            if (crc32.checksum() == _attachment->m_fileCrc32)
-            {
-                const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-                const string logFileName(sLogStorageDir + _attachment->m_fileName);
-                ofstream f(logFileName.c_str());
-                if (!f.is_open() || !f.good())
-                {
-                    string msg("Could not open log archive: " + logFileName);
-                    LOG(error) << msg;
-                    return false;
-                }
+            boost::filesystem::rename(receivedFilePath, logFilePath);
 
-                for (const auto& v : _attachment->m_data)
-                {
-                    f << v;
-                }
-            }
-            else
-            {
-                LOG(error) << "Recieved LOG file with wrong CRC32 checksum: " << crc32.checksum() << " instead of "
-                           << _attachment->m_fileCrc32;
-            }
-
-            // Return false.
-            // Give possibility to further process this message.
             return false;
         }
 
-        default:
-            LOG(debug) << "Received BINARY_ATTACHMENT has no listener.";
-            return true;
-    }
-    return true;
-}
-
-bool CAgentChannel::on_cmdBINARY_DOWNLOAD_STAT(SCommandAttachmentImpl<cmdBINARY_DOWNLOAD_STAT>::ptr_t _attachment)
-{
-    switch (_attachment->m_srcCommand)
-    {
         case cmdTRANSPORT_TEST:
         {
-            LOG(info) << "cmdDOWNLOAD_TEST_STAT attachment [" << *_attachment << "] command from "
+            LOG(info) << "cmdBINARY_ATTACHMENT_RECEIVED attachment [" << *_attachment << "] command from "
                       << remoteEndIDString();
 
             return false;
         }
 
         default:
-            LOG(debug) << "Received command cmdBINARY_DOWNLOAD_STAT does not have a listener";
+            LOG(debug) << "Received BINARY_ATTACHMENT_RECEIVED has no listener.";
             return true;
     }
-
     return true;
 }
 

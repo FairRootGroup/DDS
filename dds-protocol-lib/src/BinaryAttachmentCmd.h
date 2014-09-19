@@ -20,10 +20,6 @@ namespace dds
     {
         SBinaryAttachmentCmd()
             : m_fileId()
-            , m_fileName()
-            , m_fileSize(0)
-            , m_fileCrc32(0)
-            , m_srcCommand(0)
             , m_offset(0)
             , m_size(0)
             , m_crc32(0)
@@ -35,10 +31,6 @@ namespace dds
         size_t size() const
         {
             size_t size(boost::uuids::uuid::static_size());
-            size += (m_fileName.size() + 1);
-            size += sizeof(m_fileSize);
-            size += sizeof(m_fileCrc32);
-            size += sizeof(m_srcCommand);
             size += m_data.size();
             size += sizeof(m_offset);
             size += sizeof(m_size);
@@ -55,16 +47,11 @@ namespace dds
                 if (m_data[i++] != c)
                     return false;
             }
-            return (m_fileId == _val.m_fileId && m_fileCrc32 == _val.m_fileCrc32 && m_fileName == _val.m_fileName &&
-                    m_fileSize == _val.m_fileSize && m_srcCommand == _val.m_srcCommand && m_offset == _val.m_offset &&
-                    m_size == _val.m_size && m_crc32 == _val.m_crc32);
+            return (m_fileId == _val.m_fileId && m_offset == _val.m_offset && m_size == _val.m_size &&
+                    m_crc32 == _val.m_crc32);
         }
 
         boost::uuids::uuid m_fileId;     ///> Unique ID of the file
-        std::string m_fileName;          ///> Name of the file
-        mutable uint32_t m_fileSize;     ///> File size in bytes
-        mutable uint32_t m_fileCrc32;    ///> File checksum
-        mutable uint16_t m_srcCommand;   ///> Source command which initiated file transport
         mutable uint32_t m_offset;       ///> Offset for this piece of binary data
         mutable uint32_t m_size;         ///> Size of this piece of binary data
         mutable uint32_t m_crc32;        ///> CRC checksum of this piece of binary data
@@ -72,8 +59,7 @@ namespace dds
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)
     {
-        _stream << "fileId=" << _val.m_fileId << " fileName=" << _val.m_fileName << " fileSize=" << _val.m_fileSize
-                << " fileCrc32=" << _val.m_fileCrc32 << " offset=" << _val.m_offset << " size=" << _val.m_size
+        _stream << "fileId=" << _val.m_fileId << " offset=" << _val.m_offset << " size=" << _val.m_size
                 << " crc32=" << _val.m_crc32;
         for (const auto& c : _val.m_data)
         {
