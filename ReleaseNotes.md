@@ -17,7 +17,7 @@ Improved: The protocol message header is validated now using CRC.
 Improved: Split binary files uploads into multiple message chunks, instead of using one message per file.
 
 ### DDS common
-Added: DDS learned how to expand given user tasks commands with arguments given as a single string. (in the Topology->Task->exec parameter).
+Added: DDS learned how to expand given user tasks commands with arguments given as a single string. (in the Topology->Task->exec parameter).   
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   
 
 ## v0.2 (2014-09-03)
