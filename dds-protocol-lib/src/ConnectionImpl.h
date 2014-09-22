@@ -9,6 +9,7 @@
 #include <deque>
 #include <map>
 #include <chrono>
+#include <condition_variable>
 // BOOST
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
