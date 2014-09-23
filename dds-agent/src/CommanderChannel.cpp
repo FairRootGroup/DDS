@@ -187,7 +187,9 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         for (const auto& v : logFiles)
         {
             fs::path dest(archiveDir.string() + "/" + v.filename().string());
-            fs::copy_file(v, dest);
+            if (fs::exists(dest) && !fs::is_directory(dest))
+                fs::remove(dest);
+            fs::copy(v, dest);
         }
 
         CFindCfgFile<string> cfg;
