@@ -22,8 +22,8 @@ namespace dds
                 return "collection";
             case ETopoType::GROUP:
                 return "group";
-            case ETopoType::PORT:
-                return "port";
+            case ETopoType::TOPO_PROPERTY:
+                return "property";
             default:
                 throw runtime_error("Topology element not found.");
         }
@@ -37,18 +37,8 @@ namespace dds
             return ETopoType::COLLECTION;
         else if (_name == "group")
             return ETopoType::GROUP;
-        else if (_name == "port")
-            return ETopoType::PORT;
-        else
-            throw runtime_error("Topology element with name " + _name + " does not exist.");
-    }
-
-    EPortType StringToPortType(const std::string& _name)
-    {
-        if (_name == "server")
-            return EPortType::SERVER;
-        else if (_name == "client")
-            return EPortType::CLIENT;
+        else if (_name == "property")
+            return ETopoType::TOPO_PROPERTY;
         else
             throw runtime_error("Topology element with name " + _name + " does not exist.");
     }

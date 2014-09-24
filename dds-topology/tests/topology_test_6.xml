@@ -1,21 +1,21 @@
 <topology name="myTopology">
-
-	<port name="port1" min="20000" max="22000" type="server"/>
-	<port name="port2" min="20000" max="22000" type="client"/>
-	<port name="port3" min="20000" max="22000" type="server"/>
-	<port name="port3" min="20000" max="22000" type="client"/>
+	
+	<property name="property1" default="dafault1"/>
+	<property name="property2" default="dafault2"/>
+	<property name="property3" default="dafault3"/>
+	<property name="property3" default="dafault3"/>
 	
   	<task name="task1" exec="app1">
-		<port name="port1"/>
-		<port name="port3"/>
+		<property name="property1"/>
+		<property name="property3"/>
 	</task>
 	<task name="task2" exec="app2">
-		<port name="port1"/>
-		<port name="port2"/>
+		<property name="property1"/>
+		<property name="property2"/>
 	</task>
 	<task name="task2" exec="app3">
-		<port name="port2"/>
-		<port name="port3"/>
+		<property name="property2"/>
+		<property name="property3"/>
 	</task>
 
   	<collection name="collection1">

@@ -24,8 +24,7 @@ namespace dds
         TOPO_ELEMENT,
         TASK,
         COLLECTION,
-        GROUP,
-        PORT
+        GROUP
     };
 
     class CTopoBase

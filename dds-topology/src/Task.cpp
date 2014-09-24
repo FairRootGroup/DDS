@@ -19,7 +19,7 @@ using namespace dds;
 
 CTask::CTask()
     : CTopoElement()
-    , m_ports()
+    , m_properties()
 {
     setType(ETopoType::TASK);
 }
@@ -38,14 +38,14 @@ void CTask::setEnv(const string& _env)
     m_env = _env;
 }
 
-void CTask::setPorts(const PortPtrVector_t& _ports)
+void CTask::setProperties(const TopoPropertyPtrVector_t& _properties)
 {
-    m_ports = _ports;
+    m_properties = _properties;
 }
 
-void CTask::addPort(PortPtr_t& _port)
+void CTask::addProperty(TopoPropertyPtr_t& _property)
 {
-    m_ports.push_back(_port);
+    m_properties.push_back(_property);
 }
 
 size_t CTask::getNofTasks() const
@@ -68,9 +68,9 @@ const string& CTask::getEnv() const
     return m_env;
 }
 
-size_t CTask::getNofPorts() const
+size_t CTask::getNofProperties() const
 {
-    return m_ports.size();
+    return m_properties.size();
 }
 
 size_t CTask::getTotalCounter() const
@@ -78,16 +78,16 @@ size_t CTask::getTotalCounter() const
     return getTotalCounterDefault();
 }
 
-PortPtr_t CTask::getPort(size_t _i) const
+TopoPropertyPtr_t CTask::getProperty(size_t _i) const
 {
-    if (_i >= getNofPorts())
+    if (_i >= getNofProperties())
         throw out_of_range("Out of range exception");
-    return m_ports[_i];
+    return m_properties[_i];
 }
 
-const PortPtrVector_t& CTask::getPorts() const
+const TopoPropertyPtrVector_t& CTask::getProperties() const
 {
-    return m_ports;
+    return m_properties;
 }
 
 void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
@@ -99,14 +99,14 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         setName(taskPT.get<string>("<xmlattr>.name"));
         setExec(taskPT.get<string>("<xmlattr>.exec"));
         setEnv(taskPT.get<string>("<xmlattr>.env", ""));
-        for (const auto& port : taskPT)
+        for (const auto& property : taskPT)
         {
-            if (port.first == "<xmlattr>")
+            if (property.first == "<xmlattr>")
                 continue;
-            PortPtr_t newPort = make_shared<CPort>();
-            newPort->setParent(this);
-            newPort->initFromPropertyTree(port.second.get<string>("<xmlattr>.name"), _pt);
-            addPort(newPort);
+            TopoPropertyPtr_t newProperty = make_shared<CTopoProperty>();
+            newProperty->setParent(this);
+            newProperty->initFromPropertyTree(property.second.get<string>("<xmlattr>.name"), _pt);
+            addProperty(newProperty);
         }
     }
     catch (exception& error) // ptree_error, logic_error
@@ -118,10 +118,10 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 string CTask::toString() const
 {
     stringstream ss;
-    ss << "Task: m_name=" << getName() << " m_exec=" << m_exec << " m_env=" << m_env << " m_ports:\n";
-    for (const auto& port : m_ports)
+    ss << "Task: m_name=" << getName() << " m_exec=" << m_exec << " m_env=" << m_env << " m_properties:\n";
+    for (const auto& property : m_properties)
     {
-        ss << " - " << port->toString() << endl;
+        ss << " - " << property->toString() << endl;
     }
     return ss.str();
 }

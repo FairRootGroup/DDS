@@ -15,21 +15,6 @@
 </xs:simpleType>
 
 
-<xs:simpleType name="portNumberType">
-  <xs:restriction base="xs:unsignedShort">
-    <xs:minInclusive value="10000"/>
-    <xs:maxInclusive value="60000"/>
-  </xs:restriction>
-</xs:simpleType>
-
-
-<xs:simpleType name="portTypeType">
-	<xs:restriction base="xs:string">
-    	<xs:pattern value="server|client"/>
-	</xs:restriction>
-</xs:simpleType>
-
-
 <xs:complexType name="namedType">
 	<xs:attribute name="name" type="stringNameType" use="required"/>
 </xs:complexType>
@@ -48,17 +33,15 @@
 </xs:complexType>
 
 
-<xs:complexType name="portType">
+<xs:complexType name="propertyType">
   <xs:attribute name="name" type="stringType" use="required"/>
-  <xs:attribute name="min" type="portNumberType" use="required"/>
-  <xs:attribute name="max" type="portNumberType" use="required"/>
-  <xs:attribute name="type" type="portTypeType" use="required"/>
+  <xs:attribute name="default" type="stringType" use="optional"/>
 </xs:complexType>
 
 
 <xs:complexType name="taskType">
   <xs:sequence>
-  	<xs:element name="port" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+  	<xs:element name="property" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>
   <xs:attribute name="exec" type="stringType" use="required"/>
@@ -97,7 +80,7 @@
 
 <xs:complexType name="topologyType">
   <xs:sequence>
-    <xs:element name="port" type="portType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="property" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="task" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
     <xs:element name="collection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>

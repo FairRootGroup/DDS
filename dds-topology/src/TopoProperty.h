@@ -21,12 +21,31 @@ namespace dds
     /// \brief Data class to hold topology property.
     class CTopoProperty : public CTopoBase
     {
-      protected:
+      public:
         /// \brief Constructor.
         CTopoProperty();
 
         /// \brief Destructor.
         virtual ~CTopoProperty();
+
+        /// \brief Inherited from TopoBase
+        void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+
+        const std::string& getValue() const;
+
+        void setValue(const std::string& _value);
+
+        /// \brief Returns string representation of an object.
+        /// \return String representation of an object.
+        virtual std::string toString() const;
+
+        /// \brief Operator << for convenient output to ostream.
+        /// \return Insertion stream in order to be able to call a succession of
+        /// insertion operations.
+        friend std::ostream& operator<<(std::ostream& _strm, const CTopoProperty& _property);
+
+      private:
+        std::string m_value; ///> Property value
     };
 
     typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;

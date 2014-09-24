@@ -35,7 +35,6 @@ set( SOURCE_FILES
 	./src/Task.cpp
 	./src/TaskCollection.cpp
 	./src/TaskGroup.cpp
-	./src/Port.cpp
 	./src/TopoElement.cpp
 	./src/TaskContainer.cpp
 	./src/TopologyParserXML.cpp
@@ -54,7 +53,6 @@ set( HEADER_FILES
 	./src/Task.h
 	./src/TaskCollection.h
 	./src/TaskGroup.h
-	./src/Port.h
 	./src/TopoElement.h
 	./src/TaskContainer.h
 	./src/TopologyParserXML.h

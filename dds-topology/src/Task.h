@@ -8,7 +8,7 @@
 
 // DDS
 #include "TopoElement.h"
-#include "Port.h"
+#include "TopoProperty.h"
 // STD
 #include <string>
 #include <memory>
@@ -27,15 +27,15 @@ namespace dds
         /// Accessors
         const std::string& getExec() const;
         const std::string& getEnv() const;
-        size_t getNofPorts() const;
-        PortPtr_t getPort(size_t _i) const;
-        const PortPtrVector_t& getPorts() const;
+        size_t getNofProperties() const;
+        TopoPropertyPtr_t getProperty(size_t _i) const;
+        const TopoPropertyPtrVector_t& getProperties() const;
 
         /// Modifiers
         void setExec(const std::string& _exec);
         void setEnv(const std::string& _env);
-        void setPorts(const PortPtrVector_t& _ports);
-        void addPort(PortPtr_t& _port);
+        void setProperties(const TopoPropertyPtrVector_t& _properties);
+        void addProperty(TopoPropertyPtr_t& _property);
 
         /// \brief If parent is a group than return N, else return 1.
         size_t getTotalCounter() const;
@@ -59,9 +59,9 @@ namespace dds
         friend std::ostream& operator<<(std::ostream& _strm, const CTask& _task);
 
       private:
-        std::string m_exec;      ///> Path to executable
-        std::string m_env;       ///> Path to environmtnt file
-        PortPtrVector_t m_ports; ///> Ports
+        std::string m_exec;                   ///> Path to executable
+        std::string m_env;                    ///> Path to environmtnt file
+        TopoPropertyPtrVector_t m_properties; ///> Properties
     };
 
     typedef std::shared_ptr<CTask> TaskPtr_t;

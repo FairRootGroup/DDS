@@ -15,13 +15,11 @@ set( SOURCE_FILES
 	${dds-topology_SOURCE_DIR}/src/TopoBase.cpp
 	${dds-topology_SOURCE_DIR}/src/Topology.cpp
 	${dds-topology_SOURCE_DIR}/src/Task.cpp
-	${dds-topology_SOURCE_DIR}/src/Port.cpp
 	${dds-topology_SOURCE_DIR}/src/TaskCollection.cpp
 	${dds-topology_SOURCE_DIR}/src/TaskGroup.cpp
 	${dds-topology_SOURCE_DIR}/src/TopoElement.cpp
 	${dds-topology_SOURCE_DIR}/src/TaskContainer.cpp
 	${dds-topology_SOURCE_DIR}/src/TopologyParserXML.cpp
-	${dds-topology_SOURCE_DIR}/src/Port.cpp
 	${dds-topology_SOURCE_DIR}/src/TopoUtils.cpp
 	${dds-topology_SOURCE_DIR}/src/TopoFactory.cpp
 )

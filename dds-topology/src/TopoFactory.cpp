@@ -31,17 +31,6 @@ namespace dds
         }
     }
 
-    TopoPropertyPtr_t CreateTopoProperty(ETopoType _type)
-    {
-        switch (_type)
-        {
-            case ETopoType::PORT:
-                return dynamic_pointer_cast<CTopoProperty>(make_shared<CPort>());
-            default:
-                throw runtime_error("Topo property type does not exist.");
-        }
-    }
-
     TopoBasePtr_t CreateTopoBase(ETopoType _type)
     {
         switch (_type)
@@ -52,8 +41,8 @@ namespace dds
                 return dynamic_pointer_cast<CTopoBase>(make_shared<CTaskCollection>());
             case ETopoType::GROUP:
                 return dynamic_pointer_cast<CTopoBase>(make_shared<CTaskGroup>());
-            case ETopoType::PORT:
-                return dynamic_pointer_cast<CTopoBase>(make_shared<CPort>());
+            case ETopoType::TOPO_PROPERTY:
+                return dynamic_pointer_cast<CTopoBase>(make_shared<CTopoProperty>());
             default:
                 throw runtime_error("Topo base type does not exist.");
         }

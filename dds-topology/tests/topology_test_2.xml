@@ -1,9 +1,9 @@
 <topology name="myTopology">
 
-	<port name="port1" min="2000000" max="2200000" type="serverserver"/>
+	<property name="property1"/>
 	
   	<task name="task1" exec="app1">
-		<port name="port1"/>
+		<port name="property1"/>
 	</task>
 	
 </topology>

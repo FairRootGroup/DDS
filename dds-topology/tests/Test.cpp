@@ -83,10 +83,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element1->getNofTasks() == 1);
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
     TaskPtr_t casted1 = dynamic_pointer_cast<CTask>(element1);
-    BOOST_CHECK(casted1->getNofPorts() == 2);
-    BOOST_CHECK(casted1->getPort(0)->getPortType() == EPortType::SERVER);
-    BOOST_CHECK(casted1->getPort(1)->getPortType() == EPortType::CLIENT);
-    BOOST_CHECK(casted1->getExec() == "app1");
+    BOOST_CHECK(casted1->getNofProperties() == 2);
+    BOOST_CHECK(casted1->getProperty(0)->getValue() == "value1");
+    BOOST_CHECK(casted1->getProperty(1)->getValue() == "value2");
+    BOOST_CHECK(casted1->getExec() == "app1 -l -n");
     BOOST_CHECK(casted1->getEnv() == "env1");
 
     TopoElementPtr_t element2 = main->getElement(1);
@@ -148,8 +148,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
     BOOST_CHECK(casted6->getNofTasks() == 1);
     BOOST_CHECK(casted6->getTotalNofTasks() == 1);
-    BOOST_CHECK(casted6->getNofPorts() == 2);
-    BOOST_CHECK(casted6->getExec() == "app1");
+    BOOST_CHECK(casted6->getNofProperties() == 2);
+    BOOST_CHECK(casted6->getExec() == "app1 -l -n");
 
     // Test getElementsByType and getTotalCounter
     TopoElementPtrVector_t elements1 = main->getElementsByType(ETopoType::TASK);
@@ -273,15 +273,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_factory)
     // DDSCreateTopoBase
     BOOST_CHECK_THROW(CreateTopoBase(ETopoType::TOPO_BASE), runtime_error);
     BOOST_CHECK_THROW(CreateTopoBase(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoBase(ETopoType::TOPO_PROPERTY), runtime_error);
+    TopoBasePtr_t baseTopoProperty = CreateTopoBase(ETopoType::TOPO_PROPERTY);
+    BOOST_CHECK(baseTopoProperty != nullptr);
     TopoBasePtr_t baseTask = CreateTopoBase(ETopoType::TASK);
     BOOST_CHECK(baseTask != nullptr);
     TopoBasePtr_t baseCollection = CreateTopoBase(ETopoType::COLLECTION);
     BOOST_CHECK(baseCollection != nullptr);
     TopoBasePtr_t baseGroup = CreateTopoBase(ETopoType::GROUP);
     BOOST_CHECK(baseGroup != nullptr);
-    TopoBasePtr_t basePort = CreateTopoBase(ETopoType::PORT);
-    BOOST_CHECK(basePort != nullptr);
 
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(CreateTopoElement(ETopoType::TOPO_BASE), runtime_error);
@@ -293,17 +292,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_factory)
     BOOST_CHECK(elementCollection != nullptr);
     TopoElementPtr_t elementGroup = CreateTopoElement(ETopoType::GROUP);
     BOOST_CHECK(elementGroup != nullptr);
-    BOOST_CHECK_THROW(CreateTopoElement(ETopoType::PORT), runtime_error);
-
-    // DDSCreateTopoProperty
-    BOOST_CHECK_THROW(CreateTopoProperty(ETopoType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoProperty(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoProperty(ETopoType::TOPO_PROPERTY), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoProperty(ETopoType::TASK), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoProperty(ETopoType::COLLECTION), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoProperty(ETopoType::GROUP), runtime_error);
-    TopoBasePtr_t propertyPort = CreateTopoProperty(ETopoType::PORT);
-    BOOST_CHECK(propertyPort != nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
@@ -311,26 +299,19 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     // DDSTopoTypeToTag
     BOOST_CHECK_THROW(TopoTypeToTag(ETopoType::TOPO_BASE), runtime_error);
     BOOST_CHECK_THROW(TopoTypeToTag(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK_THROW(TopoTypeToTag(ETopoType::TOPO_PROPERTY), runtime_error);
     BOOST_CHECK(TopoTypeToTag(ETopoType::TASK) == "task");
     BOOST_CHECK(TopoTypeToTag(ETopoType::COLLECTION) == "collection");
     BOOST_CHECK(TopoTypeToTag(ETopoType::GROUP) == "group");
-    BOOST_CHECK(TopoTypeToTag(ETopoType::PORT) == "port");
+    BOOST_CHECK(TopoTypeToTag(ETopoType::TOPO_PROPERTY) == "property");
 
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(TagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(TagToTopoType("topobase"), runtime_error);
     BOOST_CHECK_THROW(TagToTopoType("topoelement"), runtime_error);
-    BOOST_CHECK_THROW(TagToTopoType("topoproperty"), runtime_error);
     BOOST_CHECK(TagToTopoType("task") == ETopoType::TASK);
     BOOST_CHECK(TagToTopoType("collection") == ETopoType::COLLECTION);
     BOOST_CHECK(TagToTopoType("group") == ETopoType::GROUP);
-    BOOST_CHECK(TagToTopoType("port") == ETopoType::PORT);
-
-    // DDSStringToPortType
-    BOOST_CHECK_THROW(StringToPortType("blablabla"), runtime_error);
-    BOOST_CHECK(StringToPortType("server") == EPortType::SERVER);
-    BOOST_CHECK(StringToPortType("client") == EPortType::CLIENT);
+    BOOST_CHECK(TagToTopoType("property") == ETopoType::TOPO_PROPERTY);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
@@ -347,8 +328,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
     const ptree& pt3 = CTopoBase::findElement(ETopoType::GROUP, "group1", pt.get_child("topology.main"));
     BOOST_CHECK(pt3.get<string>("<xmlattr>.name") == "group1");
 
-    const ptree& pt4 = CTopoBase::findElement(ETopoType::PORT, "port1", pt.get_child("topology"));
-    BOOST_CHECK(pt4.get<string>("<xmlattr>.name") == "port1");
+    const ptree& pt4 = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "property1", pt.get_child("topology"));
+    BOOST_CHECK(pt4.get<string>("<xmlattr>.name") == "property1");
 
     // Wrong path to property tree
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task1", pt), logic_error);
@@ -358,14 +339,15 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "NO", pt.get_child("topology")), logic_error);
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::COLLECTION, "NO", pt.get_child("topology")), logic_error);
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::GROUP, "NO", pt.get_child("topology.main")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::PORT, "NO", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "NO", pt.get_child("topology")), logic_error);
 
     // Dublicated names
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task2", pt.get_child("topology")), logic_error);
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::COLLECTION, "collection2", pt.get_child("topology")),
                       logic_error);
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::GROUP, "group2", pt.get_child("topology.main")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::PORT, "port3", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "property3", pt.get_child("topology")),
+                      logic_error);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
