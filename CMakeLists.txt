@@ -49,6 +49,7 @@ option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
 option(BUILD_dds-getlog "Build dds-getlog" ON)
 option(BUILD_dds-test "Build dds-test" ON)
+option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
 #
 # Documentation output directory
 #
@@ -236,6 +237,12 @@ if(BUILD_dds-test)
     message(STATUS "Build dds-test - YES")
     add_subdirectory ( dds-test )
 endif(BUILD_dds-test)
+
+# dds-key-value-lib
+if(BUILD_dds-key-value-lib)
+    message(STATUS "Build dds-key-value library - YES")
+    add_subdirectory ( dds-key-value-lib )
+endif(BUILD_dds-key-value-lib)
 
 #
 # Install
