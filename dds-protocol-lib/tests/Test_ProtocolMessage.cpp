@@ -401,14 +401,14 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     SAssignUserTaskCmd src;
     src.m_sExeFile = "test.exe -l -n --test";
     // expected attachment size
-    const unsigned int cmdSize = src.m_sExeFile.size();
+    const unsigned int cmdSize = src.m_sExeFile.size() + 1;
     MiscCommon::BYTEVector_t data;
     src.convertToData(&data);
     CProtocolMessage msg_src;
     msg_src.encode(cmdASSIGN_USER_TASK, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdASSIGN_USER_TASK);
-
+    
     BOOST_CHECK(src.size() == cmdSize);
 
     // "Send" message
