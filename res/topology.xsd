@@ -7,7 +7,7 @@
 </xs:simpleType>
 
 
-<xs:simpleType name="stringNameType">
+<xs:simpleType name="stringIdType">
 	<xs:restriction base="xs:string">
 		<xs:maxLength value="128"/>
     	<xs:pattern value="([a-zA-Z0-9])+"/>
@@ -15,8 +15,8 @@
 </xs:simpleType>
 
 
-<xs:complexType name="namedType">
-	<xs:attribute name="name" type="stringNameType" use="required"/>
+<xs:complexType name="idType">
+	<xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 
@@ -28,22 +28,22 @@
 
 
 <xs:complexType name="mainGroupType">
-	<xs:attribute name="name" type="stringNameType" use="required"/>
+	<xs:attribute name="id" type="stringIdType" use="required"/>
 	<xs:attribute name="n" type="sizeType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="propertyType">
-  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringType" use="required"/>
   <xs:attribute name="default" type="stringType" use="optional"/>
 </xs:complexType>
 
 
 <xs:complexType name="taskType">
   <xs:sequence>
-  	<xs:element name="property" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+  	<xs:element name="property" type="idType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringType" use="required"/>
   <xs:attribute name="exec" type="stringType" use="required"/>
   <xs:attribute name="env" type="stringType" use="optional"/>
 </xs:complexType>
@@ -51,38 +51,38 @@
 
 <xs:complexType name="collectionType">
   <xs:sequence>
-    <xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="1"/>
+    <xs:element name="task" type="idType" maxOccurs="unbounded" minOccurs="1"/>
   </xs:sequence>
-  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="groupType">
   <xs:sequence>
-    <xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
-    <xs:element name="collection" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="task" type="idType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="collection" type="idType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringType" use="required"/>
   <xs:attribute name="n" type="sizeType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="mainType">
   <xs:sequence>
-	<xs:element name="task" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
-    <xs:element name="collection" type="namedType" maxOccurs="unbounded" minOccurs="0"/>
-	<xs:element name="group" type="groupType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="task" type="idType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="collection" type="idType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="declgroup" type="groupType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringType" use="required"/>
   <xs:attribute name="n" type="sizeType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="topologyType">
   <xs:sequence>
-    <xs:element name="property" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
-    <xs:element name="task" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
-    <xs:element name="collection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="declproperty" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="decltask" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
+    <xs:element name="declcollection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
   <xs:attribute name="name" type="stringType" use="required"/>

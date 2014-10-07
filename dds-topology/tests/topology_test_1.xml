@@ -1,57 +1,57 @@
 <topology name="myTopology">
 		
-	<property name="property1" default="value1"/>
-	<property name="property2" />
-	<property name="property3" />
-	<property name="property4" default="value2"/>
+	<declproperty id="property1" default="value1"/>
+	<declproperty id="property2" />
+	<declproperty id="property3" />
+	<declproperty id="property4" default="value2"/>
 	
-  	<task name="task1" exec="app1 -l -n" env="env1">
-		<property name="property1"/>
-		<property name="property4"/>
-	</task>
-	<task name="task2" exec="app2">
-		<property name="property1"/>
-		<property name="property2"/>
-	</task>
-	<task name="task3" exec="app3">
-		<property name="property2"/>
-		<property name="property3"/>
-	</task>
-	<task name="task4" exec="app4">
-		<property name="property3"/>
-		<property name="property4"/>
-	</task>
-	<task name="task5" exec="app5">
-		<property name="property1"/>
-	</task>
+  	<decltask id="task1" exec="app1 -l -n" env="env1">
+		<property id="property1"/>
+		<property id="property4"/>
+	</decltask>
+	<decltask id="task2" exec="app2">
+		<property id="property1"/>
+		<property id="property2"/>
+	</decltask>
+	<decltask id="task3" exec="app3">
+		<property id="property2"/>
+		<property id="property3"/>
+	</decltask>
+	<decltask id="task4" exec="app4">
+		<property id="property3"/>
+		<property id="property4"/>
+	</decltask>
+	<decltask id="task5" exec="app5">
+		<property id="property1"/>
+	</decltask>
 
-  	<collection name="collection1">
-   		<task name="task1"/>
-		<task name="task2"/>
-		<task name="task2"/>
-		<task name="task3"/>
-  	</collection>
+  	<declcollection id="collection1">
+   		<task id="task1"/>
+		<task id="task2"/>
+		<task id="task2"/>
+		<task id="task3"/>
+  	</declcollection>
 	
-  	<collection name="collection2">
-   		<task name="task4"/>
-		<task name="task4"/>
-		<task name="task5"/>
-  	</collection>
+  	<declcollection id="collection2">
+   		<task id="task4"/>
+		<task id="task4"/>
+		<task id="task5"/>
+  	</declcollection>
 	
-	<main name="main" n="1">
-	    <task name="task1"/>
-	    <collection name="collection1"/>
-		<group name="group1" n="10">
-			<task name="task1"/>
-			<collection name="collection1"/>
-			<collection name="collection2"/>
-		</group>
-		<group name="group2" n="15">
-			<task name="task3"/>
-			<task name="task4"/>
-			<collection name="collection1"/>
-			<collection name="collection2"/>
-		</group>
+	<main id="main" n="1">
+	    <task id="task1"/>
+	    <collection id="collection1"/>
+		<declgroup id="group1" n="10">
+			<task id="task1"/>
+			<collection id="collection1"/>
+			<collection id="collection2"/>
+		</declgroup>
+		<declgroup id="group2" n="15">
+			<task id="task3"/>
+			<task id="task4"/>
+			<collection id="collection1"/>
+			<collection id="collection2"/>
+		</declgroup>
 	</main>
 	
 </topology>

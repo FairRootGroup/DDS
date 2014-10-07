@@ -44,15 +44,15 @@ void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt
     {
         const ptree& collectionPT = CTopoElement::findElement(ETopoType::COLLECTION, _name, _pt.get_child("topology"));
 
-        setName(collectionPT.get<string>("<xmlattr>.name"));
+        setId(collectionPT.get<string>("<xmlattr>.id"));
 
         for (const auto& element : collectionPT)
         {
             if (element.first == "<xmlattr>")
                 continue;
-            TopoElementPtr_t newElement = CreateTopoElement(TagToTopoType(element.first));
+            TopoElementPtr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
             newElement->setParent(this);
-            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
+            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.id"), _pt);
             addElement(newElement);
         }
     }

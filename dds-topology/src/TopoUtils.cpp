@@ -12,7 +12,7 @@ using namespace std;
 
 namespace dds
 {
-    string TopoTypeToTag(ETopoType _type)
+    string TopoTypeToUseTag(ETopoType _type)
     {
         switch (_type)
         {
@@ -21,7 +21,7 @@ namespace dds
             case ETopoType::COLLECTION:
                 return "collection";
             case ETopoType::GROUP:
-                return "group";
+                return "declgroup";
             case ETopoType::TOPO_PROPERTY:
                 return "property";
             default:
@@ -29,15 +29,46 @@ namespace dds
         }
     }
 
-    ETopoType TagToTopoType(const string& _name)
+    ETopoType UseTagToTopoType(const string& _name)
     {
         if (_name == "task")
             return ETopoType::TASK;
         else if (_name == "collection")
             return ETopoType::COLLECTION;
-        else if (_name == "group")
+        else if (_name == "declgroup")
             return ETopoType::GROUP;
         else if (_name == "property")
+            return ETopoType::TOPO_PROPERTY;
+        else
+            throw runtime_error("Topology element with name " + _name + " does not exist.");
+    }
+    
+    string TopoTypeToDeclTag(ETopoType _type)
+    {
+        switch (_type)
+        {
+            case ETopoType::TASK:
+                return "decltask";
+            case ETopoType::COLLECTION:
+                return "declcollection";
+            case ETopoType::GROUP:
+                return "declgroup";
+            case ETopoType::TOPO_PROPERTY:
+                return "declproperty";
+            default:
+                throw runtime_error("Topology element not found.");
+        }
+    }
+    
+    ETopoType DeclTagToTopoType(const string& _name)
+    {
+        if (_name == "decltask")
+            return ETopoType::TASK;
+        else if (_name == "declcollection")
+            return ETopoType::COLLECTION;
+        else if (_name == "declgroup")
+            return ETopoType::GROUP;
+        else if (_name == "declproperty")
             return ETopoType::TOPO_PROPERTY;
         else
             throw runtime_error("Topology element with name " + _name + " does not exist.");

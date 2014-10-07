@@ -48,16 +48,16 @@ void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
         const ptree& mainPT = _pt.get_child("topology.main");
         const ptree& groupPT = (_name == "main") ? mainPT : CTopoElement::findElement(ETopoType::GROUP, _name, mainPT);
 
-        setName(groupPT.get<string>("<xmlattr>.name"));
+        setId(groupPT.get<string>("<xmlattr>.id"));
         setN(groupPT.get<size_t>("<xmlattr>.n"));
 
         for (const auto& element : groupPT)
         {
             if (element.first == "<xmlattr>")
                 continue;
-            TopoElementPtr_t newElement = CreateTopoElement(TagToTopoType(element.first));
+            TopoElementPtr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
             newElement->setParent(this);
-            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.name"), _pt);
+            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.id"), _pt);
             addElement(newElement);
         }
     }
@@ -122,7 +122,7 @@ IndexVector_t CTaskGroup::getIndicesByType(ETopoType _type) const
 string CTaskGroup::toString() const
 {
     stringstream ss;
-    ss << "TaskGroup: m_name=" << getName() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
+    ss << "TaskGroup: m_id=" << getId() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
     const auto& elements = getElements();
     for (const auto& element : elements)
     {

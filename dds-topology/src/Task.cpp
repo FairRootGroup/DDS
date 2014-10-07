@@ -96,7 +96,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
     {
         const ptree& taskPT = CTopoElement::findElement(ETopoType::TASK, _name, _pt.get_child("topology"));
 
-        setName(taskPT.get<string>("<xmlattr>.name"));
+        setId(taskPT.get<string>("<xmlattr>.id"));
         setExec(taskPT.get<string>("<xmlattr>.exec"));
         setEnv(taskPT.get<string>("<xmlattr>.env", ""));
         for (const auto& property : taskPT)
@@ -105,7 +105,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
                 continue;
             TopoPropertyPtr_t newProperty = make_shared<CTopoProperty>();
             newProperty->setParent(this);
-            newProperty->initFromPropertyTree(property.second.get<string>("<xmlattr>.name"), _pt);
+            newProperty->initFromPropertyTree(property.second.get<string>("<xmlattr>.id"), _pt);
             addProperty(newProperty);
         }
     }
@@ -118,7 +118,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 string CTask::toString() const
 {
     stringstream ss;
-    ss << "Task: m_name=" << getName() << " m_exec=" << m_exec << " m_env=" << m_env << " m_properties:\n";
+    ss << "Task: m_id=" << getId() << " m_exec=" << m_exec << " m_env=" << m_env << " m_properties:\n";
     for (const auto& property : m_properties)
     {
         ss << " - " << property->toString() << endl;

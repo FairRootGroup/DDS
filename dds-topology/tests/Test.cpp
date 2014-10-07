@@ -69,14 +69,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(main->getNofTasks() == 22);
     BOOST_CHECK(main->getTotalNofTasks() == 220);
     BOOST_CHECK(main->getN() == 1);
-    BOOST_CHECK(main->getName() == "main");
+    BOOST_CHECK(main->getId() == "main");
     BOOST_CHECK(main->getNofElements() == 4);
     BOOST_CHECK(main->getParent() == nullptr);
     BOOST_CHECK(main->getPath() == "main");
     BOOST_CHECK_THROW(main->getElement(4), std::out_of_range);
 
     TopoElementPtr_t element1 = main->getElement(0);
-    BOOST_CHECK(element1->getName() == "task1");
+    BOOST_CHECK(element1->getId() == "task1");
     BOOST_CHECK(element1->getType() == ETopoType::TASK);
     BOOST_CHECK(element1->getParent() == main.get());
     BOOST_CHECK(element1->getPath() == "main/task1");
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->getEnv() == "env1");
 
     TopoElementPtr_t element2 = main->getElement(1);
-    BOOST_CHECK(element2->getName() == "collection1");
+    BOOST_CHECK(element2->getId() == "collection1");
     BOOST_CHECK(element2->getType() == ETopoType::COLLECTION);
     BOOST_CHECK(element2->getParent() == main.get());
     BOOST_CHECK(element2->getPath() == "main/collection1");
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     }
 
     TopoElementPtr_t element3 = main->getElement(2);
-    BOOST_CHECK(element3->getName() == "group1");
+    BOOST_CHECK(element3->getId() == "group1");
     BOOST_CHECK(element3->getType() == ETopoType::GROUP);
     BOOST_CHECK(element3->getParent() == main.get());
     BOOST_CHECK(element3->getPath() == "main/group1");
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted3->getN() == 10);
 
     TopoElementPtr_t element4 = main->getElement(3);
-    BOOST_CHECK(element4->getName() == "group2");
+    BOOST_CHECK(element4->getId() == "group2");
     BOOST_CHECK(element4->getType() == ETopoType::GROUP);
     BOOST_CHECK(element4->getParent() == main.get());
     BOOST_CHECK(element4->getPath() == "main/group2");
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted4->getN() == 15);
 
     TaskCollectionPtr_t casted5 = dynamic_pointer_cast<CTaskCollection>(casted4->getElement(2));
-    BOOST_CHECK(casted5->getName() == "collection1");
+    BOOST_CHECK(casted5->getId() == "collection1");
     BOOST_CHECK(casted5->getType() == ETopoType::COLLECTION);
     BOOST_CHECK(casted5->getParent() == casted4.get());
     BOOST_CHECK(casted5->getPath() == "main/group2/collection1");
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted5->getTotalCounter() == 15);
 
     TaskPtr_t casted6 = dynamic_pointer_cast<CTask>(casted5->getElement(0));
-    BOOST_CHECK(casted6->getName() == "task1");
+    BOOST_CHECK(casted6->getId() == "task1");
     BOOST_CHECK(casted6->getType() == ETopoType::TASK);
     BOOST_CHECK(casted6->getParent() == casted5.get());
     BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
@@ -159,19 +159,19 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
         BOOST_CHECK(v->getType() == ETopoType::TASK);
     }
     TaskPtr_t castedTask = dynamic_pointer_cast<CTask>(elements1[0]);
-    BOOST_CHECK(castedTask->getName() == "task1");
+    BOOST_CHECK(castedTask->getId() == "task1");
     BOOST_CHECK(castedTask->getPath() == "main/task1");
     BOOST_CHECK(castedTask->getTotalCounter() == 1);
     castedTask = dynamic_pointer_cast<CTask>(elements1[1]);
-    BOOST_CHECK(castedTask->getName() == "task1");
+    BOOST_CHECK(castedTask->getId() == "task1");
     BOOST_CHECK(castedTask->getPath() == "main/group1/task1");
     BOOST_CHECK(castedTask->getTotalCounter() == 10);
     castedTask = dynamic_pointer_cast<CTask>(elements1[2]);
-    BOOST_CHECK(castedTask->getName() == "task3");
+    BOOST_CHECK(castedTask->getId() == "task3");
     BOOST_CHECK(castedTask->getPath() == "main/group2/task3");
     BOOST_CHECK(castedTask->getTotalCounter() == 15);
     castedTask = dynamic_pointer_cast<CTask>(elements1[3]);
-    BOOST_CHECK(castedTask->getName() == "task4");
+    BOOST_CHECK(castedTask->getId() == "task4");
     BOOST_CHECK(castedTask->getPath() == "main/group2/task4");
     BOOST_CHECK(castedTask->getTotalCounter() == 15);
 
@@ -182,23 +182,23 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
         BOOST_CHECK(v->getType() == ETopoType::COLLECTION);
     }
     TaskCollectionPtr_t castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[0]);
-    BOOST_CHECK(castedCollection->getName() == "collection1");
+    BOOST_CHECK(castedCollection->getId() == "collection1");
     BOOST_CHECK(castedCollection->getPath() == "main/collection1");
     BOOST_CHECK(castedCollection->getTotalCounter() == 1);
     castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[1]);
-    BOOST_CHECK(castedCollection->getName() == "collection1");
+    BOOST_CHECK(castedCollection->getId() == "collection1");
     BOOST_CHECK(castedCollection->getPath() == "main/group1/collection1");
     BOOST_CHECK(castedCollection->getTotalCounter() == 10);
     castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[2]);
-    BOOST_CHECK(castedCollection->getName() == "collection2");
+    BOOST_CHECK(castedCollection->getId() == "collection2");
     BOOST_CHECK(castedCollection->getPath() == "main/group1/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 10);
     castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[3]);
-    BOOST_CHECK(castedCollection->getName() == "collection1");
+    BOOST_CHECK(castedCollection->getId() == "collection1");
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection1");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
     castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[4]);
-    BOOST_CHECK(castedCollection->getName() == "collection2");
+    BOOST_CHECK(castedCollection->getId() == "collection2");
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
 
@@ -296,22 +296,39 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_factory)
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
 {
-    // DDSTopoTypeToTag
-    BOOST_CHECK_THROW(TopoTypeToTag(ETopoType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(TopoTypeToTag(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK(TopoTypeToTag(ETopoType::TASK) == "task");
-    BOOST_CHECK(TopoTypeToTag(ETopoType::COLLECTION) == "collection");
-    BOOST_CHECK(TopoTypeToTag(ETopoType::GROUP) == "group");
-    BOOST_CHECK(TopoTypeToTag(ETopoType::TOPO_PROPERTY) == "property");
+    // TopoTypeToUseTag
+    BOOST_CHECK_THROW(TopoTypeToUseTag(ETopoType::TOPO_BASE), runtime_error);
+    BOOST_CHECK_THROW(TopoTypeToUseTag(ETopoType::TOPO_ELEMENT), runtime_error);
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::TASK) == "task");
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::COLLECTION) == "collection");
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::GROUP) == "declgroup");
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::TOPO_PROPERTY) == "property");
 
+    // UseTagToTopoType
+    BOOST_CHECK_THROW(UseTagToTopoType(""), runtime_error);
+    BOOST_CHECK_THROW(UseTagToTopoType("topobase"), runtime_error);
+    BOOST_CHECK_THROW(UseTagToTopoType("topoelement"), runtime_error);
+    BOOST_CHECK(UseTagToTopoType("task") == ETopoType::TASK);
+    BOOST_CHECK(UseTagToTopoType("collection") == ETopoType::COLLECTION);
+    BOOST_CHECK(UseTagToTopoType("declgroup") == ETopoType::GROUP);
+    BOOST_CHECK(UseTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
+    
+    // TopoTypeToDeclTag
+    BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_BASE), runtime_error);
+    BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_ELEMENT), runtime_error);
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TASK) == "decltask");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::COLLECTION) == "declcollection");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "declgroup");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "declproperty");
+    
     // DDSCreateTopoElement
-    BOOST_CHECK_THROW(TagToTopoType(""), runtime_error);
-    BOOST_CHECK_THROW(TagToTopoType("topobase"), runtime_error);
-    BOOST_CHECK_THROW(TagToTopoType("topoelement"), runtime_error);
-    BOOST_CHECK(TagToTopoType("task") == ETopoType::TASK);
-    BOOST_CHECK(TagToTopoType("collection") == ETopoType::COLLECTION);
-    BOOST_CHECK(TagToTopoType("group") == ETopoType::GROUP);
-    BOOST_CHECK(TagToTopoType("property") == ETopoType::TOPO_PROPERTY);
+    BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
+    BOOST_CHECK_THROW(DeclTagToTopoType("topobase"), runtime_error);
+    BOOST_CHECK_THROW(DeclTagToTopoType("topoelement"), runtime_error);
+    BOOST_CHECK(DeclTagToTopoType("decltask") == ETopoType::TASK);
+    BOOST_CHECK(DeclTagToTopoType("declcollection") == ETopoType::COLLECTION);
+    BOOST_CHECK(DeclTagToTopoType("declgroup") == ETopoType::GROUP);
+    BOOST_CHECK(DeclTagToTopoType("declproperty") == ETopoType::TOPO_PROPERTY);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
@@ -320,16 +337,16 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
     read_xml("topology_test_6.xml", pt);
 
     const ptree& pt1 = CTopoBase::findElement(ETopoType::TASK, "task1", pt.get_child("topology"));
-    BOOST_CHECK(pt1.get<string>("<xmlattr>.name") == "task1");
+    BOOST_CHECK(pt1.get<string>("<xmlattr>.id") == "task1");
 
     const ptree& pt2 = CTopoBase::findElement(ETopoType::COLLECTION, "collection1", pt.get_child("topology"));
-    BOOST_CHECK(pt2.get<string>("<xmlattr>.name") == "collection1");
+    BOOST_CHECK(pt2.get<string>("<xmlattr>.id") == "collection1");
 
     const ptree& pt3 = CTopoBase::findElement(ETopoType::GROUP, "group1", pt.get_child("topology.main"));
-    BOOST_CHECK(pt3.get<string>("<xmlattr>.name") == "group1");
+    BOOST_CHECK(pt3.get<string>("<xmlattr>.id") == "group1");
 
     const ptree& pt4 = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "property1", pt.get_child("topology"));
-    BOOST_CHECK(pt4.get<string>("<xmlattr>.name") == "property1");
+    BOOST_CHECK(pt4.get<string>("<xmlattr>.id") == "property1");
 
     // Wrong path to property tree
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task1", pt), logic_error);
