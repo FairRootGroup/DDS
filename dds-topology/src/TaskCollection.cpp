@@ -52,7 +52,7 @@ void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt
                 continue;
             TopoElementPtr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
             newElement->setParent(this);
-            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.id"), _pt);
+            newElement->initFromPropertyTree(element.second.data(), _pt);
             addElement(newElement);
         }
     }

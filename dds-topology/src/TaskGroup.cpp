@@ -16,7 +16,7 @@ using namespace dds;
 
 CTaskGroup::CTaskGroup()
     : CTaskContainer()
-    , m_n(0)
+    , m_n(1)
 {
     setType(ETopoType::GROUP);
 }
@@ -49,7 +49,7 @@ void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
         const ptree& groupPT = (_name == "main") ? mainPT : CTopoElement::findElement(ETopoType::GROUP, _name, mainPT);
 
         setId(groupPT.get<string>("<xmlattr>.id"));
-        setN(groupPT.get<size_t>("<xmlattr>.n"));
+        setN(groupPT.get<size_t>("<xmlattr>.n", 1));
 
         for (const auto& element : groupPT)
         {
@@ -57,7 +57,9 @@ void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
                 continue;
             TopoElementPtr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
             newElement->setParent(this);
-            newElement->initFromPropertyTree(element.second.get<string>("<xmlattr>.id"), _pt);
+            boost::optional<const ptree&> child = element.second.get_child_optional("<xmlattr>");
+            string name = (child) ? child.get().get<string>("id") : element.second.data();
+            newElement->initFromPropertyTree(name, _pt);
             addElement(newElement);
         }
     }

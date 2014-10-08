@@ -97,16 +97,19 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         const ptree& taskPT = CTopoElement::findElement(ETopoType::TASK, _name, _pt.get_child("topology"));
 
         setId(taskPT.get<string>("<xmlattr>.id"));
-        setExec(taskPT.get<string>("<xmlattr>.exec"));
-        setEnv(taskPT.get<string>("<xmlattr>.env", ""));
-        for (const auto& property : taskPT)
+        setExec(taskPT.get<string>("exe"));
+        setEnv(taskPT.get<string>("env", ""));
+
+        boost::optional<const ptree&> propertiesPT = taskPT.get_child_optional("properties");
+        if (propertiesPT)
         {
-            if (property.first == "<xmlattr>")
-                continue;
-            TopoPropertyPtr_t newProperty = make_shared<CTopoProperty>();
-            newProperty->setParent(this);
-            newProperty->initFromPropertyTree(property.second.get<string>("<xmlattr>.id"), _pt);
-            addProperty(newProperty);
+            for (const auto& property : propertiesPT.get())
+            {
+                TopoPropertyPtr_t newProperty = make_shared<CTopoProperty>();
+                newProperty->setParent(this);
+                newProperty->initFromPropertyTree(property.second.data(), _pt);
+                addProperty(newProperty);
+            }
         }
     }
     catch (exception& error) // ptree_error, logic_error

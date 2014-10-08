@@ -39,11 +39,10 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
     {
         const ptree& propertyPT = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
         setId(propertyPT.get<string>("<xmlattr>.id"));
-        setValue(propertyPT.get<string>("<xmlattr>.default", ""));
     }
     catch (exception& error) // ptree_error, runtime_error
     {
-        throw logic_error("Unable to initialize port " + _name + " error:" + error.what());
+        throw logic_error("Unable to initialize property " + _name + " error:" + error.what());
     }
 }
 

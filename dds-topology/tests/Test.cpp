@@ -83,9 +83,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element1->getNofTasks() == 1);
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
     TaskPtr_t casted1 = dynamic_pointer_cast<CTask>(element1);
-    BOOST_CHECK(casted1->getNofProperties() == 2);
-    BOOST_CHECK(casted1->getProperty(0)->getValue() == "value1");
-    BOOST_CHECK(casted1->getProperty(1)->getValue() == "value2");
+    BOOST_CHECK(casted1->getNofProperties() == 3);
+    BOOST_CHECK(casted1->getProperty(0)->getId() == "property1");
+    BOOST_CHECK(casted1->getProperty(1)->getId() == "property4");
+    BOOST_CHECK(casted1->getProperty(2)->getId() == "property1");
     BOOST_CHECK(casted1->getExec() == "app1 -l -n");
     BOOST_CHECK(casted1->getEnv() == "env1");
 
@@ -148,7 +149,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
     BOOST_CHECK(casted6->getNofTasks() == 1);
     BOOST_CHECK(casted6->getTotalNofTasks() == 1);
-    BOOST_CHECK(casted6->getNofProperties() == 2);
+    BOOST_CHECK(casted6->getNofProperties() == 3);
     BOOST_CHECK(casted6->getExec() == "app1 -l -n");
 
     // Test getElementsByType and getTotalCounter
@@ -301,7 +302,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK_THROW(TopoTypeToUseTag(ETopoType::TOPO_ELEMENT), runtime_error);
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::TASK) == "task");
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::COLLECTION) == "collection");
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::GROUP) == "declgroup");
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::GROUP) == "group");
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::TOPO_PROPERTY) == "property");
 
     // UseTagToTopoType
@@ -310,25 +311,25 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK_THROW(UseTagToTopoType("topoelement"), runtime_error);
     BOOST_CHECK(UseTagToTopoType("task") == ETopoType::TASK);
     BOOST_CHECK(UseTagToTopoType("collection") == ETopoType::COLLECTION);
-    BOOST_CHECK(UseTagToTopoType("declgroup") == ETopoType::GROUP);
+    BOOST_CHECK(UseTagToTopoType("group") == ETopoType::GROUP);
     BOOST_CHECK(UseTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
-    
+
     // TopoTypeToDeclTag
     BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_BASE), runtime_error);
     BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_ELEMENT), runtime_error);
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TASK) == "decltask");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::COLLECTION) == "declcollection");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "declgroup");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "declproperty");
-    
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "group");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "property");
+
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topobase"), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topoelement"), runtime_error);
     BOOST_CHECK(DeclTagToTopoType("decltask") == ETopoType::TASK);
     BOOST_CHECK(DeclTagToTopoType("declcollection") == ETopoType::COLLECTION);
-    BOOST_CHECK(DeclTagToTopoType("declgroup") == ETopoType::GROUP);
-    BOOST_CHECK(DeclTagToTopoType("declproperty") == ETopoType::TOPO_PROPERTY);
+    BOOST_CHECK(DeclTagToTopoType("group") == ETopoType::GROUP);
+    BOOST_CHECK(DeclTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
