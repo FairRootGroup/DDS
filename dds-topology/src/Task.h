@@ -25,15 +25,19 @@ namespace dds
         virtual ~CTask();
 
         /// Accessors
-        const std::string& getExec() const;
+        const std::string& getExe() const;
         const std::string& getEnv() const;
+        bool isExeReachable() const;
+        bool isEnvReachable() const;
         size_t getNofProperties() const;
         TopoPropertyPtr_t getProperty(size_t _i) const;
         const TopoPropertyPtrVector_t& getProperties() const;
 
         /// Modifiers
-        void setExec(const std::string& _exec);
+        void setExe(const std::string& _exe);
         void setEnv(const std::string& _env);
+        void setExeReachable(bool _exeReachable);
+        void setEnvReachable(bool _envReachable);
         void setProperties(const TopoPropertyPtrVector_t& _properties);
         void addProperty(TopoPropertyPtr_t& _property);
 
@@ -59,8 +63,10 @@ namespace dds
         friend std::ostream& operator<<(std::ostream& _strm, const CTask& _task);
 
       private:
-        std::string m_exec;                   ///> Path to executable
+        std::string m_exe;                    ///> Path to executable
         std::string m_env;                    ///> Path to environmtnt file
+        bool m_exeReachable;                  ///> If executable is available on the WN
+        bool m_envReachable;                  ///> If environment script is available on the WN
         TopoPropertyPtrVector_t m_properties; ///> Properties
     };
 

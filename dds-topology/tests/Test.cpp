@@ -87,8 +87,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->getProperty(0)->getId() == "property1");
     BOOST_CHECK(casted1->getProperty(1)->getId() == "property4");
     BOOST_CHECK(casted1->getProperty(2)->getId() == "property1");
-    BOOST_CHECK(casted1->getExec() == "app1 -l -n");
+    BOOST_CHECK(casted1->getExe() == "app1 -l -n");
     BOOST_CHECK(casted1->getEnv() == "env1");
+    BOOST_CHECK(casted1->isExeReachable() == true);
+    BOOST_CHECK(casted1->isEnvReachable() == false);
 
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
@@ -150,7 +152,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted6->getNofTasks() == 1);
     BOOST_CHECK(casted6->getTotalNofTasks() == 1);
     BOOST_CHECK(casted6->getNofProperties() == 3);
-    BOOST_CHECK(casted6->getExec() == "app1 -l -n");
+    BOOST_CHECK(casted6->getExe() == "app1 -l -n");
+    BOOST_CHECK(casted6->getEnv() == "env1");
+    BOOST_CHECK(casted6->isExeReachable() == true);
+    BOOST_CHECK(casted6->isEnvReachable() == false);
 
     // Test getElementsByType and getTotalCounter
     TopoElementPtrVector_t elements1 = main->getElementsByType(ETopoType::TASK);

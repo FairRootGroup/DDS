@@ -3,7 +3,9 @@
 
 
 <xs:simpleType name="stringType">
-  <xs:restriction base="xs:string"/>
+  <xs:restriction base="xs:string">
+	  <xs:minLength value="1"/>
+  </xs:restriction>
 </xs:simpleType>
 
 
@@ -33,9 +35,19 @@
 </xs:complexType>
 
 
+<xs:complexType name="exeType">
+   <xs:simpleContent>  
+       <xs:extension base="stringType">  
+           <xs:attribute name="reachable" type="xs:boolean" use="optional"/>  
+       </xs:extension>  
+   </xs:simpleContent> 
+</xs:complexType>
+
+
 <xs:complexType name="propertyType">
   <xs:attribute name="id" type="stringType" use="required"/>
 </xs:complexType>
+
 
 <xs:complexType name="propertyArrayType">
   <xs:sequence>
@@ -46,8 +58,8 @@
 
 <xs:complexType name="taskType">
   <xs:sequence>
-	<xs:element name="exe" type="stringType" maxOccurs="1" minOccurs="1"/>
-	<xs:element name="env" type="stringType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
+	<xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
   	<xs:element name="properties" type="propertyArrayType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringType" use="required"/>

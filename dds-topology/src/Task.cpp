@@ -19,6 +19,10 @@ using namespace dds;
 
 CTask::CTask()
     : CTopoElement()
+    , m_exe()
+    , m_env()
+    , m_exeReachable(false)
+    , m_envReachable(false)
     , m_properties()
 {
     setType(ETopoType::TASK);
@@ -28,14 +32,24 @@ CTask::~CTask()
 {
 }
 
-void CTask::setExec(const string& _exec)
+void CTask::setExe(const string& _exe)
 {
-    m_exec = _exec;
+    m_exe = _exe;
 }
 
 void CTask::setEnv(const string& _env)
 {
     m_env = _env;
+}
+
+void CTask::setExeReachable(bool _exeReachable)
+{
+    m_exeReachable = _exeReachable;
+}
+
+void CTask::setEnvReachable(bool _envReachable)
+{
+    m_envReachable = _envReachable;
 }
 
 void CTask::setProperties(const TopoPropertyPtrVector_t& _properties)
@@ -58,14 +72,24 @@ size_t CTask::getTotalNofTasks() const
     return 1;
 }
 
-const string& CTask::getExec() const
+const string& CTask::getExe() const
 {
-    return m_exec;
+    return m_exe;
 }
 
 const string& CTask::getEnv() const
 {
     return m_env;
+}
+
+bool CTask::isExeReachable() const
+{
+    return m_exeReachable;
+}
+
+bool CTask::isEnvReachable() const
+{
+    return m_envReachable;
 }
 
 size_t CTask::getNofProperties() const
@@ -97,8 +121,10 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         const ptree& taskPT = CTopoElement::findElement(ETopoType::TASK, _name, _pt.get_child("topology"));
 
         setId(taskPT.get<string>("<xmlattr>.id"));
-        setExec(taskPT.get<string>("exe"));
+        setExe(taskPT.get<string>("exe"));
         setEnv(taskPT.get<string>("env", ""));
+        setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", false));
+        setEnvReachable(taskPT.get<bool>("env.<xmlattr>.reachable", false));
 
         boost::optional<const ptree&> propertiesPT = taskPT.get_child_optional("properties");
         if (propertiesPT)
@@ -121,7 +147,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 string CTask::toString() const
 {
     stringstream ss;
-    ss << "Task: m_id=" << getId() << " m_exec=" << m_exec << " m_env=" << m_env << " m_properties:\n";
+    ss << "Task: m_id=" << getId() << " m_exe=" << m_exe << " m_env=" << m_env << " m_properties:\n";
     for (const auto& property : m_properties)
     {
         ss << " - " << property->toString() << endl;

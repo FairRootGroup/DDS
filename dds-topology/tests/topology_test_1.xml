@@ -6,8 +6,8 @@
 	<property id="property4" />
 	
   	<decltask id="task1">
-		<exe>app1 -l -n</exe>
-		<env>env1</env>
+		<exe reachable="true">app1 -l -n</exe>
+		<env reachable="false">env1</env>
 		<properties>
 		   <id>property1</id>
 		   <id>property4</id>
@@ -22,7 +22,7 @@
 	    </properties>
 	</decltask>
 	<decltask id="task3">
-		<exe>app3</exe>
+		<exe reachable="true">app3</exe>
 		<properties>
 		   <id>property2</id>
 		   <id>property3</id>
@@ -36,7 +36,7 @@
 	    </properties>
 	</decltask>
 	<decltask id="task5">
-		<exe>app5</exe>
+		<exe reachable="false">app5</exe>
 		<properties>
 		   <id>property1</id>
 	    </properties>
