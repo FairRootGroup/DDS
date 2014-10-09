@@ -74,9 +74,9 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv1)
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv2)
 {
-/*    stringstream ssCmd;
-    ssCmd << "XXXXX eee";
-    BOOST_CHECK_THROW(do_execv(ssCmd.str(), 3, NULL), runtime_error);*/
+    /*    stringstream ssCmd;
+        ssCmd << "XXXXX eee";
+        BOOST_CHECK_THROW(do_execv(ssCmd.str(), 3, NULL), runtime_error);*/
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_getprocbyname)
