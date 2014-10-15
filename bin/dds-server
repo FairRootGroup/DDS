@@ -132,7 +132,7 @@ get_bins()
    for index in 0 1
    do
       FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
-      $CMD_URL ${POD_URL}/$PKG_VERSION/$FILE_NAME
+      $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
       if (( $? != 0 )); then
          echo "Error: Can't download pre-compiled binaries for WNs."
          echo "Please check availability of ${DDS_URL}/$PKG_VERSION/$FILE_NAME"
@@ -302,7 +302,7 @@ fi
 # star|stop|status|getbins
 case "$1" in
     start)
-        #get_bins	
+        get_bins	
 	start $WORK_DIR
 	RETVAL=$?
 	;;
