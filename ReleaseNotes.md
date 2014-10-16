@@ -4,7 +4,7 @@
 ### dds-topology
 Fixed: respond with an error if the given topo file is missing.   
 Modified: the topology description schema has been revised. See User's manual for more details.   
-Added: topology learned a new users' task attribute - "reachable". It defines whether executable is available on worker nodes.
+Added: topology learned a new users' task attribute - "reachable". It defines whether executable is available on worker nodes. (GH-6)
 
 ### dds-submit
 Modified: Stop server communication channel if a fatal error is received from the server.   
@@ -20,7 +20,7 @@ Improved: Split binary files uploads into multiple message chunks, instead of us
 
 ### DDS common
 Added: DDS learned how to expand given user tasks commands with arguments given as a single string. (in the Topology->Task->exec parameter).   
-Added: if a user's task is defined in the topology as not reachable, then DDS will take care of delivering it to worker nodes.   
+Added: if a user's task is defined in the topology as not reachable, then DDS will take care of delivering it to worker nodes. (GH-6)   
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   
 
 ## v0.2 (2014-09-03)
