@@ -299,7 +299,14 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                     break;
                 SAssignUserTaskCmd msg_cmd;
                 TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(*it_tasks);
-                msg_cmd.m_sExeFile = topoTask->getExe();
+
+                if (topoTask->isExeReachable())
+                    msg_cmd.m_sExeFile = topoTask->getExe();
+                else
+                {
+                    // Executable is not reachable by the agent.
+                    // Upload it and change its path to $DDS_LOCATION on the WN
+                }
                 ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
                 ++it_tasks;
             }

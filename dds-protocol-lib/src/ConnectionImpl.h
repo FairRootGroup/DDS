@@ -304,6 +304,23 @@ namespace dds
             sendYourself<_cmd>(cmd);
         }
 
+        void pushBinaryAttachmentCmd(const std::string& _srcFilePath, const std::string& _fileName, uint16_t _cmdSource)
+        {
+            MiscCommon::BYTEVector_t data;
+
+            std::ifstream f(_srcFilePath);
+            if (!f.is_open() || !f.good())
+            {
+                throw std::runtime_error("Could not open read the source file: " + _srcFilePath);
+            }
+            f.seekg(0, std::ios::end);
+            data.reserve(f.tellg());
+            f.seekg(0, std::ios::beg);
+            data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+
+            pushBinaryAttachmentCmd(data, _fileName, _cmdSource);
+        }
+
         void pushBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
                                      const std::string& _fileName,
                                      uint16_t _cmdSource)

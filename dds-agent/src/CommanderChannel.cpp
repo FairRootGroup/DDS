@@ -204,26 +204,11 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         string output;
         do_execv(ssCmd.str(), 60, &output);
 
-        MiscCommon::BYTEVector_t data;
-
-        ifstream f(archiveFileName.c_str());
-        if (!f.is_open() || !f.good())
-        {
-            string msg("Could not open archive with log files: " + archiveFileName);
-            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, MiscCommon::error, cmdGET_LOG));
-            return true;
-        }
-        f.seekg(0, ios::end);
-        data.reserve(f.tellg());
-        f.seekg(0, ios::beg);
-        data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-
         string fileName(archiveName);
         fileName += ".tar.gz";
 
-        pushBinaryAttachmentCmd(data, fileName, cmdGET_LOG);
+        pushBinaryAttachmentCmd(archiveFileName, fileName, cmdGET_LOG);
 
-        f.close();
         fs::remove(archiveFileName);
         fs::remove_all(archiveDirName);
     }
