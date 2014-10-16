@@ -165,7 +165,7 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
     catch (exception& e)
     {
         stringstream ss;
-        ss << "Can't create DDS worker package:\nSTDOUT:" << out << ";\n STDERR: " << err;
+        ss << "Can't create DDS worker package: " << e.what() << "\nSTDOUT:" << out << ";\nSTDERR: " << err;
         throw runtime_error(ss.str());
     }
     if (_cmdOutput)

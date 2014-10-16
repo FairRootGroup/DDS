@@ -311,7 +311,7 @@ namespace dds
             std::ifstream f(_srcFilePath);
             if (!f.is_open() || !f.good())
             {
-                throw std::runtime_error("Could not open read the source file: " + _srcFilePath);
+                throw std::runtime_error("Could not open the source file: " + _srcFilePath);
             }
             f.seekg(0, std::ios::end);
             data.reserve(f.tellg());

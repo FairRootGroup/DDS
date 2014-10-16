@@ -110,7 +110,13 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             pushMsg<cmdBINARY_ATTACHMENT_RECEIVED>(*_attachment);
             return true;
         }
-
+        case cmdASSIGN_USER_TASK:
+        {
+            boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
+            destFilePath /= _attachment->m_requestedFileName;
+            boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
+            LOG(info) << "Received user executable to execute: " << destFilePath.generic_string();
+        }
         default:
             LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
             return true;

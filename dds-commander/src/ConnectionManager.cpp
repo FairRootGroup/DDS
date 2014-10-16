@@ -306,6 +306,35 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 {
                     // Executable is not reachable by the agent.
                     // Upload it and change its path to $DDS_LOCATION on the WN
+                    boost::filesystem::path exePath(topoTask->getExe());
+                    const string sExeFileNameWithArgs(exePath.filename().generic_string());
+                    msg_cmd.m_sExeFile += "$DDS_LOCATION/";
+                    msg_cmd.m_sExeFile += sExeFileNameWithArgs;
+
+                    // Expand the string for the program to extract exe name and command line arguments
+                    wordexp_t result;
+                    switch (wordexp(sExeFileNameWithArgs.c_str(), &result, 0))
+                    {
+                        case 0:
+                        {
+                            const string sExeFileName(result.we_wordv[0]);
+                            boost::filesystem::path exePathWithoutArgs(exePath.parent_path());
+                            exePathWithoutArgs /= sExeFileName;
+                            wordfree(&result);
+
+                            ptr->pushBinaryAttachmentCmd(
+                                exePathWithoutArgs.generic_string(), sExeFileName, cmdASSIGN_USER_TASK);
+                        }
+                        break;
+                        case WRDE_NOSPACE:
+                            // If the error was WRDE_NOSPACE,
+                            // then perhaps part of the result was allocated.
+                            wordfree(&result);
+                            throw runtime_error("memory error occurred while processing the user's executable path: " +
+                                                topoTask->getExe());
+                        default: // Some other error.
+                            throw runtime_error("failed to process the user's executable path: " + topoTask->getExe());
+                    }
                 }
                 ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
                 ++it_tasks;

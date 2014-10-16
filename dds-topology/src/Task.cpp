@@ -21,8 +21,8 @@ CTask::CTask()
     : CTopoElement()
     , m_exe()
     , m_env()
-    , m_exeReachable(false)
-    , m_envReachable(false)
+    , m_exeReachable(true)
+    , m_envReachable(true)
     , m_properties()
 {
     setType(ETopoType::TASK);
@@ -123,8 +123,8 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         setId(taskPT.get<string>("<xmlattr>.id"));
         setExe(taskPT.get<string>("exe"));
         setEnv(taskPT.get<string>("env", ""));
-        setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", false));
-        setEnvReachable(taskPT.get<bool>("env.<xmlattr>.reachable", false));
+        setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));
+        setEnvReachable(taskPT.get<bool>("env.<xmlattr>.reachable", true));
 
         boost::optional<const ptree&> propertiesPT = taskPT.get_child_optional("properties");
         if (propertiesPT)

@@ -8,6 +8,7 @@
 // API
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <dirent.h>
@@ -452,17 +453,25 @@ namespace MiscCommon
         wordexp_t result;
         switch (wordexp(_Command.c_str(), &result, 0))
         {
-            case 0: /* Successful.  */
+            case 0: // Successful.
                 break;
             case WRDE_NOSPACE:
-                /* If the error was WRDE_NOSPACE,
-                 then perhaps part of the result was allocated.  */
+                // If the error was WRDE_NOSPACE, then perhaps part of the result was allocated.
                 wordfree(&result);
-            default: /* Some other error.  */
+            default: // Some other error.
                 return -1;
         }
         ////-----
 
+        // make sure exe has it's exe falg
+        struct stat info;
+        stat(result.we_wordv[0], &info);
+        if (!(info.st_mode & S_IXUSR))
+        {
+            int ret = chmod(result.we_wordv[0], info.st_mode | S_IXUSR);
+            if (ret != 0)
+                throw system_error("Can't set executable flag on " + std::string(result.we_wordv[0]));
+        }
         switch (child_pid = fork())
         {
             case -1:
@@ -492,8 +501,8 @@ namespace MiscCommon
                     dup2(fdpipe_err[1], STDERR_FILENO);
                     close(fdpipe_err[1]);
                 }
-                // child: execute the required command, on success does not return
 
+                // child: execute the required command, on success does not return
                 execv(result.we_wordv[0], result.we_wordv);
                 // not usually reached
                 exit(1);

@@ -198,7 +198,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
 bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment)
 {
     // Return false.
-    // Give possibility to further process this message.
+    // Give the possibility to further process this message.
     // For example, send information to UI.
     return false;
 }
@@ -206,7 +206,7 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_I
 bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment)
 {
     // Return false.
-    // Give possibility to further process this message.
+    // Give the possibility to further process this message.
     // For example, send information to UI.
     return false;
 }
