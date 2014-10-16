@@ -1,4 +1,4 @@
-<topology name="myTopology">
+<topology id="myTopology">
 
   	<task name="task1" exec="app1">
 		<property name="property1"/>

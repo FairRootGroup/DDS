@@ -1,4 +1,4 @@
-<topology name="myTopology">
+<topology id="myTopology">
 
 	<property name="property1"/>
 	

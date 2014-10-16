@@ -23,7 +23,7 @@
 
 
 <xs:simpleType name="sizeType">
-  <xs:restriction base="xs:unsignedShort">
+  <xs:restriction base="xs:unsignedInt">
     <xs:minInclusive value="1"/>
   </xs:restriction>
 </xs:simpleType>
@@ -101,7 +101,7 @@
     <xs:element name="declcollection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
-  <xs:attribute name="name" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringType" use="required"/>
 </xs:complexType>
 
 
