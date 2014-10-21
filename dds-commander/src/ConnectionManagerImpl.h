@@ -103,18 +103,32 @@ namespace dds
             {
                 // TODO: Use mutex
                 // Send shutdown signal to all client connections.
-                for (const auto& v : m_channels)
+                typename T::weakConnectionPtrVector_t channels(getChannels());
+
+                for (const auto& v : channels)
                 {
-                    v->template syncPushMsg<cmdSHUTDOWN>();
+                    if (v.expired())
+                        continue;
+                    auto ptr = v.lock();
+                    ptr->template syncPushMsg<cmdSHUTDOWN>();
                 }
 
                 m_acceptor.close();
                 m_acceptor.get_io_service().stop();
-                for (const auto& v : m_channels)
+
+                for (const auto& v : channels)
                 {
-                    v->stop();
+                    if (v.expired())
+                        continue;
+                    auto ptr = v.lock();
+                    ptr->stop();
                 }
+
                 m_channels.clear();
+            }
+            catch (std::bad_weak_ptr& e)
+            {
+                // TODO: Do we need to log something here?
             }
             catch (std::exception& e)
             {
@@ -154,12 +168,24 @@ namespace dds
         void broadcastMsg(const AttachmentType& _attachment,
                           std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
-            for (auto& v : m_channels)
+            try
             {
-                if (_condition == nullptr || _condition(v))
+                typename T::weakConnectionPtrVector_t channels(getChannels());
+
+                for (const auto& v : channels)
                 {
-                    v->template pushMsg<_cmd>(_attachment);
+                    if (v.expired())
+                        continue;
+                    auto ptr = v.lock();
+                    if (_condition == nullptr || _condition(ptr))
+                    {
+                        ptr->template pushMsg<_cmd>(_attachment);
+                    }
                 }
+            }
+            catch (std::bad_weak_ptr& e)
+            {
+                // TODO: Do we need to log something here?
             }
         }
 
@@ -175,12 +201,24 @@ namespace dds
                                           uint16_t _cmdSource,
                                           std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
-            for (auto& v : m_channels)
+            try
             {
-                if (_condition == nullptr || _condition(v))
+                typename T::weakConnectionPtrVector_t channels(getChannels());
+
+                for (const auto& v : channels)
                 {
-                    v->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource);
+                    if (v.expired())
+                        continue;
+                    auto ptr = v.lock();
+                    if (_condition == nullptr || _condition(ptr))
+                    {
+                        ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource);
+                    }
                 }
+            }
+            catch (std::bad_weak_ptr& e)
+            {
+                // TODO: Do we need to log something here?
             }
         }
 
@@ -224,8 +262,7 @@ namespace dds
             pThis->newClientCreated(newClient);
 
             // Subscribe on dissconnect event
-            newClient->registerDissconnectEventHandler([this](T* _channel)
-                                                           -> void
+            newClient->registerDissconnectEventHandler([this](T* _channel) -> void
                                                        {
                 return this->removeClient(_channel);
             });
