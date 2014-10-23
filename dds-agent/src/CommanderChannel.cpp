@@ -282,6 +282,19 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 {
     string sUsrExe(m_sUsrExe);
     smart_path(&sUsrExe);
+
+    if (sUsrExe.empty())
+    {
+        LOG(MiscCommon::info) << "Recieved activation command. Ignoring the command, since no task is assigned.";
+        // Send response back to server
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = "No task is assigned. Activation is ignored.";
+        cmd.m_msgSeverity = MiscCommon::info;
+        cmd.m_srcCommand = cmdACTIVATE_AGENT;
+        pushMsg<cmdSIMPLE_MSG>(cmd);
+        return true;
+    }
+
     StringVector_t params;
     string output;
     pid_t pidUsrTask(0);
