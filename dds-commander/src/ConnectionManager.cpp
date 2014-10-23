@@ -322,8 +322,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                             exePathWithoutArgs /= sExeFileName;
                             wordfree(&result);
 
-                            ptr->pushBinaryAttachmentCmd(
-                                exePathWithoutArgs.generic_string(), sExeFileName, cmdASSIGN_USER_TASK);
+                            ptr->pushBinaryAttachmentCmd(exePathWithoutArgs.generic_string(), sExeFileName,
+                                                         cmdASSIGN_USER_TASK);
                         }
                         break;
                         case WRDE_NOSPACE:

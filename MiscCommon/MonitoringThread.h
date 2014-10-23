@@ -67,17 +67,17 @@ namespace dds
 
                                   // Call registred callback functions
                                   // We use Erase-remove idiom to execute callback and remove expired if needed.
-                                  m_registeredCallbackFunctions.erase(remove_if(m_registeredCallbackFunctions.begin(),
-                                                                                m_registeredCallbackFunctions.end(),
-                                                                                [&](callbackFunction_t& i)
-                                                                                {
-                                                                          // A callback function can return false, which
-                                                                          // means it wants to be unregistered
-                                                                          // (expire)
-                                                                          bool bActive = i();
-                                                                          return !bActive;
-                                                                      }),
-                                                                      m_registeredCallbackFunctions.end());
+                                  m_registeredCallbackFunctions.erase(
+                                      remove_if(m_registeredCallbackFunctions.begin(),
+                                                m_registeredCallbackFunctions.end(), [&](callbackFunction_t& i)
+                                                {
+                                          // A callback function can return false, which
+                                          // means it wants to be unregistered
+                                          // (expire)
+                                          bool bActive = i();
+                                          return !bActive;
+                                      }),
+                                      m_registeredCallbackFunctions.end());
 
                                   if (idleTime.count() > _idleTime)
                                   {

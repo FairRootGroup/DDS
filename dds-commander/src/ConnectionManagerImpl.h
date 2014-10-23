@@ -63,8 +63,7 @@ namespace dds
                 // Start monitoring thread
                 const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
-                CMonitoringThread::instance().start(maxIdleTime,
-                                                    []()
+                CMonitoringThread::instance().start(maxIdleTime, []()
                                                     {
                     LOG(MiscCommon::info) << "Idle callback called";
                 });
@@ -262,14 +261,14 @@ namespace dds
             pThis->newClientCreated(newClient);
 
             // Subscribe on dissconnect event
-            newClient->registerDissconnectEventHandler([this](T* _channel) -> void
+            newClient->registerDissconnectEventHandler([this](T* _channel)
+                                                           -> void
                                                        {
                 return this->removeClient(_channel);
             });
 
-            m_acceptor.async_accept(
-                newClient->socket(),
-                std::bind(&CConnectionManagerImpl::acceptHandler, this, newClient, std::placeholders::_1));
+            m_acceptor.async_accept(newClient->socket(), std::bind(&CConnectionManagerImpl::acceptHandler, this,
+                                                                   newClient, std::placeholders::_1));
         }
 
         void createServerInfoFile() const
@@ -309,9 +308,7 @@ namespace dds
         {
             LOG(MiscCommon::debug) << "Removing agent from the list of active";
             std::lock_guard<std::mutex> lock(m_mutex);
-            m_channels.erase(remove_if(m_channels.begin(),
-                                       m_channels.end(),
-                                       [&](typename T::connectionPtr_t& i)
+            m_channels.erase(remove_if(m_channels.begin(), m_channels.end(), [&](typename T::connectionPtr_t& i)
                                        {
                                  return (i.get() == _client);
                              }),

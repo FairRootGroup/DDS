@@ -115,16 +115,8 @@ void CSSHTunnel::create(const string& _connectionStr, size_t _localPort, size_t 
             //                if( _opt.m_batchMode )
             //                    sBatch = "-b";
 
-            execl(cmd.c_str(),
-                  "ssh-tunnel",
-                  pid_arg.c_str(),
-                  l_arg.c_str(),
-                  p_arg.str().c_str(),
-                  r_arg.str().c_str(),
-                  o_arg.c_str(),
-                  i_arg.c_str(),
-                  sBatch.c_str(),
-                  NULL);
+            execl(cmd.c_str(), "ssh-tunnel", pid_arg.c_str(), l_arg.c_str(), p_arg.str().c_str(), r_arg.str().c_str(),
+                  o_arg.c_str(), i_arg.c_str(), sBatch.c_str(), NULL);
             // we shoud never come to this point of execution
             exit(1);
         }

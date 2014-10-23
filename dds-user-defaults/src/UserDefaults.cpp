@@ -43,16 +43,13 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     boost::program_options::options_description config_file_options("DDS user defaults options");
     config_file_options.add_options()(
         "server.work_dir",
-        boost::program_options::value<string>(&m_options.m_server.m_workDir)->default_value("$HOME/.DDS"),
-        "");
+        boost::program_options::value<string>(&m_options.m_server.m_workDir)->default_value("$HOME/.DDS"), "");
     config_file_options.add_options()(
         "server.sandbox_dir",
-        boost::program_options::value<string>(&m_options.m_server.m_sandboxDir)->default_value("$HOME/.DDS"),
-        "");
+        boost::program_options::value<string>(&m_options.m_server.m_sandboxDir)->default_value("$HOME/.DDS"), "");
     config_file_options.add_options()(
         "server.log_dir",
-        boost::program_options::value<string>(&m_options.m_server.m_logDir)->default_value("$HOME/.DDS/log"),
-        "");
+        boost::program_options::value<string>(&m_options.m_server.m_logDir)->default_value("$HOME/.DDS/log"), "");
     config_file_options.add_options()(
         "server.log_severity_level",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_logSeverityLevel)->default_value(0));
@@ -70,9 +67,8 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
                                       boost::program_options::value<unsigned int>(
                                           &m_options.m_server.m_ddsCommanderPortRangeMax)->default_value(21000),
                                       "");
-    config_file_options.add_options()(
-        "server.idle_time",
-        boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(1800));
+    config_file_options.add_options()("server.idle_time", boost::program_options::value<unsigned int>(
+                                                              &m_options.m_server.m_idleTime)->default_value(1800));
 
     if (!_get_default)
     {

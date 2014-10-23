@@ -104,13 +104,13 @@ namespace MiscCommon
         CLogImp()
         {
             if (CLogSingleton::Instance().IsReady())
-                CLogSingleton::Instance().push(
-                    LOG_SEVERITY_INFO, 0, g_cszMODULENAME_CORE, "Bringing >>> " + GetModuleName() + " <<< to life...");
+                CLogSingleton::Instance().push(LOG_SEVERITY_INFO, 0, g_cszMODULENAME_CORE,
+                                               "Bringing >>> " + GetModuleName() + " <<< to life...");
         }
         ~CLogImp()
         {
-            CLogSingleton::Instance().push(
-                LOG_SEVERITY_INFO, 0, g_cszMODULENAME_CORE, "Shutting down >>> " + GetModuleName() + " <<<");
+            CLogSingleton::Instance().push(LOG_SEVERITY_INFO, 0, g_cszMODULENAME_CORE,
+                                           "Shutting down >>> " + GetModuleName() + " <<<");
         }
         void InfoLog(const std::string& _Message)
         {

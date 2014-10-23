@@ -63,8 +63,7 @@ namespace dds
         bpo::options_description options("dds-agent options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("command",
-                              bpo::value<std::string>(),
+        options.add_options()("command", bpo::value<std::string>(),
                               "The command is a name of dds-agent command."
                               " Can be one of the following: start.\n"
                               "For user's convenience it is allowed to call dds-agent without \"--command\" option"
