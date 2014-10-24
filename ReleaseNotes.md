@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v0.4 (NOT YET RELEASED)
+## v0.4 (2014-10-24)
 ### dds-topology
 Fixed: respond with an error if the given topo file is missing.   
 Modified: the topology description schema has been revised. See User's manual for more details.   
@@ -22,6 +22,8 @@ Improved: Split binary files uploads into multiple message chunks, instead of us
 Added: DDS learned how to expand given user tasks commands with arguments given as a single string. (in the Topology->Task->exec parameter).   
 Added: if a user's task is defined in the topology as not reachable, then DDS will take care of delivering it to worker nodes. (GH-6)   
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   
+Modified: Updated User's manual.   
+Modified: Improved stability.
 
 ## v0.2 (2014-09-03)
 
