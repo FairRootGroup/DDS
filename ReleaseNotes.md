@@ -1,5 +1,7 @@
 # DDS Release Notes
 
+## v0.6 (NOT YET RELEASED)
+
 ## v0.4 (2014-10-24)
 ### dds-topology
 Fixed: respond with an error if the given topo file is missing.   
