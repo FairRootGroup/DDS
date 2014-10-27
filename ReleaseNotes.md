@@ -1,6 +1,8 @@
 # DDS Release Notes
 
 ## v0.6 (NOT YET RELEASED)
+### dds-topology
+Added: posibility to use comments in the topology XML file. (GH-15)
 
 ## v0.4 (2014-10-24)
 ### dds-topology
