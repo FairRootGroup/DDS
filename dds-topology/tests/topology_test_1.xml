@@ -5,14 +5,21 @@
 	<property id="property3" />
 	<property id="property4" />
 	
+	<!-- THIS IS A COMMENT -->
+	
   	<decltask id="task1">
 		<exe reachable="true">app1 -l -n</exe>
 		<env reachable="false">env1</env>
 		<properties>
+			<id>property1</id>
+			<id>property4</id>
+			<id>property1</id>
+		</properties>
+	<!--	<properties>
 		   <id>property1</id>
 		   <id>property4</id>
 		   <id>property1</id>
-	    </properties>
+	    </properties>-->
 	</decltask>
 	<decltask id="task2">
 		<exe>app2</exe>
@@ -56,6 +63,7 @@
   	</declcollection>
 	
 	<main id="main">
+		<!--task>task2</task-->
 	    <task>task1</task>
 	    <collection>collection1</collection>
 		<group id="group1" n="10">

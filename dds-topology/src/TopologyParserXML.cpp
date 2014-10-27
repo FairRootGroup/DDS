@@ -90,7 +90,7 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main)
     // Read property tree from file
     try
     {
-        read_xml(_fileName, pt);
+        read_xml(_fileName, pt, xml_parser::no_comments);
     }
     catch (xml_parser_error& error)
     {
