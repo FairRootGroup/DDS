@@ -62,8 +62,12 @@ int main(int argc, char* argv[])
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CGetLogChannel::connectionPtr_t client = CGetLogChannel::makeNew(io_service);
-        client->connect(iterator);
+        CGetLogChannel::connectionPtr_t client = nullptr;
+        if (options.m_agentCmd == EAgentCmdType::GETLOG)
+        {
+            client = CGetLogChannel::makeNew(io_service);
+            client->connect(iterator);
+        }
 
         io_service.run();
     }

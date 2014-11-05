@@ -17,15 +17,49 @@ namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds
 {
-    /// \brief dds-getlog's container of options
+    enum class EAgentCmdType
+    {
+        UNKNOWN = -1,
+        GETLOG = 0
+    };
+    std::map<EAgentCmdType, std::string> AgentCmdTypeCodeToString = { { EAgentCmdType::GETLOG, "getlog" } };
+
+    // A custom streamer to help boost program options to convert string options to EAgentCmdType
+    inline std::istream& operator>>(std::istream& _in, EAgentCmdType& _agentCmd)
+    {
+        std::string token;
+        _in >> token;
+        if (token == "getlog")
+            _agentCmd = EAgentCmdType::GETLOG;
+        else
+            throw bpo::invalid_option_value(token);
+        return _in;
+    }
+
+    inline std::ostream& operator<<(std::ostream& _out, EAgentCmdType& _agentCmd)
+    {
+        switch (_agentCmd)
+        {
+            case EAgentCmdType::GETLOG:
+                _out << "getlog";
+                break;
+            case EAgentCmdType::UNKNOWN:
+                break;
+        }
+        return _out;
+    }
+
+    /// \brief dds-agent-cmd's container of options
     typedef struct SOptions
     {
         SOptions()
-            : m_downloadAllLogs(false)
+            : m_sendCommandToAllAgents(false)
+            , m_agentCmd(EAgentCmdType::UNKNOWN)
         {
         }
 
-        bool m_downloadAllLogs;
+        bool m_sendCommandToAllAgents;
+        EAgentCmdType m_agentCmd;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -42,10 +76,12 @@ namespace dds
             throw std::runtime_error("Internal error: options' container is empty.");
 
         // Generic options
-        bpo::options_description options("dds-getlog options");
+        bpo::options_description options("dds-agent-cmd options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("all,a", "Download logs from all agents");
+        options.add_options()("cmd,c", bpo::value<EAgentCmdType>(&_options->m_agentCmd),
+                              "Command that has to be send to agents.");
+        options.add_options()("all,a", "Send command to all active agents");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -62,9 +98,15 @@ namespace dds
             PrintVersion();
             return false;
         }
+        if (!vm.count("cmd"))
+        {
+            LOG(MiscCommon::log_stderr) << "specify an agent command"
+                                        << "\n\n" << options;
+            return false;
+        }
         if (vm.count("all"))
         {
-            _options->m_downloadAllLogs = true;
+            _options->m_sendCommandToAllAgents = true;
         }
 
         return true;
