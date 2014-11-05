@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
+        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
 
         boost::asio::io_service io_service;
 
