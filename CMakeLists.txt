@@ -47,7 +47,7 @@ option(BUILD_dds-ssh "Build dds-ssh" ON)
 option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
 option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
-option(BUILD_dds-getlog "Build dds-getlog" ON)
+option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
 option(BUILD_dds-test "Build dds-test" ON)
 option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
 #
@@ -226,11 +226,11 @@ if(BUILD_dds-submit)
     add_subdirectory ( dds-submit )
 endif(BUILD_dds-submit)
 
-# dds-getlog
-if(BUILD_dds-getlog)
-    message(STATUS "Build dds-getlog - YES")
-    add_subdirectory ( dds-getlog )
-endif(BUILD_dds-getlog)
+# dds-agent-cmd
+if(BUILD_dds-agent-cmd)
+    message(STATUS "Build dds-agent-cmd - YES")
+    add_subdirectory ( dds-agent-cmd )
+endif(BUILD_dds-agent-cmd)
 
 # dds-test
 if(BUILD_dds-test)

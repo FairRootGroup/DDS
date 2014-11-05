@@ -1,7 +1,7 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
+#dds-agent-cmd
 #
-#
-project( dds-getlog )
+project( dds-agent-cmd )
 
 #
 # Where to lookup modules
@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # configure files
 # 
-configure_file( ${dds-getlog_SOURCE_DIR}/src/version.h.in ${dds-getlog_BINARY_DIR}/version.h @ONLY )
+configure_file( ${dds-agent-cmd_SOURCE_DIR}/src/version.h.in ${dds-agent-cmd_BINARY_DIR}/version.h @ONLY )
 
 #
 # API Docs
@@ -39,25 +39,25 @@ set( HEADER_FILES
 )
 
 include_directories(
-	${dds-getlog_BINARY_DIR}
+	${dds-agent-cmd_BINARY_DIR}
 	${MiscCommon_LOCATION}
 	${Boost_INCLUDE_DIRS} 
 )
 
 #
-# dds-getlog executable
+# dds-agent-cmd executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-getlog ${SOURCE_FILES} ${HEADER_FILES})
+    add_executable(dds-agent-cmd ${SOURCE_FILES} ${HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-getlog ${SOURCE_FILES})
+    add_executable(dds-agent-cmd ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 #message(STATUS "LOG_LIBRARY=${Boost_LOG_LIBRARY}")
 #message(STATUS "FILESYSTEM_LIBRARY=${Boost_FILESYSTEM_LIBRARY}")
 
 target_link_libraries (
-	dds-getlog
+	dds-agent-cmd
 	dds-user-defaults-lib
 	dds-protocol-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -67,21 +67,21 @@ target_link_libraries (
 	${Boost_THREAD_LIBRARY}
 )
 
-target_include_directories(dds-getlog
+target_include_directories(dds-agent-cmd
 	PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
 		$<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-install(TARGETS dds-getlog DESTINATION bin)
+install(TARGETS dds-agent-cmd DESTINATION bin)
 
 #
 # Unit tests
 #
 #if (BUILD_TESTS)
-#    message (STATUS "Build dds-getlog unit tests - YES")
-#    add_subdirectory ( ${dds-getlog_SOURCE_DIR}/tests ) 
+#    message (STATUS "Build dds-agent-cmd unit tests - YES")
+#    add_subdirectory ( ${dds-agent-cmd_SOURCE_DIR}/tests ) 
 #else (BUILD_TESTS)
-#    message (STATUS "Build dds-getlog unit tests - NO")
+#    message (STATUS "Build dds-agent-cmd unit tests - NO")
 #endif (BUILD_TESTS)
