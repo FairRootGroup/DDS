@@ -41,6 +41,7 @@ option(BUILD_DOCUMENTATION "Build documentation" OFF)
 option(BUILD_TESTS "Build DDS unit tests" OFF)
 # modules
 option(BUILD_dds-commander "Build dds-commander" ON)
+option(BUILD_dds-topology "Build dds-topology" ON)
 option(BUILD_dds-topology-lib "Build dds-topology-lib" ON)
 option(BUILD_dds-agent "Build dds-agent" ON)
 option(BUILD_dds-ssh "Build dds-ssh" ON)
@@ -189,6 +190,12 @@ if(BUILD_dds-commander)
     message(STATUS "Build dds-commander - YES")
     add_subdirectory ( dds-commander )
 endif(BUILD_dds-commander)
+
+# dds-topology
+if(BUILD_dds-topology)
+    message(STATUS "Build dds-topology - YES")
+    add_subdirectory ( dds-topology )
+endif(BUILD_dds-topology)
 
 # dds-topology-lib
 if(BUILD_dds-topology-lib)

@@ -53,7 +53,6 @@ namespace dds
     {
         SOptions()
             : m_RMS(SSubmitCmd::UNKNOWN)
-            , m_bStart(false)
         {
         }
 
@@ -117,13 +116,12 @@ namespace dds
         std::string m_sTopoFile;
         SSubmitCmd::ERmsType m_RMS;
         std::string m_sSSHCfgFile;
-        bool m_bStart;
     } SOptions_t;
     //=============================================================================
     inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
     {
         return _stream << "\nTopoFile: " << val.m_sTopoFile << "\nRMS: " << val.m_RMS << "\nSSHPlugIn-ConfigFile"
-                       << val.m_sSSHCfgFile << "\nActivateAgents: " << val.m_bStart;
+                       << val.m_sSSHCfgFile;
     }
     //=============================================================================
     inline void PrintVersion()
@@ -154,8 +152,6 @@ namespace dds
         options.add_options()("ssh-rms-cfg", bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
-        options.add_options()("activate", bpo::bool_switch(&_options->m_bStart),
-                              "Activate DDS agents. This will trigger user tasks distribution on the deployed agents");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -175,7 +171,7 @@ namespace dds
             _options->load(&sCfg);
         }
 
-        if (vm.count("help") || (_options->m_RMS == SSubmitCmd::UNKNOWN && !_options->m_bStart))
+        if (vm.count("help") || (_options->m_RMS == SSubmitCmd::UNKNOWN))
         {
             LOG(MiscCommon::log_stdout) << options;
             return false;

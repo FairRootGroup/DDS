@@ -3,35 +3,29 @@
 //
 //
 
-#ifndef __DDS__SubmitChannel__
-#define __DDS__SubmitChannel__
+#ifndef __DDS__ActivateChannel__
+#define __DDS__ActivateChannel__
 // DDS
 #include "ConnectionImpl.h"
 
 namespace dds
 {
-    class CSubmitChannel : public CConnectionImpl<CSubmitChannel>
+    class CActivateChannel : public CConnectionImpl<CActivateChannel>
     {
-        CSubmitChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CSubmitChannel>(_service)
+        CActivateChannel(boost::asio::io_service& _service)
+            : CConnectionImpl<CActivateChannel>(_service)
             , m_isHandShakeOK(false)
-            , m_RMS(SSubmitCmd::UNKNOWN)
         {
         }
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
 
       public:
-        BEGIN_MSG_MAP(CSubmitChannel)
+        BEGIN_MSG_MAP(CActivateChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         END_MSG_MAP()
-
-      public:
-        void setTopoFile(const std::string& _val);
-        void setSSHCfgFile(const std::string& _val);
-        void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
 
       private:
         // Message Handlers
@@ -42,7 +36,7 @@ namespace dds
         void onConnected()
         {
             LOG(MiscCommon::log_stdout) << "Connection established.";
-            LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
+            LOG(MiscCommon::log_stdout) << "Requesting server to activate tasks...";
         }
         void onFailedToConnect()
         {
@@ -58,9 +52,6 @@ namespace dds
 
       private:
         bool m_isHandShakeOK;
-        std::string m_sTopoFile;
-        std::string m_sSSHCfgFile;
-        SSubmitCmd::ERmsType m_RMS;
     };
 }
 

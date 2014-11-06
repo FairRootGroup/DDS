@@ -3,14 +3,15 @@
 //
 //
 // DDS
-#include "ErrorCode.h"
-#include "SubmitChannel.h"
+#include "UserDefaults.h"
+#include "ActivateChannel.h"
 #include "Options.h"
 #include "DDSHelper.h"
 
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
+using boost::asio::ip::tcp;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
+        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
 
         boost::asio::io_service io_service;
 
@@ -61,12 +62,12 @@ int main(int argc, char* argv[])
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
-        client->connect(iterator);
-
-        client->setTopoFile(options.m_sTopoFile);
-        client->setSSHCfgFile(options.m_sSSHCfgFile);
-        client->setRMSTypeCode(options.m_RMS);
+        CActivateChannel::connectionPtr_t client = nullptr;
+        if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
+        {
+            client = CActivateChannel::makeNew(io_service);
+            client->connect(iterator);
+        }
 
         io_service.run();
     }

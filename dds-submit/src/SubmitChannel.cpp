@@ -29,7 +29,7 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HA
 {
     m_isHandShakeOK = true;
 
-    if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS && !m_bSendStart)
+    if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS)
     {
         // Create the command's attachment
         SSubmitCmd cmd;
@@ -37,11 +37,6 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HA
         cmd.m_nRMSTypeCode = m_RMS;
         cmd.m_sSSHCfgFile = m_sSSHCfgFile;
         pushMsg<cmdSUBMIT>(cmd);
-    }
-    // Check wheather we need to start distribuiting tasks
-    if (m_bSendStart)
-    {
-        pushMsg<cmdACTIVATE_AGENT>();
     }
 
     return true;
