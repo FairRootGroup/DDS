@@ -302,7 +302,7 @@ fi
 # star|stop|status|getbins
 case "$1" in
     start)
-       # get_bins	
+        get_bins	
 	start $WORK_DIR
 	RETVAL=$?
 	;;
