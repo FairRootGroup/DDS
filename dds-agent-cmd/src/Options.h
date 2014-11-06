@@ -83,9 +83,12 @@ namespace dds
                               "Command that has to be send to agents.");
         options.add_options()("all,a", "Send command to all active agents");
 
+        bpo::positional_options_description positional;
+        positional.add("cmd", -1);
+
         // Parsing command-line
         bpo::variables_map vm;
-        bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
+        bpo::store(bpo::command_line_parser(_argc, _argv).options(options).positional(positional).run(), vm);
         bpo::notify(vm);
 
         if (vm.count("help") || vm.empty())
