@@ -59,7 +59,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries (
 	dds-test
 	dds-user-defaults-lib
-	dds-topology
+	dds-topology-lib
 	dds-protocol-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
@@ -73,7 +73,7 @@ target_include_directories(dds-test
 	PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
-		$<TARGET_PROPERTY:dds-topology,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds-topology-lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
 		$<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
