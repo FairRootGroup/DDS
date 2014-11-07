@@ -261,8 +261,7 @@ namespace dds
             pThis->newClientCreated(newClient);
 
             // Subscribe on dissconnect event
-            newClient->registerDissconnectEventHandler([this](T* _channel)
-                                                           -> void
+            newClient->registerDissconnectEventHandler([this](T* _channel) -> void
                                                        {
                 return this->removeClient(_channel);
             });

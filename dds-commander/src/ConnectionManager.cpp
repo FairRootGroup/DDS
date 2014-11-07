@@ -31,8 +31,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 {
     // Subscribe on protocol messages
     std::function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
-        [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel)
-            -> bool
+        [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_LOG(_attachment, useRawPtr(_channel));
     };
@@ -49,40 +48,37 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 
     std::function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_AGENTS_INFO =
-            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel)
-                -> bool
+            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_AGENTS_INFO(_attachment, useRawPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
     std::function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
-        [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel)
-            -> bool
+        [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSUBMIT(_attachment, useRawPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
     std::function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fACTIVATE_AGENT = [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel)
-                              -> bool
+        fACTIVATE_AGENT =
+            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdACTIVATE_AGENT(_attachment, useRawPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
     std::function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fTRANSPORT_TEST = [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel)
-                              -> bool
+        fTRANSPORT_TEST =
+            [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdTRANSPORT_TEST(_attachment, useRawPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdTRANSPORT_TEST>(fTRANSPORT_TEST);
 
     std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel)
-                          -> bool
+        fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSIMPLE_MSG(_attachment, useRawPtr(_channel));
     };
