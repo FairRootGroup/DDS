@@ -77,6 +77,41 @@ get_freeport()
 get_bins()
 {
    WN_BIN_DIR="$DDS_LOCATION/bin/wn_bins"
+	
+   # check only wn bins of the local system
+   check_only_local=$1
+   if [ "$check_only_local" = "true" ]; then
+	    echo "Checking availability of WN bin of the local system..."
+   		# bin name:
+   	 	# <pakage>-<version>-<OS>-<ARCH>.tar.gz
+   	 	BASE_NAME="dds-wrk-bin"
+   	 	OS=$(uname -s 2>&1)
+   	 	wn_host_arch=$(uname -m  2>&1)
+   	 	case "$wn_host_arch" in
+      	  	i[3-9]86*|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686)
+         		host_arch="x86"
+         	;;
+      	  	x86_64)
+         		host_arch="amd64"
+            ;;
+      	  	*)
+         		echo "Error: unsupported architecture: $host_arch"
+		 	   	exit 1
+	 	    ;;
+   	 	esac
+   	 	#MacOSX is using always universal bins
+   	 	if [ "$OS" == "Darwin" ]; then
+     		host_arch="universal"
+  	  	fi
+   	 	WN_BIN_ARC="$BASE_NAME-$PKG_VERSION-$OS-$host_arch.tar.gz"
+		if [ ! -f "$WN_BIN_DIR/$WN_BIN_ARC" ]; then
+		   echo "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
+		   exit 1
+		fi
+		echo "found compatible WN bin: $WN_BIN_ARC"
+		return 0
+	fi
+  
    # we hard-code a list of supported architectures
    FILE_ARCH=("x86" "amd64")
    # check that bins dir exists and contain all supported bins
@@ -299,24 +334,30 @@ if [ ! -e "$WORK_DIR" ]; then
    exit 1
 fi
 
+
+check_only_local_wn_bins="false"
+if [ "$2" = "-s" ]; then
+	check_only_local_wn_bins="true"
+fi
+
 # star|stop|status|getbins
 case "$1" in
     start)
-        get_bins	
-	start $WORK_DIR
-	RETVAL=$?
+		get_bins $check_only_local_wn_bins	
+		start $WORK_DIR
+		RETVAL=$?
 	;;
     restart)
-        get_bins
+		get_bins $check_only_local_wn_bins
         restart $WORK_DIR
         RETVAL=$?
-        ;;
+    ;;
     stop)
-	stop $WORK_DIR
-	RETVAL=$?
+		stop $WORK_DIR
+		RETVAL=$?
 	;;
     status)
-	status $WORK_DIR
+		status $WORK_DIR
 	;;
 # internal parameter
     status_with_code)
@@ -328,7 +369,7 @@ case "$1" in
         RETVAL=$?
         ;;
     *)
-        echo "Usage: $(basename "$0") {start|restart|stop|status|getbins}"
+        echo "Usage: $(basename "$0") {start [-s]|restart [-s]|stop|status|getbins}"
         exit 1
 esac
 
