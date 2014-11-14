@@ -37,11 +37,14 @@ namespace dds
 
       private:
         boost::asio::io_service& m_service;
+        boost::asio::signal_set m_signals;
         dds::SOptions_t m_options;
         CCommanderChannel::connectionPtrVector_t m_agents;
         childrenPidContainer_t m_children;
         std::mutex m_childrenContainerMutex;
         bool m_bStarted;
+        boost::asio::io_service m_UI_io_service;
+        boost::asio::ip::tcp::endpoint m_UI_end_point;
         UIConnectionManagerPtr_t m_UIConnectionMng;
     };
 }
