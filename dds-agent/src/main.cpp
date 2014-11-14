@@ -8,6 +8,7 @@
 #include "Options.h"
 #include "ErrorCode.h"
 #include "AgentConnectionManager.h"
+#include "INet.h"
 #include "Logger.h"
 
 using namespace std;
@@ -37,8 +38,8 @@ int main(int argc, char* argv[])
     {
         try
         {
-            boost::asio::io_service service;
-            CAgentConnectionManager agent(options, service);
+            boost::asio::io_service io_service;
+            CAgentConnectionManager agent(options, io_service);
             agent.start();
         }
         catch (exception& e)

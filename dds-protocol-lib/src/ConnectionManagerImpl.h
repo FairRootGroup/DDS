@@ -22,12 +22,9 @@ namespace dds
     class CConnectionManagerImpl
     {
       public:
-        CConnectionManagerImpl(const SOptions_t& _options,
-                               boost::asio::io_service& _io_service,
-                               boost::asio::ip::tcp::endpoint& _endpoint)
+        CConnectionManagerImpl(boost::asio::io_service& _io_service, boost::asio::ip::tcp::endpoint& _endpoint)
             : m_acceptor(_io_service, _endpoint)
             , m_signals(_io_service)
-            , m_options(_options)
         {
             // Register to handle the signals that indicate when the server should exit.
             // It is safe to register for the same signal multiple times in a program,
@@ -53,13 +50,18 @@ namespace dds
         ~CConnectionManagerImpl()
         {
             // Delete server info file
-            deleteServerInfoFile();
+            deleteInfoFile();
+            stop();
         }
 
-        void start()
+        void start(bool _join = true)
         {
             try
             {
+                // Call _start of the "child"
+                A* pThis = static_cast<A*>(this);
+                pThis->_start();
+
                 // Start monitoring thread
                 const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
@@ -72,7 +74,7 @@ namespace dds
                 createClientAndStartAccept();
 
                 // Create a server info file
-                createServerInfoFile();
+                createInfoFile();
 
                 // a thread pool for the DDS transport engine
                 // may return 0 when not able to detect
@@ -80,15 +82,15 @@ namespace dds
                 // we need at least 4 threads
                 if (concurrentThreads < 4)
                     concurrentThreads = 4;
-                boost::thread_group worker_threads;
                 LOG(MiscCommon::info) << "Starting DDS transport engine using " << concurrentThreads
                                       << " concurrent threads.";
                 for (int x = 0; x < concurrentThreads; ++x)
                 {
-                    worker_threads.create_thread(
+                    m_workerThreads.create_thread(
                         boost::bind(&boost::asio::io_service::run, &(m_acceptor.get_io_service())));
                 }
-                worker_threads.join_all();
+                if (_join)
+                    m_workerThreads.join_all();
             }
             catch (std::exception& e)
             {
@@ -100,6 +102,10 @@ namespace dds
         {
             try
             {
+                // Call _stop of the "child"
+                A* pThis = static_cast<A*>(this);
+                pThis->_stop();
+
                 // TODO: Use mutex
                 // Send shutdown signal to all client connections.
                 typename T::weakConnectionPtrVector_t channels(getChannels());
@@ -270,42 +276,23 @@ namespace dds
                                                                    newClient, std::placeholders::_1));
         }
 
-        void createServerInfoFile() const
+        void createInfoFile()
         {
-            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
-            LOG(MiscCommon::info) << "Creating a server info file: " << sSrvCfg;
-            std::ofstream f(sSrvCfg.c_str());
-            if (!f.is_open() || !f.good())
-            {
-                std::string msg("Could not open a server info configuration file: ");
-                msg += sSrvCfg;
-                throw std::runtime_error(msg);
-            }
-
-            std::string srvHost;
-            MiscCommon::get_hostname(&srvHost);
-            std::string srvUser;
-            MiscCommon::get_cuser_name(&srvUser);
-
-            f << "[server]\n"
-              << "host=" << srvHost << "\n"
-              << "user=" << srvUser << "\n"
-              << "port=" << m_acceptor.local_endpoint().port() << "\n" << std::endl;
+            // The child needs to have that method
+            A* pThis = static_cast<A*>(this);
+            pThis->_createInfoFile(m_acceptor.local_endpoint().port());
         }
 
-        void deleteServerInfoFile() const
+        void deleteInfoFile()
         {
-            const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
-            if (sSrvCfg.empty())
-                return;
-
-            // TODO: check error code
-            unlink(sSrvCfg.c_str());
+            // The child needs to have that method
+            A* pThis = static_cast<A*>(this);
+            pThis->_deleteInfoFile();
         }
 
         void removeClient(T* _client)
         {
-            LOG(MiscCommon::debug) << "Removing agent from the list of active";
+            LOG(MiscCommon::debug) << "Removing " << _client->getTypeName() << " client from the list of active";
             std::lock_guard<std::mutex> lock(m_mutex);
             m_channels.erase(remove_if(m_channels.begin(), m_channels.end(), [&](typename T::connectionPtr_t& i)
                                        {
@@ -321,9 +308,7 @@ namespace dds
         boost::asio::signal_set m_signals;
         std::mutex m_mutex;
         typename T::connectionPtrVector_t m_channels;
-
-      protected:
-        dds::SOptions_t m_options;
+        boost::thread_group m_workerThreads;
     };
 }
 #endif /* defined(__DDS__ConnectionManagerImpl__) */

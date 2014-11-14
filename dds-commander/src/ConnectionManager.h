@@ -9,6 +9,7 @@
 #include "ConnectionManagerImpl.h"
 #include "AgentChannel.h"
 #include "UIChannelInfo.h"
+#include "Options.h"
 // STD
 #include <mutex>
 
@@ -25,6 +26,14 @@ namespace dds
 
       public:
         void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
+        void _start()
+        {
+        }
+        void _stop()
+        {
+        }
+        void _createInfoFile(size_t _port) const;
+        void _deleteInfoFile() const;
 
       private:
         bool on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,

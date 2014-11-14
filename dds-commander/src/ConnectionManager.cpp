@@ -19,7 +19,7 @@ namespace fs = boost::filesystem;
 CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                        boost::asio::io_service& _io_service,
                                        boost::asio::ip::tcp::endpoint& _endpoint)
-    : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_options, _io_service, _endpoint)
+    : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_io_service, _endpoint)
 {
 }
 
@@ -83,6 +83,39 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         return this->on_cmdSIMPLE_MSG(_attachment, useRawPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
+}
+
+void CConnectionManager::_createInfoFile(size_t _port) const
+{
+    const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
+    LOG(MiscCommon::info) << "Creating the server info file: " << sSrvCfg;
+    std::ofstream f(sSrvCfg.c_str());
+    if (!f.is_open() || !f.good())
+    {
+        std::string msg("Could not open the server info configuration file: ");
+        msg += sSrvCfg;
+        throw std::runtime_error(msg);
+    }
+
+    std::string srvHost;
+    MiscCommon::get_hostname(&srvHost);
+    std::string srvUser;
+    MiscCommon::get_cuser_name(&srvUser);
+
+    f << "[server]\n"
+      << "host=" << srvHost << "\n"
+      << "user=" << srvUser << "\n"
+      << "port=" << _port << "\n" << std::endl;
+}
+
+void CConnectionManager::_deleteInfoFile() const
+{
+    const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
+    if (sSrvCfg.empty())
+        return;
+
+    // TODO: check error code
+    unlink(sSrvCfg.c_str());
 }
 
 bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,

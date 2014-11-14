@@ -15,6 +15,7 @@ namespace dds
         AGENT,
         UI
     };
+    const std::vector<std::string> g_vecAgentChannelType = { "generic", "agent", "UI" };
 
     class CAgentChannel : public CConnectionImpl<CAgentChannel>
     {
@@ -50,6 +51,7 @@ namespace dds
 
       public:
         EAgentChannelType getType() const;
+        std::string getTypeName() const;
         const boost::uuids::uuid& getId() const;
         const SHostInfoCmd getRemoteHostInfo() const
         {

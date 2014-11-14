@@ -18,38 +18,18 @@ using namespace std;
 using namespace dds;
 using namespace MiscCommon;
 namespace sp = std::placeholders;
+using boost::asio::ip::tcp;
 
-CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _service)
-    : m_service(_service)
-    , m_signals(_service)
+CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service)
+    : m_service(_io_service)
     , m_options(_options)
     , m_agents()
     , m_bStarted(false)
 {
-    // Register to handle the signals that indicate when the server should exit.
-    // It is safe to register for the same signal multiple times in a program,
-    // provided all registration for the specified signal is made through Asio.
-    m_signals.add(SIGINT);
-    m_signals.add(SIGTERM);
-#if defined(SIGQUIT)
-    m_signals.add(SIGQUIT);
-#endif // defined(SIGQUIT)
-
-    doAwaitStop();
 }
 
 CAgentConnectionManager::~CAgentConnectionManager()
 {
-    stop();
-}
-
-void CAgentConnectionManager::doAwaitStop()
-{
-    m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
-                         {
-                             // Stop transport engine
-                             stop();
-                         });
 }
 
 void CAgentConnectionManager::start()
@@ -111,6 +91,13 @@ void CAgentConnectionManager::start()
                 SVersionCmd ver;
                 newAgent->pushMsg<cmdHANDSHAKE_AGENT>(ver);
                 newAgent->start();
+
+                // Start the UI agent server
+                // Let the OS pick a random available port
+                boost::asio::io_service io_service;
+                tcp::endpoint endpoint(tcp::v4(), 0);
+                m_UIConnectionMng = make_shared<CUIConnectionManager>(io_service, endpoint);
+                m_UIConnectionMng->start(false);
             }
             else
             {

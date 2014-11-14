@@ -26,6 +26,11 @@ EAgentChannelType CAgentChannel::getType() const
     return m_type;
 }
 
+std::string CAgentChannel::getTypeName() const
+{
+    return g_vecAgentChannelType[static_cast<size_t>(m_type)];
+}
+
 const boost::uuids::uuid& CAgentChannel::getId() const
 {
     return m_id;

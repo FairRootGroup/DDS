@@ -28,7 +28,6 @@ configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BIN
 set( SOURCE_FILES
 	./src/main.cpp
 	./src/ConnectionManager.cpp
-	./src/ConnectionManagerImpl.cpp
 	./src/AgentChannel.cpp
     ./src/UIChannelInfo.cpp
 )
@@ -39,7 +38,6 @@ set( SOURCE_FILES
 set( HEADER_FILES
 	./src/Options.h
 	./src/ConnectionManager.h
-	./src/ConnectionManagerImpl.h
 	./src/AgentChannel.h
     ./src/UIChannelInfo.h
 )

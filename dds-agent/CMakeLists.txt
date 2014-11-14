@@ -28,7 +28,9 @@ configure_file( ${dds-agent_SOURCE_DIR}/src/version.h.in ${dds-agent_BINARY_DIR}
 set( SOURCE_FILES
 	./src/main.cpp
 	./src/CommanderChannel.cpp
+	./src/UIChannel.cpp
 	./src/AgentConnectionManager.cpp
+        ./src/UIConnectionManager.cpp
 )
 
 #
@@ -37,7 +39,9 @@ set( SOURCE_FILES
 set( HEADER_FILES
 	./src/Options.h
 	./src/CommanderChannel.h
+	./src/UIChannel.h
 	./src/AgentConnectionManager.h
+        ./src/UIConnectionManager.h
 )
 
 include_directories(
