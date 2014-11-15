@@ -82,9 +82,9 @@ void CAgentConnectionManager::start()
         LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
         // Resolve endpoint iterator from host and port
-        boost::asio::ip::tcp::resolver resolver(m_service);
-        boost::asio::ip::tcp::resolver::query query(sHost, sPort);
-        boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        tcp::resolver resolver(m_service);
+        tcp::resolver::query query(sHost, sPort);
+        tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new agent and push handshake message
         CCommanderChannel::connectionPtr_t newAgent = CCommanderChannel::makeNew(m_service);
@@ -104,7 +104,7 @@ void CAgentConnectionManager::start()
                                                 });
 
         boost::asio::async_connect(newAgent->socket(), endpoint_iterator,
-                                   [this, &newAgent](boost::system::error_code ec, ip::tcp::resolver::iterator)
+                                   [this, &newAgent](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
             if (!ec)
             {
