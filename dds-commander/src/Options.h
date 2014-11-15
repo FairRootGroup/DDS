@@ -70,9 +70,9 @@ namespace dds
         options.add_options()(
             "command", bpo::value<std::string>(),
             "The command is a name of dds-commander command."
-            " Can be one of the following: start, stop, status, and info.\n"
+            " Can be one of the following: start, and stop.\n"
             "For user's convenience it is allowed to call dds-commander without \"--command\" option"
-            " by just specifying the command name directly, like:\ndds-commander start or dds-commander status.\n\n"
+            " by just specifying the command name directly, like:\ndds-commander start or dds-commander stop.\n\n"
             "Commands:\n"
             "   start: \tStart dds-commander daemon\n"
             "   stop: \tStop dds-commander daemon\n");
