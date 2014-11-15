@@ -2,13 +2,14 @@
 
 ## v0.6 (NOT YET RELEASED)
 ### dds-topology
-Added: posibility to use comments in the topology XML file. (GH-15)   
+Added: a possibility to use comments in the topology XML file. (GH-15)   
 Renamed: dds-topology renamed to dds-topology-lib. dds-topology is executable now.   
 Added: task activation functionality is moved from dds-submit to dds-topology.(GH-16)
 
 ###dds-agent-cmd
-Added: new command for comunication with agents.(GH-17)   
+Added: new command for communication with agents.(GH-17)   
 Added: getlog functionality moved to dds-agent-cmd.(GH-17)
+Added: dds-agent-cmd learned a new command - update-key. It forces an update of a given task's property in the topology.
 
 ## v0.4 (2014-10-24)
 ### dds-topology

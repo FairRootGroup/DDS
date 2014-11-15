@@ -69,7 +69,7 @@ namespace dds
         options.add_options()("version,v", "Version information");
         options.add_options()(
             "command", bpo::value<std::string>(),
-            "The command is a name of dds-commander command."
+            "The command is a name of a dds-commander command."
             " Can be one of the following: start, and stop.\n"
             "For user's convenience it is allowed to call dds-commander without \"--command\" option"
             " by just specifying the command name directly, like:\ndds-commander start or dds-commander stop.\n\n"
