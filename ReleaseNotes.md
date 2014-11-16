@@ -1,6 +1,9 @@
 # DDS Release Notes
 
 ## v0.6 (NOT YET RELEASED)
+### dds-protocol-lib
+Modified: Version changed to v2.0.
+Added: The protocol has learned a new command - cmdUPDATE_KEY. (GH-12)
 ### dds-topology
 Added: a possibility to use comments in the topology XML file. (GH-15)   
 Renamed: dds-topology renamed to dds-topology-lib. dds-topology is executable now.   
@@ -9,7 +12,7 @@ Added: task activation functionality is moved from dds-submit to dds-topology.(G
 ###dds-agent-cmd
 Added: new command for communication with agents.(GH-17)   
 Added: getlog functionality moved to dds-agent-cmd.(GH-17)
-Added: dds-agent-cmd learned a new command - update-key. It forces an update of a given task's property in the topology.
+Added: dds-agent-cmd learned a new command - update-key. It forces an update of a given task's property in the topology. (GH-12)
 
 ## v0.4 (2014-10-24)
 ### dds-topology

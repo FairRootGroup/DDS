@@ -26,6 +26,7 @@ set( SOURCE_FILES
 	./src/VersionCmd.cpp
     ./src/BinaryAttachmentReceivedCmd.cpp
     ./src/BinaryAttachmentStartCmd.cpp
+	./src/UpdateKeyCmd.cpp
 )
 
 set( SRC_HDRS
@@ -46,7 +47,7 @@ set( SRC_HDRS
 	./src/VersionCmd.h
     ./src/BinaryAttachmentReceivedCmd.h
     ./src/BinaryAttachmentStartCmd.h
-
+	./src/UpdateKeyCmd.h
 )
 
 include_directories(

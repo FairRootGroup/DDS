@@ -41,12 +41,13 @@ namespace dds
         MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
         // - get Agents Info command
         MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
-
         MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_UUID)
-        MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
         MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+        // - Agents commands
+        MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
+        MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_MSG_MAP()
 
       public:
@@ -72,6 +73,7 @@ namespace dds
         bool on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment);
         bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
 
         // On connection handles
         void onRemoteEndDissconnected()

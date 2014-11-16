@@ -27,7 +27,7 @@ configure_file( ${dds-agent-cmd_SOURCE_DIR}/src/version.h.in ${dds-agent-cmd_BIN
 #
 set( SOURCE_FILES
 	./src/main.cpp
-	./src/GetLogChannel.cpp
+	./src/GenericChannel.cpp
 )
 
 #
@@ -35,7 +35,7 @@ set( SOURCE_FILES
 #
 set( HEADER_FILES
 	./src/Options.h
-	./src/GetLogChannel.h
+	./src/GenericChannel.h
 )
 
 include_directories(

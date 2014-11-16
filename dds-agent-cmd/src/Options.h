@@ -25,8 +25,8 @@ namespace dds
         UPDATE_KEY
     };
     typedef std::map<EAgentCmdType, std::string> mapAgentCmdTypeCodes_t;
-    mapAgentCmdTypeCodes_t AgentCmdTypeCodeToString = { { EAgentCmdType::GETLOG, "getlog" },
-                                                        { EAgentCmdType::UPDATE_KEY, "update-key" } };
+    const mapAgentCmdTypeCodes_t AgentCmdTypeCodeToString = { { EAgentCmdType::GETLOG, "getlog" },
+                                                              { EAgentCmdType::UPDATE_KEY, "update-key" } };
 
     // A custom streamer to help boost program options to convert string options to EAgentCmdType
     inline std::istream& operator>>(std::istream& _in, EAgentCmdType& _agentCmd)
@@ -44,7 +44,10 @@ namespace dds
 
     inline std::ostream& operator<<(std::ostream& _out, EAgentCmdType& _agentCmd)
     {
-        _out << AgentCmdTypeCodeToString[_agentCmd];
+        auto found = AgentCmdTypeCodeToString.find(_agentCmd);
+        if (found != AgentCmdTypeCodeToString.end())
+            _out << found->second;
+
         return _out;
     }
 
@@ -115,7 +118,7 @@ namespace dds
             PrintVersion();
             return false;
         }
-        if (!vm.count("command"))
+        if (!vm.count("command") || _options->m_agentCmd == EAgentCmdType::UNKNOWN)
         {
             LOG(MiscCommon::log_stderr) << "Nothing to do. Please, specify a command"
                                         << "\n\n" << options;

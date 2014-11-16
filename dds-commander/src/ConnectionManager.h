@@ -50,6 +50,8 @@ namespace dds
                                   CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                              CAgentChannel::weakConnectionPtr_t _channel);
 
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;

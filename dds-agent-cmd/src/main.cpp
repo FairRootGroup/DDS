@@ -4,7 +4,7 @@
 //
 // DDS
 #include "UserDefaults.h"
-#include "GetLogChannel.h"
+#include "GenericChannel.h"
 #include "Options.h"
 #include "DDSHelper.h"
 
@@ -62,12 +62,9 @@ int main(int argc, char* argv[])
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CGetLogChannel::connectionPtr_t client = nullptr;
-        if (options.m_agentCmd == EAgentCmdType::GETLOG)
-        {
-            client = CGetLogChannel::makeNew(io_service);
-            client->connect(iterator);
-        }
+        CGenericChannel::connectionPtr_t client = CGenericChannel::makeNew(io_service);
+        client->setOptions(options);
+        client->connect(iterator);
 
         io_service.run();
     }

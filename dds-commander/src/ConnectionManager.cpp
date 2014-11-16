@@ -83,6 +83,13 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         return this->on_cmdSIMPLE_MSG(_attachment, useRawPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
+
+    std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel * _channel)>
+        fUPDATE_KEY = [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdUPDATE_KEY(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 }
 
 void CConnectionManager::_createInfoFile(size_t _port) const
@@ -503,4 +510,32 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
             return m_transportTest.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
     }
     return false;
+}
+
+bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                          CAgentChannel::weakConnectionPtr_t _channel)
+{
+    try
+    {
+        // TODO:
+        // 1 - check that tasks are activated
+        // 2 - send only to agents whoes tasks depend on the given key
+        //
+        auto condition = [](CAgentChannel::connectionPtr_t _v)
+        {
+            return (_v != nullptr && _v->getType() == EAgentChannelType::AGENT && _v->started());
+        };
+
+        broadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("All related agents have been advised about the key update.",
+                                                MiscCommon::info, cmdUPDATE_KEY));
+        p->pushMsg<cmdSHUTDOWN>();
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
+    }
+
+    return true;
 }

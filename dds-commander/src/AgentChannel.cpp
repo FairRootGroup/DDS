@@ -236,3 +236,10 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
             return true;
     }
 }
+
+bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+{
+    // Return false.
+    // The command can only be processed by the higher level object
+    return false;
+}

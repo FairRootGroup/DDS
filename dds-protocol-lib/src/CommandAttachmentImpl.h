@@ -18,6 +18,7 @@
 #include "VersionCmd.h"
 #include "BinaryAttachmentReceivedCmd.h"
 #include "BinaryAttachmentStartCmd.h"
+#include "UpdateKeyCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -80,6 +81,7 @@ namespace dds
     REGISTER_CMD_ATTACHMENT(SAssignUserTaskCmd, cmdASSIGN_USER_TASK)
     REGISTER_CMD_ATTACHMENT(SBinaryAttachmentReceivedCmd, cmdBINARY_ATTACHMENT_RECEIVED)
     REGISTER_CMD_ATTACHMENT(SBinaryAttachmentStartCmd, cmdBINARY_ATTACHMENT_START)
+    REGISTER_CMD_ATTACHMENT(SUpdateKeyCmd, cmdUPDATE_KEY)
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

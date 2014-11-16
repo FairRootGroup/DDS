@@ -6,13 +6,14 @@
 #define __DDS__GetLogChannel__
 // DDS
 #include "ConnectionImpl.h"
+#include "Options.h"
 
 namespace dds
 {
-    class CGetLogChannel : public CConnectionImpl<CGetLogChannel>
+    class CGenericChannel : public CConnectionImpl<CGenericChannel>
     {
-        CGetLogChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CGetLogChannel>(_service)
+        CGenericChannel(boost::asio::io_service& _service)
+            : CConnectionImpl<CGenericChannel>(_service)
             , m_isHandShakeOK(false)
         {
         }
@@ -21,11 +22,16 @@ namespace dds
         REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
-        BEGIN_MSG_MAP(CGetLogChannel)
+        BEGIN_MSG_MAP(CGenericChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG);
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         END_MSG_MAP()
+
+        void setOptions(const SOptions& _options)
+        {
+            m_options = _options;
+        }
 
       private:
         // Message Handlers
@@ -35,12 +41,13 @@ namespace dds
         // On connection handles
         void onRemoteEndDissconnected()
         {
-            LOG(MiscCommon::info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+            LOG(MiscCommon::info) << "The DDS commander [" << socket().remote_endpoint().address().to_string()
                                   << "] has closed the connection.";
         }
 
       private:
         bool m_isHandShakeOK;
+        SOptions m_options;
     };
 }
 #endif /* defined(__DDS__GetLogChannel__) */

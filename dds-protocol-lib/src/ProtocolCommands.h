@@ -10,13 +10,19 @@
 #define NAME_TO_STRING(NAME) #NAME
 
 // define current protocol version version
-const uint16_t g_protocolCommandsVersion = 1;
+//
+// ---= VERSION History =---
+// -----=== v2 ===-----
+//
+// Added:
+// cmdUPDATE_KEY
+//
+const uint16_t g_protocolCommandsVersion = 2;
 
 namespace dds
 {
     enum ECmdType
     {
-        // ----------- VERSION 1 --------------------
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
         cmdHANDSHAKE,       // attachment: SVersionCmd
@@ -41,9 +47,8 @@ namespace dds
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
-        cmdTRANSPORT_TEST
-
-        // ----------- VERSION 2 --------------------
+        cmdTRANSPORT_TEST,
+        cmdUPDATE_KEY // attachment: SUpdateKeyCmd
     };
 
     static std::map<uint16_t, std::string> g_cmdToString{
@@ -72,6 +77,7 @@ namespace dds
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
+        { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
     };
 }
 

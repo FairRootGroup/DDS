@@ -429,4 +429,41 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     BOOST_CHECK(src == dest);
 }
 
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
+{
+    const string sKey = "test_Key";
+    const string sValue = "test_Value";
+    const unsigned int cmdSize = sKey.size() + 1 + sValue.size() + 1;
+
+    // Create a message
+    SUpdateKeyCmd cmd_src;
+    cmd_src.m_sKey = sKey;
+    cmd_src.m_sValue = sValue;
+    MiscCommon::BYTEVector_t data;
+    cmd_src.convertToData(&data);
+    CProtocolMessage msg_src;
+    msg_src.encode(cmdUPDATE_KEY, data);
+
+    BOOST_CHECK(msg_src.header().m_cmd == cmdUPDATE_KEY);
+
+    BOOST_CHECK(cmd_src.size() == cmdSize);
+
+    // "Send" message
+    CProtocolMessage msg_dest;
+    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
+    memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
+
+    // Decode the message
+    BOOST_CHECK(msg_dest.decode_header());
+
+    // Check that we got the proper command ID
+    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
+
+    // Read the message
+    SUpdateKeyCmd cmd_dest;
+    cmd_dest.convertFromData(msg_dest.bodyToContainer());
+
+    BOOST_CHECK(cmd_src == cmd_dest);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
