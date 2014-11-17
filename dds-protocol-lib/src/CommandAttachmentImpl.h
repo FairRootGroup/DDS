@@ -8,7 +8,6 @@
 #include "ProtocolCommands.h"
 #include "ProtocolMessage.h"
 #include "AgentsInfoCmd.h"
-#include "BinaryDownloadStatCmd.h"
 #include "SimpleMsgCmd.h"
 #include "UUIDCmd.h"
 #include "AssignUserTaskCmd.h"

@@ -16,7 +16,6 @@ set( SOURCE_FILES
 	./src/ProtocolMessage.cpp
 	./src/BasicCmd.cpp
 	./src/AgentsInfoCmd.cpp
-	./src/BinaryDownloadStatCmd.cpp
 	./src/SimpleMsgCmd.cpp
 	./src/UUIDCmd.cpp
 	./src/AssignUserTaskCmd.cpp
@@ -37,7 +36,6 @@ set( SRC_HDRS
 	./src/ConnectionManagerImpl.h
 	./src/BasicCmd.h
 	./src/AgentsInfoCmd.h
-	./src/BinaryDownloadStatCmd.h
 	./src/SimpleMsgCmd.h
 	./src/UUIDCmd.h
 	./src/AssignUserTaskCmd.h
