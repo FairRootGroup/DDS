@@ -7,6 +7,7 @@
 #include "ActivateChannel.h"
 #include "Options.h"
 #include "DDSHelper.h"
+#include "Topology.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -35,6 +36,22 @@ int main(int argc, char* argv[])
     {
         LOG(log_stderr) << e.what();
         return EXIT_FAILURE;
+    }
+
+    if (options.m_topologyCmd == ETopologyCmdType::VALIDATE)
+    {
+        try
+        {
+            CTopology topology;
+            topology.init(options.m_sTopoFile);
+        }
+        catch (exception& e)
+        {
+            LOG(log_stderr) << e.what();
+            return EXIT_FAILURE;
+        }
+
+        return EXIT_SUCCESS;
     }
 
     string sHost;

@@ -9,6 +9,7 @@
 #include "TaskGroup.h"
 #include "TaskCollection.h"
 #include "UserDefaults.h"
+#include "FindCfgFile.h"
 // STL
 #include <map>
 // SYSTEM
@@ -42,10 +43,14 @@ bool CTopologyParserXML::isValid(const std::string& _fileName)
             throw runtime_error("Unable to run XML validator.");
         case 0:
         {
-            string topoXSDPath = CUserDefaults::getDDSPath() + "share/topology.xsd";
             // FIXME: XSD file is hardcoded now -> take it from resource manager
-            // FIXME: Path to xmllint is hardcoded now.
-            execl("/usr/bin/xmllint", "xmllint", "--noout", "--schema", topoXSDPath.c_str(), _fileName.c_str(), NULL);
+            string topoXSDPath = CUserDefaults::getDDSPath() + "share/topology.xsd";
+            MiscCommon::CFindCfgFile<string> cfg;
+            cfg.SetOrder("/usr/bin/xmllint")("/usr/local/bin/xmllint")("/opt/local/bin/xmllint")("/bin/xmllint");
+            string xmllintPath;
+            cfg.GetCfg(&xmllintPath);
+
+            execl(xmllintPath.c_str(), "xmllint", "--noout", "--schema", topoXSDPath.c_str(), _fileName.c_str(), NULL);
 
             // We shoud never come to this point of execution
             exit(1);

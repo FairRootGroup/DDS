@@ -60,11 +60,13 @@ target_link_libraries (
 	dds-topology
 	dds-user-defaults-lib
 	dds-protocol-lib
+    dds-topology-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_LOG_LIBRARY}
 	${Boost_LOG_SETUP_LIBRARY}
 	${Boost_THREAD_LIBRARY}
+	${Boost_FILESYSTEM_LIBRARY}
 )
 
 target_include_directories(dds-topology
