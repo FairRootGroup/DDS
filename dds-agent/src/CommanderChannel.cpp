@@ -7,6 +7,7 @@
 #include "version.h"
 #include "CommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
+#include "KeyValue.h"
 // MiscCommon
 #include "FindCfgFile.h"
 // BOOST
@@ -334,5 +335,21 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
 bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
+    try
+    {
+        CKeyValue kv;
+        kv.putValue(_attachment->m_sKey, _attachment->m_sValue);
+    }
+    catch (exception& e)
+    {
+        LOG(error) << e.what();
+
+        // Send response back to server
+        SSimpleMsgCmd cmd;
+        cmd.m_sMsg = e.what();
+        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_srcCommand = cmdUPDATE_KEY;
+        pushMsg<cmdSIMPLE_MSG>(cmd);
+    }
     return true;
 }

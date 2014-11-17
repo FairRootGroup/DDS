@@ -13,6 +13,11 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 set( SOURCE_FILES
 	./src/KeyValue.cpp
+	./src/KeyValueGuard.cpp
+)
+
+set( SRC_HDRS_INT
+	./src/KeyValueGuard.h
 )
 
 set( SRC_HDRS
@@ -29,21 +34,28 @@ include_directories(
 # lib
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_library(dds-key-value-lib SHARED ${SOURCE_FILES} ${SRC_HDRS})
+	add_library(dds-key-value-lib SHARED ${SOURCE_FILES} ${SRC_HDRS_INT} ${SRC_HDRS})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
 	add_library(dds-key-value-lib SHARED ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-key-value-lib
+	dds-user-defaults-lib
 	${Boost_SYSTEM_LIBRARY}
+	${Boost_FILESYSTEM_LIBRARY}
+)
+
+target_include_directories(dds-key-value-lib
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 # API headers
 target_include_directories(dds-key-value-lib INTERFACE ${dds-key-value-lib_SOURCE_DIR}/src)
 
 install(TARGETS dds-key-value-lib DESTINATION lib)
-
+install(FILES ${SRC_HDRS} DESTINATION include)
 
 #
 # Unit tests

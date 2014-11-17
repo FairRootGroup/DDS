@@ -63,6 +63,7 @@ target_link_libraries (
 	dds-agent
 	dds-protocol-lib
 	dds-user-defaults-lib
+	dds-key-value-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_LOG_LIBRARY}
@@ -74,6 +75,8 @@ target_link_libraries (
 target_include_directories(dds-commander
 	PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+	PRIVATE
+		$<TARGET_PROPERTY:dds-key-value-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-agent DESTINATION bin)
