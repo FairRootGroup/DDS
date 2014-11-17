@@ -132,7 +132,7 @@ bool CCommanderChannel::on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_
     // If file does not exist than return uuid_nil.
 
     const string sAgentUUIDFile(CUserDefaults::instance().getAgentUUIDFile());
-    if (MiscCommon::file_exists(sAgentUUIDFile))
+    if (file_exists(sAgentUUIDFile))
     {
         readAgentUUIDFile();
     }
@@ -184,7 +184,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         if (!fs::exists(archiveDir) && !fs::create_directory(archiveDir))
         {
             string msg("Could not create directory: " + archiveDir.string());
-            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, MiscCommon::error, cmdGET_LOG));
+            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, error, cmdGET_LOG));
             return true;
         }
 
@@ -222,7 +222,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
     catch (exception& e)
     {
         LOG(error) << e.what();
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), MiscCommon::error, cmdGET_LOG));
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), error, cmdGET_LOG));
     }
 
     return true;
@@ -231,7 +231,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
 void CCommanderChannel::readAgentUUIDFile()
 {
     const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
-    LOG(MiscCommon::info) << "Reading an agent UUID file: " << sAgentUUIDFile;
+    LOG(info) << "Reading an agent UUID file: " << sAgentUUIDFile;
     ifstream f(sAgentUUIDFile.c_str());
     if (!f.is_open() || !f.good())
     {
@@ -274,7 +274,7 @@ void CCommanderChannel::onRemoteEndDissconnected()
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
 {
-    LOG(MiscCommon::info) << "Recieved a user task assigment. " << *_attachment;
+    LOG(info) << "Recieved a user task assigment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
     return true;
 }
@@ -286,11 +286,11 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
     if (sUsrExe.empty())
     {
-        LOG(MiscCommon::info) << "Recieved activation command. Ignoring the command, since no task is assigned.";
+        LOG(info) << "Recieved activation command. Ignoring the command, since no task is assigned.";
         // Send response back to server
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = "No task is assigned. Activation is ignored.";
-        cmd.m_msgSeverity = MiscCommon::info;
+        cmd.m_msgSeverity = info;
         cmd.m_srcCommand = cmdACTIVATE_AGENT;
         pushMsg<cmdSIMPLE_MSG>(cmd);
         return true;
@@ -302,7 +302,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
     try
     {
-        LOG(MiscCommon::info) << "Executing user task: " << sUsrExe;
+        LOG(info) << "Executing user task: " << sUsrExe;
         pidUsrTask = do_execv(sUsrExe, 0, &output);
     }
     catch (exception& e)
@@ -312,21 +312,21 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         // Send response back to server
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = e.what();
-        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_msgSeverity = error;
         cmd.m_srcCommand = cmdACTIVATE_AGENT;
         pushMsg<cmdSIMPLE_MSG>(cmd);
     }
 
     stringstream ss;
     ss << "User task (pid:" << pidUsrTask << ") is activated.";
-    LOG(MiscCommon::info) << ss.str();
+    LOG(info) << ss.str();
 
     m_onNewUserTaskCallback(pidUsrTask);
 
     // Send response back to server
     SSimpleMsgCmd cmd;
     cmd.m_sMsg = ss.str();
-    cmd.m_msgSeverity = MiscCommon::info;
+    cmd.m_msgSeverity = info;
     cmd.m_srcCommand = cmdACTIVATE_AGENT;
     pushMsg<cmdSIMPLE_MSG>(cmd);
 
@@ -337,6 +337,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
 {
     try
     {
+        LOG(info) << "Recieved a key update notifications: " << *_attachment;
         CKeyValue kv;
         kv.putValue(_attachment->m_sKey, _attachment->m_sValue);
     }
@@ -347,7 +348,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
         // Send response back to server
         SSimpleMsgCmd cmd;
         cmd.m_sMsg = e.what();
-        cmd.m_msgSeverity = MiscCommon::error;
+        cmd.m_msgSeverity = error;
         cmd.m_srcCommand = cmdUPDATE_KEY;
         pushMsg<cmdSIMPLE_MSG>(cmd);
     }
