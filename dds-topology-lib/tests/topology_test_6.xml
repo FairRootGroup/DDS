@@ -5,8 +5,14 @@
 	<property id="property3"/>
 	<property id="property3"/>
 	
+	<restriction id="restriction1">
+    	<hostPattern value="*.gsi.de"/>
+		<userPattern value="andrey"/>
+	</restriction>
+	
   	<decltask id="task1">
 		<exe>app1</exe>
+		<restriction>restriction1</restriction>
 		<properties>
 			<id>property1</id>
 		    <id>property3</id>

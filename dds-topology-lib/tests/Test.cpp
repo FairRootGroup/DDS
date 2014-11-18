@@ -91,6 +91,18 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->getEnv() == "env1");
     BOOST_CHECK(casted1->isExeReachable() == true);
     BOOST_CHECK(casted1->isEnvReachable() == false);
+    RestrictionPtr_t restriction = casted1->getRestriction();
+    BOOST_CHECK(restriction->getId() == "restriction1");
+    BOOST_CHECK(restriction->getType() == ETopoType::RESTRICTION);
+    BOOST_CHECK(restriction->getParent() == element1.get());
+    BOOST_CHECK(restriction->getHostPattern() == ".+.gsi.de");
+    BOOST_CHECK(restriction->getUserPattern() == "andrey|anar");
+    BOOST_CHECK(restriction->hostPatterMatches("dds.gsi.de") == true);
+    BOOST_CHECK(restriction->hostPatterMatches("gsi.de") == false);
+    BOOST_CHECK(restriction->hostPatterMatches("google.com") == false);
+    BOOST_CHECK(restriction->userPatterMatches("andrey") == true);
+    BOOST_CHECK(restriction->userPatterMatches("anar") == true);
+    BOOST_CHECK(restriction->userPatterMatches("user") == false);
 
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
@@ -309,6 +321,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::COLLECTION) == "collection");
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::GROUP) == "group");
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::TOPO_PROPERTY) == "property");
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::RESTRICTION) == "restriction");
 
     // UseTagToTopoType
     BOOST_CHECK_THROW(UseTagToTopoType(""), runtime_error);
@@ -318,6 +331,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(UseTagToTopoType("collection") == ETopoType::COLLECTION);
     BOOST_CHECK(UseTagToTopoType("group") == ETopoType::GROUP);
     BOOST_CHECK(UseTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
+    BOOST_CHECK(UseTagToTopoType("restriction") == ETopoType::RESTRICTION);
 
     // TopoTypeToDeclTag
     BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_BASE), runtime_error);
@@ -326,6 +340,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::COLLECTION) == "declcollection");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "group");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "property");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::RESTRICTION) == "restriction");
 
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
@@ -335,6 +350,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(DeclTagToTopoType("declcollection") == ETopoType::COLLECTION);
     BOOST_CHECK(DeclTagToTopoType("group") == ETopoType::GROUP);
     BOOST_CHECK(DeclTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
+    BOOST_CHECK(DeclTagToTopoType("restriction") == ETopoType::RESTRICTION);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
@@ -353,6 +369,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
 
     const ptree& pt4 = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "property1", pt.get_child("topology"));
     BOOST_CHECK(pt4.get<string>("<xmlattr>.id") == "property1");
+
+    const ptree& pt5 = CTopoBase::findElement(ETopoType::RESTRICTION, "restriction1", pt.get_child("topology"));
+    BOOST_CHECK(pt5.get<string>("<xmlattr>.id") == "restriction1");
 
     // Wrong path to property tree
     BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task1", pt), logic_error);

@@ -57,9 +57,14 @@ void CTask::setProperties(const TopoPropertyPtrVector_t& _properties)
     m_properties = _properties;
 }
 
-void CTask::addProperty(TopoPropertyPtr_t& _property)
+void CTask::addProperty(TopoPropertyPtr_t _property)
 {
     m_properties.push_back(_property);
+}
+
+void CTask::setRestriction(RestrictionPtr_t _restriction)
+{
+    m_restriction = _restriction;
 }
 
 size_t CTask::getNofTasks() const
@@ -114,6 +119,11 @@ const TopoPropertyPtrVector_t& CTask::getProperties() const
     return m_properties;
 }
 
+RestrictionPtr_t CTask::getRestriction() const
+{
+    return m_restriction;
+}
+
 void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
@@ -125,6 +135,15 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         setEnv(taskPT.get<string>("env", ""));
         setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));
         setEnvReachable(taskPT.get<bool>("env.<xmlattr>.reachable", true));
+
+        string restrictionId = taskPT.get<string>("restriction", "");
+        if (!restrictionId.empty())
+        {
+            RestrictionPtr_t newRestriction = make_shared<CRestriction>();
+            newRestriction->setParent(this);
+            newRestriction->initFromPropertyTree(restrictionId, _pt);
+            setRestriction(newRestriction);
+        }
 
         boost::optional<const ptree&> propertiesPT = taskPT.get_child_optional("properties");
         if (propertiesPT)

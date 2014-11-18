@@ -5,11 +5,17 @@
 	<property id="property3" />
 	<property id="property4" />
 	
+	<restriction id="restriction1">
+    	<hostPattern value=".+.gsi.de"/>
+		<userPattern value="andrey|anar"/>
+	</restriction>
+	
 	<!-- THIS IS A COMMENT -->
 	
   	<decltask id="task1">
 		<exe reachable="true">app1 -l -n</exe>
 		<env reachable="false">env1</env>
+		<restriction>restriction1</restriction>
 		<properties>
 			<id>property1</id>
 			<id>property4</id>

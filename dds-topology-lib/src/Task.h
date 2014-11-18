@@ -9,6 +9,7 @@
 // DDS
 #include "TopoElement.h"
 #include "TopoProperty.h"
+#include "Restriction.h"
 // STD
 #include <string>
 #include <memory>
@@ -32,6 +33,7 @@ namespace dds
         size_t getNofProperties() const;
         TopoPropertyPtr_t getProperty(size_t _i) const;
         const TopoPropertyPtrVector_t& getProperties() const;
+        RestrictionPtr_t getRestriction() const;
 
         /// Modifiers
         void setExe(const std::string& _exe);
@@ -39,7 +41,8 @@ namespace dds
         void setExeReachable(bool _exeReachable);
         void setEnvReachable(bool _envReachable);
         void setProperties(const TopoPropertyPtrVector_t& _properties);
-        void addProperty(TopoPropertyPtr_t& _property);
+        void addProperty(TopoPropertyPtr_t _property);
+        void setRestriction(RestrictionPtr_t _restriction);
 
         /// \brief If parent is a group than return N, else return 1.
         size_t getTotalCounter() const;
@@ -68,6 +71,7 @@ namespace dds
         bool m_exeReachable;                  ///> If executable is available on the WN
         bool m_envReachable;                  ///> If environment script is available on the WN
         TopoPropertyPtrVector_t m_properties; ///> Properties
+        RestrictionPtr_t m_restriction;       ///> Restriction
     };
 
     typedef std::shared_ptr<CTask> TaskPtr_t;

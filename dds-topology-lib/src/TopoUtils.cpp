@@ -24,6 +24,8 @@ namespace dds
                 return "group";
             case ETopoType::TOPO_PROPERTY:
                 return "property";
+            case ETopoType::RESTRICTION:
+                return "restriction";
             default:
                 throw runtime_error("Topology element not found.");
         }
@@ -39,6 +41,8 @@ namespace dds
             return ETopoType::GROUP;
         else if (_name == "property")
             return ETopoType::TOPO_PROPERTY;
+        else if (_name == "restriction")
+            return ETopoType::RESTRICTION;
         else
             throw runtime_error("Topology element with name " + _name + " does not exist.");
     }
@@ -55,6 +59,8 @@ namespace dds
                 return "group";
             case ETopoType::TOPO_PROPERTY:
                 return "property";
+            case ETopoType::RESTRICTION:
+                return "restriction";
             default:
                 throw runtime_error("Topology element not found.");
         }
@@ -70,6 +76,8 @@ namespace dds
             return ETopoType::GROUP;
         else if (_name == "property")
             return ETopoType::TOPO_PROPERTY;
+        else if (_name == "restriction")
+            return ETopoType::RESTRICTION;
         else
             throw runtime_error("Topology element with name " + _name + " does not exist.");
     }
