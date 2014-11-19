@@ -56,15 +56,15 @@
 </xs:complexType>
 
 
-<xs:complexType name="restrictionValueType">
+<xs:complexType name="requirementValueType">
   <xs:attribute name="value" type="stringType" use="required"/>
 </xs:complexType>
 
 
-<xs:complexType name="restrictionType">
+<xs:complexType name="requirementType">
   <xs:sequence>
-    <xs:element name="hostPattern" type="restrictionValueType" maxOccurs="1" minOccurs="0"/>
-	<xs:element name="userPattern" type="restrictionValueType" maxOccurs="1" minOccurs="0"/>
+    <xs:element name="hostPattern" type="requirementValueType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="userPattern" type="requirementValueType" maxOccurs="1" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringType" use="required"/>
 </xs:complexType>
@@ -73,7 +73,7 @@
   <xs:sequence>
 	<xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
 	<xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
-	<xs:element name="restriction" type="stringType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="requirement" type="stringType" maxOccurs="1" minOccurs="0"/>
   	<xs:element name="properties" type="propertyArrayType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringType" use="required"/>
@@ -111,7 +111,7 @@
 <xs:complexType name="topologyType">
   <xs:sequence>
     <xs:element name="property" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
-	<xs:element name="restriction" type="restrictionType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="declrequirement" type="requirementType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="decltask" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
     <xs:element name="declcollection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>

@@ -62,9 +62,9 @@ void CTask::addProperty(TopoPropertyPtr_t _property)
     m_properties.push_back(_property);
 }
 
-void CTask::setRestriction(RestrictionPtr_t _restriction)
+void CTask::setRequirement(RequirementPtr_t _requirement)
 {
-    m_restriction = _restriction;
+    m_requirement = _requirement;
 }
 
 size_t CTask::getNofTasks() const
@@ -119,9 +119,9 @@ const TopoPropertyPtrVector_t& CTask::getProperties() const
     return m_properties;
 }
 
-RestrictionPtr_t CTask::getRestriction() const
+RequirementPtr_t CTask::getRequirement() const
 {
-    return m_restriction;
+    return m_requirement;
 }
 
 void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
@@ -139,10 +139,10 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         string restrictionId = taskPT.get<string>("restriction", "");
         if (!restrictionId.empty())
         {
-            RestrictionPtr_t newRestriction = make_shared<CRestriction>();
-            newRestriction->setParent(this);
-            newRestriction->initFromPropertyTree(restrictionId, _pt);
-            setRestriction(newRestriction);
+            RequirementPtr_t newRequirement = make_shared<CRequirement>();
+            newRequirement->setParent(this);
+            newRequirement->initFromPropertyTree(restrictionId, _pt);
+            setRequirement(newRequirement);
         }
 
         boost::optional<const ptree&> propertiesPT = taskPT.get_child_optional("properties");

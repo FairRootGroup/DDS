@@ -39,7 +39,7 @@ set( SOURCE_FILES
 	./src/TaskContainer.cpp
 	./src/TopologyParserXML.cpp
 	./src/Index.cpp
-    ./src/Restriction.cpp
+    ./src/Requirement.cpp
 )
 
 #
@@ -58,7 +58,7 @@ set( HEADER_FILES
 	./src/TaskContainer.h
 	./src/TopologyParserXML.h
 	./src/Index.h
-    ./src/Restriction.h
+    ./src/Requirement.h
 )
 
 include_directories(

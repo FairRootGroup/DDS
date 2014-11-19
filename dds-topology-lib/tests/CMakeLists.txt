@@ -22,7 +22,7 @@ set( SOURCE_FILES
 	${dds-topology-lib_SOURCE_DIR}/src/TopologyParserXML.cpp
 	${dds-topology-lib_SOURCE_DIR}/src/TopoUtils.cpp
 	${dds-topology-lib_SOURCE_DIR}/src/TopoFactory.cpp
-    ${dds-topology-lib_SOURCE_DIR}/src/Restriction.cpp
+    ${dds-topology-lib_SOURCE_DIR}/src/Requirement.cpp
 )
 add_executable(dds-topology-lib-tests ${SOURCE_FILES} )
 

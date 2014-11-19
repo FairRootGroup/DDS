@@ -25,7 +25,7 @@ namespace dds
         TASK,
         COLLECTION,
         GROUP,
-        RESTRICTION
+        REQUIREMENT
     };
 
     class CTopoBase
