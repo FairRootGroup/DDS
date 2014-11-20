@@ -59,7 +59,7 @@ exec_test "MiscCommon_test_Logger"
 echo "----------------------"
 echo "dds-topology UNIT-TESTs"
 echo "----------------------"
-exec_test "dds-topology_tests" "--catch_system_errors=no"
+exec_test "dds-topology-lib-tests" "--catch_system_errors=no"
 
 echo "----------------------"
 echo "Protocol UNIT-TESTs"
