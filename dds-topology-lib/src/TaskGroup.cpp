@@ -98,9 +98,9 @@ TopoElementPtrVector_t CTaskGroup::getElementsByType(ETopoType _type) const
     return result;
 }
 
-IndexVector_t CTaskGroup::getIndicesByType(ETopoType _type) const
+TopoIndexVector_t CTaskGroup::getTopoIndicesByType(ETopoType _type) const
 {
-    IndexVector_t result;
+    TopoIndexVector_t result;
     const auto& elements = getElements();
     for (const auto& v : elements)
     {

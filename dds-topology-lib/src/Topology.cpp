@@ -6,7 +6,7 @@
 // DDS
 #include "Topology.h"
 #include "TopologyParserXML.h"
-#include "Index.h"
+#include "TopoIndex.h"
 // STD
 #include <string>
 
@@ -34,30 +34,30 @@ void CTopology::init(const std::string& _fileName)
     CTopologyParserXML parser;
     m_main = make_shared<CTaskGroup>();
     parser.parse(_fileName, m_main);
-    FillIndexToTopoElementMap(m_main);
+    FillTopoIndexToTopoElementMap(m_main);
 }
 
-TopoElementPtr_t CTopology::getTopoElementByIndex(const CIndex& _index) const
+TopoElementPtr_t CTopology::getTopoElementByTopoIndex(const CTopoIndex& _index) const
 {
-    auto it = m_indexToTopoElementMap.find(_index);
-    if (it == m_indexToTopoElementMap.end())
+    auto it = m_topoIndexToTopoElementMap.find(_index);
+    if (it == m_topoIndexToTopoElementMap.end())
         throw runtime_error("Can not find element with index " + _index.getPath());
     return it->second;
 }
 
-void CTopology::FillIndexToTopoElementMap(const TopoElementPtr_t& _element)
+void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)
 {
     if (_element->getType() == ETopoType::TASK)
     {
-        m_indexToTopoElementMap[_element->getPath()] = _element;
+        m_topoIndexToTopoElementMap[_element->getPath()] = _element;
         return;
     }
     TaskContainerPtr_t container = dynamic_pointer_cast<CTaskContainer>(_element);
     const auto& elements = container->getElements();
     for (const auto& v : elements)
     {
-        m_indexToTopoElementMap[v->getPath()] = v;
-        FillIndexToTopoElementMap(v);
+        m_topoIndexToTopoElementMap[v->getPath()] = v;
+        FillTopoIndexToTopoElementMap(v);
     }
 }
 

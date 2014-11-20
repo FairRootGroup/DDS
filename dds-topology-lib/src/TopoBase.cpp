@@ -66,9 +66,9 @@ string CTopoBase::getPath() const
     }
 }
 
-CIndex CTopoBase::getIndex() const
+CTopoIndex CTopoBase::getIndex() const
 {
-    return CIndex(getPath());
+    return CTopoIndex(getPath());
 }
 
 const ptree& CTopoBase::findElement(ETopoType _type, const string& _name, const ptree& _pt)

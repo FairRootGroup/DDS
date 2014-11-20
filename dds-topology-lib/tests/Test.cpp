@@ -10,7 +10,7 @@
 #include <boost/test/unit_test.hpp>
 
 // DDS
-#include "Index.h"
+#include "TopoIndex.h"
 #include "Topology.h"
 #include "TopologyParserXML.h"
 #include "TopoBase.h"
@@ -36,22 +36,22 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_1)
     CTopology topology;
     topology.init("topology_test_1.xml");
 
-    TopoElementPtr_t e1 = topology.getTopoElementByIndex(CIndex("main/task1"));
+    TopoElementPtr_t e1 = topology.getTopoElementByTopoIndex(CTopoIndex("main/task1"));
     BOOST_CHECK(e1->getPath() == "main/task1");
 
-    TopoElementPtr_t e2 = topology.getTopoElementByIndex(CIndex("main/collection1"));
+    TopoElementPtr_t e2 = topology.getTopoElementByTopoIndex(CTopoIndex("main/collection1"));
     BOOST_CHECK(e2->getPath() == "main/collection1");
 
-    TopoElementPtr_t e3 = topology.getTopoElementByIndex(CIndex("main/group1"));
+    TopoElementPtr_t e3 = topology.getTopoElementByTopoIndex(CTopoIndex("main/group1"));
     BOOST_CHECK(e3->getPath() == "main/group1");
 
-    TopoElementPtr_t e4 = topology.getTopoElementByIndex(CIndex("main/group1/collection1"));
+    TopoElementPtr_t e4 = topology.getTopoElementByTopoIndex(CTopoIndex("main/group1/collection1"));
     BOOST_CHECK(e4->getPath() == "main/group1/collection1");
 
-    TopoElementPtr_t e5 = topology.getTopoElementByIndex(CIndex("main/group2/collection2/task5"));
+    TopoElementPtr_t e5 = topology.getTopoElementByTopoIndex(CTopoIndex("main/group2/collection2/task5"));
     BOOST_CHECK(e5->getPath() == "main/group2/collection2/task5");
 
-    BOOST_CHECK_THROW(topology.getTopoElementByIndex(CIndex("wrong_path")), runtime_error);
+    BOOST_CHECK_THROW(topology.getTopoElementByTopoIndex(CTopoIndex("wrong_path")), runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
 
     /// test getIndicesByType
-    IndexVector_t ids1 = main->getIndicesByType(ETopoType::COLLECTION);
+    TopoIndexVector_t ids1 = main->getTopoIndicesByType(ETopoType::COLLECTION);
     BOOST_CHECK(ids1.size() == 5);
     BOOST_CHECK(ids1[0].getPath() == "main/collection1");
     BOOST_CHECK(ids1[1].getPath() == "main/group1/collection1");
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(ids1[3].getPath() == "main/group2/collection1");
     BOOST_CHECK(ids1[4].getPath() == "main/group2/collection2");
 
-    IndexVector_t ids2 = main->getIndicesByType(ETopoType::TASK);
+    TopoIndexVector_t ids2 = main->getTopoIndicesByType(ETopoType::TASK);
     BOOST_CHECK(ids2.size() == 4);
     BOOST_CHECK(ids2[0].getPath() == "main/task1");
     BOOST_CHECK(ids2[1].getPath() == "main/group1/task1");

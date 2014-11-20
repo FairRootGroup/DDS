@@ -7,7 +7,7 @@
 #define __DDS__Topology__
 
 // DDS Topo
-#include "Index.h"
+#include "TopoIndex.h"
 #include "TaskGroup.h"
 #include "TopoElement.h"
 #include "Task.h"
@@ -33,7 +33,7 @@ namespace dds
 
         /// Accessors
         TaskGroupPtr_t getMainGroup() const;
-        TopoElementPtr_t getTopoElementByIndex(const CIndex& _index) const;
+        TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.
@@ -45,12 +45,12 @@ namespace dds
         friend std::ostream& operator<<(std::ostream& _strm, const CTopology& _topology);
 
       private:
-        void FillIndexToTopoElementMap(const TopoElementPtr_t& _element);
+        void FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element);
 
         TaskGroupPtr_t m_main; ///> Main task group which we run
 
-        typedef std::map<CIndex, TopoElementPtr_t, CompareIndexLess> IndexToTopoElementMap_t;
-        IndexToTopoElementMap_t m_indexToTopoElementMap;
+        typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
+        TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
     };
 }
 #endif /* defined(__DDS__Topology__) */

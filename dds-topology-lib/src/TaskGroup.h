@@ -7,7 +7,7 @@
 #define DDS_TaskGroup_h
 // DDS
 #include "TaskContainer.h"
-#include "Index.h"
+#include "TopoIndex.h"
 
 namespace dds
 {
@@ -35,7 +35,7 @@ namespace dds
 
         TopoElementPtrVector_t getElementsByType(ETopoType _type) const;
 
-        IndexVector_t getIndicesByType(ETopoType _type) const;
+        TopoIndexVector_t getTopoIndicesByType(ETopoType _type) const;
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.

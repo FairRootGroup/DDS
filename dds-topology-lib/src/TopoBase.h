@@ -7,7 +7,7 @@
 #define __DDS__TopoBase__
 
 // DDS
-#include "Index.h"
+#include "TopoIndex.h"
 // STD
 #include <sstream>
 #include <string>
@@ -44,7 +44,7 @@ namespace dds
         std::string getPath() const;
 
         /// \brief Return index of topo element or property.
-        CIndex getIndex() const;
+        CTopoIndex getIndex() const;
 
         /// \brief Initialize object with data from property tree.
         /// \param[in] _name Name of the object as in input file.

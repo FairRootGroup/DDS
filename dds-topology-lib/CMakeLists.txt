@@ -38,7 +38,7 @@ set( SOURCE_FILES
 	./src/TopoElement.cpp
 	./src/TaskContainer.cpp
 	./src/TopologyParserXML.cpp
-	./src/Index.cpp
+	./src/TopoIndex.cpp
     ./src/Requirement.cpp
 )
 
@@ -57,7 +57,7 @@ set( HEADER_FILES
 	./src/TopoElement.h
 	./src/TaskContainer.h
 	./src/TopologyParserXML.h
-	./src/Index.h
+	./src/TopoIndex.h
     ./src/Requirement.h
 )
 
