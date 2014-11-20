@@ -1,9 +1,13 @@
 # DDS Release Notes
 
 ## v0.6 (NOT YET RELEASED)
+### DDS common   
+Modified: Build WN packages without ICU support. (GH-14)   
+
 ### dds-protocol-lib
 Modified: Version changed to v2.0.
 Added: The protocol has learned a new command - cmdUPDATE_KEY. (GH-12)
+
 ### dds-topology
 Added: a possibility to use comments in the topology XML file. (GH-15)   
 Renamed: dds-topology renamed to dds-topology-lib. dds-topology is executable now.   
