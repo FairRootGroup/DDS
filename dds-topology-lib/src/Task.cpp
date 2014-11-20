@@ -5,6 +5,7 @@
 
 #include "Task.h"
 #include "TaskGroup.h"
+#include "TopoUtils.h"
 // STD
 #include <sstream>
 #include <string>
@@ -136,12 +137,12 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));
         setEnvReachable(taskPT.get<bool>("env.<xmlattr>.reachable", true));
 
-        string restrictionId = taskPT.get<string>("restriction", "");
-        if (!restrictionId.empty())
+        string requirementId = taskPT.get<string>(TopoTypeToUseTag(ETopoType::REQUIREMENT), "");
+        if (!requirementId.empty())
         {
             RequirementPtr_t newRequirement = make_shared<CRequirement>();
             newRequirement->setParent(this);
-            newRequirement->initFromPropertyTree(restrictionId, _pt);
+            newRequirement->initFromPropertyTree(requirementId, _pt);
             setRequirement(newRequirement);
         }
 

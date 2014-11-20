@@ -67,8 +67,8 @@ void CRequirement::initFromPropertyTree(const std::string& _name, const boost::p
     {
         const ptree& requirementPT = CTopoBase::findElement(ETopoType::REQUIREMENT, _name, _pt.get_child("topology"));
         setId(requirementPT.get<string>("<xmlattr>.id"));
-        setHostPattern(requirementPT.get<std::string>("hostPattern", ""));
-        setUserPattern(requirementPT.get<std::string>("userPattern", ""));
+        setHostPattern(requirementPT.get<std::string>("hostPattern.<xmlattr>.value", ""));
+        setUserPattern(requirementPT.get<std::string>("userPattern.<xmlattr>.value", ""));
     }
     catch (exception& error) // ptree_error, runtime_error
     {
