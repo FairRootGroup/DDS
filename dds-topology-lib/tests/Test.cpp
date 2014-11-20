@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
     CTopology topology;
     topology.init("topology_test_1.xml");
+    // std::cout << topology.toString();
     TaskGroupPtr_t main = topology.getMainGroup();
 
     //  CTopologyParserXML parser;
@@ -103,7 +104,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(requirement->userPatterMatches("andrey") == true);
     BOOST_CHECK(requirement->userPatterMatches("anar") == true);
     BOOST_CHECK(requirement->userPatterMatches("user") == false);
-
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
     BOOST_CHECK(element2->getType() == ETopoType::COLLECTION);
