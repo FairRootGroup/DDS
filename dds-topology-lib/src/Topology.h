@@ -24,13 +24,13 @@ namespace dds
     class CTopology
     {
       public:
-        typedef std::map<size_t, TaskPtr_t> IndexToTaskMap_t;
-        typedef std::map<size_t, TaskCollectionPtr_t> IndexToTaskCollectionMap_t;
+        typedef std::map<size_t, TaskPtr_t> HashToTaskMap_t;
+        typedef std::map<size_t, TaskCollectionPtr_t> HashToTaskCollectionMap_t;
         typedef std::function<bool(std::pair<size_t, TaskPtr_t>)> TaskCondition_t;
         typedef std::function<bool(std::pair<size_t, TaskCollectionPtr_t>)> TaskCollectionCondition_t;
-        typedef boost::filter_iterator<TaskCondition_t, IndexToTaskMap_t::const_iterator> TaskIterator_t;
+        typedef boost::filter_iterator<TaskCondition_t, HashToTaskMap_t::const_iterator> TaskIterator_t;
         typedef std::pair<TaskIterator_t, TaskIterator_t> TaskIteratorPair_t;
-        typedef boost::filter_iterator<TaskCollectionCondition_t, IndexToTaskCollectionMap_t::const_iterator>
+        typedef boost::filter_iterator<TaskCollectionCondition_t, HashToTaskCollectionMap_t::const_iterator>
             TaskCollectionIterator_t;
         typedef std::pair<TaskCollectionIterator_t, TaskCollectionIterator_t> TaskCollectionIteratorPair_t;
 
@@ -47,8 +47,8 @@ namespace dds
         /// Accessors
         TaskGroupPtr_t getMainGroup() const;
         TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
-        TaskPtr_t getTaskByIndex(size_t _index) const;
-        TaskCollectionPtr_t getTaskCollectionByIndex(size_t _index) const;
+        TaskPtr_t getTaskByHash(size_t _hash) const;
+        TaskCollectionPtr_t getTaskCollectionByHash(size_t _hash) const;
 
         /// Iterators
         TaskIteratorPair_t getTaskIterator(TaskCondition_t _condition = nullptr) const;
@@ -65,17 +65,25 @@ namespace dds
 
       private:
         void FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element);
-        void FillIndexToTopoElementMap(const TopoElementPtr_t& _element);
+        void FillHashToTopoElementMap(const TopoElementPtr_t& _element);
 
         TaskGroupPtr_t m_main; ///> Main task group which we run
 
         typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
         TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
 
-        IndexToTaskMap_t m_indexToTaskMap;
-        IndexToTaskCollectionMap_t m_indexToTaskCollectionMap;
-        size_t m_taskCounter;
-        size_t m_taskCollectionCounter;
+        // FIXME: Hash path maps has to be removed due to performance reasons.
+        // In any case we do not need them.
+        // For the moment we store them only for tests.
+        typedef std::map<std::string, TaskPtr_t> HashPathToTaskMap_t;
+        typedef std::map<std::string, TaskCollectionPtr_t> HashPathToTaskCollectionMap_t;
+        HashPathToTaskMap_t m_hashPathToTaskMap;
+        HashPathToTaskCollectionMap_t m_hashPathToTaskCollectionMap;
+
+        HashToTaskMap_t m_hashToTaskMap;
+        HashToTaskCollectionMap_t m_hashToTaskCollectionMap;
+        std::map<std::string, size_t> m_counterMap;
+        std::string m_currentTaskCollectionHashPath;
     };
 }
 #endif /* defined(__DDS__Topology__) */

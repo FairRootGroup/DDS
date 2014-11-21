@@ -17,10 +17,9 @@ using namespace boost;
 CTopology::CTopology()
     : m_main()
     , m_topoIndexToTopoElementMap()
-    , m_indexToTaskMap()
-    , m_indexToTaskCollectionMap()
-    , m_taskCounter(0)
-    , m_taskCollectionCounter(0)
+    , m_hashToTaskMap()
+    , m_hashToTaskCollectionMap()
+    , m_counterMap()
 {
 }
 
@@ -43,9 +42,8 @@ void CTopology::init(const std::string& _fileName)
 
     FillTopoIndexToTopoElementMap(m_main);
 
-    m_taskCounter = 0;
-    m_taskCollectionCounter = 0;
-    FillIndexToTopoElementMap(m_main);
+    m_counterMap.clear();
+    FillHashToTopoElementMap(m_main);
 }
 
 TopoElementPtr_t CTopology::getTopoElementByTopoIndex(const CTopoIndex& _index) const
@@ -56,19 +54,19 @@ TopoElementPtr_t CTopology::getTopoElementByTopoIndex(const CTopoIndex& _index) 
     return it->second;
 }
 
-TaskPtr_t CTopology::getTaskByIndex(size_t _index) const
+TaskPtr_t CTopology::getTaskByHash(size_t _hash) const
 {
-    auto it = m_indexToTaskMap.find(_index);
-    if (it == m_indexToTaskMap.end())
-        throw runtime_error("Can not find element with index " + to_string(_index));
+    auto it = m_hashToTaskMap.find(_hash);
+    if (it == m_hashToTaskMap.end())
+        throw runtime_error("Can not find element with hash " + to_string(_hash));
     return it->second;
 }
 
-TaskCollectionPtr_t CTopology::getTaskCollectionByIndex(size_t _index) const
+TaskCollectionPtr_t CTopology::getTaskCollectionByHash(size_t _hash) const
 {
-    auto it = m_indexToTaskCollectionMap.find(_index);
-    if (it == m_indexToTaskCollectionMap.end())
-        throw runtime_error("Can not find element with index " + to_string(_index));
+    auto it = m_hashToTaskCollectionMap.find(_hash);
+    if (it == m_hashToTaskCollectionMap.end())
+        throw runtime_error("Can not find element with hash " + to_string(_hash));
     return it->second;
 }
 
@@ -82,8 +80,8 @@ CTopology::TaskIteratorPair_t CTopology::getTaskIterator(TaskCondition_t _condit
             return true;
         };
     }
-    TaskIterator_t begin_iterator(condition, m_indexToTaskMap.begin(), m_indexToTaskMap.end());
-    TaskIterator_t end_iterator(condition, m_indexToTaskMap.end(), m_indexToTaskMap.end());
+    TaskIterator_t begin_iterator(condition, m_hashToTaskMap.begin(), m_hashToTaskMap.end());
+    TaskIterator_t end_iterator(condition, m_hashToTaskMap.end(), m_hashToTaskMap.end());
     return make_pair(begin_iterator, end_iterator);
 }
 
@@ -97,10 +95,9 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
             return true;
         };
     }
-    TaskCollectionIterator_t begin_iterator(condition, m_indexToTaskCollectionMap.begin(),
-                                            m_indexToTaskCollectionMap.end());
-    TaskCollectionIterator_t end_iterator(condition, m_indexToTaskCollectionMap.end(),
-                                          m_indexToTaskCollectionMap.end());
+    TaskCollectionIterator_t begin_iterator(condition, m_hashToTaskCollectionMap.begin(),
+                                            m_hashToTaskCollectionMap.end());
+    TaskCollectionIterator_t end_iterator(condition, m_hashToTaskCollectionMap.end(), m_hashToTaskCollectionMap.end());
     return make_pair(begin_iterator, end_iterator);
 }
 
@@ -120,21 +117,45 @@ void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)
     }
 }
 
-void CTopology::FillIndexToTopoElementMap(const TopoElementPtr_t& _element)
+void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element)
 {
     if (_element->getType() == ETopoType::TASK)
     {
-        m_indexToTaskMap[m_taskCounter++] = dynamic_pointer_cast<CTask>(_element);
+        TaskPtr_t task = dynamic_pointer_cast<CTask>(_element);
+        std::string path;
+        if (task->getParent()->getType() == ETopoType::COLLECTION)
+        {
+            path = m_currentTaskCollectionHashPath + "/" + task->getId();
+        }
+        else
+        {
+            path = _element->getPath();
+        }
+
+        size_t counter = ++m_counterMap[path];
+        std::string hashPath = path + "_" + to_string(counter);
+        m_hashPathToTaskMap[hashPath] = task;
+
+        std::hash<string> hash;
+        m_hashToTaskMap[hash(hashPath)] = task;
         return;
     }
     else if (_element->getType() == ETopoType::COLLECTION)
     {
         TaskCollectionPtr_t collection = dynamic_pointer_cast<CTaskCollection>(_element);
-        m_indexToTaskCollectionMap[m_taskCollectionCounter++] = collection;
+
+        std::string path = collection->getPath();
+        size_t counter = ++m_counterMap[path];
+        m_currentTaskCollectionHashPath = path + "_" + to_string(counter);
+        m_hashPathToTaskCollectionMap[m_currentTaskCollectionHashPath] = collection;
+
+        std::hash<std::string> hash;
+        m_hashToTaskCollectionMap[hash(m_currentTaskCollectionHashPath)] = collection;
+
         const auto& elements = collection->getElements();
         for (const auto& v : elements)
         {
-            FillIndexToTopoElementMap(v);
+            FillHashToTopoElementMap(v);
         }
     }
     else if (_element->getType() == ETopoType::GROUP)
@@ -146,7 +167,7 @@ void CTopology::FillIndexToTopoElementMap(const TopoElementPtr_t& _element)
         {
             for (const auto& v : elements)
             {
-                FillIndexToTopoElementMap(v);
+                FillHashToTopoElementMap(v);
             }
         }
     }
@@ -161,13 +182,23 @@ string CTopology::toString() const
     {
         ss << "    " << v.first.getPath() << " -> " << v.second->getPath() << "\n";
     }
-    ss << "  m_indexToTaskMap size=" << m_indexToTaskMap.size() << "\n";
-    for (const auto& v : m_indexToTaskMap)
+    ss << "  m_hashToTaskMap size=" << m_hashToTaskMap.size() << "\n";
+    for (const auto& v : m_hashToTaskMap)
     {
         ss << "    " << v.first << " -> " << v.second->getPath() << "\n";
     }
-    ss << "  m_indexToTaskCollectionMap size=" << m_indexToTaskCollectionMap.size() << "\n";
-    for (const auto& v : m_indexToTaskCollectionMap)
+    ss << "  m_hashToTaskCollectionMap size=" << m_hashToTaskCollectionMap.size() << "\n";
+    for (const auto& v : m_hashToTaskCollectionMap)
+    {
+        ss << "    " << v.first << " -> " << v.second->getPath() << "\n";
+    }
+    ss << "  m_hashPathToTaskMap size=" << m_hashPathToTaskMap.size() << "\n";
+    for (const auto& v : m_hashPathToTaskMap)
+    {
+        ss << "    " << v.first << " -> " << v.second->getPath() << "\n";
+    }
+    ss << "  m_hashPathToTaskCollectionMap size=" << m_hashPathToTaskCollectionMap.size() << "\n";
+    for (const auto& v : m_hashPathToTaskCollectionMap)
     {
         ss << "    " << v.first << " -> " << v.second->getPath() << "\n";
     }

@@ -50,6 +50,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
     {
         const CTopology::TaskIterator_t::value_type& v = *it;
         output1 << v.first << " " << v.second->getPath() << "\n";
+        // std::cout << v.first << " " << v.second->getPath() << "\n";
     }
     BOOST_CHECK(output1.match_pattern());
 
@@ -59,6 +60,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
     {
         const CTopology::TaskIterator_t::value_type& v = *it;
         output2 << v.first << " " << v.second->getPath() << "\n";
+        // std::cout << v.first << " " << v.second->getPath() << "\n";
     }
     BOOST_CHECK(output2.match_pattern());
 
