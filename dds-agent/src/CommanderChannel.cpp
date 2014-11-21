@@ -276,6 +276,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
 {
     LOG(info) << "Recieved a user task assigment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
+    m_sTaskId = _attachment->m_sID;
     return true;
 }
 
@@ -302,6 +303,13 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
     try
     {
+        // set task's environment
+        LOG(info) << "Setting up task's environment: "
+                  << "DDS_TASK_ID:" << m_sTaskId;
+        if (::setenv("DDS_TASK_ID", m_sTaskId.c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
+
+        // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
         pidUsrTask = do_execv(sUsrExe, 0, &output);
     }

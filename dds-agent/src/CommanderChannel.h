@@ -68,7 +68,7 @@ namespace dds
         bool m_isHandShakeOK;
         boost::uuids::uuid m_id;
         std::string m_sUsrExe;
-        uint32_t m_nTaskId;
+        std::string m_sTaskId;
         handlerOnNewUserTaks_t m_onNewUserTaskCallback;
     };
 }

@@ -13,28 +13,27 @@ namespace dds
     struct SAssignUserTaskCmd : public SBasicCmd<SAssignUserTaskCmd>
     {
         SAssignUserTaskCmd()
-            : m_nID(0)
         {
         }
         void normalizeToLocal() const;
         void normalizeToRemote() const;
         size_t size() const
         {
-            return (m_sExeFile.size() + 1 + sizeof(m_nID));
+            return (m_sExeFile.size() + 1 + m_sID.size() + 1);
         }
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SAssignUserTaskCmd& val) const
         {
-            return (m_sExeFile == val.m_sExeFile);
+            return (m_sExeFile == val.m_sExeFile && m_sID == val.m_sID);
         }
 
-        mutable uint32_t m_nID;
         std::string m_sExeFile;
+        std::string m_sID;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SAssignUserTaskCmd& val)
     {
-        return _stream << "TaskId: " << val.m_nID << "; Exe: " << val.m_sExeFile;
+        return _stream << "TaskId: " << val.m_sID << "; Exe: " << val.m_sExeFile;
     }
     inline bool operator!=(const SAssignUserTaskCmd& lhs, const SAssignUserTaskCmd& rhs)
     {

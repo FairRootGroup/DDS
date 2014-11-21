@@ -332,6 +332,9 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 SAssignUserTaskCmd msg_cmd;
                 TaskPtr_t topoTask = it_tasks->second;
 
+                // Set Task ID
+                msg_cmd.m_sID = to_string(it_tasks->first);
+
                 if (topoTask->isExeReachable())
                     msg_cmd.m_sExeFile = topoTask->getExe();
                 else
@@ -342,7 +345,6 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                     const string sExeFileNameWithArgs(exePath.filename().generic_string());
                     msg_cmd.m_sExeFile += "$DDS_LOCATION/";
                     msg_cmd.m_sExeFile += sExeFileNameWithArgs;
-                    msg_cmd.m_nID = it_tasks->first;
 
                     // Expand the string for the program to extract exe name and command line arguments
                     wordexp_t result;
