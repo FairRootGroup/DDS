@@ -9,6 +9,8 @@
 #include "TopoIndex.h"
 // STD
 #include <string>
+// BOOST
+#include <boost/crc.hpp>
 
 using namespace std;
 using namespace dds;
@@ -32,7 +34,7 @@ TaskGroupPtr_t CTopology::getMainGroup() const
     return m_main;
 }
 
-void CTopology::init(const std::string& _fileName)
+void CTopology::init(const std::string& _fileName, bool _initForTest)
 {
     /// FIXME Use parser based on the file extension.
 
@@ -40,10 +42,39 @@ void CTopology::init(const std::string& _fileName)
     m_main = make_shared<CTaskGroup>();
     parser.parse(_fileName, m_main);
 
+    m_topoIndexToTopoElementMap.clear();
     FillTopoIndexToTopoElementMap(m_main);
 
     m_counterMap.clear();
-    FillHashToTopoElementMap(m_main);
+    m_hashToTaskMap.clear();
+    m_hashToTaskCollectionMap.clear();
+    m_currentTaskCollectionHashPath = "";
+    FillHashToTopoElementMap(m_main, _initForTest);
+}
+
+const CTopology::TopoIndexToTopoElementMap_t CTopology::getTopoIndexToTopoElementMap() const
+{
+    return m_topoIndexToTopoElementMap;
+}
+
+const CTopology::HashToTaskMap_t CTopology::getHashToTaskMap() const
+{
+    return m_hashToTaskMap;
+}
+
+const CTopology::HashToTaskCollectionMap_t CTopology::getHashToTaskCollectionMap() const
+{
+    return m_hashToTaskCollectionMap;
+}
+
+const CTopology::HashPathToTaskMap_t& CTopology::getHashPathToTaskMap() const
+{
+    return m_hashPathToTaskMap;
+}
+
+const CTopology::HashPathToTaskCollectionMap_t& CTopology::getHashPathToTaskCollectionMap() const
+{
+    return m_hashPathToTaskCollectionMap;
 }
 
 TopoElementPtr_t CTopology::getTopoElementByTopoIndex(const CTopoIndex& _index) const
@@ -117,7 +148,7 @@ void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)
     }
 }
 
-void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element)
+void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool _fillHashPathMaps)
 {
     if (_element->getType() == ETopoType::TASK)
     {
@@ -134,7 +165,11 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element)
 
         size_t counter = ++m_counterMap[path];
         std::string hashPath = path + "_" + to_string(counter);
-        m_hashPathToTaskMap[hashPath] = task;
+
+        if (_fillHashPathMaps)
+        {
+            m_hashPathToTaskMap[hashPath] = task;
+        }
 
         std::hash<string> hash;
         m_hashToTaskMap[hash(hashPath)] = task;
@@ -147,7 +182,11 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element)
         std::string path = collection->getPath();
         size_t counter = ++m_counterMap[path];
         m_currentTaskCollectionHashPath = path + "_" + to_string(counter);
-        m_hashPathToTaskCollectionMap[m_currentTaskCollectionHashPath] = collection;
+
+        if (_fillHashPathMaps)
+        {
+            m_hashPathToTaskCollectionMap[m_currentTaskCollectionHashPath] = collection;
+        }
 
         std::hash<std::string> hash;
         m_hashToTaskCollectionMap[hash(m_currentTaskCollectionHashPath)] = collection;
@@ -155,7 +194,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element)
         const auto& elements = collection->getElements();
         for (const auto& v : elements)
         {
-            FillHashToTopoElementMap(v);
+            FillHashToTopoElementMap(v, _fillHashPathMaps);
         }
     }
     else if (_element->getType() == ETopoType::GROUP)
@@ -167,7 +206,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element)
         {
             for (const auto& v : elements)
             {
-                FillHashToTopoElementMap(v);
+                FillHashToTopoElementMap(v, _fillHashPathMaps);
             }
         }
     }

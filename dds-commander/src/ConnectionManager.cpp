@@ -9,7 +9,6 @@
 #include "CommandAttachmentImpl.h"
 // BOOST
 #include <boost/filesystem.hpp>
-#include <boost/crc.hpp>
 
 using namespace dds;
 using namespace std;
