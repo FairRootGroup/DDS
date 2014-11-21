@@ -24,10 +24,12 @@ namespace dds
     class CTopology
     {
       public:
-        typedef std::map<size_t, TaskPtr_t> HashToTaskMap_t;
-        typedef std::map<size_t, TaskCollectionPtr_t> HashToTaskCollectionMap_t;
-        typedef std::function<bool(std::pair<size_t, TaskPtr_t>)> TaskCondition_t;
-        typedef std::function<bool(std::pair<size_t, TaskCollectionPtr_t>)> TaskCollectionCondition_t;
+        /// Note that hash is of type uint_64.
+        /// Hash is calculated using CRC64 algorithm.
+        typedef std::map<uint64_t, TaskPtr_t> HashToTaskMap_t;
+        typedef std::map<uint64_t, TaskCollectionPtr_t> HashToTaskCollectionMap_t;
+        typedef std::function<bool(std::pair<uint64_t, TaskPtr_t>)> TaskCondition_t;
+        typedef std::function<bool(std::pair<uint64_t, TaskCollectionPtr_t>)> TaskCollectionCondition_t;
         typedef boost::filter_iterator<TaskCondition_t, HashToTaskMap_t::const_iterator> TaskIterator_t;
         typedef std::pair<TaskIterator_t, TaskIterator_t> TaskIteratorPair_t;
         typedef boost::filter_iterator<TaskCollectionCondition_t, HashToTaskCollectionMap_t::const_iterator>
@@ -50,8 +52,8 @@ namespace dds
         /// Accessors
         TaskGroupPtr_t getMainGroup() const;
         TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
-        TaskPtr_t getTaskByHash(size_t _hash) const;
-        TaskCollectionPtr_t getTaskCollectionByHash(size_t _hash) const;
+        TaskPtr_t getTaskByHash(uint64_t _hash) const;
+        TaskCollectionPtr_t getTaskCollectionByHash(uint64_t _hash) const;
 
         /// Accessors to internal data structures. Used for unit tests.
         const TopoIndexToTopoElementMap_t getTopoIndexToTopoElementMap() const;

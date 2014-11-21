@@ -7,10 +7,9 @@
 #include "Topology.h"
 #include "TopologyParserXML.h"
 #include "TopoIndex.h"
+#include "TopoUtils.h"
 // STD
 #include <string>
-// BOOST
-#include <boost/crc.hpp>
 
 using namespace std;
 using namespace dds;
@@ -85,7 +84,7 @@ TopoElementPtr_t CTopology::getTopoElementByTopoIndex(const CTopoIndex& _index) 
     return it->second;
 }
 
-TaskPtr_t CTopology::getTaskByHash(size_t _hash) const
+TaskPtr_t CTopology::getTaskByHash(uint64_t _hash) const
 {
     auto it = m_hashToTaskMap.find(_hash);
     if (it == m_hashToTaskMap.end())
@@ -93,7 +92,7 @@ TaskPtr_t CTopology::getTaskByHash(size_t _hash) const
     return it->second;
 }
 
-TaskCollectionPtr_t CTopology::getTaskCollectionByHash(size_t _hash) const
+TaskCollectionPtr_t CTopology::getTaskCollectionByHash(uint64_t _hash) const
 {
     auto it = m_hashToTaskCollectionMap.find(_hash);
     if (it == m_hashToTaskCollectionMap.end())
@@ -106,7 +105,7 @@ CTopology::TaskIteratorPair_t CTopology::getTaskIterator(TaskCondition_t _condit
     TaskCondition_t condition = _condition;
     if (condition == nullptr)
     {
-        condition = [](std::pair<size_t, TaskPtr_t>) -> bool
+        condition = [](HashToTaskMap_t::value_type) -> bool
         {
             return true;
         };
@@ -121,7 +120,7 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
     TaskCollectionCondition_t condition = _condition;
     if (condition == nullptr)
     {
-        condition = [](std::pair<size_t, TaskCollectionPtr_t>) -> bool
+        condition = [](HashToTaskCollectionMap_t::value_type) -> bool
         {
             return true;
         };
@@ -171,8 +170,17 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             m_hashPathToTaskMap[hashPath] = task;
         }
 
-        std::hash<string> hash;
-        m_hashToTaskMap[hash(hashPath)] = task;
+        uint64_t crc = dds::crc64(hashPath);
+        if (m_hashToTaskMap.find(crc) != m_hashToTaskMap.end())
+        {
+            std::stringstream ss;
+            ss << "The same hash detected <" << crc << "> for " << hashPath << std::endl;
+            throw runtime_error(ss.str());
+        }
+        else
+        {
+            m_hashToTaskMap[crc] = task;
+        }
         return;
     }
     else if (_element->getType() == ETopoType::COLLECTION)
@@ -188,8 +196,17 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             m_hashPathToTaskCollectionMap[m_currentTaskCollectionHashPath] = collection;
         }
 
-        std::hash<std::string> hash;
-        m_hashToTaskCollectionMap[hash(m_currentTaskCollectionHashPath)] = collection;
+        uint64_t crc = dds::crc64(m_currentTaskCollectionHashPath);
+        if (m_hashToTaskCollectionMap.find(crc) != m_hashToTaskCollectionMap.end())
+        {
+            std::stringstream ss;
+            ss << "The same hash detected <" << crc << "> for " << m_currentTaskCollectionHashPath << std::endl;
+            throw runtime_error(ss.str());
+        }
+        else
+        {
+            m_hashToTaskCollectionMap[crc] = collection;
+        }
 
         const auto& elements = collection->getElements();
         for (const auto& v : elements)

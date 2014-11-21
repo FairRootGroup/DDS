@@ -20,5 +20,7 @@ namespace dds
     std::string TopoTypeToDeclTag(ETopoType _type);
 
     ETopoType DeclTagToTopoType(const std::string& _name);
+
+    uint64_t crc64(const std::string& _str);
 }
 #endif /* defined(__DDS__TopoUtils__) */

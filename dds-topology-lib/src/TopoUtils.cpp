@@ -7,6 +7,8 @@
 #include "TopoUtils.h"
 // STD
 #include <stdexcept>
+// BOOST
+#include <boost/crc.hpp>
 
 using namespace std;
 
@@ -80,5 +82,12 @@ namespace dds
             return ETopoType::REQUIREMENT;
         else
             throw runtime_error("Topology element with name " + _name + " does not exist.");
+    }
+
+    uint64_t crc64(const string& _str)
+    {
+        boost::crc_optimal<64, 0x04C11DB7, 0, 0, false, false> crc;
+        crc.process_bytes(_str.data(), _str.size());
+        return crc.checksum();
     }
 }
