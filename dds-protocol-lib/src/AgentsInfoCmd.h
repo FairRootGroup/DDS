@@ -25,7 +25,7 @@ namespace dds
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SAgentsInfoCmd& _val) const
         {
-            return (m_nActiveAgents == _val.m_nActiveAgents);
+            return (m_nActiveAgents == _val.m_nActiveAgents && m_sListOfAgents == _val.m_sListOfAgents);
         }
 
         mutable uint16_t m_nActiveAgents;

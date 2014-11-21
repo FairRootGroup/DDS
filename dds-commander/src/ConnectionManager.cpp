@@ -315,11 +315,11 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             if (m_ActivateAgents.m_nofRequests == 0)
                 throw runtime_error("There are no connected agents.");
             if (topology.getMainGroup()->getTotalNofTasks() > m_ActivateAgents.m_nofRequests)
-                throw runtime_error("The number of active agents is not sufficient for this topology.");
+                throw runtime_error("The number of agents is not sufficient for this topology.");
 
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-            TopoElementPtrVector_t tasks(topology.getMainGroup()->getElementsByType(ETopoType::TASK));
-            TopoElementPtrVector_t::const_iterator it_tasks = tasks.begin();
+            CTopology::TaskIteratorPair_t tasks = topology.getTaskIterator();
+            CTopology::TaskIterator_t it_tasks = tasks.first;
             for (const auto& v : channels)
             {
                 if (v.expired())
@@ -327,10 +327,10 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 auto ptr = v.lock();
 
                 // Assign user's tasks to agents
-                if (it_tasks == tasks.end())
+                if (it_tasks == tasks.second)
                     break;
                 SAssignUserTaskCmd msg_cmd;
-                TaskPtr_t topoTask = dynamic_pointer_cast<CTask>(*it_tasks);
+                TaskPtr_t topoTask = it_tasks->second;
 
                 if (topoTask->isExeReachable())
                     msg_cmd.m_sExeFile = topoTask->getExe();
@@ -342,6 +342,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                     const string sExeFileNameWithArgs(exePath.filename().generic_string());
                     msg_cmd.m_sExeFile += "$DDS_LOCATION/";
                     msg_cmd.m_sExeFile += sExeFileNameWithArgs;
+                    msg_cmd.m_nID = it_tasks->first;
 
                     // Expand the string for the program to extract exe name and command line arguments
                     wordexp_t result;
