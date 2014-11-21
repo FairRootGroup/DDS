@@ -12,6 +12,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace boost;
 
 CTopology::CTopology()
     : m_main()
@@ -69,6 +70,38 @@ TaskCollectionPtr_t CTopology::getTaskCollectionByIndex(size_t _index) const
     if (it == m_indexToTaskCollectionMap.end())
         throw runtime_error("Can not find element with index " + to_string(_index));
     return it->second;
+}
+
+CTopology::TaskIteratorPair_t CTopology::getTaskIterator(TaskCondition_t _condition) const
+{
+    TaskCondition_t condition = _condition;
+    if (condition == nullptr)
+    {
+        condition = [](std::pair<size_t, TaskPtr_t>) -> bool
+        {
+            return true;
+        };
+    }
+    TaskIterator_t begin_iterator(condition, m_indexToTaskMap.begin(), m_indexToTaskMap.end());
+    TaskIterator_t end_iterator(condition, m_indexToTaskMap.end(), m_indexToTaskMap.end());
+    return make_pair(begin_iterator, end_iterator);
+}
+
+CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(TaskCollectionCondition_t _condition) const
+{
+    TaskCollectionCondition_t condition = _condition;
+    if (condition == nullptr)
+    {
+        condition = [](std::pair<size_t, TaskCollectionPtr_t>) -> bool
+        {
+            return true;
+        };
+    }
+    TaskCollectionIterator_t begin_iterator(condition, m_indexToTaskCollectionMap.begin(),
+                                            m_indexToTaskCollectionMap.end());
+    TaskCollectionIterator_t end_iterator(condition, m_indexToTaskCollectionMap.end(),
+                                          m_indexToTaskCollectionMap.end());
+    return make_pair(begin_iterator, end_iterator);
 }
 
 void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)

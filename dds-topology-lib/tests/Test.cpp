@@ -31,6 +31,32 @@ using namespace dds;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
+BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
+{
+    CTopology topology;
+    topology.init("topology_test_1.xml");
+
+    CTopology::TaskIteratorPair_t taskIt1 = topology.getTaskIterator([](std::pair<size_t, TaskPtr_t> value) -> bool
+                                                                     {
+        TaskPtr_t task = value.second;
+        return (task->getId() == "task1");
+    });
+    std::cout << "---------\n";
+    for (auto it = taskIt1.first; it != taskIt1.second; it++)
+    {
+        const std::pair<size_t, TaskPtr_t>& v = *it;
+        std::cout << v.first << " " << v.second->getPath() << "\n";
+    }
+
+    CTopology::TaskIteratorPair_t taskIt2 = topology.getTaskIterator();
+    std::cout << "---------\n";
+    for (auto it = taskIt2.first; it != taskIt2.second; it++)
+    {
+        const std::pair<size_t, TaskPtr_t>& v = *it;
+        std::cout << v.first << " " << v.second->getPath() << "\n";
+    }
+}
+
 BOOST_AUTO_TEST_CASE(test_dds_topology_1)
 {
     CTopology topology;
@@ -58,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
     CTopology topology;
     topology.init("topology_test_1.xml");
-    // std::cout << topology.toString();
+    std::cout << topology.toString();
     TaskGroupPtr_t main = topology.getMainGroup();
 
     //  CTopologyParserXML parser;

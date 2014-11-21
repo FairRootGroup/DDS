@@ -16,12 +16,24 @@
 #include <ostream>
 #include <string>
 #include <map>
+// BOOST
+#include <boost/iterator/filter_iterator.hpp>
 
 namespace dds
 {
     class CTopology
     {
       public:
+        typedef std::map<size_t, TaskPtr_t> IndexToTaskMap_t;
+        typedef std::map<size_t, TaskCollectionPtr_t> IndexToTaskCollectionMap_t;
+        typedef std::function<bool(std::pair<size_t, TaskPtr_t>)> TaskCondition_t;
+        typedef std::function<bool(std::pair<size_t, TaskCollectionPtr_t>)> TaskCollectionCondition_t;
+        typedef boost::filter_iterator<TaskCondition_t, IndexToTaskMap_t::const_iterator> TaskIterator_t;
+        typedef std::pair<TaskIterator_t, TaskIterator_t> TaskIteratorPair_t;
+        typedef boost::filter_iterator<TaskCollectionCondition_t, IndexToTaskCollectionMap_t::const_iterator>
+            TaskCollectionIterator_t;
+        typedef std::pair<TaskCollectionIterator_t, TaskCollectionIterator_t> TaskCollectionIteratorPair_t;
+
         /// \brief Constructor.
         CTopology();
 
@@ -37,6 +49,10 @@ namespace dds
         TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
         TaskPtr_t getTaskByIndex(size_t _index) const;
         TaskCollectionPtr_t getTaskCollectionByIndex(size_t _index) const;
+
+        /// Iterators
+        TaskIteratorPair_t getTaskIterator(TaskCondition_t _condition = nullptr) const;
+        TaskCollectionIteratorPair_t getTaskCollectionIterator(TaskCollectionCondition_t _condition = nullptr) const;
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.
@@ -56,9 +72,7 @@ namespace dds
         typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
         TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
 
-        typedef std::map<size_t, TaskPtr_t> IndexToTaskMap_t;
         IndexToTaskMap_t m_indexToTaskMap;
-        typedef std::map<size_t, TaskCollectionPtr_t> IndexToTaskCollectionMap_t;
         IndexToTaskCollectionMap_t m_indexToTaskCollectionMap;
         size_t m_taskCounter;
         size_t m_taskCollectionCounter;
