@@ -7,7 +7,7 @@
 #include "version.h"
 #include "CommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
-#include "KeyValue.h"
+#include "KeyValueGuard.h"
 // MiscCommon
 #include "FindCfgFile.h"
 // BOOST
@@ -346,8 +346,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     try
     {
         LOG(info) << "Recieved a key update notifications: " << *_attachment;
-        CKeyValue kv;
-        kv.putValue(_attachment->m_sKey, _attachment->m_sValue);
+        CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
     }
     catch (exception& e)
     {

@@ -22,6 +22,7 @@ namespace dds
         static CKeyValueGuard& instance();
         void init();
         void putValue(const std::string& _key, const std::string& _value);
+        void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
 
       private:
         const std::string getCfgFilePath() const;
