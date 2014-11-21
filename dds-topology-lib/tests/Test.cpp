@@ -8,6 +8,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+#include <boost/test/output_test_stream.hpp>
 
 // DDS
 #include "TopoIndex.h"
@@ -27,6 +28,7 @@
 
 using namespace std;
 using namespace boost::property_tree;
+using boost::test_tools::output_test_stream;
 using namespace dds;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
@@ -36,25 +38,55 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
     CTopology topology;
     topology.init("topology_test_1.xml");
 
-    CTopology::TaskIteratorPair_t taskIt1 = topology.getTaskIterator([](std::pair<size_t, TaskPtr_t> value) -> bool
-                                                                     {
-        TaskPtr_t task = value.second;
-        return (task->getId() == "task1");
-    });
-    std::cout << "---------\n";
+    // Task iterators
+    output_test_stream output1("topology_test_1_iterators_1.txt", true);
+    CTopology::TaskIteratorPair_t taskIt1 =
+        topology.getTaskIterator([](CTopology::TaskIterator_t::value_type value) -> bool
+                                 {
+            TaskPtr_t task = value.second;
+            return (task->getId() == "task1");
+        });
     for (auto it = taskIt1.first; it != taskIt1.second; it++)
     {
-        const std::pair<size_t, TaskPtr_t>& v = *it;
-        std::cout << v.first << " " << v.second->getPath() << "\n";
+        const CTopology::TaskIterator_t::value_type& v = *it;
+        output1 << v.first << " " << v.second->getPath() << "\n";
     }
+    BOOST_CHECK(output1.match_pattern());
 
+    output_test_stream output2("topology_test_1_iterators_2.txt", true);
     CTopology::TaskIteratorPair_t taskIt2 = topology.getTaskIterator();
-    std::cout << "---------\n";
     for (auto it = taskIt2.first; it != taskIt2.second; it++)
     {
-        const std::pair<size_t, TaskPtr_t>& v = *it;
-        std::cout << v.first << " " << v.second->getPath() << "\n";
+        const CTopology::TaskIterator_t::value_type& v = *it;
+        output2 << v.first << " " << v.second->getPath() << "\n";
     }
+    BOOST_CHECK(output2.match_pattern());
+
+    // Task collection iterators
+    output_test_stream output3("topology_test_1_iterators_3.txt", true);
+    CTopology::TaskCollectionIteratorPair_t tcIt1 =
+        topology.getTaskCollectionIterator([](CTopology::TaskCollectionIterator_t::value_type value) -> bool
+                                           {
+            TaskCollectionPtr_t tc = value.second;
+            return (tc->getId() == "collection1");
+        });
+    for (auto it = tcIt1.first; it != tcIt1.second; it++)
+    {
+        const CTopology::TaskCollectionIterator_t::value_type& v = *it;
+        output3 << v.first << " " << v.second->getPath() << "\n";
+        // std::cout << v.first << " " << v.second->getPath() << "\n";
+    }
+    BOOST_CHECK(output3.match_pattern());
+
+    output_test_stream output4("topology_test_1_iterators_4.txt", true);
+    CTopology::TaskCollectionIteratorPair_t tcIt2 = topology.getTaskCollectionIterator();
+    for (auto it = tcIt2.first; it != tcIt2.second; it++)
+    {
+        const CTopology::TaskCollectionIterator_t::value_type& v = *it;
+        output4 << v.first << " " << v.second->getPath() << "\n";
+        // std::cout << v.first << " " << v.second->getPath() << "\n";
+    }
+    BOOST_CHECK(output4.match_pattern());
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_1)
@@ -84,7 +116,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
     CTopology topology;
     topology.init("topology_test_1.xml");
-    std::cout << topology.toString();
+    // std::cout << topology.toString();
     TaskGroupPtr_t main = topology.getMainGroup();
 
     //  CTopologyParserXML parser;
