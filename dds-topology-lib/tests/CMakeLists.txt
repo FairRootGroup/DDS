@@ -10,24 +10,12 @@ include_directories(${dds-topology-lib_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set( SOURCE_FILES
 	Test.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopoIndex.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopoProperty.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopoBase.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/Topology.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/Task.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TaskCollection.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TaskGroup.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopoElement.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TaskContainer.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopologyParserXML.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopoUtils.cpp
-	${dds-topology-lib_SOURCE_DIR}/src/TopoFactory.cpp
-    ${dds-topology-lib_SOURCE_DIR}/src/Requirement.cpp
 )
 add_executable(dds-topology-lib-tests ${SOURCE_FILES} )
 
 target_link_libraries (
 	dds-topology-lib-tests
+    dds-topology-lib
 	dds-user-defaults-lib
 	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 	${Boost_FILESYSTEM_LIBRARY}
