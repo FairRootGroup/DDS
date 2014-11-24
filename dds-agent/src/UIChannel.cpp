@@ -18,3 +18,10 @@ std::string CUIChannel::getTypeName() const
 {
     return g_vecChannelType[static_cast<size_t>(m_type)];
 }
+
+bool CUIChannel::on_cmdHANDSHAKE_KEY_VALUE_GUARD(
+    SCommandAttachmentImpl<cmdHANDSHAKE_KEY_VALUE_GUARD>::ptr_t _attachment)
+{
+    m_type = EChannelType::KEY_VALUE_GUARD;
+    return true;
+}

@@ -16,6 +16,7 @@
 //
 // Added:
 // cmdUPDATE_KEY
+// cmdHANDSHAKE_KEY_VALUE_GUARD
 //
 const uint16_t g_protocolCommandsVersion = 2;
 
@@ -25,10 +26,11 @@ namespace dds
     {
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
-        cmdHANDSHAKE,       // attachment: SVersionCmd
-        cmdHANDSHAKE_AGENT, // attachment: SVersionCmd
-        cmdSUBMIT,          // attachment: SSubmitCmd
-        cmdSIMPLE_MSG,      // attachment: SSimpleMsgCmd
+        cmdHANDSHAKE,                 // attachment: SVersionCmd
+        cmdHANDSHAKE_AGENT,           // attachment: SVersionCmd
+        cmdHANDSHAKE_KEY_VALUE_GUARD, // attachment: SVersionCmd
+        cmdSUBMIT,                    // attachment: SSubmitCmd
+        cmdSIMPLE_MSG,                // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
         cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
         cmdGET_HOST_INFO,
@@ -56,6 +58,7 @@ namespace dds
         { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
         { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
+        { cmdHANDSHAKE_KEY_VALUE_GUARD, NAME_TO_STRING(cmdHANDSHAKE_KEY_VALUE_GUARD) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
         { cmdSIMPLE_MSG, NAME_TO_STRING(cmdSIMPLE_MSG) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },

@@ -9,15 +9,24 @@ project( dds-key-value-lib )
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 #
+# configure files
+# 
+configure_file( ${dds-info_SOURCE_DIR}/src/version.h.in ${dds-key-value-lib_BINARY_DIR}/version.h @ONLY )
+
+#
 # Source files
 #
 set( SOURCE_FILES
 	./src/KeyValue.cpp
 	./src/KeyValueGuard.cpp
+	./src/AgentConnectionManager.cpp
+	./src/AgentChannel.cpp
 )
 
 set( SRC_HDRS_INT
 	./src/KeyValueGuard.h
+	./src/AgentConnectionManager.h
+	./src/AgentChannel.h
 )
 
 set( SRC_HDRS
@@ -25,6 +34,7 @@ set( SRC_HDRS
 )
 
 include_directories(
+	${dds-key-value-lib_BINARY_DIR}
 	${PROJECT_SOURCE_DIR}
 	${MiscCommon_LOCATION}
 	${Boost_INCLUDE_DIRS}
@@ -42,8 +52,12 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries (
 	dds-key-value-lib
 	dds-user-defaults-lib
+	dds-protocol-lib
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_FILESYSTEM_LIBRARY}
+	${Boost_LOG_LIBRARY}
+	${Boost_LOG_SETUP_LIBRARY}
+	${Boost_THREAD_LIBRARY}
 )
 
 target_include_directories(dds-key-value-lib

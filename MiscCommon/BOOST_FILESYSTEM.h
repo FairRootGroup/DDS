@@ -30,7 +30,7 @@ namespace MiscCommon
          * @param[out] _ret - vector of pathes to files.
          *
          */
-        void get_files_by_extension(const fs::path& _root, const std::string& _ext, std::vector<fs::path>& _ret)
+        inline void get_files_by_extension(const fs::path& _root, const std::string& _ext, std::vector<fs::path>& _ret)
         {
             if (!fs::exists(_root))
                 return;

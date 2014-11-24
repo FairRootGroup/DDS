@@ -20,11 +20,12 @@ namespace dds
 
       public:
         static CKeyValueGuard& instance();
-        void init();
-        void putValue(const std::string& _key, const std::string& _value);
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
+        void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
+        void notifyAgent();
 
       private:
+        void init();
         const std::string getCfgFilePath() const;
 
       private:

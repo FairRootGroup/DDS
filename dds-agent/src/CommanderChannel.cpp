@@ -346,7 +346,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     try
     {
         LOG(info) << "Recieved a key update notifications: " << *_attachment;
-        CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
+        CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue, m_sTaskId);
     }
     catch (exception& e)
     {

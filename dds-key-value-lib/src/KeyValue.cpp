@@ -6,8 +6,13 @@
 #include "KeyValueGuard.h"
 
 using namespace dds;
+using namespace std;
 
-void CKeyValue::putValue(const std::string& _key, const std::string& _value)
+void CKeyValue::putValue(const string& _key, const string& _value)
 {
     // Put value via notifying the current
+}
+
+void CKeyValue::getValue(const string& _key, container_t* _values, const chrono::system_clock::duration& _timeout)
+{
 }

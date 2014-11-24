@@ -29,10 +29,15 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CUIChannel)
+        MESSAGE_HANDLER(cmdHANDSHAKE_KEY_VALUE_GUARD, on_cmdHANDSHAKE_KEY_VALUE_GUARD)
         END_MSG_MAP()
 
       public:
         std::string getTypeName() const;
+
+      private:
+        // Message Handlers
+        bool on_cmdHANDSHAKE_KEY_VALUE_GUARD(SCommandAttachmentImpl<cmdHANDSHAKE_KEY_VALUE_GUARD>::ptr_t _attachment);
 
       private:
         bool m_isHandShakeOK;
