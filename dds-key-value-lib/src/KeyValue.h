@@ -18,9 +18,10 @@ namespace dds
 
       public:
         void putValue(const std::string& _key, const std::string& _value);
-        void getValue(const std::string& _key,
-                      container_t* _values,
-                      const std::chrono::system_clock::duration &_timeout = std::chrono::system_clock::duration::zero());
+        void getValue(
+            const std::string& _key,
+            container_t* _values,
+            const std::chrono::system_clock::duration& _timeout = std::chrono::system_clock::duration::zero());
     };
 }
 
