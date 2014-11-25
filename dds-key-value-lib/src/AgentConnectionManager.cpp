@@ -36,8 +36,6 @@ CAgentConnectionManager::CAgentConnectionManager(boost::asio::io_service& _io_se
 #endif // defined(SIGQUIT)
 
     doAwaitStop();
-
-    Logger::instance().init(); // Initialize log
 }
 
 CAgentConnectionManager::~CAgentConnectionManager()
@@ -115,8 +113,18 @@ void CAgentConnectionManager::start()
             }
         });
 
-        boost::thread t(boost::bind(&boost::asio::io_service::run, &(m_service)));
-        // t.join_for(boost::chrono::milliseconds(500));
+        // Don't block main thread, start transport service in a thread
+        std::thread t([this]()
+                      {
+                          try
+                          {
+                              m_service.run();
+                          }
+                          catch (exception& _e)
+                          {
+                              LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
+                          }
+                      });
         t.join();
     }
     catch (exception& e)

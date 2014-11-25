@@ -7,6 +7,7 @@ Modified: Build WN packages without ICU support. (GH-14)
 ### dds-protocol-lib
 Modified: Version changed to v2.0.   
 Added: The protocol has learned a new command - cmdUPDATE_KEY. (GH-12)   
+Added: BinaryAttachment command learned to resolve environment variables in source files paths.
 
 ### dds-topology
 Added: a possibility to use comments in the topology XML file. (GH-15)   

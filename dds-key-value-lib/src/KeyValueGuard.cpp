@@ -34,6 +34,8 @@ CKeyValueGuard& CKeyValueGuard::instance()
 
 void CKeyValueGuard::init()
 {
+    Logger::instance().init(); // Initialize log
+
     // create cfg file if missing
     fs::path cfgFile(getCfgFilePath());
     if (!fs::exists(cfgFile))

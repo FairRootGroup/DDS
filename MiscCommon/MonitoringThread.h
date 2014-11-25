@@ -53,53 +53,61 @@ namespace dds
 
             std::thread t([this, &_idleCallback, _idleTime]()
                           {
-                              while (true)
+                              try
                               {
-                                  std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
-                                  // std::chrono::duration<double> elapsedTime =
-                                  //     std::chrono::duration_cast<std::chrono::duration<double>>(currentTime -
-                                  // m_startTime);
-                                  // LOG(MiscCommon::info) << "time since start [s]: " << elapsedTime.count();
-
-                                  // Check if process is idle.
-                                  std::chrono::seconds idleTime =
-                                      std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startTime);
-
-                                  // Call registred callback functions
-                                  // We use Erase-remove idiom to execute callback and remove expired if needed.
-                                  m_registeredCallbackFunctions.erase(
-                                      remove_if(m_registeredCallbackFunctions.begin(),
-                                                m_registeredCallbackFunctions.end(), [&](callbackFunction_t& i)
-                                                {
-                                          // A callback function can return false, which
-                                          // means it wants to be unregistered
-                                          // (expire)
-                                          bool bActive = i();
-                                          return !bActive;
-                                      }),
-                                      m_registeredCallbackFunctions.end());
-
-                                  if (idleTime.count() > _idleTime)
+                                  while (true)
                                   {
-                                      // First call idle callback
-                                      LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                            << " sec. Call idle callback.";
-                                      _idleCallback();
-                                      sleep(WAITING_TIME);
+                                      std::chrono::steady_clock::time_point currentTime =
+                                          std::chrono::steady_clock::now();
+                                      // std::chrono::duration<double> elapsedTime =
+                                      //     std::chrono::duration_cast<std::chrono::duration<double>>(currentTime -
+                                      // m_startTime);
+                                      // LOG(MiscCommon::info) << "time since start [s]: " << elapsedTime.count();
 
-                                      // Call terminate
-                                      LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                            << " sec. Terminate the process.";
-                                      std::terminate();
-                                      sleep(WAITING_TIME);
+                                      // Check if process is idle.
+                                      std::chrono::seconds idleTime =
+                                          std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startTime);
 
-                                      // Kill process
-                                      LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                            << " sec. Kill the process.";
-                                      killProcess();
+                                      // Call registred callback functions
+                                      // We use Erase-remove idiom to execute callback and remove expired if needed.
+                                      m_registeredCallbackFunctions.erase(
+                                          remove_if(m_registeredCallbackFunctions.begin(),
+                                                    m_registeredCallbackFunctions.end(), [&](callbackFunction_t& i)
+                                                    {
+                                              // A callback function can return false, which
+                                              // means it wants to be unregistered
+                                              // (expire)
+                                              bool bActive = i();
+                                              return !bActive;
+                                          }),
+                                          m_registeredCallbackFunctions.end());
+
+                                      if (idleTime.count() > _idleTime)
+                                      {
+                                          // First call idle callback
+                                          LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
+                                                                << " sec. Call idle callback.";
+                                          _idleCallback();
+                                          sleep(WAITING_TIME);
+
+                                          // Call terminate
+                                          LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
+                                                                << " sec. Terminate the process.";
+                                          std::terminate();
+                                          sleep(WAITING_TIME);
+
+                                          // Kill process
+                                          LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
+                                                                << " sec. Kill the process.";
+                                          killProcess();
+                                      }
+
+                                      sleep(LOOP_TIME_DELAY);
                                   }
-
-                                  sleep(LOOP_TIME_DELAY);
+                              }
+                              catch (std::exception& _e)
+                              {
+                                  LOG(MiscCommon::error) << "MonitoringThread exception: " << _e.what();
                               }
                           });
             t.detach();
