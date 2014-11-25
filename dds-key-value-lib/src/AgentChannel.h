@@ -32,8 +32,6 @@ namespace dds
 
     class CAgentChannel : public CConnectionImpl<CAgentChannel>
     {
-        typedef std::function<void(pid_t)> handlerOnNewUserTaks_t;
-
       public:
         BEGIN_MSG_MAP(CAgentChannel)
         MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)

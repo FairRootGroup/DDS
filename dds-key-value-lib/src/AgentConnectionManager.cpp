@@ -86,26 +86,27 @@ void CAgentConnectionManager::start()
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new communication channel and push handshake message
-        CAgentChannel::connectionPtr_t channel = CAgentChannel::makeNew(m_service);
+        CAgentChannel::connectionPtr_t agentChannel = CAgentChannel::makeNew(m_service);
         // Subscribe to Shutdown command
-        channel->registerMessageHandler<cmdSHUTDOWN>(
-            [this, channel](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+        agentChannel->registerMessageHandler<cmdSHUTDOWN>(
+            [this, agentChannel](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel)
+                -> bool
             {
                 // TODO: adjust the algorithm if we would need to support several agents
                 // we have only one agent (newAgent) at the moment
-                return this->on_cmdSHUTDOWN(_attachment, channel);
+                return this->on_cmdSHUTDOWN(_attachment, agentChannel);
             });
 
-        boost::asio::async_connect(channel->socket(), endpoint_iterator,
-                                   [this, &channel](boost::system::error_code ec, tcp::resolver::iterator)
+        boost::asio::async_connect(agentChannel->socket(), endpoint_iterator,
+                                   [this, &agentChannel](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
             if (!ec)
             {
                 // Create handshake message which is the first one for all agents
                 SVersionCmd ver;
-                channel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
-                channel->m_cmdContainer = m_cmdContainer;
-                channel->start();
+                agentChannel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
+                agentChannel->m_cmdContainer = m_cmdContainer;
+                agentChannel->start();
             }
             else
             {
@@ -125,7 +126,7 @@ void CAgentConnectionManager::start()
                               LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
                           }
                       });
-        t.join();
+        t.join(); // t.detach();
     }
     catch (exception& e)
     {
@@ -161,6 +162,7 @@ void CAgentConnectionManager::stop()
 bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
+    LOG(info) << "*********************** DEBUG ********** ";
     stop();
     return true;
 }
