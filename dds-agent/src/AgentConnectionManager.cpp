@@ -244,8 +244,13 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
             if (WIFEXITED(status))
                 LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
                           << WEXITSTATUS(status);
-            if (WIFSTOPPED(status))
+            else if (WIFSTOPPED(status))
                 LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
+            else if (WIFSIGNALED(status))
+                LOG(info) << "User task killed by signal " << WTERMSIG(status)
+                          << (WCOREDUMP(status) ? "; (core dumped)" : "");
+            else
+                LOG(info) << "User task exited with unexpected status: " << status;
 
             LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
