@@ -131,6 +131,21 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
     return make_pair(begin_iterator, end_iterator);
 }
 
+CTopology::TaskIteratorPair_t CTopology::getTaskIteratorForPropertyId(const std::string& _propertyId) const
+{
+    return getTaskIterator([&_propertyId](CTopology::TaskIterator_t::value_type value) -> bool
+                           {
+        TaskPtr_t task = value.second;
+        const TopoPropertyPtrVector_t& properties = task->getProperties();
+        for (const auto& v : properties)
+        {
+            if (v->getId() == _propertyId)
+                return true;
+        }
+        return false;
+    });
+}
+
 void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)
 {
     if (_element->getType() == ETopoType::TASK)

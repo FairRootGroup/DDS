@@ -65,6 +65,7 @@ namespace dds
         /// Iterators
         TaskIteratorPair_t getTaskIterator(TaskCondition_t _condition = nullptr) const;
         TaskCollectionIteratorPair_t getTaskCollectionIterator(TaskCollectionCondition_t _condition = nullptr) const;
+        TaskIteratorPair_t getTaskIteratorForPropertyId(const std::string& _propertyId) const;
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.

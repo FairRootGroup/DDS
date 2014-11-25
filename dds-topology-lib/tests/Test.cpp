@@ -118,6 +118,16 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     output_test_stream output4("topology_test_1_iterators_4.txt", true);
     check_topology_iterator(topology.getTaskCollectionIterator(), output4);
+
+    // Task iterators for property
+    output_test_stream output5("topology_test_1_iterators_5.txt", true);
+    check_topology_iterator(topology.getTaskIteratorForPropertyId("property4"), output5);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)
+{
+    CTopology topology;
+    topology.init("topology_test_1.xml");
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_1)
