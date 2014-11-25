@@ -214,9 +214,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 
             // TODO: Job submission should be moved from here to a thread
             // Resolve topology
-            CTopology topology;
-            m_sCurrentTopoFile = _attachment->m_sTopoFile;
-            topology.init(m_sCurrentTopoFile);
+            m_topo.init(_attachment->m_sTopoFile);
             // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
 
             // Submitting the job
@@ -299,8 +297,6 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         {
             // Start distributing user tasks between agents
             // TODO: We might need to create a thread here to avoid blocking a thread of the transport
-            CTopology topology;
-            topology.init(m_sCurrentTopoFile);
 
             // Send binaries of user jobs to all active agents.
             // Send activate signal to all agents. This will trigger start of user jobs on the agents.
@@ -313,11 +309,11 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
             if (m_ActivateAgents.m_nofRequests == 0)
                 throw runtime_error("There are no connected agents.");
-            if (topology.getMainGroup()->getTotalNofTasks() > m_ActivateAgents.m_nofRequests)
+            if (m_topo.getMainGroup()->getTotalNofTasks() > m_ActivateAgents.m_nofRequests)
                 throw runtime_error("The number of agents is not sufficient for this topology.");
 
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-            CTopology::TaskIteratorPair_t tasks = topology.getTaskIterator();
+            CTopology::TaskIteratorPair_t tasks = m_topo.getTaskIterator();
             CTopology::TaskIterator_t it_tasks = tasks.first;
             for (const auto& v : channels)
             {
@@ -333,6 +329,10 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
                 // Set Task ID
                 msg_cmd.m_sID = to_string(it_tasks->first);
+
+                // Set task ID for agent and add it to map
+                ptr->setTaskID(it_tasks->first);
+                m_taskIDToAgentChannelMap[it_tasks->first] = v;
 
                 if (topoTask->isExeReachable())
                     msg_cmd.m_sExeFile = topoTask->getExe();
@@ -521,15 +521,58 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
     {
         // TODO:
         // 1 - check that tasks are activated
-        // 2 - send only to agents whoes tasks depend on the given key
-        //
-        auto condition = [](CAgentChannel::connectionPtr_t _v)
-        {
-            return (_v != nullptr && _v->getType() == EAgentChannelType::AGENT && _v->started());
-        };
 
-        broadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
+        // If UI channel sends a property update than property key does not contain a hash.
+        // In this case each agent set the property key hash himself.
         auto p = _channel.lock();
+        bool sentFromUIChannel = (p->getType() == EAgentChannelType::UI);
+
+        string propertyID = _attachment->m_sKey;
+        if (!sentFromUIChannel)
+        {
+            // If we get property key from agent we have to parse it to get the property ID.
+            // propertyID_17621121989812
+            string propertyKey = _attachment->m_sKey;
+            size_t pos = propertyKey.find_last_of('_');
+            propertyID = propertyKey.substr(0, pos);
+        }
+
+        CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(propertyID);
+
+        for (auto it = taskIt.first; it != taskIt.second; it++)
+        {
+            auto iter = m_taskIDToAgentChannelMap.find(it->first);
+            if (iter == m_taskIDToAgentChannelMap.end())
+            {
+                // TODO: Add log task is not running.
+            }
+            else
+            {
+                if (iter->second.expired())
+                    continue;
+                auto ptr = iter->second.lock();
+
+                if (ptr->getType() == EAgentChannelType::AGENT && ptr->started())
+                {
+                    if (sentFromUIChannel)
+                    {
+                        // If property changed from UI we have to change hash in the property key.
+                        SUpdateKeyCmd attachment(*_attachment);
+                        stringstream ss;
+                        ss << propertyID << "_" << ptr->getTaskID();
+                        attachment.m_sKey = ss.str();
+                        ptr->pushMsg<cmdUPDATE_KEY>(attachment);
+                        LOG(info) << "Property update from UI channel: " << ss.str();
+                    }
+                    else
+                    {
+                        ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
+                        LOG(info) << "Property update from agent channel: " << _attachment->m_sKey;
+                    }
+                }
+            }
+        }
+
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("All related agents have been advised about the key update.",
                                                 MiscCommon::info, cmdUPDATE_KEY));
         p->pushMsg<cmdSHUTDOWN>();

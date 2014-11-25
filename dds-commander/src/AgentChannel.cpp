@@ -35,6 +35,16 @@ const boost::uuids::uuid& CAgentChannel::getId() const
     return m_id;
 }
 
+uint64_t CAgentChannel::getTaskID() const
+{
+    return m_taskID;
+}
+
+void CAgentChannel::setTaskID(uint64_t _taskID)
+{
+    m_taskID = _taskID;
+}
+
 bool CAgentChannel::on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment)
 {
     // send shutdown if versions are incompatible

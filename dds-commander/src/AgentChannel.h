@@ -23,6 +23,7 @@ namespace dds
             : CConnectionImpl<CAgentChannel>(_service)
             , m_isHandShakeOK(false)
             , m_type(EAgentChannelType::UNDEFINED)
+            , m_taskID(0)
         {
         }
 
@@ -58,6 +59,9 @@ namespace dds
         {
             return m_remoteHostInfo;
         }
+        uint64_t getTaskID() const;
+
+        void setTaskID(uint64_t _taskID);
 
       private:
         // Message Handlers
@@ -96,6 +100,7 @@ namespace dds
         boost::uuids::uuid m_id;
         SHostInfoCmd m_remoteHostInfo;
         std::string m_sCurrentTopoFile;
+        uint64_t m_taskID;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

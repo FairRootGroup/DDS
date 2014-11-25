@@ -10,6 +10,7 @@
 #include "AgentChannel.h"
 #include "UIChannelInfo.h"
 #include "Options.h"
+#include "Topology.h"
 // STD
 #include <mutex>
 
@@ -56,7 +57,10 @@ namespace dds
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;
         CActivateAgentsChannelInfo m_ActivateAgents;
-        std::string m_sCurrentTopoFile;
+        CTopology m_topo;
+
+        typedef std::map<uint64_t, CAgentChannel::weakConnectionPtr_t> TaskIDToAgentChannelMap_t;
+        TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
     };
 }
 #endif /* defined(__DDS__ConnectionManager__) */
