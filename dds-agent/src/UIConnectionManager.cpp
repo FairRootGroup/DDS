@@ -5,7 +5,9 @@
 
 #include "UIConnectionManager.h"
 
+using namespace std;
 using namespace dds;
+using namespace MiscCommon;
 
 CUIConnectionManager::CUIConnectionManager(boost::asio::io_service& _io_service,
                                            boost::asio::ip::tcp::endpoint& _endpoint)
@@ -19,33 +21,60 @@ CUIConnectionManager::~CUIConnectionManager()
 
 void CUIConnectionManager::_createInfoFile(size_t _port) const
 {
-    const std::string sAgntCfg(CUserDefaults::instance().getAgentInfoFileLocation());
+    const string sAgntCfg(CUserDefaults::instance().getAgentInfoFileLocation());
     LOG(MiscCommon::info) << "Creating the agent info file: " << sAgntCfg;
-    std::ofstream f(sAgntCfg.c_str());
+    ofstream f(sAgntCfg.c_str());
     if (!f.is_open() || !f.good())
     {
-        std::string msg("Could not open the agent info configuration file: ");
+        string msg("Could not open the agent info configuration file: ");
         msg += sAgntCfg;
-        throw std::runtime_error(msg);
+        throw runtime_error(msg);
     }
 
-    std::string srvHost;
+    string srvHost;
     MiscCommon::get_hostname(&srvHost);
-    std::string srvUser;
+    string srvUser;
     MiscCommon::get_cuser_name(&srvUser);
 
     f << "[agent]\n"
       << "host=" << srvHost << "\n"
       << "user=" << srvUser << "\n"
-      << "port=" << _port << "\n" << std::endl;
+      << "port=" << _port << "\n" << endl;
 }
 
 void CUIConnectionManager::_deleteInfoFile() const
 {
-    const std::string sAgntCfg(CUserDefaults::instance().getAgentInfoFileLocation());
+    const string sAgntCfg(CUserDefaults::instance().getAgentInfoFileLocation());
     if (sAgntCfg.empty())
         return;
 
     // TODO: check error code
     unlink(sAgntCfg.c_str());
+}
+
+void CUIConnectionManager::newClientCreated(CUIChannel::connectionPtr_t _newClient)
+{
+    // Subscribe on protocol messages
+    function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel * _channel)> fUPDATE_KEY =
+        [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel* _channel) -> bool
+    {
+        return this->on_cmdUPDATE_KEY(_attachment, useRawPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+}
+
+bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                            CUIChannel::weakConnectionPtr_t _channel)
+{
+    try
+    {
+        LOG(debug) << "Forwarding a key notification update to commander channel...";
+        auto p = m_commanderChannel.lock();
+        p->updateKey(_attachment->m_sKey, _attachment->m_sValue);
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
+    }
+    return true;
 }

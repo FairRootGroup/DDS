@@ -43,6 +43,8 @@ namespace dds
             m_onNewUserTaskCallback = _callback;
         }
 
+        void updateKey(const std::string& _key, const std::string& _value);
+
       private:
         // Message Handlers
         bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);

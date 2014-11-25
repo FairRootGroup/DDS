@@ -41,7 +41,7 @@ namespace dds
                                      // operations. Once all operations have finished the io_service::run()
                                      // call will exit.
                                      LOG(MiscCommon::info) << "Received a signal: " << signo;
-                                     LOG(MiscCommon::info) << "Sopping DDS commander server";
+                                     LOG(MiscCommon::info) << "Sopping DDS transport server";
 
                                      stop();
                                  });

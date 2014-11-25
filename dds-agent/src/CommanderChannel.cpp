@@ -361,3 +361,14 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     }
     return true;
 }
+
+void CCommanderChannel::updateKey(const string& _key, const string& _value)
+{
+    SUpdateKeyCmd cmd;
+    // Update key name with the task id
+    cmd.m_sKey = _key + "_" + m_sTaskId;
+    cmd.m_sValue = _value;
+    LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
+               << cmd.m_sValue;
+    pushMsg<cmdUPDATE_KEY>(cmd);
+}

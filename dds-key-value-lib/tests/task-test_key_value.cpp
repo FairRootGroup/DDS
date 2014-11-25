@@ -12,7 +12,7 @@ int main()
     try
     {
         CKeyValue ddsKeyValue;
-        ddsKeyValue.putValue("prop_test_key", "prop_test_value");
+        ddsKeyValue.putValue("property1", "prop1_test_value");
     }
     catch (exception& _e)
     {

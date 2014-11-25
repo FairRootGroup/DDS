@@ -575,7 +575,9 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("All related agents have been advised about the key update.",
                                                 MiscCommon::info, cmdUPDATE_KEY));
-        p->pushMsg<cmdSHUTDOWN>();
+        // Shutdown initial chennel if it's a UI
+        if (p->getType() == EAgentChannelType::UI)
+            p->pushMsg<cmdSHUTDOWN>();
     }
     catch (bad_weak_ptr& e)
     {

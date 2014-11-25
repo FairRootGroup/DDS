@@ -22,14 +22,15 @@ namespace dds
     {
       private:
         CUIChannel(boost::asio::io_service& _service);
+        std::string _remoteEndIDString();
 
-        REGISTER_DEFAULT_REMOTE_ID_STRING
         REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
         REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CUIChannel)
         MESSAGE_HANDLER(cmdHANDSHAKE_KEY_VALUE_GUARD, on_cmdHANDSHAKE_KEY_VALUE_GUARD)
+        MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_MSG_MAP()
 
       public:
@@ -38,6 +39,7 @@ namespace dds
       private:
         // Message Handlers
         bool on_cmdHANDSHAKE_KEY_VALUE_GUARD(SCommandAttachmentImpl<cmdHANDSHAKE_KEY_VALUE_GUARD>::ptr_t _attachment);
+        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
 
       private:
         bool m_isHandShakeOK;

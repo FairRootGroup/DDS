@@ -9,6 +9,7 @@
 // DDS
 #include "ConnectionManagerImpl.h"
 #include "UIChannel.h"
+#include "CommanderChannel.h"
 // BOOST
 #include <boost/asio.hpp>
 
@@ -21,9 +22,7 @@ namespace dds
         virtual ~CUIConnectionManager();
 
       public:
-        void newClientCreated(CUIChannel::connectionPtr_t _newClient)
-        {
-        }
+        void newClientCreated(CUIChannel::connectionPtr_t _newClient);
         void _start()
         {
         }
@@ -32,6 +31,17 @@ namespace dds
         }
         void _createInfoFile(size_t _port) const;
         void _deleteInfoFile() const;
+        void setCommanderChannel(CCommanderChannel::weakConnectionPtr_t _channel)
+        {
+            m_commanderChannel = _channel;
+        }
+
+      private:
+        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                              CUIChannel::weakConnectionPtr_t _channel);
+
+      private:
+        CCommanderChannel::weakConnectionPtr_t m_commanderChannel;
     };
 }
 

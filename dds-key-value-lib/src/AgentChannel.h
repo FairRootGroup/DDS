@@ -11,15 +11,28 @@
 
 namespace dds
 {
+    struct SCommandContainer
+    {
+        SCommandContainer()
+            : m_cmdType(cmdUNKNOWN)
+        {
+        }
+        void setCmdType(ECmdType _cmdType)
+        {
+            m_cmdType = _cmdType;
+        }
+        void setKeyUpdate(const SUpdateKeyCmd& _cmd)
+        {
+            m_cmd = _cmd;
+        }
+
+        ECmdType m_cmdType;
+        SUpdateKeyCmd m_cmd;
+    };
+
     class CAgentChannel : public CConnectionImpl<CAgentChannel>
     {
         typedef std::function<void(pid_t)> handlerOnNewUserTaks_t;
-
-      private:
-        CAgentChannel(boost::asio::io_service& _service);
-
-        REGISTER_DEFAULT_REMOTE_ID_STRING
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CAgentChannel)
@@ -28,6 +41,19 @@ namespace dds
         MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         END_MSG_MAP()
+
+      public:
+        SCommandContainer m_cmdContainer;
+
+      private:
+        CAgentChannel(boost::asio::io_service& _service);
+
+        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
+
+        std::string _remoteEndIDString()
+        {
+            return "DDS agent";
+        }
 
       private:
         // Message Handlers

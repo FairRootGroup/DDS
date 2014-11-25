@@ -106,6 +106,7 @@ void CAgentConnectionManager::start()
                 // Create handshake message which is the first one for all agents
                 SVersionCmd ver;
                 channel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
+                channel->m_cmdContainer = m_cmdContainer;
                 channel->start();
             }
             else
@@ -115,6 +116,7 @@ void CAgentConnectionManager::start()
         });
 
         boost::thread t(boost::bind(&boost::asio::io_service::run, &(m_service)));
+        // t.join_for(boost::chrono::milliseconds(500));
         t.join();
     }
     catch (exception& e)

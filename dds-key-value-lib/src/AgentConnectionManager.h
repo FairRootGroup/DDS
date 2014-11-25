@@ -23,6 +23,9 @@ namespace dds
         void start();
         void stop();
 
+      public:
+        SCommandContainer m_cmdContainer;
+
       private:
         void doAwaitStop();
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,

@@ -302,12 +302,13 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    add_custom_target( wn_bin
                       COMMAND -mkdir -p ${WN_PKG_DIR}
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
-		      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
+		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
-		      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
+		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
+					  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-key-value-lib> "${WN_PKG_DIR}"
                       ####### <<<<<<
-		      COMMAND ${lib_cmd} ${lib_cmd_args}
-              COMMAND ${lib_cmd} ${lib_cmd_args_log}
+		              COMMAND ${lib_cmd} ${lib_cmd_args}
+                      COMMAND ${lib_cmd} ${lib_cmd_args_log}
                       COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
                       COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
                       COMMENT "Generate WN binary package" 
@@ -315,7 +316,8 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    add_dependencies( wn_bin
 			dds-agent
 			dds-user-defaults-lib 
-			dds-protocol-lib)
+			dds-protocol-lib
+			dds-key-value-lib)
 
    add_custom_target( wn_bin_upload
 		      COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"                      
