@@ -308,10 +308,14 @@ namespace dds
         {
             MiscCommon::BYTEVector_t data;
 
-            std::ifstream f(_srcFilePath);
+            std::string srcFilePath(_srcFilePath);
+            // Resolve environment variables
+            MiscCommon::smart_path(&srcFilePath);
+
+            std::ifstream f(srcFilePath);
             if (!f.is_open() || !f.good())
             {
-                throw std::runtime_error("Could not open the source file: " + _srcFilePath);
+                throw std::runtime_error("Could not open the source file: " + srcFilePath);
             }
             f.seekg(0, std::ios::end);
             data.reserve(f.tellg());
