@@ -5,6 +5,8 @@
 #ifndef TIMEMEASURE_H_
 #define TIMEMEASURE_H_
 
+#include <chrono>
+
 namespace MiscCommon
 {
     template <typename TimeT = std::chrono::milliseconds>
