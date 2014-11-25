@@ -1,0 +1,26 @@
+<topology id="myTopology">
+	
+  	<decltask id="task1">
+		<exe>task1.exe</exe>
+	</decltask>
+	<decltask id="task2">
+		<exe>task2.exe</exe>
+	</decltask>
+	
+  	<declcollection id="collection1">
+   		<task>task1</task>
+		<task>task2</task>
+  	</declcollection>
+	
+	<main id="main">
+	    <task>task1</task>
+	    <collection>collection1</collection>
+		<group id="group1" n="100000">
+			<task>task1</task>
+			<task>task1</task>
+			<task>task2</task>
+			<collection>collection1</collection>
+		</group>
+	</main>
+	
+</topology>

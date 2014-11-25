@@ -62,6 +62,11 @@ echo "----------------------"
 exec_test "dds-topology-lib-tests" "--catch_system_errors=no"
 
 echo "----------------------"
+echo "dds-topology performance UNIT-TESTs"
+echo "----------------------"
+exec_test "dds-topology-lib-performance-tests" "--catch_system_errors=no"
+
+echo "----------------------"
 echo "Protocol UNIT-TESTs"
 echo "----------------------"
 exec_test "dds-protocol-lib-ProtocolMessage-tests"

@@ -8,10 +8,8 @@ include_directories(${dds-topology-lib_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 #=============================================================================
 
 
-set( SOURCE_FILES
-	Test.cpp
-)
-add_executable(dds-topology-lib-tests ${SOURCE_FILES} )
+add_executable(dds-topology-lib-tests Test.cpp )
+add_executable(dds-topology-lib-performance-tests TestPerformance.cpp )
 
 target_link_libraries (
 	dds-topology-lib-tests
@@ -21,8 +19,16 @@ target_link_libraries (
 	${Boost_FILESYSTEM_LIBRARY}
 )
 
-install(TARGETS dds-topology-lib-tests DESTINATION tests)
+target_link_libraries (
+    dds-topology-lib-performance-tests
+    dds-topology-lib
+    dds-user-defaults-lib
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+)
 
+install(TARGETS dds-topology-lib-tests DESTINATION tests)
+install(TARGETS dds-topology-lib-performance-tests DESTINATION tests)
 
 target_include_directories(dds-topology-lib-tests
 	PRIVATE
@@ -50,6 +56,7 @@ if( BUILD_TESTS )
   install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_5.xml DESTINATION tests)
   install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_6.xml DESTINATION tests)
   install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7.xml DESTINATION tests)
+  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_8.xml DESTINATION tests)
   install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_1.txt DESTINATION tests)
   install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_2.txt DESTINATION tests)
   install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_3.txt DESTINATION tests)
