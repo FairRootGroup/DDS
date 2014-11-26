@@ -30,6 +30,16 @@ namespace dds
         void doAwaitStop();
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                             CAgentChannel::weakConnectionPtr_t _channel);
+        CAgentChannel::weakConnectionPtr_t getWeakPtr(CAgentChannel* _client)
+        {
+            // TODO: Use mutex
+            for (auto& v : m_channels)
+            {
+                if (v.get() == _client)
+                    return v;
+            }
+            return typename CAgentChannel::weakConnectionPtr_t();
+        }
 
       private:
         boost::asio::io_service& m_service;

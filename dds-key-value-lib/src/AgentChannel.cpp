@@ -68,7 +68,7 @@ bool CAgentChannel::on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_
 bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
 {
     LOG(info) << "key-value-gurad connection channel exited.";
-
+    stop();
     // return false to let connection manager to catch this message as weel
     return false;
 }

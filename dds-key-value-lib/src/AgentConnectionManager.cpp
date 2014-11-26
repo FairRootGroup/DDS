@@ -88,14 +88,14 @@ void CAgentConnectionManager::start()
         // Create new communication channel and push handshake message
         CAgentChannel::connectionPtr_t agentChannel = CAgentChannel::makeNew(m_service);
         // Subscribe to Shutdown command
-        agentChannel->registerMessageHandler<cmdSHUTDOWN>(
-            [this, agentChannel](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel)
-                -> bool
-            {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                return this->on_cmdSHUTDOWN(_attachment, agentChannel);
-            });
+        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel * _channel)>
+            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+        {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdSHUTDOWN(_attachment, getWeakPtr(_channel));
+        };
+        agentChannel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         boost::asio::async_connect(agentChannel->socket(), endpoint_iterator,
                                    [this, &agentChannel](boost::system::error_code ec, tcp::resolver::iterator)
@@ -126,7 +126,7 @@ void CAgentConnectionManager::start()
                               LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
                           }
                       });
-        t.join(); // t.detach();
+        t.join();
     }
     catch (exception& e)
     {
@@ -162,7 +162,6 @@ void CAgentConnectionManager::stop()
 bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
-    LOG(info) << "*********************** DEBUG ********** ";
     stop();
     return true;
 }

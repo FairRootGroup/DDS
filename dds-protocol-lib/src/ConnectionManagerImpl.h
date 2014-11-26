@@ -142,7 +142,7 @@ namespace dds
         }
 
       protected:
-        typename T::weakConnectionPtr_t useRawPtr(T* _client) const
+        typename T::weakConnectionPtr_t getWeakPtr(T* _client) const
         {
             // TODO: Use mutex
             for (auto& v : m_channels)

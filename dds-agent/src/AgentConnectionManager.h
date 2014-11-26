@@ -34,6 +34,16 @@ namespace dds
         void terminateChildrenProcesses();
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                             CCommanderChannel::weakConnectionPtr_t _channel);
+        CCommanderChannel::weakConnectionPtr_t getWeakPtr(CCommanderChannel* _client)
+        {
+            // TODO: Use mutex
+            for (auto& v : m_agents)
+            {
+                if (v.get() == _client)
+                    return v;
+            }
+            return typename CCommanderChannel::weakConnectionPtr_t();
+        }
 
       private:
         boost::asio::io_service& m_service;

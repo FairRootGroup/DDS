@@ -58,7 +58,7 @@ void CUIConnectionManager::newClientCreated(CUIChannel::connectionPtr_t _newClie
     function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel * _channel)> fUPDATE_KEY =
         [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel* _channel) -> bool
     {
-        return this->on_cmdUPDATE_KEY(_attachment, useRawPtr(_channel));
+        return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 }

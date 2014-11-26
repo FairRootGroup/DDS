@@ -32,7 +32,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     std::function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
         [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdGET_LOG(_attachment, useRawPtr(_channel));
+        return this->on_cmdGET_LOG(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
 
@@ -41,7 +41,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel* _channel)
             -> bool
     {
-        return this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, useRawPtr(_channel));
+        return this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
 
@@ -49,14 +49,14 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         fGET_AGENTS_INFO =
             [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdGET_AGENTS_INFO(_attachment, useRawPtr(_channel));
+        return this->on_cmdGET_AGENTS_INFO(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
     std::function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
         [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdSUBMIT(_attachment, useRawPtr(_channel));
+        return this->on_cmdSUBMIT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
@@ -64,7 +64,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         fACTIVATE_AGENT =
             [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdACTIVATE_AGENT(_attachment, useRawPtr(_channel));
+        return this->on_cmdACTIVATE_AGENT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
@@ -72,21 +72,21 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         fTRANSPORT_TEST =
             [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdTRANSPORT_TEST(_attachment, useRawPtr(_channel));
+        return this->on_cmdTRANSPORT_TEST(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdTRANSPORT_TEST>(fTRANSPORT_TEST);
 
     std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)>
         fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdSIMPLE_MSG(_attachment, useRawPtr(_channel));
+        return this->on_cmdSIMPLE_MSG(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 
     std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel * _channel)>
         fUPDATE_KEY = [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
-        return this->on_cmdUPDATE_KEY(_attachment, useRawPtr(_channel));
+        return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 }
