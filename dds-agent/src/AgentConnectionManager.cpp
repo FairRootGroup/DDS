@@ -23,7 +23,6 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boo
     : m_service(_io_service)
     , m_signals(_io_service)
     , m_options(_options)
-    , m_agents()
     , m_bStarted(false)
     , m_UI_end_point(tcp::v4(), 0) // Let the OS pick a random available port
 {
@@ -87,36 +86,60 @@ void CAgentConnectionManager::start()
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new agent and push handshake message
-        CCommanderChannel::connectionPtr_t newAgent = CCommanderChannel::makeNew(m_service);
+        m_agents = CCommanderChannel::makeNew(m_service);
+
         // Subscribe to Shutdown command
-        newAgent->registerMessageHandler<cmdSHUTDOWN>(
-            [this, newAgent](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel* _channel)
-                -> bool
-            {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                return this->on_cmdSHUTDOWN(_attachment, getWeakPtr(_channel));
-            });
+        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel * _channel)>
+            fSHUTDOWN =
+                [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
+        {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdSHUTDOWN(_attachment, m_agents);
+        };
+        m_agents->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
+
+        // Subscribe for key updates
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
+            fUPDATE_KEY =
+                [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
+        {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdUPDATE_KEY(_attachment, m_agents);
+        };
+        m_agents->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+
+        // Subscribe for cmdSIMPLE_MSG
+        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel * _channel)>
+            fSIMPLE_MSG =
+                [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
+        {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdSIMPLE_MSG(_attachment, m_agents);
+        };
+        m_agents->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 
         // Call this callback when a user process is activated
-        newAgent->registerOnNewUserTaskCallback([this](pid_t _pid)
+        m_agents->registerOnNewUserTaskCallback([this](pid_t _pid)
                                                 {
                                                     return this->onNewUserTask(_pid);
                                                 });
 
-        boost::asio::async_connect(newAgent->socket(), endpoint_iterator,
-                                   [this, &newAgent](boost::system::error_code ec, tcp::resolver::iterator)
+        boost::asio::async_connect(m_agents->socket(), endpoint_iterator,
+                                   [this](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
             if (!ec)
             {
                 // Create handshake message which is the first one for all agents
                 SVersionCmd ver;
-                newAgent->pushMsg<cmdHANDSHAKE_AGENT>(ver);
-                newAgent->start();
+                m_agents->pushMsg<cmdHANDSHAKE_AGENT>(ver);
+                m_agents->start();
 
                 // Start the UI agent server
                 m_UIConnectionMng = make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
-                m_UIConnectionMng->setCommanderChannel(newAgent);
+                m_UIConnectionMng->setCommanderChannel(m_agents);
                 m_UIConnectionMng->start(false);
             }
             else
@@ -147,11 +170,7 @@ void CAgentConnectionManager::stop()
     try
     {
         m_service.stop();
-        for (const auto& v : m_agents)
-        {
-            v->stop();
-        }
-        m_agents.clear();
+        m_agents->stop();
     }
     catch (exception& e)
     {
@@ -214,6 +233,38 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
                                              CCommanderChannel::weakConnectionPtr_t _channel)
 {
     stop();
+    return true;
+}
+
+bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                               CCommanderChannel::weakConnectionPtr_t _channel)
+{
+    // Notify UI manager about keyt updates
+    if (m_UIConnectionMng)
+        m_UIConnectionMng->notifyAboutKeyUpdate(_attachment);
+    else
+        LOG(warning) << "UI connection manager doesn't run. Skipping key notification broadcasting.";
+    return true;
+}
+
+bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                               CCommanderChannel::weakConnectionPtr_t _channel)
+{
+    switch (_attachment->m_srcCommand)
+    {
+        case cmdUPDATE_KEY:
+        case cmdWAIT_FOR_KEY_UPDATE:
+            if (m_UIConnectionMng)
+                m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
+            else
+                LOG(warning) << "UI connection manager doesn't run. Skipping simple message broadcasting.";
+            return true;
+
+        default:
+            LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
+            return true;
+    }
+
     return true;
 }
 

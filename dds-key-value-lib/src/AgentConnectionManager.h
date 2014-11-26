@@ -24,7 +24,7 @@ namespace dds
         void stop();
 
       public:
-        SCommandContainer m_cmdContainer;
+        SCommandContainer* m_cmdContainer;
 
       private:
         void doAwaitStop();
@@ -32,19 +32,15 @@ namespace dds
                             CAgentChannel::weakConnectionPtr_t _channel);
         CAgentChannel::weakConnectionPtr_t getWeakPtr(CAgentChannel* _client)
         {
-            // TODO: Use mutex
-            for (auto& v : m_channels)
-            {
-                if (v.get() == _client)
-                    return v;
-            }
+            if (m_channel.get() == _client)
+                return m_channel;
             return typename CAgentChannel::weakConnectionPtr_t();
         }
 
       private:
         boost::asio::io_service& m_service;
         boost::asio::signal_set m_signals;
-        CAgentChannel::connectionPtrVector_t m_channels;
+        CAgentChannel::connectionPtr_t m_channel;
         bool m_bStarted;
     };
 }

@@ -19,14 +19,17 @@ int main(int argc, char* argv[])
 {
     try
     {
-        string key;
-        string value;
+        string sWriteKey;
+        string sWriteValue;
+        string sReadKey;
 
         // Generic options
         bpo::options_description options("task-test_key_value options");
         options.add_options()("help,h", "Produce help message");
-        options.add_options()("key", bpo::value<std::string>(&key), "Specefies the key to update");
-        options.add_options()("value", bpo::value<std::string>(&value), "Specefies the new value of the given key");
+        options.add_options()("write-key", bpo::value<std::string>(&sWriteKey), "Specefies the key to update");
+        options.add_options()("write-value", bpo::value<std::string>(&sWriteValue),
+                              "Specefies the new value of the given key");
+        options.add_options()("read-key", bpo::value<std::string>(&sReadKey), "Specefies the key to read");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -39,13 +42,25 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        MiscCommon::BOOSTHelper::option_dependency(vm, "key", "value");
+        MiscCommon::BOOSTHelper::option_dependency(vm, "write-key", "write-value");
 
-        if (vm.count("key") && vm.count("value"))
+        if (vm.count("write-key") && vm.count("write-value"))
         {
             CKeyValue ddsKeyValue;
-            ddsKeyValue.putValue(key, value);
-            cout << "Update key and value with: <" << key << ", " << value << ">" << endl;
+            ddsKeyValue.putValue(sWriteKey, sWriteValue);
+            cout << "Update key and value with: <" << sWriteKey << ", " << sWriteValue << ">" << endl;
+        }
+
+        if (vm.count("read-key"))
+        {
+            CKeyValue ddsKeyValue;
+            CKeyValue::keysContainer_t keysToWait;
+            keysToWait.insert(sReadKey);
+            string sUpdatedKey;
+            CKeyValue::container_t valuesMap;
+            int retVal = ddsKeyValue.getValue(keysToWait, &sUpdatedKey, &valuesMap, chrono::seconds(60));
+            if (retVal != 0 || sUpdatedKey.empty() || valuesMap.size() == 0)
+                return EXIT_FAILURE;
         }
     }
     catch (exception& _e)

@@ -75,7 +75,7 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     }
 }
 
-void CKeyValueGuard::notifyAgent(const SCommandContainer& _newCommand)
+void CKeyValueGuard::notifyAgent(SCommandContainer* _newCommand)
 {
     boost::asio::io_service io_service;
     CAgentConnectionManager agent(io_service);

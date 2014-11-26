@@ -34,22 +34,16 @@ namespace dds
         void terminateChildrenProcesses();
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                             CCommanderChannel::weakConnectionPtr_t _channel);
-        CCommanderChannel::weakConnectionPtr_t getWeakPtr(CCommanderChannel* _client)
-        {
-            // TODO: Use mutex
-            for (auto& v : m_agents)
-            {
-                if (v.get() == _client)
-                    return v;
-            }
-            return typename CCommanderChannel::weakConnectionPtr_t();
-        }
+        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                              CCommanderChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                              CCommanderChannel::weakConnectionPtr_t _channel);
 
       private:
         boost::asio::io_service& m_service;
         boost::asio::signal_set m_signals;
         dds::SOptions_t m_options;
-        CCommanderChannel::connectionPtrVector_t m_agents;
+        CCommanderChannel::connectionPtr_t m_agents;
         childrenPidContainer_t m_children;
         std::mutex m_childrenContainerMutex;
         bool m_bStarted;

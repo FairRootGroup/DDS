@@ -24,7 +24,7 @@ namespace dds
         static CKeyValueGuard& instance();
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
-        void notifyAgent(const SCommandContainer& _newCommand);
+        void notifyAgent(SCommandContainer* _newCommand);
 
       private:
         void init();

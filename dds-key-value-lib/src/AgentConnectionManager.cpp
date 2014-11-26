@@ -21,9 +21,9 @@ namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager(boost::asio::io_service& _io_service)
-    : m_service(_io_service)
+    : m_cmdContainer(nullptr)
+    , m_service(_io_service)
     , m_signals(_io_service)
-    , m_channels()
     , m_bStarted(false)
 {
     // Register to handle the signals that indicate when the server should exit.
@@ -86,27 +86,27 @@ void CAgentConnectionManager::start()
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new communication channel and push handshake message
-        CAgentChannel::connectionPtr_t agentChannel = CAgentChannel::makeNew(m_service);
+        m_channel = CAgentChannel::makeNew(m_service);
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel * _channel)>
             fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
-            return this->on_cmdSHUTDOWN(_attachment, getWeakPtr(_channel));
+            return this->on_cmdSHUTDOWN(_attachment, m_channel);
         };
-        agentChannel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
+        m_channel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
-        boost::asio::async_connect(agentChannel->socket(), endpoint_iterator,
-                                   [this, &agentChannel](boost::system::error_code ec, tcp::resolver::iterator)
+        boost::asio::async_connect(m_channel->socket(), endpoint_iterator,
+                                   [this](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
             if (!ec)
             {
                 // Create handshake message which is the first one for all agents
                 SVersionCmd ver;
-                agentChannel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
-                agentChannel->m_cmdContainer = m_cmdContainer;
-                agentChannel->start();
+                m_channel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
+                m_channel->m_cmdContainer = m_cmdContainer;
+                m_channel->start();
             }
             else
             {
@@ -146,11 +146,7 @@ void CAgentConnectionManager::stop()
     try
     {
         m_service.stop();
-        for (const auto& v : m_channels)
-        {
-            v->stop();
-        }
-        m_channels.clear();
+        m_channel->stop();
     }
     catch (exception& e)
     {

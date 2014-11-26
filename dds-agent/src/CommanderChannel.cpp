@@ -46,6 +46,9 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
             pushMsg<cmdSIMPLE_MSG>(*_attachment);
             return true;
         }
+        case cmdUPDATE_KEY:
+        case cmdWAIT_FOR_KEY_UPDATE:
+            return false; // let connection manager forward this info to UI channels
 
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
@@ -359,7 +362,9 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
         cmd.m_srcCommand = cmdUPDATE_KEY;
         pushMsg<cmdSIMPLE_MSG>(cmd);
     }
-    return true;
+
+    // give a chance to others to recive update nitifications
+    return false;
 }
 
 void CCommanderChannel::updateKey(const string& _key, const string& _value)

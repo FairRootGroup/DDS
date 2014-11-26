@@ -78,3 +78,30 @@ bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY
     }
     return true;
 }
+
+void CUIConnectionManager::notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+{
+    try
+    {
+        LOG(debug) << "Broadcasting key update notification to all connected UI channels. Attachment: " << *_attachment;
+        // broadcast to all subscribers about key updates
+        broadcastMsg<cmdUPDATE_KEY>(*_attachment);
+    }
+    catch (exception& e)
+    {
+        LOG(fatal) << e.what();
+    }
+}
+
+void CUIConnectionManager::notifyAboutSimpleMsg(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+{
+    try
+    {
+        LOG(debug) << "Broadcasting simple message to all connected UI channels. Attachment: " << *_attachment;
+        broadcastMsg<cmdSIMPLE_MSG>(*_attachment);
+    }
+    catch (exception& e)
+    {
+        LOG(fatal) << e.what();
+    }
+}

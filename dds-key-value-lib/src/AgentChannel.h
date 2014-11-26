@@ -5,9 +5,11 @@
 
 #ifndef __DDS__CAgentChannel__
 #define __DDS__CAgentChannel__
-
 // DDS
 #include "ConnectionImpl.h"
+#include "def.h"
+// STD
+#include <condition_variable>
 
 namespace dds
 {
@@ -28,6 +30,9 @@ namespace dds
 
         ECmdType m_cmdType;
         SUpdateKeyCmd m_cmd;
+        MiscCommon::StringSet_t m_sKeysToWait;
+        std::condition_variable m_cvKeyWait;
+        std::string m_sUpdatedKey;
     };
 
     class CAgentChannel : public CConnectionImpl<CAgentChannel>
@@ -38,10 +43,11 @@ namespace dds
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
+        MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_MSG_MAP()
 
       public:
-        SCommandContainer m_cmdContainer;
+        SCommandContainer* m_cmdContainer;
 
       private:
         CAgentChannel(boost::asio::io_service& _service);
@@ -59,6 +65,7 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
+        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
         void onRemoteEndDissconnected();
 
       private:

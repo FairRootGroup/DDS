@@ -35,6 +35,8 @@ namespace dds
         {
             m_commanderChannel = _channel;
         }
+        void notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+        void notifyAboutSimpleMsg(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
 
       private:
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
