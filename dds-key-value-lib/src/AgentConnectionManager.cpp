@@ -115,18 +115,20 @@ void CAgentConnectionManager::start()
         });
 
         // Don't block main thread, start transport service in a thread
-        std::thread t([this]()
-                      {
-                          try
-                          {
-                              m_service.run();
-                          }
-                          catch (exception& _e)
-                          {
-                              LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
-                          }
-                      });
-        t.join();
+        //        std::thread t([this]()
+        //                      {
+        //                          try
+        //                          {
+        //                              m_service.run();
+        //                          }
+        //                          catch (exception& _e)
+        //                          {
+        //                              LOG(fatal) << "AgentConnectionManager: exception in the transport service: " <<
+        //                              _e.what();
+        //                          }
+        //                      });
+        //        t.join();
+        m_service.run();
     }
     catch (exception& e)
     {

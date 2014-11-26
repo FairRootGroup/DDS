@@ -13,12 +13,18 @@ CUIChannel::CUIChannel(boost::asio::io_service& _service)
     : CConnectionImpl<CUIChannel>(_service)
     , m_isHandShakeOK(false)
     , m_type(EChannelType::UNDEFINED)
+    , m_isWaitingForKeyUpdates(false)
 {
 }
 
 string CUIChannel::getTypeName() const
 {
     return g_vecChannelType[static_cast<size_t>(m_type)];
+}
+
+bool CUIChannel::isWaitingForKey() const
+{
+    return m_isWaitingForKeyUpdates;
 }
 
 std::string CUIChannel::_remoteEndIDString()
@@ -59,4 +65,10 @@ bool CUIChannel::on_cmdHANDSHAKE_KEY_VALUE_GUARD(
 bool CUIChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
     return false; // the connection manager should process this message
+}
+
+bool CUIChannel::on_cmdWAIT_FOR_KEY_UPDATE(SCommandAttachmentImpl<cmdWAIT_FOR_KEY_UPDATE>::ptr_t _attachment)
+{
+    m_isWaitingForKeyUpdates = true;
+    return true;
 }

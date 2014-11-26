@@ -30,20 +30,21 @@ int CKeyValue::getValue(const CKeyValue::keysContainer_t& _keysToWait,
                         const chrono::system_clock::duration& _timeout)
 {
     if (_updatedKey == nullptr)
-        throw invalid_argument("_updatedKey is NULL");
+        throw invalid_argument("argument \"_updatedKey\" is NULL");
 
     SCommandContainer cmd_container;
     cmd_container.m_cmdType = cmdWAIT_FOR_KEY_UPDATE;
     cmd_container.m_sKeysToWait = _keysToWait;
 
-    mutex mutexKeyWait;
-    unique_lock<mutex> lk(mutexKeyWait);
-    auto now = std::chrono::system_clock::now();
-    if (cmd_container.m_cvKeyWait.wait_until(lk, now + _timeout) == cv_status::timeout)
-    {
-        return 1;
-    }
-
+    /*    mutex mutexKeyWait;
+        unique_lock<mutex> lk(mutexKeyWait);
+        auto now = std::chrono::system_clock::now();
+        if (cmd_container.m_cvKeyWait.wait_until(lk, now + _timeout) == cv_status::timeout)
+        {
+            return 1;
+        }
+    */
+    CKeyValueGuard::instance().notifyAgent(&cmd_container);
     *_updatedKey = cmd_container.m_sUpdatedKey;
 
     return 0;

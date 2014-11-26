@@ -31,19 +31,23 @@ namespace dds
         BEGIN_MSG_MAP(CUIChannel)
         MESSAGE_HANDLER(cmdHANDSHAKE_KEY_VALUE_GUARD, on_cmdHANDSHAKE_KEY_VALUE_GUARD)
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+        MESSAGE_HANDLER(cmdWAIT_FOR_KEY_UPDATE, on_cmdWAIT_FOR_KEY_UPDATE)
         END_MSG_MAP()
 
       public:
         std::string getTypeName() const;
+        bool isWaitingForKey() const;
 
       private:
         // Message Handlers
         bool on_cmdHANDSHAKE_KEY_VALUE_GUARD(SCommandAttachmentImpl<cmdHANDSHAKE_KEY_VALUE_GUARD>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+        bool on_cmdWAIT_FOR_KEY_UPDATE(SCommandAttachmentImpl<cmdWAIT_FOR_KEY_UPDATE>::ptr_t _attachment);
 
       private:
         bool m_isHandShakeOK;
         EChannelType m_type;
+        bool m_isWaitingForKeyUpdates;
     };
 }
 

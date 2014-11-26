@@ -85,7 +85,11 @@ void CUIConnectionManager::notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE
     {
         LOG(debug) << "Broadcasting key update notification to all connected UI channels. Attachment: " << *_attachment;
         // broadcast to all subscribers about key updates
-        broadcastMsg<cmdUPDATE_KEY>(*_attachment);
+        auto condition = [](CUIChannel::connectionPtr_t _v)
+        {
+            return (_v->isWaitingForKey());
+        };
+        broadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
     }
     catch (exception& e)
     {
