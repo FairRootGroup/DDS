@@ -49,3 +49,15 @@ target_link_libraries (
 )
 
 install(TARGETS MiscCommon_test_Logger DESTINATION tests)
+
+#=============================================================================
+add_executable(MiscCommon_test_wordexp Test_wordexp.cpp )
+
+target_link_libraries (
+    MiscCommon_test_wordexp
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+	${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+)
+
+install(TARGETS MiscCommon_test_wordexp DESTINATION tests)

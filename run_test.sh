@@ -33,9 +33,9 @@ fi
 
 # Mac OS X
 if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-   DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:/opt/local/lib; export DYLD_LIBRARY_PATH   # Mac OS X
+   DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:; export DYLD_LIBRARY_PATH   # Mac OS X
 else
-   DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH:/opt/local/lib; export DYLD_LIBRARY_PATH
+   DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
 fi
 
 
@@ -55,6 +55,7 @@ exec_test "MiscCommon_test_Process" "--catch_system_errors=no"
 exec_test "MiscCommon_test_SysHelper"
 #exec_test "MiscCommon_test_FindCfgFile"
 exec_test "MiscCommon_test_Logger"
+exec_test "MiscCommon_test_wordexp"
 
 echo "----------------------"
 echo "dds-topology UNIT-TESTs"
