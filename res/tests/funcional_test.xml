@@ -4,7 +4,7 @@
 	<property id="property2" />
 		
   	<decltask id="TestKeyValue">
-		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --write-key property1 --write-value prop1_test</exe>
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --write-key property1 --write-value prop1_test --read-key property2</exe>
 		<properties>
 			<id>property1</id>
 			<id>property2</id>
