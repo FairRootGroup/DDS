@@ -84,6 +84,12 @@ namespace MiscCommon
         /// \brief Initialization of log. Has to be called in main.
         void init()
         {
+            static bool bStarted = false;
+            if (bStarted)
+                return;
+
+            bStarted = true;
+
             using namespace boost::log;
 
             const dds::CUserDefaults& userDefaults = dds::CUserDefaults::instance();
@@ -127,6 +133,8 @@ namespace MiscCommon
 
             add_common_attributes();
             core::get()->add_global_attribute("Process", attributes::current_process_name());
+
+            LOG(debug) << "Log engine is initialized";
         }
 
       private:
