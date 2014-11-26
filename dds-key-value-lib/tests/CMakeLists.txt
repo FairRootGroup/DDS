@@ -23,6 +23,7 @@ target_link_libraries (
 	dds-key-value-lib
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+	${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 target_include_directories(dds-key-value-lib-tests
