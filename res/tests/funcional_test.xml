@@ -1,0 +1,29 @@
+<topology id="myTopology">
+	
+	<property id="property1" />
+
+  	<decltask id="TestKeyValue">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value</exe>
+		<properties>
+			<id>property1</id>
+		</properties>
+	</decltask>
+
+	<decltask id="task1">
+		<exe>/Users/anar/DDS/Test1.sh</exe>
+		<properties>
+			<id>property1</id>
+		</properties>
+	</decltask>
+		
+	<decltask id="task2">
+		<exe>/Users/anar/DDS/Test2.sh</exe>
+	</decltask>
+	
+	<main id="main">
+		<task>TestKeyValue</task>
+	    <task>task1</task>
+        <task>task2</task>
+	</main>
+	
+</topology>
