@@ -335,29 +335,38 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 m_taskIDToAgentChannelMap[it_tasks->first] = v;
 
                 if (topoTask->isExeReachable())
+                {
                     msg_cmd.m_sExeFile = topoTask->getExe();
+                }
                 else
                 {
                     // Executable is not reachable by the agent.
                     // Upload it and change its path to $DDS_LOCATION on the WN
-                    boost::filesystem::path exePath(topoTask->getExe());
-                    const string sExeFileNameWithArgs(exePath.filename().generic_string());
-                    msg_cmd.m_sExeFile += "$DDS_LOCATION/";
-                    msg_cmd.m_sExeFile += sExeFileNameWithArgs;
 
                     // Expand the string for the program to extract exe name and command line arguments
                     wordexp_t result;
-                    switch (wordexp(sExeFileNameWithArgs.c_str(), &result, 0))
+                    switch (wordexp(topoTask->getExe().c_str(), &result, 0))
                     {
                         case 0:
                         {
-                            const string sExeFileName(result.we_wordv[0]);
-                            boost::filesystem::path exePathWithoutArgs(exePath.parent_path());
-                            exePathWithoutArgs /= sExeFileName;
+                            string sExeFilePath = result.we_wordv[0];
+                            
+                            boost::filesystem::path exeFilePath(sExeFilePath);
+                            string sExeFileName = exeFilePath.filename().generic_string();
+                            
+                            string sExeFileNameWithArgs = sExeFileName;
+                            for (size_t i = 1; i < result.we_wordc; i++)
+                            {
+                                sExeFileNameWithArgs += " ";
+                                sExeFileNameWithArgs += result.we_wordv[i];
+                            }
+                            
+                            msg_cmd.m_sExeFile += "$DDS_LOCATION/";
+                            msg_cmd.m_sExeFile += sExeFileNameWithArgs;
+
                             wordfree(&result);
 
-                            ptr->pushBinaryAttachmentCmd(exePathWithoutArgs.generic_string(), sExeFileName,
-                                                         cmdASSIGN_USER_TASK);
+                            ptr->pushBinaryAttachmentCmd(sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK);
                         }
                         break;
                         case WRDE_NOSPACE:
