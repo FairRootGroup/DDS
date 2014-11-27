@@ -20,10 +20,12 @@ using namespace MiscCommon;
 namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
-CAgentConnectionManager::CAgentConnectionManager(boost::asio::io_service& _io_service)
-    : m_cmdContainer(nullptr)
-    , m_service(_io_service)
-    , m_signals(_io_service)
+const std::chrono::milliseconds g_interval(100);
+const size_t g_maxWait = 600;
+
+CAgentConnectionManager::CAgentConnectionManager()
+    : m_syncHelper(nullptr)
+    , m_signals(m_service)
     , m_bStarted(false)
 {
     // Register to handle the signals that indicate when the server should exit.
@@ -105,7 +107,7 @@ void CAgentConnectionManager::start()
                 // Create handshake message which is the first one for all agents
                 SVersionCmd ver;
                 m_channel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
-                m_channel->m_cmdContainer = m_cmdContainer;
+                m_channel->m_syncHelper = m_syncHelper;
                 m_channel->start();
             }
             else
@@ -114,20 +116,6 @@ void CAgentConnectionManager::start()
             }
         });
 
-        // Don't block main thread, start transport service in a thread
-        //        std::thread t([this]()
-        //                      {
-        //                          try
-        //                          {
-        //                              m_service.run();
-        //                          }
-        //                          catch (exception& _e)
-        //                          {
-        //                              LOG(fatal) << "AgentConnectionManager: exception in the transport service: " <<
-        //                              _e.what();
-        //                          }
-        //                      });
-        //        t.join();
         m_service.run();
     }
     catch (exception& e)
@@ -162,4 +150,24 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
 {
     stop();
     return true;
+}
+
+int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
+{
+    size_t i(0);
+    while (i < g_maxWait)
+    {
+        if (m_channel && m_channel->m_mtxChannelReady.try_lock())
+        {
+            m_channel->pushMsg<cmdUPDATE_KEY>(_cmd);
+            m_channel->m_mtxChannelReady.unlock();
+            return 0;
+        }
+        else
+        {
+            ++i;
+            this_thread::sleep_for(g_interval);
+        }
+    }
+    return 1;
 }

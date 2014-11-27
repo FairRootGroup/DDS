@@ -13,27 +13,7 @@
 
 namespace dds
 {
-    struct SCommandContainer
-    {
-        SCommandContainer()
-            : m_cmdType(cmdUNKNOWN)
-        {
-        }
-        void setCmdType(ECmdType _cmdType)
-        {
-            m_cmdType = _cmdType;
-        }
-        void setKeyUpdate(const SUpdateKeyCmd& _cmd)
-        {
-            m_cmd = _cmd;
-        }
-
-        ECmdType m_cmdType;
-        SUpdateKeyCmd m_cmd;
-        MiscCommon::StringSet_t m_sKeysToWait;
-        std::condition_variable m_cvKeyWait;
-        std::string m_sUpdatedKey;
-    };
+    struct SSyncHelper;
 
     class CAgentChannel : public CConnectionImpl<CAgentChannel>
     {
@@ -47,7 +27,9 @@ namespace dds
         END_MSG_MAP()
 
       public:
-        SCommandContainer* m_cmdContainer;
+        SSyncHelper* m_syncHelper;
+        std::mutex m_mtxChannelReady;
+        std::condition_variable m_cvChannelReady;
 
       private:
         CAgentChannel(boost::asio::io_service& _service);
@@ -69,7 +51,7 @@ namespace dds
         void onRemoteEndDissconnected();
 
       private:
-        bool m_isHandShakeOK;
+        //  bool m_isHandShakeOK;
     };
 }
 

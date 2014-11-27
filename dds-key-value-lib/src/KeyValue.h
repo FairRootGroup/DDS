@@ -12,6 +12,7 @@
 
 namespace dds
 {
+    const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::seconds(60);
     class CKeyValue
     {
       public:
@@ -19,7 +20,7 @@ namespace dds
         typedef std::set<std::string> keysContainer_t;
 
       public:
-        void putValue(const std::string& _key, const std::string& _value);
+        int putValue(const std::string& _key, const std::string& _value);
         int getValue(const keysContainer_t& _keysToWait,
                      std::string* _updatedKey,
                      container_t* _values,

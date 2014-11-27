@@ -13,18 +13,25 @@
 
 namespace dds
 {
+    struct SSyncHelper;
+
     class CAgentConnectionManager
     {
       public:
-        CAgentConnectionManager(boost::asio::io_service& _io_service);
+        CAgentConnectionManager();
         virtual ~CAgentConnectionManager();
 
       public:
         void start();
         void stop();
+        bool stopped()
+        {
+            return m_service.stopped();
+        }
+        int updateKey(const SUpdateKeyCmd& _cmd);
 
       public:
-        SCommandContainer* m_cmdContainer;
+        SSyncHelper* m_syncHelper;
 
       private:
         void doAwaitStop();
@@ -38,7 +45,7 @@ namespace dds
         }
 
       private:
-        boost::asio::io_service& m_service;
+        boost::asio::io_service m_service;
         boost::asio::signal_set m_signals;
         CAgentChannel::connectionPtr_t m_channel;
         bool m_bStarted;

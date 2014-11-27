@@ -6,7 +6,6 @@
 #include "KeyValueGuard.h"
 #include "UserDefaults.h"
 #include "BOOST_FILESYSTEM.h"
-#include "AgentConnectionManager.h"
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
@@ -75,10 +74,33 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     }
 }
 
-void CKeyValueGuard::notifyAgent(SCommandContainer* _newCommand)
+void CKeyValueGuard::initAgentConnection()
 {
-    boost::asio::io_service io_service;
-    CAgentConnectionManager agent(io_service);
-    agent.m_cmdContainer = _newCommand;
-    agent.start();
+    std::lock_guard<std::mutex> lock(m_mtxAgentConnnection);
+    if (!m_agentConnectionMng || m_agentConnectionMng->stopped())
+    {
+        m_agentConnectionMng.reset();
+        m_agentConnectionMng = make_shared<CAgentConnectionManager>();
+        m_agentConnectionMng->m_syncHelper = &m_syncHelper;
+
+        // Don't block main thread, start transport service in a thread
+        std::thread t([this]()
+                      {
+                          try
+                          {
+                              m_agentConnectionMng->start();
+                          }
+                          catch (exception& _e)
+                          {
+                              LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
+                          }
+                      });
+        t.detach();
+    }
+}
+
+int CKeyValueGuard::updateKey(const SUpdateKeyCmd& _cmd)
+{
+    std::lock_guard<std::mutex> lock(m_mtxAgentConnnection);
+    return m_agentConnectionMng->updateKey(_cmd);
 }

@@ -350,17 +350,17 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                         case 0:
                         {
                             string sExeFilePath = result.we_wordv[0];
-                            
+
                             boost::filesystem::path exeFilePath(sExeFilePath);
                             string sExeFileName = exeFilePath.filename().generic_string();
-                            
+
                             string sExeFileNameWithArgs = sExeFileName;
                             for (size_t i = 1; i < result.we_wordc; i++)
                             {
                                 sExeFileNameWithArgs += " ";
                                 sExeFileNameWithArgs += result.we_wordv[i];
                             }
-                            
+
                             msg_cmd.m_sExeFile += "$DDS_LOCATION/";
                             msg_cmd.m_sExeFile += sExeFileNameWithArgs;
 
@@ -374,23 +374,31 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                             // then perhaps part of the result was allocated.
                             throw runtime_error("memory error occurred while processing the user's executable path: " +
                                                 topoTask->getExe());
-                            
+
                         case WRDE_BADCHAR:
-                            throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " + topoTask->getExe());
+                            throw runtime_error(
+                                "Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
+                                topoTask->getExe());
                             break;
-                        
+
                         case WRDE_BADVAL:
-                            throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag told us to consider this an error in " + topoTask->getExe());
+                            throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
+                                                "told us to consider this an error in " +
+                                                topoTask->getExe());
                             break;
-                            
+
                         case WRDE_CMDSUB:
-                            throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to consider this an error in " + topoTask->getExe());
+                            throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
+                                                "consider this an error in " +
+                                                topoTask->getExe());
                             break;
 
                         case WRDE_SYNTAX:
-                            throw runtime_error("Shell syntax error, such as unbalanced parentheses or unmatched quotes in "  + topoTask->getExe());
+                            throw runtime_error(
+                                "Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
+                                topoTask->getExe());
                             break;
-                            
+
                         default: // Some other error.
                             throw runtime_error("failed to process the user's executable path: " + topoTask->getExe());
                     }
