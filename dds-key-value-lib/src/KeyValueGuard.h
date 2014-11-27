@@ -25,6 +25,7 @@ namespace dds
     class CKeyValueGuard
     {
         typedef std::shared_ptr<CAgentConnectionManager> AgentConnectionManagerPtr_t;
+        typedef std::map<std::string, std::string> valuesMap_t;
 
       private:
         CKeyValueGuard();
@@ -34,6 +35,7 @@ namespace dds
         static CKeyValueGuard& instance();
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
+        void getValues(const std::string& _key, valuesMap_t* _values);
         int updateKey(const SUpdateKeyCmd& _cmd);
 
         // User API

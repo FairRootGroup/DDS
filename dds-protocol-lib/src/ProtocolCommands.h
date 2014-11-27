@@ -50,8 +50,7 @@ namespace dds
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
         cmdTRANSPORT_TEST,
-        cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
-        cmdWAIT_FOR_KEY_UPDATE
+        cmdUPDATE_KEY // attachment: SUpdateKeyCmd
     };
 
     static std::map<uint16_t, std::string> g_cmdToString{
@@ -81,8 +80,7 @@ namespace dds
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
-        { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
-        { cmdWAIT_FOR_KEY_UPDATE, NAME_TO_STRING(cmdWAIT_FOR_KEY_UPDATE) }
+        { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) }
     };
 }
 

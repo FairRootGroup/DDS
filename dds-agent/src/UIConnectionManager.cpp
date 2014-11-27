@@ -87,7 +87,7 @@ void CUIConnectionManager::notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE
         // broadcast to all subscribers about key updates
         auto condition = [](CUIChannel::connectionPtr_t _v)
         {
-            return (_v->isWaitingForKey());
+            return (_v->getType() == EChannelType::KEY_VALUE_GUARD);
         };
         broadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
     }

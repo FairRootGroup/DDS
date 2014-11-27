@@ -9,6 +9,8 @@ using namespace dds;
 using namespace std;
 using namespace MiscCommon;
 
+const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::seconds(60);
+
 int CKeyValue::putValue(const string& _key, const string& _value)
 {
     CKeyValueGuard::instance().initAgentConnection();
@@ -29,30 +31,24 @@ int CKeyValue::putValue(const string& _key, const string& _value)
     return 0;
 }
 
-// Return 0 when successful
-// Return 1 when timed out earlier than update notification
-int CKeyValue::getValue(const CKeyValue::keysContainer_t& _keysToWait,
-                        std::string* _updatedKey,
-                        container_t* _values,
-                        const chrono::system_clock::duration& _timeout)
+void CKeyValue::getValues(const std::string& _key, valuesMap_t* _values)
 {
-    //    if (_updatedKey == nullptr)
-    //        throw invalid_argument("argument \"_updatedKey\" is NULL");
-    //
-    //    SCommandContainer cmd_container;
-    //    cmd_container.m_cmdType = cmdWAIT_FOR_KEY_UPDATE;
-    //    cmd_container.m_sKeysToWait = _keysToWait;
-    //
-    //    /*    mutex mutexKeyWait;
-    //        unique_lock<mutex> lk(mutexKeyWait);
-    //        auto now = std::chrono::system_clock::now();
-    //        if (cmd_container.m_cvKeyWait.wait_until(lk, now + _timeout) == cv_status::timeout)
-    //        {
-    //            return 1;
-    //        }
-    //    */
-    //    CKeyValueGuard::instance().notifyAgent(&cmd_container);
-    //    *_updatedKey = cmd_container.m_sUpdatedKey;
+    CKeyValueGuard::instance().getValues(_key, _values);
+}
+
+int CKeyValue::waitForUpdate(const std::chrono::system_clock::duration& _timeout)
+{
+    LOG(debug) << "User process is waiting for property keys updates.";
+    CKeyValueGuard::instance().initAgentConnection();
+
+    auto now = std::chrono::system_clock::now();
+    unique_lock<mutex> lk(CKeyValueGuard::instance().m_syncHelper.m_mtxWaitKey);
+    if (CKeyValueGuard::instance().m_syncHelper.m_cvWaitKey.wait_until(lk, now + _timeout) == cv_status::timeout)
+    {
+        LOG(debug) << "waiting for property keys updates has timed out";
+        return 1;
+    }
+    LOG(debug) << "waiting for property keys updates is ended";
 
     return 0;
 }

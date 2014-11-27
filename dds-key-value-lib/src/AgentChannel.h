@@ -49,9 +49,6 @@ namespace dds
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
         void onRemoteEndDissconnected();
-
-      private:
-        //  bool m_isHandShakeOK;
     };
 }
 

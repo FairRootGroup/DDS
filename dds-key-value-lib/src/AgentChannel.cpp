@@ -17,7 +17,6 @@ using namespace std;
 
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     : CConnectionImpl<CAgentChannel>(_service)
-// , m_isHandShakeOK(false)
 {
     m_mtxChannelReady.lock();
 }
@@ -36,6 +35,8 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
     {
         case cmdUPDATE_KEY:
             LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
+            if (m_syncHelper == nullptr)
+                throw invalid_argument("syncHelper is NULL");
             m_syncHelper->m_cvUpdateKey.notify_all();
             break;
         default:
@@ -69,17 +70,8 @@ void CAgentChannel::onRemoteEndDissconnected()
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    //    if (nullptr == m_cmdContainer)
-    //        throw invalid_argument("Command container is NULL");
-    //
-    //    // Notify watchers if the key their were waiting is updated
-    //    auto found = m_cmdContainer->m_sKeysToWait.find(_attachment->m_sKey);
-    //    if (found != m_cmdContainer->m_sKeysToWait.end())
-    //    {
-    //        LOG(info) << "Unlocking user process as it is waiting for update notifications of key = "
-    //                  << _attachment->m_sKey;
-    //        m_cmdContainer->m_sUpdatedKey = _attachment->m_sKey;
-    //        m_cmdContainer->m_cvKeyWait.notify_all();
-    //    }
+    if (m_syncHelper == nullptr)
+        throw invalid_argument("syncHelper is NULL");
+    m_syncHelper->m_cvWaitKey.notify_all();
     return true;
 }

@@ -47,7 +47,6 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
             return true;
         }
         case cmdUPDATE_KEY:
-        case cmdWAIT_FOR_KEY_UPDATE:
             return false; // let connection manager forward this info to UI channels
 
         default:

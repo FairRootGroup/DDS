@@ -12,19 +12,19 @@
 
 namespace dds
 {
-    const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::seconds(60);
     class CKeyValue
     {
       public:
-        typedef std::map<uint64_t, std::string> container_t;
-        typedef std::set<std::string> keysContainer_t;
+        typedef std::map<std::string, std::string> valuesMap_t;
 
       public:
         int putValue(const std::string& _key, const std::string& _value);
-        int getValue(const keysContainer_t& _keysToWait,
-                     std::string* _updatedKey,
-                     container_t* _values,
-                     const std::chrono::system_clock::duration& _timeout);
+        void getValues(const std::string& _key, valuesMap_t* _values);
+        int waitForUpdate(const std::chrono::system_clock::duration& _timeout);
+        //        int getValue(const keysContainer_t& _keysToWait,
+        //                     std::string* _updatedKey,
+        //                     container_t* _values,
+        //                     const std::chrono::system_clock::duration& _timeout);
     };
 }
 

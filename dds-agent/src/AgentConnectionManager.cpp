@@ -253,7 +253,6 @@ bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
     switch (_attachment->m_srcCommand)
     {
         case cmdUPDATE_KEY:
-        case cmdWAIT_FOR_KEY_UPDATE:
             if (m_UIConnectionMng)
                 m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
             else

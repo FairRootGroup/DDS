@@ -54,13 +54,14 @@ int main(int argc, char* argv[])
         if (vm.count("read-key"))
         {
             CKeyValue ddsKeyValue;
-            CKeyValue::keysContainer_t keysToWait;
-            keysToWait.insert(sReadKey);
-            string sUpdatedKey;
-            CKeyValue::container_t valuesMap;
-            int retVal = ddsKeyValue.getValue(keysToWait, &sUpdatedKey, &valuesMap, chrono::seconds(60));
-            if (retVal != 0 || sUpdatedKey.empty() || valuesMap.size() == 0)
-                return EXIT_FAILURE;
+            CKeyValue::valuesMap_t values;
+            ddsKeyValue.getValues(sReadKey, &values);
+            while (values.empty())
+            {
+                ddsKeyValue.waitForUpdate(chrono::seconds(120));
+
+                ddsKeyValue.getValues(sReadKey, &values);
+            }
         }
     }
     catch (exception& _e)
