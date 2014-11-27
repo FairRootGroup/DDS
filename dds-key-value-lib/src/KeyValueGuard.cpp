@@ -56,7 +56,7 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
     const string sKey = _key + "." + _taskId;
     {
         boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-        m_pt.put(_key, _value);
+        m_pt.put(sKey, _value);
         boost::property_tree::ini_parser::write_ini(getCfgFilePath(), m_pt);
     }
 }
