@@ -5,6 +5,8 @@
 Modified: Build WN packages without ICU support. (GH-14)   
 Added: key-value propagation support. (GH-12)   
 Added: key-value propagation API lib. (GH-11)   
+Fixed: Arguments of the task executable could contain slashes.
+Added: Simple scheduler for SSH which takes into account requirements.
 
 ### dds-protocol-lib
 Modified: Version changed to v2.0.   
