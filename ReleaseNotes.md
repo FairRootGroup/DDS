@@ -3,6 +3,8 @@
 ## v0.6 (NOT YET RELEASED)
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   
+Added: key-value propagation support. (GH-12)   
+Added: key-value propagation API lib. (GH-11)   
 
 ### dds-protocol-lib
 Modified: Version changed to v2.0.   

@@ -7,7 +7,6 @@
 #define __DDS__CAgentChannel__
 // DDS
 #include "ConnectionImpl.h"
-#include "def.h"
 // STD
 #include <condition_variable>
 

@@ -5,7 +5,6 @@
 #ifndef DDS_KeyValueGuard_h
 #define DDS_KeyValueGuard_h
 // DDS
-#include "AgentChannel.h"
 #include "AgentConnectionManager.h"
 // STD
 #include <string>

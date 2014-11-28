@@ -2,10 +2,8 @@
 //
 //
 //
-
 #ifndef __DDS__AgentConnectionManager__
 #define __DDS__AgentConnectionManager__
-
 // DDS
 #include "AgentChannel.h"
 // BOOST

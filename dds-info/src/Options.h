@@ -69,8 +69,8 @@ namespace dds
         bpo::variables_map::const_iterator found =
             find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v)
                     {
-                return (!_v.second.defaulted());
-            });
+            return (!_v.second.defaulted());
+        });
 
         if (vm.count("help") || vm.end() == found)
         {

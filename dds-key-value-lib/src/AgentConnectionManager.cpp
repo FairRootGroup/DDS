@@ -6,10 +6,8 @@
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/thread/thread.hpp>
 // DDS
 #include "AgentConnectionManager.h"
-#include "AgentChannel.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 

@@ -7,7 +7,6 @@
 // STD
 #include <string>
 #include <map>
-#include <set>
 #include <chrono>
 
 namespace dds
@@ -21,10 +20,6 @@ namespace dds
         int putValue(const std::string& _key, const std::string& _value);
         void getValues(const std::string& _key, valuesMap_t* _values);
         int waitForUpdate(const std::chrono::system_clock::duration& _timeout);
-        //        int getValue(const keysContainer_t& _keysToWait,
-        //                     std::string* _updatedKey,
-        //                     container_t* _values,
-        //                     const std::chrono::system_clock::duration& _timeout);
     };
 }
 
