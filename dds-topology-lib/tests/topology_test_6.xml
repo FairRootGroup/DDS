@@ -7,7 +7,6 @@
 	
 	<declrequirement id="requirement1">
     	<hostPattern value="*.gsi.de"/>
-		<userPattern value="andrey"/>
 	</declrequirement>
 	
   	<decltask id="task1">

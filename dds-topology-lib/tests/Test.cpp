@@ -95,12 +95,12 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     // Task iterators
     output_test_stream output1("topology_test_1_iterators_1.txt", true);
-    CTopology::TaskIteratorPair_t taskIt1 =
-        topology.getTaskIterator([](CTopology::TaskIterator_t::value_type value) -> bool
-                                 {
-            TaskPtr_t task = value.second;
-            return (task->getId() == "task1");
-        });
+    CTopology::TaskIteratorPair_t taskIt1 = topology.getTaskIterator([](CTopology::TaskIterator_t::value_type value)
+                                                                         -> bool
+                                                                     {
+        TaskPtr_t task = value.second;
+        return (task->getId() == "task1");
+    });
     check_topology_iterator(taskIt1, output1);
 
     output_test_stream output2("topology_test_1_iterators_2.txt", true);
@@ -109,7 +109,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
     // Task collection iterators
     output_test_stream output3("topology_test_1_iterators_3.txt", true);
     CTopology::TaskCollectionIteratorPair_t tcIt1 =
-        topology.getTaskCollectionIterator([](CTopology::TaskCollectionIterator_t::value_type value) -> bool
+        topology.getTaskCollectionIterator([](CTopology::TaskCollectionIterator_t::value_type value)
+                                               -> bool
                                            {
             TaskCollectionPtr_t tc = value.second;
             return (tc->getId() == "collection1");
@@ -196,13 +197,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(requirement->getType() == ETopoType::REQUIREMENT);
     BOOST_CHECK(requirement->getParent() == element1.get());
     BOOST_CHECK(requirement->getHostPattern() == ".+.gsi.de");
-    BOOST_CHECK(requirement->getUserPattern() == "andrey|anar");
     BOOST_CHECK(requirement->hostPatterMatches("dds.gsi.de") == true);
     BOOST_CHECK(requirement->hostPatterMatches("gsi.de") == false);
     BOOST_CHECK(requirement->hostPatterMatches("google.com") == false);
-    BOOST_CHECK(requirement->userPatterMatches("andrey") == true);
-    BOOST_CHECK(requirement->userPatterMatches("anar") == true);
-    BOOST_CHECK(requirement->userPatterMatches("user") == false);
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
     BOOST_CHECK(element2->getType() == ETopoType::COLLECTION);

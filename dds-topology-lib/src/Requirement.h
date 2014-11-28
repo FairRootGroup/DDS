@@ -28,13 +28,10 @@ namespace dds
         void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
         const std::string& getHostPattern() const;
-        const std::string& getUserPattern() const;
 
         void setHostPattern(const std::string& _hostPattern);
-        void setUserPattern(const std::string& _userPattern);
 
         bool hostPatterMatches(const std::string& _host) const;
-        bool userPatterMatches(const std::string& _user) const;
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.
@@ -47,7 +44,6 @@ namespace dds
 
       private:
         std::string m_hostPattern; ///> Pattern of the host name
-        std::string m_userPattern; ///> Pattern of the user name
     };
 
     typedef std::shared_ptr<CRequirement> RequirementPtr_t;

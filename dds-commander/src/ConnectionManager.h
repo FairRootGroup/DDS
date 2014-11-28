@@ -11,6 +11,7 @@
 #include "UIChannelInfo.h"
 #include "Options.h"
 #include "Topology.h"
+#include "SSHScheduler.h"
 // STD
 #include <mutex>
 
@@ -58,7 +59,9 @@ namespace dds
         CTestChannelInfo m_transportTest;
         CActivateAgentsChannelInfo m_ActivateAgents;
         CTopology m_topo;
+        CSSHScheduler m_scheduler;
 
+        // TODO: This is temporary storage only. Store this information as a part of scheduler.
         typedef std::map<uint64_t, CAgentChannel::weakConnectionPtr_t> TaskIDToAgentChannelMap_t;
         TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
     };

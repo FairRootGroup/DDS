@@ -313,30 +313,30 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 throw runtime_error("The number of agents is not sufficient for this topology.");
 
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-            CTopology::TaskIteratorPair_t tasks = m_topo.getTaskIterator();
-            CTopology::TaskIterator_t it_tasks = tasks.first;
-            for (const auto& v : channels)
-            {
-                if (v.expired())
-                    continue;
-                auto ptr = v.lock();
 
-                // Assign user's tasks to agents
-                if (it_tasks == tasks.second)
-                    break;
+            m_scheduler.makeSchedule(m_topo, channels);
+            const CSSHScheduler::ScheduleVector_t& schedule = m_scheduler.getSchedule();
+
+            for (const auto& sch : schedule)
+            {
                 SAssignUserTaskCmd msg_cmd;
-                TaskPtr_t topoTask = it_tasks->second;
 
                 // Set Task ID
-                msg_cmd.m_sID = to_string(it_tasks->first);
+                msg_cmd.m_sID = to_string(sch.m_taskID);
+
+                if (sch.m_channel.expired())
+                    continue;
+                auto ptr = sch.m_channel.lock();
 
                 // Set task ID for agent and add it to map
-                ptr->setTaskID(it_tasks->first);
-                m_taskIDToAgentChannelMap[it_tasks->first] = v;
+                // TODO: Do we have to assign taskID here?
+                // TODO: Probably it has to be assigned when the task is successfully activated.
+                ptr->setTaskID(sch.m_taskID);
+                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
 
-                if (topoTask->isExeReachable())
+                if (sch.m_task->isExeReachable())
                 {
-                    msg_cmd.m_sExeFile = topoTask->getExe();
+                    msg_cmd.m_sExeFile = sch.m_task->getExe();
                 }
                 else
                 {
@@ -345,7 +345,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
                     // Expand the string for the program to extract exe name and command line arguments
                     wordexp_t result;
-                    switch (wordexp(topoTask->getExe().c_str(), &result, 0))
+                    switch (wordexp(sch.m_task->getExe().c_str(), &result, 0))
                     {
                         case 0:
                         {
@@ -361,11 +361,12 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                                 sExeFileNameWithArgs += result.we_wordv[i];
                             }
 
-                            msg_cmd.m_sExeFile += "$DDS_LOCATION/";
+                            msg_cmd.m_sExeFile = "$DDS_LOCATION/";
                             msg_cmd.m_sExeFile += sExeFileNameWithArgs;
 
                             wordfree(&result);
 
+                            //
                             ptr->pushBinaryAttachmentCmd(sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK);
                         }
                         break;
@@ -373,33 +374,38 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                             // If the error was WRDE_NOSPACE,
                             // then perhaps part of the result was allocated.
                             throw runtime_error("memory error occurred while processing the user's executable path: " +
-                                                topoTask->getExe());
+                                                sch.m_task->getExe());
+
                         case WRDE_BADCHAR:
                             throw runtime_error(
                                 "Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
-                                topoTask->getExe());
+                                sch.m_task->getExe());
                             break;
+
                         case WRDE_BADVAL:
                             throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
                                                 "told us to consider this an error in " +
-                                                topoTask->getExe());
+                                                sch.m_task->getExe());
                             break;
+
                         case WRDE_CMDSUB:
                             throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
                                                 "consider this an error in " +
-                                                topoTask->getExe());
+                                                sch.m_task->getExe());
                             break;
                         case WRDE_SYNTAX:
                             throw runtime_error(
                                 "Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
-                                topoTask->getExe());
+                                sch.m_task->getExe());
                             break;
+
                         default: // Some other error.
-                            throw runtime_error("failed to process the user's executable path: " + topoTask->getExe());
+                            throw runtime_error("failed to process the user's executable path: " +
+                                                sch.m_task->getExe());
                     }
                 }
                 ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
-                ++it_tasks;
+                //++it_tasks;
             }
 
             // Active agents.
