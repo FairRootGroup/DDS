@@ -34,6 +34,7 @@ namespace dds
       public:
         static CKeyValueGuard& instance();
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
+        void putValue(const std::string& _key, const std::string& _value);
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
         void getValues(const std::string& _key, valuesMap_t* _values);
         int updateKey(const SUpdateKeyCmd& _cmd);

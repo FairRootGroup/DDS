@@ -61,6 +61,17 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
     }
 }
 
+void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value)
+{
+    boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
+    const string sKey = _key;
+    {
+        boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
+        m_pt.put(sKey, _value);
+        boost::property_tree::ini_parser::write_ini(getCfgFilePath(), m_pt);
+    }
+}
+
 void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, const std::string& _taskId)
 {
     if (_value == nullptr)
@@ -70,7 +81,9 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     const string sKey = _key + "." + _taskId;
     {
         boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-        m_pt.get(_key, *_value);
+        fs::path cfgFile(getCfgFilePath());
+        boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
+        m_pt.get(sKey, *_value);
     }
 }
 
@@ -81,6 +94,8 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
     boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
+    fs::path cfgFile(getCfgFilePath());
+    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
     try
     {
 

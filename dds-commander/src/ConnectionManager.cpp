@@ -564,9 +564,9 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         if (!sentFromUIChannel)
         {
             // If we get property key from agent we have to parse it to get the property ID.
-            // propertyID_17621121989812
+            // propertyID.17621121989812
             string propertyKey = _attachment->m_sKey;
-            size_t pos = propertyKey.find_last_of('_');
+            size_t pos = propertyKey.find_last_of('.');
             propertyID = propertyKey.substr(0, pos);
         }
 
@@ -592,7 +592,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                         // If property changed from UI we have to change hash in the property key.
                         SUpdateKeyCmd attachment(*_attachment);
                         stringstream ss;
-                        ss << propertyID << "_" << ptr->getTaskID();
+                        ss << propertyID << "." << ptr->getTaskID();
                         attachment.m_sKey = ss.str();
                         ptr->pushMsg<cmdUPDATE_KEY>(attachment);
                         LOG(info) << "Property update from UI channel: " << ss.str();

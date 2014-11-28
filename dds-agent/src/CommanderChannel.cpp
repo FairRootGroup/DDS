@@ -348,7 +348,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     try
     {
         LOG(info) << "Recieved a key update notifications: " << *_attachment;
-        CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue, m_sTaskId);
+        CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
     }
     catch (exception& e)
     {
@@ -370,7 +370,7 @@ void CCommanderChannel::updateKey(const string& _key, const string& _value)
 {
     SUpdateKeyCmd cmd;
     // Update key name with the task id
-    cmd.m_sKey = _key + "_" + m_sTaskId;
+    cmd.m_sKey = _key + "." + m_sTaskId;
     cmd.m_sValue = _value;
     LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
                << cmd.m_sValue;
