@@ -62,7 +62,8 @@ void CAgentConnectionManager::start()
     {
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
-        CMonitoringThread::instance().start(maxIdleTime, []()
+        CMonitoringThread::instance().start(maxIdleTime,
+                                            []()
                                             {
             LOG(info) << "Idle callback called";
         });
@@ -127,7 +128,8 @@ void CAgentConnectionManager::start()
                                                     return this->onNewUserTask(_pid);
                                                 });
 
-        boost::asio::async_connect(m_agents->socket(), endpoint_iterator,
+        boost::asio::async_connect(m_agents->socket(),
+                                   endpoint_iterator,
                                    [this](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
             if (!ec)

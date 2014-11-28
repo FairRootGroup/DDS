@@ -444,7 +444,8 @@ namespace dds
 
                 info->m_bytesReceived += _attachment->m_size;
 
-                std::copy(_attachment->m_data.begin(), _attachment->m_data.end(),
+                std::copy(_attachment->m_data.begin(),
+                          _attachment->m_data.end(),
                           info->m_data.begin() + _attachment->m_offset);
 
                 allBytesReceived = info->m_bytesReceived == info->m_fileSize;
@@ -546,7 +547,8 @@ namespace dds
       private:
         void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
         {
-            boost::asio::async_connect(m_socket, _endpoint_iterator,
+            boost::asio::async_connect(m_socket,
+                                       _endpoint_iterator,
                                        [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
                                        {
                 if (!ec)
@@ -623,7 +625,8 @@ namespace dds
                 return;
             }
 
-            boost::asio::async_read(m_socket, boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
+            boost::asio::async_read(m_socket,
+                                    boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
                                     [this](boost::system::error_code ec, std::size_t length)
                                     {
                 if (!ec)
@@ -660,8 +663,9 @@ namespace dds
         {
             LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString()
                                    << " a message: " << m_writeMsgQueue.front()->toString();
-            boost::asio::async_write(m_socket, boost::asio::buffer(m_writeMsgQueue.front()->data(),
-                                                                   m_writeMsgQueue.front()->length()),
+            boost::asio::async_write(m_socket,
+                                     boost::asio::buffer(m_writeMsgQueue.front()->data(),
+                                                         m_writeMsgQueue.front()->length()),
                                      [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                                      {
                 if (!_ec)
@@ -710,8 +714,8 @@ namespace dds
             }
             LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
             boost::system::error_code ec;
-            size_t bytesTransfered = boost::asio::write(m_socket, boost::asio::buffer(_msg->data(), _msg->length()),
-                                                        boost::asio::transfer_all(), ec);
+            size_t bytesTransfered = boost::asio::write(
+                m_socket, boost::asio::buffer(_msg->data(), _msg->length()), boost::asio::transfer_all(), ec);
 
             writeHandler(ec, bytesTransfered);
         }

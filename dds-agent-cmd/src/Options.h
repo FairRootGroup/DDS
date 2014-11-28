@@ -84,7 +84,8 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()(
-            "command", bpo::value<EAgentCmdType>(&_options->m_agentCmd),
+            "command",
+            bpo::value<EAgentCmdType>(&_options->m_agentCmd),
             "The command is a name of a dds-agent-cmd command."
             " Can be one of the following: getlog, and update-key.\n"
             "For user's convenience it is allowed to call dds-agent-cmd without \"--command\" option"
@@ -95,8 +96,8 @@ namespace dds
             "its value should be provided additionally (see --key and --value) \n");
         options.add_options()("all,a", "Send command to all active agents");
         options.add_options()("key", bpo::value<std::string>(&_options->m_sUpdKey_key), "Specefies the key to update");
-        options.add_options()("value", bpo::value<std::string>(&_options->m_sUpdKey_value),
-                              "Specefies the new value ofthe given key");
+        options.add_options()(
+            "value", bpo::value<std::string>(&_options->m_sUpdKey_value), "Specefies the new value ofthe given key");
 
         bpo::positional_options_description positional;
         positional.add("command", -1);

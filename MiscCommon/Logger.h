@@ -113,8 +113,10 @@ namespace MiscCommon
 
             // Logging to file
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
-                add_file_log(keywords::file_name = sLogFile, keywords::open_mode = (std::ios::out | std::ios::app),
-                             keywords::rotation_size = rotationSize, keywords::auto_flush = true);
+                add_file_log(keywords::file_name = sLogFile,
+                             keywords::open_mode = (std::ios::out | std::ios::app),
+                             keywords::rotation_size = rotationSize,
+                             keywords::auto_flush = true);
 
             fileSink->set_formatter(formatter);
             fileSink->set_filter(severity >= severityLevel);

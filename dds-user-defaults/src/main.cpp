@@ -43,8 +43,8 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("verbose,V", "Cause pod-user-defaults to be verbose in case of an error");
     visible.add_options()("path,p", "Show DDS user defaults config file path");
     visible.add_options()("default,d", "Generate a default PoD configuration file");
-    visible.add_options()("config,c", bpo::value<string>()->default_value("~/.DDS/DDS.cfg"),
-                          "DDS user defaults configuration file");
+    visible.add_options()(
+        "config,c", bpo::value<string>()->default_value("~/.DDS/DDS.cfg"), "DDS user defaults configuration file");
     visible.add_options()("key", bpo::value<string>(), "Get a value for the given key");
     visible.add_options()(
         "force,f",
@@ -52,9 +52,10 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("wrkpkg", "Show the full path of the worker package. The path must be evaluated before use");
     visible.add_options()("wrkscript",
                           "Show the full path of the worker script. The path must be evaluated before use");
-    visible.add_options()("rms-sandbox-dir", "Show the full path of the RMS sandbox directory. It returns "
-                                             "server.sandbox_dir if it is not empty, otherwise server.work_dir is "
-                                             "returned. The path must be evaluated before use");
+    visible.add_options()("rms-sandbox-dir",
+                          "Show the full path of the RMS sandbox directory. It returns "
+                          "server.sandbox_dir if it is not empty, otherwise server.work_dir is "
+                          "returned. The path must be evaluated before use");
     visible.add_options()("user-env-script",
                           "Show the full path of user's environment script for workers (if present). "
                           "The path must be evaluated before use");

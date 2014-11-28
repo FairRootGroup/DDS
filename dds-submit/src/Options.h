@@ -145,11 +145,14 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
-        options.add_options()("topo,t", bpo::value<std::string>(&_options->m_sTopoFile),
+        options.add_options()("topo,t",
+                              bpo::value<std::string>(&_options->m_sTopoFile),
                               "A topology file. The option can only be used with the \"submit\" command");
-        options.add_options()("rms,r", bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
+        options.add_options()("rms,r",
+                              bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
                               "Resource Management System. The option can only be used with the \"submit\" command");
-        options.add_options()("ssh-rms-cfg", bpo::value<std::string>(&_options->m_sSSHCfgFile),
+        options.add_options()("ssh-rms-cfg",
+                              bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
 

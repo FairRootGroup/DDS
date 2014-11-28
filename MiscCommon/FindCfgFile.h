@@ -91,8 +91,8 @@ namespace MiscCommon
             if (!_stream)
                 return;
 
-            std::copy(m_Paths.begin(), m_Paths.end(),
-                      std::ostream_iterator<container_value>(*_stream, _Seporator.c_str()));
+            std::copy(
+                m_Paths.begin(), m_Paths.end(), std::ostream_iterator<container_value>(*_stream, _Seporator.c_str()));
         }
 
       private:

@@ -51,13 +51,15 @@ namespace dds
         bpo::options_description options("dds-info options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
-        options.add_options()("commander-pid", bpo::bool_switch(&_options->m_bNeedCommanderPid),
+        options.add_options()("commander-pid",
+                              bpo::bool_switch(&_options->m_bNeedCommanderPid),
                               "Return the pid of the commander server");
-        options.add_options()("status", bpo::bool_switch(&_options->m_bNeedDDSStatus),
-                              "Query current status of DDS commander server");
-        options.add_options()("agents-number,n", bpo::bool_switch(&_options->m_bNeedAgentsNumber),
-                              "Returns a number of online agents");
-        options.add_options()("agents-list,l", bpo::bool_switch(&_options->m_bNeedAgentsList),
+        options.add_options()(
+            "status", bpo::bool_switch(&_options->m_bNeedDDSStatus), "Query current status of DDS commander server");
+        options.add_options()(
+            "agents-number,n", bpo::bool_switch(&_options->m_bNeedAgentsNumber), "Returns a number of online agents");
+        options.add_options()("agents-list,l",
+                              bpo::bool_switch(&_options->m_bNeedAgentsList),
                               "Show detailed info about all online agents");
 
         // Parsing command-line
@@ -66,9 +68,10 @@ namespace dds
         bpo::notify(vm);
 
         // check for non-defaulted arguments
-        bpo::variables_map::const_iterator found =
-            find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v)
-                    {
+        bpo::variables_map::const_iterator found = find_if(vm.begin(),
+                                                           vm.end(),
+                                                           [](const bpo::variables_map::value_type& _v)
+                                                           {
             return (!_v.second.defaulted());
         });
 

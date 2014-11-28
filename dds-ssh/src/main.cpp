@@ -71,7 +71,8 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
     bpo::options_description visible("Options");
     visible.add_options()("help,h", "Produce help message");
     visible.add_options()("version,v", "Version information");
-    visible.add_options()("command", bpo::value<string>(),
+    visible.add_options()("command",
+                          bpo::value<string>(),
                           "The command is a name of dds-ssh command."
                           " Can be one of the following: submit, status, clean, fast-clean.\n"
                           "For user's convenience it is allowed to call dds-ssh without \"--command\" option"
@@ -86,7 +87,8 @@ bool parseCmdLine(int _Argc, char* _Argv[], bpo::variables_map* _vm)
     visible.add_options()("exec,e", bpo::value<string>(), "Execute a local shell script on the remote worker nodes");
     visible.add_options()(
         "logs", "Download all log files from the worker nodes. Can be used only together with the clean option");
-    visible.add_options()("for-worker", bpo::value<vector<string>>()->multitoken(),
+    visible.add_options()("for-worker",
+                          bpo::value<vector<string>>()->multitoken(),
                           "Perform an action on defined worker nodes. (arg is a space separated list of WN names)"
                           " Can only be used in connection with \"submit\", \"clean\", \"fast-clean\", \"exec\".");
     //...positional
@@ -253,7 +255,8 @@ int main(int argc, char* argv[])
             stringstream ss(cmdOutput);
             // send the output line by line to the log
             StringVector_t vec;
-            std::copy(custom_istream_iterator<std::string>(ss), custom_istream_iterator<std::string>(),
+            std::copy(custom_istream_iterator<std::string>(ss),
+                      custom_istream_iterator<std::string>(),
                       std::back_inserter(vec));
             StringVector_t::const_iterator iter = vec.begin();
             StringVector_t::const_iterator iter_end = vec.end();
@@ -315,7 +318,8 @@ int main(int argc, char* argv[])
             stringstream ss(cmdOutput);
             // send the output line by line to the log
             StringVector_t vec;
-            std::copy(custom_istream_iterator<std::string>(ss), custom_istream_iterator<std::string>(),
+            std::copy(custom_istream_iterator<std::string>(ss),
+                      custom_istream_iterator<std::string>(),
                       std::back_inserter(vec));
             StringVector_t::const_iterator iter = vec.begin();
             StringVector_t::const_iterator iter_end = vec.end();

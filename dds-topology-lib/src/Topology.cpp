@@ -125,8 +125,8 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
             return true;
         };
     }
-    TaskCollectionIterator_t begin_iterator(condition, m_hashToTaskCollectionMap.begin(),
-                                            m_hashToTaskCollectionMap.end());
+    TaskCollectionIterator_t begin_iterator(
+        condition, m_hashToTaskCollectionMap.begin(), m_hashToTaskCollectionMap.end());
     TaskCollectionIterator_t end_iterator(condition, m_hashToTaskCollectionMap.end(), m_hashToTaskCollectionMap.end());
     return make_pair(begin_iterator, end_iterator);
 }

@@ -27,8 +27,8 @@ int main(int argc, char* argv[])
         bpo::options_description options("task-test_key_value options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("write-key", bpo::value<std::string>(&sWriteKey), "Specefies the key to update");
-        options.add_options()("write-value", bpo::value<std::string>(&sWriteValue),
-                              "Specefies the new value of the given key");
+        options.add_options()(
+            "write-value", bpo::value<std::string>(&sWriteValue), "Specefies the new value of the given key");
         options.add_options()("read-key", bpo::value<std::string>(&sReadKey), "Specefies the key to read");
 
         // Parsing command-line
