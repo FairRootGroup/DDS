@@ -305,11 +305,12 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                 return (_v->getType() == EAgentChannelType::AGENT && _v->started());
             };
 
-            m_ActivateAgents.m_nofRequests = countNofChannels(condition);
+            m_ActivateAgents.m_nofRequests = m_topo.getMainGroup()->getTotalNofTasks();
+            size_t nofAgents = countNofChannels(condition);
 
-            if (m_ActivateAgents.m_nofRequests == 0)
+            if (nofAgents == 0)
                 throw runtime_error("There are no connected agents.");
-            if (m_topo.getMainGroup()->getTotalNofTasks() > m_ActivateAgents.m_nofRequests)
+            if (nofAgents < m_ActivateAgents.m_nofRequests)
                 throw runtime_error("The number of agents is not sufficient for this topology.");
 
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
@@ -409,7 +410,11 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             }
 
             // Active agents.
-            broadcastSimpleMsg<cmdACTIVATE_AGENT>(condition);
+            broadcastSimpleMsg<cmdACTIVATE_AGENT>(
+                [](CAgentChannel::connectionPtr_t _v)
+                {
+                    return (_v->getType() == EAgentChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+                });
         }
         catch (bad_weak_ptr& _e)
         {
