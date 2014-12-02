@@ -605,6 +605,14 @@ namespace MiscCommon
         {
             return htonll(_value);
         }
+
+// some old Linux systems don't have ntohll and htonll
+#ifndef ntohll
+#define ntohll(x) (((_int64)(ntohl((int)((x << 32) >> 32))) << 32) |
+        (unsigned int)ntohl(((int)(x >> 32)))) //By Runner
+#define htonll(x) ntohll(x)
+#endif
+        
         /**
          *
          * @brief A helper function, which insures that whole buffer was written.
