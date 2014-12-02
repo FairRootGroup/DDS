@@ -71,7 +71,7 @@ bool CAgentChannel::on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t 
 bool CAgentChannel::on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AGENT>::ptr_t _attachment)
 {
     // send shutdown if versions are incompatible
-    if (*_attachment != SVersionCmd())
+    if (_attachment->m_version != SVersionCmd().m_version)
     {
         m_isHandShakeOK = false;
         // Send reply that the version of the protocol is incompatible
@@ -82,9 +82,12 @@ bool CAgentChannel::on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AG
     {
         m_isHandShakeOK = true;
         m_type = EAgentChannelType::AGENT;
+        chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        chrono::system_clock::time_point submitTime = chrono::system_clock::from_time_t(_attachment->m_submitTime);
+        m_startUpTime = std::chrono::duration_cast<std::chrono::seconds>(now - submitTime);
         // everything is OK, we can work with this agent
         LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                  << "] has succesfully connected.";
+                  << "] has succesfully connected. Startup time: " << m_startUpTime.count() << " sec.";
 
         // replay on handshake in sync push, to preserver order of messages. Otherwise the replay could be send after
         // other requests are sent and other will be ignored by the agent as there were no handshake ok received yet.

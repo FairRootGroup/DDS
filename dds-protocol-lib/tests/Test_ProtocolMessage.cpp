@@ -68,19 +68,20 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
 {
-    const unsigned int cmdSize = 2;
+    const unsigned int cmdSize = 10;
 
     // Create a message
-    SVersionCmd ver_src;
-    ver_src.m_version = 777;
+    SHandShakeAgentCmd src;
+    src.m_version = 777;
+    src.m_submitTime = 0xFFFFFFFFFFFFFFFF; // unsigned long long
     MiscCommon::BYTEVector_t data;
-    ver_src.convertToData(&data);
+    src.convertToData(&data);
     CProtocolMessage msg_src;
     msg_src.encode(cmdHANDSHAKE_AGENT, data);
 
     BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE_AGENT);
 
-    BOOST_CHECK(ver_src.size() == cmdSize);
+    BOOST_CHECK(src.size() == cmdSize);
 
     // "Send" message
     CProtocolMessage msg_dest;
@@ -94,10 +95,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
     BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
 
     // Read the message
-    SVersionCmd ver_dest;
-    ver_dest.convertFromData(msg_dest.bodyToContainer());
+    SHandShakeAgentCmd dest;
+    dest.convertFromData(msg_dest.bodyToContainer());
 
-    BOOST_CHECK(ver_src == ver_dest);
+    BOOST_CHECK(src == dest);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
@@ -148,7 +149,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     const string sDDSPath = "/Users/andrey/DDS";
     const uint16_t nAgentPort = 20000;
     const uint32_t nAgentPid = 1111;
-    const uint32_t nTimeStamp = 111111111;
     const unsigned int cmdSize = 52;
 
     // Create a message
@@ -159,7 +159,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     cmd_src.m_DDSPath = sDDSPath;
     cmd_src.m_agentPort = nAgentPort;
     cmd_src.m_agentPid = nAgentPid;
-    cmd_src.m_timeStamp = nTimeStamp;
     MiscCommon::BYTEVector_t data;
     cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
@@ -191,7 +190,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     BOOST_CHECK(sDDSPath == cmd_dest.m_DDSPath);
     BOOST_CHECK(nAgentPort == cmd_dest.m_agentPort);
     BOOST_CHECK(nAgentPid == cmd_dest.m_agentPid);
-    BOOST_CHECK(nTimeStamp == cmd_dest.m_timeStamp);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)

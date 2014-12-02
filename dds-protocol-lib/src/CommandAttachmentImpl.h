@@ -18,6 +18,7 @@
 #include "BinaryAttachmentReceivedCmd.h"
 #include "BinaryAttachmentStartCmd.h"
 #include "UpdateKeyCmd.h"
+#include "HandShakeAgentCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -68,7 +69,7 @@ namespace dds
     };
 
     REGISTER_CMD_ATTACHMENT(SVersionCmd, cmdHANDSHAKE)
-    REGISTER_CMD_ATTACHMENT(SVersionCmd, cmdHANDSHAKE_AGENT)
+    REGISTER_CMD_ATTACHMENT(SHandShakeAgentCmd, cmdHANDSHAKE_AGENT)
     REGISTER_CMD_ATTACHMENT(SVersionCmd, cmdHANDSHAKE_KEY_VALUE_GUARD)
     REGISTER_CMD_ATTACHMENT(SSubmitCmd, cmdSUBMIT)
     REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdSIMPLE_MSG)

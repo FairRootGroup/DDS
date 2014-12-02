@@ -589,6 +589,10 @@ namespace MiscCommon
         {
             return ntohl(_value);
         }
+        inline uint64_t _normalizeRead64(uint64_t _value)
+        {
+            return ntohll(_value);
+        }
         inline uint16_t _normalizeWrite16(uint16_t _value)
         {
             return htons(_value);
@@ -596,6 +600,10 @@ namespace MiscCommon
         inline uint32_t _normalizeWrite32(uint32_t _value)
         {
             return htonl(_value);
+        }
+        inline uint64_t _normalizeWrite64(uint64_t _value)
+        {
+            return htonll(_value);
         }
         /**
          *

@@ -18,6 +18,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #pragma clang diagnostic pop
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -59,24 +61,36 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
 
 bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment)
 {
+    // pid
     pid_t pid = getpid();
+
+    // UI port number
+    size_t nPort(0);
+    try
+    {
+        // Read server info file
+        const string sSrvCfg(CUserDefaults::instance().getAgentInfoFileLocation());
+        LOG(info) << "Reading server info from: " << sSrvCfg;
+        if (sSrvCfg.empty())
+            throw runtime_error("Cannot find agent info file.");
+
+        boost::property_tree::ptree pt;
+        boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
+        nPort = pt.get<size_t>("agent.port");
+    }
+    catch (...)
+    {
+    }
 
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);
     get_hostname(&cmd.m_host);
     cmd.m_version = PROJECT_VERSION_STRING;
     cmd.m_DDSPath = CUserDefaults::getDDSPath();
-    cmd.m_agentPort = 0;
+    cmd.m_agentPort = nPort;
     cmd.m_agentPid = pid;
-    cmd.m_timeStamp = 0;
-
-    // CProtocolMessage::protocolMessagePtr_t msg = make_shared<CProtocolMessage>();
-    // msg->encodeWithAttachment<cmdREPLY_HOST_INFO>(cmd);
-    // pushMsg(msg);
 
     pushMsg<cmdREPLY_HOST_INFO>(cmd);
-    // pushMsg<cmdSIMPLE_MSG>(cmd);
-
     return true;
 }
 

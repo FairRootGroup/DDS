@@ -20,6 +20,7 @@ set( SOURCE_FILES
 	./src/UUIDCmd.cpp
 	./src/AssignUserTaskCmd.cpp
 	./src/BinaryAttachmentCmd.cpp
+	./src/HandShakeAgentCmd.cpp
 	./src/HostInfoCmd.cpp
 	./src/SubmitCmd.cpp
 	./src/VersionCmd.cpp
@@ -40,6 +41,7 @@ set( SRC_HDRS
 	./src/UUIDCmd.h
 	./src/AssignUserTaskCmd.h
 	./src/BinaryAttachmentCmd.h
+	./src/HandShakeAgentCmd.h
 	./src/HostInfoCmd.h
 	./src/SubmitCmd.h
 	./src/VersionCmd.h

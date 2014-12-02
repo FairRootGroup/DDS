@@ -7,6 +7,7 @@ Added: key-value propagation support. (GH-12)
 Added: key-value propagation API lib. (GH-11)   
 Fixed: Arguments of the task executable could contain slashes.   
 Added: Simple scheduler for SSH which takes into account requirements. (GH-20)
+Added: Startup time of agents. It can be requested via git-info -l. (GH-3)
 
 ### dds-protocol-lib
 Modified: Version changed to v2.0.   

@@ -453,8 +453,11 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
             auto ptr = v.lock();
 
             ++cmd.m_nActiveAgents;
-            ss << ptr->getId() << " " << ptr->getRemoteHostInfo().m_username << "@" << ptr->getRemoteHostInfo().m_host
-               << ":" << ptr->getRemoteHostInfo().m_DDSPath << " (pid:" << ptr->getRemoteHostInfo().m_agentPid << ")\n";
+            ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
+               << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
+               << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
+               << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
+               << "\nAgent startup time: " << ptr->getStartupTime().count() << " sec.\n";
         }
         cmd.m_sListOfAgents = ss.str();
 

@@ -6,6 +6,7 @@
 #define __DDS__CAgentChannel__
 // DDS
 #include "ConnectionImpl.h"
+#include <chrono>
 
 namespace dds
 {
@@ -62,6 +63,10 @@ namespace dds
         uint64_t getTaskID() const;
 
         void setTaskID(uint64_t _taskID);
+        std::chrono::seconds getStartupTime() const
+        {
+            return m_startUpTime;
+        }
 
       private:
         // Message Handlers
@@ -101,6 +106,7 @@ namespace dds
         SHostInfoCmd m_remoteHostInfo;
         std::string m_sCurrentTopoFile;
         uint64_t m_taskID;
+        std::chrono::seconds m_startUpTime;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

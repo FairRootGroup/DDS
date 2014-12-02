@@ -14,14 +14,12 @@ void SHostInfoCmd::normalizeToLocal() const
 {
     m_agentPort = inet::_normalizeRead16(m_agentPort);
     m_agentPid = inet::_normalizeRead32(m_agentPid);
-    m_timeStamp = inet::_normalizeRead32(m_timeStamp);
 }
 
 void SHostInfoCmd::normalizeToRemote() const
 {
     m_agentPort = inet::_normalizeWrite16(m_agentPort);
     m_agentPid = inet::_normalizeWrite32(m_agentPid);
-    m_timeStamp = inet::_normalizeWrite32(m_timeStamp);
 }
 
 void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -42,12 +40,6 @@ void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     m_agentPid += (_data[idx++] << 8);
     m_agentPid += (_data[idx++] << 16);
     m_agentPid += (_data[idx] << 24);
-
-    ++idx;
-    m_timeStamp = _data[idx++];
-    m_timeStamp += (_data[idx++] << 8);
-    m_timeStamp += (_data[idx++] << 16);
-    m_timeStamp += (_data[idx] << 24);
 
     ++idx;
     vector<string> v;
@@ -80,11 +72,6 @@ void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back((m_agentPid >> 8) & 0xFF);
     _data->push_back((m_agentPid >> 16) & 0xFF);
     _data->push_back((m_agentPid >> 24) & 0xFF);
-
-    _data->push_back(m_timeStamp & 0xFF);
-    _data->push_back((m_timeStamp >> 8) & 0xFF);
-    _data->push_back((m_timeStamp >> 16) & 0xFF);
-    _data->push_back((m_timeStamp >> 24) & 0xFF);
 
     copy(m_username.begin(), m_username.end(), back_inserter(*_data));
     _data->push_back('\0');

@@ -135,8 +135,18 @@ void CAgentConnectionManager::start()
             if (!ec)
             {
                 // Create handshake message which is the first one for all agents
-                SVersionCmd ver;
-                m_agents->pushMsg<cmdHANDSHAKE_AGENT>(ver);
+                SHandShakeAgentCmd handShake;
+                // get submit time
+                string sSubmitTime;
+                char* pchSubmitTime;
+                pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
+                if (NULL != pchSubmitTime)
+                {
+                    sSubmitTime.assign(pchSubmitTime);
+                    handShake.m_submitTime = stoll(sSubmitTime);
+                }
+
+                m_agents->pushMsg<cmdHANDSHAKE_AGENT>(handShake);
                 m_agents->start();
 
                 // Start the UI agent server
