@@ -22,13 +22,6 @@
 /// this macro indicates an invalid status of the socket
 #define INVALID_SOCKET -1
 
-// some old Linux systems don't have ntohll and htonll
-#ifndef ntohll
-#define ntohll(x) (((_int64)(ntohl((int)((x << 32) >> 32))) << 32) |
-(unsigned int)ntohl(((int)(x >> 32)))) //By Runner
-#define htonll(x) ntohll(x)
-#endif
-
 namespace MiscCommon
 {
     /**
@@ -585,6 +578,18 @@ namespace MiscCommon
             return 0;
         }
 
+// some old Linux systems don't have ntohll and htonll
+#ifndef ntohll
+        uint64_t htonll(uint64_t val)
+        {
+            return (((uint64_t)htonl(val)) << 32) + htonl(val >> 32);
+        }
+
+        uint64_t ntohll(uint64_t val)
+        {
+            return (((uint64_t)ntohl(val)) << 32) + ntohl(val >> 32);
+        }
+#endif
         // The following 4 functions convert values between host and network byte order.
         // Whenever data should be send to a remote peer the _normalizeWrite must be used.
         // Whenever data are going to be read from the _normalizeRead must be used to check that Endianness is correct.
@@ -612,6 +617,7 @@ namespace MiscCommon
         {
             return htonll(_value);
         }
+
         /**
          *
          * @brief A helper function, which insures that whole buffer was written.
