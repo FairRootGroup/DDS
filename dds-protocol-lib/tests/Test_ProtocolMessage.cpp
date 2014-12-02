@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     const string sDDSPath = "/Users/andrey/DDS";
     const uint16_t nAgentPort = 20000;
     const uint32_t nAgentPid = 1111;
-    const unsigned int cmdSize = 52;
+    const unsigned int cmdSize = 48;
 
     // Create a message
     SHostInfoCmd cmd_src;
