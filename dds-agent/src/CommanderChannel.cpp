@@ -29,6 +29,7 @@ namespace fs = boost::filesystem;
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CConnectionImpl<CCommanderChannel>(_service)
     , m_isHandShakeOK(false)
+    , m_id()
 {
 }
 
