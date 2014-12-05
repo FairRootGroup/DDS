@@ -11,6 +11,7 @@
 #include "CommanderChannel.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
+#include "KeyValueGuard.h"
 
 using namespace boost::asio;
 using namespace std;
@@ -281,6 +282,10 @@ bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
+    // Clean Key-Value storage
+    CKeyValueGuard::instance().clean();
+
+    // watchdog
     LOG(info) << "Starting the watchdog for user task pid = " << _pid;
     {
         // remove pid from the active children list
