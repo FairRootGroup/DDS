@@ -31,7 +31,7 @@ CKeyValueGuard& CKeyValueGuard::instance()
     return instance;
 }
 
-void CKeyValueGuard::clean() const
+void CKeyValueGuard::cleanStorage() const
 {
     // create cfg file if missing
     fs::path cfgFile(getCfgFilePath());
@@ -43,16 +43,23 @@ void CKeyValueGuard::clean() const
     }
 }
 
-void CKeyValueGuard::init()
+void CKeyValueGuard::createStorage()
 {
-    Logger::instance().init(); // Initialize log
-
     // create cfg file if missing
     fs::path cfgFile(getCfgFilePath());
     if (!fs::exists(cfgFile))
+    {
+        LOG(debug) << "Create key-value storage file: " << cfgFile.generic_string();
         ofstream f(cfgFile.generic_string());
+    }
 
     boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
+}
+
+void CKeyValueGuard::init()
+{
+    Logger::instance().init(); // Initialize log
+    createStorage();
 }
 
 const std::string CKeyValueGuard::getCfgFilePath() const

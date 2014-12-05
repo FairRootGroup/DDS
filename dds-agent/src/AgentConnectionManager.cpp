@@ -283,7 +283,8 @@ bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
     // Clean Key-Value storage
-    CKeyValueGuard::instance().clean();
+    CKeyValueGuard::instance().cleanStorage();
+    CKeyValueGuard::instance().createStorage();
 
     // watchdog
     LOG(info) << "Starting the watchdog for user task pid = " << _pid;

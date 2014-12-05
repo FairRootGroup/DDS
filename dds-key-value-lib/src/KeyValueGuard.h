@@ -32,7 +32,8 @@ namespace dds
 
       public:
         static CKeyValueGuard& instance();
-        void clean() const;
+        void cleanStorage() const;
+        void createStorage();
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
         void putValue(const std::string& _key, const std::string& _value);
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
