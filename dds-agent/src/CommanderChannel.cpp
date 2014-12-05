@@ -389,5 +389,8 @@ void CCommanderChannel::updateKey(const string& _key, const string& _value)
     cmd.m_sValue = _value;
     LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
                << cmd.m_sValue;
+    // write the property locally
+    CKeyValueGuard::instance().putValue(cmd.m_sKey, cmd.m_sValue);
+    // Push update to the commander server
     pushMsg<cmdUPDATE_KEY>(cmd);
 }
