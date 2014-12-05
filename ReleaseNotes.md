@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v0.6 (NOT YET RELEASED)
+## v0.6 (2014-12-05)
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   
 Added: key-value propagation support. (GH-12)   
