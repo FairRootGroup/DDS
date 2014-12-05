@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # configure files
 # 
-configure_file( ${dds-info_SOURCE_DIR}/src/version.h.in ${dds-key-value-lib_BINARY_DIR}/version.h @ONLY )
+configure_file( ${dds-key-value-lib_SOURCE_DIR}/src/version.h.in ${dds-key-value-lib_BINARY_DIR}/version.h @ONLY )
 
 #
 # Source files
