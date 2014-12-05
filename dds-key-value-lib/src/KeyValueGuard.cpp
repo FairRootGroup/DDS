@@ -36,7 +36,10 @@ void CKeyValueGuard::clean() const
     // create cfg file if missing
     fs::path cfgFile(getCfgFilePath());
     if (fs::exists(cfgFile))
+    {
+        LOG(debug) << "Removing key-value storage file: " << cfgFile.generic_string();
         fs::remove(cfgFile);
+    }
 }
 
 void CKeyValueGuard::init()
