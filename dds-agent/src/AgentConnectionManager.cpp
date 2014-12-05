@@ -215,8 +215,8 @@ void CAgentConnectionManager::terminateChildrenProcesses()
         if (!IsProcessExist(pid))
             continue;
 
-        // wait 5 seconds each
-        for (size_t i = 0; i < 5; ++i)
+        // wait 30 seconds each
+        for (size_t i = 0; i < 30; ++i)
         {
             LOG(info) << "Waiting for pid = " << pid;
             int stat(0);
