@@ -1,5 +1,8 @@
 # DDS Release Notes
 
+## v0.8 (NOT YET RELEASED)
+
+
 ## v0.6 (2014-12-05)
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   
