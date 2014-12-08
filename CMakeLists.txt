@@ -306,7 +306,6 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
 		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
 					  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-key-value-lib> "${WN_PKG_DIR}"
-                      ####### <<<<<<
 		              COMMAND ${lib_cmd} ${lib_cmd_args}
                       COMMAND ${lib_cmd} ${lib_cmd_args_log}
                       COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
