@@ -11,6 +11,7 @@
 
 using namespace dds;
 using namespace std;
+using namespace MiscCommon;
 
 CSSHScheduler::CSSHScheduler()
 {
@@ -73,6 +74,7 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
         }
         if (!taskAssigned)
         {
+            printSchedule();
             stringstream ss;
             ss << "Unable to schedule task <" << id << "> with path " << task->getPath();
             throw runtime_error(ss.str());
@@ -119,6 +121,7 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
         }
         if (!taskAssigned)
         {
+            printSchedule();
             stringstream ss;
             ss << "Unable to schedule task <" << id << "> with path " << task->getPath();
             throw runtime_error(ss.str());
@@ -129,14 +132,33 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
 
     if (taskCounter != m_schedule.size())
     {
+        printSchedule();
         stringstream ss;
         ss << "Unable to make a schedule for tasks. Number of requested tasks: " << taskCounter
            << ". Number of scheduled tasks: " << m_schedule.size();
         throw runtime_error(ss.str());
     }
+
+    printSchedule();
 }
 
 const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const
 {
     return m_schedule;
+}
+
+void CSSHScheduler::printSchedule()
+{
+    stringstream ss;
+    ss << "Scheduled tasks: " << m_schedule.size() << endl;
+    for (const auto& s : m_schedule)
+    {
+        if (s.m_channel.expired())
+            continue;
+        auto ptr = s.m_channel.lock();
+
+        ss << "<" << s.m_taskID << ">"
+           << " <" << s.m_task->getPath() << "> ---> " << ptr->getRemoteHostInfo().m_host << endl;
+    }
+    LOG(debug) << ss.str();
 }

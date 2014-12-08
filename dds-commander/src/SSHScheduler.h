@@ -39,6 +39,9 @@ namespace dds
         const ScheduleVector_t& getSchedule() const;
 
       private:
+        void printSchedule();
+
+      private:
         ScheduleVector_t m_schedule;
     };
 }
