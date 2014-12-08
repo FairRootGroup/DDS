@@ -7,7 +7,8 @@
 #include "Requirement.h"
 // STD
 #include <iostream>
-#include <regex>
+//#include <regex>
+#include <boost/regex.hpp>
 
 using namespace std;
 using namespace boost::property_tree;
@@ -38,8 +39,8 @@ bool CRequirement::hostPatterMatches(const std::string& _host) const
 {
     if (getHostPattern().empty())
         return true;
-    const std::regex e(getHostPattern());
-    return std::regex_match(_host, e);
+    const boost::regex e(getHostPattern());
+    return boost::regex_match(_host, e);
 }
 
 void CRequirement::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)

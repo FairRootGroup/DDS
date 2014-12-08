@@ -81,6 +81,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries ( dds-topology-lib
 	dds-user-defaults-lib
 	${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_REGEX_LIBRARY}
 )
 
 # API headers
