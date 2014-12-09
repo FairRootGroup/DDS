@@ -9,7 +9,7 @@ using namespace dds;
 using namespace std;
 using namespace MiscCommon;
 
-const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::seconds(60);
+const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::milliseconds(2000);
 
 int CKeyValue::putValue(const string& _key, const string& _value)
 {
@@ -25,6 +25,7 @@ int CKeyValue::putValue(const string& _key, const string& _value)
     unique_lock<mutex> lk(CKeyValueGuard::instance().m_syncHelper.m_mtxUpdateKey);
     if (CKeyValueGuard::instance().m_syncHelper.m_cvUpdateKey.wait_until(lk, now + g_maxWaitTime) == cv_status::timeout)
     {
+        LOG(debug) << "CKeyValue::putValue timed out while updating key = " << _key << " with value = " << _value;
         return 1;
     }
 

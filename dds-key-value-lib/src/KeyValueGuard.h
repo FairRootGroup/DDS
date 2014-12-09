@@ -54,6 +54,7 @@ namespace dds
         boost::property_tree::ptree m_pt;
         AgentConnectionManagerPtr_t m_agentConnectionMng;
         std::mutex m_mtxAgentConnnection;
+        std::string m_sCfgFilePath;
     };
 }
 

@@ -46,12 +46,15 @@ void CKeyValueGuard::cleanStorage() const
 void CKeyValueGuard::createStorage()
 {
     // create cfg file if missing
-    fs::path cfgFile(getCfgFilePath());
+    boost::filesystem::path cfgFile(CUserDefaults::instance().getDDSPath());
+    cfgFile /= "task.cfg";
+
     if (!fs::exists(cfgFile))
     {
         LOG(debug) << "Create key-value storage file: " << cfgFile.generic_string();
         ofstream f(cfgFile.generic_string());
     }
+    m_sCfgFilePath = cfgFile.generic_string();
 
     boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
 }
@@ -64,9 +67,7 @@ void CKeyValueGuard::init()
 
 const std::string CKeyValueGuard::getCfgFilePath() const
 {
-    boost::filesystem::path cfgFile(CUserDefaults::instance().getDDSPath());
-    cfgFile /= "task.cfg";
-    return cfgFile.generic_string();
+    return m_sCfgFilePath;
 }
 
 void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value, const std::string& _taskId)
@@ -100,8 +101,7 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     const string sKey = _key + "." + _taskId;
     {
         boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-        fs::path cfgFile(getCfgFilePath());
-        boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
+        boost::property_tree::ini_parser::read_ini(getCfgFilePath(), m_pt);
         m_pt.get(sKey, *_value);
     }
 }
@@ -115,11 +115,9 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
     boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-    fs::path cfgFile(getCfgFilePath());
-    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
+    boost::property_tree::ini_parser::read_ini(getCfgFilePath(), m_pt);
     try
     {
-
         for (auto& element : m_pt.get_child(_key))
         {
             _values->insert(make_pair(element.first, element.second.get_value<std::string>()));
