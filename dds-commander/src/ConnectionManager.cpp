@@ -406,7 +406,6 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                     }
                 }
                 ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
-                //++it_tasks;
             }
 
             // Active agents.
