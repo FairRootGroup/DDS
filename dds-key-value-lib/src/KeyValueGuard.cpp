@@ -111,6 +111,8 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
     if (_values == nullptr)
         throw invalid_argument("CKeyValueGuard::getValue: _values can't be NULL");
 
+    _values->clear();
+
     boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
     fs::path cfgFile(getCfgFilePath());
