@@ -560,9 +560,6 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 {
     try
     {
-        // TODO:
-        // 1 - check that tasks are activated
-
         // If UI channel sends a property update than property key does not contain a hash.
         // In this case each agent set the property key hash himself.
         auto p = _channel.lock();
@@ -580,7 +577,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 
         CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(propertyID);
 
-        for (auto it = taskIt.first; it != taskIt.second; it++)
+        for (auto it = taskIt.first; it != taskIt.second; ++it)
         {
             auto iter = m_taskIDToAgentChannelMap.find(it->first);
             if (iter == m_taskIDToAgentChannelMap.end())
