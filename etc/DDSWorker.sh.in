@@ -259,13 +259,33 @@ fi
 #
 export DDS_WN_SUBMIT_TIMESTAMP=0000
 
-
-
-
-
-
-
-
+# deploy more agents on this host if needed
+if [ -n "$1" ]; then
+	if [ $1 -gt 1 ]; then
+		logMsg "This scout is requested to deploy additionally (($1-1)) agents on that machine..."
+		NUM_WNs=1
+		while [ $NUM_WNs -lt $1 ]
+		do
+			# create working dorectory for the child agent
+			WD_child_name="$(basename "$WD")_$NUM_WNs"
+			logMsg "Deploying child: $WD_child_name"
+			eval WD_child="$WD/../$WD_child_name"
+			mkdir $WD_child
+			
+			# copy WN package into childs directory
+			cp $0 $WD_child/
+			
+			pushd $(pwd) &> /dev/null
+			cd $WD_child
+			# execute DDS scout scrip of the child instance
+			logMsg "Executing DDS scout of the child: $(pwd)/$(basename $0)"
+			$(basename $0)&
+			
+			popd &> /dev/null
+			let NUM_WNs+=1
+		done
+	fi
+fi
 
 # if dds-agent goes down or is crashed, we will try to restart it AGENT_MAX_RESTART_COUNT times
 start_time=$((date +%s) 2>/dev/null)

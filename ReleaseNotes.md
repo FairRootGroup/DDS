@@ -2,6 +2,8 @@
 
 ## v0.8 (NOT YET RELEASED)
 
+### dds-ssh
+Added: the ssh plug-in has been extended to support multiple agents per host. (GH-25)   
 
 ## v0.6 (2014-12-05)
 ### DDS common   
