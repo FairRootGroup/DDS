@@ -1,6 +1,5 @@
 // DDS
 #include "KeyValue.h"
-#include "BOOSTHelper.h"
 // STD
 #include <vector>
 #include <iostream>
@@ -15,21 +14,29 @@ using namespace std;
 using namespace dds;
 namespace bpo = boost::program_options;
 
+const size_t g_maxValue = 1000;
+const size_t g_maxWaitTime = 100; // milliseconds
+
 int main(int argc, char* argv[])
 {
     try
     {
-        string sWriteKey;
-        string sWriteValue;
-        string sReadKey;
+        string sKey;
+        size_t nInstances(0);
+        size_t nMaxValue(g_maxValue);
+        size_t nMaxWaitTime(g_maxWaitTime);
 
         // Generic options
         bpo::options_description options("task-test_key_value options");
         options.add_options()("help,h", "Produce help message");
-        options.add_options()("write-key", bpo::value<std::string>(&sWriteKey), "Specefies the key to update");
+        options.add_options()("key", bpo::value<std::string>(&sKey)->default_value("property1"), "key to update");
         options.add_options()(
-            "write-value", bpo::value<std::string>(&sWriteValue), "Specefies the new value of the given key");
-        options.add_options()("read-key", bpo::value<std::string>(&sReadKey), "Specefies the key to read");
+            "instances,i", bpo::value<size_t>(&nInstances)->default_value(0), "A number of instances");
+        options.add_options()(
+            "max-value", bpo::value<size_t>(&nMaxValue)->default_value(g_maxValue), "A max value of the property");
+        options.add_options()("max-wait-time",
+                              bpo::value<size_t>(&nMaxWaitTime)->default_value(g_maxWaitTime),
+                              "A max wait time (in milliseconds), which an instannces should wait before exit");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -42,25 +49,45 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        MiscCommon::BOOSTHelper::option_dependency(vm, "write-key", "write-value");
+        // The test workflow
+        // #1. Update the given key with value X (starting from X=1)
+        // #2. Wait until all other instances of the key also get value X
+        // #3. Repeat the procedure with X = X + 1
+        // -->> return success (0) when keys of all instances gets max value
+        // -->> return failed (1) when one or more instances failed to updated in a given amount of time
 
-        if (vm.count("write-key") && vm.count("write-value"))
+        CKeyValue ddsKeyValue;
+        size_t nCurValue = 0;
+        while (true)
         {
-            CKeyValue ddsKeyValue;
-            ddsKeyValue.putValue(sWriteKey, sWriteValue);
-            cout << "Update key and value with: <" << sWriteKey << ", " << sWriteValue << ">" << endl;
-        }
+            ++nCurValue;
+            if (nCurValue > g_maxValue)
+                return 0;
 
-        if (vm.count("read-key"))
-        {
-            CKeyValue ddsKeyValue;
+            const string sCurValue = to_string(nCurValue);
+            ddsKeyValue.putValue(sKey, sCurValue);
+
             CKeyValue::valuesMap_t values;
-            ddsKeyValue.getValues(sReadKey, &values);
-            while (values.empty())
+            ddsKeyValue.getValues(sKey, &values);
+            bool bGoodToGo = false;
+            bool isTimeOut = false;
+            while (values.empty() || !bGoodToGo)
             {
-                ddsKeyValue.waitForUpdate(chrono::seconds(120));
 
-                ddsKeyValue.getValues(sReadKey, &values);
+                CKeyValue::valuesMap_t::iterator it = values.begin();
+                while (it != values.end())
+                {
+                    bGoodToGo = (it->second == sCurValue);
+                    if (!bGoodToGo)
+                        break;
+                    ++it;
+                }
+                if (!bGoodToGo && isTimeOut)
+                    return 1;
+
+                isTimeOut = ddsKeyValue.waitForUpdate(chrono::milliseconds(nMaxWaitTime));
+
+                ddsKeyValue.getValues(sKey, &values);
             }
         }
     }

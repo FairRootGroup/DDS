@@ -1,38 +1,18 @@
 <topology id="myTopology">
 	
 	<property id="property1" />
-	<property id="property2" />
-	<property id="property3" />
 		
   	<decltask id="TestKeyValue">
-		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --write-key property1 --write-value prop1_test --read-key property3</exe>
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --key property1 -i 20 --max-value 1000 --max-wait-time 500</exe>
 		<properties>
 			<id>property1</id>
-			<id>property2</id>
-			<id>property3</id>
-		</properties>
-	</decltask>
-
-  	<decltask id="TestKeyValue2">
-		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --write-key property2 --write-value prop2_test</exe>
-		<properties>
-			<id>property1</id>
-			<id>property2</id>
 		</properties>
 	</decltask>
 	
-	<decltask id="task1">
-		<exe>/Users/anar/DDS/Test1.sh</exe>
-		<properties>
-			<id>property1</id>
-			<id>property2</id>
-		</properties>
-	</decltask>
-
 	<main id="main">
-		<task>TestKeyValue</task>
-	    <task>TestKeyValue2</task>
-        <task>task1</task>
+		<group id="group1" n="20">
+			<task>TestKeyValue</task>
+		</group>
 	</main>
 	
 </topology>
