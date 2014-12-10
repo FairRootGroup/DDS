@@ -5,6 +5,9 @@
 ### dds-ssh
 Added: the ssh plug-in has been extended to support multiple agents per host. (GH-25)   
 
+### dds-key-value
+Added: users are now able to subscribe on properties update events. (GH-29)   
+
 ## v0.6 (2014-12-05)
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   

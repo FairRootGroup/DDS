@@ -37,19 +37,8 @@ void CKeyValue::getValues(const std::string& _key, valuesMap_t* _values)
     CKeyValueGuard::instance().getValues(_key, _values);
 }
 
-int CKeyValue::waitForUpdate(const std::chrono::system_clock::duration& _timeout)
+CKeyValue::connection_t CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
 {
     LOG(debug) << "User process is waiting for property keys updates.";
-    CKeyValueGuard::instance().initAgentConnection();
-
-    auto now = std::chrono::system_clock::now();
-    unique_lock<mutex> lk(CKeyValueGuard::instance().m_syncHelper.m_mtxWaitKey);
-    if (CKeyValueGuard::instance().m_syncHelper.m_cvWaitKey.wait_until(lk, now + _timeout) == cv_status::timeout)
-    {
-        LOG(debug) << "waiting for property keys updates has timed out";
-        return 1;
-    }
-    LOG(debug) << "waiting for property keys updates is ended";
-
-    return 0;
+    return CKeyValueGuard::instance().connect(_subscriber);
 }

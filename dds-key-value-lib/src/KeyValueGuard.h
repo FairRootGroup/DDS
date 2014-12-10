@@ -10,15 +10,18 @@
 #include <string>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
+#include <boost/signals2/signal.hpp>
 
 namespace dds
 {
+    typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+    typedef boost::signals2::connection connection_t;
+
     struct SSyncHelper
     {
         std::condition_variable m_cvUpdateKey;
         std::mutex m_mtxUpdateKey;
-        std::condition_variable m_cvWaitKey;
-        std::mutex m_mtxWaitKey;
+        signal_t m_updateSig;
     };
 
     class CKeyValueGuard
@@ -39,6 +42,10 @@ namespace dds
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
         void getValues(const std::string& _key, valuesMap_t* _values);
         int updateKey(const SUpdateKeyCmd& _cmd);
+        connection_t connect(signal_t::slot_function_type _subscriber)
+        {
+            return m_syncHelper.m_updateSig.connect(_subscriber);
+        }
 
         // User API
         void initAgentConnection();

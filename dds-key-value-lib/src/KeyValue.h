@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 #include <chrono>
+// BOOST
+#include <boost/signals2/signal.hpp>
 
 namespace dds
 {
@@ -15,11 +17,13 @@ namespace dds
     {
       public:
         typedef std::map<std::string, std::string> valuesMap_t;
+        typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+        typedef boost::signals2::connection connection_t;
 
       public:
         int putValue(const std::string& _key, const std::string& _value);
         void getValues(const std::string& _key, valuesMap_t* _values);
-        int waitForUpdate(const std::chrono::system_clock::duration& _timeout);
+        connection_t subscribe(signal_t::slot_function_type _subscriber);
     };
 }
 

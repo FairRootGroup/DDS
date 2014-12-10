@@ -72,6 +72,6 @@ bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_
 {
     if (m_syncHelper == nullptr)
         throw invalid_argument("syncHelper is NULL");
-    m_syncHelper->m_cvWaitKey.notify_all();
+    m_syncHelper->m_updateSig(_attachment->m_sKey, _attachment->m_sValue);
     return true;
 }
