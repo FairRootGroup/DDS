@@ -3,14 +3,14 @@
 	<property id="property1" />
 		
   	<decltask id="TestKeyValue">
-		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --key property1 -i 20 --max-value 1000 --max-wait-time 500</exe>
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value --key property1 -i 100 --max-value 1000 --max-wait-time 1000</exe>
 		<properties>
 			<id>property1</id>
 		</properties>
 	</decltask>
 	
 	<main id="main">
-		<group id="group1" n="20">
+		<group id="group1" n="100">
 			<task>TestKeyValue</task>
 		</group>
 	</main>
