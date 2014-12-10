@@ -188,14 +188,13 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
         uint64_t crc = dds::crc64(hashPath);
         if (m_hashToTaskMap.find(crc) != m_hashToTaskMap.end())
         {
-            std::stringstream ss;
-            ss << "The same hash detected <" << crc << "> for " << hashPath << std::endl;
-            throw runtime_error(ss.str());
+            // std::stringstream ss;
+            // ss << "The same hash detected <" << crc << "> for " << hashPath << std::endl;
+            // throw runtime_error(ss.str());
+            crc = getNextHashForTask(crc);
         }
-        else
-        {
-            m_hashToTaskMap[crc] = task;
-        }
+        m_hashToTaskMap[crc] = task;
+
         return;
     }
     else if (_element->getType() == ETopoType::COLLECTION)
@@ -214,14 +213,13 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
         uint64_t crc = dds::crc64(m_currentTaskCollectionHashPath);
         if (m_hashToTaskCollectionMap.find(crc) != m_hashToTaskCollectionMap.end())
         {
-            std::stringstream ss;
-            ss << "The same hash detected <" << crc << "> for " << m_currentTaskCollectionHashPath << std::endl;
-            throw runtime_error(ss.str());
+            // std::stringstream ss;
+            // ss << "The same hash detected <" << crc << "> for " << m_currentTaskCollectionHashPath << std::endl;
+            // throw runtime_error(ss.str());
+            crc = getNextHashForTaskCollection(crc);
         }
-        else
-        {
-            m_hashToTaskCollectionMap[crc] = collection;
-        }
+
+        m_hashToTaskCollectionMap[crc] = collection;
 
         const auto& elements = collection->getElements();
         for (const auto& v : elements)
@@ -242,6 +240,26 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             }
         }
     }
+}
+
+uint64_t CTopology::getNextHashForTask(uint64_t _crc) const
+{
+    uint64_t crc = _crc;
+    do
+    {
+        ++crc;
+    } while (m_hashToTaskMap.find(crc) == m_hashToTaskMap.end());
+    return crc;
+}
+
+uint64_t CTopology::getNextHashForTaskCollection(uint64_t _crc) const
+{
+    uint64_t crc = _crc;
+    do
+    {
+        ++crc;
+    } while (m_hashToTaskCollectionMap.find(crc) == m_hashToTaskCollectionMap.end());
+    return crc;
 }
 
 string CTopology::toString() const

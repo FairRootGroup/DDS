@@ -80,6 +80,9 @@ namespace dds
         void FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element);
         void FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool _fillHashPathMaps = false);
 
+        uint64_t getNextHashForTask(uint64_t _crc) const;
+        uint64_t getNextHashForTaskCollection(uint64_t _crc) const;
+
         TaskGroupPtr_t m_main; ///> Main task group which we run
 
         TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
