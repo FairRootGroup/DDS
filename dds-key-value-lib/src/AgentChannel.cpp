@@ -70,8 +70,10 @@ void CAgentChannel::onRemoteEndDissconnected()
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
+    LOG(debug) << "CAgentChannel::on_cmdUPDATE_KEY: start";
     if (m_syncHelper == nullptr)
         throw invalid_argument("syncHelper is NULL");
     m_syncHelper->m_updateSig(_attachment->m_sKey, _attachment->m_sValue);
+    LOG(debug) << "CAgentChannel::on_cmdUPDATE_KEY: end";
     return true;
 }

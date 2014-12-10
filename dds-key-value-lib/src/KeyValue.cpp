@@ -9,7 +9,7 @@ using namespace dds;
 using namespace std;
 using namespace MiscCommon;
 
-const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::milliseconds(2000);
+const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::milliseconds(20000);
 
 int CKeyValue::putValue(const string& _key, const string& _value)
 {

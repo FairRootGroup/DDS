@@ -9,8 +9,8 @@
 // STD
 #include <string>
 // BOOST
-#include <boost/property_tree/ptree.hpp>
 #include <boost/signals2/signal.hpp>
+#include <boost/interprocess/sync/file_lock.hpp>
 
 namespace dds
 {
@@ -58,10 +58,10 @@ namespace dds
         const std::string getCfgFilePath() const;
 
       private:
-        boost::property_tree::ptree m_pt;
         AgentConnectionManagerPtr_t m_agentConnectionMng;
         std::mutex m_mtxAgentConnnection;
         std::string m_sCfgFilePath;
+        boost::interprocess::file_lock m_fileLock;
     };
 }
 

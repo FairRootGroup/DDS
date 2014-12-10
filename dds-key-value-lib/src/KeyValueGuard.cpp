@@ -7,8 +7,8 @@
 #include "UserDefaults.h"
 #include "BOOST_FILESYSTEM.h"
 // BOOST
+#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 using namespace std;
@@ -56,7 +56,9 @@ void CKeyValueGuard::createStorage()
     }
     m_sCfgFilePath = cfgFile.generic_string();
 
-    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
+    // boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_pt);
+
+    m_fileLock = boost::interprocess::file_lock(getCfgFilePath().c_str());
 }
 
 void CKeyValueGuard::init()
@@ -72,24 +74,18 @@ const std::string CKeyValueGuard::getCfgFilePath() const
 
 void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value, const std::string& _taskId)
 {
-    boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
     const string sKey = _key + "." + _taskId;
-    {
-        boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-        m_pt.put(sKey, _value);
-        boost::property_tree::ini_parser::write_ini(getCfgFilePath(), m_pt);
-    }
+    putValue(sKey, _value);
 }
 
 void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value)
 {
-    boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
     const string sKey = _key;
-    {
-        boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-        m_pt.put(sKey, _value);
-        boost::property_tree::ini_parser::write_ini(getCfgFilePath(), m_pt);
-    }
+    boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(m_fileLock);
+    boost::property_tree::ptree pt;
+    boost::property_tree::ini_parser::read_ini(getCfgFilePath(), pt);
+    pt.put(sKey, _value);
+    boost::property_tree::ini_parser::write_ini(getCfgFilePath(), pt);
 }
 
 void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, const std::string& _taskId)
@@ -97,12 +93,12 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     if (_value == nullptr)
         throw invalid_argument("CKeyValueGuard::getValue: Value can't be NULL");
 
-    boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
     const string sKey = _key + "." + _taskId;
     {
-        boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-        boost::property_tree::ini_parser::read_ini(getCfgFilePath(), m_pt);
-        m_pt.get(sKey, *_value);
+        boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(m_fileLock);
+        boost::property_tree::ptree pt;
+        boost::property_tree::ini_parser::read_ini(getCfgFilePath(), pt);
+        pt.get(sKey, *_value);
     }
 }
 
@@ -113,12 +109,13 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
     _values->clear();
 
-    boost::interprocess::file_lock f_lock(getCfgFilePath().c_str());
-    boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(f_lock);
-    boost::property_tree::ini_parser::read_ini(getCfgFilePath(), m_pt);
+    boost::property_tree::ptree pt;
+    boost::interprocess::scoped_lock<boost::interprocess::file_lock> e_lock(m_fileLock);
+    boost::property_tree::ini_parser::read_ini(getCfgFilePath(), pt);
+
     try
     {
-        for (auto& element : m_pt.get_child(_key))
+        for (auto& element : pt.get_child(_key))
         {
             _values->insert(make_pair(element.first, element.second.get_value<std::string>()));
         }
@@ -131,9 +128,12 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
 void CKeyValueGuard::initAgentConnection()
 {
+    LOG(debug) << "CKeyValueGuard::initAgentConnection: is going to init";
     std::lock_guard<std::mutex> lock(m_mtxAgentConnnection);
     if (!m_agentConnectionMng || m_agentConnectionMng->stopped())
     {
+        LOG(debug) << "CKeyValueGuard::initAgentConnection: start init";
+
         m_agentConnectionMng.reset();
         m_agentConnectionMng = make_shared<CAgentConnectionManager>();
         m_agentConnectionMng->m_syncHelper = &m_syncHelper;
