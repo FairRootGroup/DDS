@@ -18,14 +18,6 @@ namespace bpo = boost::program_options;
 const size_t g_maxValue = 1000;
 const size_t g_maxWaitTime = 100; // milliseconds
 
-std::mutex g_mutex;
-std::condition_variable g_cv;
-
-void update(const string& /*_Key*/, const string& /*_Value*/)
-{
-    g_cv.notify_all();
-}
-
 int main(int argc, char* argv[])
 {
     try
@@ -66,9 +58,14 @@ int main(int argc, char* argv[])
         // -->> return failed (1) when one or more instances failed to updated in a given amount of time
 
         CKeyValue ddsKeyValue;
+        std::mutex keyMutex;
+        std::condition_variable keyCondition;
 
         // Subscribe on key update events
-        ddsKeyValue.subscribe(update);
+        ddsKeyValue.subscribe([&keyCondition](const string& _key, const string _value)
+                              {
+                                  keyCondition.notify_all();
+                              });
 
         size_t nCurValue = 0;
         while (true)
@@ -85,7 +82,7 @@ int main(int argc, char* argv[])
             bool bGoodToGo = false;
             while (values.empty() || !bGoodToGo)
             {
-
+                bool isTimeout = false;
                 CKeyValue::valuesMap_t::iterator it = values.begin();
                 while (it != values.end())
                 {
@@ -98,11 +95,14 @@ int main(int argc, char* argv[])
                 if (bGoodToGo)
                     break;
 
+                if (isTimeout)
+                    return 1;
+
                 // wait for a key update event
                 auto now = std::chrono::system_clock::now();
-                unique_lock<mutex> lk(g_mutex);
-                if (g_cv.wait_until(lk, now + chrono::milliseconds(nMaxWaitTime)) == cv_status::timeout)
-                    return 1;
+                std::unique_lock<std::mutex> lk(keyMutex);
+                isTimeout = keyCondition.wait_until(lk, now + chrono::milliseconds(nMaxWaitTime)) == cv_status::timeout;
+
                 ddsKeyValue.getValues(sKey, &values);
             }
         }
