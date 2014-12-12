@@ -10,7 +10,11 @@
 #include <string>
 // BOOST
 #include <boost/signals2/signal.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/interprocess/sync/named_mutex.hpp>
+#pragma clang diagnostic pop
+
 
 namespace dds
 {
