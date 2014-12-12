@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
         char* ddsTaskId;
         ddsTaskId = getenv("DDS_TASK_ID");
         if (NULL == ddsTaskId)
-            throw runtime_error("Can't initialize semaphore because DDS_TASK_ID variable is not set");
+            throw runtime_error("USER TASK: Can't initialize semaphore because DDS_TASK_ID variable is not set");
         const string taskID(ddsTaskId);
 
         // The test workflow
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
         // Subscribe on key update events
         ddsKeyValue.subscribe([&keyCondition](const string& _key, const string _value)
                               {
-                                  LOG(info) << "TASK RECEIVED KEY UPDATE NOTIFICATION";
+                                  LOG(info) << "USER TASK received key update notification";
                                   keyCondition.notify_all();
                               });
 
@@ -84,9 +84,9 @@ int main(int argc, char* argv[])
             if (nCurValue > g_maxValue)
                 return 0;
 
-            LOG(info) << "TASK IS GOING to set new value " << nCurValue;
+            LOG(info) << "USER TASK is going to set new value " << nCurValue;
             const string sCurValue = to_string(nCurValue);
-            LOG(info) << "TASK PUT VALUE RETURN CODE: " << ddsKeyValue.putValue(sKey, sCurValue);
+            LOG(info) << "USER TASK put value return code: " << ddsKeyValue.putValue(sKey, sCurValue);
 
             CKeyValue::valuesMap_t values;
             ddsKeyValue.getValues(sKey, &values);
@@ -98,9 +98,9 @@ int main(int argc, char* argv[])
                 {
                     for (const auto& v : values)
                     {
-                        // if (v.first == taskID)
-                        //   continue;
-
+                        // we should check against current and current+1 values, becasue
+                        // of edge cases when key updates happen excatly before we try to read new values triggered by
+                        // previouse update.
                         bGoodToGo = (v.second == to_string(nCurValue + 1) || v.second == sCurValue);
                         if (!bGoodToGo)
                             break;
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
     }
     catch (exception& _e)
     {
-        LOG(fatal) << "TASK Error: " << _e.what() << endl;
+        LOG(fatal) << "USER TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
