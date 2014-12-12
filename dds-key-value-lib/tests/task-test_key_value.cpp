@@ -1,5 +1,6 @@
 // DDS
 #include "KeyValue.h"
+#include "Logger.h"
 // STD
 #include <vector>
 #include <iostream>
@@ -14,6 +15,7 @@
 using namespace std;
 using namespace dds;
 namespace bpo = boost::program_options;
+using namespace MiscCommon;
 
 const size_t g_maxValue = 1000;
 const size_t g_maxWaitTime = 100; // milliseconds
@@ -50,6 +52,13 @@ int main(int argc, char* argv[])
             return false;
         }
 
+        // Named mutex
+        char* ddsTaskId;
+        ddsTaskId = getenv("DDS_TASK_ID");
+        if (NULL == ddsTaskId)
+            throw runtime_error("Can't initialize semaphore because DDS_TASK_ID variable is not set");
+        const string taskID(ddsTaskId);
+
         // The test workflow
         // #1. Update the given key with value X (starting from X=1)
         // #2. Wait until all other instances of the key also get value X
@@ -64,6 +73,7 @@ int main(int argc, char* argv[])
         // Subscribe on key update events
         ddsKeyValue.subscribe([&keyCondition](const string& _key, const string _value)
                               {
+                                  LOG(info) << "TASK RECEIVED KEY UPDATE NOTIFICATION";
                                   keyCondition.notify_all();
                               });
 
@@ -74,22 +84,27 @@ int main(int argc, char* argv[])
             if (nCurValue > g_maxValue)
                 return 0;
 
+            LOG(info) << "TASK IS GOING to set new value " << nCurValue;
             const string sCurValue = to_string(nCurValue);
-            ddsKeyValue.putValue(sKey, sCurValue);
+            LOG(info) << "TASK PUT VALUE RETURN CODE: " << ddsKeyValue.putValue(sKey, sCurValue);
 
             CKeyValue::valuesMap_t values;
             ddsKeyValue.getValues(sKey, &values);
             bool bGoodToGo = false;
+            bool isTimeout = false;
             while (values.empty() || !bGoodToGo)
             {
-                bool isTimeout = false;
-                CKeyValue::valuesMap_t::iterator it = values.begin();
-                while (it != values.end())
+                if (values.size() == nInstances)
                 {
-                    bGoodToGo = (it->second == sCurValue);
-                    if (!bGoodToGo)
-                        break;
-                    ++it;
+                    for (const auto& v : values)
+                    {
+                        // if (v.first == taskID)
+                        //   continue;
+
+                        bGoodToGo = (v.second == to_string(nCurValue + 1) || v.second == sCurValue);
+                        if (!bGoodToGo)
+                            break;
+                    }
                 }
 
                 if (bGoodToGo)
@@ -109,7 +124,7 @@ int main(int argc, char* argv[])
     }
     catch (exception& _e)
     {
-        cerr << "Error: " << _e.what() << endl;
+        LOG(fatal) << "TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

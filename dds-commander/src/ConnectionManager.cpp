@@ -9,6 +9,8 @@
 #include "CommandAttachmentImpl.h"
 // BOOST
 #include <boost/filesystem.hpp>
+// BOOST
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace dds;
 using namespace std;
@@ -20,6 +22,26 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                        boost::asio::ip::tcp::endpoint& _endpoint)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_io_service, _endpoint)
 {
+
+    //    // create cfg file if missing
+    //    boost::filesystem::path cfgFile(CUserDefaults::instance().getDDSPath());
+    //    cfgFile /= "task.cfg";
+    //
+    //    if (fs::exists(cfgFile))
+    //    {
+    //        LOG(debug) << "Removing key-value storage file: " << cfgFile.generic_string();
+    //        if (!fs::remove(cfgFile))
+    //            LOG(fatal) << "Failed to remove key-value storage file: " << cfgFile.generic_string();
+    //    }
+    //
+    //    if (!fs::exists(cfgFile))
+    //    {
+    //        LOG(debug) << "Create key-value storage file: " << cfgFile.generic_string();
+    //        ofstream f(cfgFile.generic_string());
+    //    }
+    //    m_sCfgFilePath = cfgFile.generic_string();
+    //
+    //    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_propertyPT);
 }
 
 CConnectionManager::~CConnectionManager()
@@ -560,10 +582,13 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 {
     try
     {
+        //    m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
+        //    boost::property_tree::ini_parser::write_ini(m_sCfgFilePath, m_propertyPT);
+
         // If UI channel sends a property update than property key does not contain a hash.
         // In this case each agent set the property key hash himself.
-        auto p = _channel.lock();
-        bool sentFromUIChannel = (p->getType() == EAgentChannelType::UI);
+        auto channelPtr = _channel.lock();
+        bool sentFromUIChannel = (channelPtr->getType() == EAgentChannelType::UI);
 
         string propertyID = _attachment->m_sKey;
         if (!sentFromUIChannel)
@@ -582,7 +607,8 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
             auto iter = m_taskIDToAgentChannelMap.find(it->first);
             if (iter == m_taskIDToAgentChannelMap.end())
             {
-                // TODO: Add log task is not running.
+                LOG(debug) << "on_cmdUPDATE_KEY task <" << it->first
+                           << "> not found in map. Property will not be updated.";
             }
             else
             {
@@ -604,25 +630,26 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                     }
                     else
                     {
-                        if (ptr->getTaskID() != p->getTaskID())
+                        if (ptr->getTaskID() != channelPtr->getTaskID())
                         {
                             ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
-                            LOG(info) << "Property update from agent channel: " << _attachment->m_sKey;
+                            LOG(info) << "Property update from agent channel: <" << _attachment->m_sKey << "> "
+                                      << _attachment->m_sValue;
                         }
                     }
                 }
             }
         }
 
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
+        channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
             "All related agents have been advised about the key update.", MiscCommon::info, cmdUPDATE_KEY));
-        // Shutdown initial chennel if it's a UI
-        if (p->getType() == EAgentChannelType::UI)
-            p->pushMsg<cmdSHUTDOWN>();
+        // Shutdown initial channel if it's a UI
+        if (channelPtr->getType() == EAgentChannelType::UI)
+            channelPtr->pushMsg<cmdSHUTDOWN>();
     }
     catch (bad_weak_ptr& e)
     {
-        // TODO: Do we need to log something here?
+        LOG(debug) << "bad_weak_ptr exception in on_cmdUPDATE_KEY: " << e.what();
     }
 
     return true;

@@ -24,7 +24,6 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
 bool CAgentChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
 {
     m_mtxChannelReady.unlock();
-    m_cvChannelReady.notify_all();
     //    m_isHandShakeOK = true;
     return true;
 }
@@ -37,7 +36,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
             LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
             if (m_syncHelper == nullptr)
                 throw invalid_argument("syncHelper is NULL");
-            m_syncHelper->m_cvUpdateKey.notify_all();
+            // m_syncHelper->m_cvUpdateKey.notify_all();
             break;
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";

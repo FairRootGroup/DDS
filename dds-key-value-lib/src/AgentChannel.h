@@ -8,7 +8,7 @@
 // DDS
 #include "ConnectionImpl.h"
 // STD
-#include <condition_variable>
+#include <mutex>
 
 namespace dds
 {
@@ -28,7 +28,6 @@ namespace dds
       public:
         SSyncHelper* m_syncHelper;
         std::mutex m_mtxChannelReady;
-        std::condition_variable m_cvChannelReady;
 
       private:
         CAgentChannel(boost::asio::io_service& _service);

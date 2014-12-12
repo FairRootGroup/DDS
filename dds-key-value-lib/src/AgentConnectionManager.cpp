@@ -18,7 +18,7 @@ using namespace MiscCommon;
 namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
-const std::chrono::milliseconds g_interval(100);
+const std::chrono::milliseconds g_interval(500);
 const size_t g_maxWait = 600;
 
 CAgentConnectionManager::CAgentConnectionManager()
@@ -169,5 +169,6 @@ int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
             this_thread::sleep_for(g_interval);
         }
     }
+    LOG(fatal) << "Fail to push the property key=" << _cmd.m_sKey << " value=" << _cmd.m_sValue;
     return 1;
 }

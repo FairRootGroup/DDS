@@ -14,6 +14,8 @@
 #include "SSHScheduler.h"
 // STD
 #include <mutex>
+// BOOST
+#include <boost/property_tree/ptree.hpp>
 
 namespace dds
 {
@@ -64,6 +66,9 @@ namespace dds
         // TODO: This is temporary storage only. Store this information as a part of scheduler.
         typedef std::map<uint64_t, CAgentChannel::weakConnectionPtr_t> TaskIDToAgentChannelMap_t;
         TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
+
+        // boost::property_tree::ptree m_propertyPT;
+        // std::string m_sCfgFilePath;
     };
 }
 #endif /* defined(__DDS__ConnectionManager__) */

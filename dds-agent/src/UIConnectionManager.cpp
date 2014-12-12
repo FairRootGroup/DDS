@@ -68,13 +68,13 @@ bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY
 {
     try
     {
-        LOG(debug) << "Forwarding a key notification update to commander channel...";
+        LOG(debug) << "Forwarding a key notification update to commander channel: " << *_attachment;
         auto p = m_commanderChannel.lock();
         p->updateKey(_attachment->m_sKey, _attachment->m_sValue);
     }
     catch (bad_weak_ptr& e)
     {
-        // TODO: Do we need to log something here?
+        LOG(fatal) << "Can not lock commander channel";
     }
     return true;
 }

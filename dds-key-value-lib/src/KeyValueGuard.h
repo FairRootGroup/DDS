@@ -10,17 +10,18 @@
 #include <string>
 // BOOST
 #include <boost/signals2/signal.hpp>
-#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/interprocess/sync/named_mutex.hpp>
 
 namespace dds
 {
     typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
     typedef boost::signals2::connection connection_t;
+    typedef std::shared_ptr<boost::interprocess::named_mutex> fileMutexPtr_t;
 
     struct SSyncHelper
     {
-        std::condition_variable m_cvUpdateKey;
-        std::mutex m_mtxUpdateKey;
+        // std::condition_variable m_cvUpdateKey;
+        // std::mutex m_mtxUpdateKey;
         signal_t m_updateSig;
     };
 
@@ -35,8 +36,8 @@ namespace dds
 
       public:
         static CKeyValueGuard& instance();
-        void cleanStorage() const;
         void createStorage();
+        void initLock();
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
         void putValue(const std::string& _key, const std::string& _value);
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
@@ -54,14 +55,12 @@ namespace dds
         SSyncHelper m_syncHelper;
 
       private:
-        void init();
         const std::string getCfgFilePath() const;
 
       private:
         AgentConnectionManagerPtr_t m_agentConnectionMng;
-        std::mutex m_mtxAgentConnnection;
         std::string m_sCfgFilePath;
-        boost::interprocess::file_lock m_fileLock;
+        fileMutexPtr_t m_fileMutex;
     };
 }
 

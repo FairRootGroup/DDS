@@ -326,6 +326,9 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         if (::setenv("DDS_TASK_ID", m_sTaskId.c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
 
+        // Clean Key-Value storage
+        CKeyValueGuard::instance().createStorage();
+
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
         pidUsrTask = do_execv(sUsrExe, 0, &output);
