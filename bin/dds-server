@@ -277,9 +277,6 @@ wait_and_kill()
       fi
       sleep 1
    done
-
-  # delete tmp directory
-  delete_tmp_dir
 }
 # ************************************************************************
 # ***** STOP *****
