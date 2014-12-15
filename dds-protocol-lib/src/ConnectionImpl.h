@@ -538,10 +538,17 @@ namespace dds
         std::string remoteEndIDString()
         {
             // give a chance child to execute something
-            T* pThis = static_cast<T*>(this);
-            std::stringstream ss;
-            ss << pThis->_remoteEndIDString() << " [" << socket().remote_endpoint().address().to_string() << "]";
-            return ss.str();
+            try
+            {
+                T* pThis = static_cast<T*>(this);
+                std::stringstream ss;
+                ss << pThis->_remoteEndIDString() << " [" << socket().remote_endpoint().address().to_string() << "]";
+                return ss.str();
+            }
+            catch (...)
+            {
+                return std::string();
+            }
         }
 
       private:

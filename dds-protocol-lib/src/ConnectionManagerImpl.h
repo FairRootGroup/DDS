@@ -107,7 +107,6 @@ namespace dds
                 A* pThis = static_cast<A*>(this);
                 pThis->_stop();
 
-                // TODO: Use mutex
                 // Send shutdown signal to all client connections.
                 typename T::weakConnectionPtrVector_t channels(getChannels());
 
@@ -130,6 +129,7 @@ namespace dds
                     ptr->stop();
                 }
 
+                std::lock_guard<std::mutex> lock(m_mutex);
                 m_channels.clear();
             }
             catch (std::bad_weak_ptr& e)
@@ -143,9 +143,10 @@ namespace dds
         }
 
       protected:
-        typename T::weakConnectionPtr_t getWeakPtr(T* _client) const
+        typename T::weakConnectionPtr_t getWeakPtr(T* _client)
         {
-            // TODO: Use mutex
+            std::lock_guard<std::mutex> lock(m_mutex);
+
             for (auto& v : m_channels)
             {
                 if (v.get() == _client)
@@ -155,9 +156,10 @@ namespace dds
         }
 
         typename T::weakConnectionPtrVector_t getChannels(
-            std::function<bool(typename T::connectionPtr_t)> _condition = nullptr) const
+            std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
-            // TODO: Use mutex
+            std::lock_guard<std::mutex> lock(m_mutex);
+
             typename T::weakConnectionPtrVector_t result;
             result.reserve(m_channels.size());
             for (auto& v : m_channels)
@@ -230,6 +232,8 @@ namespace dds
 
         size_t countNofChannels(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
+
             if (_condition == nullptr)
                 return m_channels.size();
             size_t counter = 0;

@@ -154,21 +154,28 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
 
 int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
 {
-    size_t i(0);
-    while (i < g_maxWait)
+    try
     {
-        if (m_channel && m_channel->m_mtxChannelReady.try_lock())
+        size_t i(0);
+        while (i < g_maxWait)
         {
-            m_channel->pushMsg<cmdUPDATE_KEY>(_cmd);
-            m_channel->m_mtxChannelReady.unlock();
-            return 0;
-        }
-        else
-        {
-            ++i;
-            this_thread::sleep_for(g_interval);
+            if (m_channel && m_channel->m_mtxChannelReady.try_lock())
+            {
+                m_channel->pushMsg<cmdUPDATE_KEY>(_cmd);
+                m_channel->m_mtxChannelReady.unlock();
+                return 0;
+            }
+            else
+            {
+                ++i;
+                this_thread::sleep_for(g_interval);
+            }
         }
     }
-    LOG(fatal) << "Fail to push the property key=" << _cmd.m_sKey << " value=" << _cmd.m_sValue;
+    catch (const exception& _e)
+    {
+        LOG(fatal) << "Fail to push the property update: " << _cmd << "; Error: " << _e.what();
+    }
+    LOG(fatal) << "Fail to push the property update: " << _cmd;
     return 1;
 }
