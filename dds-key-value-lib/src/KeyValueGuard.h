@@ -15,7 +15,6 @@
 #include <boost/interprocess/sync/named_mutex.hpp>
 #pragma clang diagnostic pop
 
-
 namespace dds
 {
     typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
