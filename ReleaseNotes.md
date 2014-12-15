@@ -1,6 +1,8 @@
 # DDS Release Notes
 
 ## v0.8 (NOT YET RELEASED)
+### dds-common
+Fixed: correct idle time calculation for dds-commander and dds-agent. (GH-32)
 
 ### dds-ssh
 Added: the ssh plug-in has been extended to support multiple agents per host. (GH-25)   
