@@ -33,7 +33,7 @@ namespace dds
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SUpdateKeyCmd& val)
     {
-        return _stream << "key: " << val.m_sKey << "; Value: " << val.m_sValue;
+        return _stream << "key: " << val.m_sKey << " Value: " << val.m_sValue;
     }
     inline bool operator!=(const SUpdateKeyCmd& lhs, const SUpdateKeyCmd& rhs)
     {

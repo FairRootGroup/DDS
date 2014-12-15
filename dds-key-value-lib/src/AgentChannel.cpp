@@ -64,6 +64,7 @@ bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _a
 
 void CAgentChannel::onRemoteEndDissconnected()
 {
+    LOG(info) << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
     sendYourself<cmdSHUTDOWN>();
 }
 

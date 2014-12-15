@@ -588,15 +588,15 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         // If UI channel sends a property update than property key does not contain a hash.
         // In this case each agent set the property key hash himself.
         auto channelPtr = _channel.lock();
-        bool sentFromUIChannel = (channelPtr->getType() == EAgentChannelType::UI);
+        const bool sentFromUIChannel = (channelPtr->getType() == EAgentChannelType::UI);
 
-        string propertyID = _attachment->m_sKey;
+        string propertyID(_attachment->m_sKey);
         if (!sentFromUIChannel)
         {
             // If we get property key from agent we have to parse it to get the property ID.
             // propertyID.17621121989812
-            string propertyKey = _attachment->m_sKey;
-            size_t pos = propertyKey.find_last_of('.');
+            const string propertyKey(_attachment->m_sKey);
+            const size_t pos(propertyKey.find_last_of('.'));
             propertyID = propertyKey.substr(0, pos);
         }
 
@@ -633,8 +633,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                         if (ptr->getTaskID() != channelPtr->getTaskID())
                         {
                             ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
-                            LOG(info) << "Property update from agent channel: <" << _attachment->m_sKey << "> "
-                                      << _attachment->m_sValue;
+                            LOG(info) << "Property update from agent channel: <" << *_attachment << ">";
                         }
                     }
                 }
@@ -643,13 +642,17 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 
         channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
             "All related agents have been advised about the key update.", MiscCommon::info, cmdUPDATE_KEY));
-        // Shutdown initial channel if it's a UI
-        if (channelPtr->getType() == EAgentChannelType::UI)
+        // Shutdown the initial channel if it's an UI one
+        if (sentFromUIChannel)
+        {
+            LOG(debug) << "A key-value notification has been broadcasted:" << *_attachment
+                       << " There are no more requests from the UI channel, therefore shutting it down.";
             channelPtr->pushMsg<cmdSHUTDOWN>();
+        }
     }
-    catch (bad_weak_ptr& e)
+    catch (const bad_weak_ptr& e)
     {
-        LOG(debug) << "bad_weak_ptr exception in on_cmdUPDATE_KEY: " << e.what();
+        LOG(error) << "bad_weak_ptr exception in on_cmdUPDATE_KEY: " << e.what();
     }
 
     return true;
