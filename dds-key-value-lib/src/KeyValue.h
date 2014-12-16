@@ -7,6 +7,7 @@
 // STD
 #include <string>
 #include <map>
+#include <vector>
 #include <chrono>
 // BOOST
 #include <boost/signals2/signal.hpp>
@@ -21,9 +22,16 @@ namespace dds
         typedef boost::signals2::connection connection_t;
 
       public:
+        ~CKeyValue();
+
+      public:
         int putValue(const std::string& _key, const std::string& _value);
         void getValues(const std::string& _key, valuesMap_t* _values);
         connection_t subscribe(signal_t::slot_function_type _subscriber);
+        void unsubscribe();
+
+      public:
+        connection_t m_signalConnection;
     };
 }
 

@@ -9,7 +9,12 @@ using namespace dds;
 using namespace std;
 using namespace MiscCommon;
 
-const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::milliseconds(20000);
+// const std::chrono::system_clock::duration g_maxWaitTime = std::chrono::milliseconds(20000);
+
+CKeyValue::~CKeyValue()
+{
+    unsubscribe();
+}
 
 int CKeyValue::putValue(const string& _key, const string& _value)
 {
@@ -44,5 +49,18 @@ CKeyValue::connection_t CKeyValue::subscribe(signal_t::slot_function_type _subsc
 {
     CKeyValueGuard::instance().initLock();
     LOG(debug) << "User process is waiting for property keys updates.";
-    return CKeyValueGuard::instance().connect(_subscriber);
+
+    unsubscribe();
+    m_signalConnection = CKeyValueGuard::instance().connect(_subscriber);
+
+    return m_signalConnection;
+}
+
+void CKeyValue::unsubscribe()
+{
+    if (!m_signalConnection.connected())
+        return;
+
+    LOG(debug) << "unsubscribing from key notification events.";
+    m_signalConnection.disconnect();
 }
