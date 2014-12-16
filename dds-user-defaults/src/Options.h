@@ -22,7 +22,7 @@ namespace dds
         std::string m_logDir;
         //!< Log severity level
         unsigned int m_logSeverityLevel;
-        //!< Log rotation size in bytes
+        //!< Log rotation size in MB
         unsigned int m_logRotationSize;
         //!< True if output log also to console
         bool m_logHasConsoleOutput;

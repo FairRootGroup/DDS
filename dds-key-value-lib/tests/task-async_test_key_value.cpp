@@ -114,7 +114,10 @@ int main(int argc, char* argv[])
             if (bGoodToGo)
                 return 0;
             if (isTimeout)
+            {
+                LOG(info) << "USER TASK - timeout is reached, but not all values have been received.";
                 return 1;
+            }
         }
     }
     catch (const exception& _e)

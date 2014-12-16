@@ -55,10 +55,10 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         "");
     config_file_options.add_options()(
         "server.log_severity_level",
-        boost::program_options::value<unsigned int>(&m_options.m_server.m_logSeverityLevel)->default_value(0));
-    config_file_options.add_options()("server.log_rotation_size",
-                                      boost::program_options::value<unsigned int>(&m_options.m_server.m_logRotationSize)
-                                          ->default_value(10 * 1024 * 1024));
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_logSeverityLevel)->default_value(1));
+    config_file_options.add_options()(
+        "server.log_rotation_size",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_logRotationSize)->default_value(10));
     config_file_options.add_options()(
         "server.log_has_console_output",
         boost::program_options::value<bool>(&m_options.m_server.m_logHasConsoleOutput)->default_value(true));
@@ -279,7 +279,7 @@ string CUserDefaults::getLogFile() const
     string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
     smart_append<std::string>(&sLogDir, '/');
     std::string sLogFile(sLogDir);
-    sLogFile += "dds.log";
+    sLogFile += "dds_%N.log";
     smart_path<std::string>(&sLogFile);
     return sLogFile;
 }

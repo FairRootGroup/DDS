@@ -115,7 +115,7 @@ namespace MiscCommon
             boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
                 add_file_log(keywords::file_name = sLogFile,
                              keywords::open_mode = (std::ios::out | std::ios::app),
-                             keywords::rotation_size = rotationSize,
+                             keywords::rotation_size = rotationSize * 1024 * 1024,
                              keywords::auto_flush = true);
 
             fileSink->set_formatter(formatter);
@@ -140,12 +140,6 @@ namespace MiscCommon
         }
 
       private:
-        /// \brief Constructor
-        //        Logger()
-        //        {
-        //            init();
-        //        }
-
         logger_t fLogger; ///> Main logger object
     };
 };

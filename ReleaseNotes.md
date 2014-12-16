@@ -2,7 +2,12 @@
 
 ## v0.8 (NOT YET RELEASED)
 ### dds-common
-Fixed: correct idle time calculation for dds-commander and dds-agent. (GH-32)
+Fixed: correct idle time calculation for dds-commander and dds-agent. (GH-32)   
+Fixed: a bug, which prevented log files to rotate.   
+
+### dds-user-defaults
+Modified: default log level is 1 (instead of 0).   
+Modified: default log rotations size in MB instead of bytes. (default is 10 MB).   
 
 ### dds-ssh
 Added: the ssh plug-in has been extended to support multiple agents per host. (GH-25)   
