@@ -153,7 +153,7 @@ void CAgentConnectionManager::start()
                 // Start the UI agent server
                 m_UIConnectionMng = make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
                 m_UIConnectionMng->setCommanderChannel(m_agents);
-                m_UIConnectionMng->start(false);
+                m_UIConnectionMng->start(false, 2);
             }
             else
             {

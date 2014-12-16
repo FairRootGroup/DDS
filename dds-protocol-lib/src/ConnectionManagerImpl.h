@@ -54,7 +54,7 @@ namespace dds
             stop();
         }
 
-        void start(bool _join = true)
+        void start(bool _join = true, unsigned int _nThreads = 0 /*0 - auto; min. number is 4*/)
         {
             try
             {
@@ -79,10 +79,10 @@ namespace dds
 
                 // a thread pool for the DDS transport engine
                 // may return 0 when not able to detect
-                unsigned int concurrentThreads = std::thread::hardware_concurrency();
-                // we need at least 4 threads
-                if (concurrentThreads < 4)
-                    concurrentThreads = 4;
+                unsigned int concurrentThreads = (0 == _nThreads) ? std::thread::hardware_concurrency() : _nThreads;
+                // we need at least 2 threads
+                if (concurrentThreads < 2)
+                    concurrentThreads = 2;
                 LOG(MiscCommon::info) << "Starting DDS transport engine using " << concurrentThreads
                                       << " concurrent threads.";
                 for (int x = 0; x < concurrentThreads; ++x)
