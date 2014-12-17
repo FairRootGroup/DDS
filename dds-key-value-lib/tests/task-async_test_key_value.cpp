@@ -100,7 +100,8 @@ int main(int argc, char* argv[])
         {
             LOG(debug) << "USER TASK is going to set new value " << i;
             const string sCurValue = to_string(i);
-            LOG(debug) << "USER TASK put value return code: " << ddsKeyValue.putValue(sKey, sCurValue);
+            const int retVal = ddsKeyValue.putValue(sKey, sCurValue);
+            LOG(debug) << "USER TASK put value return code: " << retVal;
         }
 
         while (true)
@@ -115,7 +116,7 @@ int main(int argc, char* argv[])
                 return 0;
             if (isTimeout)
             {
-                LOG(info) << "USER TASK - timeout is reached, but not all values have been received.";
+                LOG(error) << "USER TASK - timeout is reached, but not all values have been received.";
                 return 1;
             }
         }

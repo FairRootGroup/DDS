@@ -86,7 +86,8 @@ int main(int argc, char* argv[])
 
             LOG(info) << "USER TASK is going to set new value " << nCurValue;
             const string sCurValue = to_string(nCurValue);
-            LOG(info) << "USER TASK put value return code: " << ddsKeyValue.putValue(sKey, sCurValue);
+            const int retVal = ddsKeyValue.putValue(sKey, sCurValue);
+            LOG(info) << "USER TASK put value return code: " << retVal;
 
             CKeyValue::valuesMap_t values;
             ddsKeyValue.getValues(sKey, &values);
