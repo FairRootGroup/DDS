@@ -18,9 +18,6 @@ using namespace MiscCommon;
 namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
-const std::chrono::milliseconds g_interval(500);
-const size_t g_maxWait = 600;
-
 CAgentConnectionManager::CAgentConnectionManager()
     : m_syncHelper(nullptr)
     , m_signals(m_service)
@@ -154,10 +151,12 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
 
 int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
 {
+    // TODO: the push should not be processed before handshake is confirmed (see GH-37)
     try
     {
-        size_t i(0);
-        while (i < g_maxWait)
+        // try 100 times for 100 ms each
+        const std::chrono::milliseconds interval(100);
+        for (unsigned short i = 0; i < 100; ++i)
         {
             if (m_channel && m_channel->m_mtxChannelReady.try_lock())
             {
@@ -166,10 +165,7 @@ int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
                 return 0;
             }
             else
-            {
-                ++i;
-                this_thread::sleep_for(g_interval);
-            }
+                this_thread::sleep_for(interval);
         }
     }
     catch (const exception& _e)

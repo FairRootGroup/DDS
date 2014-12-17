@@ -195,7 +195,7 @@ void CKeyValueGuard::initAgentConnection()
 
 int CKeyValueGuard::updateKey(const SUpdateKeyCmd& _cmd)
 {
-    if (!m_agentConnectionMng || m_agentConnectionMng->stopped())
+    if (!m_agentConnectionMng)
     {
         LOG(error) << "CKeyValueGuard::updateKey: Agent connection channel is not running. Failed to update " << _cmd;
         return 1;
