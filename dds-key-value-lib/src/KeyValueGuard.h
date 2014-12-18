@@ -14,17 +14,25 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/interprocess/sync/named_mutex.hpp>
 #pragma clang diagnostic pop
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/streams/vectorstream.hpp>
 
 namespace dds
 {
     typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
     typedef boost::signals2::connection connection_t;
-    typedef std::shared_ptr<boost::interprocess::named_mutex> fileMutexPtr_t;
+    typedef std::shared_ptr<boost::interprocess::named_mutex> sharedMemoryMutexPtr_t;
+    typedef std::shared_ptr<boost::interprocess::managed_shared_memory> managedSharedMemoryPtr_t;
+    typedef boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager>
+        sharedMemoryCharAllocator_t;
+    typedef boost::interprocess::basic_string<char, std::char_traits<char>, sharedMemoryCharAllocator_t>
+        sharedMemoryString_t;
+    typedef boost::interprocess::basic_vectorstream<sharedMemoryString_t> sharedMemoryVectorStream_t;
 
     struct SSyncHelper
     {
-        // std::condition_variable m_cvUpdateKey;
-        // std::mutex m_mtxUpdateKey;
         signal_t m_updateSig;
     };
 
@@ -63,7 +71,8 @@ namespace dds
       private:
         AgentConnectionManagerPtr_t m_agentConnectionMng;
         std::string m_sCfgFilePath;
-        fileMutexPtr_t m_fileMutex;
+        sharedMemoryMutexPtr_t m_sharedMemoryMutex;
+        managedSharedMemoryPtr_t m_sharedMemory;
     };
 }
 

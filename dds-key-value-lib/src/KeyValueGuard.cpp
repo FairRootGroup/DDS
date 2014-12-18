@@ -49,21 +49,45 @@ void CKeyValueGuard::createStorage()
     LOG(debug) << "Create key-value storage file: " << cfgFile.generic_string();
     ofstream f(cfgFile.generic_string());
 
-    // Named mutex
+    // Create shared memory storage and semaphor to synchronize accesss to shared memory
+
+    // Get task ID from environment
     char* ddsTaskId;
     ddsTaskId = getenv("DDS_TASK_ID");
     if (NULL == ddsTaskId)
         throw runtime_error("Can't initialize semaphore because DDS_TASK_ID variable is not set");
-    const string mutexName(ddsTaskId);
+
+    // Shared memory storage for property tree
+    string sharedMemoryName(ddsTaskId);
+    sharedMemoryName += "_DDSSM";
+
+    const bool sharedMemoryRemoved = ip::shared_memory_object::remove(sharedMemoryName.c_str());
+    LOG(debug) << "Shared memory " << sharedMemoryName << " remove status: " << sharedMemoryRemoved;
+
+    m_sharedMemory.reset();
+    try
+    {
+        LOG(debug) << "Creating key-value shared memory with name " << sharedMemoryName;
+        m_sharedMemory =
+            make_shared<ip::managed_shared_memory>(ip::open_or_create, sharedMemoryName.c_str(), 1024 * 1024);
+    }
+    catch (const ip::interprocess_exception& _e)
+    {
+        LOG(fatal) << "Can't initialize key-value shared memory with name " << sharedMemoryName << ": " << _e.what();
+    }
+
+    // Named mutex
+    string mutexName(ddsTaskId);
+    mutexName += "_DDSM";
 
     const bool removed = ip::named_mutex::remove(mutexName.c_str());
-    LOG(debug) << "Shared object remove status: " << removed;
+    LOG(debug) << "Named mutex remove status: " << removed;
 
-    m_fileMutex.reset();
+    m_sharedMemoryMutex.reset();
     try
     {
         LOG(debug) << "Creating key-value lock object with name " << mutexName;
-        m_fileMutex = make_shared<ip::named_mutex>(ip::open_or_create, mutexName.c_str());
+        m_sharedMemoryMutex = make_shared<ip::named_mutex>(ip::open_or_create, mutexName.c_str());
     }
     catch (const ip::interprocess_exception& _e)
     {
@@ -73,20 +97,36 @@ void CKeyValueGuard::createStorage()
 
 void CKeyValueGuard::initLock()
 {
-    if (m_fileMutex)
+    if (m_sharedMemoryMutex)
         return;
 
-    // Named mutex
     char* ddsTaskId;
     ddsTaskId = getenv("DDS_TASK_ID");
     if (NULL == ddsTaskId)
         throw runtime_error("Can't initialize semaphore because DDS_TASK_ID variable is not set");
-    const string mutexName(ddsTaskId);
+
+    // Shared memory storage for property tree
+    string sharedMemoryName(ddsTaskId);
+    sharedMemoryName += "_DDSSM";
+
+    try
+    {
+        LOG(debug) << "Creating key-value shared memory with name " << sharedMemoryName;
+        m_sharedMemory = make_shared<ip::managed_shared_memory>(ip::open_only, sharedMemoryName.c_str());
+    }
+    catch (const ip::interprocess_exception& _e)
+    {
+        LOG(fatal) << "Can't initialize key-value shared memory with name " << sharedMemoryName << ": " << _e.what();
+    }
+
+    // Named mutex
+    string mutexName(ddsTaskId);
+    mutexName += "_DDSM";
 
     try
     {
         LOG(debug) << "Creating key-value lock object with name " << mutexName;
-        m_fileMutex = make_shared<ip::named_mutex>(ip::open_only, mutexName.c_str());
+        m_sharedMemoryMutex = make_shared<ip::named_mutex>(ip::open_only, mutexName.c_str());
     }
     catch (const ip::interprocess_exception& _e)
     {
@@ -110,11 +150,33 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
     LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " ...";
     const string sKey = _key;
     {
-        boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_fileMutex);
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(getCfgFilePath(), pt);
-        pt.put(sKey, _value);
-        boost::property_tree::ini_parser::write_ini(getCfgFilePath(), pt);
+        try
+        {
+            ip::scoped_lock<ip::named_mutex> lock(*m_sharedMemoryMutex);
+
+            sharedMemoryString_t* ptString = m_sharedMemory->find_or_construct<sharedMemoryString_t>("KeyValue")(
+                sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+            sharedMemoryVectorStream_t readStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+            readStream.swap_vector(*ptString);
+
+            boost::property_tree::ptree ptsm;
+            boost::property_tree::ini_parser::read_ini(readStream, ptsm);
+
+            ptsm.put(sKey, _value);
+
+            sharedMemoryVectorStream_t writeStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+            boost::property_tree::ini_parser::write_ini(writeStream, ptsm);
+
+            writeStream.swap_vector(*ptString);
+            // LOG(debug) << "CKeyValueGuard::putValue file content |" << *ptString << "|";
+        }
+        catch (const ip::interprocess_exception& _e)
+        {
+            LOG(fatal) << "key-value guard putValue exception: " << _e.what();
+        }
     }
     LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " done";
 }
@@ -126,12 +188,25 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
         throw invalid_argument("CKeyValueGuard::getValue: Value can't be NULL");
 
     const string sKey = _key + "." + _taskId;
+    // TODO: Check if need this scope? Probably only for scoped_lock!
     // IMPORTANT: adding additional scope to make sure that the stream has flushed the data
     {
-        boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_fileMutex);
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(getCfgFilePath(), pt);
-        pt.get(sKey, *_value);
+        boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_sharedMemoryMutex);
+
+        sharedMemoryString_t* ptString = m_sharedMemory->find_or_construct<sharedMemoryString_t>("KeyValue")(
+            sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        sharedMemoryVectorStream_t readStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        readStream.swap_vector(*ptString);
+
+        boost::property_tree::ptree ptsm;
+        boost::property_tree::ini_parser::read_ini(readStream, ptsm);
+
+        // Swap back vectors
+        readStream.swap_vector(*ptString);
+
+        ptsm.get(sKey, *_value);
     }
     LOG(debug) << "CKeyValueGuard::getValue key=" << _key << " taskId=" << _taskId << " done";
 }
@@ -147,8 +222,19 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
     boost::property_tree::ptree pt;
 
     {
-        boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_fileMutex);
-        boost::property_tree::ini_parser::read_ini(getCfgFilePath(), pt);
+        boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_sharedMemoryMutex);
+
+        sharedMemoryString_t* ptString = m_sharedMemory->find_or_construct<sharedMemoryString_t>("KeyValue")(
+            sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        sharedMemoryVectorStream_t readStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        readStream.swap_vector(*ptString);
+
+        boost::property_tree::ini_parser::read_ini(readStream, pt);
+
+        // Swap back vectors
+        readStream.swap_vector(*ptString);
     }
 
     try
