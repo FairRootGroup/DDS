@@ -153,13 +153,10 @@ namespace dds
     struct SBinaryAttachmentInfo
     {
         SBinaryAttachmentInfo()
-            : m_data()
-            , m_bytesReceived(0)
-            , m_fileName()
+            : m_bytesReceived(0)
             , m_fileCrc32(0)
             , m_srcCommand(0)
             , m_fileSize(0)
-            , m_mutex()
             , m_startTime()
         {
         }
@@ -172,7 +169,6 @@ namespace dds
         uint32_t m_fileSize;
         std::mutex m_mutex;
         std::chrono::steady_clock::time_point m_startTime;
-        bool m_hasError;
     };
 
     typedef std::shared_ptr<SBinaryAttachmentInfo> binaryAttachmentInfoPtr_t;
@@ -182,6 +178,7 @@ namespace dds
     {
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
+        typedef std::vector<boost::asio::mutable_buffer> protocolMessageBuffer_t;
 
       public:
         typedef std::shared_ptr<T> connectionPtr_t;
@@ -240,6 +237,11 @@ namespace dds
             return m_socket;
         }
 
+        bool isWriteInProgress() const
+        {
+            return (!m_writeMsgBufferQueue.empty() || !m_writeMsgQueue.empty());
+        }
+
         template <ECmdType _cmd, class A>
         void pushMsg(const A& _attachment)
         {
@@ -252,15 +254,20 @@ namespace dds
                 // Do not execute writeMessage if older messages are being processed.
                 // We must not register more, than async_write in the same time (different threads).
                 // Only one async_write is allowed at time per socket to avoid messages corruption.
-                bWriteInProgress = !m_writeMsgQueue.empty();
+                bWriteInProgress = isWriteInProgress();
                 m_writeMsgQueue.push_back(msg);
+                LOG(MiscCommon::debug) << "MESSAGE QUEUE SIZE = " << m_writeMsgQueue.size()
+                                       << "; SENDING BUFFER SIZE = " << m_writeMsgBufferQueue.size();
+                LOG(MiscCommon::debug) << "pushMsg: " << (bWriteInProgress
+                                                              ? "buffer messages, while sending is still in progress"
+                                                              : "will send");
             }
             if (!bWriteInProgress)
             {
                 // We need to make sure that write is not called from different threads.
                 // Only one write at time is allowed by asio.
                 // We therefore notify syncWrite about a chance to write
-                m_cvReadyToWrite.notify_one();
+                m_cvReadyToWrite.notify_all();
 
                 // process standard async writing
                 writeMessage();
@@ -668,11 +675,30 @@ namespace dds
       private:
         void writeMessage()
         {
-            LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString()
-                                   << " a message: " << m_writeMsgQueue.front()->toString();
+            // To avoid sending of a bunch of small messages, we pack as many messages as possible into one write
+            // request (GH-38).
+            // Copy messages from the queue to send buffer (which should remain until the write handler is called)
+            size_t nMsgSize(0);
+            while (nMsgSize < 20000) // TODO: fix the "magic" size of the buffer (so far we sent a max ~20 KB message)
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+                if (m_writeMsgQueue.empty())
+                    break;
+
+                LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString()
+                                       << " a message: " << m_writeMsgQueue.front()->toString();
+
+                nMsgSize += m_writeMsgQueue.front()->length();
+
+                m_writeMsgBuffer.push_back(
+                    boost::asio::buffer(m_writeMsgQueue.front()->data(), m_writeMsgQueue.front()->length()));
+                m_writeMsgBufferQueue.push_back(m_writeMsgQueue.front());
+
+                m_writeMsgQueue.pop_front();
+            }
+
             boost::asio::async_write(m_socket,
-                                     boost::asio::buffer(m_writeMsgQueue.front()->data(),
-                                                         m_writeMsgQueue.front()->length()),
+                                     m_writeMsgBuffer,
                                      [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                                      {
                 if (!_ec)
@@ -681,18 +707,22 @@ namespace dds
                                            << _bytesTransferred << " bytes)";
 
                     // lock the modification of the container
-                    std::lock_guard<std::mutex> lock(m_mutex);
-                    m_writeMsgQueue.pop_front();
+                    std::unique_lock<std::mutex> lock(m_mutex);
+                    m_writeMsgBuffer.clear();
+                    m_writeMsgBufferQueue.clear();
 
                     // process next message if the queue is not empty
                     if (!m_writeMsgQueue.empty())
+                    {
+                        lock.unlock(); // avoid to dead-lock
                         writeMessage();
+                    }
                     else
                     {
                         // We need to make sure that write is not called from different threads.
                         // Only one write at time is allowed by asio.
                         // We therefore notify syncWrite about a chance to write
-                        m_cvReadyToWrite.notify_one();
+                        m_cvReadyToWrite.notify_all();
                     }
                 }
                 else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
@@ -715,10 +745,9 @@ namespace dds
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
             std::unique_lock<std::mutex> lock(m_mutex);
-            while (!m_writeMsgQueue.empty())
-            {
+            while (isWriteInProgress())
                 m_cvReadyToWrite.wait(lock);
-            }
+
             LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
             boost::system::error_code ec;
             size_t bytesTransfered = boost::asio::write(
@@ -779,6 +808,8 @@ namespace dds
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
         protocolMessagePtrQueue_t m_writeMsgQueue;
+        protocolMessageBuffer_t m_writeMsgBuffer;
+        protocolMessagePtrQueue_t m_writeMsgBufferQueue;
         std::mutex m_mutex;
         std::condition_variable m_cvReadyToWrite;
 

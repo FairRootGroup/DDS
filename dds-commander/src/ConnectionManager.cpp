@@ -633,7 +633,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                         if (ptr->getTaskID() != channelPtr->getTaskID())
                         {
                             ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
-                            LOG(info) << "Property update from agent channel: <" << *_attachment << ">";
+                            LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
                         }
                     }
                 }

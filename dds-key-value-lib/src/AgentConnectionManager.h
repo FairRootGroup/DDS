@@ -8,6 +8,7 @@
 #include "AgentChannel.h"
 // BOOST
 #include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 
 namespace dds
 {
@@ -47,6 +48,7 @@ namespace dds
         boost::asio::signal_set m_signals;
         CAgentChannel::connectionPtr_t m_channel;
         bool m_bStarted;
+        boost::thread_group m_workerThreads;
     };
 }
 

@@ -50,6 +50,7 @@ namespace dds
         boost::asio::io_service m_UI_io_service;
         boost::asio::ip::tcp::endpoint m_UI_end_point;
         UIConnectionManagerPtr_t m_UIConnectionMng;
+        boost::thread_group m_workerThreads;
     };
 }
 

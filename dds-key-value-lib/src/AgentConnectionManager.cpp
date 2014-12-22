@@ -113,7 +113,13 @@ void CAgentConnectionManager::start()
             }
         });
 
-        m_service.run();
+        // Don't block main thread, start transport service on a thread-pool
+        const int nConcurrentThreads(2);
+        LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
+        for (int x = 0; x < nConcurrentThreads; ++x)
+        {
+            m_workerThreads.create_thread(boost::bind(&boost::asio::io_service::run, &(m_service)));
+        }
     }
     catch (exception& e)
     {

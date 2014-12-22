@@ -263,19 +263,14 @@ void CKeyValueGuard::initAgentConnection()
         m_agentConnectionMng = make_shared<CAgentConnectionManager>();
         m_agentConnectionMng->m_syncHelper = &m_syncHelper;
 
-        // Don't block main thread, start transport service in a thread
-        std::thread t([this]()
-                      {
-                          try
-                          {
-                              m_agentConnectionMng->start();
-                          }
-                          catch (exception& _e)
-                          {
-                              LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
-                          }
-                      });
-        t.detach();
+        try
+        {
+            m_agentConnectionMng->start();
+        }
+        catch (exception& _e)
+        {
+            LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
+        }
     }
 }
 
