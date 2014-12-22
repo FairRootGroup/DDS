@@ -14,6 +14,7 @@ Added: the ssh plug-in has been extended to support multiple agents per host. (G
 
 ### dds-key-value
 Added: users are now able to subscribe on properties update events. (GH-29)   
+Added: shared memory storage for key-value. (GH-35)   
 
 ## v0.6 (2014-12-05)
 ### DDS common   
