@@ -16,6 +16,9 @@ Added: the ssh plug-in has been extended to support multiple agents per host. (G
 Added: users are now able to subscribe on properties update events. (GH-29)   
 Added: shared memory storage for key-value. (GH-35)   
 
+### dds-protocol-lib
+Modified: The DDS transport learned to accumulate commands before sending, instead of sending them one by one. (GH-38)   
+
 ## v0.6 (2014-12-05)
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   
