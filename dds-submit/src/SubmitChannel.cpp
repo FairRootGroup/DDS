@@ -25,10 +25,8 @@ void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
     m_RMS = _val;
 }
 
-bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/)
+void CSubmitChannel::onHandshakeOK()
 {
-    m_isHandShakeOK = true;
-
     if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS)
     {
         // Create the command's attachment
@@ -38,8 +36,10 @@ bool CSubmitChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HA
         cmd.m_sSSHCfgFile = m_sSSHCfgFile;
         pushMsg<cmdSUBMIT>(cmd);
     }
+}
 
-    return true;
+void CSubmitChannel::onHandshakeERR()
+{
 }
 
 bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

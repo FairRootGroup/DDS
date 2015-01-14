@@ -5,25 +5,17 @@
 #ifndef __DDS__CAgentChannel__
 #define __DDS__CAgentChannel__
 // DDS
-#include "ConnectionImpl.h"
+#include "ServerChannelImpl.h"
 #include <chrono>
 
 namespace dds
 {
-    enum class EAgentChannelType
-    {
-        UNDEFINED,
-        AGENT,
-        UI
-    };
     const std::vector<std::string> g_vecAgentChannelType = { "generic", "agent", "UI" };
 
-    class CAgentChannel : public CConnectionImpl<CAgentChannel>
+    class CAgentChannel : public CServerChannelImpl<CAgentChannel>
     {
         CAgentChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CAgentChannel>(_service)
-            , m_isHandShakeOK(false)
-            , m_type(EAgentChannelType::UNDEFINED)
+            : CServerChannelImpl<CAgentChannel>(_service, { EChannelType::AGENT, EChannelType::UI })
             , m_taskID(0)
         {
         }
@@ -32,8 +24,8 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CAgentChannel)
-        MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
-        MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
+        //        MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
+        //        MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
         MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
         //====> replay on the "submit" command request
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
@@ -53,8 +45,6 @@ namespace dds
         END_MSG_MAP()
 
       public:
-        EAgentChannelType getType() const;
-        std::string getTypeName() const;
         const boost::uuids::uuid& getId() const;
         const SHostInfoCmd getRemoteHostInfo() const
         {
@@ -70,8 +60,6 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment);
-        bool on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AGENT>::ptr_t _attachment);
         bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment);
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
         bool on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment);
@@ -93,15 +81,16 @@ namespace dds
         void onHeaderRead();
         std::string _remoteEndIDString()
         {
-            if (EAgentChannelType::AGENT == m_type)
+            if (getChannelType() == EChannelType::AGENT)
                 return boost::uuids::to_string(m_id);
             else
                 return "UI client";
         }
 
+        void onHandshakeOK();
+        void onHandshakeERR();
+
       private:
-        bool m_isHandShakeOK;
-        EAgentChannelType m_type;
         boost::uuids::uuid m_id;
         SHostInfoCmd m_remoteHostInfo;
         std::string m_sCurrentTopoFile;

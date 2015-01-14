@@ -7,18 +7,11 @@
 #define DDS_UIChannel_h
 
 // DDS
-#include "ConnectionImpl.h"
+#include "ServerChannelImpl.h"
 
 namespace dds
 {
-    enum class EChannelType
-    {
-        UNDEFINED,
-        KEY_VALUE_GUARD
-    };
-    const std::vector<std::string> g_vecChannelType = { "generic", "key-value-guard" };
-
-    class CUIChannel : public CConnectionImpl<CUIChannel>
+    class CUIChannel : public CServerChannelImpl<CUIChannel>
     {
       private:
         CUIChannel(boost::asio::io_service& _service);
@@ -29,22 +22,15 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CUIChannel)
-        MESSAGE_HANDLER(cmdHANDSHAKE_KEY_VALUE_GUARD, on_cmdHANDSHAKE_KEY_VALUE_GUARD)
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_MSG_MAP()
 
-      public:
-        std::string getTypeName() const;
-        EChannelType getType() const;
-
       private:
         // Message Handlers
-        bool on_cmdHANDSHAKE_KEY_VALUE_GUARD(SCommandAttachmentImpl<cmdHANDSHAKE_KEY_VALUE_GUARD>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
 
-      private:
-        bool m_isHandShakeOK;
-        EChannelType m_type;
+        void onHandshakeOK();
+        void onHandshakeERR();
     };
 }
 

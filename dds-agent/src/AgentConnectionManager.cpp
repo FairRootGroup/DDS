@@ -88,7 +88,7 @@ void CAgentConnectionManager::start()
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new agent and push handshake message
-        m_agents = CCommanderChannel::makeNew(m_service);
+        m_agent = CCommanderChannel::makeNew(m_service);
 
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel * _channel)>
@@ -97,9 +97,9 @@ void CAgentConnectionManager::start()
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
-            return this->on_cmdSHUTDOWN(_attachment, m_agents);
+            return this->on_cmdSHUTDOWN(_attachment, m_agent);
         };
-        m_agents->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
+        m_agent->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         // Subscribe for key updates
         std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
@@ -108,9 +108,9 @@ void CAgentConnectionManager::start()
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
-            return this->on_cmdUPDATE_KEY(_attachment, m_agents);
+            return this->on_cmdUPDATE_KEY(_attachment, m_agent);
         };
-        m_agents->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+        m_agent->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
         // Subscribe for cmdSIMPLE_MSG
         std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel * _channel)>
@@ -119,48 +119,63 @@ void CAgentConnectionManager::start()
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
-            return this->on_cmdSIMPLE_MSG(_attachment, m_agents);
+            return this->on_cmdSIMPLE_MSG(_attachment, m_agent);
         };
-        m_agents->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
+        m_agent->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 
         // Call this callback when a user process is activated
-        m_agents->registerOnNewUserTaskCallback([this](pid_t _pid)
-                                                {
-                                                    return this->onNewUserTask(_pid);
-                                                });
+        m_agent->registerOnNewUserTaskCallback([this](pid_t _pid)
+                                               {
+                                                   return this->onNewUserTask(_pid);
+                                               });
 
-        boost::asio::async_connect(m_agents->socket(),
-                                   endpoint_iterator,
-                                   [this](boost::system::error_code ec, tcp::resolver::iterator)
-                                   {
-                                       if (!ec)
-                                       {
-                                           // Create handshake message which is the first one for all agents
-                                           SHandShakeAgentCmd handShake;
-                                           // get submit time
-                                           string sSubmitTime;
-                                           char* pchSubmitTime;
-                                           pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
-                                           if (NULL != pchSubmitTime)
-                                           {
-                                               sSubmitTime.assign(pchSubmitTime);
-                                               handShake.m_submitTime = stoll(sSubmitTime);
-                                           }
+        m_agent->registerConnectEventHandler([this](CCommanderChannel* _channel)
+                                             {
+                                                 // Start the UI agent server
+                                                 m_UIConnectionMng =
+                                                     make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
+                                                 m_UIConnectionMng->setCommanderChannel(m_agent);
+                                                 m_UIConnectionMng->start(false, 2);
+                                             });
+        m_agent->connect(endpoint_iterator);
 
-                                           m_agents->pushMsg<cmdHANDSHAKE_AGENT>(handShake);
-                                           m_agents->start();
-
-                                           // Start the UI agent server
-                                           m_UIConnectionMng =
-                                               make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
-                                           m_UIConnectionMng->setCommanderChannel(m_agents);
-                                           m_UIConnectionMng->start(false, 2);
-                                       }
-                                       else
-                                       {
-                                           LOG(fatal) << "Cannot connect to server: " << ec.message();
-                                       }
-                                   });
+        //        boost::asio::async_connect(m_agent->socket(),
+        //                                   endpoint_iterator,
+        //                                   [this](boost::system::error_code ec, tcp::resolver::iterator)
+        //                                   {
+        //            if (!ec)
+        //            {
+        //                // Create handshake message which is the first one for all agents
+        //                SHandShakeAgentCmd handShake;
+        //                // get submit time
+        //                string sSubmitTime;
+        //                char* pchSubmitTime;
+        //                pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
+        //                if (NULL != pchSubmitTime)
+        //                {
+        //                    sSubmitTime.assign(pchSubmitTime);
+        //                    handShake.m_submitTime = stoll(sSubmitTime);
+        //                }
+        //
+        //                m_agent->start();
+        //
+        //                // m_agents->pushMsg<cmdHANDSHAKE_AGENT>(handShake);
+        //
+        //                // Prepare a hand shake message
+        //                SVersionCmd cmd;
+        //                cmd.m_handshakeType = EHandshakeType::handshakeAGENT;
+        //                m_agent->pushMsg<cmdHANDSHAKE>(cmd);
+        //
+        //                // Start the UI agent server
+        //                m_UIConnectionMng = make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
+        //                m_UIConnectionMng->setCommanderChannel(m_agent);
+        //                m_UIConnectionMng->start(false, 2);
+        //            }
+        //            else
+        //            {
+        //                LOG(fatal) << "Cannot connect to server: " << ec.message();
+        //            }
+        //        });
 
         const int nConcurrentThreads(2);
         LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
@@ -191,7 +206,7 @@ void CAgentConnectionManager::stop()
     try
     {
         m_service.stop();
-        m_agents->stop();
+        m_agent->stop();
     }
     catch (exception& e)
     {

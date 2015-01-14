@@ -24,31 +24,61 @@
 #include "Logger.h"
 #include "MonitoringThread.h"
 
-#define BEGIN_MSG_MAP(theClass)                                                                                      \
-  public:                                                                                                            \
-    friend CConnectionImpl<theClass>;                                                                                \
-    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)                                          \
-    {                                                                                                                \
-        using namespace dds;                                                                                         \
-        CMonitoringThread::instance().updateIdle();                                                                  \
-        bool processed = true;                                                                                       \
-        ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                                    \
-        if (currentCmd == cmdBINARY_ATTACHMENT)                                                                      \
-        {                                                                                                            \
-            typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t attahcmentPtr_t;                    \
-            attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::decode(_currentMsg);       \
-            processBinaryAttachmentCmd(attachmentPtr);                                                               \
-            return;                                                                                                  \
-        }                                                                                                            \
-        if (currentCmd == cmdBINARY_ATTACHMENT_START)                                                                \
-        {                                                                                                            \
-            typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t attahcmentPtr_t;              \
-            attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::decode(_currentMsg); \
-            processBinaryAttachmentStartCmd(attachmentPtr);                                                          \
-            return;                                                                                                  \
-        }                                                                                                            \
-        switch (currentCmd)                                                                                          \
-        {
+template <class T>
+class CClientChannelImpl; // needed for friend class
+template <class T>
+class CServerChannelImpl; // needed for friend class
+
+#define BEGIN_MSG_MAP(theClass)                                                                                    \
+  public:                                                                                                          \
+    friend CBaseChannelImpl<theClass>;                                                                             \
+    friend CClientChannelImpl<theClass>;                                                                           \
+    friend CServerChannelImpl<theClass>;                                                                           \
+    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)                                        \
+    {                                                                                                              \
+        using namespace dds;                                                                                       \
+        CMonitoringThread::instance().updateIdle();                                                                \
+        bool processed = true;                                                                                     \
+        ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                                  \
+                                                                                                                   \
+        switch (currentCmd)                                                                                        \
+        {                                                                                                          \
+            case cmdBINARY_ATTACHMENT:                                                                             \
+            {                                                                                                      \
+                typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t attahcmentPtr_t;              \
+                attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::decode(_currentMsg); \
+                processBinaryAttachmentCmd(attachmentPtr);                                                         \
+                return;                                                                                            \
+            }                                                                                                      \
+            case cmdBINARY_ATTACHMENT_START:                                                                       \
+            {                                                                                                      \
+                typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t attahcmentPtr_t;        \
+                attahcmentPtr_t attachmentPtr =                                                                    \
+                    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::decode(_currentMsg);                       \
+                processBinaryAttachmentStartCmd(attachmentPtr);                                                    \
+                return;                                                                                            \
+            }                                                                                                      \
+            case cmdHANDSHAKE:                                                                                     \
+            {                                                                                                      \
+                SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
+                    SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
+                dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                return;                                                                                            \
+            }                                                                                                      \
+            case cmdREPLY_HANDSHAKE_OK:                                                                            \
+            {                                                                                                      \
+                SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
+                    SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
+                dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                return;                                                                                            \
+            }                                                                                                      \
+            case cmdREPLY_HANDSHAKE_ERR:                                                                           \
+            {                                                                                                      \
+                SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
+                    SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
+                dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                return;                                                                                            \
+            }
 
 #define MESSAGE_HANDLER(msg, func)                                                                                 \
     case msg:                                                                                                      \
@@ -103,6 +133,16 @@
 
 namespace dds
 {
+    // Channel types
+    enum EChannelType
+    {
+        UNKNOWN = 0,
+        AGENT,
+        UI,
+        KEY_VALUE_GUARD
+    };
+    typedef std::vector<EChannelType> channelTypeVector_t;
+
     // --- Helpers for events dispatching ---
     // TODO: Move to a seporate header
     struct SHandlerHlpFunc
@@ -174,7 +214,7 @@ namespace dds
     typedef std::shared_ptr<SBinaryAttachmentInfo> binaryAttachmentInfoPtr_t;
 
     template <class T>
-    class CConnectionImpl : public boost::noncopyable
+    class CBaseChannelImpl : public boost::noncopyable
     {
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
@@ -187,8 +227,10 @@ namespace dds
         typedef std::vector<weakConnectionPtr_t> weakConnectionPtrVector_t;
 
       protected:
-        CConnectionImpl<T>(boost::asio::io_service& _service)
-            : m_io_service(_service)
+        CBaseChannelImpl<T>(boost::asio::io_service& _service)
+            : m_isHandshakeOK(false)
+            , m_channelType(EChannelType::UNKNOWN)
+            , m_io_service(_service)
             , m_socket(_service)
             , m_started(false)
             , m_currentMsg(std::make_shared<CProtocolMessage>())
@@ -198,7 +240,7 @@ namespace dds
         }
 
       public:
-        ~CConnectionImpl<T>()
+        ~CBaseChannelImpl<T>()
         {
             stop();
         }
@@ -210,11 +252,17 @@ namespace dds
         }
 
       public:
-        void connect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
+        bool isHanshakeOK() const
         {
-            doConnect(_endpoint_iterator);
+            return m_isHandshakeOK;
         }
 
+        EChannelType getChannelType() const
+        {
+            return m_channelType;
+        }
+
+      public:
         void start()
         {
             if (m_started)
@@ -532,9 +580,9 @@ namespace dds
             addListener<_cmd, Func>(m_registeredMessageHandlers, _handler);
         }
 
-        void registerDissconnectEventHandler(handlerDisconnectEventFunction_t _handler)
+        void registerDisconnectEventHandler(handlerDisconnectEventFunction_t _handler)
         {
-            m_dissconnectEventHandler = _handler;
+            m_disconnectEventHandler = _handler;
         }
 
         bool started()
@@ -559,34 +607,6 @@ namespace dds
         }
 
       private:
-        void doConnect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
-        {
-            boost::asio::async_connect(m_socket,
-                                       _endpoint_iterator,
-                                       [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
-                                       {
-                                           if (!ec)
-                                           {
-                                               // give a chance child to execute something
-                                               T* pThis = static_cast<T*>(this);
-                                               pThis->onConnected();
-
-                                               // start the communication channel
-                                               start();
-
-                                               // Prepare a hand shake message
-                                               SVersionCmd cmd;
-                                               pushMsg<cmdHANDSHAKE>(cmd);
-                                           }
-                                           else
-                                           {
-                                               // give a chance child to execute something
-                                               T* pThis = static_cast<T*>(this);
-                                               pThis->onFailedToConnect();
-                                           }
-                                       });
-        }
-
         void readHeader()
         {
             boost::asio::async_read(
@@ -792,8 +812,8 @@ namespace dds
             pThis->onRemoteEndDissconnected();
 
             // Call external event handler
-            if (m_dissconnectEventHandler)
-                m_dissconnectEventHandler(pThis);
+            if (m_disconnectEventHandler)
+                m_disconnectEventHandler(pThis);
         }
 
       private:
@@ -802,9 +822,13 @@ namespace dds
             m_socket.close();
         }
 
+      private:
+        handlerDisconnectEventFunction_t m_disconnectEventHandler;
+
       protected:
         Listeners_t m_registeredMessageHandlers;
-        handlerDisconnectEventFunction_t m_dissconnectEventHandler;
+        bool m_isHandshakeOK;
+        EChannelType m_channelType;
 
       private:
         boost::asio::io_service& m_io_service;

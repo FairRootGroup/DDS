@@ -178,7 +178,7 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
 
         auto condition = [](CAgentChannel::connectionPtr_t _v)
         {
-            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
         };
 
         m_getLog.m_nofRequests = countNofChannels(condition);
@@ -248,6 +248,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
             ssCmd << sCommand << " -c " << _attachment->m_sSSHCfgFile << " submit";
             const size_t nCmdTimeout = 60; // in sec.
             int nDdsSSHExitCode(0);
+
             try
             {
                 do_execv(ssCmd.str(), nCmdTimeout, &outPut, nullptr, &nDdsSSHExitCode);
@@ -324,7 +325,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             // Send activate signal to all agents. This will trigger start of user jobs on the agents.
             auto condition = [](CAgentChannel::connectionPtr_t _v)
             {
-                return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                return (_v->getChannelType() == EChannelType::AGENT && _v->started());
             };
 
             m_ActivateAgents.m_nofRequests = m_topo.getMainGroup()->getTotalNofTasks();
@@ -434,7 +435,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             broadcastSimpleMsg<cmdACTIVATE_AGENT>(
                 [](CAgentChannel::connectionPtr_t _v)
                 {
-                    return (_v->getType() == EAgentChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+                    return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
                 });
         }
         catch (bad_weak_ptr& _e)
@@ -464,7 +465,7 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
         CAgentChannel::weakConnectionPtrVector_t channels(
             getChannels([](CAgentChannel::connectionPtr_t _v)
                         {
-                            return (_v->getType() == EAgentChannelType::AGENT && _v->started());
+                            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
                         }));
 
         for (const auto& v : channels)
@@ -525,7 +526,7 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
 
         auto condition = [](CAgentChannel::connectionPtr_t _v)
         {
-            return (_v != nullptr && _v->getType() == EAgentChannelType::AGENT && _v->started());
+            return (_v != nullptr && _v->getChannelType() == EChannelType::AGENT && _v->started());
         };
 
         vector<size_t> binarySizes{ 1000, 10000, 1000, 100000, 1000, 1000000, 1000, 10000000, 1000 };
@@ -598,7 +599,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         // If UI channel sends a property update than property key does not contain a hash.
         // In this case each agent set the property key hash himself.
         auto channelPtr = _channel.lock();
-        const bool sentFromUIChannel = (channelPtr->getType() == EAgentChannelType::UI);
+        const bool sentFromUIChannel = (channelPtr->getChannelType() == EChannelType::UI);
 
         string propertyID(_attachment->m_sKey);
         if (!sentFromUIChannel)
@@ -626,7 +627,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                     continue;
                 auto ptr = iter->second.lock();
 
-                if (ptr->getType() == EAgentChannelType::AGENT && ptr->started())
+                if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
                 {
                     if (sentFromUIChannel)
                     {

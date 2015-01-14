@@ -6,15 +6,14 @@
 #ifndef __DDS__ActivateChannel__
 #define __DDS__ActivateChannel__
 // DDS
-#include "ConnectionImpl.h"
+#include "ClientChannelImpl.h"
 
 namespace dds
 {
-    class CActivateChannel : public CConnectionImpl<CActivateChannel>
+    class CActivateChannel : public CClientChannelImpl<CActivateChannel>
     {
         CActivateChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CActivateChannel>(_service)
-            , m_isHandShakeOK(false)
+            : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI)
         {
         }
 
@@ -22,14 +21,12 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CActivateChannel)
-        MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         END_MSG_MAP()
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         // On connection handles
@@ -49,9 +46,8 @@ namespace dds
         void onHeaderRead()
         {
         }
-
-      private:
-        bool m_isHandShakeOK;
+        void onHandshakeOK();
+        void onHandshakeERR();
     };
 }
 

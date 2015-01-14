@@ -20,16 +20,6 @@ void CAgentChannel::onHeaderRead()
 {
 }
 
-EAgentChannelType CAgentChannel::getType() const
-{
-    return m_type;
-}
-
-std::string CAgentChannel::getTypeName() const
-{
-    return g_vecAgentChannelType[static_cast<size_t>(m_type)];
-}
-
 const boost::uuids::uuid& CAgentChannel::getId() const
 {
     return m_id;
@@ -45,58 +35,71 @@ void CAgentChannel::setTaskID(uint64_t _taskID)
     m_taskID = _taskID;
 }
 
-bool CAgentChannel::on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment)
+void CAgentChannel::onHandshakeOK()
 {
-    // send shutdown if versions are incompatible
-    if (*_attachment != SVersionCmd())
+    if (getChannelType() == EChannelType::AGENT)
     {
-        m_isHandShakeOK = false;
-        // Send reply that the version of the protocol is incompatible
-        LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
-        pushMsg<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
-    }
-    else
-    {
-        m_isHandShakeOK = true;
-        m_type = EAgentChannelType::UI;
-        // everything is OK, we can work with this agent
-        LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                  << "] has successfully connected.";
-
-        pushMsg<cmdREPLY_HANDSHAKE_OK>();
-    }
-    return true;
-}
-
-bool CAgentChannel::on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AGENT>::ptr_t _attachment)
-{
-    // send shutdown if versions are incompatible
-    if (_attachment->m_version != SVersionCmd().m_version)
-    {
-        m_isHandShakeOK = false;
-        // Send reply that the version of the protocol is incompatible
-        LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
-        pushMsg<cmdREPLY_ERR_BAD_PROTOCOL_VERSION>();
-    }
-    else
-    {
-        m_isHandShakeOK = true;
-        m_type = EAgentChannelType::AGENT;
-        chrono::system_clock::time_point now = std::chrono::system_clock::now();
-        chrono::system_clock::time_point submitTime = chrono::system_clock::from_time_t(_attachment->m_submitTime);
-        m_startUpTime = std::chrono::duration_cast<std::chrono::seconds>(now - submitTime);
-        // everything is OK, we can work with this agent
-        LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                  << "] has succesfully connected. Startup time: " << m_startUpTime.count() << " sec.";
-
-        // replay on handshake in sync push, to preserver order of messages. Otherwise the replay could be send after
-        // other requests are sent and other will be ignored by the agent as there were no handshake ok received yet.
-        syncPushMsg<cmdREPLY_HANDSHAKE_OK>();
         pushMsg<cmdGET_UUID>();
         pushMsg<cmdGET_HOST_INFO>();
     }
-    return true;
 }
+
+void CAgentChannel::onHandshakeERR()
+{
+}
+
+// bool CAgentChannel::on_cmdHANDSHAKE(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment)
+//{
+//    // send shutdown if versions are incompatible
+//    if (*_attachment != SVersionCmd())
+//    {
+//        m_isHandShakeOK = false;
+//        // Send reply that the version of the protocol is incompatible
+//        LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
+//        pushMsg<cmdREPLY_HANDSHAKE_ERR>();
+//    }
+//    else
+//    {
+//        m_isHandShakeOK = true;
+//        m_type = EAgentChannelType::UI;
+//        // everything is OK, we can work with this agent
+//        LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+//                  << "] has successfully connected.";
+//
+//        pushMsg<cmdREPLY_HANDSHAKE_OK>();
+//    }
+//    return true;
+//}
+//
+// bool CAgentChannel::on_cmdHANDSHAKE_AGENT(SCommandAttachmentImpl<cmdHANDSHAKE_AGENT>::ptr_t _attachment)
+//{
+//    // send shutdown if versions are incompatible
+//    if (_attachment->m_version != SVersionCmd().m_version)
+//    {
+//        m_isHandShakeOK = false;
+//        // Send reply that the version of the protocol is incompatible
+//        LOG(warning) << "Incompatible protocol version of the client: " << remoteEndIDString();
+//        pushMsg<cmdREPLY_HANDSHAKE_ERR>();
+//    }
+//    else
+//    {
+//        m_isHandShakeOK = true;
+//        m_type = EAgentChannelType::AGENT;
+//        chrono::system_clock::time_point now = std::chrono::system_clock::now();
+//        chrono::system_clock::time_point submitTime = chrono::system_clock::from_time_t(_attachment->m_submitTime);
+//        m_startUpTime = std::chrono::duration_cast<std::chrono::seconds>(now - submitTime);
+//        // everything is OK, we can work with this agent
+//        LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+//                  << "] has succesfully connected. Startup time: " << m_startUpTime.count() << " sec.";
+//
+//        // replay on handshake in sync push, to preserver order of messages. Otherwise the replay could be send after
+//        // other requests are sent and other will be ignored by the agent as there were no handshake ok received yet.
+//        syncPushMsg<cmdREPLY_HANDSHAKE_OK>();
+//        pushMsg<cmdGET_UUID>();
+//        pushMsg<cmdGET_HOST_INFO>();
+//    }
+//    return true;
+//}
 
 bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment)
 {

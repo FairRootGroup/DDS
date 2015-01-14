@@ -26,13 +26,11 @@ namespace dds
     {
         cmdUNKNOWN = -1,
         cmdSHUTDOWN = 1,
-        cmdHANDSHAKE,                 // attachment: SVersionCmd
-        cmdHANDSHAKE_AGENT,           // attachment: SVersionCmd
-        cmdHANDSHAKE_KEY_VALUE_GUARD, // attachment: SVersionCmd
-        cmdSUBMIT,                    // attachment: SSubmitCmd
-        cmdSIMPLE_MSG,                // attachment: SSimpleMsgCmd
+        cmdHANDSHAKE,  // attachment: SVersionCmd
+        cmdSUBMIT,     // attachment: SSubmitCmd
+        cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
-        cmdREPLY_ERR_BAD_PROTOCOL_VERSION,
+        cmdREPLY_HANDSHAKE_ERR,
         cmdGET_HOST_INFO,
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
@@ -57,12 +55,12 @@ namespace dds
         { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
         { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
-        { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
-        { cmdHANDSHAKE_KEY_VALUE_GUARD, NAME_TO_STRING(cmdHANDSHAKE_KEY_VALUE_GUARD) },
+        //        { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
+        //        { cmdHANDSHAKE_KEY_VALUE_GUARD, NAME_TO_STRING(cmdHANDSHAKE_KEY_VALUE_GUARD) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
         { cmdSIMPLE_MSG, NAME_TO_STRING(cmdSIMPLE_MSG) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },
-        { cmdREPLY_ERR_BAD_PROTOCOL_VERSION, NAME_TO_STRING(cmdREPLY_ERR_BAD_PROTOCOL_VERSION) },
+        { cmdREPLY_HANDSHAKE_ERR, NAME_TO_STRING(cmdREPLY_HANDSHAKE_ERR) },
         { cmdGET_HOST_INFO, NAME_TO_STRING(cmdGET_HOST_INFO) },
         { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) },
         { cmdDISCONNECT, NAME_TO_STRING(cmdDISCONNECT) },

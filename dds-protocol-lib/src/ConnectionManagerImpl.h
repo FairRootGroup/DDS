@@ -272,10 +272,10 @@ namespace dds
             pThis->newClientCreated(newClient);
 
             // Subscribe on dissconnect event
-            newClient->registerDissconnectEventHandler([this](T* _channel) -> void
-                                                       {
-                                                           return this->removeClient(_channel);
-                                                       });
+            newClient->registerDisconnectEventHandler([this](T* _channel) -> void
+                                                      {
+                                                          return this->removeClient(_channel);
+                                                      });
 
             m_acceptor.async_accept(
                 newClient->socket(),
@@ -298,7 +298,7 @@ namespace dds
 
         void removeClient(T* _client)
         {
-            LOG(MiscCommon::debug) << "Removing " << _client->getTypeName() << " client from the list of active";
+            LOG(MiscCommon::debug) << "Removing " /*<< _client->getTypeName()*/ << " client from the list of active";
             std::lock_guard<std::mutex> lock(m_mutex);
             m_channels.erase(remove_if(m_channels.begin(),
                                        m_channels.end(),

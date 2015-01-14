@@ -39,6 +39,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
     // Create a message
     SVersionCmd ver_src;
     ver_src.m_version = 444;
+    ver_src.m_channelType = 2;
     MiscCommon::BYTEVector_t data;
     ver_src.convertToData(&data);
     CProtocolMessage msg_src;
@@ -64,41 +65,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
     ver_dest.convertFromData(msg_dest.bodyToContainer());
 
     BOOST_CHECK(ver_src == ver_dest);
-}
-
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE_AGENT)
-{
-    const unsigned int cmdSize = 10;
-
-    // Create a message
-    SHandShakeAgentCmd src;
-    src.m_version = 777;
-    src.m_submitTime = 0xFFFFFFFFFFFFFFFF; // unsigned long long
-    MiscCommon::BYTEVector_t data;
-    src.convertToData(&data);
-    CProtocolMessage msg_src;
-    msg_src.encode(cmdHANDSHAKE_AGENT, data);
-
-    BOOST_CHECK(msg_src.header().m_cmd == cmdHANDSHAKE_AGENT);
-
-    BOOST_CHECK(src.size() == cmdSize);
-
-    // "Send" message
-    CProtocolMessage msg_dest;
-    msg_dest.resize(msg_src.length()); // resize internal buffer to appropriate size.
-    memcpy(msg_dest.data(), msg_src.data(), msg_src.length());
-
-    // Decode the message
-    BOOST_CHECK(msg_dest.decode_header());
-
-    // Check that we got the proper command ID
-    BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
-
-    // Read the message
-    SHandShakeAgentCmd dest;
-    dest.convertFromData(msg_dest.bodyToContainer());
-
-    BOOST_CHECK(src == dest);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)

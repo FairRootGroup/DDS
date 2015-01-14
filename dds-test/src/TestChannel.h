@@ -5,15 +5,14 @@
 #ifndef __DDS__TestChannel__
 #define __DDS__TestChannel__
 // DDS
-#include "ConnectionImpl.h"
+#include "ClientChannelImpl.h"
 
 namespace dds
 {
-    class CTestChannel : public CConnectionImpl<CTestChannel>
+    class CTestChannel : public CClientChannelImpl<CTestChannel>
     {
         CTestChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CTestChannel>(_service)
-            , m_isHandShakeOK(false)
+            : CClientChannelImpl<CTestChannel>(_service, EChannelType::UI)
         {
         }
 
@@ -22,14 +21,12 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CTestChannel)
-        MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         END_MSG_MAP()
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
 
@@ -40,8 +37,8 @@ namespace dds
                                   << "] has closed the connection.";
         }
 
-      private:
-        bool m_isHandShakeOK;
+        void onHandshakeOK();
+        void onHandshakeERR();
     };
 }
 #endif /* defined(__DDS__TalkToAgent__) */

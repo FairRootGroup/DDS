@@ -7,11 +7,11 @@
 #define __DDS__CCommanderChannel__
 
 // DDS
-#include "ConnectionImpl.h"
+#include "ClientChannelImpl.h"
 
 namespace dds
 {
-    class CCommanderChannel : public CConnectionImpl<CCommanderChannel>
+    class CCommanderChannel : public CClientChannelImpl<CCommanderChannel>
     {
         typedef std::function<void(pid_t)> handlerOnNewUserTaks_t;
 
@@ -23,7 +23,6 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CCommanderChannel)
-        MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
         MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
@@ -60,6 +59,8 @@ namespace dds
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
         void onRemoteEndDissconnected();
+        void onHandshakeOK();
+        void onHandshakeERR();
 
       private:
         void readAgentUUIDFile();
@@ -67,7 +68,6 @@ namespace dds
         void deleteAgentUUIDFile() const;
 
       private:
-        bool m_isHandShakeOK;
         boost::uuids::uuid m_id;
         std::string m_sUsrExe;
         std::string m_sTaskId;

@@ -43,7 +43,7 @@ namespace dds
         boost::asio::io_service& m_service;
         boost::asio::signal_set m_signals;
         dds::SOptions_t m_options;
-        CCommanderChannel::connectionPtr_t m_agents;
+        CCommanderChannel::connectionPtr_t m_agent;
         childrenPidContainer_t m_children;
         std::mutex m_childrenContainerMutex;
         bool m_bStarted;

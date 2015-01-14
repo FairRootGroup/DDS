@@ -11,10 +11,8 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-bool CGenericChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
+void CGenericChannel::onHandshakeOK()
 {
-    m_isHandShakeOK = true;
-
     switch (m_options.m_agentCmd)
     {
         case EAgentCmdType::GETLOG:
@@ -34,8 +32,10 @@ bool CGenericChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_H
             LOG(log_stderr) << "Uknown command.";
             stop();
     }
+}
 
-    return true;
+void CGenericChannel::onHandshakeERR()
+{
 }
 
 bool CGenericChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

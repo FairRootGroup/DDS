@@ -10,13 +10,13 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-bool CTestChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
+void CTestChannel::onHandshakeOK()
 {
-    m_isHandShakeOK = true;
-
     pushMsg<cmdTRANSPORT_TEST>();
+}
 
-    return true;
+void CTestChannel::onHandshakeERR()
+{
 }
 
 bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

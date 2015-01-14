@@ -16,16 +16,18 @@ using namespace dds;
 using namespace std;
 
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
-    : CConnectionImpl<CAgentChannel>(_service)
+    : CClientChannelImpl<CAgentChannel>(_service, EChannelType::KEY_VALUE_GUARD)
 {
     m_mtxChannelReady.lock();
 }
 
-bool CAgentChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
+void CAgentChannel::onHandshakeOK()
 {
     m_mtxChannelReady.unlock();
-    //    m_isHandShakeOK = true;
-    return true;
+}
+
+void CAgentChannel::onHandshakeERR()
+{
 }
 
 bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
@@ -70,10 +72,8 @@ void CAgentChannel::onRemoteEndDissconnected()
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    LOG(debug) << "CAgentChannel::on_cmdUPDATE_KEY: start";
     if (m_syncHelper == nullptr)
         throw invalid_argument("syncHelper is NULL");
     m_syncHelper->m_updateSig(_attachment->m_sKey, _attachment->m_sValue);
-    LOG(debug) << "CAgentChannel::on_cmdUPDATE_KEY: end";
     return true;
 }

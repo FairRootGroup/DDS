@@ -1,0 +1,83 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
+
+#ifndef DDS_ServerChannelImpl_h
+#define DDS_ServerChannelImpl_h
+
+#include "BaseChannelImpl.h"
+
+namespace dds
+{
+    template <class T>
+    class CServerChannelImpl : public CBaseChannelImpl<T>
+    {
+      protected:
+        CServerChannelImpl<T>(boost::asio::io_service& _service, const channelTypeVector_t _requiredChannelTypes)
+            : CBaseChannelImpl<T>(_service)
+            , m_requiredChannelTypes(_requiredChannelTypes)
+        {
+            // Register handshake callback
+            std::function<bool(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment, CServerChannelImpl * _channel)>
+                funcHandshake =
+                    [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment, CServerChannelImpl* _channel)
+                        -> bool
+            {
+                // send shutdown if versions are incompatible
+                bool versionCompatible = m_requiredChannelTypes.empty();
+
+                if (!versionCompatible)
+                {
+                    for (const auto& v : m_requiredChannelTypes)
+                    {
+                        SVersionCmd versionCmd;
+                        versionCmd.m_channelType = v;
+                        versionCompatible = (*_attachment == versionCmd);
+                        if (versionCompatible)
+                            break;
+                    }
+                }
+
+                if (!versionCompatible)
+                {
+                    this->m_isHandshakeOK = false;
+                    this->m_channelType = EChannelType::UNKNOWN;
+                    // Send reply that the version of the protocol is incompatible
+                    LOG(MiscCommon::warning)
+                        << "Incompatible protocol version of the client: " << this->remoteEndIDString();
+                    this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>();
+
+                    // give a chance child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onHandshakeERR();
+                }
+                else
+                {
+                    this->m_isHandshakeOK = true;
+                    this->m_channelType = static_cast<EChannelType>(_attachment->m_channelType);
+                    // everything is OK, we can work with this agent
+                    LOG(MiscCommon::info) << "[" << this->socket().remote_endpoint().address().to_string()
+                                          << "] has successfully connected.";
+
+                    this->template pushMsg<cmdREPLY_HANDSHAKE_OK>();
+
+                    // give a chance child to execute something
+                    T* pThis = static_cast<T*>(this);
+                    pThis->onHandshakeOK();
+                }
+                return true;
+            };
+            this->template registerMessageHandler<cmdHANDSHAKE>(funcHandshake);
+        }
+
+        ~CServerChannelImpl<T>()
+        {
+        }
+
+      private:
+        channelTypeVector_t m_requiredChannelTypes;
+    };
+}
+
+#endif

@@ -27,17 +27,17 @@ using namespace std;
 namespace fs = boost::filesystem;
 
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
-    : CConnectionImpl<CCommanderChannel>(_service)
-    , m_isHandShakeOK(false)
+    : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
     , m_id()
 {
 }
 
-bool CCommanderChannel::on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment)
+void CCommanderChannel::onHandshakeOK()
 {
-    m_isHandShakeOK = true;
+}
 
-    return true;
+void CCommanderChannel::onHandshakeERR()
+{
 }
 
 bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

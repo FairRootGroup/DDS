@@ -62,11 +62,12 @@ int main(int argc, char* argv[])
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
         CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
-        client->connect(iterator);
 
         client->setTopoFile(options.m_sTopoFile);
         client->setSSHCfgFile(options.m_sSSHCfgFile);
         client->setRMSTypeCode(options.m_RMS);
+
+        client->connect(iterator);
 
         io_service.run();
     }

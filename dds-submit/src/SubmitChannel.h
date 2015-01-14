@@ -6,15 +6,14 @@
 #ifndef __DDS__SubmitChannel__
 #define __DDS__SubmitChannel__
 // DDS
-#include "ConnectionImpl.h"
+#include "ClientChannelImpl.h"
 
 namespace dds
 {
-    class CSubmitChannel : public CConnectionImpl<CSubmitChannel>
+    class CSubmitChannel : public CClientChannelImpl<CSubmitChannel>
     {
         CSubmitChannel(boost::asio::io_service& _service)
-            : CConnectionImpl<CSubmitChannel>(_service)
-            , m_isHandShakeOK(false)
+            : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI)
             , m_RMS(SSubmitCmd::UNKNOWN)
         {
         }
@@ -23,7 +22,6 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CSubmitChannel)
-        MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK, on_cmdREPLY_HANDSHAKE_OK)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         END_MSG_MAP()
@@ -35,7 +33,6 @@ namespace dds
 
       private:
         // Message Handlers
-        bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         // On connection handles
@@ -56,8 +53,10 @@ namespace dds
         {
         }
 
+        void onHandshakeOK();
+        void onHandshakeERR();
+
       private:
-        bool m_isHandShakeOK;
         std::string m_sTopoFile;
         std::string m_sSSHCfgFile;
         SSubmitCmd::ERmsType m_RMS;
