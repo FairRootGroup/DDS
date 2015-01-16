@@ -72,8 +72,8 @@ namespace dds
                                                            vm.end(),
                                                            [](const bpo::variables_map::value_type& _v)
                                                            {
-            return (!_v.second.defaulted());
-        });
+                                                               return (!_v.second.defaulted());
+                                                           });
 
         if (vm.count("help") || vm.end() == found)
         {

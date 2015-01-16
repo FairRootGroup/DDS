@@ -68,8 +68,8 @@ namespace dds
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
                                                     {
-                    LOG(MiscCommon::info) << "Idle callback called";
-                });
+                                                        LOG(MiscCommon::info) << "Idle callback called";
+                                                    });
                 m_acceptor.listen();
 
                 createClientAndStartAccept();
@@ -274,8 +274,8 @@ namespace dds
             // Subscribe on dissconnect event
             newClient->registerDissconnectEventHandler([this](T* _channel) -> void
                                                        {
-                return this->removeClient(_channel);
-            });
+                                                           return this->removeClient(_channel);
+                                                       });
 
             m_acceptor.async_accept(
                 newClient->socket(),
@@ -300,13 +300,12 @@ namespace dds
         {
             LOG(MiscCommon::debug) << "Removing " << _client->getTypeName() << " client from the list of active";
             std::lock_guard<std::mutex> lock(m_mutex);
-            m_channels.erase(remove_if(
-                                 m_channels.begin(),
-                                 m_channels.end(),
-                                 [&](typename T::connectionPtr_t& i)
-                                 {
-                                     return (i.get() == _client);
-                                 }),
+            m_channels.erase(remove_if(m_channels.begin(),
+                                       m_channels.end(),
+                                       [&](typename T::connectionPtr_t& i)
+                                       {
+                                           return (i.get() == _client);
+                                       }),
                              m_channels.end());
         }
 

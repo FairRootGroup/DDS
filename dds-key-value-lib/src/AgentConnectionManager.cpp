@@ -62,8 +62,8 @@ void CAgentConnectionManager::start()
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
                                             {
-            LOG(info) << "Idle callback called";
-        });
+                                                LOG(info) << "Idle callback called";
+                                            });
 
         // Read server info file
         const string sSrvCfg(CUserDefaults::instance().getAgentInfoFileLocation());
@@ -99,19 +99,19 @@ void CAgentConnectionManager::start()
                                    endpoint_iterator,
                                    [this](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
-            if (!ec)
-            {
-                // Create handshake message which is the first one for all agents
-                SVersionCmd ver;
-                m_channel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
-                m_channel->m_syncHelper = m_syncHelper;
-                m_channel->start();
-            }
-            else
-            {
-                LOG(fatal) << "Cannot connect to DDS agent: " << ec.message();
-            }
-        });
+                                       if (!ec)
+                                       {
+                                           // Create handshake message which is the first one for all agents
+                                           SVersionCmd ver;
+                                           m_channel->pushMsg<cmdHANDSHAKE_KEY_VALUE_GUARD>(ver);
+                                           m_channel->m_syncHelper = m_syncHelper;
+                                           m_channel->start();
+                                       }
+                                       else
+                                       {
+                                           LOG(fatal) << "Cannot connect to DDS agent: " << ec.message();
+                                       }
+                                   });
 
         // Don't block main thread, start transport service on a thread-pool
         const int nConcurrentThreads(2);

@@ -66,8 +66,8 @@ void CAgentConnectionManager::start()
         CMonitoringThread::instance().start(maxIdleTime,
                                             []()
                                             {
-            LOG(info) << "Idle callback called";
-        });
+                                                LOG(info) << "Idle callback called";
+                                            });
 
         // Read server info file
         const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocation());
@@ -133,33 +133,34 @@ void CAgentConnectionManager::start()
                                    endpoint_iterator,
                                    [this](boost::system::error_code ec, tcp::resolver::iterator)
                                    {
-            if (!ec)
-            {
-                // Create handshake message which is the first one for all agents
-                SHandShakeAgentCmd handShake;
-                // get submit time
-                string sSubmitTime;
-                char* pchSubmitTime;
-                pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
-                if (NULL != pchSubmitTime)
-                {
-                    sSubmitTime.assign(pchSubmitTime);
-                    handShake.m_submitTime = stoll(sSubmitTime);
-                }
+                                       if (!ec)
+                                       {
+                                           // Create handshake message which is the first one for all agents
+                                           SHandShakeAgentCmd handShake;
+                                           // get submit time
+                                           string sSubmitTime;
+                                           char* pchSubmitTime;
+                                           pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
+                                           if (NULL != pchSubmitTime)
+                                           {
+                                               sSubmitTime.assign(pchSubmitTime);
+                                               handShake.m_submitTime = stoll(sSubmitTime);
+                                           }
 
-                m_agents->pushMsg<cmdHANDSHAKE_AGENT>(handShake);
-                m_agents->start();
+                                           m_agents->pushMsg<cmdHANDSHAKE_AGENT>(handShake);
+                                           m_agents->start();
 
-                // Start the UI agent server
-                m_UIConnectionMng = make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
-                m_UIConnectionMng->setCommanderChannel(m_agents);
-                m_UIConnectionMng->start(false, 2);
-            }
-            else
-            {
-                LOG(fatal) << "Cannot connect to server: " << ec.message();
-            }
-        });
+                                           // Start the UI agent server
+                                           m_UIConnectionMng =
+                                               make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
+                                           m_UIConnectionMng->setCommanderChannel(m_agents);
+                                           m_UIConnectionMng->start(false, 2);
+                                       }
+                                       else
+                                       {
+                                           LOG(fatal) << "Cannot connect to server: " << ec.message();
+                                       }
+                                   });
 
         const int nConcurrentThreads(2);
         LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
@@ -297,42 +298,43 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
         m_children.push_back(_pid);
     }
     // Register the user task's watchdog
-    CMonitoringThread::instance().registerCallbackFunction([this, _pid]() -> bool
-                                                           {
-        if (!IsProcessExist(_pid))
+    CMonitoringThread::instance().registerCallbackFunction(
+        [this, _pid]() -> bool
         {
-            LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
-            LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+            if (!IsProcessExist(_pid))
+            {
+                LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
+                LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
-            std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
-            m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
-            return false;
-        }
+                std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+                m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+                return false;
+            }
 
-        // We must call "wait" to check exist status of a child process, otherwise we will crate a zombie :)
-        int status;
-        if (_pid == ::waitpid(_pid, &status, WNOHANG))
-        {
-            if (WIFEXITED(status))
-                LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
-                          << WEXITSTATUS(status);
-            else if (WIFSTOPPED(status))
-                LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
-            else if (WIFSIGNALED(status))
-                LOG(info) << "User task killed by signal " << WTERMSIG(status)
-                          << (WCOREDUMP(status) ? "; (core dumped)" : "");
-            else
-                LOG(info) << "User task exited with unexpected status: " << status;
+            // We must call "wait" to check exist status of a child process, otherwise we will crate a zombie :)
+            int status;
+            if (_pid == ::waitpid(_pid, &status, WNOHANG))
+            {
+                if (WIFEXITED(status))
+                    LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
+                              << WEXITSTATUS(status);
+                else if (WIFSTOPPED(status))
+                    LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
+                else if (WIFSIGNALED(status))
+                    LOG(info) << "User task killed by signal " << WTERMSIG(status)
+                              << (WCOREDUMP(status) ? "; (core dumped)" : "");
+                else
+                    LOG(info) << "User task exited with unexpected status: " << status;
 
-            LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+                LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
-            // remove pid from the active children list
-            std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
-            m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+                // remove pid from the active children list
+                std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+                m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
 
-            return false;
-        }
+                return false;
+            }
 
-        return true;
-    });
+            return true;
+        });
 }

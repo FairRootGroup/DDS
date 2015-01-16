@@ -565,63 +565,64 @@ namespace dds
                                        _endpoint_iterator,
                                        [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
                                        {
-                if (!ec)
-                {
-                    // give a chance child to execute something
-                    T* pThis = static_cast<T*>(this);
-                    pThis->onConnected();
+                                           if (!ec)
+                                           {
+                                               // give a chance child to execute something
+                                               T* pThis = static_cast<T*>(this);
+                                               pThis->onConnected();
 
-                    // start the communication channel
-                    start();
+                                               // start the communication channel
+                                               start();
 
-                    // Prepare a hand shake message
-                    SVersionCmd cmd;
-                    pushMsg<cmdHANDSHAKE>(cmd);
-                }
-                else
-                {
-                    // give a chance child to execute something
-                    T* pThis = static_cast<T*>(this);
-                    pThis->onFailedToConnect();
-                }
-            });
+                                               // Prepare a hand shake message
+                                               SVersionCmd cmd;
+                                               pushMsg<cmdHANDSHAKE>(cmd);
+                                           }
+                                           else
+                                           {
+                                               // give a chance child to execute something
+                                               T* pThis = static_cast<T*>(this);
+                                               pThis->onFailedToConnect();
+                                           }
+                                       });
         }
 
         void readHeader()
         {
-            boost::asio::async_read(m_socket,
-                                    boost::asio::buffer(m_currentMsg->data(), CProtocolMessage::header_length),
-                                    [this](boost::system::error_code ec, std::size_t length)
-                                    {
-                if (!ec)
+            boost::asio::async_read(
+                m_socket,
+                boost::asio::buffer(m_currentMsg->data(), CProtocolMessage::header_length),
+                [this](boost::system::error_code ec, std::size_t length)
                 {
-                    LOG(MiscCommon::debug) << "Received message HEADER from " << remoteEndIDString() << ": " << length
-                                           << " bytes, expected " << CProtocolMessage::header_length;
-                }
-                if (!ec && m_currentMsg->decode_header())
-                {
-                    //                    // give a chance to child to execute something
-                    //                    T* pThis = static_cast<T*>(this);
-                    //                    pThis->onHeaderRead();
+                    if (!ec)
+                    {
+                        LOG(MiscCommon::debug) << "Received message HEADER from " << remoteEndIDString() << ": "
+                                               << length << " bytes, expected " << CProtocolMessage::header_length;
+                    }
+                    if (!ec && m_currentMsg->decode_header())
+                    {
+                        //                    // give a chance to child to execute something
+                        //                    T* pThis = static_cast<T*>(this);
+                        //                    pThis->onHeaderRead();
 
-                    // If the header is ok, receive the body of the message
-                    readBody();
-                }
-                else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
-                {
-                    onDissconnect();
-                }
-                else
-                {
-                    if (m_started)
-                        LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
+                        // If the header is ok, receive the body of the message
+                        readBody();
+                    }
+                    else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
+                    {
+                        onDissconnect();
+                    }
                     else
-                        LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                 "closing the connection: " << ec.message();
+                    {
+                        if (m_started)
+                            LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
+                        else
+                            LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                     "closing the connection: " << ec.message();
 
-                    stop();
-                }
-            });
+                        stop();
+                    }
+                });
         }
 
         void readBody()
@@ -639,37 +640,38 @@ namespace dds
                 return;
             }
 
-            boost::asio::async_read(m_socket,
-                                    boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
-                                    [this](boost::system::error_code ec, std::size_t length)
-                                    {
-                if (!ec)
+            boost::asio::async_read(
+                m_socket,
+                boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
+                [this](boost::system::error_code ec, std::size_t length)
                 {
-                    LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString() << " (" << length
-                                           << " bytes): " << m_currentMsg->toString();
+                    if (!ec)
+                    {
+                        LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString() << " (" << length
+                                               << " bytes): " << m_currentMsg->toString();
 
-                    // process received message
-                    T* pThis = static_cast<T*>(this);
-                    pThis->processMessage(m_currentMsg);
-                    // Read next message
-                    m_currentMsg->clear();
-                    readHeader();
-                }
-                else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
-                {
-                    onDissconnect();
-                }
-                else
-                {
-                    // don't show error if service is closed
-                    if (m_started)
-                        LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
+                        // process received message
+                        T* pThis = static_cast<T*>(this);
+                        pThis->processMessage(m_currentMsg);
+                        // Read next message
+                        m_currentMsg->clear();
+                        readHeader();
+                    }
+                    else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
+                    {
+                        onDissconnect();
+                    }
                     else
-                        LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                 "closing the connection: " << ec.message();
-                    stop();
-                }
-            });
+                    {
+                        // don't show error if service is closed
+                        if (m_started)
+                            LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
+                        else
+                            LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                     "closing the connection: " << ec.message();
+                        stop();
+                    }
+                });
         }
 
       private:
@@ -697,49 +699,51 @@ namespace dds
                 m_writeMsgQueue.pop_front();
             }
 
-            boost::asio::async_write(m_socket,
-                                     m_writeMsgBuffer,
-                                     [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
-                                     {
-                if (!_ec)
+            boost::asio::async_write(
+                m_socket,
+                m_writeMsgBuffer,
+                [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                 {
-                    LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
-                                           << _bytesTransferred << " bytes)";
-
-                    // lock the modification of the container
-                    std::unique_lock<std::mutex> lock(m_mutex);
-                    m_writeMsgBuffer.clear();
-                    m_writeMsgBufferQueue.clear();
-
-                    // process next message if the queue is not empty
-                    if (!m_writeMsgQueue.empty())
+                    if (!_ec)
                     {
-                        lock.unlock(); // avoid to dead-lock
-                        writeMessage();
+                        LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
+                                               << _bytesTransferred << " bytes)";
+
+                        // lock the modification of the container
+                        std::unique_lock<std::mutex> lock(m_mutex);
+                        m_writeMsgBuffer.clear();
+                        m_writeMsgBufferQueue.clear();
+
+                        // process next message if the queue is not empty
+                        if (!m_writeMsgQueue.empty())
+                        {
+                            lock.unlock(); // avoid to dead-lock
+                            writeMessage();
+                        }
+                        else
+                        {
+                            // We need to make sure that write is not called from different threads.
+                            // Only one write at time is allowed by asio.
+                            // We therefore notify syncWrite about a chance to write
+                            m_cvReadyToWrite.notify_all();
+                        }
+                    }
+                    else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
+                    {
+                        onDissconnect();
                     }
                     else
                     {
-                        // We need to make sure that write is not called from different threads.
-                        // Only one write at time is allowed by asio.
-                        // We therefore notify syncWrite about a chance to write
-                        m_cvReadyToWrite.notify_all();
+                        // don't show error if service is closed
+                        if (m_started)
+                            LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": "
+                                                   << _ec.message();
+                        else
+                            LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                     "closing the connection: " << _ec.message();
+                        stop();
                     }
-                }
-                else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
-                {
-                    onDissconnect();
-                }
-                else
-                {
-                    // don't show error if service is closed
-                    if (m_started)
-                        LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
-                    else
-                        LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                 "closing the connection: " << _ec.message();
-                    stop();
-                }
-            });
+                });
         }
 
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)

@@ -135,15 +135,15 @@ CTopology::TaskIteratorPair_t CTopology::getTaskIteratorForPropertyId(const std:
 {
     return getTaskIterator([&_propertyId](CTopology::TaskIterator_t::value_type value) -> bool
                            {
-        TaskPtr_t task = value.second;
-        const TopoPropertyPtrVector_t& properties = task->getProperties();
-        for (const auto& v : properties)
-        {
-            if (v->getId() == _propertyId)
-                return true;
-        }
-        return false;
-    });
+                               TaskPtr_t task = value.second;
+                               const TopoPropertyPtrVector_t& properties = task->getProperties();
+                               for (const auto& v : properties)
+                               {
+                                   if (v->getId() == _propertyId)
+                                       return true;
+                               }
+                               return false;
+                           });
 }
 
 void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)
