@@ -473,12 +473,22 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
                 continue;
             auto ptr = v.lock();
 
+            string sTaskName("no task is assigned");
+            if (ptr->getTaskID() > 0)
+            {
+                TaskPtr_t task = m_topo.getTaskByHash(ptr->getTaskID());
+                stringstream ssTaskString;
+                ssTaskString << ptr->getTaskID() << " (" << task->getId() << ")";
+                sTaskName = ssTaskString.str();
+            }
+
             ++cmd.m_nActiveAgents;
             ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
                << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
                << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
                << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
-               << "\nAgent startup time: " << ptr->getStartupTime().count() << " sec.\n";
+               << "\nAgent startup time: " << ptr->getStartupTime().count() << " sec."
+               << "\nTask ID: " << sTaskName << "\n";
         }
         cmd.m_sListOfAgents = ss.str();
 

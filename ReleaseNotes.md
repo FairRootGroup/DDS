@@ -22,6 +22,9 @@ Added: shared memory storage for key-value. (GH-35)
 ### dds-protocol-lib
 Modified: The DDS transport learned to accumulate commands before sending, instead of sending them one by one. (GH-38)   
 
+### dds-info
+dds-info: Add taskId and task name to console output (dds-info -l). (GH-33)    
+
 ## v0.6 (2014-12-05)
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   
