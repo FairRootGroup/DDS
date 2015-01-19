@@ -116,6 +116,13 @@ namespace MiscCommon
                 add_file_log(keywords::file_name = sLogFile,
                              keywords::open_mode = (std::ios::out | std::ios::app),
                              keywords::rotation_size = rotationSize * 1024 * 1024,
+                             // rotate at midnight every day
+                             keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
+                             // log collector,
+                             // -- maximum total size of the stored log files is 1GB.
+                             // -- minimum free space on the drive is 2GB
+                             keywords::max_size = 1000 * 1024 * 1024,
+                             keywords::min_free_space = 2000 * 1024 * 1024,
                              keywords::auto_flush = true);
 
             fileSink->set_formatter(formatter);

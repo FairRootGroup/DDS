@@ -279,7 +279,7 @@ string CUserDefaults::getLogFile() const
     string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
     smart_append<std::string>(&sLogDir, '/');
     std::string sLogFile(sLogDir);
-    sLogFile += "dds_%N.log";
+    sLogFile += "dds_%Y-%m-%d.%N.log";
     smart_path<std::string>(&sLogFile);
     return sLogFile;
 }
