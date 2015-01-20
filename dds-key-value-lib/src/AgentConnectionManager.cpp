@@ -164,22 +164,10 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
 
 int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
 {
-    // TODO: the push should not be processed before handshake is confirmed (see GH-37)
     try
     {
-        // try 100 times for 100 ms each
-        const std::chrono::milliseconds interval(100);
-        for (unsigned short i = 0; i < 100; ++i)
-        {
-            if (m_channel && m_channel->m_mtxChannelReady.try_lock())
-            {
-                m_channel->pushMsg<cmdUPDATE_KEY>(_cmd);
-                m_channel->m_mtxChannelReady.unlock();
-                return 0;
-            }
-            else
-                this_thread::sleep_for(interval);
-        }
+        m_channel->pushMsg<cmdUPDATE_KEY>(_cmd);
+        return 0;
     }
     catch (const exception& _e)
     {

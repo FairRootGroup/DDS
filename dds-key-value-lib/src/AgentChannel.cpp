@@ -18,12 +18,10 @@ using namespace std;
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::KEY_VALUE_GUARD)
 {
-    m_mtxChannelReady.lock();
 }
 
 void CAgentChannel::onHandshakeOK()
 {
-    m_mtxChannelReady.unlock();
 }
 
 void CAgentChannel::onHandshakeERR()

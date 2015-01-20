@@ -26,7 +26,6 @@ namespace dds
 
       public:
         SSyncHelper* m_syncHelper;
-        std::mutex m_mtxChannelReady;
 
       private:
         CAgentChannel(boost::asio::io_service& _service);

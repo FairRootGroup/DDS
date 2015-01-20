@@ -29,7 +29,12 @@ namespace dds
                 [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment, CClientChannelImpl* _channel)
                     -> bool
             {
+                LOG(MiscCommon::info) << "Successfull handshake";
+
                 this->m_isHandshakeOK = true;
+
+                // The following commands starts message processing which might be queued before.
+                this->template pushMsg<cmdUNKNOWN>(true);
 
                 // give a chance child to execute something
                 T* pThis = static_cast<T*>(this);
@@ -49,6 +54,8 @@ namespace dds
                 [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment, CClientChannelImpl* _channel)
                     -> bool
             {
+                LOG(MiscCommon::info) << "Handshake failed";
+
                 this->m_isHandshakeOK = false;
                 this->m_channelType = EChannelType::UNKNOWN;
 
