@@ -32,7 +32,9 @@ set( SOURCE_FILES
 set( SRC_HDRS
 	./src/ProtocolCommands.h
 	./src/ProtocolMessage.h
-	./src/ConnectionImpl.h
+	./src/BaseChannelImpl.h
+	./src/ClientChannelImpl.h
+	./src/ServerChannelImpl.h
 	./src/CommandAttachmentImpl.h
 	./src/ConnectionManagerImpl.h
 	./src/BasicCmd.h

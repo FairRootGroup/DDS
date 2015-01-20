@@ -34,7 +34,7 @@ namespace dds
                 this->m_isHandshakeOK = true;
 
                 // The following commands starts message processing which might be queued before.
-                this->template pushMsg<cmdUNKNOWN>(true);
+                this->template pushMsg<cmdUNKNOWN>();
 
                 // give a chance child to execute something
                 T* pThis = static_cast<T*>(this);

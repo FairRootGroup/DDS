@@ -285,16 +285,13 @@ namespace dds
             return m_socket;
         }
 
-        bool isWriteInProgress(bool _forceUnlockProcessing = false) const
+        bool isWriteInProgress() const
         {
-            if (!_forceUnlockProcessing)
-                return (!m_writeMsgBufferQueue.empty() || !m_writeMsgQueue.empty());
-            else
-                return !m_writeMsgBufferQueue.empty();
+            return (!m_writeMsgBufferQueue.empty() || !m_writeMsgQueue.empty());
         }
 
         template <ECmdType _cmd, class A>
-        void pushMsg(const A& _attachment, bool _forceUnlockProcessing = false)
+        void pushMsg(const A& _attachment)
         {
             CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
 
@@ -305,26 +302,39 @@ namespace dds
                 // Do not execute writeMessage if older messages are being processed.
                 // We must not register more, than async_write in the same time (different threads).
                 // Only one async_write is allowed at time per socket to avoid messages corruption.
-                bWriteInProgress = isWriteInProgress(_forceUnlockProcessing);
-                if (cmdUNKNOWN != _cmd)
+                bWriteInProgress = isWriteInProgress();
+                // Prioretize important messages.
+                if (!m_isHandshakeOK)
                 {
-                    m_writeMsgQueue.push_back(msg);
-                    LOG(MiscCommon::debug) << "MESSAGE QUEUE SIZE = " << m_writeMsgQueue.size()
-                                           << "; SENDING BUFFER SIZE = " << m_writeMsgBufferQueue.size();
-                    LOG(MiscCommon::debug)
-                        << "pushMsg: "
-                        << (bWriteInProgress ? "buffer messages, while sending is still in progress" : "will send");
+                    if (isCmdAllowedWithoutHandshake(_cmd))
+                        m_writeMsgQueue.push_back(msg);
+                    else
+                        m_writeMsgQueueBeforeHandShake.push_back(msg);
                 }
+                else
+                {
+                    // copy the buffered queue, which has been collected before hand-shake
+                    if (!m_writeMsgQueueBeforeHandShake.empty())
+                    {
+                        std::copy(m_writeMsgQueueBeforeHandShake.begin(),
+                                  m_writeMsgQueueBeforeHandShake.end(),
+                                  back_inserter(m_writeMsgQueue));
+                        m_writeMsgQueueBeforeHandShake.clear();
+                    }
+
+                    // add the current message to the queue
+                    if (cmdUNKNOWN != _cmd)
+                        m_writeMsgQueue.push_back(msg);
+                }
+
+                LOG(MiscCommon::debug) << "MESSAGE QUEUE SIZE = " << m_writeMsgQueue.size()
+                                       << "; SENDING BUFFER SIZE = " << m_writeMsgBufferQueue.size();
+                LOG(MiscCommon::debug) << "pushMsg: " << (bWriteInProgress
+                                                              ? "buffer messages, while sending is still in progress"
+                                                              : "will send");
             }
 
-            LOG(MiscCommon::debug) << "BaseChannelImpl::pushMsg bwriteInProgress=" << bWriteInProgress
-                                   << " m_isHandshakeOK=" << m_isHandshakeOK
-                                   << " isCmdAllowedWithoutHandshake(_cmd)=" << isCmdAllowedWithoutHandshake(_cmd)
-                                   << " condition="
-                                   << (!bWriteInProgress && (m_isHandshakeOK || isCmdAllowedWithoutHandshake(_cmd)))
-                                   << " cmd=" << _cmd;
-
-            if (!bWriteInProgress && (m_isHandshakeOK || isCmdAllowedWithoutHandshake(_cmd)))
+            if (!bWriteInProgress)
             {
                 // We need to make sure that write is not called from different threads.
                 // Only one write at time is allowed by asio.
@@ -337,10 +347,10 @@ namespace dds
         }
 
         template <ECmdType _cmd>
-        void pushMsg(bool _forceUnlockProcessing = false)
+        void pushMsg()
         {
             SEmptyCmd cmd;
-            pushMsg<_cmd>(cmd, _forceUnlockProcessing);
+            pushMsg<_cmd>(cmd);
         }
 
         template <ECmdType _cmd, class A>
@@ -752,15 +762,18 @@ namespace dds
                         LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
                                                << _bytesTransferred << " bytes)";
 
-                        // lock the modification of the container
-                        std::unique_lock<std::mutex> lock(m_mutex);
-                        m_writeMsgBuffer.clear();
-                        m_writeMsgBufferQueue.clear();
+                        bool bNeedToSendMore(false);
+                        {
+                            // lock the modification of the container
+                            std::lock_guard<std::mutex> lock(m_mutex);
+                            bNeedToSendMore = !m_writeMsgQueue.empty();
+                            m_writeMsgBuffer.clear();
+                            m_writeMsgBufferQueue.clear();
+                        }
 
                         // process next message if the queue is not empty
-                        if (!m_writeMsgQueue.empty())
+                        if (bNeedToSendMore)
                         {
-                            lock.unlock(); // avoid to dead-lock
                             writeMessage();
                         }
                         else
@@ -792,8 +805,7 @@ namespace dds
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
             std::unique_lock<std::mutex> lock(m_mutex);
-            while (isWriteInProgress() || !m_isHandshakeOK ||
-                   !isCmdAllowedWithoutHandshake(static_cast<ECmdType>(_msg->header().m_cmd)))
+            while (isWriteInProgress())
                 m_cvReadyToWrite.wait(lock);
 
             LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
@@ -866,6 +878,7 @@ namespace dds
         boost::asio::ip::tcp::socket m_socket;
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
+        protocolMessagePtrQueue_t m_writeMsgQueueBeforeHandShake;
         protocolMessagePtrQueue_t m_writeMsgQueue;
         protocolMessageBuffer_t m_writeMsgBuffer;
         protocolMessagePtrQueue_t m_writeMsgBufferQueue;

@@ -58,7 +58,7 @@ namespace dds
                     this->m_channelType = static_cast<EChannelType>(_attachment->m_channelType);
 
                     // The following commands starts message processing which might be queued before.
-                    this->template pushMsg<cmdUNKNOWN>(true);
+                    this->template pushMsg<cmdUNKNOWN>();
 
                     // everything is OK, we can work with this agent
                     LOG(MiscCommon::info) << "[" << this->socket().remote_endpoint().address().to_string()
