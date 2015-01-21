@@ -285,65 +285,43 @@ namespace dds
             return m_socket;
         }
 
-        bool isWriteInProgress() const
-        {
-            return (!m_writeMsgBufferQueue.empty() || !m_writeMsgQueue.empty());
-        }
-
         template <ECmdType _cmd, class A>
         void pushMsg(const A& _attachment)
         {
             CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
 
-            bool bWriteInProgress(true);
+            std::lock_guard<std::mutex> lock(m_mutexWriteQueue);
+            if (!m_isHandshakeOK)
             {
-                // it can be called from multiple IO threads
-                std::lock_guard<std::mutex> lock(m_mutex);
-                // Do not execute writeMessage if older messages are being processed.
-                // We must not register more, than async_write in the same time (different threads).
-                // Only one async_write is allowed at time per socket to avoid messages corruption.
-                bWriteInProgress = isWriteInProgress();
-                // Prioretize important messages.
-                if (!m_isHandshakeOK)
-                {
-                    if (isCmdAllowedWithoutHandshake(_cmd))
-                        m_writeMsgQueue.push_back(msg);
-                    else
-                        m_writeMsgQueueBeforeHandShake.push_back(msg);
-                }
+                if (isCmdAllowedWithoutHandshake(_cmd))
+                    m_writeQueue.push_back(msg);
                 else
+                    m_writeQueueBeforeHandShake.push_back(msg);
+            }
+            else
+            {
+                // copy the buffered queue, which has been collected before hand-shake
+                if (!m_writeQueueBeforeHandShake.empty())
                 {
-                    // copy the buffered queue, which has been collected before hand-shake
-                    if (!m_writeMsgQueueBeforeHandShake.empty())
-                    {
-                        std::copy(m_writeMsgQueueBeforeHandShake.begin(),
-                                  m_writeMsgQueueBeforeHandShake.end(),
-                                  back_inserter(m_writeMsgQueue));
-                        m_writeMsgQueueBeforeHandShake.clear();
-                    }
-
-                    // add the current message to the queue
-                    if (cmdUNKNOWN != _cmd)
-                        m_writeMsgQueue.push_back(msg);
+                    std::copy(m_writeQueueBeforeHandShake.begin(),
+                              m_writeQueueBeforeHandShake.end(),
+                              back_inserter(m_writeQueue));
+                    m_writeQueueBeforeHandShake.clear();
                 }
 
-                LOG(MiscCommon::debug) << "MESSAGE QUEUE SIZE = " << m_writeMsgQueue.size()
-                                       << "; SENDING BUFFER SIZE = " << m_writeMsgBufferQueue.size();
-                LOG(MiscCommon::debug) << "pushMsg: " << (bWriteInProgress
-                                                              ? "buffer messages, while sending is still in progress"
-                                                              : "will send");
+                // add the current message to the queue
+                if (cmdUNKNOWN != _cmd)
+                    m_writeQueue.push_back(msg);
             }
 
-            if (!bWriteInProgress)
-            {
-                // We need to make sure that write is not called from different threads.
-                // Only one write at time is allowed by asio.
-                // We therefore notify syncWrite about a chance to write
-                m_cvReadyToWrite.notify_all();
+            LOG(MiscCommon::debug) << "pushMsg: WriteQueue size = " << m_writeQueue.size()
+                                   << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size();
 
-                // process standard async writing
-                writeMessage();
-            }
+            // process standard async writing
+            m_io_service.post([this]
+                              {
+                                  writeMessage();
+                              });
         }
 
         template <ECmdType _cmd>
@@ -724,37 +702,33 @@ namespace dds
             // To avoid sending of a bunch of small messages, we pack as many messages as possible into one write
             // request (GH-38).
             // Copy messages from the queue to send buffer (which should remain until the write handler is called)
-            size_t nMsgSize(0);
-            while (nMsgSize < 20000) // TODO: fix the "magic" size of the buffer (so far we sent a max ~20 KB message)
+            std::lock_guard<std::mutex> lockWriteBuffer(m_mutexWriteBuffer);
+            if (!m_writeBuffer.empty())
+                return; // a write is in progress, don't start anything
+
+            std::lock_guard<std::mutex> lockWriteQueue(m_mutexWriteQueue);
+            if (m_writeQueue.empty())
             {
-                std::lock_guard<std::mutex> lock(m_mutex);
-                if (m_writeMsgQueue.empty())
-                    break;
-
-                LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString()
-                                       << " a message: " << m_writeMsgQueue.front()->toString();
-
-                nMsgSize += m_writeMsgQueue.front()->length();
-
-                m_writeMsgBuffer.push_back(
-                    boost::asio::buffer(m_writeMsgQueue.front()->data(), m_writeMsgQueue.front()->length()));
-                m_writeMsgBufferQueue.push_back(m_writeMsgQueue.front());
-
-                m_writeMsgQueue.pop_front();
+                // There is nothing to send.
+                //
+                // We need to make sure that write is not called from different threads.
+                // Only one write at time is allowed by asio.
+                // We therefore notify syncWrite about a chance to write
+                m_cvReadyToWrite.notify_all();
+                return;
             }
 
-            LOG(MiscCommon::debug) << "BaseChannelImpl::pushMsg before async_write: m_writeMsgBuffer.size()="
-                                   << m_writeMsgBuffer.size();
-
-            if (m_writeMsgBuffer.empty())
-                return;
-
-            LOG(MiscCommon::debug) << "BaseChannelImpl::pushMsg call async_write: m_writeMsgBuffer.size()="
-                                   << m_writeMsgBuffer.size();
+            for (auto i : m_writeQueue)
+            {
+                LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << " a message: " << i->toString();
+                m_writeBuffer.push_back(boost::asio::buffer(i->data(), i->length()));
+                m_writeBufferQueue.push_back(i);
+            }
+            m_writeQueue.clear();
 
             boost::asio::async_write(
                 m_socket,
-                m_writeMsgBuffer,
+                m_writeBuffer,
                 [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                 {
                     if (!_ec)
@@ -762,27 +736,14 @@ namespace dds
                         LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
                                                << _bytesTransferred << " bytes)";
 
-                        bool bNeedToSendMore(false);
+                        // lock the modification of the container
                         {
-                            // lock the modification of the container
-                            std::lock_guard<std::mutex> lock(m_mutex);
-                            bNeedToSendMore = !m_writeMsgQueue.empty();
-                            m_writeMsgBuffer.clear();
-                            m_writeMsgBufferQueue.clear();
+                            std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+                            m_writeBuffer.clear();
+                            m_writeBufferQueue.clear();
                         }
-
-                        // process next message if the queue is not empty
-                        if (bNeedToSendMore)
-                        {
-                            writeMessage();
-                        }
-                        else
-                        {
-                            // We need to make sure that write is not called from different threads.
-                            // Only one write at time is allowed by asio.
-                            // We therefore notify syncWrite about a chance to write
-                            m_cvReadyToWrite.notify_all();
-                        }
+                        // we might need to send more messages
+                        writeMessage();
                     }
                     else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                     {
@@ -804,8 +765,8 @@ namespace dds
 
         void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            while (isWriteInProgress())
+            std::unique_lock<std::mutex> lock(m_mutexWriteBuffer);
+            while (!m_writeBuffer.empty())
                 m_cvReadyToWrite.wait(lock);
 
             LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
@@ -878,11 +839,15 @@ namespace dds
         boost::asio::ip::tcp::socket m_socket;
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
-        protocolMessagePtrQueue_t m_writeMsgQueueBeforeHandShake;
-        protocolMessagePtrQueue_t m_writeMsgQueue;
-        protocolMessageBuffer_t m_writeMsgBuffer;
-        protocolMessagePtrQueue_t m_writeMsgBufferQueue;
-        std::mutex m_mutex;
+
+        std::mutex m_mutexWriteQueue;
+        protocolMessagePtrQueue_t m_writeQueue;
+        protocolMessagePtrQueue_t m_writeQueueBeforeHandShake;
+
+        std::mutex m_mutexWriteBuffer;
+        protocolMessageBuffer_t m_writeBuffer;
+        protocolMessagePtrQueue_t m_writeBufferQueue;
+
         std::condition_variable m_cvReadyToWrite;
 
         // BinaryAttachment
