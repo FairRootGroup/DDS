@@ -18,7 +18,6 @@
 #include "BinaryAttachmentReceivedCmd.h"
 #include "BinaryAttachmentStartCmd.h"
 #include "UpdateKeyCmd.h"
-#include "HandShakeAgentCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
