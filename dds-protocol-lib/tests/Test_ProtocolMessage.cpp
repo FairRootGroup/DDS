@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_SUITE(Test_ProtocolMessage);
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 {
-    const unsigned int cmdSize = 2;
+    const unsigned int cmdSize = 4;
 
     // Create a message
     SVersionCmd ver_src;
