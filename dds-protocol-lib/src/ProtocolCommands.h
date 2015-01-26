@@ -30,7 +30,7 @@ namespace dds
         cmdSUBMIT,     // attachment: SSubmitCmd
         cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
         cmdREPLY_HANDSHAKE_OK,
-        cmdREPLY_HANDSHAKE_ERR,
+        cmdREPLY_HANDSHAKE_ERR, // attachment: SSimpleMsgCmd
         cmdGET_HOST_INFO,
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
@@ -55,8 +55,6 @@ namespace dds
         { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
         { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
         { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
-        //        { cmdHANDSHAKE_AGENT, NAME_TO_STRING(cmdHANDSHAKE_AGENT) },
-        //        { cmdHANDSHAKE_KEY_VALUE_GUARD, NAME_TO_STRING(cmdHANDSHAKE_KEY_VALUE_GUARD) },
         { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },
         { cmdSIMPLE_MSG, NAME_TO_STRING(cmdSIMPLE_MSG) },
         { cmdREPLY_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_HANDSHAKE_OK) },

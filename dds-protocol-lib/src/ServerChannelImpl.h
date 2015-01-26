@@ -44,9 +44,9 @@ namespace dds
                     this->m_isHandshakeOK = false;
                     this->m_channelType = EChannelType::UNKNOWN;
                     // Send reply that the version of the protocol is incompatible
-                    LOG(MiscCommon::warning)
-                        << "Incompatible protocol version of the client: " << this->remoteEndIDString();
-                    this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>();
+                    std::string msg("Incompatible protocol version of the client");
+                    LOG(MiscCommon::warning) << msg << this->remoteEndIDString();
+                    this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(msg, MiscCommon::fatal));
 
                     // give a chance child to execute something
                     T* pThis = static_cast<T*>(this);

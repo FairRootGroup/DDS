@@ -54,7 +54,7 @@ namespace dds
                 [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment, CClientChannelImpl* _channel)
                     -> bool
             {
-                LOG(MiscCommon::info) << "Handshake failed";
+                LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
                 this->m_isHandshakeOK = false;
                 this->m_channelType = EChannelType::UNKNOWN;
