@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <dirent.h>
 #include <wordexp.h>
+#include <fcntl.h>
 
 #if defined(__APPLE__)
 #include <sys/sysctl.h>
@@ -426,6 +427,68 @@ namespace MiscCommon
         return WIFEXITED(status) && WEXITSTATUS(status) == 0;
     }
 
+    inline pid_t do_execv_std2file(const std::string& _Command,
+                                   std::string _stdoutFileName,
+                                   std::string _stderrFileName)
+    {
+        //----- Expand the string for the program to run.
+        wordexp_t result;
+        switch (wordexp(_Command.c_str(), &result, 0))
+        {
+            case 0: // Successful.
+                break;
+            case WRDE_NOSPACE:
+                // If the error was WRDE_NOSPACE, then perhaps part of the result was allocated.
+                wordfree(&result);
+            default: // Some other error.
+                return -1;
+        }
+        ////-----
+
+        // make sure exe has it's exe falg
+        struct stat info;
+        stat(result.we_wordv[0], &info);
+        if (!(info.st_mode & S_IXUSR))
+        {
+            int ret = chmod(result.we_wordv[0], info.st_mode | S_IXUSR);
+            if (ret != 0)
+                throw system_error("Can't set executable flag on " + std::string(result.we_wordv[0]));
+        }
+
+        pid_t child_pid(0);
+        switch (child_pid = fork())
+        {
+            case -1:
+                // Unable to fork
+                throw std::runtime_error("do_execv: Unable to fork process");
+
+            case 0:
+                // child
+                int fd_out = open(_stdoutFileName.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+                if (fd_out < 0)
+                    throw MiscCommon::system_error("Can't open file for user's process stdout: " + _stdoutFileName);
+                int fd_err = open(_stderrFileName.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+                if (fd_err < 0)
+                    throw MiscCommon::system_error("Can't open file for user's process stderr: " + _stderrFileName);
+
+                dup2(fd_out, 1); // make stdout go to file
+                dup2(fd_err, 2); // make stderr go to file - you may choose to not do this
+                // or perhaps send stderr to another file
+
+                close(fd_out); // fd no longer needed - the dup'ed handles are sufficient
+                close(fd_err); // fd no longer needed - the dup'ed handles are sufficient
+
+                // child: execute the required command, on success does not return
+                execv(result.we_wordv[0], result.we_wordv);
+                // not usually reached
+                exit(1);
+        }
+
+        wordfree(&result);
+
+        return child_pid;
+    }
+
     // TODO: Document me!
     // If _Delay is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
     // return value is 0.
@@ -441,12 +504,12 @@ namespace MiscCommon
         if (_output)
         {
             if (pipe(fdpipe_out))
-                throw system_error("Can't create stdout pipe.");
+                throw MiscCommon::system_error("Can't create stdout pipe.");
         }
         if (_errout)
         {
             if (pipe(fdpipe_err))
-                throw system_error("Can't create stderr pipe.");
+                throw MiscCommon::system_error("Can't create stderr pipe.");
         }
 
         //----- Expand the string for the program to run.

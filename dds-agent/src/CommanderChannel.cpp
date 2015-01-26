@@ -262,7 +262,7 @@ void CCommanderChannel::readAgentUUIDFile()
 void CCommanderChannel::createAgentUUIDFile() const
 {
     const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
-    LOG(MiscCommon::info) << "Creating an agent UUID file: " << sAgentUUIDFile;
+    LOG(info) << "Creating an agent UUID file: " << sAgentUUIDFile;
     ofstream f(sAgentUUIDFile.c_str());
     if (!f.is_open() || !f.good())
     {
@@ -315,7 +315,6 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     }
 
     StringVector_t params;
-    string output;
     pid_t pidUsrTask(0);
 
     try
@@ -331,7 +330,13 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
-        pidUsrTask = do_execv(sUsrExe, 0, &output);
+        stringstream ssTaskOutput;
+        ssTaskOutput << CUserDefaults::getDDSPath() << "user_task_" << m_sTaskId;
+
+        string sTaskStdOut(ssTaskOutput.str() + "_out.log");
+        string sTaskStdErr(ssTaskOutput.str() + "_err.log");
+
+        pidUsrTask = do_execv_std2file(sUsrExe, sTaskStdOut, sTaskStdErr);
     }
     catch (exception& e)
     {

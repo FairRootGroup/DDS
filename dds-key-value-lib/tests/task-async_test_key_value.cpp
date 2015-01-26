@@ -108,22 +108,28 @@ int main(int argc, char* argv[])
         {
             unique_lock<mutex> lk(keyMutex);
             if (bGoodToGo)
+            {
+                LOG(log_stdout) << "Task succesffuylly done";
                 return 0;
+            }
             // wait for a key update event
             auto now = chrono::system_clock::now();
             int isTimeout = keyCondition.wait_until(lk, now + chrono::milliseconds(nMaxWaitTime)) == cv_status::timeout;
             if (bGoodToGo)
+            {
+                LOG(log_stdout) << "Task succesffuylly done";
                 return 0;
+            }
             if (isTimeout)
             {
-                LOG(error) << "USER TASK - timeout is reached, but not all values have been received.";
+                LOG(log_stderr) << "USER TASK - timeout is reached, but not all values have been received.";
                 return 1;
             }
         }
     }
     catch (const exception& _e)
     {
-        LOG(fatal) << "USER TASK Error: " << _e.what() << endl;
+        LOG(log_stderr) << "USER TASK Error: " << _e.what() << endl;
         return 1;
     }
     return 1;
