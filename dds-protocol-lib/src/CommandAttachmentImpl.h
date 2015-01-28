@@ -18,6 +18,7 @@
 #include "BinaryAttachmentReceivedCmd.h"
 #include "BinaryAttachmentStartCmd.h"
 #include "UpdateKeyCmd.h"
+#include "ProgressCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -81,6 +82,7 @@ namespace dds
     REGISTER_CMD_ATTACHMENT(SBinaryAttachmentReceivedCmd, cmdBINARY_ATTACHMENT_RECEIVED)
     REGISTER_CMD_ATTACHMENT(SBinaryAttachmentStartCmd, cmdBINARY_ATTACHMENT_START)
     REGISTER_CMD_ATTACHMENT(SUpdateKeyCmd, cmdUPDATE_KEY)
+    REGISTER_CMD_ATTACHMENT(SProgressCmd, cmdPROGRESS)
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

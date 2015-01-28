@@ -22,10 +22,12 @@ namespace dds
     {
         SOptions()
             : m_transportTest(false)
+            , m_verbose(false)
         {
         }
 
         bool m_transportTest;
+        bool m_verbose;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -46,6 +48,7 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()("transport,t", "Start transport test");
+        options.add_options()("verbose", "Verbose output");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -65,6 +68,10 @@ namespace dds
         if (vm.count("transport"))
         {
             _options->m_transportTest = true;
+        }
+        if (vm.count("verbose"))
+        {
+            _options->m_verbose = true;
         }
 
         return true;

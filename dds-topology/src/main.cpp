@@ -83,6 +83,7 @@ int main(int argc, char* argv[])
         if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
         {
             client = CActivateChannel::makeNew(io_service);
+            client->setOptions(options);
             client->connect(iterator);
         }
 

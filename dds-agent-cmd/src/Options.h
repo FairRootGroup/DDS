@@ -57,6 +57,7 @@ namespace dds
         SOptions()
             : m_sendCommandToAllAgents(false)
             , m_agentCmd(EAgentCmdType::UNKNOWN)
+            , m_verbose(false)
         {
         }
 
@@ -64,6 +65,7 @@ namespace dds
         EAgentCmdType m_agentCmd;
         std::string m_sUpdKey_key;
         std::string m_sUpdKey_value;
+        bool m_verbose;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -83,6 +85,7 @@ namespace dds
         bpo::options_description options("dds-agent-cmd options");
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
+        options.add_options()("verbose", "Verbose output");
         options.add_options()(
             "command",
             bpo::value<EAgentCmdType>(&_options->m_agentCmd),
@@ -118,6 +121,10 @@ namespace dds
         {
             PrintVersion();
             return false;
+        }
+        if (vm.count("verbose"))
+        {
+            _options->m_verbose = true;
         }
         if (!vm.count("command") || _options->m_agentCmd == EAgentCmdType::UNKNOWN)
         {

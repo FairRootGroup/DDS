@@ -32,11 +32,13 @@ namespace dds
         SOptions()
             : m_topologyCmd(ETopologyCmdType::UNKNOWN)
             , m_sTopoFile()
+            , m_verbose(false)
         {
         }
 
         ETopologyCmdType m_topologyCmd;
         std::string m_sTopoFile;
+        bool m_verbose;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -59,6 +61,7 @@ namespace dds
         options.add_options()("activate", "Request to activate agents, i.e. distribute and start user tasks.");
         options.add_options()(
             "validate", bpo::value<std::string>(&_options->m_sTopoFile), "Validate topology file against XSD schema.");
+        options.add_options()("verbose", "Verbose output");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -74,6 +77,10 @@ namespace dds
         {
             PrintVersion();
             return false;
+        }
+        if (vm.count("verbose"))
+        {
+            _options->m_verbose = true;
         }
         if (vm.count("validate") && !_options->m_sTopoFile.empty())
         {

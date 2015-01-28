@@ -62,14 +62,11 @@ namespace dds
                 T* pThis = static_cast<T*>(this);
                 std::string userMessage = pThis->getMessage(_cmd, _channel);
 
-                SSimpleMsgCmd cmd;
-                cmd.m_msgSeverity = MiscCommon::info;
-                cmd.m_sMsg = userMessage;
-
                 if (!m_channel.expired())
                 {
                     auto pUI = m_channel.lock();
-                    pUI->template syncPushMsg<cmdSIMPLE_MSG>(cmd);
+                    pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
+                    pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(m_nofReceived, m_nofRequests, m_nofReceivedErrors));
                 }
 
                 checkAllReceived();
@@ -94,14 +91,11 @@ namespace dds
                 T* pThis = static_cast<T*>(this);
                 std::string userMessage = pThis->getErrorMessage(_cmd, _channel);
 
-                SSimpleMsgCmd cmd;
-                cmd.m_msgSeverity = MiscCommon::error;
-                cmd.m_sMsg = userMessage;
-
                 if (!m_channel.expired())
                 {
                     auto pUI = m_channel.lock();
-                    pUI->template syncPushMsg<cmdSIMPLE_MSG>(cmd);
+                    pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::error));
+                    pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(m_nofReceived, m_nofRequests, m_nofReceivedErrors));
                 }
 
                 checkAllReceived();
@@ -124,14 +118,10 @@ namespace dds
                     T* pThis = static_cast<T*>(this);
                     std::string userMessage = pThis->getAllReceivedMessage();
 
-                    SSimpleMsgCmd cmd;
-                    cmd.m_msgSeverity = MiscCommon::info;
-                    cmd.m_sMsg = userMessage;
-
                     if (!m_channel.expired())
                     {
                         auto pUI = m_channel.lock();
-                        pUI->template syncPushMsg<cmdSIMPLE_MSG>(cmd);
+                        pUI->template syncPushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
                         pUI->template pushMsg<cmdSHUTDOWN>();
 
                         m_channel.reset();
