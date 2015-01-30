@@ -23,6 +23,7 @@ namespace dds
     {
         UNKNOWN = -1,
         ACTIVATE = 0,
+        STOP,
         VALIDATE
     };
 
@@ -59,6 +60,7 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()("activate", "Request to activate agents, i.e. distribute and start user tasks.");
+        options.add_options()("stop", "Request to stop execution of user tasks.");
         options.add_options()(
             "validate", bpo::value<std::string>(&_options->m_sTopoFile), "Validate topology file against XSD schema.");
         options.add_options()("verbose", "Verbose output");
@@ -93,6 +95,11 @@ namespace dds
         if (vm.count("activate"))
         {
             _options->m_topologyCmd = ETopologyCmdType::ACTIVATE;
+            return true;
+        }
+        else if (vm.count("stop"))
+        {
+            _options->m_topologyCmd = ETopologyCmdType::STOP;
             return true;
         }
 

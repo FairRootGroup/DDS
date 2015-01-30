@@ -13,8 +13,19 @@ using namespace std;
 
 void CActivateChannel::onHandshakeOK()
 {
-    pushMsg<cmdACTIVATE_AGENT>();
+    switch (m_options.m_topologyCmd)
+    {
+        case ETopologyCmdType::ACTIVATE:
+            pushMsg<cmdACTIVATE_AGENT>();
+            break;
+        case ETopologyCmdType::STOP:
+            pushMsg<cmdSTOP_USER_TASK>();
+            break;
+        default:
+            return;
+    }
 }
+
 void CActivateChannel::onHandshakeERR()
 {
 }
@@ -59,7 +70,7 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
     else
     {
         cout << getProgressDisplayString(completed, _attachment->m_total) << endl;
-        cout << "Tasks activated: " << _attachment->m_completed << " errors: " << _attachment->m_errors
+        cout << "Tasks: " << _attachment->m_completed << " errors: " << _attachment->m_errors
              << " total: " << _attachment->m_total << endl;
     }
     return true;

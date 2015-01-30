@@ -244,6 +244,33 @@ namespace dds
             return ss.str();
         }
     };
+
+    class CStopUserTasksChannelInfo : public CUIChannelInfo<CStopUserTasksChannelInfo>
+    {
+      public:
+        std::string getMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+        {
+            std::stringstream ss;
+            auto p = _channel.lock();
+            ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> Stopped";
+            return ss.str();
+        }
+
+        std::string getErrorMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+        {
+            std::stringstream ss;
+            auto p = _channel.lock();
+            ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
+            return ss.str();
+        }
+
+        std::string getAllReceivedMessage() const
+        {
+            std::stringstream ss;
+            ss << "total: " << m_nofRequests << ", stopped: " << nofReceived() << ", errors: " << m_nofReceivedErrors;
+            return ss.str();
+        }
+    };
 }
 
 #endif /* defined(__DDS__UIChannelInfo__) */

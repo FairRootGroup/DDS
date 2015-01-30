@@ -306,11 +306,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     {
         LOG(info) << "Recieved activation command. Ignoring the command, since no task is assigned.";
         // Send response back to server
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = "No task is assigned. Activation is ignored.";
-        cmd.m_msgSeverity = info;
-        cmd.m_srcCommand = cmdACTIVATE_AGENT;
-        pushMsg<cmdSIMPLE_MSG>(cmd);
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No task is assigned. Activation is ignored.", info, cmdACTIVATE_AGENT));
         return true;
     }
 
@@ -338,16 +334,11 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
         pidUsrTask = do_execv_std2file(sUsrExe, sTaskStdOut, sTaskStdErr);
     }
-    catch (exception& e)
+    catch (exception& _e)
     {
-        LOG(error) << e.what();
-
+        LOG(error) << _e.what();
         // Send response back to server
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = e.what();
-        cmd.m_msgSeverity = error;
-        cmd.m_srcCommand = cmdACTIVATE_AGENT;
-        pushMsg<cmdSIMPLE_MSG>(cmd);
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdACTIVATE_AGENT));
     }
 
     stringstream ss;
@@ -357,13 +348,23 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     m_onNewUserTaskCallback(pidUsrTask);
 
     // Send response back to server
-    SSimpleMsgCmd cmd;
-    cmd.m_sMsg = ss.str();
-    cmd.m_msgSeverity = info;
-    cmd.m_srcCommand = cmdACTIVATE_AGENT;
-    pushMsg<cmdSIMPLE_MSG>(cmd);
+    pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), info, cmdACTIVATE_AGENT));
 
     return true;
+}
+
+bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment)
+{
+    if (m_sTaskId.empty())
+    {
+        // No running tasks, nothing to stop
+        // Send response back to server
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No tasks is running. Nothing to stop.", info, cmdSTOP_USER_TASK));
+        return true;
+    }
+
+    // Let the parent should terminate user tasks
+    return false;
 }
 
 bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
@@ -373,16 +374,11 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
         LOG(info) << "Recieved a key update notifications: " << *_attachment;
         CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
     }
-    catch (exception& e)
+    catch (exception& _e)
     {
-        LOG(error) << e.what();
-
+        LOG(error) << _e.what();
         // Send response back to server
-        SSimpleMsgCmd cmd;
-        cmd.m_sMsg = e.what();
-        cmd.m_msgSeverity = error;
-        cmd.m_srcCommand = cmdUPDATE_KEY;
-        pushMsg<cmdSIMPLE_MSG>(cmd);
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdUPDATE_KEY));
     }
 
     // give a chance to others to recive update nitifications
@@ -391,14 +387,21 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
 
 void CCommanderChannel::updateKey(const string& _key, const string& _value)
 {
-    SUpdateKeyCmd cmd;
-    // Update key name with the task id
-    cmd.m_sKey = _key + "." + m_sTaskId;
-    cmd.m_sValue = _value;
-    LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
-               << cmd.m_sValue;
-    // write the property locally
-    CKeyValueGuard::instance().putValue(cmd.m_sKey, cmd.m_sValue);
-    // Push update to the commander server
-    pushMsg<cmdUPDATE_KEY>(cmd);
+    try
+    {
+        SUpdateKeyCmd cmd;
+        // Update key name with the task id
+        cmd.m_sKey = _key + "." + m_sTaskId;
+        cmd.m_sValue = _value;
+        LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
+                   << cmd.m_sValue;
+        // write the property locally
+        CKeyValueGuard::instance().putValue(cmd.m_sKey, cmd.m_sValue);
+        // Push update to the commander server
+        pushMsg<cmdUPDATE_KEY>(cmd);
+    }
+    catch (exception& _e)
+    {
+        LOG(error) << _e.what();
+    }
 }

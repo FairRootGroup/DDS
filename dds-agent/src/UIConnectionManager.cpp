@@ -72,7 +72,7 @@ bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY
         auto p = m_commanderChannel.lock();
         p->updateKey(_attachment->m_sKey, _attachment->m_sValue);
     }
-    catch (bad_weak_ptr& e)
+    catch (bad_weak_ptr& _bad)
     {
         LOG(fatal) << "Can not lock commander channel";
     }
@@ -91,9 +91,9 @@ void CUIConnectionManager::notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE
         };
         broadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
     }
-    catch (exception& e)
+    catch (exception& _e)
     {
-        LOG(fatal) << e.what();
+        LOG(fatal) << _e.what();
     }
 }
 
@@ -104,8 +104,8 @@ void CUIConnectionManager::notifyAboutSimpleMsg(SCommandAttachmentImpl<cmdSIMPLE
         LOG(debug) << "Broadcasting simple message to all connected UI channels. Attachment: " << *_attachment;
         broadcastMsg<cmdSIMPLE_MSG>(*_attachment);
     }
-    catch (exception& e)
+    catch (exception& _e)
     {
-        LOG(fatal) << e.what();
+        LOG(fatal) << _e.what();
     }
 }

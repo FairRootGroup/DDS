@@ -41,7 +41,17 @@ namespace dds
         void onConnected()
         {
             LOG(MiscCommon::log_stdout) << "Connection established.";
-            LOG(MiscCommon::log_stdout) << "Requesting server to activate tasks...";
+            switch (m_options.m_topologyCmd)
+            {
+                case ETopologyCmdType::ACTIVATE:
+                    LOG(MiscCommon::log_stdout) << "Requesting server to activate user tasks...";
+                    break;
+                case ETopologyCmdType::STOP:
+                    LOG(MiscCommon::log_stdout) << "Requesting server to stop user tasks...";
+                    break;
+                default:
+                    return;
+            }
         }
         void onFailedToConnect()
         {
@@ -49,7 +59,7 @@ namespace dds
         }
         void onRemoteEndDissconnected()
         {
-            LOG(MiscCommon::log_stderr) << "Server has closed the coinnection.";
+            LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
         }
         void onHeaderRead()
         {

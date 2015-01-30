@@ -134,7 +134,13 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 
 bool CAgentChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment)
 {
-    // The agent channel can't activate all agents. Let others to process this message.
+    // The agent channel can't access all agents, therefore other should process this message.
+    return false;
+}
+
+bool CAgentChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment)
+{
+    // The agent channel can't access all agents, therefore other should process this message.
     return false;
 }
 
@@ -233,11 +239,14 @@ bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TES
 
 bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    LOG(info) << "on_cmdSIMPLE_MSG attachment [" << *_attachment << "] command from " << remoteEndIDString();
+    LOG(debug) << "on_cmdSIMPLE_MSG attachment [" << *_attachment << "] command from " << remoteEndIDString();
 
     switch (_attachment->m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
+            return false; // let others to process this message
+
+        case cmdSTOP_USER_TASK:
             return false; // let others to process this message
 
         case cmdGET_LOG:

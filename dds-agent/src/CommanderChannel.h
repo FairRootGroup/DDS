@@ -33,6 +33,7 @@ namespace dds
         MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
         MESSAGE_HANDLER(cmdASSIGN_USER_TASK, on_cmdASSIGN_USER_TASK)
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
+        MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_MSG_MAP()
 
@@ -57,6 +58,7 @@ namespace dds
         bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
         bool on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment);
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
+        bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
         void onRemoteEndDissconnected();
         void onHandshakeOK();

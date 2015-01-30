@@ -30,6 +30,7 @@ namespace dds
         //====> replay on the "submit" command request
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
+        MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
         //====> replay on the "info" command request
         // - get pid of the commander server
         MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
@@ -62,6 +63,7 @@ namespace dds
         // Message Handlers
         bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment);
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
+        bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment);
         bool on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment);
         bool on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment);
         bool on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment);

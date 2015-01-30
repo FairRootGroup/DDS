@@ -90,6 +90,14 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
+    std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
+        fSTOP_USER_TASK =
+            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdSTOP_USER_TASK(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
+
     std::function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
         fTRANSPORT_TEST =
             [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
@@ -454,6 +462,61 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
     return true;
 }
 
+bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                              CAgentChannel::weakConnectionPtr_t _channel)
+{
+    std::lock_guard<std::mutex> lock(m_StopUserTasks.m_mutexStart);
+    try
+    {
+        if (!m_StopUserTasks.m_channel.expired())
+            throw runtime_error("Can not process the request. Stopping of tasks is already in progress.");
+
+        // remember the UI channel, which requested to submit the job
+        m_StopUserTasks.m_channel = _channel;
+        m_StopUserTasks.zeroCounters();
+
+        try
+        {
+            auto p = m_StopUserTasks.m_channel.lock();
+            auto condition = [](CAgentChannel::connectionPtr_t _v)
+            {
+                return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+            };
+
+            m_StopUserTasks.m_nofRequests = countNofChannels(condition);
+            // initiate the progress on the UI
+            p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_StopUserTasks.m_nofRequests, 0));
+
+            CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
+            for (const auto& v : channels)
+            {
+                if (v.expired())
+                    continue;
+                auto ptr = v.lock();
+                // remove task ID from the channel
+                ptr->setTaskID(0);
+                // dequeue important (or expensive) messages
+                ptr->dequeueMsg<cmdUPDATE_KEY>();
+                // send stop message
+                ptr->template pushMsg<cmdSTOP_USER_TASK>();
+            }
+        }
+        catch (bad_weak_ptr& _e)
+        {
+            // TODO: Do we need to log something here?
+        }
+    }
+    catch (exception& _e)
+    {
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdACTIVATE_AGENT));
+
+        m_StopUserTasks.m_channel.reset();
+        return true;
+    }
+    return true;
+}
+
 bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -575,6 +638,19 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
                 case error:
                 case fatal:
                     m_ActivateAgents.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    break;
+            }
+            return true; // let others to process this message
+
+        case cmdSTOP_USER_TASK:
+            switch (_attachment->m_msgSeverity)
+            {
+                case info:
+                    m_StopUserTasks.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    break;
+                case error:
+                case fatal:
+                    m_StopUserTasks.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
             }
             return true; // let others to process this message

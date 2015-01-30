@@ -38,6 +38,8 @@ namespace dds
                               CCommanderChannel::weakConnectionPtr_t _channel);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                               CCommanderChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                  CCommanderChannel::weakConnectionPtr_t _channel);
 
       private:
         boost::asio::io_service& m_service;

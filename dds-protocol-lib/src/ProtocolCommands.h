@@ -45,6 +45,7 @@ namespace dds
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assigned user task
+        cmdSTOP_USER_TASK,
         cmdTRANSPORT_TEST,
         cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
         cmdPROGRESS    // attachment: SProgressCmd
@@ -74,6 +75,7 @@ namespace dds
         { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
+        { cmdSTOP_USER_TASK, NAME_TO_STRING(cmdSTOP_USER_TASK) },
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
         { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
         { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) }

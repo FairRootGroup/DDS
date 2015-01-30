@@ -123,6 +123,18 @@ void CAgentConnectionManager::start()
         };
         m_agent->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 
+        // Subscribe for cmdSTOP_USER_TASK
+        std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel * _channel)>
+            fSTOP_USER_TASK =
+                [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel* _channel)
+                    -> bool
+        {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
+        };
+        m_agent->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
+
         // Call this callback when a user process is activated
         m_agent->registerOnNewUserTaskCallback([this](pid_t _pid)
                                                {
@@ -238,8 +250,8 @@ void CAgentConnectionManager::terminateChildrenProcesses()
         if (!IsProcessExist(pid))
             continue;
 
-        // wait 30 seconds each
-        for (size_t i = 0; i < 30; ++i)
+        // wait 10 seconds each
+        for (size_t i = 0; i < 10; ++i)
         {
             LOG(info) << "Waiting for pid = " << pid;
             int stat(0);
@@ -352,4 +364,21 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
             return true;
         });
+}
+
+bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                                   CCommanderChannel::weakConnectionPtr_t _channel)
+{
+    // TODO: add error processing, in case if user tasks won't quite
+    terminateChildrenProcesses();
+    try
+    {
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
+    }
+    catch (bad_weak_ptr& _e)
+    {
+        // TODO: Do we need to log something here?
+    }
+    return true;
 }

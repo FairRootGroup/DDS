@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
         CActivateChannel::connectionPtr_t client = nullptr;
-        if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
+        if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE || options.m_topologyCmd == ETopologyCmdType::STOP)
         {
             client = CActivateChannel::makeNew(io_service);
             client->setOptions(options);

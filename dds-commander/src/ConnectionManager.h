@@ -50,6 +50,8 @@ namespace dds
                           CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                  CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
@@ -60,6 +62,7 @@ namespace dds
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;
         CActivateAgentsChannelInfo m_ActivateAgents;
+        CStopUserTasksChannelInfo m_StopUserTasks;
         CTopology m_topo;
         CSSHScheduler m_scheduler;
 

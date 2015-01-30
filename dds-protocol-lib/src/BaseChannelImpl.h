@@ -29,56 +29,58 @@ class CClientChannelImpl; // needed for friend class
 template <class T>
 class CServerChannelImpl; // needed for friend class
 
-#define BEGIN_MSG_MAP(theClass)                                                                                    \
-  public:                                                                                                          \
-    friend CBaseChannelImpl<theClass>;                                                                             \
-    friend CClientChannelImpl<theClass>;                                                                           \
-    friend CServerChannelImpl<theClass>;                                                                           \
-    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)                                        \
-    {                                                                                                              \
-        using namespace dds;                                                                                       \
-        CMonitoringThread::instance().updateIdle();                                                                \
-        bool processed = true;                                                                                     \
-        ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                                  \
-                                                                                                                   \
-        switch (currentCmd)                                                                                        \
-        {                                                                                                          \
-            case cmdBINARY_ATTACHMENT:                                                                             \
-            {                                                                                                      \
-                typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t attahcmentPtr_t;              \
-                attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::decode(_currentMsg); \
-                processBinaryAttachmentCmd(attachmentPtr);                                                         \
-                return;                                                                                            \
-            }                                                                                                      \
-            case cmdBINARY_ATTACHMENT_START:                                                                       \
-            {                                                                                                      \
-                typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t attahcmentPtr_t;        \
-                attahcmentPtr_t attachmentPtr =                                                                    \
-                    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::decode(_currentMsg);                       \
-                processBinaryAttachmentStartCmd(attachmentPtr);                                                    \
-                return;                                                                                            \
-            }                                                                                                      \
-            case cmdHANDSHAKE:                                                                                     \
-            {                                                                                                      \
-                SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
-                    SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
-                dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
-                return;                                                                                            \
-            }                                                                                                      \
-            case cmdREPLY_HANDSHAKE_OK:                                                                            \
-            {                                                                                                      \
-                SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
-                    SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
-                dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
-                return;                                                                                            \
-            }                                                                                                      \
-            case cmdREPLY_HANDSHAKE_ERR:                                                                           \
-            {                                                                                                      \
-                SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
-                    SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
-                dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
-                return;                                                                                            \
-            }
+#define BEGIN_MSG_MAP(theClass)                                                                                        \
+  public:                                                                                                              \
+    friend CBaseChannelImpl<theClass>;                                                                                 \
+    friend CClientChannelImpl<theClass>;                                                                               \
+    friend CServerChannelImpl<theClass>;                                                                               \
+    void processMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)                                            \
+    {                                                                                                                  \
+        using namespace dds;                                                                                           \
+        CMonitoringThread::instance().updateIdle();                                                                    \
+        bool processed = true;                                                                                         \
+        ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                                      \
+                                                                                                                       \
+        try                                                                                                            \
+        {                                                                                                              \
+            switch (currentCmd)                                                                                        \
+            {                                                                                                          \
+                case cmdBINARY_ATTACHMENT:                                                                             \
+                {                                                                                                      \
+                    typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t attahcmentPtr_t;              \
+                    attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::decode(_currentMsg); \
+                    processBinaryAttachmentCmd(attachmentPtr);                                                         \
+                    return;                                                                                            \
+                }                                                                                                      \
+                case cmdBINARY_ATTACHMENT_START:                                                                       \
+                {                                                                                                      \
+                    typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t attahcmentPtr_t;        \
+                    attahcmentPtr_t attachmentPtr =                                                                    \
+                        SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::decode(_currentMsg);                       \
+                    processBinaryAttachmentStartCmd(attachmentPtr);                                                    \
+                    return;                                                                                            \
+                }                                                                                                      \
+                case cmdHANDSHAKE:                                                                                     \
+                {                                                                                                      \
+                    SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
+                        SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
+                    dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                    return;                                                                                            \
+                }                                                                                                      \
+                case cmdREPLY_HANDSHAKE_OK:                                                                            \
+                {                                                                                                      \
+                    SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
+                        SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
+                    dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                    return;                                                                                            \
+                }                                                                                                      \
+                case cmdREPLY_HANDSHAKE_ERR:                                                                           \
+                {                                                                                                      \
+                    SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
+                        SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
+                    dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                    return;                                                                                            \
+                }
 
 #define MESSAGE_HANDLER(msg, func)                                                                                 \
     case msg:                                                                                                      \
@@ -105,6 +107,11 @@ class CServerChannelImpl; // needed for friend class
 #define END_MSG_MAP()                                                                                         \
     default:                                                                                                  \
         LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString(); \
+        }                                                                                                     \
+        }                                                                                                     \
+        catch (std::exception & _e)                                                                           \
+        {                                                                                                     \
+            LOG(MiscCommon::error) << "processMessage: " << _e.what();                                        \
         }                                                                                                     \
         }
 
@@ -283,6 +290,19 @@ namespace dds
         boost::asio::ip::tcp::socket& socket()
         {
             return m_socket;
+        }
+
+        template <ECmdType _cmd>
+        void dequeueMsg()
+        {
+            std::lock_guard<std::mutex> lock(m_mutexWriteQueue);
+            m_writeQueue.erase(std::remove_if(std::begin(m_writeQueue),
+                                              std::end(m_writeQueue),
+                                              [](const CProtocolMessage::protocolMessagePtr_t& _msg)
+                                              {
+                                                  return (_msg->header().m_cmd == _cmd);
+                                              }),
+                               std::end(m_writeQueue));
         }
 
         template <ECmdType _cmd, class A>
