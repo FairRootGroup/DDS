@@ -11,12 +11,10 @@
 
 // define current protocol version version
 //
-// ---= VERSION History =---
-// -----=== v2 ===-----
-//
-// Added:
-// cmdUPDATE_KEY
-// cmdHANDSHAKE_KEY_VALUE_GUARD
+// We wanted to track protocol changes by versions, but at the moment it is a kinda overkill.
+// At the moment it doesn't matter which versions peers have, once the version is different, we break the connection.
+// In the future we might want to support backward compatibility. In this case protocol version, command will be
+// organized in separate structures and enums.
 //
 const uint16_t g_protocolCommandsVersion = 2;
 
@@ -35,8 +33,8 @@ namespace dds
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
         cmdDISCONNECT,
         cmdGED_PID,
-        cmdREPLY_PID,                  // attachment: SSimpleMsgCmd. The message contians the pid of the responder.
-        cmdBINARY_ATTACHMENT,          // attachment: SBinanryAttachmentCmd. The message containes binary attachment.
+        cmdREPLY_PID,                  // attachment: SSimpleMsgCmd. The message contains the pid of the responder.
+        cmdBINARY_ATTACHMENT,          // attachment: SBinanryAttachmentCmd. The message contains binary attachment.
         cmdBINARY_ATTACHMENT_RECEIVED, // attachment: SBinaryAttachmentReceivedCmd.
         cmdBINARY_ATTACHMENT_START,    // attachment: SBinaryAttachmentStartCmd.
         cmdGET_UUID,
@@ -46,7 +44,7 @@ namespace dds
         cmdGET_AGENTS_INFO,
         cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
-        cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assgined user task
+        cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assigned user task
         cmdTRANSPORT_TEST,
         cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
         cmdPROGRESS    // attachment: SProgressCmd
