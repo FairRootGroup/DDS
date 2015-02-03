@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <list>
 #include <thread>
+#include <chrono>
 // DDS
 #include "BOOSTHelper.h"
 #include "SysHelper.h"
@@ -142,6 +143,11 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
     string err;
     try
     {
+        // set submit time
+        chrono::system_clock::time_point now = chrono::system_clock::now();
+        stringstream ssSubmitTime;
+        ssSubmitTime << " -s " << chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+
         // invoking a new bash process can in some case overwrite env. vars
         // To be shure that our env is there, we call DDS_env.sh
         string cmd_env("$DDS_LOCATION/DDS_env.sh");
@@ -149,6 +155,7 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
 
         string cmd("$DDS_LOCATION/bin/dds-prep-worker");
         smart_path(&cmd);
+        cmd += ssSubmitTime.str();
         if (_needInlineBashScript)
             cmd += " -i";
         string arg("source ");
@@ -158,6 +165,8 @@ void repackPkg(string* _cmdOutput, bool _needInlineBashScript = false)
 
         stringstream ssCmd;
         ssCmd << "/bin/bash -c \"" << arg << "\"";
+
+        LOG(debug) << "Preparing WN package: " << ssCmd.str();
 
         // 10 sec time-out for this command
         do_execv(ssCmd.str(), 10, &out, &err);

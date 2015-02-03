@@ -24,8 +24,6 @@ namespace dds
 
       public:
         BEGIN_MSG_MAP(CAgentChannel)
-        //        MESSAGE_HANDLER(cmdHANDSHAKE, on_cmdHANDSHAKE)
-        //        MESSAGE_HANDLER(cmdHANDSHAKE_AGENT, on_cmdHANDSHAKE_AGENT)
         MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
         //====> replay on the "submit" command request
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
@@ -54,7 +52,7 @@ namespace dds
         uint64_t getTaskID() const;
 
         void setTaskID(uint64_t _taskID);
-        std::chrono::seconds getStartupTime() const
+        std::chrono::milliseconds getStartupTime() const
         {
             return m_startUpTime;
         }
@@ -97,7 +95,7 @@ namespace dds
         SHostInfoCmd m_remoteHostInfo;
         std::string m_sCurrentTopoFile;
         uint64_t m_taskID;
-        std::chrono::seconds m_startUpTime;
+        std::chrono::milliseconds m_startUpTime;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

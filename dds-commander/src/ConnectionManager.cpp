@@ -551,7 +551,7 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
                << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
                << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
                << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
-               << "\nAgent startup time: " << ptr->getStartupTime().count() << " sec."
+               << "\nAgent startup time: " << std::chrono::duration<double>(ptr->getStartupTime()).count() << " s"
                << "\nTask ID: " << sTaskName << "\n";
         }
         cmd.m_sListOfAgents = ss.str();

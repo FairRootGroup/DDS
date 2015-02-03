@@ -19,7 +19,8 @@ DDS command line utility to prepare a worker package - all elements of DDS which
 
 Usage: $(basename $0) [OPTION]
      -i 			Re-pack user_worker_env.sh (for internal use only).
-     -h          		Show summary of options.
+	 -s 			Submit time (optional). 
+     -h          	Show summary of options.
 
 Report bugs to http://dds.gsi.de
 EOF
@@ -28,12 +29,15 @@ EOF
 # ***** OPTARG *****
 #=============================================================================
 REPACK_WRK_PKG=""
-while getopts ":ih" opt; do
+SUBMIT_TIME=""
+while getopts ":is:h" opt; do
   case $opt in
-  i)
-    REPACK_WRK_PKG="YES"
-    ;;
-  h) 
+  	i)
+    	REPACK_WRK_PKG="YES"
+    	;;
+	s) SUBMIT_TIME="$OPTARG"
+		;;
+  	h) 
     usage
     exit 0
     ;;
@@ -250,7 +254,16 @@ if (( 0 != $? )); then
 fi
 
 # update WN submit timestampt
-regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\1$(date +%s)/g"
+# in milliseconds
+if [ -n "$SUBMIT_TIME" ]; then 
+	regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\1$SUBMIT_TIME/g"
+else
+	# OSX version of date doesn't support milliseconds. move the implemention to dds-submit to be able to set milliseconds programmatically.
+	# We cann't use this: regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\1$(($(date +%s)))/g" 
+	# We thereofe use the -s argument to the script to provide a submit time in milliseconds.
+	# in case if -s is not provided the submit time is zero	
+	 regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\10/g"
+fi
 # LANG is to silence: "sed: RE error: illegal byte sequence"
 LANG=C LC_ALL=C sed -e "$regexpr_wn_submit_time" $DDS_WRK_SCRIPT_TMP > "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp"
 mv "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp" $DDS_WRK_SCRIPT_TMP 

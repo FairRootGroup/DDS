@@ -151,44 +151,6 @@ void CAgentConnectionManager::start()
                                              });
         m_agent->connect(endpoint_iterator);
 
-        //        boost::asio::async_connect(m_agent->socket(),
-        //                                   endpoint_iterator,
-        //                                   [this](boost::system::error_code ec, tcp::resolver::iterator)
-        //                                   {
-        //            if (!ec)
-        //            {
-        //                // Create handshake message which is the first one for all agents
-        //                SHandShakeAgentCmd handShake;
-        //                // get submit time
-        //                string sSubmitTime;
-        //                char* pchSubmitTime;
-        //                pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
-        //                if (NULL != pchSubmitTime)
-        //                {
-        //                    sSubmitTime.assign(pchSubmitTime);
-        //                    handShake.m_submitTime = stoll(sSubmitTime);
-        //                }
-        //
-        //                m_agent->start();
-        //
-        //                // m_agents->pushMsg<cmdHANDSHAKE_AGENT>(handShake);
-        //
-        //                // Prepare a hand shake message
-        //                SVersionCmd cmd;
-        //                cmd.m_handshakeType = EHandshakeType::handshakeAGENT;
-        //                m_agent->pushMsg<cmdHANDSHAKE>(cmd);
-        //
-        //                // Start the UI agent server
-        //                m_UIConnectionMng = make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
-        //                m_UIConnectionMng->setCommanderChannel(m_agent);
-        //                m_UIConnectionMng->start(false, 2);
-        //            }
-        //            else
-        //            {
-        //                LOG(fatal) << "Cannot connect to server: " << ec.message();
-        //            }
-        //        });
-
         const int nConcurrentThreads(2);
         LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
         for (int x = 0; x < nConcurrentThreads; ++x)

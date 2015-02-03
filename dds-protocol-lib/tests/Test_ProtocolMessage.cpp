@@ -115,7 +115,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     const string sDDSPath = "/Users/andrey/DDS";
     const uint16_t nAgentPort = 20000;
     const uint32_t nAgentPid = 1111;
-    const unsigned int cmdSize = 48;
+    const uint64_t lSubmitTime = 23465677;
+    const unsigned int cmdSize = 56;
 
     // Create a message
     SHostInfoCmd cmd_src;
@@ -125,6 +126,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     cmd_src.m_DDSPath = sDDSPath;
     cmd_src.m_agentPort = nAgentPort;
     cmd_src.m_agentPid = nAgentPid;
+    cmd_src.m_submitTime = lSubmitTime;
     MiscCommon::BYTEVector_t data;
     cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
@@ -156,6 +158,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     BOOST_CHECK(sDDSPath == cmd_dest.m_DDSPath);
     BOOST_CHECK(nAgentPort == cmd_dest.m_agentPort);
     BOOST_CHECK(nAgentPid == cmd_dest.m_agentPid);
+    BOOST_CHECK(lSubmitTime == cmd_dest.m_submitTime);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)

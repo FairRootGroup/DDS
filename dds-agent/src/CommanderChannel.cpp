@@ -91,6 +91,16 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     cmd.m_agentPort = nPort;
     cmd.m_agentPid = pid;
 
+    // get submit time
+    string sSubmitTime;
+    char* pchSubmitTime;
+    pchSubmitTime = getenv("DDS_WN_SUBMIT_TIMESTAMP");
+    if (NULL != pchSubmitTime)
+    {
+        sSubmitTime.assign(pchSubmitTime);
+        cmd.m_submitTime = stoll(sSubmitTime);
+    }
+
     pushMsg<cmdREPLY_HOST_INFO>(cmd);
     return true;
 }
