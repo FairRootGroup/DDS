@@ -41,10 +41,16 @@ void CGenericChannel::onHandshakeERR()
 
 bool CGenericChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    if (m_options.m_verbose)
-        LOG(log_stdout) << _attachment->m_sMsg;
+    bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;
+    if (m_options.m_verbose || isErrorMsg)
+    {
+        if (!_attachment->m_sMsg.empty())
+            LOG((isErrorMsg) ? log_stderr : log_stdout) << _attachment->m_sMsg;
+    }
     else
+    {
         LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
+    }
     return true;
 }
 

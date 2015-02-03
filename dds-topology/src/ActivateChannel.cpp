@@ -32,11 +32,11 @@ void CActivateChannel::onHandshakeERR()
 
 bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
-    if (m_options.m_verbose)
+    bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;
+    if (m_options.m_verbose || isErrorMsg)
     {
         if (!_attachment->m_sMsg.empty())
-            LOG((_attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error) ? log_stderr : log_stdout)
-                << "Server reports: " << _attachment->m_sMsg;
+            LOG((isErrorMsg) ? log_stderr : log_stdout) << "Server reports: " << _attachment->m_sMsg;
     }
     else
     {
