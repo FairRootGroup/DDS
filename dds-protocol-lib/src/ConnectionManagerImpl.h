@@ -178,17 +178,14 @@ namespace dds
         {
             try
             {
-                typename T::weakConnectionPtrVector_t channels(getChannels());
+                typename T::weakConnectionPtrVector_t channels(getChannels(_condition));
 
                 for (const auto& v : channels)
                 {
                     if (v.expired())
                         continue;
                     auto ptr = v.lock();
-                    if (_condition == nullptr || _condition(ptr))
-                    {
-                        ptr->template pushMsg<_cmd>(_attachment);
-                    }
+                    ptr->template pushMsg<_cmd>(_attachment);
                 }
             }
             catch (std::bad_weak_ptr& e)
@@ -211,17 +208,14 @@ namespace dds
         {
             try
             {
-                typename T::weakConnectionPtrVector_t channels(getChannels());
+                typename T::weakConnectionPtrVector_t channels(getChannels(_condition));
 
                 for (const auto& v : channels)
                 {
                     if (v.expired())
                         continue;
                     auto ptr = v.lock();
-                    if (_condition == nullptr || _condition(ptr))
-                    {
-                        ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource);
-                    }
+                    ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource);
                 }
             }
             catch (std::bad_weak_ptr& e)
