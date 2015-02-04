@@ -344,6 +344,9 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             if (nofAgents < m_ActivateAgents.m_nofRequests)
                 throw runtime_error("The number of agents is not sufficient for this topology.");
 
+            // initiate UI progress
+            p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_ActivateAgents.m_nofRequests, 0));
+
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
 
             m_scheduler.makeSchedule(m_topo, channels);
