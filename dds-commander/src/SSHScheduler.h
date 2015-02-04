@@ -40,6 +40,7 @@ namespace dds
 
       private:
         void printSchedule();
+        void makeScheduleImpl(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels);
 
       private:
         ScheduleVector_t m_schedule;

@@ -7,6 +7,7 @@
 //
 
 #include "SSHScheduler.h"
+#include "TimeMeasure.h"
 #include <set>
 
 using namespace dds;
@@ -22,6 +23,16 @@ CSSHScheduler::~CSSHScheduler()
 }
 
 void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels)
+{
+    auto execTime = STimeMeasure<std::chrono::microseconds>::execution([this, &_topology, &_channels]()
+                                                                       {
+                                                                           makeScheduleImpl(_topology, _channels);
+                                                                       });
+    LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
+}
+
+void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
+                                     const CAgentChannel::weakConnectionPtrVector_t& _channels)
 {
     m_schedule.clear();
 
@@ -47,6 +58,9 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
         size_t nofChannels = _channels.size();
         for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
         {
+            if (usedChannels.find(iChannel) != usedChannels.end())
+                continue;
+
             const auto& v = _channels[iChannel];
             if (v.expired())
                 continue;
@@ -54,10 +68,7 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
 
             const SHostInfoCmd& hostInfo = ptr->getRemoteHostInfo();
 
-            bool hostMatches =
-                (task->getRequirement() == nullptr || task->getRequirement()->hostPatterMatches(hostInfo.m_host)) &&
-                (usedChannels.find(iChannel) == usedChannels.end());
-            if (hostMatches)
+            if (task->getRequirement() == nullptr || task->getRequirement()->hostPatterMatches(hostInfo.m_host))
             {
                 usedChannels.insert(iChannel);
 
@@ -98,26 +109,25 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
         size_t nofChannels = _channels.size();
         for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
         {
+            if (usedChannels.find(iChannel) != usedChannels.end())
+                continue;
+
             const auto& v = _channels[iChannel];
             if (v.expired())
                 continue;
             auto ptr = v.lock();
 
-            bool hostMatches = (usedChannels.find(iChannel) == usedChannels.end());
-            if (hostMatches)
-            {
-                usedChannels.insert(iChannel);
+            usedChannels.insert(iChannel);
 
-                SSchedule schedule;
-                schedule.m_channel = v;
-                schedule.m_task = task;
-                schedule.m_taskID = id;
-                m_schedule.push_back(schedule);
+            SSchedule schedule;
+            schedule.m_channel = v;
+            schedule.m_task = task;
+            schedule.m_taskID = id;
+            m_schedule.push_back(schedule);
 
-                taskAssigned = true;
+            taskAssigned = true;
 
-                break;
-            }
+            break;
         }
         if (!taskAssigned)
         {
