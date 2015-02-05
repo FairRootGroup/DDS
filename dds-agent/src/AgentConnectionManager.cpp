@@ -281,11 +281,17 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
     // watchdog
     LOG(info) << "Starting the watchdog for user task pid = " << _pid;
+    try
     {
         // remove pid from the active children list
         std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
         m_children.push_back(_pid);
     }
+    catch (exception& _e)
+    {
+        LOG(fatal) << "Can't add new user task to the list of children: " << _e.what();
+    }
+
     // Register the user task's watchdog
     CMonitoringThread::instance().registerCallbackFunction(
         [this, _pid]() -> bool
