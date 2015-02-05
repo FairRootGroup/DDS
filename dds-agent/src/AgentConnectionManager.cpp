@@ -290,38 +290,45 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     CMonitoringThread::instance().registerCallbackFunction(
         [this, _pid]() -> bool
         {
-            if (!IsProcessExist(_pid))
+            try
             {
-                LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
-                LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+                if (!IsProcessExist(_pid))
+                {
+                    LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
+                    LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
-                std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
-                m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
-                return false;
+                    std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+                    m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+                    return false;
+                }
+
+                // We must call "wait" to check exist status of a child process, otherwise we will crate a zombie :)
+                int status;
+                if (_pid == ::waitpid(_pid, &status, WNOHANG))
+                {
+                    if (WIFEXITED(status))
+                        LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "")
+                                  << " with status " << WEXITSTATUS(status);
+                    else if (WIFSTOPPED(status))
+                        LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
+                    else if (WIFSIGNALED(status))
+                        LOG(info) << "User task killed by signal " << WTERMSIG(status)
+                                  << (WCOREDUMP(status) ? "; (core dumped)" : "");
+                    else
+                        LOG(info) << "User task exited with unexpected status: " << status;
+
+                    LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+
+                    // remove pid from the active children list
+                    std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+                    m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+
+                    return false;
+                }
             }
-
-            // We must call "wait" to check exist status of a child process, otherwise we will crate a zombie :)
-            int status;
-            if (_pid == ::waitpid(_pid, &status, WNOHANG))
+            catch (exception& _e)
             {
-                if (WIFEXITED(status))
-                    LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
-                              << WEXITSTATUS(status);
-                else if (WIFSTOPPED(status))
-                    LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
-                else if (WIFSIGNALED(status))
-                    LOG(info) << "User task killed by signal " << WTERMSIG(status)
-                              << (WCOREDUMP(status) ? "; (core dumped)" : "");
-                else
-                    LOG(info) << "User task exited with unexpected status: " << status;
-
-                LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
-
-                // remove pid from the active children list
-                std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
-                m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
-
-                return false;
+                LOG(fatal) << "User processe monitoring thread received an exception: " << _e.what();
             }
 
             return true;
@@ -333,14 +340,7 @@ bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTO
 {
     // TODO: add error processing, in case if user tasks won't quite
     terminateChildrenProcesses();
-    try
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
-    }
-    catch (bad_weak_ptr& _e)
-    {
-        // TODO: Do we need to log something here?
-    }
+    auto p = _channel.lock();
+    p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
     return true;
 }

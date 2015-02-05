@@ -67,21 +67,15 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
 
     // UI port number
     size_t nPort(0);
-    try
-    {
-        // Read server info file
-        const string sSrvCfg(CUserDefaults::instance().getAgentInfoFileLocation());
-        LOG(info) << "Reading server info from: " << sSrvCfg;
-        if (sSrvCfg.empty())
-            throw runtime_error("Cannot find agent info file.");
+    // Read server info file
+    const string sSrvCfg(CUserDefaults::instance().getAgentInfoFileLocation());
+    LOG(info) << "Reading server info from: " << sSrvCfg;
+    if (sSrvCfg.empty())
+        throw runtime_error("Cannot find agent info file.");
 
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
-        nPort = pt.get<size_t>("agent.port");
-    }
-    catch (...)
-    {
-    }
+    boost::property_tree::ptree pt;
+    boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
+    nPort = pt.get<size_t>("agent.port");
 
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);

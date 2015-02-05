@@ -66,16 +66,9 @@ void CUIConnectionManager::newClientCreated(CUIChannel::connectionPtr_t _newClie
 bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                             CUIChannel::weakConnectionPtr_t _channel)
 {
-    try
-    {
-        LOG(debug) << "Forwarding a key notification update to commander channel: " << *_attachment;
-        auto p = m_commanderChannel.lock();
-        p->updateKey(_attachment->m_sKey, _attachment->m_sValue);
-    }
-    catch (bad_weak_ptr& _bad)
-    {
-        LOG(fatal) << "Can not lock commander channel";
-    }
+    LOG(debug) << "Forwarding a key notification update to commander channel: " << *_attachment;
+    auto p = m_commanderChannel.lock();
+    p->updateKey(_attachment->m_sKey, _attachment->m_sValue);
     return true;
 }
 
