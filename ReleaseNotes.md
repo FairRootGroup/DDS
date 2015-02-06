@@ -28,6 +28,8 @@ Added: shared memory storage for key-value. (GH-35)
 Modified: The DDS transport learned to accumulate commands before sending, instead of sending them one by one. (GH-38)   
 Modified: Hand-shake messages are prioritized now. DDS doesn't send/accept any other message until hand-shake is successful. (GH-37)   
 Fixed: Revised write message algorithms. It is also faster now.    
+Fixed: a bug in the dds-agent, which could cause a SEGFAULT when trying to access a deleted channel object on disconnect.    
+Added: Implemented callbacks (signals) in BaseChannelImpl for different channel events like connect, disconnect, handshakeOK, handshakeFailed. (GH-41)    
 
 ### dds-info
 Added: taskId and task name to console output (dds-info -l). (GH-33)    
