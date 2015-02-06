@@ -41,6 +41,7 @@ void CAgentChannel::onHandshakeOK()
     {
         case EChannelType::AGENT:
         {
+            m_state = EAgentState::idle;
             pushMsg<cmdGET_UUID>();
             pushMsg<cmdGET_HOST_INFO>();
         }

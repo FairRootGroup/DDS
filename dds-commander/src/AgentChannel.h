@@ -10,13 +10,20 @@
 
 namespace dds
 {
-    const std::vector<std::string> g_vecAgentChannelType = { "generic", "agent", "UI" };
+    enum EAgentState
+    {
+        unknown = 0,
+        idle,     // no tasks are assigned
+        executing // assigned task is executing
+    };
+    const std::array<std::string, 3> g_agentStates = { "unknown", "idle", "executing" };
 
     class CAgentChannel : public CServerChannelImpl<CAgentChannel>
     {
         CAgentChannel(boost::asio::io_service& _service)
             : CServerChannelImpl<CAgentChannel>(_service, { EChannelType::AGENT, EChannelType::UI })
             , m_taskID(0)
+            , m_state(EAgentState::unknown)
         {
         }
 
@@ -55,6 +62,14 @@ namespace dds
         std::chrono::milliseconds getStartupTime() const
         {
             return m_startUpTime;
+        }
+        EAgentState getState() const
+        {
+            return m_state;
+        }
+        void setState(EAgentState _state)
+        {
+            m_state = _state;
         }
 
       private:
@@ -96,6 +111,7 @@ namespace dds
         std::string m_sCurrentTopoFile;
         uint64_t m_taskID;
         std::chrono::milliseconds m_startUpTime;
+        EAgentState m_state;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

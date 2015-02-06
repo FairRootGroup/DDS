@@ -435,6 +435,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                     }
                 }
                 ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
+                ptr->setState(EAgentState::executing);
             }
 
             // Active agents.
@@ -473,41 +474,35 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
         m_StopUserTasks.m_channel = _channel;
         m_StopUserTasks.zeroCounters();
 
-        try
+        auto p = m_StopUserTasks.m_channel.lock();
+        auto condition = [](CAgentChannel::connectionPtr_t _v)
         {
-            auto p = m_StopUserTasks.m_channel.lock();
-            auto condition = [](CAgentChannel::connectionPtr_t _v)
-            {
-                return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
-            };
+            return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+        };
 
-            m_StopUserTasks.m_nofRequests = countNofChannels(condition);
-            // initiate the progress on the UI
-            p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_StopUserTasks.m_nofRequests, 0));
+        m_StopUserTasks.m_nofRequests = countNofChannels(condition);
+        // initiate the progress on the UI
+        p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_StopUserTasks.m_nofRequests, 0));
 
-            CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-            for (const auto& v : channels)
-            {
-                if (v.expired())
-                    continue;
-                auto ptr = v.lock();
-                // remove task ID from the channel
-                ptr->setTaskID(0);
-                // dequeue important (or expensive) messages
-                ptr->dequeueMsg<cmdUPDATE_KEY>();
-                // send stop message
-                ptr->template pushMsg<cmdSTOP_USER_TASK>();
-            }
-        }
-        catch (bad_weak_ptr& _e)
+        CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
+        for (const auto& v : channels)
         {
-            // TODO: Do we need to log something here?
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+            // remove task ID from the channel
+            ptr->setTaskID(0);
+            // dequeue important (or expensive) messages
+            ptr->dequeueMsg<cmdUPDATE_KEY>();
+            // send stop message
+            ptr->template pushMsg<cmdSTOP_USER_TASK>();
+            ptr->setState(EAgentState::idle);
         }
     }
     catch (exception& _e)
     {
         auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdACTIVATE_AGENT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSTOP_USER_TASK));
 
         m_StopUserTasks.m_channel.reset();
         return true;
@@ -548,6 +543,7 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
            << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
            << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
            << "\nAgent startup time: " << std::chrono::duration<double>(ptr->getStartupTime()).count() << " s"
+           << "\nState: " << g_agentStates.at(ptr->getState()) << "\n"
            << "\nTask ID: " << sTaskName << "\n";
     }
     cmd.m_sListOfAgents = ss.str();
