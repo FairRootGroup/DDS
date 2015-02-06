@@ -15,10 +15,40 @@ namespace dds
         CGenericChannel(boost::asio::io_service& _service)
             : CClientChannelImpl<CGenericChannel>(_service, EChannelType::UI)
         {
+            subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                             [this](CGenericChannel* _channel)
+                             {
+                                 LOG(MiscCommon::info) << "The DDS commander ["
+                                                       << this->socket().remote_endpoint().address().to_string()
+                                                       << "] has closed the connection.";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                             [this](CGenericChannel* _channel)
+                             {
+                                 switch (m_options.m_agentCmd)
+                                 {
+                                     case EAgentCmdType::GETLOG:
+                                         LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
+                                         pushMsg<cmdGET_LOG>();
+                                         break;
+                                     case EAgentCmdType::UPDATE_KEY:
+                                     {
+                                         LOG(MiscCommon::log_stdout) << "Sending key update command...";
+                                         SUpdateKeyCmd cmd;
+                                         cmd.m_sKey = m_options.m_sUpdKey_key;
+                                         cmd.m_sValue = m_options.m_sUpdKey_value;
+                                         pushMsg<cmdUPDATE_KEY>(cmd);
+                                     }
+                                     break;
+                                     default:
+                                         LOG(MiscCommon::log_stderr) << "Uknown command.";
+                                         stop();
+                                 }
+                             });
         }
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CGenericChannel)
@@ -37,15 +67,6 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         bool on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment);
-        // On connection handles
-        void onRemoteEndDissconnected()
-        {
-            LOG(MiscCommon::info) << "The DDS commander [" << socket().remote_endpoint().address().to_string()
-                                  << "] has closed the connection.";
-        }
-
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         SOptions m_options;

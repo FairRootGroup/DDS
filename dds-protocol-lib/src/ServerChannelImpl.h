@@ -48,9 +48,8 @@ namespace dds
                     LOG(MiscCommon::warning) << msg << this->remoteEndIDString();
                     this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(msg, MiscCommon::fatal));
 
-                    // give a chance child to execute something
-                    T* pThis = static_cast<T*>(this);
-                    pThis->onHandshakeERR();
+                    // notify all subscribers about the event
+                    this->onEvent(EChannelEvents::OnHandshakeFailed);
                 }
                 else
                 {
@@ -66,9 +65,8 @@ namespace dds
 
                     this->template pushMsg<cmdREPLY_HANDSHAKE_OK>();
 
-                    // give a chance child to execute something
-                    T* pThis = static_cast<T*>(this);
-                    pThis->onHandshakeOK();
+                    // notify all subscribers about the event
+                    this->onEvent(EChannelEvents::OnHandshakeOK);
                 }
                 return true;
             };

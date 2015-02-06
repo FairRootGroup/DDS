@@ -30,8 +30,6 @@ namespace dds
       private:
         CAgentChannel(boost::asio::io_service& _service);
 
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
-
         std::string _remoteEndIDString()
         {
             return "DDS agent";
@@ -43,9 +41,6 @@ namespace dds
         bool on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-        void onRemoteEndDissconnected();
-        void onHandshakeOK();
-        void onHandshakeERR();
     };
 }
 

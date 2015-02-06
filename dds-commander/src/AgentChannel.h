@@ -16,7 +16,7 @@ namespace dds
         idle,     // no tasks are assigned
         executing // assigned task is executing
     };
-    const std::array<std::string, 3> g_agentStates = { "unknown", "idle", "executing" };
+    const std::array<std::string, 3> g_agentStates = { { "unknown", "idle", "executing" } };
 
     class CAgentChannel : public CServerChannelImpl<CAgentChannel>
     {
@@ -25,9 +25,35 @@ namespace dds
             , m_taskID(0)
             , m_state(EAgentState::unknown)
         {
-        }
+            subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                             [](CAgentChannel* _channel)
+                             {
+                                 LOG(MiscCommon::info) << "The Agent has closed the connection.";
+                             });
 
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
+            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                             [this](CAgentChannel* _channel)
+                             {
+                                 switch (getChannelType())
+                                 {
+                                     case EChannelType::AGENT:
+                                     {
+                                         m_state = EAgentState::idle;
+                                         pushMsg<cmdGET_UUID>();
+                                         pushMsg<cmdGET_HOST_INFO>();
+                                     }
+                                         return;
+                                     case EChannelType::UI:
+                                         LOG(MiscCommon::info) << "The UI agent ["
+                                                               << socket().remote_endpoint().address().to_string()
+                                                               << "] has successfully connected.";
+                                         return;
+                                     default:
+                                         // TODO: log unknown connection attempt
+                                         return;
+                                 }
+                             });
+        }
 
       public:
         BEGIN_MSG_MAP(CAgentChannel)
@@ -87,13 +113,6 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
 
-        // On connection handles
-        void onRemoteEndDissconnected()
-        {
-            LOG(MiscCommon::info) << "The Agent has closed the connection.";
-        }
-        // On header read handle
-        void onHeaderRead();
         std::string _remoteEndIDString()
         {
             if (getChannelType() == EChannelType::AGENT)
@@ -101,9 +120,6 @@ namespace dds
             else
                 return "UI client";
         }
-
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         boost::uuids::uuid m_id;

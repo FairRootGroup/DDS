@@ -17,9 +17,6 @@ namespace dds
         CUIChannel(boost::asio::io_service& _service);
         std::string _remoteEndIDString();
 
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
-        REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
-
       public:
         BEGIN_MSG_MAP(CUIChannel)
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
@@ -28,9 +25,6 @@ namespace dds
       private:
         // Message Handlers
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-
-        void onHandshakeOK();
-        void onHandshakeERR();
     };
 }
 

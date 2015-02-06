@@ -11,25 +11,6 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CActivateChannel::onHandshakeOK()
-{
-    switch (m_options.m_topologyCmd)
-    {
-        case ETopologyCmdType::ACTIVATE:
-            pushMsg<cmdACTIVATE_AGENT>();
-            break;
-        case ETopologyCmdType::STOP:
-            pushMsg<cmdSTOP_USER_TASK>();
-            break;
-        default:
-            return;
-    }
-}
-
-void CActivateChannel::onHandshakeERR()
-{
-}
-
 bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;

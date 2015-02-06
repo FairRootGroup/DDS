@@ -95,30 +95,12 @@ void CAgentConnectionManager::start()
         };
         m_channel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
-        m_channel->registerConnectEventHandler([this](CAgentChannel* _channel)
-                                               {
-                                                   m_channel->m_syncHelper = m_syncHelper;
-                                               });
+        m_channel->subscribeOnEvent(EChannelEvents::OnConnected,
+                                    [this](CAgentChannel* _channel)
+                                    {
+                                        m_channel->m_syncHelper = m_syncHelper;
+                                    });
         m_channel->connect(endpoint_iterator);
-
-        //        boost::asio::async_connect(m_channel->socket(),
-        //                                   endpoint_iterator,
-        //                                   [this](boost::system::error_code ec, tcp::resolver::iterator)
-        //                                   {
-        //                                       if (!ec)
-        //                                       {
-        //                                           // Create handshake message which is the first one for all agents
-        //                                           SVersionCmd ver;
-        //                                           ver.m_channelType = EChannelType::KEY_VALUE_GUARD;
-        //                                           m_channel->pushMsg<cmdHANDSHAKE>(ver);
-        //                                           m_channel->m_syncHelper = m_syncHelper;
-        //                                           m_channel->start();
-        //                                       }
-        //                                       else
-        //                                       {
-        //                                           LOG(fatal) << "Cannot connect to DDS agent: " << ec.message();
-        //                                       }
-        //                                   });
 
         // Don't block main thread, start transport service on a thread-pool
         const int nConcurrentThreads(2);

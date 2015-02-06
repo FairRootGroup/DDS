@@ -30,14 +30,11 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
     , m_id()
 {
-}
-
-void CCommanderChannel::onHandshakeOK()
-{
-}
-
-void CCommanderChannel::onHandshakeERR()
-{
+    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                     [this](CCommanderChannel* _channel)
+                     {
+                         this->sendYourself<cmdSHUTDOWN>();
+                     });
 }
 
 bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
@@ -286,11 +283,6 @@ void CCommanderChannel::deleteAgentUUIDFile() const
 
     // TODO: check error code
     unlink(sAgentUUIDFile.c_str());
-}
-
-void CCommanderChannel::onRemoteEndDissconnected()
-{
-    sendYourself<cmdSHUTDOWN>();
 }
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)

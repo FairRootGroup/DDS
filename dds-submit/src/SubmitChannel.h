@@ -16,6 +16,38 @@ namespace dds
             : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI)
             , m_RMS(SSubmitCmd::UNKNOWN)
         {
+            subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                             [](CSubmitChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                             [this](CSubmitChannel* _channel)
+                             {
+                                 if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS)
+                                 {
+                                     // Create the command's attachment
+                                     SSubmitCmd cmd;
+                                     cmd.m_sTopoFile = m_sTopoFile;
+                                     cmd.m_nRMSTypeCode = m_RMS;
+                                     cmd.m_sSSHCfgFile = m_sSSHCfgFile;
+                                     pushMsg<cmdSUBMIT>(cmd);
+                                 }
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnConnected,
+                             [](CSubmitChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stdout) << "Connection established.";
+                                 LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                             [](CSubmitChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stdout) << "Failed to connect.";
+                             });
         }
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
@@ -35,26 +67,6 @@ namespace dds
         // Message Handlers
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
-        // On connection handles
-        void onConnected()
-        {
-            LOG(MiscCommon::log_stdout) << "Connection established.";
-            LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
-        }
-        void onFailedToConnect()
-        {
-            LOG(MiscCommon::log_stdout) << "Failed to connect.";
-        }
-        void onRemoteEndDissconnected()
-        {
-            LOG(MiscCommon::log_stderr) << "Server has closed the coinnection.";
-        }
-        void onHeaderRead()
-        {
-        }
-
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         std::string m_sTopoFile;

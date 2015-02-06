@@ -21,6 +21,7 @@
 #pragma clang diagnostic pop
 // DDS
 #include "CommandAttachmentImpl.h"
+#include "ChannelEventsImpl.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 
@@ -115,23 +116,6 @@ class CServerChannelImpl; // needed for friend class
         }                                                                                                     \
         }
 
-#define REGISTER_DEFAULT_ON_CONNECT_CALLBACKS \
-    void onConnected()                        \
-    {                                         \
-    }                                         \
-    void onFailedToConnect()                  \
-    {                                         \
-    }
-
-#define REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS \
-    void onRemoteEndDissconnected()              \
-    {                                            \
-    }
-
-#define REGISTER_ALL_DEFAULT_CALLBACKS                                             \
-    REGISTER_DEFAULT_ON_CONNECT_CALLBACKS REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS \
-        REGISTER_DEFAULT_ON_HEADER_READ_CALLBACKS
-
 #define REGISTER_DEFAULT_REMOTE_ID_STRING \
     std::string _remoteEndIDString()      \
     {                                     \
@@ -221,7 +205,7 @@ namespace dds
     typedef std::shared_ptr<SBinaryAttachmentInfo> binaryAttachmentInfoPtr_t;
 
     template <class T>
-    class CBaseChannelImpl : public boost::noncopyable
+    class CBaseChannelImpl : public boost::noncopyable, public CChannelEventsImpl<T>
     {
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
@@ -235,7 +219,8 @@ namespace dds
 
       protected:
         CBaseChannelImpl<T>(boost::asio::io_service& _service)
-            : m_isHandshakeOK(false)
+            : CChannelEventsImpl<T>()
+            , m_isHandshakeOK(false)
             , m_channelType(EChannelType::UNKNOWN)
             , m_io_service(_service)
             , m_socket(_service)
@@ -643,10 +628,6 @@ namespace dds
                     }
                     if (!ec && m_currentMsg->decode_header())
                     {
-                        //                    // give a chance to child to execute something
-                        //                    T* pThis = static_cast<T*>(this);
-                        //                    pThis->onHeaderRead();
-
                         // If the header is ok, receive the body of the message
                         readBody();
                     }
@@ -824,11 +805,11 @@ namespace dds
         void onDissconnect()
         {
             LOG(MiscCommon::debug) << "The session was disconnected by the remote end: " << remoteEndIDString();
-            // give a chance to child to execute something
-            T* pThis = static_cast<T*>(this);
-            pThis->onRemoteEndDissconnected();
+            // give a chance to children to execute something
+            this->onEvent(EChannelEvents::OnRemoteEndDissconnected);
 
             // Call external event handler
+            T* pThis = static_cast<T*>(this);
             if (m_disconnectEventHandler)
                 m_disconnectEventHandler(pThis);
         }

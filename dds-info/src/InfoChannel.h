@@ -16,10 +16,30 @@ namespace dds
         CInfoChannel(boost::asio::io_service& _service)
             : CClientChannelImpl<CInfoChannel>(_service, EChannelType::UI)
         {
+            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                             [this](CInfoChannel* _channel)
+                             {
+                                 // ask the server what we wnated to ask :)
+                                 if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
+                                     pushMsg<cmdGED_PID>();
+                                 else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
+                                     pushMsg<cmdGET_AGENTS_INFO>();
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnConnected,
+                             [this](CInfoChannel* _channel)
+                             {
+                                 LOG(MiscCommon::info) << "Connected to the commander server";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                             [this](CInfoChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
+                             });
         }
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
-        REGISTER_DEFAULT_ON_DISCONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CInfoChannel)
@@ -38,19 +58,6 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment);
         bool on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
-
-        // On connection handles
-        void onConnected()
-        {
-            LOG(MiscCommon::info) << "Connected to the commander server";
-        }
-        void onFailedToConnect()
-        {
-            LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-        }
-
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         dds::SOptions m_options;

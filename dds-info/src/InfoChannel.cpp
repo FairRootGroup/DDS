@@ -10,19 +10,6 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CInfoChannel::onHandshakeOK()
-{
-    // ask the server what we wnated to ask :)
-    if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
-        pushMsg<cmdGED_PID>();
-    else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
-        pushMsg<cmdGET_AGENTS_INFO>();
-}
-
-void CInfoChannel::onHandshakeERR()
-{
-}
-
 bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     if (!_attachment->m_sMsg.empty())

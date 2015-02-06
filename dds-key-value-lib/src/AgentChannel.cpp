@@ -18,14 +18,14 @@ using namespace std;
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::KEY_VALUE_GUARD)
 {
-}
-
-void CAgentChannel::onHandshakeOK()
-{
-}
-
-void CAgentChannel::onHandshakeERR()
-{
+    subscribeOnEvent(
+        EChannelEvents::OnRemoteEndDissconnected,
+        [this](CAgentChannel* _channel)
+        {
+            LOG(info)
+                << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
+            this->sendYourself<cmdSHUTDOWN>();
+        });
 }
 
 bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
@@ -60,12 +60,6 @@ bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _a
     stop();
     // return false to let connection manager to catch this message as weel
     return false;
-}
-
-void CAgentChannel::onRemoteEndDissconnected()
-{
-    LOG(info) << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
-    sendYourself<cmdSHUTDOWN>();
 }
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)

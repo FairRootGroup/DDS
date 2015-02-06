@@ -36,13 +36,8 @@ namespace dds
                 // The following commands starts message processing which might be queued before.
                 this->template pushMsg<cmdUNKNOWN>();
 
-                // give a chance child to execute something
-                T* pThis = static_cast<T*>(this);
-                pThis->onHandshakeOK();
-
-                // Call external event handler
-                if (m_handshakeOKEventHandler)
-                    m_handshakeOKEventHandler(pThis);
+                // notify all subscribers about the event
+                this->onEvent(EChannelEvents::OnHandshakeOK);
 
                 return true;
             };
@@ -59,13 +54,8 @@ namespace dds
                 this->m_isHandshakeOK = false;
                 this->m_channelType = EChannelType::UNKNOWN;
 
-                // give a chance child to execute something
-                T* pThis = static_cast<T*>(this);
-                pThis->onHandshakeERR();
-
-                // Call external event handler
-                if (m_handshakeERREventHandler)
-                    m_handshakeERREventHandler(pThis);
+                // notify all subscribers about the event
+                this->onEvent(EChannelEvents::OnHandshakeFailed);
 
                 return true;
             };
@@ -85,13 +75,8 @@ namespace dds
                                        {
                                            if (!ec)
                                            {
-                                               // give a chance child to execute something
-                                               T* pThis = static_cast<T*>(this);
-                                               pThis->onConnected();
-
-                                               // Call external event handler
-                                               if (m_connectEventHandler)
-                                                   m_connectEventHandler(pThis);
+                                               // notify all subscribers about the event
+                                               this->onEvent(EChannelEvents::OnConnected);
 
                                                // start the communication channel
                                                this->start();
@@ -103,32 +88,11 @@ namespace dds
                                            }
                                            else
                                            {
-                                               // give a chance child to execute something
-                                               T* pThis = static_cast<T*>(this);
-                                               pThis->onFailedToConnect();
+                                               // notify all subscribers about the event
+                                               this->onEvent(EChannelEvents::OnFailedToConnect);
                                            }
                                        });
         }
-
-        void registerConnectEventHandler(handlerEventFunction_t _handler)
-        {
-            m_connectEventHandler = _handler;
-        }
-
-        void registerHandshakeOKEventHandler(handlerEventFunction_t _handler)
-        {
-            m_handshakeOKEventHandler = _handler;
-        }
-
-        void registerHandshakeERREventHandler(handlerEventFunction_t _handler)
-        {
-            m_handshakeOKEventHandler = _handler;
-        }
-
-      private:
-        handlerEventFunction_t m_connectEventHandler;
-        handlerEventFunction_t m_handshakeOKEventHandler;
-        handlerEventFunction_t m_handshakeERREventHandler;
     };
 }
 

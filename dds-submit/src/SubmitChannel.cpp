@@ -25,23 +25,6 @@ void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
     m_RMS = _val;
 }
 
-void CSubmitChannel::onHandshakeOK()
-{
-    if (!m_sTopoFile.empty() && SSubmitCmd::UNKNOWN != m_RMS)
-    {
-        // Create the command's attachment
-        SSubmitCmd cmd;
-        cmd.m_sTopoFile = m_sTopoFile;
-        cmd.m_nRMSTypeCode = m_RMS;
-        cmd.m_sSSHCfgFile = m_sSSHCfgFile;
-        pushMsg<cmdSUBMIT>(cmd);
-    }
-}
-
-void CSubmitChannel::onHandshakeERR()
-{
-}
-
 bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     if (!_attachment->m_sMsg.empty())

@@ -141,14 +141,15 @@ void CAgentConnectionManager::start()
                                                    return this->onNewUserTask(_pid);
                                                });
 
-        m_agent->registerConnectEventHandler([this](CCommanderChannel* _channel)
-                                             {
-                                                 // Start the UI agent server
-                                                 m_UIConnectionMng =
-                                                     make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
-                                                 m_UIConnectionMng->setCommanderChannel(m_agent);
-                                                 m_UIConnectionMng->start(false, 2);
-                                             });
+        m_agent->subscribeOnEvent(EChannelEvents::OnConnected,
+                                  [this](CCommanderChannel* _channel)
+                                  {
+                                      // Start the UI agent server
+                                      m_UIConnectionMng =
+                                          make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
+                                      m_UIConnectionMng->setCommanderChannel(m_agent);
+                                      m_UIConnectionMng->start(false, 2);
+                                  });
         m_agent->connect(endpoint_iterator);
 
         const int nConcurrentThreads(2);
@@ -180,7 +181,8 @@ void CAgentConnectionManager::stop()
     try
     {
         m_service.stop();
-        m_agent->stop();
+        if (m_agent)
+            m_agent->stop();
     }
     catch (exception& e)
     {

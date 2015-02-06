@@ -11,15 +11,6 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CTestChannel::onHandshakeOK()
-{
-    pushMsg<cmdTRANSPORT_TEST>();
-}
-
-void CTestChannel::onHandshakeERR()
-{
-}
-
 bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;

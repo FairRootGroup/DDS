@@ -23,10 +23,10 @@ set( SOURCE_FILES
 	./src/HostInfoCmd.cpp
 	./src/SubmitCmd.cpp
 	./src/VersionCmd.cpp
-    ./src/BinaryAttachmentReceivedCmd.cpp
-    ./src/BinaryAttachmentStartCmd.cpp
+	./src/BinaryAttachmentReceivedCmd.cpp
+	./src/BinaryAttachmentStartCmd.cpp
 	./src/UpdateKeyCmd.cpp
-    ./src/ProgressCmd.cpp
+	./src/ProgressCmd.cpp
 )
 
 set( SRC_HDRS
@@ -35,6 +35,7 @@ set( SRC_HDRS
 	./src/BaseChannelImpl.h
 	./src/ClientChannelImpl.h
 	./src/ServerChannelImpl.h
+	./src/ChannelEventsImpl.h
 	./src/CommandAttachmentImpl.h
 	./src/ConnectionManagerImpl.h
 	./src/BasicCmd.h
@@ -46,10 +47,10 @@ set( SRC_HDRS
 	./src/HostInfoCmd.h
 	./src/SubmitCmd.h
 	./src/VersionCmd.h
-    ./src/BinaryAttachmentReceivedCmd.h
-    ./src/BinaryAttachmentStartCmd.h
+	./src/BinaryAttachmentReceivedCmd.h
+	./src/BinaryAttachmentStartCmd.h
 	./src/UpdateKeyCmd.h
-    ./src/ProgressCmd.h
+	./src/ProgressCmd.h
 )
 
 include_directories(

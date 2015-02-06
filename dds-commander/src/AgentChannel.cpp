@@ -16,10 +16,6 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CAgentChannel::onHeaderRead()
-{
-}
-
 const boost::uuids::uuid& CAgentChannel::getId() const
 {
     return m_id;
@@ -33,31 +29,6 @@ uint64_t CAgentChannel::getTaskID() const
 void CAgentChannel::setTaskID(uint64_t _taskID)
 {
     m_taskID = _taskID;
-}
-
-void CAgentChannel::onHandshakeOK()
-{
-    switch (getChannelType())
-    {
-        case EChannelType::AGENT:
-        {
-            m_state = EAgentState::idle;
-            pushMsg<cmdGET_UUID>();
-            pushMsg<cmdGET_HOST_INFO>();
-        }
-            return;
-        case EChannelType::UI:
-            LOG(info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
-                      << "] has successfully connected.";
-            return;
-        default:
-            // TODO: log unknown connection attempt
-            return;
-    }
-}
-
-void CAgentChannel::onHandshakeERR()
-{
 }
 
 bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment)

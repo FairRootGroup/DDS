@@ -15,10 +15,22 @@ namespace dds
         CTestChannel(boost::asio::io_service& _service)
             : CClientChannelImpl<CTestChannel>(_service, EChannelType::UI)
         {
+            subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                             [this](CTestChannel* _channel)
+                             {
+                                 LOG(MiscCommon::info) << "The Agent ["
+                                                       << this->socket().remote_endpoint().address().to_string()
+                                                       << "] has closed the connection.";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                             [this](CTestChannel* _channel)
+                             {
+                                 pushMsg<cmdTRANSPORT_TEST>();
+                             });
         }
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CTestChannel)
@@ -37,16 +49,6 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         bool on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment);
-
-        // On connection handles
-        void onRemoteEndDissconnected()
-        {
-            LOG(MiscCommon::info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                                  << "] has closed the connection.";
-        }
-
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         dds::SOptions m_options;

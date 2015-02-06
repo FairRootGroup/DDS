@@ -16,6 +16,50 @@ namespace dds
         CActivateChannel(boost::asio::io_service& _service)
             : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI)
         {
+            subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                             [](CActivateChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnConnected,
+                             [this](CActivateChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stdout) << "Connection established.";
+                                 switch (m_options.m_topologyCmd)
+                                 {
+                                     case ETopologyCmdType::ACTIVATE:
+                                         LOG(MiscCommon::log_stdout) << "Requesting server to activate user tasks...";
+                                         break;
+                                     case ETopologyCmdType::STOP:
+                                         LOG(MiscCommon::log_stdout) << "Requesting server to stop user tasks...";
+                                         break;
+                                     default:
+                                         return;
+                                 }
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                             [this](CActivateChannel* _channel)
+                             {
+                                 LOG(MiscCommon::log_stdout) << "Failed to connect.";
+                             });
+
+            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                             [this](CActivateChannel* _channel)
+                             {
+                                 switch (m_options.m_topologyCmd)
+                                 {
+                                     case ETopologyCmdType::ACTIVATE:
+                                         pushMsg<cmdACTIVATE_AGENT>();
+                                         break;
+                                     case ETopologyCmdType::STOP:
+                                         pushMsg<cmdSTOP_USER_TASK>();
+                                         break;
+                                     default:
+                                         return;
+                                 }
+                             });
         }
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
@@ -37,35 +81,6 @@ namespace dds
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         bool on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment);
-        // On connection handles
-        void onConnected()
-        {
-            LOG(MiscCommon::log_stdout) << "Connection established.";
-            switch (m_options.m_topologyCmd)
-            {
-                case ETopologyCmdType::ACTIVATE:
-                    LOG(MiscCommon::log_stdout) << "Requesting server to activate user tasks...";
-                    break;
-                case ETopologyCmdType::STOP:
-                    LOG(MiscCommon::log_stdout) << "Requesting server to stop user tasks...";
-                    break;
-                default:
-                    return;
-            }
-        }
-        void onFailedToConnect()
-        {
-            LOG(MiscCommon::log_stdout) << "Failed to connect.";
-        }
-        void onRemoteEndDissconnected()
-        {
-            LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
-        }
-        void onHeaderRead()
-        {
-        }
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         dds::SOptions m_options;

@@ -19,7 +19,6 @@ namespace dds
         CCommanderChannel(boost::asio::io_service& _service);
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
-        REGISTER_DEFAULT_ON_CONNECT_CALLBACKS
 
       public:
         BEGIN_MSG_MAP(CCommanderChannel)
@@ -60,9 +59,6 @@ namespace dds
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
         bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-        void onRemoteEndDissconnected();
-        void onHandshakeOK();
-        void onHandshakeERR();
 
       private:
         void readAgentUUIDFile();
