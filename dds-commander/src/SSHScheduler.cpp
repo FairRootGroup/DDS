@@ -37,11 +37,21 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     m_schedule.clear();
 
     CTopology::TaskIteratorPair_t tasks = _topology.getTaskIterator();
-    set<size_t> usedChannels;
 
     size_t taskCounter = 0;
+    size_t nofChannels = _channels.size();
 
-    // TODO: refactor this code to avoid dublication, probably move some common functionality to a function.
+    // Fill host name to channel index map in order to reduce number of regex matches and speed up scheduling.
+    map<string, vector<size_t>> hostToChannelMap;
+    for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
+    {
+        const auto& v = _channels[iChannel];
+        if (v.expired())
+            continue;
+        auto ptr = v.lock();
+        const SHostInfoCmd& hostInfo = ptr->getRemoteHostInfo();
+        hostToChannelMap[hostInfo.m_host].push_back(iChannel);
+    }
 
     // Tasks with requirements
     for (auto it = tasks.first; it != tasks.second; it++)
@@ -54,33 +64,28 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
             continue;
 
         bool taskAssigned = false;
-        // Find first matched channel host
-        size_t nofChannels = _channels.size();
-        for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
+
+        for (auto& v : hostToChannelMap)
         {
-            if (usedChannels.find(iChannel) != usedChannels.end())
-                continue;
-
-            const auto& v = _channels[iChannel];
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
-
-            const SHostInfoCmd& hostInfo = ptr->getRemoteHostInfo();
-
-            if (task->getRequirement() == nullptr || task->getRequirement()->hostPatterMatches(hostInfo.m_host))
+            if (task->getRequirement()->hostPatterMatches(v.first))
             {
-                usedChannels.insert(iChannel);
+                if (!v.second.empty())
+                {
+                    size_t channelIndex = v.second.back();
+                    const auto& channel = _channels[channelIndex];
 
-                SSchedule schedule;
-                schedule.m_channel = v;
-                schedule.m_task = task;
-                schedule.m_taskID = id;
-                m_schedule.push_back(schedule);
+                    SSchedule schedule;
+                    schedule.m_channel = channel;
+                    schedule.m_task = task;
+                    schedule.m_taskID = id;
+                    m_schedule.push_back(schedule);
 
-                taskAssigned = true;
+                    v.second.pop_back();
 
-                break;
+                    taskAssigned = true;
+
+                    break;
+                }
             }
         }
         if (!taskAssigned)
@@ -100,34 +105,31 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
         uint64_t id = it->first;
         TaskPtr_t task = it->second;
 
-        // First path only for tasks without requirements;
+        // Second path only for tasks without requirements;
         if (task->getRequirement() != nullptr)
             continue;
 
         bool taskAssigned = false;
-        // Find first matched channel host
-        size_t nofChannels = _channels.size();
-        for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
+
+        for (auto& v : hostToChannelMap)
         {
-            if (usedChannels.find(iChannel) != usedChannels.end())
-                continue;
+            if (!v.second.empty())
+            {
+                size_t channelIndex = v.second.back();
+                const auto& channel = _channels[channelIndex];
 
-            const auto& v = _channels[iChannel];
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
+                SSchedule schedule;
+                schedule.m_channel = channel;
+                schedule.m_task = task;
+                schedule.m_taskID = id;
+                m_schedule.push_back(schedule);
 
-            usedChannels.insert(iChannel);
+                v.second.pop_back();
 
-            SSchedule schedule;
-            schedule.m_channel = v;
-            schedule.m_task = task;
-            schedule.m_taskID = id;
-            m_schedule.push_back(schedule);
+                taskAssigned = true;
 
-            taskAssigned = true;
-
-            break;
+                break;
+            }
         }
         if (!taskAssigned)
         {

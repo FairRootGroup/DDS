@@ -78,7 +78,7 @@ namespace dds
 
       public:
         const boost::uuids::uuid& getId() const;
-        const SHostInfoCmd getRemoteHostInfo() const
+        const SHostInfoCmd& getRemoteHostInfo() const
         {
             return m_remoteHostInfo;
         }
@@ -96,6 +96,12 @@ namespace dds
         void setState(EAgentState _state)
         {
             m_state = _state;
+        }
+
+        // This function only used in tests
+        void setRemoteHostInfo(const SHostInfoCmd& _hostInfo)
+        {
+            m_remoteHostInfo = _hostInfo;
         }
 
       private:

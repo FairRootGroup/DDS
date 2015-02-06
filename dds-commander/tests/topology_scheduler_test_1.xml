@@ -1,0 +1,42 @@
+<topology id="myTopology">
+		
+	<declrequirement id="requirement1">
+    	<hostPattern value="host1_([0-9]|[0-9][0-9])"/>
+	</declrequirement>
+	
+	<declrequirement id="requirement2">
+    	<hostPattern value="host2_([0-9]|[0-9][0-9])"/>
+	</declrequirement>
+	
+	<declrequirement id="requirement3">
+    	<hostPattern value="host3_([0-9]|[0-9][0-9])"/>
+	</declrequirement>
+	
+  	<decltask id="TestTask1">
+		<exe reachable="false">test_task.exe</exe>
+		<requirement>requirement1</requirement>
+	</decltask>
+	
+  	<decltask id="TestTask2">
+		<exe reachable="false">test_task.exe</exe>
+		<requirement>requirement2</requirement>
+	</decltask>
+	
+  	<decltask id="TestTask3">
+		<exe reachable="false">test_task.exe</exe>
+		<requirement>requirement3</requirement>
+	</decltask>
+	
+	<main id="main">
+		<group id="group1" n="1000">
+			<task>TestTask1</task>
+		</group>
+		<group id="group2" n="1000">
+			<task>TestTask2</task>
+		</group>
+		<group id="group3" n="1000">
+			<task>TestTask3</task>
+		</group>
+	</main>
+	
+</topology>

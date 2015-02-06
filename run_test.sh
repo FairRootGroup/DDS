@@ -38,6 +38,7 @@ else
    DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
 fi
 
+$DDS_LOCATION/bin/dds-user-defaults -d -c $DDS_LOCATION/DDS.cfg
 
 pushd $(pwd)
 cd "$1"/tests
@@ -73,6 +74,11 @@ echo "----------------------"
 exec_test "dds-protocol-lib-ProtocolMessage-tests"
 #exec_test "dds-protocol-lib-client-tests"
 #exec_test "dds-protocol-lib-server-tests"
+
+echo "----------------------"
+echo "Commander UNIT-TESTs"
+echo "----------------------"
+exec_test "dds-scheduler-tests" "--catch_system_errors=no"
 
 
 popd
