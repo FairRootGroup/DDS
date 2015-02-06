@@ -158,51 +158,46 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
                                        CAgentChannel::weakConnectionPtr_t _channel)
 {
     std::lock_guard<std::mutex> lock(m_getLog.m_mutexStart);
-    try
+
+    if (!m_getLog.m_channel.expired())
     {
-        if (!m_getLog.m_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(
-                SSimpleMsgCmd("Can not process the request. The getlog command is already in progress."));
-            return true;
-        }
-        m_getLog.m_channel = _channel;
-        m_getLog.zeroCounters();
-
-        auto p = m_getLog.m_channel.lock();
-        // Create directory to store logs
-        const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-        fs::path dir(sLogStorageDir);
-        if (!fs::exists(dir) && !fs::create_directory(dir))
-        {
-            stringstream ss;
-            ss << "Could not create directory " << sLogStorageDir << " to save log files.";
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
-
-            m_getLog.m_channel.reset();
-            return true;
-        }
-
-        auto condition = [](CAgentChannel::connectionPtr_t _v)
-        {
-            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
-        };
-
-        m_getLog.m_nofRequests = countNofChannels(condition);
-
-        if (m_getLog.m_nofRequests == 0)
-        {
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no connected agents."));
-            return true;
-        }
-
-        broadcastSimpleMsg<cmdGET_LOG>(condition);
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("Can not process the request. The getlog command is already in progress."));
+        return true;
     }
-    catch (bad_weak_ptr& e)
+    m_getLog.m_channel = _channel;
+    m_getLog.zeroCounters();
+
+    auto p = m_getLog.m_channel.lock();
+    // Create directory to store logs
+    const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+    fs::path dir(sLogStorageDir);
+    if (!fs::exists(dir) && !fs::create_directory(dir))
     {
-        // TODO: Do we need to log something here?
+        stringstream ss;
+        ss << "Could not create directory " << sLogStorageDir << " to save log files.";
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
+
+        m_getLog.m_channel.reset();
+        return true;
     }
+
+    auto condition = [](CAgentChannel::connectionPtr_t _v)
+    {
+        return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+    };
+
+    m_getLog.m_nofRequests = countNofChannels(condition);
+
+    if (m_getLog.m_nofRequests == 0)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no connected agents."));
+        return true;
+    }
+
+    broadcastSimpleMsg<cmdGET_LOG>(condition);
+
     return true;
 }
 
@@ -523,51 +518,44 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
 bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
-    try
+    SAgentsInfoCmd cmd;
+    stringstream ss;
+
+    CAgentChannel::weakConnectionPtrVector_t channels(
+        getChannels([](CAgentChannel::connectionPtr_t _v)
+                    {
+                        return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+                    }));
+
+    for (const auto& v : channels)
     {
-        SAgentsInfoCmd cmd;
-        stringstream ss;
+        if (v.expired())
+            continue;
+        auto ptr = v.lock();
 
-        CAgentChannel::weakConnectionPtrVector_t channels(
-            getChannels([](CAgentChannel::connectionPtr_t _v)
-                        {
-                            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
-                        }));
-
-        for (const auto& v : channels)
+        string sTaskName("no task is assigned");
+        if (ptr->getTaskID() > 0)
         {
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
-
-            string sTaskName("no task is assigned");
-            if (ptr->getTaskID() > 0)
-            {
-                TaskPtr_t task = m_topo.getTaskByHash(ptr->getTaskID());
-                stringstream ssTaskString;
-                ssTaskString << ptr->getTaskID() << " (" << task->getId() << ")";
-                sTaskName = ssTaskString.str();
-            }
-
-            ++cmd.m_nActiveAgents;
-            ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
-               << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
-               << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
-               << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
-               << "\nAgent startup time: " << std::chrono::duration<double>(ptr->getStartupTime()).count() << " s"
-               << "\nTask ID: " << sTaskName << "\n";
+            TaskPtr_t task = m_topo.getTaskByHash(ptr->getTaskID());
+            stringstream ssTaskString;
+            ssTaskString << ptr->getTaskID() << " (" << task->getId() << ")";
+            sTaskName = ssTaskString.str();
         }
-        cmd.m_sListOfAgents = ss.str();
 
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
-        }
+        ++cmd.m_nActiveAgents;
+        ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
+           << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
+           << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
+           << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
+           << "\nAgent startup time: " << std::chrono::duration<double>(ptr->getStartupTime()).count() << " s"
+           << "\nTask ID: " << sTaskName << "\n";
     }
-    catch (bad_weak_ptr& e)
+    cmd.m_sListOfAgents = ss.str();
+
+    if (!_channel.expired())
     {
-        // TODO: Do we need to log something here?
+        auto p = _channel.lock();
+        p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
     }
 
     return true;
@@ -576,52 +564,45 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
 bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
-    try
+    std::lock_guard<std::mutex> lock(m_transportTest.m_mutexStart);
+
+    if (!m_transportTest.m_channel.expired())
     {
-        std::lock_guard<std::mutex> lock(m_transportTest.m_mutexStart);
-
-        if (!m_transportTest.m_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
-                "Can not process the request. The test command is already in progress.", fatal, cmdTRANSPORT_TEST));
-            return true;
-        }
-        m_transportTest.m_channel = _channel;
-        m_transportTest.zeroCounters();
-
-        auto condition = [](CAgentChannel::connectionPtr_t _v)
-        {
-            return (_v != nullptr && _v->getChannelType() == EChannelType::AGENT && _v->started());
-        };
-
-        vector<size_t> binarySizes{ 1000, 10000, 1000, 100000, 1000, 1000000, 1000, 10000000, 1000 };
-
-        m_transportTest.m_nofRequests = binarySizes.size() * countNofChannels(condition);
-
-        for (size_t size : binarySizes)
-        {
-            MiscCommon::BYTEVector_t data;
-            for (size_t i = 0; i < size; ++i)
-            {
-                char c = rand() % 256;
-                // char c = 'c';
-                data.push_back(c);
-            }
-
-            string fileName = "test_data_" + std::to_string(size) + ".bin";
-            broadcastBinaryAttachmentCmd(data, fileName, cmdTRANSPORT_TEST, condition);
-        }
-
-        if (m_transportTest.m_nofRequests == 0 && !m_transportTest.m_channel.expired())
-        {
-            auto p = m_transportTest.m_channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no active agents.", fatal, cmdTRANSPORT_TEST));
-        }
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
+            "Can not process the request. The test command is already in progress.", fatal, cmdTRANSPORT_TEST));
+        return true;
     }
-    catch (bad_weak_ptr& e)
+    m_transportTest.m_channel = _channel;
+    m_transportTest.zeroCounters();
+
+    auto condition = [](CAgentChannel::connectionPtr_t _v)
     {
-        // TODO: Do we need to log something here?
+        return (_v != nullptr && _v->getChannelType() == EChannelType::AGENT && _v->started());
+    };
+
+    vector<size_t> binarySizes{ 1000, 10000, 1000, 100000, 1000, 1000000, 1000, 10000000, 1000 };
+
+    m_transportTest.m_nofRequests = binarySizes.size() * countNofChannels(condition);
+
+    for (size_t size : binarySizes)
+    {
+        MiscCommon::BYTEVector_t data;
+        for (size_t i = 0; i < size; ++i)
+        {
+            char c = rand() % 256;
+            // char c = 'c';
+            data.push_back(c);
+        }
+
+        string fileName = "test_data_" + std::to_string(size) + ".bin";
+        broadcastBinaryAttachmentCmd(data, fileName, cmdTRANSPORT_TEST, condition);
+    }
+
+    if (m_transportTest.m_nofRequests == 0 && !m_transportTest.m_channel.expired())
+    {
+        auto p = m_transportTest.m_channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no active agents.", fatal, cmdTRANSPORT_TEST));
     }
 
     return true;
@@ -670,79 +651,71 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
 bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    try
+    //    m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
+    //    boost::property_tree::ini_parser::write_ini(m_sCfgFilePath, m_propertyPT);
+
+    // If UI channel sends a property update than property key does not contain a hash.
+    // In this case each agent set the property key hash himself.
+    auto channelPtr = _channel.lock();
+    const bool sentFromUIChannel = (channelPtr->getChannelType() == EChannelType::UI);
+
+    string propertyID(_attachment->m_sKey);
+    if (!sentFromUIChannel)
     {
-        //    m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
-        //    boost::property_tree::ini_parser::write_ini(m_sCfgFilePath, m_propertyPT);
+        // If we get property key from agent we have to parse it to get the property ID.
+        // propertyID.17621121989812
+        const string propertyKey(_attachment->m_sKey);
+        const size_t pos(propertyKey.find_last_of('.'));
+        propertyID = propertyKey.substr(0, pos);
+    }
 
-        // If UI channel sends a property update than property key does not contain a hash.
-        // In this case each agent set the property key hash himself.
-        auto channelPtr = _channel.lock();
-        const bool sentFromUIChannel = (channelPtr->getChannelType() == EChannelType::UI);
+    CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(propertyID);
 
-        string propertyID(_attachment->m_sKey);
-        if (!sentFromUIChannel)
+    for (auto it = taskIt.first; it != taskIt.second; ++it)
+    {
+        auto iter = m_taskIDToAgentChannelMap.find(it->first);
+        if (iter == m_taskIDToAgentChannelMap.end())
         {
-            // If we get property key from agent we have to parse it to get the property ID.
-            // propertyID.17621121989812
-            const string propertyKey(_attachment->m_sKey);
-            const size_t pos(propertyKey.find_last_of('.'));
-            propertyID = propertyKey.substr(0, pos);
+            LOG(debug) << "on_cmdUPDATE_KEY task <" << it->first << "> not found in map. Property will not be updated.";
         }
-
-        CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(propertyID);
-
-        for (auto it = taskIt.first; it != taskIt.second; ++it)
+        else
         {
-            auto iter = m_taskIDToAgentChannelMap.find(it->first);
-            if (iter == m_taskIDToAgentChannelMap.end())
-            {
-                LOG(debug) << "on_cmdUPDATE_KEY task <" << it->first
-                           << "> not found in map. Property will not be updated.";
-            }
-            else
-            {
-                if (iter->second.expired())
-                    continue;
-                auto ptr = iter->second.lock();
+            if (iter->second.expired())
+                continue;
+            auto ptr = iter->second.lock();
 
-                if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
+            if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
+            {
+                if (sentFromUIChannel)
                 {
-                    if (sentFromUIChannel)
+                    // If property changed from UI we have to change hash in the property key.
+                    SUpdateKeyCmd attachment(*_attachment);
+                    stringstream ss;
+                    ss << propertyID << "." << ptr->getTaskID();
+                    attachment.m_sKey = ss.str();
+                    ptr->pushMsg<cmdUPDATE_KEY>(attachment);
+                    LOG(info) << "Property update from UI channel: " << ss.str();
+                }
+                else
+                {
+                    if (ptr->getTaskID() != channelPtr->getTaskID())
                     {
-                        // If property changed from UI we have to change hash in the property key.
-                        SUpdateKeyCmd attachment(*_attachment);
-                        stringstream ss;
-                        ss << propertyID << "." << ptr->getTaskID();
-                        attachment.m_sKey = ss.str();
-                        ptr->pushMsg<cmdUPDATE_KEY>(attachment);
-                        LOG(info) << "Property update from UI channel: " << ss.str();
-                    }
-                    else
-                    {
-                        if (ptr->getTaskID() != channelPtr->getTaskID())
-                        {
-                            ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
-                            LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
-                        }
+                        ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
+                        LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
                     }
                 }
             }
         }
-
-        channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
-            "All related agents have been advised about the key update.", MiscCommon::info, cmdUPDATE_KEY));
-        // Shutdown the initial channel if it's an UI one
-        if (sentFromUIChannel)
-        {
-            LOG(debug) << "A key-value notification has been broadcasted:" << *_attachment
-                       << " There are no more requests from the UI channel, therefore shutting it down.";
-            channelPtr->pushMsg<cmdSHUTDOWN>();
-        }
     }
-    catch (const bad_weak_ptr& e)
+
+    channelPtr->pushMsg<cmdSIMPLE_MSG>(
+        SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::info, cmdUPDATE_KEY));
+    // Shutdown the initial channel if it's an UI one
+    if (sentFromUIChannel)
     {
-        LOG(error) << "bad_weak_ptr exception in on_cmdUPDATE_KEY: " << e.what();
+        LOG(debug) << "A key-value notification has been broadcasted:" << *_attachment
+                   << " There are no more requests from the UI channel, therefore shutting it down.";
+        channelPtr->pushMsg<cmdSHUTDOWN>();
     }
 
     return true;
