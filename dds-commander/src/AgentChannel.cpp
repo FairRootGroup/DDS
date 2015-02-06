@@ -77,12 +77,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
     }
     catch (exception& e)
     {
-        SSimpleMsgCmd msg_cmd;
-        msg_cmd.m_sMsg = e.what();
-        msg_cmd.m_srcCommand = cmdSUBMIT;
-        msg_cmd.m_msgSeverity = fatal;
-        pushMsg<cmdSIMPLE_MSG>(msg_cmd);
-
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), MiscCommon::fatal, cmdSUBMIT));
         return true;
     }
 
