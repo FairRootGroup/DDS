@@ -293,39 +293,53 @@ namespace dds
         template <ECmdType _cmd, class A>
         void pushMsg(const A& _attachment)
         {
-            CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+            try
+            {
+                CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
 
-            std::lock_guard<std::mutex> lock(m_mutexWriteQueue);
-            if (!m_isHandshakeOK)
-            {
-                if (isCmdAllowedWithoutHandshake(_cmd))
-                    m_writeQueue.push_back(msg);
-                else
-                    m_writeQueueBeforeHandShake.push_back(msg);
-            }
-            else
-            {
-                // copy the buffered queue, which has been collected before hand-shake
-                if (!m_writeQueueBeforeHandShake.empty())
+                std::lock_guard<std::mutex> lock(m_mutexWriteQueue);
+                if (!m_isHandshakeOK)
                 {
-                    std::copy(m_writeQueueBeforeHandShake.begin(),
-                              m_writeQueueBeforeHandShake.end(),
-                              back_inserter(m_writeQueue));
-                    m_writeQueueBeforeHandShake.clear();
+                    if (isCmdAllowedWithoutHandshake(_cmd))
+                        m_writeQueue.push_back(msg);
+                    else
+                        m_writeQueueBeforeHandShake.push_back(msg);
+                }
+                else
+                {
+                    // copy the buffered queue, which has been collected before hand-shake
+                    if (!m_writeQueueBeforeHandShake.empty())
+                    {
+                        std::copy(m_writeQueueBeforeHandShake.begin(),
+                                  m_writeQueueBeforeHandShake.end(),
+                                  back_inserter(m_writeQueue));
+                        m_writeQueueBeforeHandShake.clear();
+                    }
+
+                    // add the current message to the queue
+                    if (cmdUNKNOWN != _cmd)
+                        m_writeQueue.push_back(msg);
                 }
 
-                // add the current message to the queue
-                if (cmdUNKNOWN != _cmd)
-                    m_writeQueue.push_back(msg);
+                LOG(MiscCommon::debug) << "pushMsg: WriteQueue size = " << m_writeQueue.size()
+                                       << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size();
             }
-
-            LOG(MiscCommon::debug) << "pushMsg: WriteQueue size = " << m_writeQueue.size()
-                                   << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size();
+            catch (std::exception& ex)
+            {
+                LOG(MiscCommon::error) << "BaseChannelImpl can't push message: " << ex.what();
+            }
 
             // process standard async writing
             m_io_service.post([this]
                               {
-                                  writeMessage();
+                                  try
+                                  {
+                                      writeMessage();
+                                  }
+                                  catch (std::exception& ex)
+                                  {
+                                      LOG(MiscCommon::error) << "BaseChannelImpl can't write message: " << ex.what();
+                                  }
                               });
         }
 
@@ -732,34 +746,41 @@ namespace dds
                 m_writeBuffer,
                 [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
                 {
-                    if (!_ec)
+                    try
                     {
-                        LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
-                                               << _bytesTransferred << " bytes)";
-
-                        // lock the modification of the container
+                        if (!_ec)
                         {
-                            std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
-                            m_writeBuffer.clear();
-                            m_writeBufferQueue.clear();
+                            LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
+                                                   << _bytesTransferred << " bytes)";
+
+                            // lock the modification of the container
+                            {
+                                std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+                                m_writeBuffer.clear();
+                                m_writeBufferQueue.clear();
+                            }
+                            // we might need to send more messages
+                            writeMessage();
                         }
-                        // we might need to send more messages
-                        writeMessage();
-                    }
-                    else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
-                    {
-                        onDissconnect();
-                    }
-                    else
-                    {
-                        // don't show error if service is closed
-                        if (m_started)
-                            LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": "
-                                                   << _ec.message();
+                        else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
+                        {
+                            onDissconnect();
+                        }
                         else
-                            LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                     "closing the connection: " << _ec.message();
-                        stop();
+                        {
+                            // don't show error if service is closed
+                            if (m_started)
+                                LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": "
+                                                       << _ec.message();
+                            else
+                                LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
+                                                         "closing the connection: " << _ec.message();
+                            stop();
+                        }
+                    }
+                    catch (std::exception& ex)
+                    {
+                        LOG(MiscCommon::error) << "BaseChannelImpl can't write message (callback): " << ex.what();
                     }
                 });
         }

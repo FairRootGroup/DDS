@@ -87,8 +87,10 @@ namespace dds
                                       << " concurrent threads.";
                 for (int x = 0; x < concurrentThreads; ++x)
                 {
-                    m_workerThreads.create_thread(
-                        boost::bind(&boost::asio::io_service::run, &(m_acceptor.get_io_service())));
+                    m_workerThreads.create_thread([this]()
+                                                  {
+                                                      runService(10);
+                                                  });
                 }
                 if (_join)
                     m_workerThreads.join_all();
@@ -96,6 +98,24 @@ namespace dds
             catch (std::exception& e)
             {
                 LOG(MiscCommon::fatal) << e.what();
+            }
+        }
+
+        void runService(short _counter)
+        {
+            if (_counter <= 0)
+            {
+                LOG(MiscCommon::error) << "CConnectionManagerImpl: can't start another io_service.";
+            }
+            try
+            {
+                m_acceptor.get_io_service().run();
+            }
+            catch (std::exception& ex)
+            {
+                LOG(MiscCommon::error) << "CConnectionManagerImpl exception: " << ex.what();
+                LOG(MiscCommon::info) << "CConnectionManagerImpl restarting io_service";
+                runService(--_counter);
             }
         }
 

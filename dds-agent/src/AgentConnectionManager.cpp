@@ -156,7 +156,17 @@ void CAgentConnectionManager::start()
         LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
         for (int x = 0; x < nConcurrentThreads; ++x)
         {
-            m_workerThreads.create_thread(boost::bind(&boost::asio::io_service::run, &(m_service)));
+            m_workerThreads.create_thread([this]()
+                                          {
+                                              try
+                                              {
+                                                  m_service.run();
+                                              }
+                                              catch (exception& ex)
+                                              {
+                                                  LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
+                                              }
+                                          });
         }
 
         m_workerThreads.join_all();
