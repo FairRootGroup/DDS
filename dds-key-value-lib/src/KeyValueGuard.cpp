@@ -190,6 +190,7 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     const string sKey = _key + "." + _taskId;
     // TODO: Check if need this scope? Probably only for scoped_lock!
     // IMPORTANT: adding additional scope to make sure that the stream has flushed the data
+    try
     {
         boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_sharedMemoryMutex);
 
@@ -208,6 +209,14 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
 
         ptsm.get(sKey, *_value);
     }
+    catch (boost::interprocess::interprocess_exception& ex)
+    {
+        LOG(error) << "Exception: " << ex.what();
+    }
+    catch (exception& ex)
+    {
+        LOG(error) << "Exception: " << ex.what();
+    }
     LOG(debug) << "CKeyValueGuard::getValue key=" << _key << " taskId=" << _taskId << " done";
 }
 
@@ -221,6 +230,7 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
     boost::property_tree::ptree pt;
 
+    try
     {
         boost::interprocess::scoped_lock<boost::interprocess::named_mutex> lock(*m_sharedMemoryMutex);
 
@@ -235,6 +245,14 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
         // Swap back vectors
         readStream.swap_vector(*ptString);
+    }
+    catch (boost::interprocess::interprocess_exception& ex)
+    {
+        LOG(error) << "Exception: " << ex.what();
+    }
+    catch (exception& ex)
+    {
+        LOG(error) << "Exception: " << ex.what();
     }
 
     try
