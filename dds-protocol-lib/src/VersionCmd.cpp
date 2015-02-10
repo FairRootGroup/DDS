@@ -20,14 +20,14 @@ SVersionCmd::SVersionCmd()
 
 void SVersionCmd::normalizeToLocal() const
 {
-    m_version = inet::_normalizeRead16(m_version);
-    m_channelType = inet::_normalizeRead16(m_channelType);
+    m_version = inet::normalizeRead(m_version);
+    m_channelType = inet::normalizeRead(m_channelType);
 }
 
 void SVersionCmd::normalizeToRemote() const
 {
-    m_version = inet::_normalizeWrite16(m_version);
-    m_channelType = inet::_normalizeWrite16(m_channelType);
+    m_version = inet::normalizeWrite(m_version);
+    m_channelType = inet::normalizeWrite(m_channelType);
 }
 
 void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -39,18 +39,13 @@ void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         throw runtime_error(ss.str());
     }
 
-    m_version = _data[0];
-    m_version += (_data[1] << 8);
-
-    m_channelType = _data[2];
-    m_channelType += (_data[3] << 8);
+    size_t idx(0);
+    inet::readData(&m_version, &_data, &idx);
+    inet::readData(&m_channelType, &_data, &idx);
 }
 
 void SVersionCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    _data->push_back(m_version & 0xFF);
-    _data->push_back(m_version >> 8);
-
-    _data->push_back(m_channelType & 0xFF);
-    _data->push_back(m_channelType >> 8);
+    inet::pushData(m_version, _data);
+    inet::pushData(m_channelType, _data);
 }

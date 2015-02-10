@@ -593,29 +593,134 @@ namespace MiscCommon
         // The following 4 functions convert values between host and network byte order.
         // Whenever data should be send to a remote peer the _normalizeWrite must be used.
         // Whenever data are going to be read from the _normalizeRead must be used to check that Endianness is correct.
-        inline uint16_t _normalizeRead16(uint16_t _value)
+        template <typename T>
+        T normalizeRead(T _value);
+
+        template <>
+        inline uint16_t normalizeRead<uint16_t>(uint16_t _value)
         {
             return ntohs(_value);
         }
-        inline uint32_t _normalizeRead32(uint32_t _value)
+
+        template <>
+        inline uint32_t normalizeRead<uint32_t>(uint32_t _value)
         {
             return ntohl(_value);
         }
-        inline uint64_t _normalizeRead64(uint64_t _value)
+
+        template <>
+        inline uint64_t normalizeRead<uint64_t>(uint64_t _value)
         {
             return ntohll(_value);
         }
-        inline uint16_t _normalizeWrite16(uint16_t _value)
+
+        template <typename T>
+        T normalizeWrite(T _value);
+
+        template <>
+        inline uint16_t normalizeWrite<uint16_t>(uint16_t _value)
         {
             return htons(_value);
         }
-        inline uint32_t _normalizeWrite32(uint32_t _value)
+
+        template <>
+        inline uint32_t normalizeWrite<uint32_t>(uint32_t _value)
         {
             return htonl(_value);
         }
-        inline uint64_t _normalizeWrite64(uint64_t _value)
+
+        template <>
+        inline uint64_t normalizeWrite<uint64_t>(uint64_t _value)
         {
             return htonll(_value);
+        }
+
+        template <typename T>
+        void readData(T* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos);
+
+        template <>
+        inline void readData<uint16_t>(uint16_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        {
+            if (_data == nullptr || _nPos == nullptr || _value == nullptr)
+                throw std::invalid_argument("readDataFromContainer");
+
+            *_value = (*_data)[*_nPos];
+            *_value += ((*_data)[++(*_nPos)] << 8);
+
+            ++(*_nPos);
+        }
+
+        template <>
+        inline void readData<uint32_t>(uint32_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        {
+            if (_data == nullptr || _nPos == nullptr || _value == nullptr)
+                throw std::invalid_argument("readDataFromContainer");
+
+            *_value = (*_data)[*_nPos];
+            *_value += ((*_data)[++(*_nPos)] << 8);
+            *_value += ((*_data)[++(*_nPos)] << 16);
+            *_value += ((*_data)[++(*_nPos)] << 24);
+
+            ++(*_nPos);
+        }
+
+        template <>
+        inline void readData<uint64_t>(uint64_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        {
+            if (_data == nullptr || _nPos == nullptr || _value == nullptr)
+                throw std::invalid_argument("readDataFromContainer");
+
+            *_value = (*_data)[*_nPos];
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 8);
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 16);
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 24);
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 32);
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 40);
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 48);
+            *_value += ((uint64_t)(*_data)[++(*_nPos)] << 56);
+
+            ++(*_nPos);
+        }
+
+        template <typename T>
+        void pushData(const T& _value, MiscCommon::BYTEVector_t* _data);
+
+        template <>
+        inline void pushData<uint16_t>(const uint16_t& _value, MiscCommon::BYTEVector_t* _data)
+        {
+            if (_data == nullptr)
+                throw std::invalid_argument("pushDataFromContainer");
+
+            _data->push_back(_value & 0xFF);
+            _data->push_back(_value >> 8);
+        }
+
+        template <>
+        inline void pushData<uint32_t>(const uint32_t& _value, MiscCommon::BYTEVector_t* _data)
+        {
+            if (_data == nullptr)
+                throw std::invalid_argument("pushDataFromContainer");
+
+            _data->push_back(_value & 0xFF);
+            _data->push_back((_value >> 8) & 0xFF);
+            _data->push_back((_value >> 16) & 0xFF);
+            _data->push_back((_value >> 24) & 0xFF);
+        }
+
+        template <>
+        inline void pushData<uint64_t>(const uint64_t& _value, MiscCommon::BYTEVector_t* _data)
+        {
+            if (_data == nullptr)
+                throw std::invalid_argument("pushDataFromContainer");
+
+            _data->push_back(_value & 0xFF);
+            _data->push_back((_value >> 8) & 0xFF);
+            _data->push_back((_value >> 16) & 0xFF);
+            _data->push_back((_value >> 24) & 0xFF);
+            _data->push_back((_value >> 32) & 0xFF);
+            _data->push_back((_value >> 40) & 0xFF);
+            _data->push_back((_value >> 48) & 0xFF);
+            _data->push_back((_value >> 56) & 0xFF);
         }
 
         /**

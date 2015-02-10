@@ -78,9 +78,9 @@ bool CProtocolMessage::decode_header()
         return false;
 
     memcpy(&header, &m_data[0], header_length);
-    header.m_crc = _normalizeRead16(header.m_crc);
-    header.m_cmd = _normalizeRead16(header.m_cmd);
-    header.m_len = _normalizeRead32(header.m_len);
+    header.m_crc = normalizeRead(header.m_crc);
+    header.m_cmd = normalizeRead(header.m_cmd);
+    header.m_len = normalizeRead(header.m_len);
 
     if (!header.isValid())
     {
@@ -111,9 +111,9 @@ void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::da
 
     // prepare data for transport
     SMessageHeader header;
-    header.m_crc = _normalizeWrite16(m_header.m_crc);
-    header.m_cmd = _normalizeWrite16(m_header.m_cmd);
-    header.m_len = _normalizeWrite32(m_header.m_len);
+    header.m_crc = normalizeWrite(m_header.m_crc);
+    header.m_cmd = normalizeWrite(m_header.m_cmd);
+    header.m_len = normalizeWrite(m_header.m_len);
 
     BYTEVector_t ret_val(header_length);
     memcpy(&ret_val[0], reinterpret_cast<unsigned char*>(&header), header_length);

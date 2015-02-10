@@ -12,14 +12,14 @@ namespace inet = MiscCommon::INet;
 
 void SSimpleMsgCmd::normalizeToLocal() const
 {
-    m_msgSeverity = inet::_normalizeRead16(m_msgSeverity);
-    m_srcCommand = inet::_normalizeRead16(m_srcCommand);
+    m_msgSeverity = inet::normalizeRead(m_msgSeverity);
+    m_srcCommand = inet::normalizeRead(m_srcCommand);
 }
 
 void SSimpleMsgCmd::normalizeToRemote() const
 {
-    m_msgSeverity = inet::_normalizeWrite16(m_msgSeverity);
-    m_srcCommand = inet::_normalizeWrite16(m_srcCommand);
+    m_msgSeverity = inet::normalizeWrite(m_msgSeverity);
+    m_srcCommand = inet::normalizeWrite(m_srcCommand);
 }
 
 void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -32,14 +32,9 @@ void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     }
 
     size_t idx(0);
-    m_msgSeverity = _data[idx++];
-    m_msgSeverity += (_data[idx] << 8);
+    inet::readData(&m_msgSeverity, &_data, &idx);
+    inet::readData(&m_srcCommand, &_data, &idx);
 
-    ++idx;
-    m_srcCommand = _data[idx++];
-    m_srcCommand += (_data[idx] << 8);
-
-    ++idx;
     vector<string> v;
     MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
     advance(iter, idx);
@@ -60,11 +55,8 @@ void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
 void SSimpleMsgCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    _data->push_back(m_msgSeverity & 0xFF);
-    _data->push_back(m_msgSeverity >> 8);
-
-    _data->push_back(m_srcCommand & 0xFF);
-    _data->push_back(m_srcCommand >> 8);
+    inet::pushData(m_msgSeverity, _data);
+    inet::pushData(m_srcCommand, _data);
 
     copy(m_sMsg.begin(), m_sMsg.end(), back_inserter(*_data));
     _data->push_back('\0');

@@ -12,16 +12,16 @@ namespace inet = MiscCommon::INet;
 
 void SBinaryAttachmentStartCmd::normalizeToLocal() const
 {
-    m_fileCrc32 = inet::_normalizeRead32(m_fileCrc32);
-    m_fileSize = inet::_normalizeRead32(m_fileSize);
-    m_srcCommand = inet::_normalizeRead16(m_srcCommand);
+    m_fileCrc32 = inet::normalizeRead(m_fileCrc32);
+    m_fileSize = inet::normalizeRead(m_fileSize);
+    m_srcCommand = inet::normalizeRead(m_srcCommand);
 }
 
 void SBinaryAttachmentStartCmd::normalizeToRemote() const
 {
-    m_fileCrc32 = inet::_normalizeWrite32(m_fileCrc32);
-    m_fileSize = inet::_normalizeWrite32(m_fileSize);
-    m_srcCommand = inet::_normalizeWrite16(m_srcCommand);
+    m_fileCrc32 = inet::normalizeWrite(m_fileCrc32);
+    m_fileSize = inet::normalizeWrite(m_fileSize);
+    m_srcCommand = inet::normalizeWrite(m_srcCommand);
 }
 
 void SBinaryAttachmentStartCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -47,18 +47,9 @@ void SBinaryAttachmentStartCmd::_convertFromData(const MiscCommon::BYTEVector_t&
     copy(iter_id_begin, iter_id_end, m_fileId.begin());
     idx += m_fileId.size();
 
-    m_fileSize = _data[idx++];
-    m_fileSize += (_data[idx++] << 8);
-    m_fileSize += (_data[idx++] << 16);
-    m_fileSize += (_data[idx++] << 24);
-
-    m_fileCrc32 = _data[idx++];
-    m_fileCrc32 += (_data[idx++] << 8);
-    m_fileCrc32 += (_data[idx++] << 16);
-    m_fileCrc32 += (_data[idx++] << 24);
-
-    m_srcCommand = _data[idx++];
-    m_srcCommand += (_data[idx++] << 8);
+    inet::readData(&m_fileSize, &_data, &idx);
+    inet::readData(&m_fileCrc32, &_data, &idx);
+    inet::readData(&m_srcCommand, &_data, &idx);
 }
 
 void SBinaryAttachmentStartCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
@@ -68,16 +59,7 @@ void SBinaryAttachmentStartCmd::_convertToData(MiscCommon::BYTEVector_t* _data) 
 
     copy(m_fileId.begin(), m_fileId.end(), back_inserter(*_data));
 
-    _data->push_back(m_fileSize & 0xFF);
-    _data->push_back((m_fileSize >> 8) & 0xFF);
-    _data->push_back((m_fileSize >> 16) & 0xFF);
-    _data->push_back((m_fileSize >> 24) & 0xFF);
-
-    _data->push_back(m_fileCrc32 & 0xFF);
-    _data->push_back((m_fileCrc32 >> 8) & 0xFF);
-    _data->push_back((m_fileCrc32 >> 16) & 0xFF);
-    _data->push_back((m_fileCrc32 >> 24) & 0xFF);
-
-    _data->push_back(m_srcCommand & 0xFF);
-    _data->push_back(m_srcCommand >> 8);
+    inet::pushData(m_fileSize, _data);
+    inet::pushData(m_fileCrc32, _data);
+    inet::pushData(m_srcCommand, _data);
 }

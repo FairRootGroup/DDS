@@ -16,16 +16,16 @@ namespace inet = MiscCommon::INet;
 
 void SProgressCmd::normalizeToLocal() const
 {
-    m_completed = inet::_normalizeRead32(m_completed);
-    m_total = inet::_normalizeRead32(m_total);
-    m_errors = inet::_normalizeRead32(m_errors);
+    m_completed = inet::normalizeRead(m_completed);
+    m_total = inet::normalizeRead(m_total);
+    m_errors = inet::normalizeRead(m_errors);
 }
 
 void SProgressCmd::normalizeToRemote() const
 {
-    m_completed = inet::_normalizeWrite32(m_completed);
-    m_total = inet::_normalizeWrite32(m_total);
-    m_errors = inet::_normalizeWrite32(m_errors);
+    m_completed = inet::normalizeWrite(m_completed);
+    m_total = inet::normalizeWrite(m_total);
+    m_errors = inet::normalizeWrite(m_errors);
 }
 
 void SProgressCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -38,38 +38,14 @@ void SProgressCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     }
 
     size_t idx(0);
-    m_completed = _data[idx++];
-    m_completed += (_data[idx++] << 8);
-    m_completed += (_data[idx++] << 16);
-    m_completed += (_data[idx] << 24);
-
-    ++idx;
-    m_total = _data[idx++];
-    m_total += (_data[idx++] << 8);
-    m_total += (_data[idx++] << 16);
-    m_total += (_data[idx] << 24);
-
-    ++idx;
-    m_errors = _data[idx++];
-    m_errors += (_data[idx++] << 8);
-    m_errors += (_data[idx++] << 16);
-    m_errors += (_data[idx] << 24);
+    inet::readData(&m_completed, &_data, &idx);
+    inet::readData(&m_total, &_data, &idx);
+    inet::readData(&m_errors, &_data, &idx);
 }
 
 void SProgressCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    _data->push_back(m_completed & 0xFF);
-    _data->push_back(m_completed >> 8);
-    _data->push_back(m_completed >> 16);
-    _data->push_back(m_completed >> 24);
-
-    _data->push_back(m_total & 0xFF);
-    _data->push_back(m_total >> 8);
-    _data->push_back(m_total >> 16);
-    _data->push_back(m_total >> 24);
-
-    _data->push_back(m_errors & 0xFF);
-    _data->push_back(m_errors >> 8);
-    _data->push_back(m_errors >> 16);
-    _data->push_back(m_errors >> 24);
+    inet::pushData(m_completed, _data);
+    inet::pushData(m_total, _data);
+    inet::pushData(m_errors, _data);
 }

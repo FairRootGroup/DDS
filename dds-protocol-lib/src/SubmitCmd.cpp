@@ -12,12 +12,12 @@ namespace inet = MiscCommon::INet;
 
 void SSubmitCmd::normalizeToLocal() const
 {
-    m_nRMSTypeCode = inet::_normalizeRead16(m_nRMSTypeCode);
+    m_nRMSTypeCode = inet::normalizeRead(m_nRMSTypeCode);
 }
 
 void SSubmitCmd::normalizeToRemote() const
 {
-    m_nRMSTypeCode = inet::_normalizeWrite16(m_nRMSTypeCode);
+    m_nRMSTypeCode = inet::normalizeWrite(m_nRMSTypeCode);
 }
 
 void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -30,10 +30,8 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     }
 
     size_t idx(0);
-    m_nRMSTypeCode = _data[idx++];
-    m_nRMSTypeCode += (_data[idx] << 8);
+    inet::readData(&m_nRMSTypeCode, &_data, &idx);
 
-    ++idx;
     vector<string> v;
     MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
     advance(iter, idx);
@@ -55,8 +53,7 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    _data->push_back(m_nRMSTypeCode & 0xFF);
-    _data->push_back(m_nRMSTypeCode >> 8);
+    inet::pushData(m_nRMSTypeCode, _data);
 
     copy(m_sTopoFile.begin(), m_sTopoFile.end(), back_inserter(*_data));
     _data->push_back('\0');

@@ -12,12 +12,12 @@ namespace inet = MiscCommon::INet;
 
 void SAgentsInfoCmd::normalizeToLocal() const
 {
-    m_nActiveAgents = inet::_normalizeRead16(m_nActiveAgents);
+    m_nActiveAgents = inet::normalizeRead(m_nActiveAgents);
 }
 
 void SAgentsInfoCmd::normalizeToRemote() const
 {
-    m_nActiveAgents = inet::_normalizeWrite16(m_nActiveAgents);
+    m_nActiveAgents = inet::normalizeWrite(m_nActiveAgents);
 }
 
 void SAgentsInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -30,10 +30,8 @@ void SAgentsInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     }
 
     size_t idx(0);
-    m_nActiveAgents = _data[idx];
-    m_nActiveAgents += (_data[++idx] << 8);
+    inet::readData(&m_nActiveAgents, &_data, &idx);
 
-    ++idx;
     vector<string> v;
     MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
     advance(iter, idx);
@@ -54,8 +52,7 @@ void SAgentsInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
 void SAgentsInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    _data->push_back(m_nActiveAgents & 0xFF);
-    _data->push_back(m_nActiveAgents >> 8);
+    inet::pushData(m_nActiveAgents, _data);
 
     copy(m_sListOfAgents.begin(), m_sListOfAgents.end(), back_inserter(*_data));
     _data->push_back('\0');
