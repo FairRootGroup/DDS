@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
         size_t nMaxWaitTime(g_maxWaitTime);
+        size_t sleepTime(0);
 
         // Generic options
         bpo::options_description options("task-async_test_key_value options");
@@ -40,6 +41,8 @@ int main(int argc, char* argv[])
         options.add_options()("max-wait-time",
                               bpo::value<size_t>(&nMaxWaitTime)->default_value(g_maxWaitTime),
                               "A max wait time (in milliseconds), which an instannces should wait before exit");
+        options.add_options()(
+            "sleep-time", bpo::value<size_t>(&sleepTime)->default_value(0), "sleep time after task finishes its work.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -110,6 +113,11 @@ int main(int argc, char* argv[])
             if (bGoodToGo)
             {
                 LOG(log_stdout) << "Task succesffuylly done";
+                if (sleepTime > 0)
+                {
+                    LOG(log_stdout) << "Task is waiting for " << sleepTime << " sec before exit";
+                    sleep(sleepTime);
+                }
                 return 0;
             }
             // wait for a key update event
@@ -118,6 +126,11 @@ int main(int argc, char* argv[])
             if (bGoodToGo)
             {
                 LOG(log_stdout) << "Task succesffuylly done";
+                if (sleepTime > 0)
+                {
+                    LOG(log_stdout) << "Task is waiting for " << sleepTime << " sec before exit";
+                    sleep(sleepTime);
+                }
                 return 0;
             }
             if (isTimeout)

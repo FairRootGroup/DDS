@@ -62,6 +62,7 @@ namespace dds
         MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
         MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
+        MESSAGE_HANDLER(cmdUSER_TASK_DONE, on_cmdUSER_TASK_DONE)
         //====> replay on the "info" command request
         // - get pid of the commander server
         MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
@@ -118,6 +119,7 @@ namespace dds
         bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment);
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+        bool on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment);
 
         std::string _remoteEndIDString()
         {

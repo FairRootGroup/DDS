@@ -401,3 +401,20 @@ void CCommanderChannel::updateKey(const string& _key, const string& _value)
         LOG(error) << _e.what();
     }
 }
+
+bool CCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)
+{
+    try
+    {
+        LOG(info) << "Recieved a key delete notifications: " << *_attachment;
+        CKeyValueGuard::instance().deleteKey(_attachment->m_sKey);
+    }
+    catch (exception& _e)
+    {
+        LOG(error) << _e.what();
+        // Send response back to server
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdDELETE_KEY));
+    }
+
+    return true;
+}

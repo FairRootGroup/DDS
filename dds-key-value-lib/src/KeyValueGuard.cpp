@@ -303,3 +303,39 @@ int CKeyValueGuard::updateKey(const SUpdateKeyCmd& _cmd)
     LOG(debug) << "CKeyValueGuard::updateKey: sending key update: " << _cmd;
     return m_agentConnectionMng->updateKey(_cmd);
 }
+
+void CKeyValueGuard::deleteKey(const std::string& _key)
+{
+    LOG(debug) << "CKeyValueGuard::deleteKey key=" << _key;
+    const string sKey = _key;
+    {
+        try
+        {
+            // TODO: Refactor this code because it is used now in three different places putValue, getValue, deleteKey.
+
+            ip::scoped_lock<ip::named_mutex> lock(*m_sharedMemoryMutex);
+
+            sharedMemoryString_t* ptString = m_sharedMemory->find_or_construct<sharedMemoryString_t>("KeyValue")(
+                sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+            sharedMemoryVectorStream_t readStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+            readStream.swap_vector(*ptString);
+
+            boost::property_tree::ptree ptsm;
+            boost::property_tree::ini_parser::read_ini(readStream, ptsm);
+
+            ptsm.erase(sKey);
+
+            sharedMemoryVectorStream_t writeStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+            boost::property_tree::ini_parser::write_ini(writeStream, ptsm);
+
+            writeStream.swap_vector(*ptString);
+        }
+        catch (const ip::interprocess_exception& _e)
+        {
+            LOG(fatal) << "key-value guard deleteKey exception: " << _e.what();
+        }
+    }
+}

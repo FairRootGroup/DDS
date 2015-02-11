@@ -19,6 +19,8 @@
 #include "BinaryAttachmentStartCmd.h"
 #include "UpdateKeyCmd.h"
 #include "ProgressCmd.h"
+#include "UserTaskDoneCmd.h"
+#include "DeleteKeyCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -83,6 +85,8 @@ namespace dds
     REGISTER_CMD_ATTACHMENT(SBinaryAttachmentStartCmd, cmdBINARY_ATTACHMENT_START)
     REGISTER_CMD_ATTACHMENT(SUpdateKeyCmd, cmdUPDATE_KEY)
     REGISTER_CMD_ATTACHMENT(SProgressCmd, cmdPROGRESS)
+    REGISTER_CMD_ATTACHMENT(SUserTaskDoneCmd, cmdUSER_TASK_DONE)
+    REGISTER_CMD_ATTACHMENT(SDeleteKeyCmd, cmdDELETE_KEY)
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

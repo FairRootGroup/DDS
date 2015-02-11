@@ -54,6 +54,7 @@ namespace dds
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
         void getValues(const std::string& _key, valuesMap_t* _values);
         int updateKey(const SUpdateKeyCmd& _cmd);
+        void deleteKey(const std::string& _key);
         connection_t connect(signal_t::slot_function_type _subscriber)
         {
             return m_syncHelper.m_updateSig.connect(_subscriber);

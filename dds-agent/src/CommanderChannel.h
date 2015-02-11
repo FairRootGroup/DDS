@@ -34,6 +34,7 @@ namespace dds
         MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
         MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+        MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
         END_MSG_MAP()
 
         // gives the possibility to register a callback, which will be called when a user task is executed
@@ -59,6 +60,7 @@ namespace dds
         bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
         bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+        bool on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment);
 
       private:
         void readAgentUUIDFile();

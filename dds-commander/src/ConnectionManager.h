@@ -58,6 +58,8 @@ namespace dds
                               CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
+                                  CAgentChannel::weakConnectionPtr_t _channel);
 
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;
@@ -69,6 +71,7 @@ namespace dds
         // TODO: This is temporary storage only. Store this information as a part of scheduler.
         typedef std::map<uint64_t, CAgentChannel::weakConnectionPtr_t> TaskIDToAgentChannelMap_t;
         TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
+        std::mutex m_mapMutex;
 
         // boost::property_tree::ptree m_propertyPT;
         // std::string m_sCfgFilePath;

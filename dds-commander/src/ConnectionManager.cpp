@@ -119,6 +119,14 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+
+    std::function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
+        fUSER_TASK_DONE =
+            [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
 }
 
 void CConnectionManager::_createInfoFile(size_t _port) const
@@ -491,12 +499,12 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
                 continue;
             auto ptr = v.lock();
             // remove task ID from the channel
-            ptr->setTaskID(0);
+            // ptr->setTaskID(0);
             // dequeue important (or expensive) messages
             ptr->dequeueMsg<cmdUPDATE_KEY>();
             // send stop message
             ptr->template pushMsg<cmdSTOP_USER_TASK>();
-            ptr->setState(EAgentState::idle);
+            // ptr->setState(EAgentState::idle);
         }
     }
     catch (exception& _e)
@@ -713,6 +721,65 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                    << " There are no more requests from the UI channel, therefore shutting it down.";
         channelPtr->pushMsg<cmdSHUTDOWN>();
     }
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
+                                              CAgentChannel::weakConnectionPtr_t _channel)
+{
+    if (_channel.expired())
+        return true;
+    auto channelPtr = _channel.lock();
+
+    auto taskID = channelPtr->getTaskID();
+    auto task = m_topo.getTaskByHash(taskID);
+
+    const TopoPropertyPtrVector_t& properties = task->getProperties();
+    for (const auto& property : properties)
+    {
+        CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(property->getId());
+
+        for (auto it = taskIt.first; it != taskIt.second; ++it)
+        {
+            auto iter = m_taskIDToAgentChannelMap.find(it->first);
+            if (iter == m_taskIDToAgentChannelMap.end())
+            {
+                LOG(debug) << "on_cmdDELETE_KEY task <" << it->first
+                           << "> not found in map. Property will not be deleted.";
+            }
+            else
+            {
+                if (iter->second.expired())
+                    continue;
+                auto ptr = iter->second.lock();
+
+                SDeleteKeyCmd cmd;
+                stringstream ss;
+                ss << property->getId() << "." << taskID;
+                cmd.m_sKey = ss.str();
+                if (ptr->getTaskID() != 0 && ptr->getTaskID() != channelPtr->getTaskID())
+                {
+                    ptr->pushMsg<cmdDELETE_KEY>(cmd);
+                    LOG(debug) << "Property deleted from agent channel: <" << *_attachment << ">";
+                }
+            }
+        }
+    }
+
+    // remove task ID from the channel
+    channelPtr->setTaskID(0);
+    channelPtr->setState(EAgentState::idle);
+
+    // remove task ID from the map
+    {
+        std::lock_guard<std::mutex> lock(m_mapMutex);
+        auto it = m_taskIDToAgentChannelMap.find(taskID);
+        if (it != m_taskIDToAgentChannelMap.end())
+            m_taskIDToAgentChannelMap.erase(it);
+    }
+
+    LOG(info) << "User task <" << taskID << "> with path " << task->getPath() << " done";
 
     return true;
 }

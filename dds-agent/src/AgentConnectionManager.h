@@ -41,6 +41,8 @@ namespace dds
         bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
                                   CCommanderChannel::weakConnectionPtr_t _channel);
 
+        void taskExited(int _pid, int _exitCode);
+
       private:
         boost::asio::io_service& m_service;
         boost::asio::signal_set m_signals;

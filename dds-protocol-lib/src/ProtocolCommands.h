@@ -46,8 +46,10 @@ namespace dds
         cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
         cmdACTIVATE_AGENT,    // this command activates a given agent and triggers a start of an assigned user task
         cmdSTOP_USER_TASK,
+        cmdUSER_TASK_DONE, // attachment: SUserTaskDoneCmd
         cmdTRANSPORT_TEST,
         cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
+        cmdDELETE_KEY, // attachment: SDeleteKeyCmd
         cmdPROGRESS    // attachment: SProgressCmd
     };
 
@@ -76,8 +78,10 @@ namespace dds
         { cmdASSIGN_USER_TASK, NAME_TO_STRING(cmdASSIGN_USER_TASK) },
         { cmdACTIVATE_AGENT, NAME_TO_STRING(cmdACTIVATE_AGENT) },
         { cmdSTOP_USER_TASK, NAME_TO_STRING(cmdSTOP_USER_TASK) },
+        { cmdUSER_TASK_DONE, NAME_TO_STRING(cmdUSER_TASK_DONE) },
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
         { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
+        { cmdDELETE_KEY, NAME_TO_STRING(cmdDELETE_KEY) },
         { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) }
     };
 }

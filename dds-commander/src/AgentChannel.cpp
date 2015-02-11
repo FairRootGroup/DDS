@@ -200,3 +200,10 @@ bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_
     // The command can only be processed by the higher level object
     return false;
 }
+
+bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment)
+{
+    // Return false.
+    // The command can only be processed by the higher level object
+    return false;
+}

@@ -289,6 +289,18 @@ bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
     return true;
 }
 
+void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
+{
+    // remove pid from the active children list
+    {
+        std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+        m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+    }
+    SUserTaskDoneCmd cmd;
+    cmd.m_exitCode = _exitCode;
+    m_agent->pushMsg<cmdUSER_TASK_DONE>(cmd);
+}
+
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
     // watchdog
@@ -315,8 +327,8 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
                     LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
                     LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
-                    std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
-                    m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+                    taskExited(_pid, 0);
+
                     return false;
                 }
 
@@ -337,10 +349,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
                     LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
-                    // remove pid from the active children list
-                    std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
-                    m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
-
+                    taskExited(_pid, status);
                     return false;
                 }
             }
