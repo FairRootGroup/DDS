@@ -2,19 +2,19 @@
 
 ## v0.8 (NOT YET RELEASED)
 ### DDS common
-Fixed: correct idle time calculation for dds-commander and dds-agent. (GH-32)   
+Fixed: idle time calculation for dds-commander and dds-agent. (GH-32)   
 Fixed: a bug, which prevented log files to rotate.    
 Added: Log rotation: maximum total size of the stored log files is 1GB. (GH-36)    
 Added: Log rotation: minimum free space on the drive after which older log files will be deleted is 2GB. (GH-36)    
 Added: User's task stdout/err on WNs are automatically written in dedicated log files, user_task_<TASK_ID>_out.log and user_task_<TASK_ID>_err.log accordingly. (GH-26)   
-Added: Progress display for "dds-agent-cmd getlog", "dds-topology --activate" and "dds-test -t" in percent. Optionaly full verbose messages can be displayed with --verbose option. (GH-42)
-Added: broadcast property deletion on task exit. (GH-28)
+Added: Progress display for "dds-agent-cmd getlog", "dds-topology --activate" and "dds-test -t" in percent. Optionaly full verbose messages can be displayed with --verbose option. (GH-42)   
+Added: Broadcast property deletion on task exit. (GH-28)
 
 ### dds-commander
 Added: State of agents. (GH-27)    
 
 ### dds-user-defaults
-Modified: default log level is 1 (instead of 0).   
+Modified: Default log level is changed to 1 (instead of 0).   
 Modified: Log rotation: default log rotations size in MB instead of bytes. (default is 10 MB).   
 
 ### dds-ssh
