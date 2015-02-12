@@ -187,6 +187,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->getProperty(0)->getId() == "property1");
     BOOST_CHECK(casted1->getProperty(1)->getId() == "property4");
     BOOST_CHECK(casted1->getProperty(2)->getId() == "property1");
+    BOOST_CHECK(casted1->getProperty(0)->getAccessType() == EPropertyAccessType::READ);
+    BOOST_CHECK(casted1->getProperty(1)->getAccessType() == EPropertyAccessType::WRITE);
+    BOOST_CHECK(casted1->getProperty(2)->getAccessType() == EPropertyAccessType::READWRITE);
     BOOST_CHECK(casted1->getExe() == "app1 -l -n");
     BOOST_CHECK(casted1->getEnv() == "env1");
     BOOST_CHECK(casted1->isExeReachable() == true);
@@ -436,6 +439,12 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "group");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "property");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::REQUIREMENT) == "declrequirement");
+
+    // TagToPropertyAccessType
+    BOOST_CHECK(TagToPropertyAccessType("read") == EPropertyAccessType::READ);
+    BOOST_CHECK(TagToPropertyAccessType("write") == EPropertyAccessType::WRITE);
+    BOOST_CHECK(TagToPropertyAccessType("readwrite") == EPropertyAccessType::READWRITE);
+    BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
 
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);

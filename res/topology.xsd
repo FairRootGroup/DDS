@@ -28,6 +28,13 @@
   </xs:restriction>
 </xs:simpleType>
 
+<xs:simpleType name="accessType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="read"/>
+    <xs:enumeration value="write"/>
+    <xs:enumeration value="readwrite"/>
+  </xs:restriction>
+</xs:simpleType>
 
 <xs:complexType name="mainGroupType">
 	<xs:attribute name="id" type="stringIdType" use="required"/>
@@ -49,9 +56,18 @@
 </xs:complexType>
 
 
+<xs:complexType name="propertyArrayElementType">
+   <xs:simpleContent>  
+       <xs:extension base="stringType">  
+            <xs:attribute name="access" type="accessType" use="required"/> 
+       </xs:extension>  
+   </xs:simpleContent> 
+</xs:complexType>
+
+
 <xs:complexType name="propertyArrayType">
   <xs:sequence>
-  	<xs:element name="id" type="stringIdType" maxOccurs="unbounded" minOccurs="0"/>
+  	<xs:element name="id" type="propertyArrayElementType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
 </xs:complexType>
 

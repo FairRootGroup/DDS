@@ -13,22 +13,22 @@
 		<exe>app1</exe>
 		<requirement>requirement1</requirement>
 		<properties>
-			<id>property1</id>
-		    <id>property3</id>
+			<id access="read">property1</id>
+		    <id access="readwrite">property3</id>
 	    </properties>
 	</decltask>
   	<decltask id="task2">
 		<exe>app2</exe>
 		<properties>
-			<id>property1</id>
-		    <id>property2</id>
+			<id access="readwrite">property1</id>
+		    <id access="readwrite">property2</id>
 	    </properties>
 	</decltask>
   	<decltask id="task2">
 		<exe>app3</exe>
 		<properties>
-			<id>property2</id>
-		    <id>property3</id>
+			<id access="readwrite">property2</id>
+		    <id access="readwrite">property3</id>
 	    </properties>
 	</decltask>
 

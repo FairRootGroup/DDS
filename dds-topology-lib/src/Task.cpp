@@ -115,6 +115,16 @@ TopoPropertyPtr_t CTask::getProperty(size_t _i) const
     return m_properties[_i];
 }
 
+TopoPropertyPtr_t CTask::getProperty(const std::string& _id) const
+{
+    for (const auto& v : m_properties)
+    {
+        if (v->getId() == _id)
+            return v;
+    }
+    return nullptr;
+}
+
 const TopoPropertyPtrVector_t& CTask::getProperties() const
 {
     return m_properties;
@@ -154,6 +164,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
                 TopoPropertyPtr_t newProperty = make_shared<CTopoProperty>();
                 newProperty->setParent(this);
                 newProperty->initFromPropertyTree(property.second.data(), _pt);
+                newProperty->setAccessType(TagToPropertyAccessType(property.second.get<string>("<xmlattr>.access")));
                 addProperty(newProperty);
             }
         }

@@ -34,6 +34,8 @@ namespace dds
         TopoPropertyPtr_t getProperty(size_t _i) const;
         const TopoPropertyPtrVector_t& getProperties() const;
         RequirementPtr_t getRequirement() const;
+        /// Get property by ID. If property not fount than return nullptr.
+        TopoPropertyPtr_t getProperty(const std::string& _id) const;
 
         /// Modifiers
         void setExe(const std::string& _exe);

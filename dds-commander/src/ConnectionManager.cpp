@@ -355,6 +355,9 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         m_scheduler.makeSchedule(m_topo, channels);
         const CSSHScheduler::ScheduleVector_t& schedule = m_scheduler.getSchedule();
 
+        // Clear the map on each activation
+        m_taskIDToAgentChannelMap.clear();
+
         for (const auto& sch : schedule)
         {
             SAssignUserTaskCmd msg_cmd;
@@ -670,16 +673,28 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 
     for (auto it = taskIt.first; it != taskIt.second; ++it)
     {
+        // We have to lock with m_mapMutex here. The map can be changed in on_cmdUSER_TASK_DONE.
+        // TODO: For the moment lock is removed because it introduces the bottle neck.
+        // TODO: In on_cmdUSER_TASK_DONE function we do not remove anything from m_taskIDToAgentChannelMap map.
+        bool iterExists = false;
+        CAgentChannel::weakConnectionPtr_t weakPtr;
+        //{
+        //    std::lock_guard<std::mutex> lock(m_mapMutex);
         auto iter = m_taskIDToAgentChannelMap.find(it->first);
-        if (iter == m_taskIDToAgentChannelMap.end())
+        iterExists = (iter != m_taskIDToAgentChannelMap.end());
+        if (iterExists)
+            weakPtr = iter->second;
+        //}
+
+        if (!iterExists)
         {
             LOG(debug) << "on_cmdUPDATE_KEY task <" << it->first << "> not found in map. Property will not be updated.";
         }
         else
         {
-            if (iter->second.expired())
+            if (weakPtr.expired())
                 continue;
-            auto ptr = iter->second.lock();
+            auto ptr = weakPtr.lock();
 
             if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
             {
@@ -697,8 +712,14 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                 {
                     if (ptr->getTaskID() != channelPtr->getTaskID())
                     {
-                        ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
-                        LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
+                        auto task = m_topo.getTaskByHash(ptr->getTaskID());
+                        auto property = task->getProperty(propertyID);
+                        if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
+                                                    property->getAccessType() == EPropertyAccessType::READWRITE))
+                        {
+                            ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
+                            LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
+                        }
                     }
                 }
             }
@@ -765,12 +786,14 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
     channelPtr->setState(EAgentState::idle);
 
     // remove task ID from the map
-    {
-        std::lock_guard<std::mutex> lock(m_mapMutex);
-        auto it = m_taskIDToAgentChannelMap.find(taskID);
-        if (it != m_taskIDToAgentChannelMap.end())
-            m_taskIDToAgentChannelMap.erase(it);
-    }
+    // TODO: Temporary solution. We do not remove tasks from the map to avoid synchronization bottlenecks in
+    // on_cmdUPDATE_KEY.
+    //{
+    //    std::lock_guard<std::mutex> lock(m_mapMutex);
+    //    auto it = m_taskIDToAgentChannelMap.find(taskID);
+    //    if (it != m_taskIDToAgentChannelMap.end())
+    //        m_taskIDToAgentChannelMap.erase(it);
+    //}
 
     LOG(info) << "User task <" << taskID << "> with path " << task->getPath() << " done";
 

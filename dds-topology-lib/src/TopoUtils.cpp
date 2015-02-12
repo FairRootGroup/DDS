@@ -84,6 +84,18 @@ namespace dds
             throw runtime_error("Topology element with name " + _name + " does not exist.");
     }
 
+    EPropertyAccessType TagToPropertyAccessType(const string& _name)
+    {
+        if (_name == "read")
+            return EPropertyAccessType::READ;
+        if (_name == "write")
+            return EPropertyAccessType::WRITE;
+        if (_name == "readwrite")
+            return EPropertyAccessType::READWRITE;
+        else
+            throw runtime_error("Property access type with name " + _name + " does not exist.");
+    }
+
     uint64_t crc64(const string& _str)
     {
         boost::crc_optimal<64, 0x04C11DB7, 0, 0, false, false> crc;

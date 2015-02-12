@@ -5,6 +5,7 @@
 
 // DDS
 #include "TopoProperty.h"
+#include "TopoUtils.h"
 // STD
 #include <iostream>
 
@@ -15,6 +16,7 @@ using namespace dds;
 CTopoProperty::CTopoProperty()
     : CTopoBase()
     , m_value()
+    , m_accessType(EPropertyAccessType::READWRITE)
 {
     setType(ETopoType::TOPO_PROPERTY);
 }
@@ -28,9 +30,19 @@ const std::string& CTopoProperty::getValue() const
     return m_value;
 }
 
+EPropertyAccessType CTopoProperty::getAccessType() const
+{
+    return m_accessType;
+}
+
 void CTopoProperty::setValue(const std::string& _value)
 {
     m_value = _value;
+}
+
+void CTopoProperty::setAccessType(EPropertyAccessType _accessType)
+{
+    m_accessType = _accessType;
 }
 
 void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
@@ -39,6 +51,7 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
     {
         const ptree& propertyPT = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
         setId(propertyPT.get<string>("<xmlattr>.id"));
+        // setAccessType(TagToPropertyAccessType(propertyPT.get<string>("<xmlattr>.access")));
     }
     catch (exception& error) // ptree_error, runtime_error
     {

@@ -17,6 +17,13 @@
 
 namespace dds
 {
+    enum class EPropertyAccessType
+    {
+        READ,
+        WRITE,
+        READWRITE
+    };
+
     /// \class TopoProperty
     /// \brief Data class to hold topology property.
     class CTopoProperty : public CTopoBase
@@ -32,8 +39,10 @@ namespace dds
         void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
         const std::string& getValue() const;
+        EPropertyAccessType getAccessType() const;
 
         void setValue(const std::string& _value);
+        void setAccessType(EPropertyAccessType _accessType);
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.
@@ -45,7 +54,8 @@ namespace dds
         friend std::ostream& operator<<(std::ostream& _strm, const CTopoProperty& _property);
 
       private:
-        std::string m_value; ///> Property value
+        std::string m_value;              ///> Property value
+        EPropertyAccessType m_accessType; ///> Property access type
     };
 
     typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;

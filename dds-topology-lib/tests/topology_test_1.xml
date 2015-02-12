@@ -1,9 +1,9 @@
 <topology id="myTopology">
 		
-	<property id="property1" />
-	<property id="property2" />
-	<property id="property3" />
-	<property id="property4" />
+	<property id="property1"/>
+	<property id="property2"/>
+	<property id="property3"/>
+	<property id="property4"/>
 	
 	<declrequirement id="requirement1">
     	<hostPattern value=".+.gsi.de"/>
@@ -16,9 +16,9 @@
 		<env reachable="false">env1</env>
 		<requirement>requirement1</requirement>
 		<properties>
-			<id>property1</id>
-			<id>property4</id>
-			<id>property1</id>
+			<id access="read">property1</id>
+			<id access="write">property4</id>
+			<id access="readwrite">property1</id>
 		</properties>
 	<!--	<properties>
 		   <id>property1</id>
@@ -29,28 +29,28 @@
 	<decltask id="task2">
 		<exe>app2</exe>
 		<properties>
-		   <id>property1</id>
-		   <id>property2</id>
+		   <id access="read">property1</id>
+		   <id access="read">property2</id>
 	    </properties>
 	</decltask>
 	<decltask id="task3">
 		<exe reachable="true">app3</exe>
 		<properties>
-		   <id>property2</id>
-		   <id>property3</id>
+		   <id access="read">property2</id>
+		   <id access="read">property3</id>
 	    </properties>
 	</decltask>
 	<decltask id="task4">
 		<exe>app4</exe>
 		<properties>
-		   <id>property3</id>
-		   <id>property4</id>
+		   <id access="read">property3</id>
+		   <id access="read">property4</id>
 	    </properties>
 	</decltask>
 	<decltask id="task5">
 		<exe reachable="false">app5</exe>
 		<properties>
-		   <id>property1</id>
+		   <id access="read">property1</id>
 	    </properties>
 	</decltask>
 
