@@ -50,7 +50,8 @@ namespace dds
         cmdTRANSPORT_TEST,
         cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
         cmdDELETE_KEY, // attachment: SDeleteKeyCmd
-        cmdPROGRESS    // attachment: SProgressCmd
+        cmdPROGRESS,   // attachment: SProgressCmd
+        cmdWATCHDOG_HEARTBEAT
     };
 
     static std::map<uint16_t, std::string> g_cmdToString{
@@ -82,7 +83,8 @@ namespace dds
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
         { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
         { cmdDELETE_KEY, NAME_TO_STRING(cmdDELETE_KEY) },
-        { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) }
+        { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) },
+        { cmdWATCHDOG_HEARTBEAT, NAME_TO_STRING(cmdWATCHDOG_HEARTBEAT) }
     };
 }
 

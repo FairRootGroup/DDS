@@ -320,6 +320,11 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     CMonitoringThread::instance().registerCallbackFunction(
         [this, _pid]() -> bool
         {
+            // Send commander server the watchdog heartbeat.
+            // It indicates that the agent is executing a task and is not idle
+            m_agent->pushMsg<cmdWATCHDOG_HEARTBEAT>();
+            CMonitoringThread::instance().updateIdle();
+
             try
             {
                 if (!IsProcessExist(_pid))

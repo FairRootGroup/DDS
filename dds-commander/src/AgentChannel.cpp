@@ -207,3 +207,13 @@ bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DON
     // The command can only be processed by the higher level object
     return false;
 }
+
+bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment)
+{
+    // The main reason for this message is to tell commander that agents are note idle (see. GH-54)
+    LOG(debug) << "Recieved Watchdog heartbeat from agent " << m_id << " running task = " << m_taskID;
+
+    // TODO: So far we don nothing with this info.
+    // In the future we might want to send more informtion about tasks being executed (pid, CPU info, memory)
+    return true;
+}

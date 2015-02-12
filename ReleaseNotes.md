@@ -4,10 +4,11 @@
 ### DDS common
 Fixed: idle time calculation for dds-commander and dds-agent. (GH-32)   
 Fixed: a bug, which prevented log files to rotate.    
+Fixed: reaching the idle timeout causes Commander and Agents to exit even if user processes are still running. (GH-54)    
 Added: Log rotation: maximum total size of the stored log files is 1GB. (GH-36)    
 Added: Log rotation: minimum free space on the drive after which older log files will be deleted is 2GB. (GH-36)    
 Added: User's task stdout/err on WNs are automatically written in dedicated log files, user_task_<TASK_ID>_out.log and user_task_<TASK_ID>_err.log accordingly. (GH-26)   
-Added: Progress display for "dds-agent-cmd getlog", "dds-topology --activate" and "dds-test -t" in percent. Optionaly full verbose messages can be displayed with --verbose option. (GH-42)   
+Added: Progress display for "dds-agent-cmd getlog", "dds-topology --activate" and "dds-test -t" in percent. Optionally full verbose messages can be displayed with --verbose option. (GH-42)   
 Added: Broadcast property deletion on task exit. (GH-28)   
 Added: property propagation types. (GH-30)
 
@@ -32,7 +33,7 @@ Modified: Hand-shake messages are prioritized now. DDS doesn't send/accept any o
 Fixed: Revised write message algorithms. It is also faster now.    
 Fixed: a bug in the dds-agent, which could cause a SEGFAULT when trying to access a deleted channel object on disconnect.    
 Added: Implemented callbacks (signals) in BaseChannelImpl for different channel events like connect, disconnect, handshakeOK, handshakeFailed. (GH-41)   
-Fixed: Stability improvements. Handling edge cases which could accure during channel destruction. 
+Fixed: Stability improvements. Handling edge cases which could occur during channel destruction. 
 
 ### dds-info
 Added: taskId and task name to console output (dds-info -l). (GH-33)    

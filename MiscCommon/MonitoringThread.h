@@ -45,8 +45,8 @@ namespace dds
         /// \example CMonitoringThread::instance().start(300, [](){ do_something_here() });
         void start(double _idleTime, const std::function<void(void)>& _idleCallback)
         {
-            static const float LOOP_TIME_DELAY = 5.f;
-            static const float WAITING_TIME = 20.f;
+            static const std::chrono::seconds LOOP_TIME_DELAY(5);
+            static const std::chrono::seconds WAITING_TIME(20);
 
             m_startIdleTime = std::chrono::steady_clock::now();
 
@@ -57,12 +57,6 @@ namespace dds
                     {
                         while (true)
                         {
-                            std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
-
-                            // Check if process is idle.
-                            std::chrono::seconds idleTime =
-                                std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startIdleTime);
-
                             // Call registred callback functions
                             // We use Erase-remove idiom to execute callback and remove expired if needed.
                             m_registeredCallbackFunctions.erase(remove_if(m_registeredCallbackFunctions.begin(),
@@ -78,19 +72,28 @@ namespace dds
                                                                           }),
                                                                 m_registeredCallbackFunctions.end());
 
+                            std::chrono::seconds idleTime;
+                            // Check if process is idle.
+                            {
+                                std::lock_guard<std::mutex> lock(m_mutex);
+                                std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+                                idleTime =
+                                    std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startIdleTime);
+                            }
+
                             if (idleTime.count() > _idleTime)
                             {
                                 // First call idle callback
                                 LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
                                                       << " sec. Call idle callback.";
                                 _idleCallback();
-                                sleep(WAITING_TIME);
+                                std::this_thread::sleep_for(WAITING_TIME);
 
                                 // Call terminate
                                 LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
                                                       << " sec. Terminate the process.";
                                 std::terminate();
-                                sleep(WAITING_TIME);
+                                std::this_thread::sleep_for(WAITING_TIME);
 
                                 // Kill process
                                 LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
@@ -98,7 +101,7 @@ namespace dds
                                 killProcess();
                             }
 
-                            sleep(LOOP_TIME_DELAY);
+                            std::this_thread::sleep_for(LOOP_TIME_DELAY);
                         }
                     }
                     catch (std::exception& _e)
