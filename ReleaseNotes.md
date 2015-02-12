@@ -38,6 +38,7 @@ Added: taskId and task name to console output (dds-info -l). (GH-33)
 
 ### dds-topology
 Added: Users are now able to stop (restart) execution of tasks by calling "dds-topology --stop". To restart call: "dds-topology --stop" and "dds-topology --activate". (GH-31)    
+Fixed: a bug, which caused a crash when topology activate is called before dds-submit. (GH-51)   
 
 ## v0.6 (2014-12-05)
 ### DDS common   

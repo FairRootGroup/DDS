@@ -315,6 +315,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
+    LOG(info) << "UI channel requested a topology activation...";
     std::lock_guard<std::mutex> lock(m_ActivateAgents.m_mutexStart);
     try
     {
@@ -326,137 +327,129 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         m_ActivateAgents.zeroCounters();
 
         auto p = m_ActivateAgents.m_channel.lock();
+        // Start distributing user tasks between agents
+        // TODO: We might need to create a thread here to avoid blocking a thread of the transport
 
-        try
+        // Send binaries of user jobs to all active agents.
+        // Send activate signal to all agents. This will trigger start of user jobs on the agents.
+        auto condition = [](CAgentChannel::connectionPtr_t _v)
         {
-            // Start distributing user tasks between agents
-            // TODO: We might need to create a thread here to avoid blocking a thread of the transport
+            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+        };
 
-            // Send binaries of user jobs to all active agents.
-            // Send activate signal to all agents. This will trigger start of user jobs on the agents.
-            auto condition = [](CAgentChannel::connectionPtr_t _v)
+        m_ActivateAgents.m_nofRequests = m_topo.getMainGroup()->getTotalNofTasks();
+        size_t nofAgents = countNofChannels(condition);
+
+        LOG(info) << "Avaliable agents = " << nofAgents;
+
+        if (nofAgents == 0)
+            throw runtime_error("There are no connected agents.");
+        if (nofAgents < m_ActivateAgents.m_nofRequests)
+            throw runtime_error("The number of agents is not sufficient for this topology.");
+
+        // initiate UI progress
+        p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_ActivateAgents.m_nofRequests, 0));
+
+        CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
+
+        m_scheduler.makeSchedule(m_topo, channels);
+        const CSSHScheduler::ScheduleVector_t& schedule = m_scheduler.getSchedule();
+
+        for (const auto& sch : schedule)
+        {
+            SAssignUserTaskCmd msg_cmd;
+
+            // Set Task ID
+            msg_cmd.m_sID = to_string(sch.m_taskID);
+
+            if (sch.m_channel.expired())
+                continue;
+            auto ptr = sch.m_channel.lock();
+
+            // Set task ID for agent and add it to map
+            // TODO: Do we have to assign taskID here?
+            // TODO: Probably it has to be assigned when the task is successfully activated.
+            ptr->setTaskID(sch.m_taskID);
+            m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
+
+            if (sch.m_task->isExeReachable())
             {
-                return (_v->getChannelType() == EChannelType::AGENT && _v->started());
-            };
-
-            m_ActivateAgents.m_nofRequests = m_topo.getMainGroup()->getTotalNofTasks();
-            size_t nofAgents = countNofChannels(condition);
-
-            if (nofAgents == 0)
-                throw runtime_error("There are no connected agents.");
-            if (nofAgents < m_ActivateAgents.m_nofRequests)
-                throw runtime_error("The number of agents is not sufficient for this topology.");
-
-            // initiate UI progress
-            p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_ActivateAgents.m_nofRequests, 0));
-
-            CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-
-            m_scheduler.makeSchedule(m_topo, channels);
-            const CSSHScheduler::ScheduleVector_t& schedule = m_scheduler.getSchedule();
-
-            for (const auto& sch : schedule)
-            {
-                SAssignUserTaskCmd msg_cmd;
-
-                // Set Task ID
-                msg_cmd.m_sID = to_string(sch.m_taskID);
-
-                if (sch.m_channel.expired())
-                    continue;
-                auto ptr = sch.m_channel.lock();
-
-                // Set task ID for agent and add it to map
-                // TODO: Do we have to assign taskID here?
-                // TODO: Probably it has to be assigned when the task is successfully activated.
-                ptr->setTaskID(sch.m_taskID);
-                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
-
-                if (sch.m_task->isExeReachable())
-                {
-                    msg_cmd.m_sExeFile = sch.m_task->getExe();
-                }
-                else
-                {
-                    // Executable is not reachable by the agent.
-                    // Upload it and change its path to $DDS_LOCATION on the WN
-
-                    // Expand the string for the program to extract exe name and command line arguments
-                    wordexp_t result;
-                    switch (wordexp(sch.m_task->getExe().c_str(), &result, 0))
-                    {
-                        case 0:
-                        {
-                            string sExeFilePath = result.we_wordv[0];
-
-                            boost::filesystem::path exeFilePath(sExeFilePath);
-                            string sExeFileName = exeFilePath.filename().generic_string();
-
-                            string sExeFileNameWithArgs = sExeFileName;
-                            for (size_t i = 1; i < result.we_wordc; ++i)
-                            {
-                                sExeFileNameWithArgs += " ";
-                                sExeFileNameWithArgs += result.we_wordv[i];
-                            }
-
-                            msg_cmd.m_sExeFile = "$DDS_LOCATION/";
-                            msg_cmd.m_sExeFile += sExeFileNameWithArgs;
-
-                            wordfree(&result);
-
-                            //
-                            ptr->pushBinaryAttachmentCmd(sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK);
-                        }
-                        break;
-                        case WRDE_NOSPACE:
-                            // If the error was WRDE_NOSPACE,
-                            // then perhaps part of the result was allocated.
-                            throw runtime_error("memory error occurred while processing the user's executable path: " +
-                                                sch.m_task->getExe());
-
-                        case WRDE_BADCHAR:
-                            throw runtime_error(
-                                "Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
-                                sch.m_task->getExe());
-                            break;
-
-                        case WRDE_BADVAL:
-                            throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
-                                                "told us to consider this an error in " +
-                                                sch.m_task->getExe());
-                            break;
-
-                        case WRDE_CMDSUB:
-                            throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
-                                                "consider this an error in " +
-                                                sch.m_task->getExe());
-                            break;
-                        case WRDE_SYNTAX:
-                            throw runtime_error(
-                                "Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
-                                sch.m_task->getExe());
-                            break;
-
-                        default: // Some other error.
-                            throw runtime_error("failed to process the user's executable path: " +
-                                                sch.m_task->getExe());
-                    }
-                }
-                ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
-                ptr->setState(EAgentState::executing);
+                msg_cmd.m_sExeFile = sch.m_task->getExe();
             }
+            else
+            {
+                // Executable is not reachable by the agent.
+                // Upload it and change its path to $DDS_LOCATION on the WN
 
-            // Active agents.
-            broadcastSimpleMsg<cmdACTIVATE_AGENT>(
-                [](CAgentChannel::connectionPtr_t _v)
+                // Expand the string for the program to extract exe name and command line arguments
+                wordexp_t result;
+                switch (wordexp(sch.m_task->getExe().c_str(), &result, 0))
                 {
-                    return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
-                });
+                    case 0:
+                    {
+                        string sExeFilePath = result.we_wordv[0];
+
+                        boost::filesystem::path exeFilePath(sExeFilePath);
+                        string sExeFileName = exeFilePath.filename().generic_string();
+
+                        string sExeFileNameWithArgs = sExeFileName;
+                        for (size_t i = 1; i < result.we_wordc; ++i)
+                        {
+                            sExeFileNameWithArgs += " ";
+                            sExeFileNameWithArgs += result.we_wordv[i];
+                        }
+
+                        msg_cmd.m_sExeFile = "$DDS_LOCATION/";
+                        msg_cmd.m_sExeFile += sExeFileNameWithArgs;
+
+                        wordfree(&result);
+
+                        //
+                        ptr->pushBinaryAttachmentCmd(sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK);
+                    }
+                    break;
+                    case WRDE_NOSPACE:
+                        // If the error was WRDE_NOSPACE,
+                        // then perhaps part of the result was allocated.
+                        throw runtime_error("memory error occurred while processing the user's executable path: " +
+                                            sch.m_task->getExe());
+
+                    case WRDE_BADCHAR:
+                        throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
+                                            sch.m_task->getExe());
+                        break;
+
+                    case WRDE_BADVAL:
+                        throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
+                                            "told us to consider this an error in " +
+                                            sch.m_task->getExe());
+                        break;
+
+                    case WRDE_CMDSUB:
+                        throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
+                                            "consider this an error in " +
+                                            sch.m_task->getExe());
+                        break;
+                    case WRDE_SYNTAX:
+                        throw runtime_error(
+                            "Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
+                            sch.m_task->getExe());
+                        break;
+
+                    default: // Some other error.
+                        throw runtime_error("failed to process the user's executable path: " + sch.m_task->getExe());
+                }
+            }
+            ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
+            ptr->setState(EAgentState::executing);
         }
-        catch (bad_weak_ptr& _e)
-        {
-            // TODO: Do we need to log something here?
-        }
+
+        // Active agents.
+        broadcastSimpleMsg<cmdACTIVATE_AGENT>(
+            [](CAgentChannel::connectionPtr_t _v)
+            {
+                return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+            });
     }
     catch (exception& _e)
     {

@@ -30,6 +30,9 @@ CTopology::~CTopology()
 
 TaskGroupPtr_t CTopology::getMainGroup() const
 {
+    if (nullptr == m_main)
+        throw runtime_error("No Topology is defined. Use dds-submit to specify one.");
+
     return m_main;
 }
 
