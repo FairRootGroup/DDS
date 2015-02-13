@@ -51,14 +51,10 @@ void CKeyValueGuard::createStorage()
 
     // Create shared memory storage and semaphor to synchronize accesss to shared memory
 
-    // Get task ID from environment
-    char* ddsTaskId;
-    ddsTaskId = getenv("DDS_TASK_ID");
-    if (NULL == ddsTaskId)
-        throw runtime_error("Can't initialize semaphore because DDS_TASK_ID variable is not set");
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
 
     // Shared memory storage for property tree
-    string sharedMemoryName(ddsTaskId);
+    string sharedMemoryName(storageName);
     sharedMemoryName += "_DDSSM";
 
     const bool sharedMemoryRemoved = ip::shared_memory_object::remove(sharedMemoryName.c_str());
@@ -77,7 +73,7 @@ void CKeyValueGuard::createStorage()
     }
 
     // Named mutex
-    string mutexName(ddsTaskId);
+    string mutexName(storageName);
     mutexName += "_DDSM";
 
     const bool removed = ip::named_mutex::remove(mutexName.c_str());
@@ -100,13 +96,10 @@ void CKeyValueGuard::initLock()
     if (m_sharedMemoryMutex)
         return;
 
-    char* ddsTaskId;
-    ddsTaskId = getenv("DDS_TASK_ID");
-    if (NULL == ddsTaskId)
-        throw runtime_error("Can't initialize semaphore because DDS_TASK_ID variable is not set");
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
 
     // Shared memory storage for property tree
-    string sharedMemoryName(ddsTaskId);
+    string sharedMemoryName(storageName);
     sharedMemoryName += "_DDSSM";
 
     try
@@ -120,7 +113,7 @@ void CKeyValueGuard::initLock()
     }
 
     // Named mutex
-    string mutexName(ddsTaskId);
+    string mutexName(storageName);
     mutexName += "_DDSM";
 
     try
@@ -172,6 +165,7 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
 
             writeStream.swap_vector(*ptString);
             // LOG(debug) << "CKeyValueGuard::putValue file content |" << *ptString << "|";
+            LOG(debug) << "Finish putValue key=" << _key << " value=" << _value;
         }
         catch (const ip::interprocess_exception& _e)
         {
@@ -262,9 +256,9 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
             _values->insert(make_pair(element.first, element.second.get_value<std::string>()));
         }
     }
-    catch (...)
+    catch (exception& ex)
     {
-        LOG(error) << "CKeyValueGuard::getValues key=" << _key << " exception";
+        LOG(error) << "key=" << _key << ": " << ex.what();
         return;
     }
     LOG(debug) << "CKeyValueGuard::getValues key=" << _key << " done";

@@ -11,6 +11,8 @@
 #include <boost/filesystem.hpp>
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
+// STD
+#include <mutex>
 
 using namespace dds;
 using namespace std;
@@ -42,6 +44,60 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
     //    m_sCfgFilePath = cfgFile.generic_string();
     //
     //    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_propertyPT);
+
+    // Register the user task's watchdog
+    //    CMonitoringThread::instance().registerCallbackFunction(
+    //        [this]() -> bool
+    //        {
+    //            static int counter = 0;
+    //            // We want to collect property trees each 1 min
+    //            // bool collectPT = counter++ % 12;
+    //            // if (!collectPT)
+    //            //    return true;
+    //
+    //            try
+    //            {
+    //                LOG(info) << "ConnectionManager monitoring thread called.";
+    //                m_propertyPT.clear();
+    //
+    //                CAgentChannel::weakConnectionPtrVector_t channels(
+    //                    getChannels([](CAgentChannel::connectionPtr_t _v)
+    //                                {
+    //                                    return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+    //                                }));
+    //
+    //                for (const auto& v : channels)
+    //                {
+    //                    if (v.expired())
+    //                        continue;
+    //                    auto ptr = v.lock();
+    //
+    //                    {
+    //                        std::lock_guard<std::mutex> lock(ptr->getPropertyPTMutex());
+    //                        const boost::property_tree::ptree& pt = ptr->getPropertyPT();
+    //                        for (const auto& v1 : pt)
+    //                        {
+    //                            for (const auto& v2 : v1.second)
+    //                            {
+    //                                m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //                stringstream ss;
+    //                for (const auto& v : m_propertyPT)
+    //                {
+    //                    ss << v.first << " -->" << v.second.data();
+    //                }
+    //                LOG(info) << ss.str();
+    //            }
+    //            catch (exception& _e)
+    //            {
+    //                LOG(fatal) << "User process monitoring thread received an exception: " << _e.what();
+    //            }
+    //
+    //            return true;
+    //        });
 }
 
 CConnectionManager::~CConnectionManager()
@@ -357,6 +413,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
         // Clear the map on each activation
         m_taskIDToAgentChannelMap.clear();
+        // Clear property tree
+        // m_propertyPT.clear();
 
         for (const auto& sch : schedule)
         {
@@ -651,7 +709,10 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
 bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    //    m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
+    // TODO: in general writeing to m_propertyPT has to be locked with mutex
+    // TODO: for the moment we only update property tree here and do not delete anything from it, otherwise we have to
+    // lock, which leads to potential bottleneck.
+    // m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
     //    boost::property_tree::ini_parser::write_ini(m_sCfgFilePath, m_propertyPT);
 
     // If UI channel sends a property update than property key does not contain a hash.

@@ -73,7 +73,7 @@ namespace dds
         TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
         std::mutex m_mapMutex;
 
-        // boost::property_tree::ptree m_propertyPT;
+        boost::property_tree::ptree m_propertyPT;
         // std::string m_sCfgFilePath;
     };
 }

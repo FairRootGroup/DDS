@@ -7,6 +7,7 @@
 #include <exception>
 #include <sstream>
 #include <condition_variable>
+#include <thread>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -91,6 +92,7 @@ int main(int argc, char* argv[])
                     // check wheather all values are already there
                     for (const auto& prop : valContainer)
                     {
+                        // LOG(info) << "prop.second.size()=" << prop.second.size() <<
                         bGoodToGo = (prop.second.size() == nMaxValue);
                         if (!bGoodToGo)
                             break;
@@ -98,6 +100,9 @@ int main(int argc, char* argv[])
                 }
                 keyCondition.notify_all();
             });
+
+        const std::chrono::seconds waitingTime(10);
+        this_thread::sleep_for(waitingTime);
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {
@@ -136,6 +141,7 @@ int main(int argc, char* argv[])
             if (isTimeout)
             {
                 LOG(log_stderr) << "USER TASK - timeout is reached, but not all values have been received.";
+
                 return 1;
             }
         }

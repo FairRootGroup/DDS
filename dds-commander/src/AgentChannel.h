@@ -7,6 +7,8 @@
 // DDS
 #include "ServerChannelImpl.h"
 #include <chrono>
+// BOOST
+#include <boost/property_tree/ptree.hpp>
 
 namespace dds
 {
@@ -107,6 +109,16 @@ namespace dds
             m_remoteHostInfo = _hostInfo;
         }
 
+        const boost::property_tree::ptree& getPropertyPT() const
+        {
+            return m_propertyPT;
+        }
+
+        std::mutex& getPropertyPTMutex()
+        {
+            return m_propertyPTMutex;
+        }
+
       private:
         // Message Handlers
         bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment);
@@ -139,6 +151,8 @@ namespace dds
         uint64_t m_taskID;
         std::chrono::milliseconds m_startUpTime;
         EAgentState m_state;
+        boost::property_tree::ptree m_propertyPT;
+        std::mutex m_propertyPTMutex;
     };
 }
 #endif /* defined(__DDS__CAgentChannel__) */

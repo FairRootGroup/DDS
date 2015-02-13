@@ -292,3 +292,11 @@ string CUserDefaults::getAgentLogStorageDir() const
     smart_append(&sWrkDir, '/');
     return (sWrkDir + sAgentLogDir);
 }
+
+pid_t CUserDefaults::getScoutPid() const
+{
+    ifstream f(getDDSPath() + "DDSWorker.pid");
+    pid_t nDDSScoutPid;
+    f >> nDDSScoutPid;
+    return nDDSScoutPid;
+}

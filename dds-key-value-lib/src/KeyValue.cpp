@@ -48,6 +48,7 @@ void CKeyValue::getValues(const std::string& _key, valuesMap_t* _values)
 CKeyValue::connection_t CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
 {
     CKeyValueGuard::instance().initLock();
+    CKeyValueGuard::instance().initAgentConnection();
     LOG(debug) << "User process is waiting for property keys updates.";
 
     unsubscribe();

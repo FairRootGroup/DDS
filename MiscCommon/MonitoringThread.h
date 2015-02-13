@@ -57,20 +57,23 @@ namespace dds
                     {
                         while (true)
                         {
-                            // Call registred callback functions
-                            // We use Erase-remove idiom to execute callback and remove expired if needed.
-                            m_registeredCallbackFunctions.erase(remove_if(m_registeredCallbackFunctions.begin(),
-                                                                          m_registeredCallbackFunctions.end(),
-                                                                          [&](callbackFunction_t& i)
-                                                                          {
-                                                                              // A callback function can return
-                                                                              // false, which
-                                                                              // means it wants to be unregistered
-                                                                              // (expire)
-                                                                              bool bActive = i();
-                                                                              return !bActive;
-                                                                          }),
-                                                                m_registeredCallbackFunctions.end());
+                            {
+                                std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
+                                // Call registred callback functions
+                                // We use Erase-remove idiom to execute callback and remove expired if needed.
+                                m_registeredCallbackFunctions.erase(remove_if(m_registeredCallbackFunctions.begin(),
+                                                                              m_registeredCallbackFunctions.end(),
+                                                                              [&](callbackFunction_t& i)
+                                                                              {
+                                                                                  // A callback function can return
+                                                                                  // false, which
+                                                                                  // means it wants to be unregistered
+                                                                                  // (expire)
+                                                                                  bool bActive = i();
+                                                                                  return !bActive;
+                                                                              }),
+                                                                    m_registeredCallbackFunctions.end());
+                            }
 
                             std::chrono::seconds idleTime;
                             // Check if process is idle.
@@ -120,6 +123,7 @@ namespace dds
 
         void registerCallbackFunction(callbackFunction_t _handler)
         {
+            std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
             m_registeredCallbackFunctions.push_back(_handler);
         }
 
@@ -158,6 +162,8 @@ namespace dds
 
         std::function<void(void)> m_idleCallback;
         std::vector<callbackFunction_t> m_registeredCallbackFunctions;
+
+        std::mutex m_registeredCallbackFunctionsMutex;
 
         std::mutex m_mutex; // Mutex for updateIdle call
     };

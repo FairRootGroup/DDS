@@ -304,7 +304,7 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
     // watchdog
-    LOG(info) << "Starting the watchdog for user task pid = " << _pid;
+    LOG(info) << "Adding user task pid " << _pid << " to the tasks queue";
     try
     {
         // remove pid from the active children list
@@ -317,8 +317,15 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     }
 
     // Register the user task's watchdog
+
+    LOG(info) << "Starting the watchdog for user task pid = " << _pid;
+
+    auto self(shared_from_this());
+
+    LOG(info) << "Shared from this created" << _pid;
+
     CMonitoringThread::instance().registerCallbackFunction(
-        [this, _pid]() -> bool
+        [this, self, _pid]() -> bool
         {
             // Send commander server the watchdog heartbeat.
             // It indicates that the agent is executing a task and is not idle
@@ -365,6 +372,8 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
             return true;
         });
+
+    LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
 }
 
 bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,

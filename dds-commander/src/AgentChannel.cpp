@@ -196,6 +196,11 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
+    {
+        std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+        m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
+    }
+
     // Return false.
     // The command can only be processed by the higher level object
     return false;
@@ -203,6 +208,10 @@ bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_
 
 bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment)
 {
+    {
+        std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+        m_propertyPT.clear();
+    }
     // Return false.
     // The command can only be processed by the higher level object
     return false;

@@ -10,6 +10,7 @@
 #include <map>
 #include <chrono>
 #include <condition_variable>
+#include <memory>
 // BOOST
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
@@ -133,6 +134,7 @@ namespace dds
         KEY_VALUE_GUARD
     };
     typedef std::vector<EChannelType> channelTypeVector_t;
+    const std::array<std::string, 4> gChannelTypeName = { "unknown", "agent", "ui", "key_value_guard" };
 
     // --- Helpers for events dispatching ---
     // TODO: Move to a seporate header
@@ -205,7 +207,9 @@ namespace dds
     typedef std::shared_ptr<SBinaryAttachmentInfo> binaryAttachmentInfoPtr_t;
 
     template <class T>
-    class CBaseChannelImpl : public boost::noncopyable, public CChannelEventsImpl<T>
+    class CBaseChannelImpl : public boost::noncopyable,
+                             public CChannelEventsImpl<T>,
+                             public std::enable_shared_from_this<T>
     {
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
@@ -234,6 +238,7 @@ namespace dds
       public:
         ~CBaseChannelImpl<T>()
         {
+            LOG(MiscCommon::info) << "Channel " << gChannelTypeName[m_channelType] << " destructor is called";
             stop();
         }
 
@@ -330,7 +335,8 @@ namespace dds
             }
 
             // process standard async writing
-            m_io_service.post([this]
+            auto self(this->shared_from_this());
+            m_io_service.post([this, self]
                               {
                                   try
                                   {
@@ -630,10 +636,11 @@ namespace dds
       private:
         void readHeader()
         {
+            auto self(this->shared_from_this());
             boost::asio::async_read(
                 m_socket,
                 boost::asio::buffer(m_currentMsg->data(), CProtocolMessage::header_length),
-                [this](boost::system::error_code ec, std::size_t length)
+                [this, self](boost::system::error_code ec, std::size_t length)
                 {
                     if (!ec)
                     {
@@ -677,10 +684,11 @@ namespace dds
                 return;
             }
 
+            auto self(this->shared_from_this());
             boost::asio::async_read(
                 m_socket,
                 boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
-                [this](boost::system::error_code ec, std::size_t length)
+                [this, self](boost::system::error_code ec, std::size_t length)
                 {
                     if (!ec)
                     {
@@ -741,10 +749,11 @@ namespace dds
             }
             m_writeQueue.clear();
 
+            auto self(this->shared_from_this());
             boost::asio::async_write(
                 m_socket,
                 m_writeBuffer,
-                [this](boost::system::error_code _ec, std::size_t _bytesTransferred)
+                [this, self](boost::system::error_code _ec, std::size_t _bytesTransferred)
                 {
                     try
                     {

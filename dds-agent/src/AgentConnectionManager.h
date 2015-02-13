@@ -15,7 +15,7 @@
 
 namespace dds
 {
-    class CAgentConnectionManager
+    class CAgentConnectionManager : public std::enable_shared_from_this<CAgentConnectionManager>
     {
         typedef std::vector<pid_t> childrenPidContainer_t;
         typedef std::shared_ptr<CUIConnectionManager> UIConnectionManagerPtr_t;

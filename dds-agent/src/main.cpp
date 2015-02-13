@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
         try
         {
             boost::asio::io_service io_service;
-            CAgentConnectionManager agent(options, io_service);
-            agent.start();
+            shared_ptr<CAgentConnectionManager> agent = make_shared<CAgentConnectionManager>(options, io_service);
+            agent->start();
         }
         catch (exception& e)
         {

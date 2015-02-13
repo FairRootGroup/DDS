@@ -46,6 +46,7 @@ namespace dds
         static std::string getAgentUUIDFile();
         std::string getLogFile() const;
         std::string getAgentLogStorageDir() const;
+        pid_t getScoutPid() const;
 
       private:
         std::string convertAnyToString(const boost::any& _any) const;
