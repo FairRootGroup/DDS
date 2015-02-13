@@ -23,6 +23,10 @@ bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t
     {
         LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
     }
+
+    if (isErrorMsg)
+        stop();
+
     return true;
 }
 
