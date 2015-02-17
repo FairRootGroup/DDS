@@ -10,7 +10,7 @@ Added: Log rotation: minimum free space on the drive after which older log files
 Added: User's task stdout/err on WNs are automatically written in dedicated log files, user_task_<TASK_ID>_out.log and user_task_<TASK_ID>_err.log accordingly. (GH-26)   
 Added: Progress display for "dds-agent-cmd getlog", "dds-topology --activate" and "dds-test -t" in percent. Optionally full verbose messages can be displayed with --verbose option. (GH-42)   
 Added: Broadcast property deletion on task exit. (GH-28)   
-Added: property propagation types. (GH-30)
+Added: property propagation types. (GH-30)   
 
 ### dds-commander
 Added: State of agents. (GH-27)    
@@ -37,6 +37,7 @@ Fixed: Stability improvements. Handling edge cases which could occur during chan
 
 ### dds-info
 Added: taskId and task name to console output (dds-info -l). (GH-33)    
+Added: possibility to get property list and property values from agents. (GH-52)
 
 ### dds-topology
 Added: Users are now able to stop (restart) execution of tasks by calling "dds-topology --stop". To restart call: "dds-topology --stop" and "dds-topology --activate". (GH-31)    

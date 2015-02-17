@@ -12,8 +12,17 @@ using namespace std;
 
 bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
+    if (_attachment->m_srcCommand == cmdGET_PROP_LIST || _attachment->m_srcCommand == cmdGET_PROP_VALUES)
+    {
+        if (!_attachment->m_sMsg.empty())
+            LOG(log_stdout) << "\n" << _attachment->m_sMsg;
+        stop();
+        return true;
+    }
+
     if (!_attachment->m_sMsg.empty())
         LOG(log_stdout) << "Server reports: " << _attachment->m_sMsg;
+
     return true;
 }
 

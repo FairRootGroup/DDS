@@ -21,6 +21,7 @@
 #include "ProgressCmd.h"
 #include "UserTaskDoneCmd.h"
 #include "DeleteKeyCmd.h"
+#include "GetPropValuesCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -87,6 +88,7 @@ namespace dds
     REGISTER_CMD_ATTACHMENT(SProgressCmd, cmdPROGRESS)
     REGISTER_CMD_ATTACHMENT(SUserTaskDoneCmd, cmdUSER_TASK_DONE)
     REGISTER_CMD_ATTACHMENT(SDeleteKeyCmd, cmdDELETE_KEY)
+    REGISTER_CMD_ATTACHMENT(SGetPropValuesCmd, cmdGET_PROP_VALUES)
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

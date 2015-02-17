@@ -12,6 +12,8 @@
 #include "version.h"
 #include "Res.h"
 #include "ProtocolCommands.h"
+// STD
+#include <string>
 //=============================================================================
 namespace bpo = boost::program_options;
 //=============================================================================
@@ -25,6 +27,9 @@ namespace dds
             , m_bNeedDDSStatus(false)
             , m_bNeedAgentsNumber(false)
             , m_bNeedAgentsList(false)
+            , m_bNeedPropList(false)
+            , m_bNeedPropValues(false)
+            , m_propertyID()
         {
         }
 
@@ -32,6 +37,9 @@ namespace dds
         bool m_bNeedDDSStatus;
         bool m_bNeedAgentsNumber;
         bool m_bNeedAgentsList;
+        bool m_bNeedPropList;
+        bool m_bNeedPropValues;
+        std::string m_propertyID;
     } SOptions_t;
     //=============================================================================
     inline void PrintVersion()
@@ -61,6 +69,14 @@ namespace dds
         options.add_options()("agents-list,l",
                               bpo::bool_switch(&_options->m_bNeedAgentsList),
                               "Show detailed info about all online agents");
+        options.add_options()(
+            "prop-list", bpo::bool_switch(&_options->m_bNeedPropList), "Returns a property list from all agents.");
+        options.add_options()("prop-values",
+                              bpo::bool_switch(&_options->m_bNeedPropValues),
+                              "Returns a key-value pairs from all agents.");
+        options.add_options()("prop-id",
+                              bpo::value<std::string>(&_options->m_propertyID),
+                              "Specify property IDs that have to be returned.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -83,6 +99,11 @@ namespace dds
         if (vm.count("version"))
         {
             PrintVersion();
+            return false;
+        }
+        if (vm.count("prop-id") && !(vm.count("prop-values")))
+        {
+            LOG(MiscCommon::log_stdout) << "Option prop-id has to be used together with prop-values.";
             return false;
         }
 

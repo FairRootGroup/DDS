@@ -60,6 +60,10 @@ namespace dds
                               CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
+                                 CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
+                                   CAgentChannel::weakConnectionPtr_t _channel);
 
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;
@@ -74,6 +78,7 @@ namespace dds
         std::mutex m_mapMutex;
 
         boost::property_tree::ptree m_propertyPT;
+        std::mutex m_propertyPTMutex;
         // std::string m_sCfgFilePath;
     };
 }

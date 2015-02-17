@@ -29,6 +29,7 @@ set( SOURCE_FILES
     ./src/DeleteKeyCmd.cpp
 	./src/ProgressCmd.cpp
     ./src/UserTaskDoneCmd.cpp
+    ./src/GetPropValuesCmd.cpp
 )
 
 set( SRC_HDRS
@@ -55,6 +56,7 @@ set( SRC_HDRS
     ./src/DeleteKeyCmd.h
 	./src/ProgressCmd.h
     ./src/UserTaskDoneCmd.h
+    ./src/GetPropValuesCmd.h
 )
 
 include_directories(

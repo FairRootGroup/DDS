@@ -79,6 +79,8 @@ namespace dds
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         // Watchdog
         MESSAGE_HANDLER(cmdWATCHDOG_HEARTBEAT, on_cmdWATCHDOG_HEARTBEAT)
+        MESSAGE_HANDLER(cmdGET_PROP_LIST, on_cmdGET_PROP_LIST)
+        MESSAGE_HANDLER(cmdGET_PROP_VALUES, on_cmdGET_PROP_VALUES)
         END_MSG_MAP()
 
       public:
@@ -135,6 +137,8 @@ namespace dds
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
         bool on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment);
         bool on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment);
+        bool on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment);
+        bool on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment);
 
         std::string _remoteEndIDString()
         {

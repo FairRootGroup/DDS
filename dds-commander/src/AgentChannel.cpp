@@ -226,3 +226,13 @@ bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_
     // In the future we might want to send more informtion about tasks being executed (pid, CPU info, memory)
     return true;
 }
+
+bool CAgentChannel::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment)
+{
+    return false;
+}
+
+bool CAgentChannel::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment)
+{
+    return false;
+}

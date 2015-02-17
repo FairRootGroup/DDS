@@ -8,6 +8,7 @@
 // DDS
 #include "ClientChannelImpl.h"
 #include "Options.h"
+#include "GetPropValuesCmd.h"
 
 namespace dds
 {
@@ -24,6 +25,14 @@ namespace dds
                                      pushMsg<cmdGED_PID>();
                                  else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
                                      pushMsg<cmdGET_AGENTS_INFO>();
+                                 else if (m_options.m_bNeedPropList)
+                                     pushMsg<cmdGET_PROP_LIST>();
+                                 else if (m_options.m_bNeedPropValues)
+                                 {
+                                     SGetPropValuesCmd cmd;
+                                     cmd.m_sPropertyID = m_options.m_propertyID;
+                                     pushMsg<cmdGET_PROP_VALUES>(cmd);
+                                 }
                              });
 
             subscribeOnEvent(EChannelEvents::OnConnected,

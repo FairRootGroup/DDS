@@ -46,58 +46,60 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
     //    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_propertyPT);
 
     // Register the user task's watchdog
-    //    CMonitoringThread::instance().registerCallbackFunction(
-    //        [this]() -> bool
-    //        {
-    //            static int counter = 0;
-    //            // We want to collect property trees each 1 min
-    //            // bool collectPT = counter++ % 12;
-    //            // if (!collectPT)
-    //            //    return true;
-    //
-    //            try
-    //            {
-    //                LOG(info) << "ConnectionManager monitoring thread called.";
-    //                m_propertyPT.clear();
-    //
-    //                CAgentChannel::weakConnectionPtrVector_t channels(
-    //                    getChannels([](CAgentChannel::connectionPtr_t _v)
-    //                                {
-    //                                    return (_v->getChannelType() == EChannelType::AGENT && _v->started());
-    //                                }));
-    //
-    //                for (const auto& v : channels)
-    //                {
-    //                    if (v.expired())
-    //                        continue;
-    //                    auto ptr = v.lock();
-    //
-    //                    {
-    //                        std::lock_guard<std::mutex> lock(ptr->getPropertyPTMutex());
-    //                        const boost::property_tree::ptree& pt = ptr->getPropertyPT();
-    //                        for (const auto& v1 : pt)
-    //                        {
-    //                            for (const auto& v2 : v1.second)
-    //                            {
-    //                                m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //                stringstream ss;
-    //                for (const auto& v : m_propertyPT)
-    //                {
-    //                    ss << v.first << " -->" << v.second.data();
-    //                }
-    //                LOG(info) << ss.str();
-    //            }
-    //            catch (exception& _e)
-    //            {
-    //                LOG(fatal) << "User process monitoring thread received an exception: " << _e.what();
-    //            }
-    //
-    //            return true;
-    //        });
+    CMonitoringThread::instance().registerCallbackFunction(
+        [this]() -> bool
+        {
+            static int counter = 0;
+            LOG(info) << "ConnectionManager monitoring thread called counter=" << counter;
+
+            // We want to collect property trees each 1 min
+            bool collectPT = !(counter++ % 12);
+            if (!collectPT)
+                return true;
+
+            try
+            {
+                LOG(info) << "ConnectionManager monitoring thread collect properties from agents.";
+                m_propertyPT.clear();
+
+                CAgentChannel::weakConnectionPtrVector_t channels(
+                    getChannels([](CAgentChannel::connectionPtr_t _v)
+                                {
+                                    return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+                                }));
+
+                // stringstream ss;
+                for (const auto& v : channels)
+                {
+                    if (v.expired())
+                        continue;
+                    auto ptr = v.lock();
+
+                    {
+                        std::lock_guard<std::mutex> lock(ptr->getPropertyPTMutex());
+                        const boost::property_tree::ptree& pt = ptr->getPropertyPT();
+                        for (const auto& v1 : pt)
+                        {
+                            for (const auto& v2 : v1.second)
+                            {
+                                {
+                                    std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+                                    m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
+                                }
+                                // ss << (v1.first + "." + v2.first) << " --> " << v2.second.data() << endl;
+                            }
+                        }
+                    }
+                }
+                // LOG(info) << ss.str();
+            }
+            catch (exception& _e)
+            {
+                LOG(fatal) << "User process monitoring thread received an exception: " << _e.what();
+            }
+
+            return true;
+        });
 }
 
 CConnectionManager::~CConnectionManager()
@@ -183,6 +185,22 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
+
+    std::function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
+        fGET_PROP_LIST =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdGET_PROP_LIST(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
+
+    std::function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
+        fGET_PROP_VALUES =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdGET_PROP_VALUES>(fGET_PROP_VALUES);
 }
 
 void CConnectionManager::_createInfoFile(size_t _port) const
@@ -556,6 +574,7 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
             // ptr->setTaskID(0);
             // dequeue important (or expensive) messages
             ptr->dequeueMsg<cmdUPDATE_KEY>();
+            ptr->dequeueMsg<cmdDELETE_KEY>();
             // send stop message
             ptr->template pushMsg<cmdSTOP_USER_TASK>();
             // ptr->setState(EAgentState::idle);
@@ -857,6 +876,77 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
     //}
 
     LOG(info) << "User task <" << taskID << "> with path " << task->getPath() << " done";
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
+                                             CAgentChannel::weakConnectionPtr_t _channel)
+{
+    std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+    stringstream ss;
+    for (const auto& v1 : m_propertyPT)
+    {
+        ss << v1.first << endl;
+    }
+
+    if (!_channel.expired())
+    {
+        auto ptr = _channel.lock();
+        ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_PROP_LIST));
+    }
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
+                                               CAgentChannel::weakConnectionPtr_t _channel)
+{
+    stringstream ss;
+    {
+        try
+        {
+            std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+            if (_attachment->m_sPropertyID.empty())
+            {
+                for (const auto& v1 : m_propertyPT)
+                {
+                    ss << "[" << v1.first << "]" << endl;
+                    for (const auto& v2 : v1.second)
+                    {
+                        m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
+                        ss << (v1.first + "." + v2.first) << " --> " << v2.second.data() << endl;
+                    }
+                }
+            }
+            else
+            {
+                auto v1 = m_propertyPT.get_child(_attachment->m_sPropertyID);
+                ss << "[" << _attachment->m_sPropertyID << "]" << endl;
+                for (const auto& v2 : v1)
+                {
+                    m_propertyPT.put((_attachment->m_sPropertyID + "." + v2.first), v2.second.data());
+                    ss << (_attachment->m_sPropertyID + "." + v2.first) << ": " << v2.second.data() << endl;
+                }
+            }
+        }
+        catch (exception& e)
+        {
+            if (!_channel.expired())
+            {
+                stringstream ss;
+                ss << "Error getting values for property " << _attachment->m_sPropertyID << ": " << e.what();
+                auto ptr = _channel.lock();
+                ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdGET_PROP_LIST));
+            }
+        }
+    }
+
+    if (!_channel.expired())
+    {
+        auto ptr = _channel.lock();
+        ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_PROP_LIST));
+    }
 
     return true;
 }

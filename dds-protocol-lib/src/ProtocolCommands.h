@@ -50,7 +50,9 @@ namespace dds
         cmdTRANSPORT_TEST,
         cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
         cmdDELETE_KEY, // attachment: SDeleteKeyCmd
-        cmdPROGRESS,   // attachment: SProgressCmd
+        cmdGET_PROP_LIST,
+        cmdGET_PROP_VALUES,
+        cmdPROGRESS, // attachment: SProgressCmd
         cmdWATCHDOG_HEARTBEAT
     };
 
@@ -83,6 +85,8 @@ namespace dds
         { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
         { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
         { cmdDELETE_KEY, NAME_TO_STRING(cmdDELETE_KEY) },
+        { cmdGET_PROP_LIST, NAME_TO_STRING(cmdGET_PROP_LIST) },
+        { cmdGET_PROP_VALUES, NAME_TO_STRING(cmdGET_PROP_VALUES) },
         { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) },
         { cmdWATCHDOG_HEARTBEAT, NAME_TO_STRING(cmdWATCHDOG_HEARTBEAT) }
     };
