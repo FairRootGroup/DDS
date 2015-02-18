@@ -4,6 +4,7 @@
 //
 
 #include "GetPropValuesCmd.h"
+#include <stdexcept>
 
 using namespace std;
 using namespace dds;

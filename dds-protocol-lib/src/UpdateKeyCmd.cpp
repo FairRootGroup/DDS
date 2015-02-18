@@ -3,6 +3,7 @@
 //
 //
 #include "UpdateKeyCmd.h"
+#include <stdexcept>
 
 using namespace std;
 using namespace dds;

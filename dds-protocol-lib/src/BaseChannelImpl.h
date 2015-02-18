@@ -11,6 +11,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <memory>
+#include <vector>
 // BOOST
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
