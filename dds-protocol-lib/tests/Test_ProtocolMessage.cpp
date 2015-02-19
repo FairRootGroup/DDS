@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
     const string sTestPath = "/Users/dummy/Documents/workspace/dummy.xml";
     const uint16_t nTestRMSTypeCode = 1;
     const string sTestSSHCfgFile = "/Users/dummy/dummy.cfg";
-    const unsigned int cmdSize = 68;
+    const unsigned int cmdSize = 70;
 
     // Create a message
     SSubmitCmd cmd_src;

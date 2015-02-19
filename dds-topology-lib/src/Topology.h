@@ -49,6 +49,8 @@ namespace dds
         /// \throw runtime_error
         void init(const std::string& _fileName, bool _initForTest = false);
 
+        void setXMLValidationDisabled(bool _val);
+
         /// Accessors
         TaskGroupPtr_t getMainGroup() const;
         TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
@@ -97,6 +99,8 @@ namespace dds
         // For the moment we store them only for tests.
         HashPathToTaskMap_t m_hashPathToTaskMap;
         HashPathToTaskCollectionMap_t m_hashPathToTaskCollectionMap;
+
+        bool m_bXMLValidationDisabled; ///< if true than XML will not be validated agains XSD
     };
 }
 #endif /* defined(__DDS__Topology__) */

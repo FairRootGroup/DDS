@@ -13,11 +13,13 @@ namespace inet = MiscCommon::INet;
 void SSubmitCmd::normalizeToLocal() const
 {
     m_nRMSTypeCode = inet::normalizeRead(m_nRMSTypeCode);
+    m_bXMLValidationDisabled = inet::normalizeRead(m_bXMLValidationDisabled);
 }
 
 void SSubmitCmd::normalizeToRemote() const
 {
     m_nRMSTypeCode = inet::normalizeWrite(m_nRMSTypeCode);
+    m_bXMLValidationDisabled = inet::normalizeWrite(m_bXMLValidationDisabled);
 }
 
 void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -31,6 +33,7 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
     size_t idx(0);
     inet::readData(&m_nRMSTypeCode, &_data, &idx);
+    inet::readData(&m_bXMLValidationDisabled, &_data, &idx);
 
     vector<string> v;
     MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
@@ -54,6 +57,7 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     inet::pushData(m_nRMSTypeCode, _data);
+    inet::pushData(m_bXMLValidationDisabled, _data);
 
     copy(m_sTopoFile.begin(), m_sTopoFile.end(), back_inserter(*_data));
     _data->push_back('\0');

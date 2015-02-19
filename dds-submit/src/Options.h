@@ -53,6 +53,7 @@ namespace dds
     {
         SOptions()
             : m_RMS(SSubmitCmd::UNKNOWN)
+            , m_bXMLValidationDisabled(false)
         {
         }
 
@@ -116,6 +117,7 @@ namespace dds
         std::string m_sTopoFile;
         SSubmitCmd::ERmsType m_RMS;
         std::string m_sSSHCfgFile;
+        bool m_bXMLValidationDisabled;
     } SOptions_t;
     //=============================================================================
     inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -155,6 +157,9 @@ namespace dds
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
+        options.add_options()("disable-xml-validation",
+                              bpo::bool_switch(&_options->m_bXMLValidationDisabled),
+                              "Explicitly disable validation of XML topology file.");
 
         // Parsing command-line
         bpo::variables_map vm;

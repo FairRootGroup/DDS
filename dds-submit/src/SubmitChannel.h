@@ -32,6 +32,7 @@ namespace dds
                                      cmd.m_sTopoFile = m_sTopoFile;
                                      cmd.m_nRMSTypeCode = m_RMS;
                                      cmd.m_sSSHCfgFile = m_sSSHCfgFile;
+                                     cmd.m_bXMLValidationDisabled = m_bXMLValidationDisabled;
                                      pushMsg<cmdSUBMIT>(cmd);
                                  }
                              });
@@ -62,6 +63,7 @@ namespace dds
         void setTopoFile(const std::string& _val);
         void setSSHCfgFile(const std::string& _val);
         void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
+        void setXMLValidationDisabled(bool _val);
 
       private:
         // Message Handlers
@@ -72,6 +74,7 @@ namespace dds
         std::string m_sTopoFile;
         std::string m_sSSHCfgFile;
         SSubmitCmd::ERmsType m_RMS;
+        bool m_bXMLValidationDisabled;
     };
 }
 

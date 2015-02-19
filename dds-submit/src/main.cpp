@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
         client->setTopoFile(options.m_sTopoFile);
         client->setSSHCfgFile(options.m_sSSHCfgFile);
         client->setRMSTypeCode(options.m_RMS);
+        client->setXMLValidationDisabled(options.m_bXMLValidationDisabled);
 
         client->connect(iterator);
 

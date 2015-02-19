@@ -21,6 +21,7 @@ CTopology::CTopology()
     , m_hashToTaskMap()
     , m_hashToTaskCollectionMap()
     , m_counterMap()
+    , m_bXMLValidationDisabled(false)
 {
 }
 
@@ -42,7 +43,7 @@ void CTopology::init(const std::string& _fileName, bool _initForTest)
 
     CTopologyParserXML parser;
     m_main = make_shared<CTaskGroup>();
-    parser.parse(_fileName, m_main);
+    parser.parse(_fileName, m_main, m_bXMLValidationDisabled);
 
     m_topoIndexToTopoElementMap.clear();
     FillTopoIndexToTopoElementMap(m_main);
@@ -52,6 +53,11 @@ void CTopology::init(const std::string& _fileName, bool _initForTest)
     m_hashToTaskCollectionMap.clear();
     m_currentTaskCollectionHashPath = "";
     FillHashToTopoElementMap(m_main, _initForTest);
+}
+
+void CTopology::setXMLValidationDisabled(bool _val)
+{
+    m_bXMLValidationDisabled = _val;
 }
 
 const CTopology::TopoIndexToTopoElementMap_t CTopology::getTopoIndexToTopoElementMap() const

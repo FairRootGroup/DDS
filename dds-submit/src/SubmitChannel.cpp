@@ -25,6 +25,11 @@ void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
     m_RMS = _val;
 }
 
+void CSubmitChannel::setXMLValidationDisabled(bool _val)
+{
+    m_bXMLValidationDisabled = _val;
+}
+
 bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     if (!_attachment->m_sMsg.empty())

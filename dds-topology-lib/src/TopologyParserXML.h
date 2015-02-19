@@ -27,11 +27,12 @@ namespace dds
         /// \brief Read topology from specified XML file.
         /// \param[in] _fileName Name of file with topology.
         /// \param[in] _main Main task group or nullptr in case of error.
-        void parse(const std::string& _fileName, TaskGroupPtr_t _main);
+        /// \param[in] _xmlValidationDisabled If tru than XML will not be validated against XSD.
+        void parse(const std::string& _fileName, TaskGroupPtr_t _main, bool _xmlValidationDisabled = false);
 
         /// \brief Validate provided XML file against XSD using xmllint.
         /// \throw runtime_error
-        bool isValid(const std::string& _fileName);
+        bool isValid(const std::string& _fileName, bool _xmlValidationDisabled = false);
 
       private:
         /// \brief Print recursively property tree to std::cout.

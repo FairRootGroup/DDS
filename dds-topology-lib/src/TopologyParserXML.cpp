@@ -32,8 +32,11 @@ CTopologyParserXML::~CTopologyParserXML()
 {
 }
 
-bool CTopologyParserXML::isValid(const std::string& _fileName)
+bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidationDisabled)
 {
+    if (_xmlValidationDisabled)
+        return true;
+
     pid_t pid = fork();
 
     switch (pid)
@@ -64,7 +67,7 @@ bool CTopologyParserXML::isValid(const std::string& _fileName)
     return (status == 0);
 }
 
-void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main)
+void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bool _xmlValidationDisabled)
 {
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");
@@ -82,7 +85,7 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main)
     // First validate XML against XSD schema
     try
     {
-        if (!isValid(_fileName))
+        if (!isValid(_fileName, _xmlValidationDisabled))
             throw runtime_error("XML file is not valid.");
     }
     catch (runtime_error& error)

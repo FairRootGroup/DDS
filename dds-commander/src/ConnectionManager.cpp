@@ -318,6 +318,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 
             // TODO: Job submission should be moved from here to a thread
             // Resolve topology
+            m_topo.setXMLValidationDisabled(_attachment->m_bXMLValidationDisabled);
             m_topo.init(_attachment->m_sTopoFile);
             // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
 
