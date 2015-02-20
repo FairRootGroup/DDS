@@ -50,8 +50,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
         [this]() -> bool
         {
             static int counter = 0;
-            LOG(info) << "ConnectionManager monitoring thread called counter=" << counter;
-
             // We want to collect property trees each 1 min
             bool collectPT = !(counter++ % 12);
             if (!collectPT)
@@ -59,7 +57,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
 
             try
             {
-                LOG(info) << "ConnectionManager monitoring thread collect properties from agents.";
                 m_propertyPT.clear();
 
                 CAgentChannel::weakConnectionPtrVector_t channels(
