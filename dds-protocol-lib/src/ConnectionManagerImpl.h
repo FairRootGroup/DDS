@@ -264,7 +264,7 @@ namespace dds
       private:
         void acceptHandler(typename T::connectionPtr_t _client, const boost::system::error_code& _ec)
         {
-            if (!_ec) // FIXME: Add proper error processing
+            if (!_ec)
             {
                 _client->start();
                 {
@@ -275,6 +275,7 @@ namespace dds
             }
             else
             {
+                LOG(error) << "Can't accept new connection: " << _ec.message();
             }
         }
 

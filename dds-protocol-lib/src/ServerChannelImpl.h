@@ -56,7 +56,7 @@ namespace dds
                     this->m_isHandshakeOK = true;
                     this->m_channelType = static_cast<EChannelType>(_attachment->m_channelType);
 
-                    // The following commands starts message processing which might be queued before.
+                    // The following commands starts message processing which might have been queued before.
                     this->template pushMsg<cmdUNKNOWN>();
 
                     // everything is OK, we can work with this agent
