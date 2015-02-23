@@ -275,7 +275,7 @@ namespace dds
             }
             else
             {
-                LOG(error) << "Can't accept new connection: " << _ec.message();
+                LOG(MiscCommon::error) << "Can't accept new connection: " << _ec.message();
             }
         }
 
