@@ -9,9 +9,7 @@
 #include <deque>
 #include <map>
 #include <chrono>
-#include <condition_variable>
 #include <memory>
-#include <vector>
 // BOOST
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
@@ -358,20 +356,6 @@ namespace dds
         }
 
         template <ECmdType _cmd, class A>
-        void syncPushMsg(const A& _attachment)
-        {
-            CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
-            syncWriteMessage(msg);
-        }
-
-        template <ECmdType _cmd>
-        void syncPushMsg()
-        {
-            SEmptyCmd cmd;
-            syncPushMsg<_cmd>(cmd);
-        }
-
-        template <ECmdType _cmd, class A>
         void sendYourself(const A& _attachment)
         {
             CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
@@ -427,7 +411,7 @@ namespace dds
             start_cmd.m_fileName = _fileName;
             start_cmd.m_fileSize = _data.size();
             start_cmd.m_fileCrc32 = fileCrc32.checksum();
-            syncPushMsg<cmdBINARY_ATTACHMENT_START>(start_cmd);
+            pushMsg<cmdBINARY_ATTACHMENT_START>(start_cmd);
 
             for (size_t i = 0; i < nofParts; ++i)
             {
@@ -734,11 +718,6 @@ namespace dds
             if (m_writeQueue.empty())
             {
                 // There is nothing to send.
-                //
-                // We need to make sure that write is not called from different threads.
-                // Only one write at time is allowed by asio.
-                // We therefore notify syncWrite about a chance to write
-                m_cvReadyToWrite.notify_all();
                 return;
             }
 
@@ -793,20 +772,6 @@ namespace dds
                         LOG(MiscCommon::error) << "BaseChannelImpl can't write message (callback): " << ex.what();
                     }
                 });
-        }
-
-        void syncWriteMessage(CProtocolMessage::protocolMessagePtr_t _msg)
-        {
-            std::unique_lock<std::mutex> lock(m_mutexWriteBuffer);
-            while (!m_writeBuffer.empty())
-                m_cvReadyToWrite.wait(lock);
-
-            LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << _msg->toString();
-            boost::system::error_code ec;
-            size_t bytesTransfered = boost::asio::write(
-                m_socket, boost::asio::buffer(_msg->data(), _msg->length()), boost::asio::transfer_all(), ec);
-
-            writeHandler(ec, bytesTransfered);
         }
 
         void writeHandler(boost::system::error_code _ec, std::size_t _bytesTransferred)
@@ -879,8 +844,6 @@ namespace dds
         std::mutex m_mutexWriteBuffer;
         protocolMessageBuffer_t m_writeBuffer;
         protocolMessagePtrQueue_t m_writeBufferQueue;
-
-        std::condition_variable m_cvReadyToWrite;
 
         // BinaryAttachment
         typedef std::map<boost::uuids::uuid, binaryAttachmentInfoPtr_t> binaryAttachmentMap_t;

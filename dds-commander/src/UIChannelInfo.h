@@ -121,7 +121,7 @@ namespace dds
                     if (!m_channel.expired())
                     {
                         auto pUI = m_channel.lock();
-                        pUI->template syncPushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
+                        pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
                         pUI->template pushMsg<cmdSHUTDOWN>();
 
                         m_channel.reset();

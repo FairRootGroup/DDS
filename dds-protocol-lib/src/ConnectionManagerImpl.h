@@ -135,7 +135,7 @@ namespace dds
                     if (v.expired())
                         continue;
                     auto ptr = v.lock();
-                    ptr->template syncPushMsg<cmdSHUTDOWN>();
+                    ptr->template pushMsg<cmdSHUTDOWN>();
                 }
 
                 m_acceptor.close();
