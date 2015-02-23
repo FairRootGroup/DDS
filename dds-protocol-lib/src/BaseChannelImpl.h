@@ -284,7 +284,7 @@ namespace dds
         template <ECmdType _cmd>
         void dequeueMsg()
         {
-            std::lock_guard<std::mutex> lock(m_mutexWriteQueue);
+            std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
             m_writeQueue.erase(std::remove_if(std::begin(m_writeQueue),
                                               std::end(m_writeQueue),
                                               [](const CProtocolMessage::protocolMessagePtr_t& _msg)
@@ -301,7 +301,7 @@ namespace dds
             {
                 CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
 
-                std::lock_guard<std::mutex> lock(m_mutexWriteQueue);
+                std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
                 if (!m_isHandshakeOK)
                 {
                     if (isCmdAllowedWithoutHandshake(_cmd))
@@ -710,24 +710,22 @@ namespace dds
             // To avoid sending of a bunch of small messages, we pack as many messages as possible into one write
             // request (GH-38).
             // Copy messages from the queue to send buffer (which should remain until the write handler is called)
-            std::lock_guard<std::mutex> lockWriteBuffer(m_mutexWriteBuffer);
-            if (!m_writeBuffer.empty())
-                return; // a write is in progress, don't start anything
-
-            std::lock_guard<std::mutex> lockWriteQueue(m_mutexWriteQueue);
-            if (m_writeQueue.empty())
             {
-                // There is nothing to send.
-                return;
-            }
+                std::lock_guard<std::mutex> lockWriteBuffer(m_mutexWriteBuffer);
+                if (!m_writeBuffer.empty())
+                    return; // a write is in progress, don't start anything
 
-            for (auto i : m_writeQueue)
-            {
-                LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << " a message: " << i->toString();
-                m_writeBuffer.push_back(boost::asio::buffer(i->data(), i->length()));
-                m_writeBufferQueue.push_back(i);
+                if (m_writeQueue.empty())
+                    return; // There is nothing to send.
+
+                for (auto i : m_writeQueue)
+                {
+                    LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << " a message: " << i->toString();
+                    m_writeBuffer.push_back(boost::asio::buffer(i->data(), i->length()));
+                    m_writeBufferQueue.push_back(i);
+                }
+                m_writeQueue.clear();
             }
-            m_writeQueue.clear();
 
             auto self(this->shared_from_this());
             boost::asio::async_write(
@@ -774,30 +772,6 @@ namespace dds
                 });
         }
 
-        void writeHandler(boost::system::error_code _ec, std::size_t _bytesTransferred)
-        {
-            if (!_ec)
-            {
-                LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
-                                       << _bytesTransferred << " bytes)";
-            }
-            else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
-            {
-                onDissconnect();
-            }
-            else
-            {
-                // don't show error if service is closed
-                if (m_started)
-                    LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
-                else
-                    LOG(MiscCommon::info)
-                        << "The stop signal is received, aborting current operation and closing the connection: "
-                        << _ec.message();
-                stop();
-            }
-        }
-
         void onDissconnect()
         {
             LOG(MiscCommon::debug) << "The session was disconnected by the remote end: " << remoteEndIDString();
@@ -837,7 +811,7 @@ namespace dds
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
 
-        std::mutex m_mutexWriteQueue;
+        // std::mutex m_mutexWriteQueue;
         protocolMessagePtrQueue_t m_writeQueue;
         protocolMessagePtrQueue_t m_writeQueueBeforeHandShake;
 
