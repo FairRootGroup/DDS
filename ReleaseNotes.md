@@ -1,5 +1,8 @@
 # DDS Release Notes
 
+## v0.10 (NOT YET RELEASED)
+
+
 ## v0.8 (2015-02-17)
 ### DDS common
 Fixed: idle time calculation for dds-commander and dds-agent. (GH-32)   
