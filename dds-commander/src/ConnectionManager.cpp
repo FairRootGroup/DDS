@@ -49,12 +49,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
     CMonitoringThread::instance().registerCallbackFunction(
         [this]() -> bool
         {
-            static int counter = 0;
-            // We want to collect property trees each 1 min
-            bool collectPT = !(counter++ % 12);
-            if (!collectPT)
-                return true;
-
             try
             {
                 m_propertyPT.clear();
@@ -65,7 +59,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                     return (_v->getChannelType() == EChannelType::AGENT && _v->started());
                                 }));
 
-                // stringstream ss;
                 for (const auto& v : channels)
                 {
                     if (v.expired())
@@ -83,20 +76,20 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                     std::lock_guard<std::mutex> lock(m_propertyPTMutex);
                                     m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
                                 }
-                                // ss << (v1.first + "." + v2.first) << " --> " << v2.second.data() << endl;
                             }
                         }
                     }
                 }
-                // LOG(info) << ss.str();
+                LOG(info) << "key-value lazy collector: checking avaliable channels for new updates...";
             }
             catch (exception& _e)
             {
-                LOG(fatal) << "User process monitoring thread received an exception: " << _e.what();
+                LOG(fatal) << "key-value lazy collector: error: " << _e.what();
             }
 
             return true;
-        });
+        },
+        chrono::seconds(60));
 }
 
 CConnectionManager::~CConnectionManager()

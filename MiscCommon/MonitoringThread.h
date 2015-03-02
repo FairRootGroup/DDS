@@ -22,6 +22,8 @@ namespace dds
     class CMonitoringThread
     {
         typedef std::function<bool()> callbackFunction_t;
+        // the function to call, the interval (in sec) the fucntion should be called at
+        typedef std::pair<callbackFunction_t, std::chrono::seconds> callbackValue_t;
 
       private:
         CMonitoringThread()
@@ -45,7 +47,8 @@ namespace dds
         /// \example CMonitoringThread::instance().start(300, [](){ do_something_here() });
         void start(double _idleTime, const std::function<void(void)>& _idleCallback)
         {
-            static const std::chrono::seconds LOOP_TIME_DELAY(5);
+            // Looping monitoring thread with a step of 1 sec up to *Unlimited* sec (size of int)
+            static const std::chrono::seconds INTERVAL_STEP(1);
             static const std::chrono::seconds WAITING_TIME(20);
 
             m_startIdleTime = std::chrono::steady_clock::now();
@@ -55,24 +58,37 @@ namespace dds
                 {
                     try
                     {
+                        std::chrono::seconds secInterval(0);
                         while (true)
                         {
+
                             {
                                 std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
                                 // Call registred callback functions
                                 // We use Erase-remove idiom to execute callback and remove expired if needed.
-                                m_registeredCallbackFunctions.erase(remove_if(m_registeredCallbackFunctions.begin(),
-                                                                              m_registeredCallbackFunctions.end(),
-                                                                              [&](callbackFunction_t& i)
-                                                                              {
-                                                                                  // A callback function can return
-                                                                                  // false, which
-                                                                                  // means it wants to be unregistered
-                                                                                  // (expire)
-                                                                                  bool bActive = i();
-                                                                                  return !bActive;
-                                                                              }),
-                                                                    m_registeredCallbackFunctions.end());
+                                m_registeredCallbackFunctions.erase(
+                                    remove_if(m_registeredCallbackFunctions.begin(),
+                                              m_registeredCallbackFunctions.end(),
+                                              [&](callbackValue_t& i)
+                                              {
+                                                  // A callback function can return
+                                                  // false, which
+                                                  // means it wants to be unregistered
+                                                  // (expire)
+                                                  const int nCurInterval =
+                                                      std::chrono::duration<int>(secInterval).count();
+                                                  const int nInterval = std::chrono::duration<int>(i.second).count();
+                                                  if (nCurInterval != 0 && nCurInterval >= nInterval &&
+                                                      0 == (nCurInterval % nInterval))
+                                                  {
+                                                      LOG(MiscCommon::debug)
+                                                          << "MONITORING: calling callback at interval of "
+                                                          << std::chrono::duration<int>(i.second).count();
+                                                      return (!i.first());
+                                                  }
+                                                  return false;
+                                              }),
+                                    m_registeredCallbackFunctions.end());
                             }
 
                             std::chrono::seconds idleTime;
@@ -104,7 +120,8 @@ namespace dds
                                 killProcess();
                             }
 
-                            std::this_thread::sleep_for(LOOP_TIME_DELAY);
+                            std::this_thread::sleep_for(INTERVAL_STEP);
+                            secInterval += INTERVAL_STEP;
                         }
                     }
                     catch (std::exception& _e)
@@ -121,10 +138,10 @@ namespace dds
             m_startIdleTime = std::chrono::steady_clock::now();
         }
 
-        void registerCallbackFunction(callbackFunction_t _handler)
+        void registerCallbackFunction(callbackFunction_t _handler, const std::chrono::seconds& _interval)
         {
             std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
-            m_registeredCallbackFunctions.push_back(_handler);
+            m_registeredCallbackFunctions.push_back(make_pair(_handler, _interval));
         }
 
       private:
@@ -161,7 +178,7 @@ namespace dds
         std::chrono::steady_clock::time_point m_startIdleTime;
 
         std::function<void(void)> m_idleCallback;
-        std::vector<callbackFunction_t> m_registeredCallbackFunctions;
+        std::vector<callbackValue_t> m_registeredCallbackFunctions;
 
         std::mutex m_registeredCallbackFunctionsMutex;
 
