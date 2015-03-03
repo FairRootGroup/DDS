@@ -27,6 +27,7 @@ namespace dds
             , m_nofReceivedErrors(0)
             , m_mutexStart()
             , m_mutexReceive()
+            , m_startTime(std::chrono::steady_clock::now())
         {
         }
 
@@ -47,6 +48,7 @@ namespace dds
             m_nofRequests = 0;
             m_nofReceived = 0;
             m_nofReceivedErrors = 0;
+            m_startTime = std::chrono::steady_clock::now();
         }
 
       public:
@@ -66,7 +68,15 @@ namespace dds
                 {
                     auto pUI = m_channel.lock();
                     pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
-                    pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(m_nofReceived, m_nofRequests, m_nofReceivedErrors));
+
+                    // mesure time to activate
+                    std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
+
+                    pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(
+                        m_nofReceived,
+                        m_nofRequests,
+                        m_nofReceivedErrors,
+                        std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime).count()));
                 }
 
                 checkAllReceived();
@@ -95,7 +105,15 @@ namespace dds
                 {
                     auto pUI = m_channel.lock();
                     pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::error));
-                    pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(m_nofReceived, m_nofRequests, m_nofReceivedErrors));
+
+                    // mesure time to activate
+                    std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
+
+                    pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(
+                        m_nofReceived,
+                        m_nofRequests,
+                        m_nofReceivedErrors,
+                        std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime).count()));
                 }
 
                 checkAllReceived();
@@ -141,6 +159,9 @@ namespace dds
         CAgentChannel::weakConnectionPtr_t m_channel;
         std::mutex m_mutexStart;
         std::mutex m_mutexReceive;
+
+      private:
+        std::chrono::steady_clock::time_point m_startTime;
     };
 
     class CGetLogChannelInfo : public CUIChannelInfo<CGetLogChannelInfo>
@@ -240,7 +261,8 @@ namespace dds
         {
             std::stringstream ss;
             ss << "total: " << m_nofRequests << ", activations: " << nofReceived()
-               << ", errors: " << m_nofReceivedErrors;
+               << ", errors: " << m_nofReceivedErrors << "\n";
+
             return ss.str();
         }
     };

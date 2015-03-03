@@ -19,6 +19,7 @@ void SProgressCmd::normalizeToLocal() const
     m_completed = inet::normalizeRead(m_completed);
     m_total = inet::normalizeRead(m_total);
     m_errors = inet::normalizeRead(m_errors);
+    m_time = inet::normalizeRead(m_time);
 }
 
 void SProgressCmd::normalizeToRemote() const
@@ -26,6 +27,7 @@ void SProgressCmd::normalizeToRemote() const
     m_completed = inet::normalizeWrite(m_completed);
     m_total = inet::normalizeWrite(m_total);
     m_errors = inet::normalizeWrite(m_errors);
+    m_time = inet::normalizeWrite(m_time);
 }
 
 void SProgressCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -41,6 +43,7 @@ void SProgressCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
     inet::readData(&m_completed, &_data, &idx);
     inet::readData(&m_total, &_data, &idx);
     inet::readData(&m_errors, &_data, &idx);
+    inet::readData(&m_time, &_data, &idx);
 }
 
 void SProgressCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
@@ -48,4 +51,5 @@ void SProgressCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     inet::pushData(m_completed, _data);
     inet::pushData(m_total, _data);
     inet::pushData(m_errors, _data);
+    inet::pushData(m_time, _data);
 }

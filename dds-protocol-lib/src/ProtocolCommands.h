@@ -16,7 +16,7 @@
 // In the future we might want to support backward compatibility. In this case protocol version, command will be
 // organized in separate structures and enums.
 //
-const uint16_t g_protocolCommandsVersion = 2;
+const uint16_t g_protocolCommandsVersion = 3;
 
 namespace dds
 {

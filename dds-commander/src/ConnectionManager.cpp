@@ -24,27 +24,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                        boost::asio::ip::tcp::endpoint& _endpoint)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_io_service, _endpoint)
 {
-
-    //    // create cfg file if missing
-    //    boost::filesystem::path cfgFile(CUserDefaults::instance().getDDSPath());
-    //    cfgFile /= "task.cfg";
-    //
-    //    if (fs::exists(cfgFile))
-    //    {
-    //        LOG(debug) << "Removing key-value storage file: " << cfgFile.generic_string();
-    //        if (!fs::remove(cfgFile))
-    //            LOG(fatal) << "Failed to remove key-value storage file: " << cfgFile.generic_string();
-    //    }
-    //
-    //    if (!fs::exists(cfgFile))
-    //    {
-    //        LOG(debug) << "Create key-value storage file: " << cfgFile.generic_string();
-    //        ofstream f(cfgFile.generic_string());
-    //    }
-    //    m_sCfgFilePath = cfgFile.generic_string();
-    //
-    //    boost::property_tree::ini_parser::read_ini(cfgFile.generic_string(), m_propertyPT);
-
     // Register the user task's watchdog
     CMonitoringThread::instance().registerCallbackFunction(
         [this]() -> bool

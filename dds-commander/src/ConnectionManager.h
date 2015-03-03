@@ -79,7 +79,6 @@ namespace dds
 
         boost::property_tree::ptree m_propertyPT;
         std::mutex m_propertyPTMutex;
-        // std::string m_sCfgFilePath;
     };
 }
 #endif /* defined(__DDS__ConnectionManager__) */

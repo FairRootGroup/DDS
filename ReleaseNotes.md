@@ -4,6 +4,9 @@
 ### DDS common\"\"
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
 
+### dds-topology
+Added: output time spent on activation. (GH-62)    
+
 ## v0.8 (2015-02-17)
 ### DDS common
 Fixed: idle time calculation for dds-commander and dds-agent. (GH-32)   
