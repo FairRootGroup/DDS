@@ -3,9 +3,16 @@
 ## v0.10 (NOT YET RELEASED)
 ### DDS common\"\"
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
+Added: accumulated push message function. (GH-64)   
+Added: include std c++ lib into worker package. (GH-61)   
 
 ### dds-topology
 Added: output time spent on activation. (GH-62)    
+
+### dds-agent
+Fixed: reconnect to DDS commander if connection was dropped.   
+Modified: Optimized key-value persistence to shared memory.   
+
 
 ## v0.8 (2015-02-17)
 ### DDS common

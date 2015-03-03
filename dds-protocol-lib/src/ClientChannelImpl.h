@@ -66,14 +66,21 @@ namespace dds
         }
 
       public:
+        void reconnect()
+        {
+            connect(m_endpoint_iterator);
+        }
+
         void connect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
         {
+            m_endpoint_iterator = _endpoint_iterator;
             boost::asio::async_connect(this->socket(),
                                        _endpoint_iterator,
                                        [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
                                        {
                                            if (!ec)
                                            {
+                                               LOG(MiscCommon::debug) << "Client channel connected.";
                                                // notify all subscribers about the event
                                                this->onEvent(EChannelEvents::OnConnected);
 
@@ -87,11 +94,15 @@ namespace dds
                                            }
                                            else
                                            {
+                                               LOG(MiscCommon::error) << "Failed to connect to remote end.";
                                                // notify all subscribers about the event
                                                this->onEvent(EChannelEvents::OnFailedToConnect);
                                            }
                                        });
         }
+
+      private:
+        boost::asio::ip::tcp::resolver::iterator m_endpoint_iterator;
     };
 }
 

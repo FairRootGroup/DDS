@@ -290,11 +290,13 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    if(APPLE)
      set( lib_cmd "bash" )
      set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{ system( \"cp \" $1 \" ${WN_PKG_DIR}\") }'" )
+     set( lib_cmd_args_cpp "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep libstdc++ | awk '{ system( \"cp \" $1 \" ${WN_PKG_DIR}\") }'" )
      # the log library needs a special handling as it depends on many other boost libraries
      set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{ system( \"cp \" $1 \" ${WN_PKG_DIR}\") }'" )
    elseif(UNIX)
      set( lib_cmd "bash" )
      set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
+     set( lib_cmd_args_cpp "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep libstdc++ | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
      # the log library needs a special handling as it depends on many other boost libraries
      set( lib_cmd_args_log "-c" "ldd ${Boost_LOG_LIBRARY} | grep -E 'boost|icu' | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
    endif(APPLE)
@@ -308,6 +310,7 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
 					  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-key-value-lib> "${WN_PKG_DIR}"
 		              COMMAND ${lib_cmd} ${lib_cmd_args}
                       COMMAND ${lib_cmd} ${lib_cmd_args_log}
+                      COMMAND ${lib_cmd} ${lib_cmd_args_cpp}
                       COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
                       COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
                       COMMENT "Generate WN binary package" 

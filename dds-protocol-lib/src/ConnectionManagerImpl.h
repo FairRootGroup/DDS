@@ -214,6 +214,28 @@ namespace dds
             }
         }
 
+        template <ECmdType _cmd, class AttachmentType>
+        void accumulativeBroadcastMsg(const AttachmentType& _attachment,
+                                      std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+        {
+            try
+            {
+                typename T::weakConnectionPtrVector_t channels(getChannels(_condition));
+
+                for (const auto& v : channels)
+                {
+                    if (v.expired())
+                        continue;
+                    auto ptr = v.lock();
+                    ptr->template accumulativePushMsg<_cmd>(_attachment);
+                }
+            }
+            catch (std::bad_weak_ptr& e)
+            {
+                // TODO: Do we need to log something here?
+            }
+        }
+
         template <ECmdType _cmd>
         void broadcastSimpleMsg(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
         {

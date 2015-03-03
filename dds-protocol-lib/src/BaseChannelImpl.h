@@ -213,6 +213,7 @@ namespace dds
         typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
         typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
         typedef std::vector<boost::asio::mutable_buffer> protocolMessageBuffer_t;
+        typedef std::shared_ptr<boost::asio::deadline_timer> deadlineTimerPtr_t;
 
       public:
         typedef std::shared_ptr<T> connectionPtr_t;
@@ -231,6 +232,8 @@ namespace dds
             , m_currentMsg(std::make_shared<CProtocolMessage>())
             , m_binaryAttachmentMap()
             , m_binaryAttachmentMutex()
+            , m_deadlineTimer(
+                  std::make_shared<boost::asio::deadline_timer>(_service, boost::posix_time::milliseconds(1000)))
         {
         }
 
@@ -292,6 +295,86 @@ namespace dds
                                                   return (_msg->header().m_cmd == _cmd);
                                               }),
                                std::end(m_writeQueue));
+        }
+
+        template <ECmdType _cmd, class A>
+        void accumulativePushMsg(const A& _attachment)
+        {
+            static const size_t maxAccumulativeWriteQueueSize = 10000;
+            try
+            {
+                CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+
+                bool copyMessages = false;
+                {
+                    std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+
+                    m_deadlineTimer->cancel();
+
+                    if (cmdUNKNOWN != _cmd)
+                        m_accumulativeWriteQueue.push_back(msg);
+
+                    copyMessages = m_accumulativeWriteQueue.size() > maxAccumulativeWriteQueueSize;
+                    if (copyMessages)
+                    {
+                        LOG(MiscCommon::debug) << "copy accumulated queue to write queue "
+                                                  "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
+                                               << " m_writeQueue.size=" << m_writeQueue.size();
+
+                        // copy queue to main queue
+                        std::copy(m_accumulativeWriteQueue.begin(),
+                                  m_accumulativeWriteQueue.end(),
+                                  back_inserter(m_writeQueue));
+                        m_accumulativeWriteQueue.clear();
+                    }
+
+                    auto self(this->shared_from_this());
+                    m_deadlineTimer->async_wait(
+                        [this, self](const boost::system::error_code& error)
+                        {
+                            if (!error)
+                            {
+                                bool copyMessages = false;
+                                {
+                                    std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+                                    copyMessages = !m_accumulativeWriteQueue.empty();
+                                    // copy queue to main queue
+                                    if (copyMessages)
+                                    {
+                                        LOG(MiscCommon::debug)
+                                            << "deadline_timer called: copy accumulated queue to write queue "
+                                               "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
+                                            << " m_writeQueue.size=" << m_writeQueue.size();
+                                        std::copy(m_accumulativeWriteQueue.begin(),
+                                                  m_accumulativeWriteQueue.end(),
+                                                  back_inserter(m_writeQueue));
+                                        m_accumulativeWriteQueue.clear();
+                                    }
+                                }
+                                if (copyMessages)
+                                    pushMsg<cmdUNKNOWN>();
+                            }
+                        });
+
+                    LOG(MiscCommon::debug) << "accumulativePushMsg: WriteQueue size = " << m_writeQueue.size()
+                                           << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size()
+                                           << " accumulativeWriteQueue size = " << m_accumulativeWriteQueue.size()
+                                           << " attachment = " << _attachment;
+                }
+                if (copyMessages)
+                    pushMsg<cmdUNKNOWN>();
+            }
+            catch (std::exception& ex)
+            {
+                LOG(MiscCommon::error) << "BaseChannelImpl can't push accumulative message: " << ex.what();
+            }
+        }
+
+        template <ECmdType _cmd>
+        void accumulativePushMsg()
+        {
+            SEmptyCmd cmd;
+            accumulativePushMsg<_cmd>(cmd);
         }
 
         template <ECmdType _cmd, class A>
@@ -639,6 +722,7 @@ namespace dds
                     }
                     else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                     {
+                        LOG(MiscCommon::error) << "Failed to read header: " << ec.message();
                         onDissconnect();
                     }
                     else
@@ -689,6 +773,7 @@ namespace dds
                     }
                     else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                     {
+                        LOG(MiscCommon::error) << "Failed to read body: " << ec.message();
                         onDissconnect();
                     }
                     else
@@ -751,6 +836,7 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                         {
+                            LOG(MiscCommon::error) << "Failed to write message: " << _ec.message();
                             onDissconnect();
                         }
                         else
@@ -811,13 +897,15 @@ namespace dds
         bool m_started;
         CProtocolMessage::protocolMessagePtr_t m_currentMsg;
 
-        // std::mutex m_mutexWriteQueue;
         protocolMessagePtrQueue_t m_writeQueue;
         protocolMessagePtrQueue_t m_writeQueueBeforeHandShake;
 
         std::mutex m_mutexWriteBuffer;
         protocolMessageBuffer_t m_writeBuffer;
         protocolMessagePtrQueue_t m_writeBufferQueue;
+
+        protocolMessagePtrQueue_t m_accumulativeWriteQueue;
+        deadlineTimerPtr_t m_deadlineTimer;
 
         // BinaryAttachment
         typedef std::map<boost::uuids::uuid, binaryAttachmentInfoPtr_t> binaryAttachmentMap_t;

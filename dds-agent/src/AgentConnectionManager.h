@@ -10,6 +10,7 @@
 #include "CommanderChannel.h"
 #include "Options.h"
 #include "UIConnectionManager.h"
+//#include "KeyValueGuard.h"
 // BOOST
 #include <boost/asio.hpp>
 
@@ -19,6 +20,8 @@ namespace dds
     {
         typedef std::vector<pid_t> childrenPidContainer_t;
         typedef std::shared_ptr<CUIConnectionManager> UIConnectionManagerPtr_t;
+        typedef std::shared_ptr<boost::asio::deadline_timer> deadlineTimerPtr_t;
+        typedef std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t> updateKeyAttachmentQueue_t;
 
       public:
         CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service);
@@ -42,6 +45,7 @@ namespace dds
                                   CCommanderChannel::weakConnectionPtr_t _channel);
 
         void taskExited(int _pid, int _exitCode);
+        void processUpdateKey();
 
       private:
         boost::asio::io_service& m_service;
@@ -55,6 +59,10 @@ namespace dds
         boost::asio::ip::tcp::endpoint m_UI_end_point;
         UIConnectionManagerPtr_t m_UIConnectionMng;
         boost::thread_group m_workerThreads;
+
+        updateKeyAttachmentQueue_t m_updateKeyQueue;
+        std::mutex m_updateKeyMutex;
+        deadlineTimerPtr_t m_deadlineTimer;
     };
 }
 

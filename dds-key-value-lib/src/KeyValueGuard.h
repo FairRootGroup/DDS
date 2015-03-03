@@ -8,6 +8,7 @@
 #include "AgentConnectionManager.h"
 // STD
 #include <string>
+#include <vector>
 // BOOST
 #include <boost/signals2/signal.hpp>
 #pragma clang diagnostic push
@@ -40,6 +41,7 @@ namespace dds
     {
         typedef std::shared_ptr<CAgentConnectionManager> AgentConnectionManagerPtr_t;
         typedef std::map<std::string, std::string> valuesMap_t;
+        typedef std::vector<std::pair<std::string, std::string>> valuesVector_t;
 
       private:
         CKeyValueGuard();
@@ -51,6 +53,7 @@ namespace dds
         void initLock();
         void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
         void putValue(const std::string& _key, const std::string& _value);
+        void putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values);
         void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
         void getValues(const std::string& _key, valuesMap_t* _values);
         int updateKey(const SUpdateKeyCmd& _cmd);

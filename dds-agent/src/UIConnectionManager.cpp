@@ -82,7 +82,7 @@ void CUIConnectionManager::notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE
         {
             return (_v->getChannelType() == EChannelType::KEY_VALUE_GUARD);
         };
-        broadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
+        accumulativeBroadcastMsg<cmdUPDATE_KEY>(*_attachment, condition);
     }
     catch (exception& _e)
     {

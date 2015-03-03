@@ -72,6 +72,7 @@ namespace dds
         std::string m_sUsrExe;
         std::string m_sTaskId;
         handlerOnNewUserTaks_t m_onNewUserTaskCallback;
+        uint16_t m_connectionAttempts;
     };
 }
 

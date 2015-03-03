@@ -26,14 +26,28 @@ using namespace dds;
 using namespace std;
 namespace fs = boost::filesystem;
 
+const uint16_t g_MaxConnectionAttempts = 5;
+
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
     , m_id()
+    , m_connectionAttempts(0)
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
                      [this](CCommanderChannel* _channel)
                      {
-                         this->sendYourself<cmdSHUTDOWN>();
+                         if (m_connectionAttempts <= g_MaxConnectionAttempts)
+                         {
+                             LOG(info) << "Remote end droped the connection. Trying to reconnect. Attempt "
+                                       << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                             reconnect();
+                             ++m_connectionAttempts;
+                         }
+                         else
+                         {
+                             LOG(info) << "Remote end disconnected. Send shutdown to yourself.";
+                             this->sendYourself<cmdSHUTDOWN>();
+                         }
                      });
 
     // Create key-value shared memory storage
@@ -365,17 +379,17 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
 
 bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    try
-    {
-        LOG(info) << "Recieved a key update notifications: " << *_attachment;
-        CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
-    }
-    catch (exception& _e)
-    {
-        LOG(error) << _e.what();
-        // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdUPDATE_KEY));
-    }
+    // try
+    // {
+    LOG(info) << "Recieved a key update notifications: " << *_attachment;
+    //     CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
+    // }
+    // catch (exception& _e)
+    // {
+    //     LOG(error) << _e.what();
+    // Send response back to server
+    //     pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdUPDATE_KEY));
+    // }
 
     // give a chance to others to recive update nitifications
     return false;

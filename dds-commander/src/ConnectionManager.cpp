@@ -767,7 +767,8 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                         if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
                                                     property->getAccessType() == EPropertyAccessType::READWRITE))
                         {
-                            ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
+                            // ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
+                            ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment);
                             LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
                         }
                     }

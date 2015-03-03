@@ -26,6 +26,7 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boo
     , m_options(_options)
     , m_bStarted(false)
     , m_UI_end_point(tcp::v4(), 0) // Let the OS pick a random available port
+    , m_deadlineTimer(std::make_shared<boost::asio::deadline_timer>(m_service, boost::posix_time::milliseconds(1000)))
 {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,
@@ -261,13 +262,55 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
 bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
-    // Notify UI manager about keyt updates
-    if (m_UIConnectionMng)
-        m_UIConnectionMng->notifyAboutKeyUpdate(_attachment);
-    else
-        LOG(warning) << "UI connection manager doesn't run. Skipping key notification broadcasting.";
+    static const size_t maxAccumulativeWriteQueueSize = 10000;
+    try
+    {
+        std::lock_guard<std::mutex> lock(m_updateKeyMutex);
+
+        m_deadlineTimer->cancel();
+
+        m_updateKeyQueue.push_back(_attachment);
+
+        if (m_updateKeyQueue.size() > maxAccumulativeWriteQueueSize)
+        {
+            processUpdateKey();
+        }
+
+        m_deadlineTimer->async_wait([this](const boost::system::error_code& error)
+                                    {
+                                        if (!error)
+                                        {
+                                            std::lock_guard<std::mutex> lock(m_updateKeyMutex);
+                                            if (!m_updateKeyQueue.empty())
+                                            {
+                                                processUpdateKey();
+                                            }
+                                        }
+                                    });
+    }
+    catch (std::exception& ex)
+    {
+        LOG(MiscCommon::error) << "Can't accumulate update key messages: " << ex.what();
+    }
+
     return true;
 }
+
+void CAgentConnectionManager::processUpdateKey()
+{
+    CKeyValueGuard::instance().putValues(m_updateKeyQueue);
+
+    if (!m_UIConnectionMng)
+        LOG(warning) << "UI connection manager doesn't run. Skipping key notification broadcasting.";
+    else
+    {
+        for (const auto& v : m_updateKeyQueue)
+        {
+            m_UIConnectionMng->notifyAboutKeyUpdate(v);
+        }
+    }
+    m_updateKeyQueue.clear();
+};
 
 bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
@@ -321,8 +364,6 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     LOG(info) << "Starting the watchdog for user task pid = " << _pid;
 
     auto self(shared_from_this());
-
-    LOG(info) << "Shared from this created" << _pid;
 
     CMonitoringThread::instance().registerCallbackFunction(
         [this, self, _pid]() -> bool

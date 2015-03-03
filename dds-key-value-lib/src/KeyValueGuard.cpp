@@ -175,6 +175,46 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
     LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " done";
 }
 
+void CKeyValueGuard::putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values)
+{
+    // LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " ...";
+    // const string sKey = _key;
+    //{
+    try
+    {
+        ip::scoped_lock<ip::named_mutex> lock(*m_sharedMemoryMutex);
+
+        sharedMemoryString_t* ptString = m_sharedMemory->find_or_construct<sharedMemoryString_t>("KeyValue")(
+            sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        sharedMemoryVectorStream_t readStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        readStream.swap_vector(*ptString);
+
+        boost::property_tree::ptree ptsm;
+        boost::property_tree::ini_parser::read_ini(readStream, ptsm);
+
+        for (const auto& v : _values)
+        {
+            ptsm.put(v->m_sKey, v->m_sValue);
+        }
+
+        sharedMemoryVectorStream_t writeStream(sharedMemoryCharAllocator_t(m_sharedMemory->get_segment_manager()));
+
+        boost::property_tree::ini_parser::write_ini(writeStream, ptsm);
+
+        writeStream.swap_vector(*ptString);
+        // LOG(debug) << "CKeyValueGuard::putValue file content |" << *ptString << "|";
+        // LOG(debug) << "Finish putValue key=" << _key << " value=" << _value;
+    }
+    catch (const ip::interprocess_exception& _e)
+    {
+        LOG(fatal) << "key-value guard putValues exception: " << _e.what();
+    }
+    // }
+    // LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " done";
+}
+
 void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, const std::string& _taskId)
 {
     LOG(debug) << "CKeyValueGuard::getValue key=" << _key << " taskId=" << _taskId << " ...";
