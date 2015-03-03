@@ -11,7 +11,6 @@
 
 namespace dds
 {
-
     template <class T>
     class CClientChannelImpl : public CBaseChannelImpl<T>
     {
