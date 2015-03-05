@@ -78,7 +78,7 @@ clean_up()
 
     wait_and_kill $DDSAGENT_PID
 	
-	logMsg "Callinf agen clean up..."
+	logMsg "Calling agent clean up..."
 	$dds_agent clean
     
 

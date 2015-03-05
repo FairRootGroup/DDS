@@ -234,6 +234,7 @@ namespace dds
             , m_binaryAttachmentMutex()
             , m_deadlineTimer(
                   std::make_shared<boost::asio::deadline_timer>(_service, boost::posix_time::milliseconds(1000)))
+            , m_isShuttingDown(false)
         {
         }
 
@@ -806,6 +807,8 @@ namespace dds
                 for (auto i : m_writeQueue)
                 {
                     LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString() << " a message: " << i->toString();
+                    if (cmdSHUTDOWN == i->header().m_cmd)
+                        m_isShuttingDown = true;
                     m_writeBuffer.push_back(boost::asio::buffer(i->data(), i->length()));
                     m_writeBufferQueue.push_back(i);
                 }
@@ -824,6 +827,13 @@ namespace dds
                         {
                             LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
                                                    << _bytesTransferred << " bytes)";
+
+                            if (m_isShuttingDown)
+                            {
+                                LOG(MiscCommon::info) << "Shutdown signal has been successfully sent to "
+                                                      << remoteEndIDString();
+                                stop();
+                            }
 
                             // lock the modification of the container
                             {
@@ -906,6 +916,8 @@ namespace dds
 
         protocolMessagePtrQueue_t m_accumulativeWriteQueue;
         deadlineTimerPtr_t m_deadlineTimer;
+
+        bool m_isShuttingDown;
 
         // BinaryAttachment
         typedef std::map<boost::uuids::uuid, binaryAttachmentInfoPtr_t> binaryAttachmentMap_t;

@@ -194,6 +194,8 @@ void CAgentConnectionManager::stop()
         m_service.stop();
         if (m_agent)
             m_agent->stop();
+        if (m_UIConnectionMng)
+            m_UIConnectionMng->stop();
     }
     catch (exception& e)
     {

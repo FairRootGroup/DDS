@@ -138,6 +138,25 @@ namespace dds
                     ptr->template pushMsg<cmdSHUTDOWN>();
                 }
 
+                auto condition = [](typename T::connectionPtr_t _v)
+                {
+                    return (_v->started());
+                };
+
+                size_t counter = 0;
+                while (true)
+                {
+                    ++counter;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                    if (countNofChannels(condition) == 0)
+                        break;
+                    if (counter > 300)
+                    {
+                        LOG(MiscCommon::warning) << "Some channels were not shut down properly. Exiting in anyway.";
+                        break;
+                    }
+                }
+
                 m_acceptor.close();
                 m_acceptor.get_io_service().stop();
 
