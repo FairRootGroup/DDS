@@ -29,6 +29,7 @@ namespace dds
         {
             cmd_unknown,
             cmd_start,
+            cmd_clean
         };
         SOptions()
             : m_Command(cmd_start)
@@ -39,6 +40,8 @@ namespace dds
         {
             if ("start" == _name)
                 return cmd_start;
+            else if ("clean" == _name)
+                return cmd_clean;
 
             return cmd_unknown;
         }
@@ -66,11 +69,12 @@ namespace dds
         options.add_options()("command",
                               bpo::value<std::string>(),
                               "The command is a name of dds-agent command."
-                              " Can be one of the following: start.\n"
+                              " Can be one of the following: start, clean.\n"
                               "For user's convenience it is allowed to call dds-agent without \"--command\" option"
                               " by just specifying the command name directly, like:\ndds-agent start.\n\n"
                               "Commands:\n"
-                              "   start: \tStart dds-agent\n");
+                              "   start: \tStart dds-agent\n"
+                              "   clean: \tCleaning");
 
         //...positional
         bpo::positional_options_description pd;

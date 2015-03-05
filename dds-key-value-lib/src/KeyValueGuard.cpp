@@ -373,3 +373,28 @@ void CKeyValueGuard::deleteKey(const std::string& _key)
         }
     }
 }
+
+void CKeyValueGuard::clean()
+{
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+
+    string sharedMemoryName(storageName);
+    sharedMemoryName += "_DDSSM";
+
+    string mutexName(storageName);
+    mutexName += "_DDSM";
+
+    try
+    {
+        const bool sharedMemoryRemoved = ip::shared_memory_object::remove(sharedMemoryName.c_str());
+        LOG(log_stdout) << "Shared memory " << sharedMemoryName << " remove status: " << sharedMemoryRemoved;
+
+        const bool mutexRemoved = ip::shared_memory_object::remove(mutexName.c_str());
+        LOG(log_stdout) << "Shared memory " << mutexName << " remove status: " << mutexRemoved;
+    }
+    catch (const ip::interprocess_exception& _e)
+    {
+        LOG(log_stderr) << "Can't remove shared memory " << sharedMemoryName << " and shared mutex " << mutexName
+                        << ": " << _e.what();
+    }
+}

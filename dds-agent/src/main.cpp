@@ -10,6 +10,7 @@
 #include "AgentConnectionManager.h"
 #include "INet.h"
 #include "Logger.h"
+#include "KeyValueGuard.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -41,6 +42,25 @@ int main(int argc, char* argv[])
             boost::asio::io_service io_service;
             shared_ptr<CAgentConnectionManager> agent = make_shared<CAgentConnectionManager>(options, io_service);
             agent->start();
+        }
+        catch (exception& e)
+        {
+            LOG(fatal) << e.what();
+            return EXIT_FAILURE;
+        }
+        catch (...)
+        {
+            LOG(fatal) << "Unexpected Exception occurred.";
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Checking for "Clean" option
+    if (SOptions_t::cmd_clean == options.m_Command)
+    {
+        try
+        {
+            CKeyValueGuard::clean();
         }
         catch (exception& e)
         {

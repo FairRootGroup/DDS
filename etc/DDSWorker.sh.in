@@ -77,6 +77,9 @@ clean_up()
     kill $DDSAGENT_PID &>/dev/null
 
     wait_and_kill $DDSAGENT_PID
+	
+	logMsg "Callinf agen clean up..."
+	$dds_agent clean
     
 
     # delete the content of the worker package

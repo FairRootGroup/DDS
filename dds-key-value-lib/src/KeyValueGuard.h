@@ -62,6 +62,7 @@ namespace dds
         {
             return m_syncHelper.m_updateSig.connect(_subscriber);
         }
+        static void clean();
 
         // User API
         void initAgentConnection();
