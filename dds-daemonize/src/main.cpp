@@ -14,6 +14,7 @@
 // DDS
 #include "version.h"
 #include "Res.h"
+#include "SysHelper.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -56,24 +57,23 @@ int main(int argc, char* argv[])
     if (::chdir("/") < 0) // TODO: Log the failure
         return EXIT_FAILURE;
 
-    // Close out the standard file descriptors
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
+    string sStdOut(argv[1]);
+    smart_append(&sStdOut, '/');
+    sStdOut += argv[2];
+    sStdOut += ".out.log";
 
-    // Establish new open descriptors for stdin, stdout, and stderr. Even if
-    // we don't plan to use them, it is still a good idea to have them open.
-    int fd = open("/dev/null", O_RDWR); // stdin - file handle 0.
-    // stdout - file handle 1.
-    if (dup(fd) < 0)
-        cerr << "Error occurred while duplicating stdout descriptor" << endl;
-    // stderr - file handle 2.
-    if (dup(fd) < 0)
-        cerr << "Error occurred while duplicating stderr descriptor" << endl;
+    // child
+    int fd_out = open(sStdOut.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (fd_out < 0)
+        cerr << "Can't open file for user's process stdout: " << sStdOut;
 
-    char** cmd_arg = &argv[1];
-    if (argc > 2)
-        execvp(argv[1], cmd_arg);
+    dup2(fd_out, 1); // make stdout go to file
+    dup2(fd_out, 2); // make stderr go to file
+    close(fd_out);   // fd no longer needed - the dup'ed handles are sufficient
+
+    char** cmd_arg = &argv[2];
+    if (argc > 3)
+        execvp(argv[2], cmd_arg);
 
     return 0;
 }

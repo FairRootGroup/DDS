@@ -1,10 +1,13 @@
 # DDS Release Notes
 
 ## v0.10 (NOT YET RELEASED)
-### DDS common\"\"
+### DDS common
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
 Added: accumulated push message function. (GH-64)   
 Added: include std c++ lib into worker package. (GH-61)   
+
+### dds-commander
+Added: Since dds-commander is a daemon and doesn't have a console, it now has a dedicated log file for its std-out/-err called "dds-commander.out.log". File is located in the log directory.   
 
 ### dds-topology
 Added: output time spent on activation. (GH-62)    

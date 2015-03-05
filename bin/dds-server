@@ -214,7 +214,8 @@ _start()
 {
    # S T A R T I N G the server
    echo "Starting DDS commander..."
-   $DDS_LOCATION/bin/dds-daemonize dds-commander start
+   eval LOG_DIR=$(dds-user-defaults -V --key server.log_dir)
+   $DDS_LOCATION/bin/dds-daemonize "$LOG_DIR" dds-commander start
    if (( $? != 0 )); then
       echo "Error: can't start dds-commander."
       return 1
