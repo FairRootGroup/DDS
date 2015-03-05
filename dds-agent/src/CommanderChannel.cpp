@@ -113,14 +113,6 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     return true;
 }
 
-bool CCommanderChannel::on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment)
-{
-    LOG(info) << "The Agent [" << m_id << "] disconnected... Bye";
-    stop();
-
-    return true;
-}
-
 bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
 {
     deleteAgentUUIDFile();

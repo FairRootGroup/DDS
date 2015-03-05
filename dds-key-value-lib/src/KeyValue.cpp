@@ -49,7 +49,7 @@ CKeyValue::connection_t CKeyValue::subscribe(signal_t::slot_function_type _subsc
 {
     CKeyValueGuard::instance().initLock();
     CKeyValueGuard::instance().initAgentConnection();
-    LOG(debug) << "User process is waiting for property keys updates.";
+    LOG(info) << "User process is waiting for property keys updates.";
 
     unsubscribe();
     m_signalConnection = CKeyValueGuard::instance().connect(_subscriber);
@@ -62,6 +62,6 @@ void CKeyValue::unsubscribe()
     if (!m_signalConnection.connected())
         return;
 
-    LOG(debug) << "unsubscribing from key notification events.";
+    LOG(info) << "unsubscribing from key notification events.";
     m_signalConnection.disconnect();
 }

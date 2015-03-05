@@ -31,7 +31,6 @@ namespace dds
         cmdREPLY_HANDSHAKE_ERR, // attachment: SSimpleMsgCmd
         cmdGET_HOST_INFO,
         cmdREPLY_HOST_INFO, // attachment: SHostInfoCmd
-        cmdDISCONNECT,
         cmdGED_PID,
         cmdREPLY_PID,                  // attachment: SSimpleMsgCmd. The message contains the pid of the responder.
         cmdBINARY_ATTACHMENT,          // attachment: SBinanryAttachmentCmd. The message contains binary attachment.
@@ -66,7 +65,6 @@ namespace dds
         { cmdREPLY_HANDSHAKE_ERR, NAME_TO_STRING(cmdREPLY_HANDSHAKE_ERR) },
         { cmdGET_HOST_INFO, NAME_TO_STRING(cmdGET_HOST_INFO) },
         { cmdREPLY_HOST_INFO, NAME_TO_STRING(cmdREPLY_HOST_INFO) },
-        { cmdDISCONNECT, NAME_TO_STRING(cmdDISCONNECT) },
         { cmdGED_PID, NAME_TO_STRING(cmdGED_PID) },
         { cmdREPLY_PID, NAME_TO_STRING(cmdREPLY_PID) },
         { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },

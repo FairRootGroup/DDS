@@ -46,14 +46,6 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
     return true;
 }
 
-bool CAgentChannel::on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment)
-{
-    LOG(info) << "key-value-gurad connection channel disconnected... Bye";
-    sendYourself<cmdSHUTDOWN>();
-
-    return true;
-}
-
 bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
 {
     LOG(info) << "key-value-gurad connection channel exited.";

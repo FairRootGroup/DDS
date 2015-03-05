@@ -19,7 +19,6 @@ namespace dds
       public:
         BEGIN_MSG_MAP(CAgentChannel)
         MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-        MESSAGE_HANDLER(cmdDISCONNECT, on_cmdDISCONNECT)
         MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
         MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_MSG_MAP()
@@ -38,7 +37,6 @@ namespace dds
       private:
         // Message Handlers
         bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-        bool on_cmdDISCONNECT(SCommandAttachmentImpl<cmdDISCONNECT>::ptr_t _attachment);
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
         bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
     };

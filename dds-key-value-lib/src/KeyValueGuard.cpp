@@ -334,7 +334,7 @@ int CKeyValueGuard::updateKey(const SUpdateKeyCmd& _cmd)
         return 1;
     }
 
-    LOG(debug) << "CKeyValueGuard::updateKey: sending key update: " << _cmd;
+    LOG(info) << "CKeyValueGuard::updateKey: sending key update: " << _cmd;
     return m_agentConnectionMng->updateKey(_cmd);
 }
 
