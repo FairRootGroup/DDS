@@ -7,6 +7,7 @@
 #include <exception>
 #include <sstream>
 #include <condition_variable>
+#include <thread>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -18,28 +19,26 @@ namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
 const size_t g_maxValue = 1000;
-const size_t g_maxWaitTime = 100; // milliseconds
 
 int main(int argc, char* argv[])
 {
+    Logger::instance().init(); // Initialize log
+    CUserDefaults::instance(); // Initialize user defaults
+
     try
     {
-        string sKey;
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
-        size_t nMaxWaitTime(g_maxWaitTime);
+        size_t type(0);
 
         // Generic options
         bpo::options_description options("task-test_key_value options");
         options.add_options()("help,h", "Produce help message");
-        options.add_options()("key", bpo::value<std::string>(&sKey)->default_value("property1"), "key to update");
         options.add_options()(
             "instances,i", bpo::value<size_t>(&nInstances)->default_value(0), "A number of instances");
         options.add_options()(
             "max-value", bpo::value<size_t>(&nMaxValue)->default_value(g_maxValue), "A max value of the property");
-        options.add_options()("max-wait-time",
-                              bpo::value<size_t>(&nMaxWaitTime)->default_value(g_maxWaitTime),
-                              "A max wait time (in milliseconds), which an instannces should wait before exit");
+        options.add_options()("type,t", bpo::value<size_t>(&type)->default_value(0), "Type of task. Must be 0 or 1.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -52,76 +51,87 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        // Named mutex
-        char* ddsTaskId;
-        ddsTaskId = getenv("DDS_TASK_ID");
-        if (NULL == ddsTaskId)
-            throw runtime_error("USER TASK: Can't initialize semaphore because DDS_TASK_ID variable is not set");
-        const string taskID(ddsTaskId);
+        const std::vector<std::string> propNames_0 = {
+            "property_1", "property_2", "property_3", "property_4", "property_5"
+        };
 
-        // The test workflow
-        // #1. Update the given key with value X (starting from X=1)
-        // #2. Wait until all other instances of the key also get value X
-        // #3. Repeat the procedure with X = X + 1
-        // -->> return success (0) when keys of all instances gets max value
-        // -->> return failed (1) when one or more instances failed to updated in a given amount of time
+        const std::vector<std::string> propNames_1 = {
+            "property_6", "property_7", "property_8", "property_9", "property_10"
+        };
 
-        CKeyValue ddsKeyValue;
-        std::mutex keyMutex;
-        std::condition_variable keyCondition;
+        dds::CKeyValue ddsKeyValue;
 
-        // Subscribe on key update events
-        ddsKeyValue.subscribe([&keyCondition](const string& _key, const string _value)
-                              {
-                                  LOG(info) << "USER TASK received key update notification";
-                                  keyCondition.notify_all();
-                              });
+        LOG(info) << "Start task with type " << type;
 
-        size_t nCurValue = 0;
-        while (true)
+        for (size_t i = 0; i < nMaxValue; ++i)
         {
-            ++nCurValue;
-            if (nCurValue > g_maxValue)
-                return 0;
+            LOG(info) << "Start iteration " << i;
 
-            LOG(info) << "USER TASK is going to set new value " << nCurValue;
-            const string sCurValue = to_string(nCurValue);
-            const int retVal = ddsKeyValue.putValue(sKey, sCurValue);
-            LOG(info) << "USER TASK put value return code: " << retVal;
-
-            CKeyValue::valuesMap_t values;
-            ddsKeyValue.getValues(sKey, &values);
-            bool bGoodToGo = false;
-            bool isTimeout = false;
-            while (values.empty() || !bGoodToGo)
+            // For tasks with type 0 we start with writing the properties.
+            if ((i % 2 == 0 && type == 0) || (i % 2 == 1 && type == 1))
             {
-                if (values.size() == nInstances)
+                LOG(info) << "Iteration " << i << " start sending values.";
+
+                string writePropValue = to_string(i);
+                const auto& writePropNames = (type == 0) ? propNames_0 : propNames_1;
+                for (const auto& prop : writePropNames)
                 {
+                    ddsKeyValue.putValue(prop, writePropValue);
+                }
+
+                LOG(info) << "Iteration " << i << " all values have been sent.";
+            }
+            // For tasks with type 1 we start with subscribtion to properties.
+            else if ((i % 2 == 0 && type == 1) || (i % 2 == 1 && type == 0))
+            {
+                LOG(info) << "Iteration " << i << " subscribe on property updates.";
+
+                // Subscribe on key update events
+
+                std::mutex keyMutex;
+                std::condition_variable keyCondition;
+
+                ddsKeyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
+                                      {
+                                          keyCondition.notify_all();
+                                      });
+
+                const auto& readPropNames = (type == 0) ? propNames_1 : propNames_0;
+                for (const auto& prop : readPropNames)
+                {
+                    dds::CKeyValue::valuesMap_t values;
+                    ddsKeyValue.getValues(prop, &values);
+                    string value = to_string(i);
+
+                    size_t counter = 0;
                     for (const auto& v : values)
                     {
-                        // we should check against current and current+1 values, becasue
-                        // of edge cases when key updates happen excatly before we try to read new values triggered by
-                        // previouse update.
-                        bGoodToGo = (v.second == to_string(nCurValue + 1) || v.second == sCurValue);
-                        if (!bGoodToGo)
-                            break;
+                        if (v.second == value)
+                            counter++;
+                    }
+
+                    while (counter != nInstances)
+                    {
+                        std::unique_lock<std::mutex> lock(keyMutex);
+                        keyCondition.wait_until(lock, std::chrono::system_clock::now() + chrono::milliseconds(1000));
+                        ddsKeyValue.getValues(prop, &values);
+
+                        counter = 0;
+                        for (const auto& v : values)
+                        {
+                            if (v.second == value)
+                                counter++;
+                        }
                     }
                 }
 
-                if (bGoodToGo)
-                    break;
-
-                if (isTimeout)
-                    return 1;
-
-                // wait for a key update event
-                auto now = std::chrono::system_clock::now();
-                std::unique_lock<std::mutex> lk(keyMutex);
-                isTimeout = keyCondition.wait_until(lk, now + chrono::milliseconds(nMaxWaitTime)) == cv_status::timeout;
-
-                ddsKeyValue.getValues(sKey, &values);
+                LOG(info) << "Iteration " << i << " got all properties.";
             }
         }
+
+        std::this_thread::sleep_for(std::chrono::seconds(30));
+
+        LOG(info) << "Task successfully done";
     }
     catch (exception& _e)
     {

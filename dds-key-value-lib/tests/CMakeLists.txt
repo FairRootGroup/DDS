@@ -76,3 +76,8 @@ target_include_directories(task-async_test_key_value
 )
 
 install(TARGETS task-async_test_key_value DESTINATION tests)
+
+
+install(FILES ${dds-key-value-lib-tests_SOURCE_DIR}/topo_test_key-value-1.xml DESTINATION tests)
+install(FILES ${dds-key-value-lib-tests_SOURCE_DIR}/topo_test_key-value-2.xml DESTINATION tests)
+
