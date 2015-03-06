@@ -325,7 +325,7 @@ namespace dds
                         // copy queue to main queue
                         std::copy(m_accumulativeWriteQueue.begin(),
                                   m_accumulativeWriteQueue.end(),
-                                  back_inserter(m_writeQueue));
+                                  back_inserter((m_isHandshakeOK) ? m_writeQueue : m_writeQueueBeforeHandShake));
                         m_accumulativeWriteQueue.clear();
                     }
 
@@ -348,7 +348,8 @@ namespace dds
                                             << " m_writeQueue.size=" << m_writeQueue.size();
                                         std::copy(m_accumulativeWriteQueue.begin(),
                                                   m_accumulativeWriteQueue.end(),
-                                                  back_inserter(m_writeQueue));
+                                                  back_inserter((m_isHandshakeOK) ? m_writeQueue
+                                                                                  : m_writeQueueBeforeHandShake));
                                         m_accumulativeWriteQueue.clear();
                                     }
                                 }
@@ -914,15 +915,15 @@ namespace dds
         protocolMessageBuffer_t m_writeBuffer;
         protocolMessagePtrQueue_t m_writeBufferQueue;
 
-        protocolMessagePtrQueue_t m_accumulativeWriteQueue;
-        deadlineTimerPtr_t m_deadlineTimer;
-
-        bool m_isShuttingDown;
-
         // BinaryAttachment
         typedef std::map<boost::uuids::uuid, binaryAttachmentInfoPtr_t> binaryAttachmentMap_t;
         binaryAttachmentMap_t m_binaryAttachmentMap;
         std::mutex m_binaryAttachmentMutex;
+
+        protocolMessagePtrQueue_t m_accumulativeWriteQueue;
+        deadlineTimerPtr_t m_deadlineTimer;
+
+        bool m_isShuttingDown;
     };
 }
 

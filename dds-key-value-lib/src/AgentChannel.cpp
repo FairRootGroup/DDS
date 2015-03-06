@@ -17,6 +17,7 @@ using namespace std;
 
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::KEY_VALUE_GUARD)
+    , m_syncHelper(nullptr)
 {
     subscribeOnEvent(
         EChannelEvents::OnRemoteEndDissconnected,
