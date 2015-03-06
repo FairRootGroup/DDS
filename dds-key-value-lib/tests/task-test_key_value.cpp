@@ -60,6 +60,8 @@ int main(int argc, char* argv[])
         };
 
         dds::CKeyValue ddsKeyValue;
+        std::mutex keyMutex;
+        std::condition_variable keyCondition;
 
         LOG(info) << "Start task with type " << type;
 
@@ -87,10 +89,6 @@ int main(int argc, char* argv[])
                 LOG(info) << "Iteration " << i << " subscribe on property updates.";
 
                 // Subscribe on key update events
-
-                std::mutex keyMutex;
-                std::condition_variable keyCondition;
-
                 ddsKeyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
                                       {
                                           keyCondition.notify_all();

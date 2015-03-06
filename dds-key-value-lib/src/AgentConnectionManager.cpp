@@ -109,6 +109,8 @@ void CAgentConnectionManager::start()
         {
             m_workerThreads.create_thread(boost::bind(&boost::asio::io_service::run, &(m_service)));
         }
+
+        this_thread::sleep_for(chrono::seconds(5));
     }
     catch (exception& e)
     {

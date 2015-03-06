@@ -37,18 +37,6 @@ CKeyValueGuard& CKeyValueGuard::instance()
 
 void CKeyValueGuard::createStorage()
 {
-    // create cfg file if missing
-    fs::path cfgFile(getCfgFilePath());
-    if (fs::exists(cfgFile))
-    {
-        LOG(debug) << "Removing key-value storage file: " << cfgFile.generic_string();
-        if (!fs::remove(cfgFile))
-            throw runtime_error("Failed to remove key-value storage file: " + cfgFile.generic_string());
-    }
-
-    LOG(debug) << "Create key-value storage file: " << cfgFile.generic_string();
-    ofstream f(cfgFile.generic_string());
-
     // Create shared memory storage and semaphor to synchronize accesss to shared memory
 
     string storageName(to_string(CUserDefaults::instance().getScoutPid()));
@@ -58,14 +46,16 @@ void CKeyValueGuard::createStorage()
     sharedMemoryName += "_DDSSM";
 
     const bool sharedMemoryRemoved = ip::shared_memory_object::remove(sharedMemoryName.c_str());
-    LOG(debug) << "Shared memory " << sharedMemoryName << " remove status: " << sharedMemoryRemoved;
+    LOG(info) << "Shared memory " << sharedMemoryName << " remove status: " << sharedMemoryRemoved;
 
     m_sharedMemory.reset();
     try
     {
-        LOG(debug) << "Creating key-value shared memory with name " << sharedMemoryName;
-        m_sharedMemory =
-            make_shared<ip::managed_shared_memory>(ip::open_or_create, sharedMemoryName.c_str(), 1024 * 1024);
+        LOG(info) << "Creating key-value shared memory with name " << sharedMemoryName;
+        // boost::interprocess::permissions perm;
+        // perm.set_unrestricted();
+        m_sharedMemory = make_shared<ip::managed_shared_memory>(
+            ip::open_or_create, sharedMemoryName.c_str(), 1024 * 1024); //, nullptr, perm);
     }
     catch (const ip::interprocess_exception& _e)
     {
@@ -77,13 +67,15 @@ void CKeyValueGuard::createStorage()
     mutexName += "_DDSM";
 
     const bool removed = ip::named_mutex::remove(mutexName.c_str());
-    LOG(debug) << "Named mutex remove status: " << removed;
+    LOG(info) << "Named mutex remove status: " << removed;
 
     m_sharedMemoryMutex.reset();
     try
     {
-        LOG(debug) << "Creating key-value lock object with name " << mutexName;
-        m_sharedMemoryMutex = make_shared<ip::named_mutex>(ip::open_or_create, mutexName.c_str());
+        LOG(info) << "Creating key-value lock object with name " << mutexName;
+        // boost::interprocess::permissions perm;
+        // perm.set_unrestricted();
+        m_sharedMemoryMutex = make_shared<ip::named_mutex>(ip::open_or_create, mutexName.c_str()); //, perm);
     }
     catch (const ip::interprocess_exception& _e)
     {
@@ -104,12 +96,12 @@ void CKeyValueGuard::initLock()
 
     try
     {
-        LOG(debug) << "Creating key-value shared memory with name " << sharedMemoryName;
+        LOG(info) << "Openning key-value shared memory with name " << sharedMemoryName;
         m_sharedMemory = make_shared<ip::managed_shared_memory>(ip::open_only, sharedMemoryName.c_str());
     }
     catch (const ip::interprocess_exception& _e)
     {
-        LOG(fatal) << "Can't initialize key-value shared memory with name " << sharedMemoryName << ": " << _e.what();
+        LOG(fatal) << "Can't open key-value shared memory with name " << sharedMemoryName << ": " << _e.what();
     }
 
     // Named mutex
@@ -118,12 +110,12 @@ void CKeyValueGuard::initLock()
 
     try
     {
-        LOG(debug) << "Creating key-value lock object with name " << mutexName;
+        LOG(info) << "Openning key-value lock object with name " << mutexName;
         m_sharedMemoryMutex = make_shared<ip::named_mutex>(ip::open_only, mutexName.c_str());
     }
     catch (const ip::interprocess_exception& _e)
     {
-        LOG(fatal) << "Can't initialize key-value lock object with name " << mutexName << ": " << _e.what();
+        LOG(fatal) << "Can't open key-value lock object with name " << mutexName << ": " << _e.what();
     }
 }
 
@@ -306,10 +298,13 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 
 void CKeyValueGuard::initAgentConnection()
 {
-    LOG(debug) << "CKeyValueGuard::initAgentConnection: is going to init";
-    if (!m_agentConnectionMng || m_agentConnectionMng->stopped())
+    lock_guard<std::mutex> lock(m_initAgentConnectionMutex);
+
+    LOG(info) << "CKeyValueGuard::initAgentConnection: is going to init";
+
+    if (!m_agentConnectionMng)
     {
-        LOG(debug) << "CKeyValueGuard::initAgentConnection: start init";
+        LOG(info) << "CKeyValueGuard::initAgentConnection: start init";
 
         m_agentConnectionMng.reset();
         m_agentConnectionMng = make_shared<CAgentConnectionManager>();
@@ -389,7 +384,7 @@ void CKeyValueGuard::clean()
         const bool sharedMemoryRemoved = ip::shared_memory_object::remove(sharedMemoryName.c_str());
         LOG(log_stdout) << "Shared memory " << sharedMemoryName << " remove status: " << sharedMemoryRemoved;
 
-        const bool mutexRemoved = ip::shared_memory_object::remove(mutexName.c_str());
+        const bool mutexRemoved = ip::named_mutex::remove(mutexName.c_str());
         LOG(log_stdout) << "Shared memory " << mutexName << " remove status: " << mutexRemoved;
     }
     catch (const ip::interprocess_exception& _e)
