@@ -18,6 +18,8 @@ Added: output time spent on activation. (GH-62)
 Fixed: reconnect to DDS commander if connection was dropped.   
 Modified: Optimized key-value persistence to shared memory.   
 
+### dds-key-value
+Fixed: stability improvements.    
 
 ## v0.8 (2015-02-17)
 ### DDS common
