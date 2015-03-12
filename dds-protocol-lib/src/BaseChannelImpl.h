@@ -133,7 +133,7 @@ namespace dds
         KEY_VALUE_GUARD
     };
     typedef std::vector<EChannelType> channelTypeVector_t;
-    const std::array<std::string, 4> gChannelTypeName = { "unknown", "agent", "ui", "key_value_guard" };
+    const std::array<std::string, 4> gChannelTypeName{ {"unknown", "agent", "ui", "key_value_guard"} };
 
     // --- Helpers for events dispatching ---
     // TODO: Move to a seporate header
