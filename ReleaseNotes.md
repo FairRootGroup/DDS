@@ -15,7 +15,7 @@ Added: Since dds-commander is a daemon and doesn't have a console, it now has a 
 Added: output time spent on activation. (GH-62)    
 
 ### dds-agent
-Fixed: reconnect to DDS commander if connection was dropped.   
+Fixed: reconnect to DDS commander if connection was dropped. (GH-77)  
 Modified: Optimized key-value persistence to shared memory.   
 
 ### dds-key-value
