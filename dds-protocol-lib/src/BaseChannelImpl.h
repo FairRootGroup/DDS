@@ -133,10 +133,10 @@ namespace dds
         KEY_VALUE_GUARD
     };
     typedef std::vector<EChannelType> channelTypeVector_t;
-    const std::array<std::string, 4> gChannelTypeName{ {"unknown", "agent", "ui", "key_value_guard"} };
+    const std::array<std::string, 4> gChannelTypeName{ { "unknown", "agent", "ui", "key_value_guard" } };
 
     // --- Helpers for events dispatching ---
-    // TODO: Move to a seporate header
+    // TODO: Move to a separate header
     struct SHandlerHlpFunc
     {
     };
@@ -724,7 +724,7 @@ namespace dds
                     }
                     else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                     {
-                        LOG(MiscCommon::error) << "Failed to read header: " << ec.message();
+                        LOG(MiscCommon::debug) << "Disconnect is detected while on read msg header: " << ec.message();
                         onDissconnect();
                     }
                     else
@@ -775,7 +775,7 @@ namespace dds
                     }
                     else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                     {
-                        LOG(MiscCommon::error) << "Failed to read body: " << ec.message();
+                        LOG(MiscCommon::debug) << "Disconnect is detected while on read msg body: " << ec.message();
                         onDissconnect();
                     }
                     else
@@ -847,7 +847,8 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                         {
-                            LOG(MiscCommon::error) << "Failed to write message: " << _ec.message();
+                            LOG(MiscCommon::debug)
+                                << "Disconnect is detected while on write message: " << _ec.message();
                             onDissconnect();
                         }
                         else

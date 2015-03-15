@@ -31,21 +31,40 @@ const uint16_t g_MaxConnectionAttempts = 5;
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
     , m_id()
-    , m_connectionAttempts(0)
+    , m_connectionAttempts(1)
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
                      [this](CCommanderChannel* _channel)
                      {
                          if (m_connectionAttempts <= g_MaxConnectionAttempts)
                          {
-                             LOG(info) << "Remote end droped the connection. Trying to reconnect. Attempt "
+                             LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
                                        << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                             this_thread::sleep_for(chrono::seconds(5));
                              reconnect();
                              ++m_connectionAttempts;
                          }
                          else
                          {
-                             LOG(info) << "Remote end disconnected. Send shutdown to yourself.";
+                             LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
+                             this->sendYourself<cmdSHUTDOWN>();
+                         }
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                     [this](CCommanderChannel* _channel)
+                     {
+                         if (m_connectionAttempts <= g_MaxConnectionAttempts)
+                         {
+                             LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt "
+                                       << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                             this_thread::sleep_for(chrono::seconds(5));
+                             reconnect();
+                             ++m_connectionAttempts;
+                         }
+                         else
+                         {
+                             LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
                              this->sendYourself<cmdSHUTDOWN>();
                          }
                      });
@@ -119,7 +138,7 @@ bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_
     LOG(info) << "The Agent [" << m_id << "] exited.";
     stop();
 
-    // return false to let connection manager to catch this message as weel
+    // return false to let connection manager to catch this message as well
     return false;
 }
 
@@ -296,7 +315,7 @@ void CCommanderChannel::deleteAgentUUIDFile() const
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
 {
-    LOG(info) << "Recieved a user task assigment. " << *_attachment;
+    LOG(info) << "Received a user task assignment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
     m_sTaskId = _attachment->m_sID;
     return true;
@@ -309,7 +328,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
     if (sUsrExe.empty())
     {
-        LOG(info) << "Recieved activation command. Ignoring the command, since no task is assigned.";
+        LOG(info) << "Received activation command. Ignoring the command, since no task is assigned.";
         // Send response back to server
         pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No task is assigned. Activation is ignored.", info, cmdACTIVATE_AGENT));
         return true;
@@ -373,7 +392,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
 {
     // try
     // {
-    LOG(info) << "Recieved a key update notifications: " << *_attachment;
+    LOG(info) << "Received a key update notifications: " << *_attachment;
     //     CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
     // }
     // catch (exception& _e)
@@ -383,7 +402,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     //     pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdUPDATE_KEY));
     // }
 
-    // give a chance to others to recive update nitifications
+    // give a chance to others to receive update notifications
     return false;
 }
 
@@ -412,7 +431,7 @@ bool CCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::
 {
     try
     {
-        LOG(info) << "Recieved a key delete notifications: " << *_attachment;
+        LOG(info) << "Received a key delete notifications: " << *_attachment;
         CKeyValueGuard::instance().deleteKey(_attachment->m_sKey);
     }
     catch (exception& _e)
