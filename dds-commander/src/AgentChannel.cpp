@@ -35,7 +35,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 {
     try
     {
-        LOG(info) << "Recieved a Submit command of the topo [" << _attachment->m_sTopoFile
+        LOG(info) << "Received a Submit command of the topo [" << _attachment->m_sTopoFile
                   << "]; RMS: " << _attachment->RMSTypeCodeToString[_attachment->m_nRMSTypeCode]
                   << " from: " << remoteEndIDString();
 
@@ -79,7 +79,7 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
     m_startUpTime -= std::chrono::milliseconds(_attachment->m_submitTime);
     // everything is OK, we can work with this agent
     LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-              << "] has succesfully connected. Startup time: " << m_startUpTime.count() << " ms.";
+              << "] has successfully connected. Startup time: " << m_startUpTime.count() << " ms.";
 
     return true;
 }
@@ -220,10 +220,10 @@ bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DON
 bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment)
 {
     // The main reason for this message is to tell commander that agents are note idle (see. GH-54)
-    LOG(debug) << "Recieved Watchdog heartbeat from agent " << m_id << " running task = " << m_taskID;
+    LOG(debug) << "Received Watchdog heartbeat from agent " << m_id << " running task = " << m_taskID;
 
     // TODO: So far we don nothing with this info.
-    // In the future we might want to send more informtion about tasks being executed (pid, CPU info, memory)
+    // In the future we might want to send more information about tasks being executed (pid, CPU info, memory)
     return true;
 }
 
