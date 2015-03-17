@@ -45,21 +45,21 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                     auto ptr = v.lock();
 
                     {
-                        std::lock_guard<std::mutex> lock(ptr->getPropertyPTMutex());
+                        lock_guard<mutex> lock(ptr->getPropertyPTMutex());
                         const boost::property_tree::ptree& pt = ptr->getPropertyPT();
                         for (const auto& v1 : pt)
                         {
                             for (const auto& v2 : v1.second)
                             {
                                 {
-                                    std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+                                    lock_guard<mutex> lock(m_propertyPTMutex);
                                     m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
                                 }
                             }
                         }
                     }
                 }
-                LOG(info) << "key-value lazy collector: checking avaliable channels for new updates...";
+                LOG(info) << "key-value lazy collector: checking available channels for new updates...";
             }
             catch (exception& _e)
             {
@@ -78,23 +78,23 @@ CConnectionManager::~CConnectionManager()
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
     // Subscribe on protocol messages
-    std::function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
+    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
         [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_LOG(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
 
-    std::function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
-                       CAgentChannel * _channel)> fBINARY_ATTACHMENT_RECEIVED =
-        [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel* _channel)
-            -> bool
+    function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel * _channel)>
+        fBINARY_ATTACHMENT_RECEIVED =
+            [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel* _channel)
+                -> bool
     {
         return this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
 
-    std::function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_AGENTS_INFO =
             [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -102,14 +102,14 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
-    std::function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
+    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
         [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSUBMIT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
-    std::function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
         fACTIVATE_AGENT =
             [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -117,7 +117,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
-    std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
         fSTOP_USER_TASK =
             [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -125,7 +125,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
 
-    std::function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
         fTRANSPORT_TEST =
             [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -133,21 +133,21 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdTRANSPORT_TEST>(fTRANSPORT_TEST);
 
-    std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)> fSIMPLE_MSG =
+        [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSIMPLE_MSG(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 
-    std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel * _channel)>
-        fUPDATE_KEY = [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel * _channel)> fUPDATE_KEY =
+        [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
-    std::function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
         fUSER_TASK_DONE =
             [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -155,7 +155,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
 
-    std::function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_PROP_LIST =
             [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -163,7 +163,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
 
-    std::function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
+    function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_PROP_VALUES =
             [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
@@ -174,30 +174,30 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 
 void CConnectionManager::_createInfoFile(size_t _port) const
 {
-    const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
+    const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
     LOG(MiscCommon::info) << "Creating the server info file: " << sSrvCfg;
-    std::ofstream f(sSrvCfg.c_str());
+    ofstream f(sSrvCfg.c_str());
     if (!f.is_open() || !f.good())
     {
-        std::string msg("Could not open the server info configuration file: ");
+        string msg("Could not open the server info configuration file: ");
         msg += sSrvCfg;
-        throw std::runtime_error(msg);
+        throw runtime_error(msg);
     }
 
-    std::string srvHost;
+    string srvHost;
     MiscCommon::get_hostname(&srvHost);
-    std::string srvUser;
+    string srvUser;
     MiscCommon::get_cuser_name(&srvUser);
 
     f << "[server]\n"
       << "host=" << srvHost << "\n"
       << "user=" << srvUser << "\n"
-      << "port=" << _port << "\n" << std::endl;
+      << "port=" << _port << "\n" << endl;
 }
 
 void CConnectionManager::_deleteInfoFile() const
 {
-    const std::string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
+    const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
     if (sSrvCfg.empty())
         return;
 
@@ -208,7 +208,7 @@ void CConnectionManager::_deleteInfoFile() const
 bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
                                        CAgentChannel::weakConnectionPtr_t _channel)
 {
-    std::lock_guard<std::mutex> lock(m_getLog.m_mutexStart);
+    lock_guard<mutex> lock(m_getLog.m_mutexStart);
 
     if (!m_getLog.m_channel.expired())
     {
@@ -360,7 +360,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     LOG(info) << "UI channel requested a topology activation...";
-    std::lock_guard<std::mutex> lock(m_ActivateAgents.m_mutexStart);
+    lock_guard<mutex> lock(m_ActivateAgents.m_mutexStart);
     try
     {
         if (!m_ActivateAgents.m_channel.expired())
@@ -384,7 +384,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         m_ActivateAgents.m_nofRequests = m_topo.getMainGroup()->getTotalNofTasks();
         size_t nofAgents = countNofChannels(condition);
 
-        LOG(info) << "Avaliable agents = " << nofAgents;
+        LOG(info) << "Available agents = " << nofAgents;
 
         if (nofAgents == 0)
             throw runtime_error("There are no connected agents.");
@@ -514,7 +514,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
-    std::lock_guard<std::mutex> lock(m_StopUserTasks.m_mutexStart);
+    lock_guard<mutex> lock(m_StopUserTasks.m_mutexStart);
     try
     {
         if (!m_StopUserTasks.m_channel.expired())
@@ -531,6 +531,15 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
         };
 
         m_StopUserTasks.m_nofRequests = countNofChannels(condition);
+
+        // Stop UI if no tasks are running
+        if (m_StopUserTasks.m_nofRequests <= 0)
+        {
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", fatal, cmdSTOP_USER_TASK));
+            m_StopUserTasks.m_channel.reset();
+            return true;
+        }
+
         // initiate the progress on the UI
         p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_StopUserTasks.m_nofRequests, 0));
 
@@ -593,7 +602,7 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
            << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
            << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
            << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
-           << "\nAgent startup time: " << std::chrono::duration<double>(ptr->getStartupTime()).count() << " s"
+           << "\nAgent startup time: " << chrono::duration<double>(ptr->getStartupTime()).count() << " s"
            << "\nState: " << g_agentStates.at(ptr->getState()) << "\n"
            << "\nTask ID: " << sTaskName << "\n";
     }
@@ -611,7 +620,7 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
 bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
-    std::lock_guard<std::mutex> lock(m_transportTest.m_mutexStart);
+    lock_guard<mutex> lock(m_transportTest.m_mutexStart);
 
     if (!m_transportTest.m_channel.expired())
     {
@@ -642,7 +651,7 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
             data.push_back(c);
         }
 
-        string fileName = "test_data_" + std::to_string(size) + ".bin";
+        string fileName = "test_data_" + to_string(size) + ".bin";
         broadcastBinaryAttachmentCmd(data, fileName, cmdTRANSPORT_TEST, condition);
     }
 
@@ -698,7 +707,7 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
 bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    // TODO: in general writeing to m_propertyPT has to be locked with mutex
+    // TODO: in general writing to m_propertyPT has to be locked with mutex
     // TODO: for the moment we only update property tree here and do not delete anything from it, otherwise we have to
     // lock, which leads to potential bottleneck.
     // m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
@@ -729,7 +738,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         bool iterExists = false;
         CAgentChannel::weakConnectionPtr_t weakPtr;
         //{
-        //    std::lock_guard<std::mutex> lock(m_mapMutex);
+        //    lock_guard<mutex> lock(m_mapMutex);
         auto iter = m_taskIDToAgentChannelMap.find(it->first);
         iterExists = (iter != m_taskIDToAgentChannelMap.end());
         if (iterExists)
@@ -840,7 +849,7 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
     // TODO: Temporary solution. We do not remove tasks from the map to avoid synchronization bottlenecks in
     // on_cmdUPDATE_KEY.
     //{
-    //    std::lock_guard<std::mutex> lock(m_mapMutex);
+    //    lock_guard<mutex> lock(m_mapMutex);
     //    auto it = m_taskIDToAgentChannelMap.find(taskID);
     //    if (it != m_taskIDToAgentChannelMap.end())
     //        m_taskIDToAgentChannelMap.erase(it);
@@ -854,7 +863,7 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
 bool CConnectionManager::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
-    std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+    lock_guard<mutex> lock(m_propertyPTMutex);
     stringstream ss;
     for (const auto& v1 : m_propertyPT)
     {
@@ -877,7 +886,7 @@ bool CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PRO
     {
         try
         {
-            std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+            lock_guard<mutex> lock(m_propertyPTMutex);
             if (_attachment->m_sPropertyID.empty())
             {
                 for (const auto& v1 : m_propertyPT)

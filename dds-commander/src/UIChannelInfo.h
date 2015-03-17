@@ -69,7 +69,7 @@ namespace dds
                     auto pUI = m_channel.lock();
                     pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
 
-                    // mesure time to activate
+                    // measure time to activate
                     std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
                     pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(
@@ -106,7 +106,7 @@ namespace dds
                     auto pUI = m_channel.lock();
                     pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::error));
 
-                    // mesure time to activate
+                    // measure time to activate
                     std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
                     pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(
@@ -187,7 +187,7 @@ namespace dds
         std::string getAllReceivedMessage() const
         {
             std::stringstream ss;
-            ss << "total: " << m_nofRequests << ", recieved: " << nofReceived() << ", errors: " << m_nofReceivedErrors;
+            ss << "total: " << m_nofRequests << ", received: " << nofReceived() << ", errors: " << m_nofReceivedErrors;
             return ss.str();
         }
     };
@@ -225,7 +225,7 @@ namespace dds
         std::string getAllReceivedMessage() const
         {
             std::stringstream ss;
-            ss << "recieved: " << nofReceived() << ", total: " << m_nofRequests << ", errors: " << m_nofReceivedErrors
+            ss << "received: " << nofReceived() << ", total: " << m_nofRequests << ", errors: " << m_nofReceivedErrors
                << " | ";
 
             float downloadTime = 0.000001 * m_totalTime; // micros->s

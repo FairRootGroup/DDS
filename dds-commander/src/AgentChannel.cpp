@@ -75,8 +75,8 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
     LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << m_remoteHostInfo << "] received from: " << remoteEndIDString();
 
     // Calculating startup time of the agent
-    m_startUpTime = chrono::duration_cast<chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    m_startUpTime -= std::chrono::milliseconds(_attachment->m_submitTime);
+    m_startUpTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+    m_startUpTime -= chrono::milliseconds(_attachment->m_submitTime);
     // everything is OK, we can work with this agent
     LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
               << "] has successfully connected. Startup time: " << m_startUpTime.count() << " ms.";
@@ -197,7 +197,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
     {
-        std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+        lock_guard<mutex> lock(m_propertyPTMutex);
         m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
     }
 
@@ -209,7 +209,7 @@ bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_
 bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment)
 {
     {
-        std::lock_guard<std::mutex> lock(m_propertyPTMutex);
+        lock_guard<mutex> lock(m_propertyPTMutex);
         m_propertyPT.clear();
     }
     // Return false.

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
 
-    vector<std::string> arguments(argv + 1, argv + argc);
+    vector<string> arguments(argv + 1, argv + argc);
     ostringstream ss;
     copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
     LOG(info) << "Starting with arguments: " << ss.str();
@@ -86,12 +86,12 @@ int main(int argc, char* argv[])
     // Checking for "start" option
     if (SOptions_t::cmd_start == options.m_Command)
     {
-        // a viusual log marker for a new DDS session
+        // a visual log marker for a new DDS session
         LOG(info) << "\n"
                   << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
                   << "+++++++++ N E W  D D S  C O M M A N D E R  S E R V E R  S E S S I O N +++++++++\n"
                   << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
-        // a parasable log marker for a new DDS session
+        // a parsable log marker for a new DDS session
         LOG(info) << "---> DDS commander session <---";
 
         try

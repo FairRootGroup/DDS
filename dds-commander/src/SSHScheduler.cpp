@@ -24,10 +24,10 @@ CSSHScheduler::~CSSHScheduler()
 
 void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels)
 {
-    auto execTime = STimeMeasure<std::chrono::microseconds>::execution([this, &_topology, &_channels]()
-                                                                       {
-                                                                           makeScheduleImpl(_topology, _channels);
-                                                                       });
+    auto execTime = STimeMeasure<chrono::microseconds>::execution([this, &_topology, &_channels]()
+                                                                  {
+                                                                      makeScheduleImpl(_topology, _channels);
+                                                                  });
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
