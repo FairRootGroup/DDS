@@ -29,6 +29,7 @@ namespace dds
         };
 
         typedef std::vector<SSchedule> ScheduleVector_t;
+        typedef std::map<size_t, std::vector<uint64_t>, std::greater<size_t>> CollectionMap_t;
 
       public:
         CSSHScheduler();
@@ -38,9 +39,24 @@ namespace dds
 
         const ScheduleVector_t& getSchedule() const;
 
-      private:
         void printSchedule();
+
+      private:
         void makeScheduleImpl(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels);
+
+        void scheduleCollections(const CTopology& _topology,
+                                 const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                 std::map<std::string, std::vector<size_t>>& _hostToChannelMap,
+                                 std::set<uint64_t>& _scheduledTasks,
+                                 const CollectionMap_t& _collectionMap,
+                                 bool useRequirement);
+
+        void scheduleTasks(const dds::CTopology& _topology,
+                           const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                           std::map<std::string, std::vector<size_t>>& _hostToChannelMap,
+                           std::set<uint64_t>& _scheduledTasks,
+                           const std::set<uint64_t>& _tasksInCollections,
+                           bool useRequirement);
 
       private:
         ScheduleVector_t m_schedule;

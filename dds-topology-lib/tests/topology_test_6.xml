@@ -33,19 +33,25 @@
 	</decltask>
 
   	<declcollection id="collection1">
-   		<task>task1</task>
-		<task>task2</task>
-		<task>task2</task>
-		<task>task3</task>
+		<tasks>
+   		   <id>task1</id>
+		   <id>task2</id>
+		   <id>task2</id>
+		   <id>task3</id>
+	    </tasks>
   	</declcollection>
   	<declcollection id="collection2">
-   		<task>task2</task>
-		<task>task2</task>
-		<task>task3</task>
+		<tasks>
+   		   <id>task2</id>
+		   <id>task2</id>
+		   <id>task3</id>
+	    </tasks>
   	</declcollection>
   	<declcollection id="collection2">
-		<task>task2</task>
-		<task>task3</task>
+		<tasks>
+		   <id>task2</id>
+		   <id>task3</id>
+	    </tasks>
   	</declcollection>
 	
 	<main id="main">

@@ -251,6 +251,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted5->getNofTasks() == 4);
     BOOST_CHECK(casted5->getTotalNofTasks() == 4);
     BOOST_CHECK(casted5->getNofElements() == 4);
+    BOOST_CHECK(casted5->getRequirement()->getId() == "requirement1");
     BOOST_CHECK_THROW(casted5->getElement(4), std::out_of_range);
     BOOST_CHECK(casted5->getTotalCounter() == 15);
 

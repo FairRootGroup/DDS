@@ -97,4 +97,58 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     std::cout << "SSH scheduler fail execution time: " << execFailTimeSeconds << " s\n";
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
+{
+    Logger::instance().init(); // Initialize log
+    CUserDefaults::instance(); // Initialize user defaults
+
+    boost::asio::io_service io_service;
+
+    CTopology topology;
+    topology.init("topology_scheduler_test_2.xml");
+
+    CAgentChannel::connectionPtrVector_t agents;
+    size_t n = 3;
+    size_t nofAgentsPerGroup = 7;
+
+    agents.reserve(n * nofAgentsPerGroup);
+
+    for (size_t i = 0; i < n; ++i)
+        for (size_t j = 0; j < nofAgentsPerGroup; ++j)
+        {
+            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service);
+
+            stringstream ss;
+            if (j != 6)
+            {
+                size_t h = (j < 4) ? j : 3;
+                ss << "host" << (h + 1) << "_" << i;
+            }
+            else
+            {
+                ss << "noname_host";
+            }
+
+            SHostInfoCmd hostInfo;
+            hostInfo.m_host = ss.str();
+
+            agent->setRemoteHostInfo(hostInfo);
+
+            agents.push_back(agent);
+
+            std::cout << ss.str() << std::endl;
+        }
+
+    CAgentChannel::weakConnectionPtrVector_t weakAgents;
+    weakAgents.reserve(agents.size());
+    for (auto& v : agents)
+    {
+        weakAgents.push_back(v);
+    }
+
+    CSSHScheduler scheduler;
+    scheduler.makeSchedule(topology, weakAgents);
+    scheduler.printSchedule();
+}
+
 BOOST_AUTO_TEST_SUITE_END()

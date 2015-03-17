@@ -8,8 +8,10 @@
 	</decltask>
 	
   	<declcollection id="collection1">
-   		<task>task1</task>
-		<task>task2</task>
+		<tasks>
+   		   <id>task1</id>
+		   <id>task2</id>
+	    </tasks>
   	</declcollection>
 	
 	<main id="main">

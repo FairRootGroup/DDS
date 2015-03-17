@@ -71,6 +71,12 @@
   </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="taskArrayType">
+  <xs:sequence>
+  	<xs:element name="id" type="stringIdType" maxOccurs="unbounded" minOccurs="1"/>
+  </xs:sequence>
+</xs:complexType>
+
 
 <xs:complexType name="requirementValueType">
   <xs:attribute name="value" type="stringType" use="required"/>
@@ -97,7 +103,8 @@
 
 <xs:complexType name="collectionType">
   <xs:sequence>
-    <xs:element name="task" type="stringIdType" maxOccurs="unbounded" minOccurs="1"/>
+	<xs:element name="requirement" type="stringType" maxOccurs="1" minOccurs="0"/>
+    <xs:element name="tasks" type="taskArrayType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringType" use="required"/>
 </xs:complexType>

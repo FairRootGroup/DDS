@@ -38,6 +38,7 @@ namespace dds
         typedef std::map<std::string, TaskPtr_t> HashPathToTaskMap_t;
         typedef std::map<std::string, TaskCollectionPtr_t> HashPathToTaskCollectionMap_t;
         typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
+        typedef std::map<uint64_t, std::vector<uint64_t>> CollectionHashToTaskHashesMap_t;
 
         /// \brief Constructor.
         CTopology();
@@ -56,6 +57,7 @@ namespace dds
         TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
         TaskPtr_t getTaskByHash(uint64_t _hash) const;
         TaskCollectionPtr_t getTaskCollectionByHash(uint64_t _hash) const;
+        const std::vector<uint64_t>& getTaskHashesByTaskCollectionHash(uint64_t _hash) const;
 
         /// Accessors to internal data structures. Used for unit tests.
         const TopoIndexToTopoElementMap_t getTopoIndexToTopoElementMap() const;
@@ -93,6 +95,9 @@ namespace dds
         HashToTaskCollectionMap_t m_hashToTaskCollectionMap;
         std::map<std::string, size_t> m_counterMap;
         std::string m_currentTaskCollectionHashPath;
+        uint64_t m_currentTaskCollectionCrc;
+
+        CollectionHashToTaskHashesMap_t m_collectionHashToTaskHashesMap;
 
         // FIXME: Hash path maps has to be removed due to performance reasons.
         // In any case we do not need them.

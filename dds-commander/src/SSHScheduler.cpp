@@ -36,11 +36,7 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
 {
     m_schedule.clear();
 
-    CTopology::TaskIteratorPair_t tasks = _topology.getTaskIterator();
-
-    size_t taskCounter = 0;
     size_t nofChannels = _channels.size();
-
     // Fill host name to channel index map in order to reduce number of regex matches and speed up scheduling.
     map<string, vector<size_t>> hostToChannelMap;
     for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
@@ -53,21 +49,73 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
         hostToChannelMap[hostInfo.m_host].push_back(iChannel);
     }
 
-    // Tasks with requirements
+    // TODO: before scheduling the collections we have to sort them by a number of tasks in the collection.
+    // TODO: for the moment we are not able to schedule collection without requirements.
+
+    // Collect all tasks that belong to collections
+    set<uint64_t> tasksInCollections;
+    CollectionMap_t collectionMap;
+    CTopology::TaskCollectionIteratorPair_t collections = _topology.getTaskCollectionIterator();
+    for (auto it = collections.first; it != collections.second; it++)
+    {
+        const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(it->first);
+        tasksInCollections.insert(taskHashes.begin(), taskHashes.end());
+        collectionMap[it->second->getNofTasks()].push_back(it->first);
+    }
+
+    set<uint64_t> scheduledTasks;
+
+    scheduleCollections(_topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, true);
+    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, true);
+    scheduleCollections(_topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, false);
+    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, false);
+
+    size_t totalNofTasks = _topology.getMainGroup()->getTotalNofTasks();
+    if (totalNofTasks != m_schedule.size())
+    {
+        printSchedule();
+        stringstream ss;
+        ss << "Unable to make a schedule for tasks. Number of requested tasks: " << totalNofTasks
+           << ". Number of scheduled tasks: " << m_schedule.size();
+        throw runtime_error(ss.str());
+    }
+
+    printSchedule();
+}
+
+void CSSHScheduler::scheduleTasks(const dds::CTopology& _topology,
+                                  const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                  map<string, vector<size_t>>& _hostToChannelMap,
+                                  set<uint64_t>& _scheduledTasks,
+                                  const set<uint64_t>& _tasksInCollections,
+                                  bool useRequirement)
+{
+    CTopology::TaskIteratorPair_t tasks = _topology.getTaskIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
     {
         uint64_t id = it->first;
+
+        // Check if task has to be scheduled in the collection
+        if (_tasksInCollections.find(id) != _tasksInCollections.end())
+            continue;
+
+        // Check if task was already scheduled in the collection
+        if (_scheduledTasks.find(id) != _scheduledTasks.end())
+            continue;
+
         TaskPtr_t task = it->second;
 
         // First path only for tasks with requirements;
-        if (task->getRequirement() == nullptr)
+        // Second path for tasks without requirements.
+        if ((useRequirement && task->getRequirement() == nullptr) ||
+            (!useRequirement && task->getRequirement() != nullptr))
             continue;
 
         bool taskAssigned = false;
 
-        for (auto& v : hostToChannelMap)
+        for (auto& v : _hostToChannelMap)
         {
-            if (task->getRequirement()->hostPatterMatches(v.first))
+            if (!useRequirement || (useRequirement && task->getRequirement()->hostPatterMatches(v.first)))
             {
                 if (!v.second.empty())
                 {
@@ -95,63 +143,67 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
             ss << "Unable to schedule task <" << id << "> with path " << task->getPath();
             throw runtime_error(ss.str());
         }
-
-        ++taskCounter;
     }
+}
 
-    // Tasks without requirements
-    for (auto it = tasks.first; it != tasks.second; it++)
+void CSSHScheduler::scheduleCollections(const CTopology& _topology,
+                                        const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                        map<string, vector<size_t>>& _hostToChannelMap,
+                                        set<uint64_t>& _scheduledTasks,
+                                        const CollectionMap_t& _collectionMap,
+                                        bool useRequirement)
+{
+    for (const auto& it_col : _collectionMap)
     {
-        uint64_t id = it->first;
-        TaskPtr_t task = it->second;
-
-        // Second path only for tasks without requirements;
-        if (task->getRequirement() != nullptr)
-            continue;
-
-        bool taskAssigned = false;
-
-        for (auto& v : hostToChannelMap)
+        for (auto id : it_col.second)
         {
-            if (!v.second.empty())
+            TaskCollectionPtr_t collection = _topology.getTaskCollectionByHash(id);
+
+            // First path only for collections with requirements;
+            // Second path for collections without requirements.
+            if ((useRequirement && collection->getRequirement() == nullptr) ||
+                (!useRequirement && collection->getRequirement() != nullptr))
+                continue;
+
+            bool collectionAssigned = false;
+
+            for (auto& v : _hostToChannelMap)
             {
-                size_t channelIndex = v.second.back();
-                const auto& channel = _channels[channelIndex];
+                if (v.second.size() >= collection->getNofTasks() &&
+                    (!useRequirement || (useRequirement && collection->getRequirement()->hostPatterMatches(v.first))))
+                {
+                    const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(id);
+                    for (auto hash : taskHashes)
+                    {
+                        TaskPtr_t task = _topology.getTaskByHash(hash);
 
-                SSchedule schedule;
-                schedule.m_channel = channel;
-                schedule.m_task = task;
-                schedule.m_taskID = id;
-                m_schedule.push_back(schedule);
+                        size_t channelIndex = v.second.back();
+                        const auto& channel = _channels[channelIndex];
 
-                v.second.pop_back();
+                        SSchedule schedule;
+                        schedule.m_channel = channel;
+                        schedule.m_task = task;
+                        schedule.m_taskID = hash;
+                        m_schedule.push_back(schedule);
 
-                taskAssigned = true;
+                        v.second.pop_back();
 
-                break;
+                        _scheduledTasks.insert(hash);
+                    }
+                    collectionAssigned = true;
+                    break;
+                }
+            }
+
+            if (!collectionAssigned)
+            {
+                printSchedule();
+                stringstream ss;
+                ss << "Unable to schedule collection <" << id << "> with path " << collection->getPath();
+                throw runtime_error(ss.str());
             }
         }
-        if (!taskAssigned)
-        {
-            printSchedule();
-            stringstream ss;
-            ss << "Unable to schedule task <" << id << "> with path " << task->getPath();
-            throw runtime_error(ss.str());
-        }
-
-        ++taskCounter;
     }
-
-    if (taskCounter != m_schedule.size())
-    {
-        printSchedule();
-        stringstream ss;
-        ss << "Unable to make a schedule for tasks. Number of requested tasks: " << taskCounter
-           << ". Number of scheduled tasks: " << m_schedule.size();
-        throw runtime_error(ss.str());
-    }
-
-    printSchedule();
 }
 
 const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const

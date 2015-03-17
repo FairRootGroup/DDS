@@ -37,6 +37,7 @@ target_include_directories(dds-scheduler-tests
 )
 
 if( BUILD_TESTS )
-  install(PROGRAMS ${dds-commander-tests_SOURCE_DIR}/topology_scheduler_test_1.xml DESTINATION tests)
+  install(FILES ${dds-commander-tests_SOURCE_DIR}/topology_scheduler_test_1.xml DESTINATION tests)
+  install(FILES ${dds-commander-tests_SOURCE_DIR}/topology_scheduler_test_2.xml DESTINATION tests)
 endif( BUILD_TESTS )
 

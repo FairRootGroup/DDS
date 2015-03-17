@@ -38,6 +38,16 @@ size_t CTaskCollection::getTotalCounter() const
     return getTotalCounterDefault();
 }
 
+void CTaskCollection::setRequirement(RequirementPtr_t _requirement)
+{
+    m_requirement = _requirement;
+}
+
+RequirementPtr_t CTaskCollection::getRequirement() const
+{
+    return m_requirement;
+}
+
 void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
@@ -46,14 +56,25 @@ void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt
 
         setId(collectionPT.get<string>("<xmlattr>.id"));
 
-        for (const auto& element : collectionPT)
+        string requirementId = collectionPT.get<string>(TopoTypeToUseTag(ETopoType::REQUIREMENT), "");
+        if (!requirementId.empty())
         {
-            if (element.first == "<xmlattr>")
-                continue;
-            TopoElementPtr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
-            newElement->setParent(this);
-            newElement->initFromPropertyTree(element.second.data(), _pt);
-            addElement(newElement);
+            RequirementPtr_t newRequirement = make_shared<CRequirement>();
+            newRequirement->setParent(this);
+            newRequirement->initFromPropertyTree(requirementId, _pt);
+            setRequirement(newRequirement);
+        }
+
+        boost::optional<const ptree&> tasksPT = collectionPT.get_child_optional("tasks");
+        if (tasksPT)
+        {
+            for (const auto& task : tasksPT.get())
+            {
+                TopoElementPtr_t newElement = make_shared<CTask>();
+                newElement->setParent(this);
+                newElement->initFromPropertyTree(task.second.data(), _pt);
+                addElement(newElement);
+            }
         }
     }
     catch (exception& error) // ptree_error, runtime_error

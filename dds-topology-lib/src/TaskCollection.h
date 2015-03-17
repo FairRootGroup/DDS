@@ -8,6 +8,7 @@
 
 // DDS
 #include "TaskContainer.h"
+#include "Requirement.h"
 
 namespace dds
 {
@@ -31,6 +32,12 @@ namespace dds
 
         /// \brief If parent is a group than return N, else return 1.
         size_t getTotalCounter() const;
+
+        RequirementPtr_t getRequirement() const;
+        void setRequirement(RequirementPtr_t _requirement);
+
+      private:
+        RequirementPtr_t m_requirement; ///> Requirement
     };
 
     typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;

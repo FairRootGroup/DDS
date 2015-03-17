@@ -20,6 +20,7 @@ CTopology::CTopology()
     , m_topoIndexToTopoElementMap()
     , m_hashToTaskMap()
     , m_hashToTaskCollectionMap()
+    , m_collectionHashToTaskHashesMap()
     , m_counterMap()
     , m_bXMLValidationDisabled(false)
 {
@@ -51,7 +52,9 @@ void CTopology::init(const std::string& _fileName, bool _initForTest)
     m_counterMap.clear();
     m_hashToTaskMap.clear();
     m_hashToTaskCollectionMap.clear();
+    m_collectionHashToTaskHashesMap.clear();
     m_currentTaskCollectionHashPath = "";
+    m_currentTaskCollectionCrc = 0;
     FillHashToTopoElementMap(m_main, _initForTest);
 }
 
@@ -105,6 +108,14 @@ TaskCollectionPtr_t CTopology::getTaskCollectionByHash(uint64_t _hash) const
 {
     auto it = m_hashToTaskCollectionMap.find(_hash);
     if (it == m_hashToTaskCollectionMap.end())
+        throw runtime_error("Can not find element with hash " + to_string(_hash));
+    return it->second;
+}
+
+const std::vector<uint64_t>& CTopology::getTaskHashesByTaskCollectionHash(uint64_t _hash) const
+{
+    auto it = m_collectionHashToTaskHashesMap.find(_hash);
+    if (it == m_collectionHashToTaskHashesMap.end())
         throw runtime_error("Can not find element with hash " + to_string(_hash));
     return it->second;
 }
@@ -203,6 +214,8 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             crc = getNextHashForTask(crc);
         }
         m_hashToTaskMap[crc] = task;
+        if (task->getParent()->getType() == ETopoType::COLLECTION)
+            m_collectionHashToTaskHashesMap[m_currentTaskCollectionCrc].push_back(crc);
 
         return;
     }
@@ -229,6 +242,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
         }
 
         m_hashToTaskCollectionMap[crc] = collection;
+        m_currentTaskCollectionCrc = crc;
 
         const auto& elements = collection->getElements();
         for (const auto& v : elements)
