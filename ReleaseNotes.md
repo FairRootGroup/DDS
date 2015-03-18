@@ -8,13 +8,15 @@ Added: include std c++ lib into worker package. (GH-61)
 Fixed: fix implementation of cmdSHUTDOWN. (ПР-65)   
 Fixed: remove shared memory on exit.
 
+
 ### dds-commander
 Added: Since dds-commander is a daemon and doesn't have a console, it now has a dedicated log file for its std-out/-err called "dds-commander.out.log". File is located in the log directory.   
 
 ### dds-topology
 Added: output time spent on activation. (GH-62)    
 Added: the command learned "--set" parameter, which is used to set up topology for the current deployment. (GH-56)   
-Added: the command learned "--disiable-validation", which is used to disable topology validation. It can be used only together with "--set". (GH-56)    
+Added: the command learned "--disiable-validation", which is used to disable topology validation. It can be used only together with "--set". (GH-56)   
+Added: scheduling and requirements for the collections. (GH-76)    
 
 ### dds-submit
 Modified: removed "--topo" parameter. (GH-56)   
