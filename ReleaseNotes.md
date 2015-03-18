@@ -13,6 +13,12 @@ Added: Since dds-commander is a daemon and doesn't have a console, it now has a 
 
 ### dds-topology
 Added: output time spent on activation. (GH-62)    
+Added: the command learned "--set" parameter, which is used to set up topology for the current deployment. (GH-56)   
+Added: the command learned "--disiable-validation", which is used to disable topology validation. It can be used only together with "--set". (GH-56)    
+
+### dds-submit
+Modified: removed "--topo" parameter. (GH-56)   
+Modified: removed "--disable-xml-validation" parameter. (GH-56)   
 
 ### dds-agent
 Fixed: reconnect to DDS commander if connection was dropped. (GH-77)  

@@ -35,17 +35,8 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 {
     try
     {
-        LOG(info) << "Received a Submit command of the topo [" << _attachment->m_sTopoFile
-                  << "]; RMS: " << _attachment->RMSTypeCodeToString[_attachment->m_nRMSTypeCode]
+        LOG(info) << "Received a Submit command; RMS: " << _attachment->RMSTypeCodeToString[_attachment->m_nRMSTypeCode]
                   << " from: " << remoteEndIDString();
-
-        // check, that topo file exists
-        if (!boost::filesystem::exists(_attachment->m_sTopoFile))
-        {
-            string sMsg("Can't find the topo file: ");
-            sMsg += _attachment->m_sTopoFile;
-            throw runtime_error(sMsg);
-        }
     }
     catch (exception& e)
     {
@@ -176,6 +167,9 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 
     switch (_attachment->m_srcCommand)
     {
+        case cmdSET_TOPOLOGY:
+            return false; // let others to process this message
+
         case cmdACTIVATE_AGENT:
             return false; // let others to process this message
 
@@ -233,6 +227,11 @@ bool CAgentChannel::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>
 }
 
 bool CAgentChannel::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment)
+{
+    return false;
+}
+
+bool CAgentChannel::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment)
 {
     return false;
 }

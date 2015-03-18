@@ -52,7 +52,8 @@ namespace dds
         cmdGET_PROP_LIST,
         cmdGET_PROP_VALUES,
         cmdPROGRESS, // attachment: SProgressCmd
-        cmdWATCHDOG_HEARTBEAT
+        cmdWATCHDOG_HEARTBEAT,
+        cmdSET_TOPOLOGY // attachment: SSetTopologyCmd
     };
 
     static std::map<uint16_t, std::string> g_cmdToString{
@@ -86,7 +87,8 @@ namespace dds
         { cmdGET_PROP_LIST, NAME_TO_STRING(cmdGET_PROP_LIST) },
         { cmdGET_PROP_VALUES, NAME_TO_STRING(cmdGET_PROP_VALUES) },
         { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) },
-        { cmdWATCHDOG_HEARTBEAT, NAME_TO_STRING(cmdWATCHDOG_HEARTBEAT) }
+        { cmdWATCHDOG_HEARTBEAT, NAME_TO_STRING(cmdWATCHDOG_HEARTBEAT) },
+        { cmdSET_TOPOLOGY, NAME_TO_STRING(cmdSET_TOPOLOGY) }
     };
 }
 

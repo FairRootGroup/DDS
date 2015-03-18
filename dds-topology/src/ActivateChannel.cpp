@@ -11,6 +11,55 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
+CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
+    : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI)
+{
+    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                     [](CActivateChannel* _channel)
+                     {
+                         LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnConnected,
+                     [this](CActivateChannel* _channel)
+                     {
+                         LOG(MiscCommon::log_stdout) << "Connection established.";
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                     [this](CActivateChannel* _channel)
+                     {
+                         LOG(MiscCommon::log_stdout) << "Failed to connect.";
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                     [this](CActivateChannel* _channel)
+                     {
+                         switch (m_options.m_topologyCmd)
+                         {
+                             case ETopologyCmdType::SET_TOPOLOGY:
+                             {
+                                 LOG(MiscCommon::log_stdout) << "Requesting server to set a new topology...";
+                                 SSetTopologyCmd cmd;
+                                 cmd.m_sTopologyFile = m_options.m_sTopoFile;
+                                 cmd.m_nDisiableValidation = m_options.m_bDisiableValidation;
+                                 pushMsg<cmdSET_TOPOLOGY>(cmd);
+                             }
+                             break;
+                             case ETopologyCmdType::ACTIVATE:
+                                 LOG(MiscCommon::log_stdout) << "Requesting server to activate user tasks...";
+                                 pushMsg<cmdACTIVATE_AGENT>();
+                                 break;
+                             case ETopologyCmdType::STOP:
+                                 LOG(MiscCommon::log_stdout) << "Requesting server to stop user tasks...";
+                                 pushMsg<cmdSTOP_USER_TASK>();
+                                 break;
+                             default:
+                                 return;
+                         }
+                     });
+}
+
 bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;
@@ -24,7 +73,7 @@ bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::p
         LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
     }
 
-    // stop communication if a fatal error is recieved
+    // stop communication if a fatal error is received
     if (_attachment->m_msgSeverity == fatal)
         stop();
     return true;

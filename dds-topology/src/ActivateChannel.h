@@ -13,54 +13,7 @@ namespace dds
 {
     class CActivateChannel : public CClientChannelImpl<CActivateChannel>
     {
-        CActivateChannel(boost::asio::io_service& _service)
-            : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI)
-        {
-            subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
-                             [](CActivateChannel* _channel)
-                             {
-                                 LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
-                             });
-
-            subscribeOnEvent(EChannelEvents::OnConnected,
-                             [this](CActivateChannel* _channel)
-                             {
-                                 LOG(MiscCommon::log_stdout) << "Connection established.";
-                                 switch (m_options.m_topologyCmd)
-                                 {
-                                     case ETopologyCmdType::ACTIVATE:
-                                         LOG(MiscCommon::log_stdout) << "Requesting server to activate user tasks...";
-                                         break;
-                                     case ETopologyCmdType::STOP:
-                                         LOG(MiscCommon::log_stdout) << "Requesting server to stop user tasks...";
-                                         break;
-                                     default:
-                                         return;
-                                 }
-                             });
-
-            subscribeOnEvent(EChannelEvents::OnFailedToConnect,
-                             [this](CActivateChannel* _channel)
-                             {
-                                 LOG(MiscCommon::log_stdout) << "Failed to connect.";
-                             });
-
-            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
-                             [this](CActivateChannel* _channel)
-                             {
-                                 switch (m_options.m_topologyCmd)
-                                 {
-                                     case ETopologyCmdType::ACTIVATE:
-                                         pushMsg<cmdACTIVATE_AGENT>();
-                                         break;
-                                     case ETopologyCmdType::STOP:
-                                         pushMsg<cmdSTOP_USER_TASK>();
-                                         break;
-                                     default:
-                                         return;
-                                 }
-                             });
-        }
+        CActivateChannel(boost::asio::io_service& _service);
 
         REGISTER_DEFAULT_REMOTE_ID_STRING
 

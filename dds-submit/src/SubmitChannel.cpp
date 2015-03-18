@@ -10,9 +10,41 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace std;
 
-void CSubmitChannel::setTopoFile(const string& _val)
+CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
+    : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI)
+    , m_RMS(SSubmitCmd::UNKNOWN)
 {
-    m_sTopoFile = _val;
+    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                     [](CSubmitChannel* _channel)
+                     {
+                         LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                     [this](CSubmitChannel* _channel)
+                     {
+                         if (SSubmitCmd::UNKNOWN != m_RMS)
+                         {
+                             // Create the command's attachment
+                             SSubmitCmd cmd;
+                             cmd.m_nRMSTypeCode = m_RMS;
+                             cmd.m_sSSHCfgFile = m_sSSHCfgFile;
+                             pushMsg<cmdSUBMIT>(cmd);
+                         }
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnConnected,
+                     [](CSubmitChannel* _channel)
+                     {
+                         LOG(MiscCommon::log_stdout) << "Connection established.";
+                         LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
+                     });
+
+    subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                     [](CSubmitChannel* _channel)
+                     {
+                         LOG(MiscCommon::log_stdout) << "Failed to connect.";
+                     });
 }
 
 void CSubmitChannel::setSSHCfgFile(const string& _val)
@@ -23,11 +55,6 @@ void CSubmitChannel::setSSHCfgFile(const string& _val)
 void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
 {
     m_RMS = _val;
-}
-
-void CSubmitChannel::setXMLValidationDisabled(bool _val)
-{
-    m_bXMLValidationDisabled = _val;
 }
 
 bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

@@ -69,14 +69,12 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 {
-    const string sTestPath = "/Users/dummy/Documents/workspace/dummy.xml";
     const uint16_t nTestRMSTypeCode = 1;
     const string sTestSSHCfgFile = "/Users/dummy/dummy.cfg";
-    const unsigned int cmdSize = 70;
+    const unsigned int cmdSize = 25;
 
     // Create a message
     SSubmitCmd cmd_src;
-    cmd_src.m_sTopoFile = sTestPath;
     cmd_src.m_nRMSTypeCode = nTestRMSTypeCode;
     cmd_src.m_sSSHCfgFile = sTestSSHCfgFile;
     MiscCommon::BYTEVector_t data;
@@ -104,7 +102,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
     cmd_dest.convertFromData(msg_dest.bodyToContainer());
 
     BOOST_CHECK(cmd_src == cmd_dest);
-    BOOST_CHECK(sTestPath == cmd_dest.m_sTopoFile);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)

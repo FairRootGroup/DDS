@@ -22,6 +22,7 @@
 #include "UserTaskDoneCmd.h"
 #include "DeleteKeyCmd.h"
 #include "GetPropValuesCmd.h"
+#include "SetTopologyCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -89,6 +90,7 @@ namespace dds
     REGISTER_CMD_ATTACHMENT(SUserTaskDoneCmd, cmdUSER_TASK_DONE)
     REGISTER_CMD_ATTACHMENT(SDeleteKeyCmd, cmdDELETE_KEY)
     REGISTER_CMD_ATTACHMENT(SGetPropValuesCmd, cmdGET_PROP_VALUES)
+    REGISTER_CMD_ATTACHMENT(SSetTopologyCmd, cmdSET_TOPOLOGY)
 }
 
 #endif /* PROTOCOLMESSAGES_H_ */

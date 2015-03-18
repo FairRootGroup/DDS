@@ -63,10 +63,8 @@ int main(int argc, char* argv[])
 
         CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
 
-        client->setTopoFile(options.m_sTopoFile);
         client->setSSHCfgFile(options.m_sSSHCfgFile);
         client->setRMSTypeCode(options.m_RMS);
-        client->setXMLValidationDisabled(options.m_bXMLValidationDisabled);
 
         client->connect(iterator);
 

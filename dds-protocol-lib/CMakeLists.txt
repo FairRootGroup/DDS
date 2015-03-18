@@ -30,6 +30,7 @@ set( SOURCE_FILES
 	./src/ProgressCmd.cpp
     ./src/UserTaskDoneCmd.cpp
     ./src/GetPropValuesCmd.cpp
+	./src/SetTopologyCmd.cpp
 )
 
 set( SRC_HDRS
@@ -57,6 +58,7 @@ set( SRC_HDRS
 	./src/ProgressCmd.h
     ./src/UserTaskDoneCmd.h
     ./src/GetPropValuesCmd.h
+	./src/SetTopologyCmd.h
 )
 
 include_directories(

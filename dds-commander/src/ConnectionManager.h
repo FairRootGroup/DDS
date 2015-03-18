@@ -64,7 +64,10 @@ namespace dds
                                  CAgentChannel::weakConnectionPtr_t _channel);
         bool on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
                                    CAgentChannel::weakConnectionPtr_t _channel);
+        bool on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment,
+                                CAgentChannel::weakConnectionPtr_t _channel);
 
+      private:
         CGetLogChannelInfo m_getLog;
         CTestChannelInfo m_transportTest;
         CActivateAgentsChannelInfo m_ActivateAgents;

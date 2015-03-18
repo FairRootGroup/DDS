@@ -170,6 +170,13 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_VALUES>(fGET_PROP_VALUES);
+
+    function<bool(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment, CAgentChannel * _channel)> fSET_TOPOLOGY =
+        [this](SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdSET_TOPOLOGY(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdSET_TOPOLOGY>(fSET_TOPOLOGY);
 }
 
 void CConnectionManager::_createInfoFile(size_t _port) const
@@ -287,11 +294,6 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         if (_attachment->m_nRMSTypeCode == SSubmitCmd::SSH)
         {
             LOG(info) << "SSH RMS is defined by: [" << _attachment->m_sSSHCfgFile << "]";
-
-            // TODO: Job submission should be moved from here to a thread
-            // Resolve topology
-            m_topo.setXMLValidationDisabled(_attachment->m_bXMLValidationDisabled);
-            m_topo.init(_attachment->m_sTopoFile);
             // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
 
             // Submitting the job
@@ -928,5 +930,27 @@ bool CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PRO
         ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_PROP_LIST));
     }
 
+    return true;
+}
+
+bool CConnectionManager::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment,
+                                            CAgentChannel::weakConnectionPtr_t _channel)
+{
+    LOG(info) << "UI channel requested to set up a new ropology. " << *_attachment;
+    auto p = _channel.lock();
+    try
+    {
+        // Resolve topology
+        m_topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
+        m_topo.init(_attachment->m_sTopologyFile);
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("new Topology is set to: " + _attachment->m_sTopologyFile, info, cmdSET_TOPOLOGY));
+    }
+    catch (exception& _e)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSET_TOPOLOGY));
+    }
+    p->pushMsg<cmdSHUTDOWN>();
     return true;
 }

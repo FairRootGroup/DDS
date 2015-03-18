@@ -25,35 +25,28 @@ namespace dds
 
         SSubmitCmd()
             : m_nRMSTypeCode(0)
-            , m_bXMLValidationDisabled(false)
         {
         }
         void normalizeToLocal() const;
         void normalizeToRemote() const;
         size_t size() const
         {
-            size_t s = (m_sTopoFile.size() + 1) + (m_sSSHCfgFile.size() + 1) + sizeof(m_nRMSTypeCode) +
-                       sizeof(m_bXMLValidationDisabled);
+            size_t s = (m_sSSHCfgFile.size() + 1) + sizeof(m_nRMSTypeCode);
             return s;
         }
         void _convertFromData(const MiscCommon::BYTEVector_t& _data);
         void _convertToData(MiscCommon::BYTEVector_t* _data) const;
         bool operator==(const SSubmitCmd& val) const
         {
-            return (m_sTopoFile == val.m_sTopoFile && m_sSSHCfgFile == val.m_sSSHCfgFile &&
-                    m_nRMSTypeCode == val.m_nRMSTypeCode && m_bXMLValidationDisabled == val.m_bXMLValidationDisabled);
+            return (m_sSSHCfgFile == val.m_sSSHCfgFile && m_nRMSTypeCode == val.m_nRMSTypeCode);
         }
 
         mutable uint16_t m_nRMSTypeCode;
-        mutable uint16_t m_bXMLValidationDisabled;
-        std::string m_sTopoFile;
         std::string m_sSSHCfgFile;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val)
     {
-        return _stream << "topo: " << val.m_sTopoFile << "; RMS type code: " << val.m_nRMSTypeCode
-                       << "; SSH Hosts config: " << val.m_sSSHCfgFile
-                       << "; XML validation disabled: " << val.m_bXMLValidationDisabled;
+        return _stream << "RMS type code: " << val.m_nRMSTypeCode << "; SSH Hosts config: " << val.m_sSSHCfgFile;
     }
     inline bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
     {

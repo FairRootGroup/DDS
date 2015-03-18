@@ -13,13 +13,11 @@ namespace inet = MiscCommon::INet;
 void SSubmitCmd::normalizeToLocal() const
 {
     m_nRMSTypeCode = inet::normalizeRead(m_nRMSTypeCode);
-    m_bXMLValidationDisabled = inet::normalizeRead(m_bXMLValidationDisabled);
 }
 
 void SSubmitCmd::normalizeToRemote() const
 {
     m_nRMSTypeCode = inet::normalizeWrite(m_nRMSTypeCode);
-    m_bXMLValidationDisabled = inet::normalizeWrite(m_bXMLValidationDisabled);
 }
 
 void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
@@ -33,7 +31,6 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
     size_t idx(0);
     inet::readData(&m_nRMSTypeCode, &_data, &idx);
-    inet::readData(&m_bXMLValidationDisabled, &_data, &idx);
 
     vector<string> v;
     MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
@@ -46,21 +43,17 @@ void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         advance(iter, tmp.size() + 1);
     }
 
-    // there are so far only 2 string fields in this msg container
-    if (v.size() != 2)
+    // there are so far only 1 string fields in this msg container
+    if (v.size() != 1)
         throw runtime_error("SubmitCmd: can't import data. Number of fields doesn't match.");
 
-    m_sTopoFile.assign(v[0]);
-    m_sSSHCfgFile.assign(v[1]);
+    m_sSSHCfgFile.assign(v[0]);
 }
 
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     inet::pushData(m_nRMSTypeCode, _data);
-    inet::pushData(m_bXMLValidationDisabled, _data);
 
-    copy(m_sTopoFile.begin(), m_sTopoFile.end(), back_inserter(*_data));
-    _data->push_back('\0');
     copy(m_sSSHCfgFile.begin(), m_sSSHCfgFile.end(), back_inserter(*_data));
     _data->push_back('\0');
 }

@@ -53,7 +53,6 @@ namespace dds
     {
         SOptions()
             : m_RMS(SSubmitCmd::UNKNOWN)
-            , m_bXMLValidationDisabled(false)
         {
         }
 
@@ -80,7 +79,6 @@ namespace dds
             {
                 LOG(MiscCommon::info) << "Loading options from: " << sCfgFile;
                 read_ini(sCfgFile, pt);
-                m_sTopoFile = pt.get<std::string>("dds-submit.TopoFile");
 
                 std::stringstream ssRMS;
                 ssRMS << pt.get<std::string>("dds-submit.RMS");
@@ -102,8 +100,6 @@ namespace dds
             using boost::property_tree::ptree;
             ptree pt;
 
-            pt.put("dds-submit.TopoFile", m_sTopoFile);
-
             std::stringstream ssRMS;
             ssRMS << m_RMS;
             pt.put("dds-submit.RMS", ssRMS.str());
@@ -114,16 +110,13 @@ namespace dds
             write_ini(sCfgFile, pt);
         }
 
-        std::string m_sTopoFile;
         SSubmitCmd::ERmsType m_RMS;
         std::string m_sSSHCfgFile;
-        bool m_bXMLValidationDisabled;
     } SOptions_t;
     //=============================================================================
     inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
     {
-        return _stream << "\nTopoFile: " << val.m_sTopoFile << "\nRMS: " << val.m_RMS << "\nSSHPlugIn-ConfigFile"
-                       << val.m_sSSHCfgFile;
+        return _stream << "\nRMS: " << val.m_RMS << "\nSSHPlugIn-ConfigFile" << val.m_sSSHCfgFile;
     }
     //=============================================================================
     inline void PrintVersion()
@@ -147,9 +140,6 @@ namespace dds
         options.add_options()("help,h", "Produce help message");
         options.add_options()("version,v", "Version information");
         options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
-        options.add_options()("topo,t",
-                              bpo::value<std::string>(&_options->m_sTopoFile),
-                              "A topology file. The option can only be used with the \"submit\" command");
         options.add_options()("rms,r",
                               bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
                               "Resource Management System. The option can only be used with the \"submit\" command");
@@ -157,9 +147,6 @@ namespace dds
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
                               "with the submit command when \'ssh\' is used as RMS");
-        options.add_options()("disable-xml-validation",
-                              bpo::bool_switch(&_options->m_bXMLValidationDisabled),
-                              "Explicitly disable validation of XML topology file.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -190,13 +177,6 @@ namespace dds
             return false;
         }
 
-        if (vm.count("rms") && !vm.count("topo"))
-        {
-            LOG(MiscCommon::log_stderr) << "specify a topo file"
-                                        << "\n\n" << options;
-            return false;
-        }
-
         if (vm.count("rms") && (_options->m_RMS == SSubmitCmd::SSH && !vm.count("ssh-rms-cfg")))
         {
             LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
@@ -206,9 +186,7 @@ namespace dds
         }
 
         // make absolute path
-        boost::filesystem::path pathTopoFile(_options->m_sTopoFile);
         boost::filesystem::path pathSSHCfgFile(_options->m_sSSHCfgFile);
-        _options->m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
         _options->m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
 
         // Save options to the config file
