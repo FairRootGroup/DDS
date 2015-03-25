@@ -100,7 +100,7 @@ TaskPtr_t CTopology::getTaskByHash(uint64_t _hash) const
 {
     auto it = m_hashToTaskMap.find(_hash);
     if (it == m_hashToTaskMap.end())
-        throw runtime_error("Can not find element with hash " + to_string(_hash));
+        throw runtime_error("Can not find task with hash " + to_string(_hash));
     return it->second;
 }
 
@@ -108,7 +108,7 @@ TaskCollectionPtr_t CTopology::getTaskCollectionByHash(uint64_t _hash) const
 {
     auto it = m_hashToTaskCollectionMap.find(_hash);
     if (it == m_hashToTaskCollectionMap.end())
-        throw runtime_error("Can not find element with hash " + to_string(_hash));
+        throw runtime_error("Can not find task collection with hash " + to_string(_hash));
     return it->second;
 }
 
@@ -116,7 +116,7 @@ const std::vector<uint64_t>& CTopology::getTaskHashesByTaskCollectionHash(uint64
 {
     auto it = m_collectionHashToTaskHashesMap.find(_hash);
     if (it == m_collectionHashToTaskHashesMap.end())
-        throw runtime_error("Can not find element with hash " + to_string(_hash));
+        throw runtime_error("Can not find task collection with hash " + to_string(_hash));
     return it->second;
 }
 
