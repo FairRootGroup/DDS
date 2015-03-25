@@ -27,11 +27,9 @@ namespace dds
       public:
         int putValue(const std::string& _key, const std::string& _value);
         void getValues(const std::string& _key, valuesMap_t* _values);
-        connection_t subscribe(signal_t::slot_function_type _subscriber);
-        void unsubscribe();
 
-      public:
-        connection_t m_signalConnection;
+        void subscribe(signal_t::slot_function_type _subscriber);
+        void unsubscribe();
     };
 }
 

@@ -34,23 +34,17 @@ void CKeyValue::getValues(const std::string& _key, valuesMap_t* _values)
     CKeyValueGuard::instance().getValues(_key, _values);
 }
 
-CKeyValue::connection_t CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
+void CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
 {
     CKeyValueGuard::instance().initLock();
     CKeyValueGuard::instance().initAgentConnection();
     LOG(info) << "User process is waiting for property keys updates.";
 
-    unsubscribe();
-    m_signalConnection = CKeyValueGuard::instance().connect(_subscriber);
-
-    return m_signalConnection;
+    connection_t connection = CKeyValueGuard::instance().connect(_subscriber);
 }
 
 void CKeyValue::unsubscribe()
 {
-    if (!m_signalConnection.connected())
-        return;
-
     LOG(info) << "unsubscribing from key notification events.";
-    m_signalConnection.disconnect();
+    CKeyValueGuard::instance().disconnect();
 }

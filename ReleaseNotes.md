@@ -28,6 +28,7 @@ Modified: Optimized key-value persistence to shared memory.
 
 ### dds-key-value
 Fixed: stability improvements.    
+Added: Multiple subscribers for key-value notifications. (GH-70)   
 
 ## v0.8 (2015-02-17)
 ### DDS common

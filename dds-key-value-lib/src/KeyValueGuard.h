@@ -62,6 +62,10 @@ namespace dds
         {
             return m_syncHelper.m_updateSig.connect(_subscriber);
         }
+        void disconnect()
+        {
+            return m_syncHelper.m_updateSig.disconnect_all_slots();
+        }
         static void clean();
 
         // User API
