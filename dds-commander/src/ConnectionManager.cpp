@@ -24,7 +24,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                        boost::asio::ip::tcp::endpoint& _endpoint)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_io_service, _endpoint)
 {
-    // Register the user task's watchdog
     CMonitoringThread::instance().registerCallbackFunction(
         [this]() -> bool
         {
