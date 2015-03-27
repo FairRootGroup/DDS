@@ -873,6 +873,9 @@ namespace dds
         void onDissconnect()
         {
             LOG(MiscCommon::debug) << "The session was disconnected by the remote end: " << remoteEndIDString();
+            // stopping the channel
+            stop();
+
             // give a chance to children to execute something
             this->onEvent(EChannelEvents::OnRemoteEndDissconnected);
 
