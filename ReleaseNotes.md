@@ -23,7 +23,8 @@ Modified: removed "--topo" parameter. (GH-56)
 Modified: removed "--disable-xml-validation" parameter. (GH-56)   
 
 ### dds-agent
-Fixed: reconnect to DDS commander if connection was dropped. (GH-77)  
+Fixed: reconnect to DDS commander if connection was dropped. (GH-77)   
+Fixed: after reconnection to commander server key update won't be propagate from the effected agent. (GH-81)    
 Modified: Optimized key-value persistence to shared memory.   
 
 ### dds-key-value
