@@ -290,7 +290,7 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
     }
     catch (exception& ex)
     {
-        LOG(error) << "key=" << _key << ": " << ex.what();
+        LOG(warning) << "key=" << _key << ": " << ex.what();
         return;
     }
     LOG(debug) << "CKeyValueGuard::getValues key=" << _key << " done";
