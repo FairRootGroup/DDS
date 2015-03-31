@@ -19,7 +19,8 @@
 
 namespace dds
 {
-    class CConnectionManager : public CConnectionManagerImpl<CAgentChannel, CConnectionManager>
+    class CConnectionManager : public CConnectionManagerImpl<CAgentChannel, CConnectionManager>,
+                               public std::enable_shared_from_this<CConnectionManager>
     {
       public:
         CConnectionManager(const SOptions_t& _options,
@@ -30,9 +31,7 @@ namespace dds
 
       public:
         void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
-        void _start()
-        {
-        }
+        void _start();
         void _stop()
         {
         }

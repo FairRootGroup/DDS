@@ -68,7 +68,7 @@ namespace dds
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()
                                                     {
-                                                        LOG(MiscCommon::info) << "Idle callback called";
+                                                        LOG(MiscCommon::info) << "Idle callback called.";
                                                     });
                 m_acceptor.listen();
 

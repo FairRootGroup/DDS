@@ -5,9 +5,10 @@
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
 Added: accumulated push message function. (GH-64)   
 Added: include std c++ lib into worker package. (GH-61)   
-Fixed: fix implementation of cmdSHUTDOWN. (ПР-65)   
-Fixed: remove shared memory on exit.
-
+Added: nicer logging on monitoring thread actions. (GH-80)     
+Fixed: fix implementation of cmdSHUTDOWN. (GH-65)   
+Fixed: remove shared memory on exit.    
+Fixed: fix monitoring thread to prevent breaks if custom callbacks throw exceptions. (GH-80)   
 
 ### dds-commander
 Added: Since dds-commander is a daemon and doesn't have a console, it now has a dedicated log file for its std-out/-err called "dds-commander.out.log". File is located in the log directory.   

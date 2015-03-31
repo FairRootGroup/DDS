@@ -107,8 +107,8 @@ int main(int argc, char* argv[])
 
             tcp::endpoint endpoint(tcp::v4(), nSrvPort);
 
-            CConnectionManager server(options, io_service, endpoint);
-            server.start();
+            shared_ptr<CConnectionManager> server = make_shared<CConnectionManager>(options, io_service, endpoint);
+            server->start();
         }
         catch (exception& e)
         {
@@ -121,6 +121,8 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
     }
+
+    LOG(info) << "DDS commander server is Done. Bye, Bye!";
 
     return EXIT_SUCCESS;
 }

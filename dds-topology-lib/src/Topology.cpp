@@ -16,12 +16,7 @@ using namespace dds;
 using namespace boost;
 
 CTopology::CTopology()
-    : m_main()
-    , m_topoIndexToTopoElementMap()
-    , m_hashToTaskMap()
-    , m_hashToTaskCollectionMap()
-    , m_collectionHashToTaskHashesMap()
-    , m_counterMap()
+    : m_main(nullptr)
     , m_bXMLValidationDisabled(false)
 {
 }

@@ -24,8 +24,17 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
                                        boost::asio::ip::tcp::endpoint& _endpoint)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_io_service, _endpoint)
 {
+}
+
+CConnectionManager::~CConnectionManager()
+{
+}
+
+void CConnectionManager::_start()
+{
+    auto self(this->shared_from_this());
     CMonitoringThread::instance().registerCallbackFunction(
-        [this]() -> bool
+        [this, self]() -> bool
         {
             try
             {
@@ -68,10 +77,6 @@ CConnectionManager::CConnectionManager(const SOptions_t& _options,
             return true;
         },
         chrono::seconds(60));
-}
-
-CConnectionManager::~CConnectionManager()
-{
 }
 
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)

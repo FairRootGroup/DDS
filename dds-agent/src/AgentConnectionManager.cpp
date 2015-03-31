@@ -371,7 +371,6 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     LOG(info) << "Starting the watchdog for user task pid = " << _pid;
 
     auto self(shared_from_this());
-
     CMonitoringThread::instance().registerCallbackFunction(
         [this, self, _pid]() -> bool
         {

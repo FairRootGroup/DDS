@@ -22,7 +22,7 @@ namespace dds
     class CMonitoringThread
     {
         typedef std::function<bool()> callbackFunction_t;
-        // the function to call, the interval (in sec) the fucntion should be called at
+        // the function to call, the interval (in sec) the function should be called at
         typedef std::pair<callbackFunction_t, std::chrono::seconds> callbackValue_t;
 
       private:
@@ -61,10 +61,12 @@ namespace dds
                         std::chrono::seconds secInterval(0);
                         while (true)
                         {
-
+                            // handle exceptions of the custom actions separately to prevent breaks of the
+                            // monitoring thread
+                            try
                             {
                                 std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
-                                // Call registred callback functions
+                                // Call registered callback functions
                                 // We use Erase-remove idiom to execute callback and remove expired if needed.
                                 m_registeredCallbackFunctions.erase(
                                     remove_if(m_registeredCallbackFunctions.begin(),
@@ -90,6 +92,14 @@ namespace dds
                                               }),
                                     m_registeredCallbackFunctions.end());
                             }
+                            catch (std::exception& _e)
+                            {
+                                LOG(MiscCommon::error) << "MonitoringThread exception on custom actions: " << _e.what();
+                            }
+                            catch (...)
+                            {
+                                // Ignore any exception here to let the monitoring thread continue whatever it takes
+                            }
 
                             std::chrono::seconds idleTime;
                             // Check if process is idle.
@@ -104,19 +114,32 @@ namespace dds
                             {
                                 // First call idle callback
                                 LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                      << " sec. Call idle callback.";
-                                _idleCallback();
+                                                      << " sec. Call idle callback and wait "
+                                                      << std::chrono::duration<int>(WAITING_TIME).count() << "s";
+                                // handle exceptions of the custom idle callback separately to prevent breaks of the
+                                // monitoring thread
+                                try
+                                {
+                                    _idleCallback();
+                                }
+                                catch (std::exception& _e)
+                                {
+                                    LOG(MiscCommon::error)
+                                        << "MonitoringThread exception on custom idle function: " << _e.what();
+                                }
+                                catch (...)
+                                {
+                                    // Ignore any exception here to let the monitoring thread continue whatever it takes
+                                }
                                 std::this_thread::sleep_for(WAITING_TIME);
 
                                 // Call terminate
-                                LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                      << " sec. Terminate the process.";
-                                std::terminate();
+                                LOG(MiscCommon::info) << "Sending SIGTERM to this process...";
+                                std::raise(SIGTERM);
                                 std::this_thread::sleep_for(WAITING_TIME);
 
                                 // Kill process
-                                LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                      << " sec. Kill the process.";
+                                LOG(MiscCommon::info) << "The process still exists. Killing the process...";
                                 killProcess();
                             }
 
