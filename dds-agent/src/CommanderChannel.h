@@ -69,6 +69,8 @@ namespace dds
         boost::uuids::uuid m_id;
         std::string m_sUsrExe;
         std::string m_sTaskId;
+        size_t m_taskIndex;
+        size_t m_collectionIndex;
         handlerOnNewUserTaks_t m_onNewUserTaskCallback;
         uint16_t m_connectionAttempts;
     };

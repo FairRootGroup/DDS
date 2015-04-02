@@ -90,7 +90,7 @@ void CSSHScheduler::scheduleTasks(const dds::CTopology& _topology,
                                   const set<uint64_t>& _tasksInCollections,
                                   bool useRequirement)
 {
-    CTopology::TaskIteratorPair_t tasks = _topology.getTaskIterator();
+    CTopology::TaskInfoIteratorPair_t tasks = _topology.getTaskInfoIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
     {
         uint64_t id = it->first;
@@ -103,7 +103,7 @@ void CSSHScheduler::scheduleTasks(const dds::CTopology& _topology,
         if (_scheduledTasks.find(id) != _scheduledTasks.end())
             continue;
 
-        TaskPtr_t task = it->second;
+        TaskPtr_t task = it->second.m_task;
 
         // First path only for tasks with requirements;
         // Second path for tasks without requirements.
@@ -126,6 +126,8 @@ void CSSHScheduler::scheduleTasks(const dds::CTopology& _topology,
                     schedule.m_channel = channel;
                     schedule.m_task = task;
                     schedule.m_taskID = id;
+                    schedule.m_taskIndex = it->second.m_taskIndex;
+                    schedule.m_collectionIndex = it->second.m_collectionIndex;
                     m_schedule.push_back(schedule);
 
                     v.second.pop_back();
@@ -175,15 +177,17 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                     const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(id);
                     for (auto hash : taskHashes)
                     {
-                        TaskPtr_t task = _topology.getTaskByHash(hash);
+                        const STaskInfo& info = _topology.getTaskInfoByHash(hash);
 
                         size_t channelIndex = v.second.back();
                         const auto& channel = _channels[channelIndex];
 
                         SSchedule schedule;
                         schedule.m_channel = channel;
-                        schedule.m_task = task;
+                        schedule.m_task = info.m_task;
                         schedule.m_taskID = hash;
+                        schedule.m_taskIndex = info.m_taskIndex;
+                        schedule.m_collectionIndex = info.m_collectionIndex;
                         m_schedule.push_back(schedule);
 
                         v.second.pop_back();

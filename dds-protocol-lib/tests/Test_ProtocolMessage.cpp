@@ -323,8 +323,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     SAssignUserTaskCmd src;
     src.m_sID = "121";
     src.m_sExeFile = "test.exe -l -n --test";
+    src.m_taskIndex = 99;
+    src.m_collectionIndex = 77;
     // expected attachment size
-    const unsigned int cmdSize = src.m_sExeFile.size() + 1 + src.m_sID.size() + 1;
+    const unsigned int cmdSize = src.m_sExeFile.size() + 1 + src.m_sID.size() + 1 + sizeof(uint32_t) + sizeof(uint32_t);
     MiscCommon::BYTEVector_t data;
     src.convertToData(&data);
     CProtocolMessage msg_src;

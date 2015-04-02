@@ -35,42 +35,55 @@ target_include_directories(dds-topology-lib-tests
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-# Copy schema file and test XML files to the build directory.
-#add_custom_target(copy_to_build ALL
-#            COMMAND ${CMAKE_COMMAND} -E copy ${TOPOLOGY_SCHEMA_PATH} "${dds-topology-lib-tests_BINARY_DIR}"
-#            COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1.xml "${dds-topology-lib-tests_BINARY_DIR}"
-#            COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_2.xml "${dds-topology-lib-tests_BINARY_DIR}"
-#            COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_3.xml "${dds-topology-lib-tests_BINARY_DIR}"
-#            COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_4.xml "${dds-topology-lib-tests_BINARY_DIR}"
-#            COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_5.xml "${dds-topology-lib-tests_BINARY_DIR}"
-#			COMMAND ${CMAKE_COMMAND} -E copy ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_6.xml "${dds-topology-lib-tests_BINARY_DIR}"
-#            COMMENT "Copying XML Schema file and test topology XML to build directory."
-#            VERBATIM)
-            
+##################################################################
+# task-test_index.cpp
+##################################################################
+
+set( TEST_INDEX_SOURCE_FILES
+	./task-test_index.cpp
+)
+
+add_executable(task-test_index ${TEST_INDEX_SOURCE_FILES})
+
+target_link_libraries (
+    task-test_index
+    dds-key-value-lib
+)
+
+target_include_directories(task-test_index
+PRIVATE
+     $<TARGET_PROPERTY:dds-key-value-lib,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+install(TARGETS task-test_index DESTINATION tests)
+
             
 if( BUILD_TESTS )
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_2.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_3.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_4.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_5.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_6.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_8.xml DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_1.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_2.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_3.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_4.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_5.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_1.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_2.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_3.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_4.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_5.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_1.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_2.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_3.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_4.txt DESTINATION tests)
-  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_5.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_2.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_3.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_4.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_5.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_6.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_8.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_1.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_2.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_3.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_4.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_iterators_5.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_1.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_2.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_3.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_4.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1_maps_5.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_1.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_2.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_3.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_4.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_7_maps_5.txt DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/index_test_hosts.cfg DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/index_test.xml DESTINATION tests)
+  install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/index_test_result.txt DESTINATION tests)
+  install(PROGRAMS ${dds-topology-lib-tests_SOURCE_DIR}/run_test_index.sh DESTINATION tests)
 endif( BUILD_TESTS )
-

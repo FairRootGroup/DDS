@@ -20,6 +20,8 @@ Added: output time spent on activation. (GH-62)
 Added: the command learned "--set" parameter, which is used to set up topology for the current deployment. (GH-56)   
 Added: the command learned "--disiable-validation", which is used to disable topology validation. It can be used only together with "--set". (GH-56)   
 Added: scheduling and requirements for the collections. (GH-76)    
+Added: index for tasks and collections which are in groups. (GH-72)   
+Added: new test for task and collection indices. (GH-72)
 
 ### dds-submit
 Modified: removed "--topo" parameter. (GH-56)   

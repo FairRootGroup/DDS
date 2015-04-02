@@ -1,4 +1,4 @@
-main/collection1_1 main/collection1
+main/collection1_0 main/collection1
+main/group1/collection1_0 main/group1/collection1
 main/group1/collection1_1 main/group1/collection1
 main/group1/collection1_2 main/group1/collection1
-main/group1/collection1_3 main/group1/collection1

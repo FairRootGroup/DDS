@@ -23,8 +23,19 @@ namespace dds
       public:
         struct SSchedule
         {
+            SSchedule()
+                : m_taskID(0)
+                , m_task(nullptr)
+                , m_taskIndex(0)
+                , m_collectionIndex(std::numeric_limits<uint32_t>::max())
+                , m_channel()
+            {
+            }
+
             uint64_t m_taskID;
             TaskPtr_t m_task;
+            size_t m_taskIndex;
+            size_t m_collectionIndex;
             CAgentChannel::weakConnectionPtr_t m_channel;
         };
 

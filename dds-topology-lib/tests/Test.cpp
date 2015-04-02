@@ -34,6 +34,17 @@ using namespace dds;
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
 template <class T>
+void check_topology_map_task(const T& _map, output_test_stream& _output)
+{
+    for (const auto& v : _map)
+    {
+        _output << v.first << " " << v.second.m_task->getPath() << "\n";
+        // std::cout << v.first << " " << v.second.m_task->getPath() << "\n";
+    }
+    BOOST_CHECK(_output.match_pattern());
+}
+
+template <class T>
 void check_topology_map(const T& _map, output_test_stream& _output)
 {
     for (const auto& v : _map)
@@ -59,7 +70,7 @@ void check_topology_maps(const string& _topoName)
     BOOST_CHECK(output1.match_pattern());
 
     output_test_stream output2(_topoName + "_maps_2.txt", true);
-    check_topology_map(topology.getHashToTaskMap(), output2);
+    check_topology_map_task(topology.getHashToTaskInfoMap(), output2);
 
     output_test_stream output3(_topoName + "_maps_3.txt", true);
     check_topology_map(topology.getHashToTaskCollectionMap(), output3);
@@ -78,7 +89,18 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_maps)
 }
 
 template <class T>
-void check_topology_iterator(const T& _iterator, output_test_stream& _output)
+void check_topology_iterator_task(const T& _iterator, output_test_stream& _output)
+{
+    for (auto it = _iterator.first; it != _iterator.second; it++)
+    {
+        _output << it->first << " " << it->second.m_task->getPath() << "\n";
+        // std::cout << it->first << " " << it->second.m_task->getPath() << "\n";
+    }
+    BOOST_CHECK(_output.match_pattern());
+}
+
+template <class T>
+void check_topology_iterator_collection(const T& _iterator, output_test_stream& _output)
 {
     for (auto it = _iterator.first; it != _iterator.second; it++)
     {
@@ -95,16 +117,16 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     // Task iterators
     output_test_stream output1("topology_test_1_iterators_1.txt", true);
-    CTopology::TaskIteratorPair_t taskIt1 =
-        topology.getTaskIterator([](CTopology::TaskIterator_t::value_type value) -> bool
-                                 {
-                                     TaskPtr_t task = value.second;
-                                     return (task->getId() == "task1");
-                                 });
-    check_topology_iterator(taskIt1, output1);
+    CTopology::TaskInfoIteratorPair_t taskIt1 =
+        topology.getTaskInfoIterator([](const CTopology::TaskInfoIterator_t::value_type& value) -> bool
+                                     {
+                                         TaskPtr_t task = value.second.m_task;
+                                         return (task->getId() == "task1");
+                                     });
+    check_topology_iterator_task(taskIt1, output1);
 
     output_test_stream output2("topology_test_1_iterators_2.txt", true);
-    check_topology_iterator(topology.getTaskIterator(), output2);
+    check_topology_iterator_task(topology.getTaskInfoIterator(), output2);
 
     // Task collection iterators
     output_test_stream output3("topology_test_1_iterators_3.txt", true);
@@ -114,14 +136,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
                                                TaskCollectionPtr_t tc = value.second;
                                                return (tc->getId() == "collection1");
                                            });
-    check_topology_iterator(tcIt1, output3);
+    check_topology_iterator_collection(tcIt1, output3);
 
     output_test_stream output4("topology_test_1_iterators_4.txt", true);
-    check_topology_iterator(topology.getTaskCollectionIterator(), output4);
+    check_topology_iterator_collection(topology.getTaskCollectionIterator(), output4);
 
     // Task iterators for property
     output_test_stream output5("topology_test_1_iterators_5.txt", true);
-    check_topology_iterator(topology.getTaskIteratorForPropertyId("property4"), output5);
+    check_topology_iterator_task(topology.getTaskInfoIteratorForPropertyId("property4"), output5);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)

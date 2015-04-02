@@ -21,20 +21,35 @@
 
 namespace dds
 {
+    struct STaskInfo
+    {
+        STaskInfo()
+            : m_task()
+            , m_taskIndex(0)
+            , m_collectionIndex(std::numeric_limits<uint32_t>::max())
+        {
+        }
+        TaskPtr_t m_task;
+        size_t m_taskIndex;
+        size_t m_collectionIndex;
+    };
+
     class CTopology
     {
       public:
         /// Note that hash is of type uint_64.
         /// Hash is calculated using CRC64 algorithm.
-        typedef std::map<uint64_t, TaskPtr_t> HashToTaskMap_t;
+        typedef std::map<uint64_t, STaskInfo> HashToTaskInfoMap_t;
+        typedef std::function<bool(std::pair<uint64_t, const STaskInfo&>)> TaskInfoCondition_t;
+        typedef boost::filter_iterator<TaskInfoCondition_t, HashToTaskInfoMap_t::const_iterator> TaskInfoIterator_t;
+        typedef std::pair<TaskInfoIterator_t, TaskInfoIterator_t> TaskInfoIteratorPair_t;
+
         typedef std::map<uint64_t, TaskCollectionPtr_t> HashToTaskCollectionMap_t;
-        typedef std::function<bool(std::pair<uint64_t, TaskPtr_t>)> TaskCondition_t;
         typedef std::function<bool(std::pair<uint64_t, TaskCollectionPtr_t>)> TaskCollectionCondition_t;
-        typedef boost::filter_iterator<TaskCondition_t, HashToTaskMap_t::const_iterator> TaskIterator_t;
-        typedef std::pair<TaskIterator_t, TaskIterator_t> TaskIteratorPair_t;
         typedef boost::filter_iterator<TaskCollectionCondition_t, HashToTaskCollectionMap_t::const_iterator>
             TaskCollectionIterator_t;
         typedef std::pair<TaskCollectionIterator_t, TaskCollectionIterator_t> TaskCollectionIteratorPair_t;
+
         typedef std::map<std::string, TaskPtr_t> HashPathToTaskMap_t;
         typedef std::map<std::string, TaskCollectionPtr_t> HashPathToTaskCollectionMap_t;
         typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
@@ -56,20 +71,21 @@ namespace dds
         TaskGroupPtr_t getMainGroup() const;
         TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
         TaskPtr_t getTaskByHash(uint64_t _hash) const;
+        const STaskInfo& getTaskInfoByHash(uint64_t _hash) const;
         TaskCollectionPtr_t getTaskCollectionByHash(uint64_t _hash) const;
         const std::vector<uint64_t>& getTaskHashesByTaskCollectionHash(uint64_t _hash) const;
 
         /// Accessors to internal data structures. Used for unit tests.
-        const TopoIndexToTopoElementMap_t getTopoIndexToTopoElementMap() const;
-        const HashToTaskMap_t getHashToTaskMap() const;
-        const HashToTaskCollectionMap_t getHashToTaskCollectionMap() const;
+        const TopoIndexToTopoElementMap_t& getTopoIndexToTopoElementMap() const;
+        const HashToTaskInfoMap_t& getHashToTaskInfoMap() const;
+        const HashToTaskCollectionMap_t& getHashToTaskCollectionMap() const;
         const HashPathToTaskMap_t& getHashPathToTaskMap() const;
         const HashPathToTaskCollectionMap_t& getHashPathToTaskCollectionMap() const;
 
         /// Iterators
-        TaskIteratorPair_t getTaskIterator(TaskCondition_t _condition = nullptr) const;
+        TaskInfoIteratorPair_t getTaskInfoIterator(TaskInfoCondition_t _condition = nullptr) const;
         TaskCollectionIteratorPair_t getTaskCollectionIterator(TaskCollectionCondition_t _condition = nullptr) const;
-        TaskIteratorPair_t getTaskIteratorForPropertyId(const std::string& _propertyId) const;
+        TaskInfoIteratorPair_t getTaskInfoIteratorForPropertyId(const std::string& _propertyId) const;
 
         /// \brief Returns string representation of an object.
         /// \return String representation of an object.
@@ -91,8 +107,9 @@ namespace dds
 
         TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
 
-        HashToTaskMap_t m_hashToTaskMap;
+        // HashToTaskMap_t m_hashToTaskMap;
         HashToTaskCollectionMap_t m_hashToTaskCollectionMap;
+        HashToTaskInfoMap_t m_hashToTaskInfoMap;
         std::map<std::string, size_t> m_counterMap;
         std::string m_currentTaskCollectionHashPath;
         uint64_t m_currentTaskCollectionCrc;

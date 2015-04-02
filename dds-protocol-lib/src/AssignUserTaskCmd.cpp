@@ -12,16 +12,25 @@ namespace inet = MiscCommon::INet;
 
 void SAssignUserTaskCmd::normalizeToLocal() const
 {
+    m_taskIndex = inet::normalizeRead(m_taskIndex);
+    m_collectionIndex = inet::normalizeRead(m_collectionIndex);
 }
 
 void SAssignUserTaskCmd::normalizeToRemote() const
 {
+    m_taskIndex = inet::normalizeWrite(m_taskIndex);
+    m_collectionIndex = inet::normalizeWrite(m_collectionIndex);
 }
 
 void SAssignUserTaskCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
+    size_t idx(0);
+    inet::readData(&m_taskIndex, &_data, &idx);
+    inet::readData(&m_collectionIndex, &_data, &idx);
+
     vector<string> v;
     MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
+    advance(iter, idx);
     MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
     for (; iter != iter_end;)
     {
@@ -40,6 +49,9 @@ void SAssignUserTaskCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 
 void SAssignUserTaskCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
+    inet::pushData(m_taskIndex, _data);
+    inet::pushData(m_collectionIndex, _data);
+
     copy(m_sExeFile.begin(), m_sExeFile.end(), back_inserter(*_data));
     _data->push_back('\0');
 

@@ -20,6 +20,7 @@
 #pragma clang diagnostic pop
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 using namespace MiscCommon;
 using namespace dds;
@@ -31,6 +32,8 @@ const uint16_t g_MaxConnectionAttempts = 5;
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
     , m_id()
+    , m_taskIndex(0)
+    , m_collectionIndex(std::numeric_limits<uint32_t>::max())
     , m_connectionAttempts(1)
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
@@ -318,6 +321,14 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     LOG(info) << "Received a user task assignment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
     m_sTaskId = _attachment->m_sID;
+    m_taskIndex = _attachment->m_taskIndex;
+    m_collectionIndex = _attachment->m_collectionIndex;
+
+    // Replace all %taskIndex% and %collectionIndex% in executable path with their values.
+    boost::algorithm::replace_all(m_sUsrExe, "%taskIndex%", to_string(m_taskIndex));
+    if (m_collectionIndex != std::numeric_limits<uint32_t>::max())
+        boost::algorithm::replace_all(m_sUsrExe, "%collectionIndex%", to_string(m_collectionIndex));
+
     return true;
 }
 
@@ -341,9 +352,15 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     {
         // set task's environment
         LOG(info) << "Setting up task's environment: "
-                  << "DDS_TASK_ID:" << m_sTaskId;
+                  << "DDS_TASK_ID:" << m_sTaskId << " DDS_TASK_INDEX:" << m_taskIndex
+                  << " DDS_COLLECTION_INDEX:" << m_collectionIndex;
         if (::setenv("DDS_TASK_ID", m_sTaskId.c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
+        if (::setenv("DDS_TASK_INDEX", to_string(m_taskIndex).c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_TASK_INDEX");
+        if (m_collectionIndex != std::numeric_limits<uint32_t>::max())
+            if (::setenv("DDS_COLLECTION_INDEX", to_string(m_collectionIndex).c_str(), 1) == -1)
+                throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_INDEX");
 
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;

@@ -415,6 +415,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
             // Set Task ID
             msg_cmd.m_sID = to_string(sch.m_taskID);
+            msg_cmd.m_taskIndex = sch.m_taskIndex;
+            msg_cmd.m_collectionIndex = sch.m_collectionIndex;
 
             if (sch.m_channel.expired())
                 continue;
@@ -733,7 +735,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         propertyID = propertyKey.substr(0, pos);
     }
 
-    CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(propertyID);
+    CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
 
     for (auto it = taskIt.first; it != taskIt.second; ++it)
     {
@@ -817,7 +819,7 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
     const TopoPropertyPtrVector_t& properties = task->getProperties();
     for (const auto& property : properties)
     {
-        CTopology::TaskIteratorPair_t taskIt = m_topo.getTaskIteratorForPropertyId(property->getId());
+        CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(property->getId());
 
         for (auto it = taskIt.first; it != taskIt.second; ++it)
         {

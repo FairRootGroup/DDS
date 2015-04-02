@@ -1,0 +1,54 @@
+<topology id="myTopology">
+	
+	<property id="IndexInfo" />
+	
+  	<decltask id="TestTask">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type task --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
+		<properties>
+			<id access="write">IndexInfo</id>
+		</properties>
+	</decltask>
+	
+  	<decltask id="TestCollectionTask">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type collectionTask --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
+		<properties>
+			<id access="write">IndexInfo</id>
+		</properties>
+	</decltask>
+	
+  	<decltask id="TestGroupTask">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type groupTask --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
+		<properties>
+			<id access="write">IndexInfo</id>
+		</properties>
+	</decltask>
+	
+  	<decltask id="TestGroupCollectionTask">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type groupCollectionTask --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
+		<properties>
+			<id access="write">IndexInfo</id>
+		</properties>
+	</decltask>
+	
+	<declcollection id="CollectionTask">
+		<tasks>
+			<id>TestCollectionTask</id>
+		</tasks>
+	</declcollection>
+	
+	<declcollection id="GroupCollectionTask">
+		<tasks>
+			<id>TestGroupCollectionTask</id>
+		</tasks>
+	</declcollection>
+	
+	<main id="main">
+		<task>TestTask</task>
+		<collection>CollectionTask</collection>
+		<group id="group1" n="3">
+			<task>TestGroupTask</task>
+			<collection>GroupCollectionTask</collection>
+		</group>
+	</main>
+	
+</topology>
