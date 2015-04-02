@@ -28,6 +28,7 @@
 
 // STD
 #include <fstream>
+#include <ostream>
 
 // DDS
 #include "def.h"
@@ -35,9 +36,12 @@
 #include "SysHelper.h"
 
 // Main macro to be used for logging in DDS
-// Example: LOG(trace) << "My message";
+// Example: LOG(info) << "My message";
 #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
 // Convenience functions
+#define P_H BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::proto_high)
+#define P_M BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::proto_mid)
+#define P_L BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::proto_low)
 #define DBG BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::debug)
 #define INF BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::info)
 #define WRN BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::warning)
@@ -49,19 +53,6 @@
 
 namespace MiscCommon
 {
-    /// The operator puts a human-friendly representation of the severity level to the stream
-    inline std::ostream& operator<<(std::ostream& strm, ELogSeverityLevel level)
-    {
-        static const char* strings[] = { "DBG", "INF", "WRN", "ERR", "FAT", "COUT", "COUT", "CERR" };
-
-        if (static_cast<std::size_t>(level) < sizeof(strings) / sizeof(*strings))
-            strm << strings[level];
-        else
-            strm << static_cast<int>(level);
-
-        return strm;
-    }
-
     BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", ELogSeverityLevel)
 
     class Logger
@@ -143,7 +134,8 @@ namespace MiscCommon
             add_common_attributes();
             core::get()->add_global_attribute("Process", attributes::current_process_name());
 
-            LOG(debug) << "Log engine is initialized";
+            LOG(info) << "Log engine is initialized with severety \""
+                      << userDefaults.getOptions().m_server.m_logSeverityLevel << "\"";
         }
 
       private:

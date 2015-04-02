@@ -53,9 +53,9 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         "server.log_dir",
         boost::program_options::value<string>(&m_options.m_server.m_logDir)->default_value("$HOME/.DDS/log"),
         "");
-    config_file_options.add_options()(
-        "server.log_severity_level",
-        boost::program_options::value<unsigned int>(&m_options.m_server.m_logSeverityLevel)->default_value(1));
+    config_file_options.add_options()("server.log_severity_level",
+                                      boost::program_options::value<MiscCommon::ELogSeverityLevel>(
+                                          &m_options.m_server.m_logSeverityLevel)->default_value(MiscCommon::info));
     config_file_options.add_options()(
         "server.log_rotation_size",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_logRotationSize)->default_value(10));
@@ -117,6 +117,18 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
             << "sandbox_dir=" << ud.getValueForKey("server.sandbox_dir") << "\n"
             << "log_dir=" << ud.getValueForKey("server.log_dir") << "\n"
+            << "#\n"
+            << "# Log severity can be one of the following values:\n"
+            << "# p_l, p_m, p_h, dbg, inf, wrn, err, fat\n"
+            << "# p_l - protocol low level events and higher\n"
+            << "# p_m - protocol middle level events and higher\n"
+            << "# p_h - protocol high level events and higher\n"
+            << "# dbg - general debug events and higher\n"
+            << "# inf - info events and higher\n"
+            << "# wrn - warning events and higher\n"
+            << "# err - error events and higher\n"
+            << "# fat - fatal errors and higher\n"
+            << "#\n"
             << "log_severity_level=" << ud.getValueForKey("server.log_severity_level") << "\n"
             << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
             << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
@@ -125,8 +137,6 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n";
 }
 
-// TODO: we use boost 1.32. This is the only method I found to convert boost::any to string.
-// In the next version of boost its solved.
 string CUserDefaults::convertAnyToString(const boost::any& _any) const
 {
     if (_any.type() == typeid(string))
@@ -135,18 +145,16 @@ string CUserDefaults::convertAnyToString(const boost::any& _any) const
     ostringstream ss;
     if (_any.type() == typeid(int))
         ss << boost::any_cast<int>(_any);
-
-    if (_any.type() == typeid(unsigned int))
+    else if (_any.type() == typeid(unsigned int))
         ss << boost::any_cast<unsigned int>(_any);
-
-    if (_any.type() == typeid(unsigned char))
+    else if (_any.type() == typeid(unsigned char))
         ss << boost::any_cast<unsigned char>(_any);
-
-    if (_any.type() == typeid(unsigned short))
+    else if (_any.type() == typeid(unsigned short))
         ss << boost::any_cast<unsigned short>(_any);
-
-    if (_any.type() == typeid(bool))
+    else if (_any.type() == typeid(bool))
         ss << boost::any_cast<bool>(_any);
+    else if (_any.type() == typeid(ELogSeverityLevel))
+        ss << reinterpret_cast<ELogSeverityLevel>(boost::any_cast<ELogSeverityLevel>(_any));
 
     return ss.str();
 }

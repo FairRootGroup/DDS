@@ -28,6 +28,8 @@ target_link_libraries (
 target_include_directories(dds-protocol-lib-ProtocolMessage-tests
     PRIVATE
         $<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-protocol-lib-ProtocolMessage-tests DESTINATION tests)

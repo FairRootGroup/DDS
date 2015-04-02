@@ -18,13 +18,13 @@ using namespace dds;
 
 int main(int argc, char* argv[])
 {
-    Logger::instance().init(); // Initialize log
-    CUserDefaults::instance(); // Initialize user defaults
-
     // Command line parser
     SOptions_t options;
     try
     {
+        Logger::instance().init(); // Initialize log
+        CUserDefaults::instance(); // Initialize user defaults
+
         if (!ParseCmdLine(argc, argv, &options))
             return EXIT_SUCCESS;
     }

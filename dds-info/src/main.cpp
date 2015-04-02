@@ -20,18 +20,19 @@ using boost::asio::ip::tcp;
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    Logger::instance().init(); // Initialize log
-    CUserDefaults::instance(); // Initialize user defaults
-
-    vector<std::string> arguments(argv + 1, argv + argc);
-    ostringstream ss;
-    copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-    LOG(info) << "Starting with arguments: " << ss.str();
-
     // Command line parser
     SOptions_t options;
+
     try
     {
+        Logger::instance().init(); // Initialize log
+        CUserDefaults::instance(); // Initialize user defaults
+
+        vector<std::string> arguments(argv + 1, argv + argc);
+        ostringstream ss;
+        copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
+        LOG(info) << "Starting with arguments: " << ss.str();
+
         if (!ParseCmdLine(argc, argv, &options))
             return EXIT_SUCCESS;
     }

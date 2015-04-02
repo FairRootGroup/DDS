@@ -26,10 +26,10 @@ set( SOURCE_FILES
 	./src/BinaryAttachmentReceivedCmd.cpp
 	./src/BinaryAttachmentStartCmd.cpp
 	./src/UpdateKeyCmd.cpp
-    ./src/DeleteKeyCmd.cpp
+	./src/DeleteKeyCmd.cpp
 	./src/ProgressCmd.cpp
-    ./src/UserTaskDoneCmd.cpp
-    ./src/GetPropValuesCmd.cpp
+	./src/UserTaskDoneCmd.cpp
+	./src/GetPropValuesCmd.cpp
 	./src/SetTopologyCmd.cpp
 )
 
@@ -54,10 +54,10 @@ set( SRC_HDRS
 	./src/BinaryAttachmentReceivedCmd.h
 	./src/BinaryAttachmentStartCmd.h
 	./src/UpdateKeyCmd.h
-    ./src/DeleteKeyCmd.h
+	./src/DeleteKeyCmd.h
 	./src/ProgressCmd.h
-    ./src/UserTaskDoneCmd.h
-    ./src/GetPropValuesCmd.h
+	./src/UserTaskDoneCmd.h
+	./src/GetPropValuesCmd.h
 	./src/SetTopologyCmd.h
 )
 
@@ -79,6 +79,11 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries (
 	dds-protocol-lib
 	${Boost_SYSTEM_LIBRARY}
+)
+
+target_include_directories(dds-protocol-lib
+	PRIVATE
+		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 # API headers

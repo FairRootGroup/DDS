@@ -7,6 +7,7 @@
 
 // DDS
 #include "BasicCmd.h"
+#include "Logger.h"
 
 namespace dds
 {

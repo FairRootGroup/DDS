@@ -5,6 +5,8 @@
 #ifndef DDS_DDSOptions_h
 #define DDS_DDSOptions_h
 
+#include "def.h"
+
 namespace dds
 {
     typedef struct SDDSServerOptions
@@ -21,7 +23,7 @@ namespace dds
         //!< Logging directory.
         std::string m_logDir;
         //!< Log severity level
-        unsigned int m_logSeverityLevel;
+        MiscCommon::ELogSeverityLevel m_logSeverityLevel;
         //!< Log rotation size in MB
         unsigned int m_logRotationSize;
         //!< True if output log also to console

@@ -11,6 +11,10 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <array>
+// BOOST
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/program_options/errors.hpp>
 
 namespace MiscCommon
 {
@@ -136,15 +140,43 @@ namespace MiscCommon
     /// Log Severity levels
     enum ELogSeverityLevel
     {
-        debug = 0,
-        info = 1,
-        warning = 2,
-        error = 3,
-        fatal = 4,
-        log_stdout = 5,
-        log_stdout_clean = 6, // nothing will be pre-append to the output
-        log_stderr = 7
+        proto_low,
+        proto_mid,
+        proto_high,
+        debug,
+        info,
+        warning,
+        error,
+        fatal,
+        log_stdout,
+        log_stdout_clean, // nothing will be pre-append to the output
+        log_stderr
     };
+    const std::array<std::string, 11> g_LogSeverityLevelString{
+        { "p_l", "p_m", "p_h", "dbg", "inf", "wrn", "err", "fat", "cout", "cout", "cerr" }
+    };
+    //=============================================================================
+    // A custom streamer to help boost program options to convert string options to ELogSeverityLevel
+    inline std::istream& operator>>(std::istream& _in, ELogSeverityLevel& _logSeverityLevel)
+    {
+        std::string token;
+        _in >> token;
+        boost::algorithm::to_lower(token);
+
+        auto found = std::find(g_LogSeverityLevelString.begin(), g_LogSeverityLevelString.end(), token);
+        if (found == g_LogSeverityLevelString.end())
+            throw boost::program_options::invalid_option_value(token);
+
+        _logSeverityLevel = static_cast<ELogSeverityLevel>(std::distance(g_LogSeverityLevelString.begin(), found));
+        return _in;
+    }
+
+    inline std::ostream& operator<<(std::ostream& _out, ELogSeverityLevel _logSeverityLevel)
+    {
+        const size_t idx = static_cast<size_t>(_logSeverityLevel);
+        _out << g_LogSeverityLevelString.at(idx);
+        return _out;
+    }
 };
 
 #endif
