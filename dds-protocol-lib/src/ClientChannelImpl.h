@@ -25,8 +25,8 @@ namespace dds
             // Register handshake OK callback
             std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
                                CClientChannelImpl * _channel)> funcHandshakeOK =
-                [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment, CClientChannelImpl* _channel)
-                    -> bool
+                [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
+                       CClientChannelImpl* _channel) -> bool
             {
                 LOG(MiscCommon::info) << "Successfull handshake";
 
@@ -45,8 +45,8 @@ namespace dds
             // Register handshake ERROR callback
             std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
                                CClientChannelImpl * _channel)> funcHandshakeERR =
-                [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment, CClientChannelImpl* _channel)
-                    -> bool
+                [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
+                       CClientChannelImpl* _channel) -> bool
             {
                 LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 

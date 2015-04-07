@@ -53,23 +53,26 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         "server.log_dir",
         boost::program_options::value<string>(&m_options.m_server.m_logDir)->default_value("$HOME/.DDS/log"),
         "");
-    config_file_options.add_options()("server.log_severity_level",
-                                      boost::program_options::value<MiscCommon::ELogSeverityLevel>(
-                                          &m_options.m_server.m_logSeverityLevel)->default_value(MiscCommon::info));
+    config_file_options.add_options()(
+        "server.log_severity_level",
+        boost::program_options::value<MiscCommon::ELogSeverityLevel>(&m_options.m_server.m_logSeverityLevel)
+            ->default_value(MiscCommon::info));
     config_file_options.add_options()(
         "server.log_rotation_size",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_logRotationSize)->default_value(10));
     config_file_options.add_options()(
         "server.log_has_console_output",
         boost::program_options::value<bool>(&m_options.m_server.m_logHasConsoleOutput)->default_value(true));
-    config_file_options.add_options()("server.commander_port_range_min",
-                                      boost::program_options::value<unsigned int>(
-                                          &m_options.m_server.m_ddsCommanderPortRangeMin)->default_value(20000),
-                                      "");
-    config_file_options.add_options()("server.commander_port_range_max",
-                                      boost::program_options::value<unsigned int>(
-                                          &m_options.m_server.m_ddsCommanderPortRangeMax)->default_value(21000),
-                                      "");
+    config_file_options.add_options()(
+        "server.commander_port_range_min",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_ddsCommanderPortRangeMin)
+            ->default_value(20000),
+        "");
+    config_file_options.add_options()(
+        "server.commander_port_range_max",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_ddsCommanderPortRangeMax)
+            ->default_value(21000),
+        "");
     config_file_options.add_options()(
         "server.idle_time",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(1800));

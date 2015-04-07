@@ -347,8 +347,18 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
+
+        // Task output files: user_task_<datetime>_<task_id>_<out/err>.log
         stringstream ssTaskOutput;
-        ssTaskOutput << CUserDefaults::getDDSPath() << "user_task_" << m_sTaskId;
+        ssTaskOutput << CUserDefaults::getDDSPath() << "user_task";
+
+        // current time
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+        ssTaskOutput << std::put_time(std::localtime(&in_time_t), "_%F_%H-%M-%S");
+
+        // task id
+        ssTaskOutput << "_" << m_sTaskId;
 
         string sTaskStdOut(ssTaskOutput.str() + "_out.log");
         string sTaskStdErr(ssTaskOutput.str() + "_err.log");

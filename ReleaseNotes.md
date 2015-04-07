@@ -9,7 +9,8 @@ Added: nicer logging on monitoring thread actions. (GH-80)
 Added: additional log levels. DDS has learned 3 new levels of protocol log events. (GH-49)    
 Fixed: fix implementation of cmdSHUTDOWN. (GH-65)   
 Fixed: remove shared memory on exit.    
-Fixed: fix monitoring thread to prevent breaks if custom callbacks throw exceptions. (GH-80)   
+Fixed: fix monitoring thread to prevent breaks if custom callbacks throw exceptions. (GH-80)  
+Modified: Name of task output file changed to "user_task_<datetime>_<task_id>_<out/err>.log". (GH-75)    
 
 ### dds-commander
 Added: Since dds-commander is a daemon and doesn't have a console, it now has a dedicated log file for its std-out/-err called "dds-commander.out.log". File is located in the log directory.   

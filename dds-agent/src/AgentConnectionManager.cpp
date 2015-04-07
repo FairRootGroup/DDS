@@ -126,9 +126,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe for cmdSTOP_USER_TASK
         std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSTOP_USER_TASK =
-                [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel* _channel)
-                    -> bool
+            fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                     CCommanderChannel* _channel) -> bool
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
