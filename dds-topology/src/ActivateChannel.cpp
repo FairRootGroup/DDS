@@ -103,8 +103,8 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
 
         std::chrono::milliseconds timeToActivate(_attachment->m_time);
 
-        cout << "Tasks: " << _attachment->m_completed << " errors: " << _attachment->m_errors
-             << " total: " << _attachment->m_total
+        cout << "Activated tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
+             << "\nTotal: " << _attachment->m_total
              << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
     }
     return true;
