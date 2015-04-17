@@ -8,8 +8,10 @@
 
 // DDS
 #include "TaskGroup.h"
+#include "TopoVars.h"
 // STD
 #include <string>
+#include <map>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
@@ -26,7 +28,7 @@ namespace dds
 
         /// \brief Read topology from specified XML file.
         /// \param[in] _fileName Name of file with topology.
-        /// \param[in] _main Main task group or nullptr in case of error.
+        /// \param[out] _main Main task group or nullptr in case of error.
         /// \param[in] _xmlValidationDisabled If tru than XML will not be validated against XSD.
         void parse(const std::string& _fileName, TaskGroupPtr_t _main, bool _xmlValidationDisabled = false);
 

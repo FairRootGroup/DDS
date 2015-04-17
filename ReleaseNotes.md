@@ -21,7 +21,8 @@ Added: the command learned "--set" parameter, which is used to set up topology f
 Added: the command learned "--disiable-validation", which is used to disable topology validation. It can be used only together with "--set". (GH-56)   
 Added: scheduling and requirements for the collections. (GH-76)    
 Added: index for tasks and collections which are in groups. (GH-72)   
-Added: new test for task and collection indices. (GH-72)
+Added: new test for task and collection indices. (GH-72)   
+Added: variable definition in the topology. (GH-71)
 
 ### dds-submit
 Modified: removed "--topo" parameter. (GH-56)   

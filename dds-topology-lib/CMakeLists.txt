@@ -40,6 +40,7 @@ set( SOURCE_FILES
 	./src/TopologyParserXML.cpp
 	./src/TopoIndex.cpp
     ./src/Requirement.cpp
+    ./src/TopoVars.cpp
 )
 
 #
@@ -59,6 +60,7 @@ set( HEADER_FILES
 	./src/TopologyParserXML.h
 	./src/TopoIndex.h
     ./src/Requirement.h
+    ./src/TopoVars.h
 )
 
 include_directories(

@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)
 {
     CTopologyParserXML parser;
     bool result = parser.isValid("topology_test_1.xml");
-    BOOST_CHECK(result == true);
+    BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_2)
@@ -462,6 +462,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "group");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "property");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::REQUIREMENT) == "declrequirement");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_VARS) == "var");
 
     // TagToPropertyAccessType
     BOOST_CHECK(TagToPropertyAccessType("read") == EPropertyAccessType::READ);
@@ -478,6 +479,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(DeclTagToTopoType("group") == ETopoType::GROUP);
     BOOST_CHECK(DeclTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
     BOOST_CHECK(DeclTagToTopoType("declrequirement") == ETopoType::REQUIREMENT);
+    BOOST_CHECK(DeclTagToTopoType("var") == ETopoType::TOPO_VARS);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)

@@ -10,6 +10,7 @@
 #include "TaskCollection.h"
 #include "UserDefaults.h"
 #include "FindCfgFile.h"
+#include "TopoVars.h"
 // STL
 #include <map>
 // SYSTEM
@@ -19,6 +20,12 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#pragma clang diagnostic pop
 
 using namespace boost::property_tree;
 using namespace std;
@@ -82,33 +89,55 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
     if (_main == nullptr)
         throw runtime_error("NULL input pointer.");
 
-    // First validate XML against XSD schema
     try
-    {
-        if (!isValid(_fileName, _xmlValidationDisabled))
+    {        
+        // First we have to parse topology variables
+        ptree varPT;
+        read_xml(_fileName, varPT, xml_parser::no_comments);
+    
+        TopoVarsPtr_t vars = make_shared<CTopoVars>();
+        vars->initFromPropertyTree("", varPT);
+        
+        // We have to replace all occurencies of topology variables in input XML file.
+        stringstream ssPT;
+        write_xml(ssPT, varPT);
+        
+        string strPT = ssPT.str();
+        const CTopoVars::varMap_t& map = vars->getMap();
+        for (const auto& v : map) {
+            string varName = "${" + v.first + "}";
+            boost::algorithm::replace_all(strPT, varName, v.second);
+        }
+        
+        boost::uuids::uuid uuid = boost::uuids::random_generator()();
+        stringstream ssTmpFileName;
+        ssTmpFileName << _fileName << "_" << uuid << ".xml";
+        string tmpFileName = ssTmpFileName.str();
+        
+        {
+           ofstream tmpFile(tmpFileName);
+           tmpFile << strPT;
+           tmpFile.close();
+        }
+        
+        // Validate temporary XML file against XSD schema
+        if (!isValid(tmpFileName, _xmlValidationDisabled))
             throw runtime_error("XML file is not valid.");
+        
+        ptree pt;
+        read_xml(tmpFileName, pt);
+        _main->initFromPropertyTree("main", pt);
+        
+        // Delete temporary file
+        boost::filesystem::remove(tmpFileName);
     }
     catch (runtime_error& error)
     {
         throw runtime_error(string("XML validation failed with the following error: ") + error.what());
     }
-
-    ptree pt;
-
-    // Read property tree from file
-    try
-    {
-        read_xml(_fileName, pt, xml_parser::no_comments);
-    }
     catch (xml_parser_error& error)
     {
         throw runtime_error(string("Reading of input XML file failed with the following error: ") + error.what());
-    }
-
-    // Parse property tree
-    try
-    {
-        _main->initFromPropertyTree("main", pt);
     }
     catch (exception& error) // ptree_error, out_of_range, logic_error
     {

@@ -25,7 +25,8 @@ namespace dds
         TASK,
         COLLECTION,
         GROUP,
-        REQUIREMENT
+        REQUIREMENT,
+        TOPO_VARS
     };
 
     class CTopoBase

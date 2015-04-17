@@ -36,6 +36,11 @@
   </xs:restriction>
 </xs:simpleType>
 
+<xs:complexType name="varType">
+	<xs:attribute name="id" type="stringIdType" use="required"/>
+	<xs:attribute name="value" type="xs:string" use="required"/>
+</xs:complexType>
+
 <xs:complexType name="mainGroupType">
 	<xs:attribute name="id" type="stringIdType" use="required"/>
 	<xs:attribute name="n" type="sizeType" use="required"/>
@@ -132,6 +137,7 @@
 
 <xs:complexType name="topologyType">
   <xs:sequence>
+	<xs:element name="var" type="varType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="property" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="declrequirement" type="requirementType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="decltask" type="taskType" maxOccurs="unbounded" minOccurs="1"/>

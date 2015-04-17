@@ -1,4 +1,8 @@
 <topology id="myTopology">
+	
+	<var id="requirementVar" value=".+.gsi.de" />
+	<var id="appNameVar" value="app1 -l -n" />
+	<var id="nofGroups" value="10" />
 		
 	<property id="property1"/>
 	<property id="property2"/>
@@ -6,13 +10,13 @@
 	<property id="property4"/>
 	
 	<declrequirement id="requirement1">
-    	<hostPattern value=".+.gsi.de"/>
+    	<hostPattern value="${requirementVar}"/>
 	</declrequirement>
 	
 	<!-- THIS IS A COMMENT -->
 	
   	<decltask id="task1">
-		<exe reachable="true">app1 -l -n</exe>
+		<exe reachable="true">${appNameVar}</exe>
 		<env reachable="false">env1</env>
 		<requirement>requirement1</requirement>
 		<properties>
@@ -76,7 +80,7 @@
 		<!--task>task2</task-->
 	    <task>task1</task>
 	    <collection>collection1</collection>
-		<group id="group1" n="10">
+		<group id="group1" n="${nofGroups}">
 			<task>task1</task>
 			<collection>collection1</collection>
 			<collection>collection2</collection>

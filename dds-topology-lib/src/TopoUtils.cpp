@@ -63,6 +63,8 @@ namespace dds
                 return "property";
             case ETopoType::REQUIREMENT:
                 return "declrequirement";
+            case ETopoType::TOPO_VARS:
+                return "var";
             default:
                 throw runtime_error("Topology element not found.");
         }
@@ -80,6 +82,8 @@ namespace dds
             return ETopoType::TOPO_PROPERTY;
         else if (_name == "declrequirement")
             return ETopoType::REQUIREMENT;
+        else if (_name == "var")
+            return ETopoType::TOPO_VARS;
         else
             throw runtime_error("Topology element with name " + _name + " does not exist.");
     }
