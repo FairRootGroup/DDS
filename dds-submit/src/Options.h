@@ -142,7 +142,7 @@ namespace dds
         options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
         options.add_options()("rms,r",
                               bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
-                              "Resource Management System. The option can only be used with the \"submit\" command");
+                              "Defines a destination resource management system. (default: ssh)");
         options.add_options()("ssh-rms-cfg",
                               bpo::value<std::string>(&_options->m_sSSHCfgFile),
                               "A DDS's ssh plug-in configuration file. The option can only be used "
