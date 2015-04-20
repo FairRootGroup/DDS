@@ -40,7 +40,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce ureadable output
     visible.add_options()("help,h", "Produce help message");
     visible.add_options()("version,v", "Version information");
-    visible.add_options()("verbose,V", "Cause pod-user-defaults to be verbose in case of an error");
+    visible.add_options()("verbose,V", "Cause dds-user-defaults to be verbose in case of an error");
     visible.add_options()("path,p", "Show DDS user defaults config file path");
     visible.add_options()("default,d", "Generate a default PoD configuration file");
     visible.add_options()(

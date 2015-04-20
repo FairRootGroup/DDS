@@ -65,10 +65,10 @@ if(DOXYGEN_FOUND)
    add_custom_target( api-docs COMMENT "Generating API docs" )
    #add_dependencies( apia-docs
    #                  MiscCommon-api-docs
-   #                  pod-ssh-api-docs
-   #                  pod-agent-api-docs
-   #                  pod-info-api-docs
-   #                  pod-remote-api-docs )
+   #                  dds-ssh-api-docs
+   #                  dds-agent-api-docs
+   #                  dds-info-api-docs
+   #                  dds-remote-api-docs )
 
    add_custom_target( upload-api-docs 
        COMMAND rsync -avz -e ssh  ${DOC_OUTPUT_DIR} podwww@lxi001.gsi.de:~/web-docs/doc
@@ -350,8 +350,8 @@ set(CPACK_SOURCE_IGNORE_FILES
     "documentation/html_help/.*\\\\.css$"
     "documentation/html_help/.*\\\\.ps$"
     "documentation/api-docs"
-    "app/pod-agent/doc"
-    "app/pod-console/doc"
+    "app/dds-agent/doc"
+    "app/dds-console/doc"
     "Logo"
     "/\\\\."
     "~$;/_"
