@@ -69,7 +69,7 @@ namespace dds
         options.add_options()("stop", "Request to stop execution of user tasks.");
         options.add_options()(
             "validate", bpo::value<std::string>(&_options->m_sTopoFile), "Validate topology file against XSD schema.");
-        options.add_options()("verbose", "Verbose output");
+        options.add_options()("verbose,V", "Verbose output");
 
         // Parsing command-line
         bpo::variables_map vm;
