@@ -42,7 +42,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("version,v", "Version information");
     visible.add_options()("verbose,V", "Cause dds-user-defaults to be verbose in case of an error");
     visible.add_options()("path,p", "Show DDS user defaults config file path");
-    visible.add_options()("default,d", "Generate a default PoD configuration file");
+    visible.add_options()("default,d", "Generate a default DDS configuration file");
     visible.add_options()(
         "config,c", bpo::value<string>()->default_value("~/.DDS/DDS.cfg"), "DDS user defaults configuration file");
     visible.add_options()("key", bpo::value<string>(), "Get a value for the given key");
