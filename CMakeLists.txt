@@ -106,10 +106,10 @@ set(MiscCommon_LOCATION
 # additional compiler and linker flags for C++11
 #
 if(APPLE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wthread-safety")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wthread-safety")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 elseif(UNIX)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 endif(APPLE)
 
 #
@@ -262,17 +262,17 @@ install(FILES ${DDS_ETC_FILES} DESTINATION etc)
 install(FILES ${DDS_SHARE_FILES} DESTINATION share)
 # tests runner
 if( BUILD_TESTS )
-  install(PROGRAMS run_test.sh DESTINATION tests)
+	install(PROGRAMS run_test.sh DESTINATION tests)
 endif( BUILD_TESTS )
 
 # WN bin package custom target
 # Because of $<TARGET_FILE:tgt> it works only in cmake 2.8.4
 if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
-   if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-     set(TRG_ARCH x86)
-   else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-     set(TRG_ARCH amd64)
-   endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+	if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+		set(TRG_ARCH x86)
+	else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+		set(TRG_ARCH amd64)
+	endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
    
    if(APPLE)
        set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-universal" )
@@ -370,4 +370,3 @@ set(CPACK_SOURCE_IGNORE_FILES
 set( CPACK_SOURCE_PACKAGE_FILE_NAME "DDS-${DDS_VERSION}-Source")
 
 include(CPack)
-
