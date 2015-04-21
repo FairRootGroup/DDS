@@ -14,15 +14,6 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 configure_file( ${dds-agent_SOURCE_DIR}/src/version.h.in ${dds-agent_BINARY_DIR}/version.h @ONLY )
 
 #
-# API Docs
-#
-#if(DOXYGEN_FOUND)
-#   configure_file( ${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY )
-#   add_custom_target(pod-ssh-api-docs ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-#      COMMENT "Generating pod-ssh API docs")
-#endif(DOXYGEN_FOUND)
-
-#
 # Source files
 #
 set( SOURCE_FILES
@@ -30,7 +21,7 @@ set( SOURCE_FILES
 	./src/CommanderChannel.cpp
 	./src/UIChannel.cpp
 	./src/AgentConnectionManager.cpp
-        ./src/UIConnectionManager.cpp
+	./src/UIConnectionManager.cpp
 )
 
 #
@@ -41,7 +32,7 @@ set( HEADER_FILES
 	./src/CommanderChannel.h
 	./src/UIChannel.h
 	./src/AgentConnectionManager.h
-        ./src/UIConnectionManager.h
+	./src/UIConnectionManager.h
 )
 
 include_directories(

@@ -12,14 +12,6 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # configure files
 # 
 configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
-#
-# API Docs
-#
-#if(DOXYGEN_FOUND)
-#   configure_file( ${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY )
-#   add_custom_target(dds-ssh-api-docs ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-#      COMMENT "Generating dds-ssh API docs")
-#endif(DOXYGEN_FOUND)
 
 #
 # Source files

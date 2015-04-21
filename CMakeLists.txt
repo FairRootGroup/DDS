@@ -52,30 +52,29 @@ option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
 option(BUILD_dds-test "Build dds-test" ON)
 option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
 #
-# Documentation output directory
+# Custom targets
 #
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-   set(DOC_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/documentation/api-docs)
-endif(DOXYGEN_FOUND)
-#
-# Custom targets
-#
-if(DOXYGEN_FOUND)
-   add_custom_target( api-docs COMMENT "Generating API docs" )
-   #add_dependencies( apia-docs
-   #                  MiscCommon-api-docs
-   #                  dds-ssh-api-docs
-   #                  dds-agent-api-docs
-   #                  dds-info-api-docs
-   #                  dds-remote-api-docs )
+	message(STATUS "Build API docs - YES")
+	#
+	# API Documentation output directory
+	#
+    set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR}/documentation/api-docs)
+    file(MAKE_DIRECTORY ${DOC_OUTPUT_DIR})
+	
+	configure_file( ${PROJECT_SOURCE_DIR}/doxyfile.in ${PROJECT_BINARY_DIR}/doxyfile @ONLY )
+	add_custom_target( api-docs 
+		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/doxyfile
+		COMMENT "Generating API docs" )
 
-   add_custom_target( upload-api-docs 
-       COMMAND rsync -avz -e ssh  ${DOC_OUTPUT_DIR} podwww@lxi001.gsi.de:~/web-docs/doc
-       COMMENT "Upload API documentation to PoD's web server")
-   add_dependencies( upload-api-docs api-docs )
+	add_custom_target( upload-api-docs 
+		COMMAND rsync -avz -e ssh  ${DOC_OUTPUT_DIR} ddswww@lxi001.gsi.de:~/web-docs/doc
+		COMMENT "Upload API documentation to DDS's web server")
+	add_dependencies( upload-api-docs api-docs )
 endif(DOXYGEN_FOUND)
 
+# Source Code Formatting using clang-format
 add_custom_target( format-code 
        COMMAND ${CMAKE_SOURCE_DIR}/utils/update_format.sh ${CMAKE_SOURCE_DIR}
        COMMENT "Updating source code formatting.")
@@ -161,16 +160,14 @@ SET(DDS_SHARE_FILES
 #
 # Search for BOOST
 #
-find_package(Boost 1.54 REQUIRED)
+set(Boost_Components log log_setup thread program_options filesystem system regex signals)
+if( BUILD_TESTS)
+  set(Boost_Components ${Boost_Components} unit_test_framework)
+endif( BUILD_TESTS)
+
+find_package(Boost 1.54 REQUIRED COMPONENTS  ${Boost_Components})
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-
-  set(Boost_Components log log_setup thread program_options filesystem system regex signals)
-  if( BUILD_TESTS)
-    set(Boost_Components ${Boost_Components} unit_test_framework)
-  endif( BUILD_TESTS)
-  
-  find_package( Boost 1.54 REQUIRED COMPONENTS  ${Boost_Components} )
 endif(Boost_FOUND)
 
 # DDS Misc Common
@@ -345,6 +342,7 @@ set(CPACK_SOURCE_IGNORE_FILES
     "inst_tmp"
     "etc/xpd.cf$"
     "documentation/Diagrams"
+	"documentation/api-docs"
     "documentation/html_help/.*\\\\.html$"
     "documentation/html_help/.*\\\\.png$"
     "documentation/html_help/.*\\\\.css$"
@@ -367,7 +365,7 @@ set(CPACK_SOURCE_IGNORE_FILES
     "CPack"
     "\\\\.svn/"
     "Makefile$"
-    "PoDFiles.txt$")
+	"DDSFiles.txt$")
 
 set( CPACK_SOURCE_PACKAGE_FILE_NAME "DDS-${DDS_VERSION}-Source")
 

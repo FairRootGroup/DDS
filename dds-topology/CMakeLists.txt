@@ -1,5 +1,5 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
-#dds-agent-cmd
+#
 #
 project( dds-topology )
 
@@ -12,15 +12,6 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # configure files
 # 
 configure_file( ${dds-topology_SOURCE_DIR}/src/version.h.in ${dds-topology_BINARY_DIR}/version.h @ONLY )
-
-#
-# API Docs
-#
-#if(DOXYGEN_FOUND)
-#   configure_file( ${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY )
-#   add_custom_target(pod-ssh-api-docs ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-#      COMMENT "Generating pod-ssh API docs")
-#endif(DOXYGEN_FOUND)
 
 #
 # Source files
@@ -52,9 +43,6 @@ if (CMAKE_GENERATOR STREQUAL "Xcode")
 else (CMAKE_GENERATOR STREQUAL "Xcode")
     add_executable(dds-topology ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-#message(STATUS "LOG_LIBRARY=${Boost_LOG_LIBRARY}")
-#message(STATUS "FILESYSTEM_LIBRARY=${Boost_FILESYSTEM_LIBRARY}")
 
 target_link_libraries (
 	dds-topology

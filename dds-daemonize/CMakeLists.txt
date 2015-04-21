@@ -17,15 +17,6 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 configure_file( ${dds-daemonize_SOURCE_DIR}/src/version.h.in ${dds-daemonize_BINARY_DIR}/version.h @ONLY )
 
 #
-# API Docs
-#
-#if(DOXYGEN_FOUND)
-#   configure_file( ${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY )
-#   add_custom_target(dds-daemonize-docs ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-#      COMMENT "Generating dds-daemonize API docs")
-#endif(DOXYGEN_FOUND)
-
-#
 # Source files
 #
 set( SOURCE_FILES
