@@ -131,10 +131,6 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
         // Delete temporary file
         boost::filesystem::remove(tmpFileName);
     }
-    catch (runtime_error& error)
-    {
-        throw runtime_error(string("XML validation failed with the following error: ") + error.what());
-    }
     catch (xml_parser_error& error)
     {
         throw runtime_error(string("Reading of input XML file failed with the following error: ") + error.what());
