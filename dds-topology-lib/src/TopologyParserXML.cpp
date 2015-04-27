@@ -90,44 +90,45 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
         throw runtime_error("NULL input pointer.");
 
     try
-    {        
+    {
         // First we have to parse topology variables
         ptree varPT;
         read_xml(_fileName, varPT, xml_parser::no_comments);
-    
+
         TopoVarsPtr_t vars = make_shared<CTopoVars>();
         vars->initFromPropertyTree("", varPT);
-        
+
         // We have to replace all occurencies of topology variables in input XML file.
         stringstream ssPT;
         write_xml(ssPT, varPT);
-        
+
         string strPT = ssPT.str();
         const CTopoVars::varMap_t& map = vars->getMap();
-        for (const auto& v : map) {
+        for (const auto& v : map)
+        {
             string varName = "${" + v.first + "}";
             boost::algorithm::replace_all(strPT, varName, v.second);
         }
-        
+
         boost::uuids::uuid uuid = boost::uuids::random_generator()();
         stringstream ssTmpFileName;
         ssTmpFileName << _fileName << "_" << uuid << ".xml";
         string tmpFileName = ssTmpFileName.str();
-        
+
         {
-           ofstream tmpFile(tmpFileName);
-           tmpFile << strPT;
-           tmpFile.close();
+            ofstream tmpFile(tmpFileName);
+            tmpFile << strPT;
+            tmpFile.close();
         }
-        
+
         // Validate temporary XML file against XSD schema
         if (!isValid(tmpFileName, _xmlValidationDisabled))
             throw runtime_error("XML file is not valid.");
-        
+
         ptree pt;
         read_xml(tmpFileName, pt);
         _main->initFromPropertyTree("main", pt);
-        
+
         // Delete temporary file
         boost::filesystem::remove(tmpFileName);
     }

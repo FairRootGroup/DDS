@@ -15,8 +15,8 @@ using namespace boost::property_tree;
 using namespace dds;
 
 CTopoVars::CTopoVars()
-: CTopoBase()
-, m_map()
+    : CTopoBase()
+    , m_map()
 {
     setType(ETopoType::TOPO_VARS);
 }
@@ -35,7 +35,7 @@ void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::prop
     try
     {
         const ptree& pt = _pt.get_child("topology");
-        
+
         for (const auto& v : pt)
         {
             const auto& elementPT = v.second;
@@ -55,10 +55,11 @@ string CTopoVars::toString() const
 {
     stringstream ss;
     ss << "DDSTopoVars: m_id=" << getId() << endl;
-    for (const auto& v : m_map) {
+    for (const auto& v : m_map)
+    {
         ss << v.first << " --> " << v.second << endl;
     }
-    
+
     return ss.str();
 }
 
