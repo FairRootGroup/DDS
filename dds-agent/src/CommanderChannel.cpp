@@ -10,8 +10,6 @@
 #include "KeyValueGuard.h"
 // MiscCommon
 #include "FindCfgFile.h"
-// STD
-#include <iomanip>
 // BOOST
 #include <boost/crc.hpp>
 #pragma clang diagnostic push
@@ -225,6 +223,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
 
         stringstream ss;
+        // TODO: change the code below once on gcc5+
         // We do not use put_time for the moment as gcc4.9 does not support it.
         // ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
         ss << buffer << "_" << hostname << "_" << m_id;
@@ -371,10 +370,18 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         stringstream ssTaskOutput;
         ssTaskOutput << CUserDefaults::getDDSPath() << "user_task";
 
+        // TODO: Change the code below once on gcc5+. GCC 4.9 doesn't support put_time
+        //
         // current time
-        auto now = std::chrono::system_clock::now();
-        auto in_time_t = std::chrono::system_clock::to_time_t(now);
-        ssTaskOutput << std::put_time(std::localtime(&in_time_t), "_%F_%H-%M-%S");
+        // auto now = std::chrono::system_clock::now();
+        // auto in_time_t = std::chrono::system_clock::to_time_t(now);
+        // ssTaskOutput << std::put_time(std::localtime(&in_time_t), "_%F_%H-%M-%S");
+
+        std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+        struct std::tm* ptm = std::localtime(&now);
+        char buffer[20];
+        std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
+        ssTaskOutput << "_" << buffer;
 
         // task id
         ssTaskOutput << "_" << m_sTaskId;
