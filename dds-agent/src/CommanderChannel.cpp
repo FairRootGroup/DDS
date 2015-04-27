@@ -10,6 +10,8 @@
 #include "KeyValueGuard.h"
 // MiscCommon
 #include "FindCfgFile.h"
+// STD
+#include <iomanip>
 // BOOST
 #include <boost/crc.hpp>
 #pragma clang diagnostic push
