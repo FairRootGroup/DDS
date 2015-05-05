@@ -97,11 +97,11 @@ clean_up()
     # delete tmp directory
     delete_tmp_dir
 
-    # remove lock file
-    rm -f $LOCK_FILE
-    rm -f $PID_FILE
+    # clean up after yourself, and release your trap
+    rm -f "$LOCK_FILE"
+    rm -f "$PID_FILE"
     # remove dds-agent ID file
-    rm -f $DDS_AGENT_ID_FILE
+    rm -f "$DDS_AGENT_ID_FILE"
 
     logMsg "done cleaning up."
     exit $1
@@ -185,11 +185,13 @@ function untar_payload()
 # ************************************************************************
 
 # check for lock file
-if lockfile -! -r1 $LOCK_FILE 
-then
-  logMsg "Error: There is already a DDS session running in the directory: $WD"
-  exit 1
+if ( set -o noclobber; echo "$$" > "$LOCK_FILE") 2> /dev/null; then
+	logMsg "Starting DDS Scout's main block"
+else
+	logMsg "Error: There is already a DDS session running in the directory: $WD"
+	exit 1
 fi
+
 echo $$ > $PID_FILE
 
 # handle signals

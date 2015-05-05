@@ -12,6 +12,9 @@ Fixed: remove shared memory on exit.
 Fixed: fix monitoring thread to prevent breaks if custom callbacks throw exceptions. (GH-80)  
 Modified: Name of task output file changed to "user_task_<datetime>_<task_id>_<out/err>.log". (GH-75)    
 
+### dds scout
+Modified: New lock algorithm, instead of the lockfile command.    
+
 ### dds-commander
 Added: Since dds-commander is a daemon and doesn't have a console, it now has a dedicated log file for its std-out/-err called "dds-commander.out.log". File is located in the log directory.   
 
