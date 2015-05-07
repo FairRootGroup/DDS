@@ -19,11 +19,10 @@ using namespace std;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
-CConnectionManager::CConnectionManager(const SOptions_t& _options,
-                                       boost::asio::io_service& _io_service,
-                                       boost::asio::ip::tcp::endpoint& _endpoint)
-    : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(_io_service, _endpoint)
+CConnectionManager::CConnectionManager(const SOptions_t& _options)
+    : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
 {
+    LOG(info) << "CConnectionManager constructor";
 }
 
 CConnectionManager::~CConnectionManager()
@@ -90,8 +89,9 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
 
     function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel * _channel)>
-        fBINARY_ATTACHMENT_RECEIVED = [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
-                                             CAgentChannel* _channel) -> bool
+        fBINARY_ATTACHMENT_RECEIVED =
+            [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel* _channel)
+                -> bool
     {
         return this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, getWeakPtr(_channel));
     };
@@ -182,7 +182,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdSET_TOPOLOGY>(fSET_TOPOLOGY);
 }
 
-void CConnectionManager::_createInfoFile(size_t _port) const
+void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
 {
     const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
     LOG(MiscCommon::info) << "Creating the server info file: " << sSrvCfg;
@@ -199,10 +199,21 @@ void CConnectionManager::_createInfoFile(size_t _port) const
     string srvUser;
     MiscCommon::get_cuser_name(&srvUser);
 
-    f << "[server]\n"
-      << "host=" << srvHost << "\n"
-      << "user=" << srvUser << "\n"
-      << "port=" << _port << "\n" << endl;
+    if (_ports.size() > 0)
+    {
+        f << "[server]\n"
+          << "host=" << srvHost << "\n"
+          << "user=" << srvUser << "\n"
+          << "port=" << _ports[0] << "\n" << endl;
+    }
+
+    if (_ports.size() > 1)
+    {
+        f << "[ui]\n"
+          << "host=" << srvHost << "\n"
+          << "user=" << srvUser << "\n"
+          << "port=" << _ports[1] << "\n" << endl;
+    }
 }
 
 void CConnectionManager::_deleteInfoFile() const

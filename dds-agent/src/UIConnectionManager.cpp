@@ -9,9 +9,8 @@ using namespace std;
 using namespace dds;
 using namespace MiscCommon;
 
-CUIConnectionManager::CUIConnectionManager(boost::asio::io_service& _io_service,
-                                           boost::asio::ip::tcp::endpoint& _endpoint)
-    : CConnectionManagerImpl<CUIChannel, CUIConnectionManager>(_io_service, _endpoint)
+CUIConnectionManager::CUIConnectionManager()
+    : CConnectionManagerImpl<CUIChannel, CUIConnectionManager>(0, 0, false)
 {
 }
 
@@ -19,7 +18,7 @@ CUIConnectionManager::~CUIConnectionManager()
 {
 }
 
-void CUIConnectionManager::_createInfoFile(size_t _port) const
+void CUIConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
 {
     const string sAgntCfg(CUserDefaults::instance().getAgentInfoFileLocation());
     LOG(MiscCommon::info) << "Creating the agent info file: " << sAgntCfg;
@@ -36,10 +35,13 @@ void CUIConnectionManager::_createInfoFile(size_t _port) const
     string srvUser;
     MiscCommon::get_cuser_name(&srvUser);
 
-    f << "[agent]\n"
-      << "host=" << srvHost << "\n"
-      << "user=" << srvUser << "\n"
-      << "port=" << _port << "\n" << endl;
+    if (_ports.size() > 0)
+    {
+        f << "[agent]\n"
+          << "host=" << srvHost << "\n"
+          << "user=" << srvUser << "\n"
+          << "port=" << _ports[0] << "\n" << endl;
+    }
 }
 
 void CUIConnectionManager::_deleteInfoFile() const

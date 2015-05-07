@@ -98,16 +98,7 @@ int main(int argc, char* argv[])
         {
             CPIDFile pidfile(pidfile_name, ::getpid());
 
-            boost::asio::io_service io_service;
-            const CUserDefaults& userDefaults = CUserDefaults::instance();
-            // get a free port from a given range
-            int nSrvPort =
-                MiscCommon::INet::get_free_port(userDefaults.getOptions().m_server.m_ddsCommanderPortRangeMin,
-                                                userDefaults.getOptions().m_server.m_ddsCommanderPortRangeMax);
-
-            tcp::endpoint endpoint(tcp::v4(), nSrvPort);
-
-            shared_ptr<CConnectionManager> server = make_shared<CConnectionManager>(options, io_service, endpoint);
+            shared_ptr<CConnectionManager> server = make_shared<CConnectionManager>(options);
             server->start();
         }
         catch (exception& e)

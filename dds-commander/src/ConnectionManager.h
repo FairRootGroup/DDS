@@ -23,9 +23,7 @@ namespace dds
                                public std::enable_shared_from_this<CConnectionManager>
     {
       public:
-        CConnectionManager(const SOptions_t& _options,
-                           boost::asio::io_service& _io_service,
-                           boost::asio::ip::tcp::endpoint& _endpoint);
+        CConnectionManager(const SOptions_t& _options);
 
         ~CConnectionManager();
 
@@ -35,7 +33,7 @@ namespace dds
         void _stop()
         {
         }
-        void _createInfoFile(size_t _port) const;
+        void _createInfoFile(const std::vector<size_t>& _ports) const;
         void _deleteInfoFile() const;
 
       private:

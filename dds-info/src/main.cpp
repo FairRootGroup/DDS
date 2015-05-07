@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     {
         string sHost;
         string sPort;
-        // Process server info file.
-        findCommanderServer(&sHost, &sPort);
+        // We connect to UI commander channel.
+        findCommanderUI(&sHost, &sPort);
 
         boost::asio::io_service io_service;
 

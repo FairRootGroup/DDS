@@ -44,8 +44,8 @@ int main(int argc, char* argv[])
     string sPort;
     try
     {
-        // Process server info file.
-        findCommanderServer(&sHost, &sPort);
+        // We want to connect to commnader's UI channel
+        findCommanderUI(&sHost, &sPort);
     }
     catch (exception& e)
     {

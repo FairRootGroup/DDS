@@ -25,7 +25,6 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boo
     , m_signals(_io_service)
     , m_options(_options)
     , m_bStarted(false)
-    , m_UI_end_point(tcp::v4(), 0) // Let the OS pick a random available port
     , m_deadlineTimer(std::make_shared<boost::asio::deadline_timer>(m_service, boost::posix_time::milliseconds(1000)))
 {
     // Register to handle the signals that indicate when the server should exit.
@@ -126,8 +125,9 @@ void CAgentConnectionManager::start()
 
         // Subscribe for cmdSTOP_USER_TASK
         std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                     CCommanderChannel* _channel) -> bool
+            fSTOP_USER_TASK =
+                [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel* _channel)
+                    -> bool
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
@@ -149,8 +149,7 @@ void CAgentConnectionManager::start()
                                           return;
 
                                       // Start the UI agent server
-                                      m_UIConnectionMng =
-                                          make_shared<CUIConnectionManager>(m_UI_io_service, m_UI_end_point);
+                                      m_UIConnectionMng = make_shared<CUIConnectionManager>();
                                       m_UIConnectionMng->setCommanderChannel(m_agent);
                                       m_UIConnectionMng->start(false, 2);
 

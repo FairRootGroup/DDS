@@ -15,36 +15,53 @@
 // BOOST
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
+// MiscCommon
+#include "INet.h"
 
 namespace dds
 {
+    /// \class CConnectionManagerImpl
+    /// \brief Base class for connection managers.
     template <class T, class A>
     class CConnectionManagerImpl
     {
       public:
-        CConnectionManagerImpl(boost::asio::io_service& _io_service, boost::asio::ip::tcp::endpoint& _endpoint)
-            : m_acceptor(_io_service, _endpoint)
-            , m_signals(_io_service)
+        CConnectionManagerImpl(size_t _minPort, size_t _maxPort, bool _useUITransport)
         {
+            int nSrvPort = (_minPort == 0 && _maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(_minPort, _maxPort);
+            m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(
+                m_io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
+
+            if (_useUITransport)
+            {
+                int nSrvPort =
+                    (_minPort == 0 && _maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(_minPort, _maxPort);
+                m_acceptorUI = std::make_shared<boost::asio::ip::tcp::acceptor>(
+                    m_io_service_UI, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
+            }
+
+            // Create and register signals
+            m_signals = std::make_shared<boost::asio::signal_set>(m_io_service);
+
             // Register to handle the signals that indicate when the server should exit.
             // It is safe to register for the same signal multiple times in a program,
             // provided all registration for the specified signal is made through Asio.
-            m_signals.add(SIGINT);
-            m_signals.add(SIGTERM);
+            m_signals->add(SIGINT);
+            m_signals->add(SIGTERM);
 #if defined(SIGQUIT)
-            m_signals.add(SIGQUIT);
+            m_signals->add(SIGQUIT);
 #endif // defined(SIGQUIT)
 
-            m_signals.async_wait([this](boost::system::error_code /*ec*/, int signo)
-                                 {
-                                     // The server is stopped by cancelling all outstanding asynchronous
-                                     // operations. Once all operations have finished the io_service::run()
-                                     // call will exit.
-                                     LOG(MiscCommon::info) << "Received a signal: " << signo;
-                                     LOG(MiscCommon::info) << "Sopping DDS transport server";
+            m_signals->async_wait([this](boost::system::error_code /*ec*/, int signo)
+                                  {
+                                      // The server is stopped by cancelling all outstanding asynchronous
+                                      // operations. Once all operations have finished the io_service::run()
+                                      // call will exit.
+                                      LOG(MiscCommon::info) << "Received a signal: " << signo;
+                                      LOG(MiscCommon::info) << "Sopping DDS transport server";
 
-                                     stop();
-                                 });
+                                      stop();
+                                  });
         }
 
         ~CConnectionManagerImpl()
@@ -70,9 +87,16 @@ namespace dds
                                                     {
                                                         LOG(MiscCommon::info) << "Idle callback called.";
                                                     });
-                m_acceptor.listen();
+                m_acceptor->listen();
+                createClientAndStartAccept(m_acceptor);
 
-                createClientAndStartAccept();
+                // If we use second channel for communication with UI we have to start acceptiing connection on that
+                // channel.
+                if (m_acceptorUI != nullptr)
+                {
+                    m_acceptorUI->listen();
+                    createClientAndStartAccept(m_acceptorUI);
+                }
 
                 // Create a server info file
                 createInfoFile();
@@ -89,9 +113,25 @@ namespace dds
                 {
                     m_workerThreads.create_thread([this]()
                                                   {
-                                                      runService(10);
+                                                      runService(10, m_acceptor->get_io_service());
                                                   });
                 }
+
+                // Starting service for UI transport engine
+                if (m_acceptorUI != nullptr)
+                {
+                    const unsigned int concurrentThreads = 2;
+                    LOG(MiscCommon::info) << "Starting DDS UI transport engine using " << concurrentThreads
+                                          << " concurrent threads.";
+                    for (int x = 0; x < concurrentThreads; ++x)
+                    {
+                        m_workerThreads.create_thread([this]()
+                                                      {
+                                                          runService(10, m_acceptorUI->get_io_service());
+                                                      });
+                    }
+                }
+
                 if (_join)
                     m_workerThreads.join_all();
             }
@@ -101,7 +141,7 @@ namespace dds
             }
         }
 
-        void runService(short _counter)
+        void runService(short _counter, boost::asio::io_service& _io_service)
         {
             if (_counter <= 0)
             {
@@ -109,13 +149,13 @@ namespace dds
             }
             try
             {
-                m_acceptor.get_io_service().run();
+                _io_service.run();
             }
             catch (std::exception& ex)
             {
                 LOG(MiscCommon::error) << "CConnectionManagerImpl exception: " << ex.what();
                 LOG(MiscCommon::info) << "CConnectionManagerImpl restarting io_service";
-                runService(--_counter);
+                runService(--_counter, _io_service);
             }
         }
 
@@ -157,8 +197,14 @@ namespace dds
                     }
                 }
 
-                m_acceptor.close();
-                m_acceptor.get_io_service().stop();
+                m_acceptor->close();
+                m_acceptor->get_io_service().stop();
+
+                if (m_acceptor != nullptr)
+                {
+                    m_acceptorUI->close();
+                    m_acceptorUI->get_io_service().stop();
+                }
 
                 for (const auto& v : channels)
                 {
@@ -303,7 +349,9 @@ namespace dds
         }
 
       private:
-        void acceptHandler(typename T::connectionPtr_t _client, const boost::system::error_code& _ec)
+        void acceptHandler(typename T::connectionPtr_t _client,
+                           std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor,
+                           const boost::system::error_code& _ec)
         {
             if (!_ec)
             {
@@ -312,7 +360,7 @@ namespace dds
                     std::lock_guard<std::mutex> lock(m_mutex);
                     m_channels.push_back(_client);
                 }
-                createClientAndStartAccept();
+                createClientAndStartAccept(_acceptor);
             }
             else
             {
@@ -320,9 +368,9 @@ namespace dds
             }
         }
 
-        void createClientAndStartAccept()
+        void createClientAndStartAccept(std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor)
         {
-            typename T::connectionPtr_t newClient = T::makeNew(m_acceptor.get_io_service());
+            typename T::connectionPtr_t newClient = T::makeNew(_acceptor->get_io_service());
 
             A* pThis = static_cast<A*>(this);
             pThis->newClientCreated(newClient);
@@ -333,16 +381,22 @@ namespace dds
                                                           return this->removeClient(_channel);
                                                       });
 
-            m_acceptor.async_accept(
+            _acceptor->async_accept(
                 newClient->socket(),
-                std::bind(&CConnectionManagerImpl::acceptHandler, this, newClient, std::placeholders::_1));
+                std::bind(&CConnectionManagerImpl::acceptHandler, this, newClient, _acceptor, std::placeholders::_1));
         }
 
         void createInfoFile()
         {
             // The child needs to have that method
             A* pThis = static_cast<A*>(this);
-            pThis->_createInfoFile(m_acceptor.local_endpoint().port());
+
+            std::vector<size_t> ports;
+            ports.push_back(m_acceptor->local_endpoint().port());
+            if (m_acceptorUI != nullptr)
+                ports.push_back(m_acceptorUI->local_endpoint().port());
+
+            pThis->_createInfoFile(ports);
         }
 
         void deleteInfoFile()
@@ -367,12 +421,19 @@ namespace dds
         }
 
       private:
-        boost::asio::ip::tcp::acceptor m_acceptor;
-        boost::asio::ip::tcp::endpoint m_endpoint;
         /// The signal_set is used to register for process termination notifications.
-        boost::asio::signal_set m_signals;
+        std::shared_ptr<boost::asio::signal_set> m_signals;
         std::mutex m_mutex;
         typename T::connectionPtrVector_t m_channels;
+
+        /// Used for the main comunication
+        boost::asio::io_service m_io_service;
+        std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+
+        // Used for UI (priority) communication
+        boost::asio::io_service m_io_service_UI;
+        std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptorUI;
+
         boost::thread_group m_workerThreads;
     };
 }
