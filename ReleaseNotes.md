@@ -39,6 +39,8 @@ Modified: Optimized key-value persistence to shared memory.
 ### dds-key-value
 Fixed: stability improvements.    
 Added: Multiple subscribers for key-value notifications. (GH-70)   
+Added: If task can only read property then property will not be propagated. (GH-55)   
+Added: User task can subscribe to error events, for example, error will be send if property can not be propagated. (GH-55)   
 
 ### dds-user-defaults
 Modified: use string log severity values instead of numbers. (GH-49)    

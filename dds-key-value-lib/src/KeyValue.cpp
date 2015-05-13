@@ -48,3 +48,18 @@ void CKeyValue::unsubscribe()
     LOG(info) << "unsubscribing from key notification events.";
     CKeyValueGuard::instance().disconnect();
 }
+
+void CKeyValue::subscribeError(errorSignal_t::slot_function_type _subscriber)
+{
+    CKeyValueGuard::instance().initLock();
+    CKeyValueGuard::instance().initAgentConnection();
+    LOG(info) << "User process is waiting error messages.";
+
+    connection_t connection = CKeyValueGuard::instance().connectError(_subscriber);
+}
+
+void CKeyValue::unsubscribeError()
+{
+    LOG(info) << "unsubscribing from error message notifications";
+    CKeyValueGuard::instance().disconnectError();
+}

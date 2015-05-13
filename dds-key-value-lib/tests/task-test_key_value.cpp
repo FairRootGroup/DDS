@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
         size_t type(0);
+        bool testErrors(true);
 
         // Generic options
         bpo::options_description options("task-test_key_value options");
@@ -39,6 +40,8 @@ int main(int argc, char* argv[])
         options.add_options()(
             "max-value", bpo::value<size_t>(&nMaxValue)->default_value(g_maxValue), "A max value of the property");
         options.add_options()("type,t", bpo::value<size_t>(&type)->default_value(0), "Type of task. Must be 0 or 1.");
+        options.add_options()("test-errors",
+                              "Indicates that taks will also put incorrect data and test the error messages.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -51,6 +54,8 @@ int main(int argc, char* argv[])
             return false;
         }
 
+        testErrors = vm.count("test-errors");
+
         const std::vector<std::string> propNames_0 = {
             "property_1", "property_2", "property_3", "property_4", "property_5"
         };
@@ -62,6 +67,14 @@ int main(int argc, char* argv[])
         dds::CKeyValue ddsKeyValue;
         std::mutex keyMutex;
         std::condition_variable keyCondition;
+
+        if (testErrors)
+        {
+            ddsKeyValue.subscribeError([&keyCondition](const string& _msg)
+                                       {
+                                           LOG(error) << "Key-value error: " << _msg;
+                                       });
+        }
 
         LOG(info) << "Start task with type " << type;
 
@@ -82,6 +95,18 @@ int main(int argc, char* argv[])
                 }
 
                 LOG(info) << "Iteration " << i << " all values have been sent.";
+
+                // Writing non existing and readonly properties to test the errors
+                if (testErrors)
+                {
+                    LOG(info) << "Iteration " << i << " sending wrong properties.";
+                    ddsKeyValue.putValue("non_existing_property", "non_existing_property_name");
+                    const auto& readonlyPropNames = (type == 0) ? propNames_1 : propNames_0;
+                    for (const auto& prop : readonlyPropNames)
+                    {
+                        ddsKeyValue.putValue(prop, writePropValue);
+                    }
+                }
             }
             // For tasks with type 1 we start with subscribtion to properties.
             else if ((i % 2 == 0 && type == 1) || (i % 2 == 1 && type == 0))

@@ -38,6 +38,12 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
             if (m_syncHelper == nullptr)
                 throw invalid_argument("syncHelper is NULL");
             // m_syncHelper->m_cvUpdateKey.notify_all();
+            if (_attachment->m_msgSeverity == MiscCommon::error)
+            {
+                if (m_syncHelper == nullptr)
+                    throw invalid_argument("syncHelper is NULL");
+                m_syncHelper->m_errorSig(_attachment->m_sMsg);
+            }
             break;
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";

@@ -746,6 +746,24 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         propertyID = propertyKey.substr(0, pos);
     }
 
+    // Check if the property has a write access to property.
+    // If not just send back an error.
+    if (!sentFromUIChannel)
+    {
+        auto task = m_topo.getTaskByHash(channelPtr->getTaskID());
+        auto property = task->getProperty(propertyID);
+        if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
+        {
+            stringstream ss;
+            if (property == nullptr)
+                ss << "Can't propagate property that doesn't exist for task " << task->getId();
+            else
+                ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
+                   << task->getId();
+            channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
+        }
+    }
+
     CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
 
     for (auto it = taskIt.first; it != taskIt.second; ++it)

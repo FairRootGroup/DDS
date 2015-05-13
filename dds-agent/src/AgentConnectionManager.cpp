@@ -323,11 +323,26 @@ bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
     switch (_attachment->m_srcCommand)
     {
         case cmdUPDATE_KEY:
-            if (m_UIConnectionMng)
-                m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
+        {
+            if (_attachment->m_msgSeverity != MiscCommon::error)
+            {
+                if (m_UIConnectionMng)
+                    m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
+                else
+                    LOG(warning) << "UI connection manager doesn't run. Skipping simple message broadcasting.";
+            }
             else
-                LOG(warning) << "UI connection manager doesn't run. Skipping simple message broadcasting.";
+            {
+                // We got an error message about property propagation
+                LOG(MiscCommon::error) << _attachment->m_sMsg;
+                // Forward error message to UI channel
+                if (m_UIConnectionMng)
+                    m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
+                else
+                    LOG(warning) << "UI connection manager doesn't run. Skipping forwarding of the error message.";
+            }
             return true;
+        }
 
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";

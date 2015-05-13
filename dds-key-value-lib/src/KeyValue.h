@@ -19,6 +19,7 @@ namespace dds
       public:
         typedef std::map<std::string, std::string> valuesMap_t;
         typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+        typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
         typedef boost::signals2::connection connection_t;
 
       public:
@@ -30,6 +31,9 @@ namespace dds
 
         void subscribe(signal_t::slot_function_type _subscriber);
         void unsubscribe();
+
+        void subscribeError(errorSignal_t::slot_function_type _subscriber);
+        void unsubscribeError();
     };
 }
 

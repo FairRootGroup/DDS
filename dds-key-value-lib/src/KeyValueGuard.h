@@ -23,6 +23,7 @@
 namespace dds
 {
     typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+    typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
     typedef boost::signals2::connection connection_t;
     typedef std::shared_ptr<boost::interprocess::named_mutex> sharedMemoryMutexPtr_t;
     typedef std::shared_ptr<boost::interprocess::managed_shared_memory> managedSharedMemoryPtr_t;
@@ -35,6 +36,7 @@ namespace dds
     struct SSyncHelper
     {
         signal_t m_updateSig;
+        errorSignal_t m_errorSig;
     };
 
     class CKeyValueGuard
@@ -65,6 +67,14 @@ namespace dds
         void disconnect()
         {
             return m_syncHelper.m_updateSig.disconnect_all_slots();
+        }
+        connection_t connectError(errorSignal_t::slot_function_type _subscriber)
+        {
+            return m_syncHelper.m_errorSig.connect(_subscriber);
+        }
+        void disconnectError()
+        {
+            return m_syncHelper.m_errorSig.disconnect_all_slots();
         }
         static void clean();
 
