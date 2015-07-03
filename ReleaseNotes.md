@@ -38,6 +38,7 @@ Modified: Optimized key-value persistence to shared memory.
 
 ### dds-key-value
 Fixed: stability improvements.    
+Fixed: multiple protections for a case when a user process calls key/value API, but the corresponding agent is offline. (GH-87)    
 Added: Multiple subscribers for key-value notifications. (GH-70)   
 Added: If task can only read property then property will not be propagated. (GH-55)   
 Added: User task can subscribe to error events, for example, error will be send if property can not be propagated. (GH-55)   

@@ -249,6 +249,10 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
 void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
 {
     LOG(debug) << "CKeyValueGuard::getValues key=" << _key << " ...";
+
+    if (!m_sharedMemoryMutex)
+        throw invalid_argument("CKeyValueGuard::getValue: can't lock shared memmory. Probably DDS agent is offline.");
+
     if (_values == nullptr)
         throw invalid_argument("CKeyValueGuard::getValue: _values can't be NULL");
 

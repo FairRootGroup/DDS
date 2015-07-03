@@ -319,8 +319,10 @@ namespace dds
                     if (copyMessages)
                     {
                         LOG(MiscCommon::debug) << "copy accumulated queue to write queue "
-                                                  "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
-                                               << " m_writeQueue.size=" << m_writeQueue.size();
+                                                  "m_accumulativeWriteQueue.size="
+                                               << m_accumulativeWriteQueue.size()
+                                               << " m_writeQueue.size="
+                                               << m_writeQueue.size();
 
                         // copy queue to main queue
                         std::copy(m_accumulativeWriteQueue.begin(),
@@ -344,8 +346,10 @@ namespace dds
                                     {
                                         LOG(MiscCommon::debug)
                                             << "deadline_timer called: copy accumulated queue to write queue "
-                                               "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
-                                            << " m_writeQueue.size=" << m_writeQueue.size();
+                                               "m_accumulativeWriteQueue.size="
+                                            << m_accumulativeWriteQueue.size()
+                                            << " m_writeQueue.size="
+                                            << m_writeQueue.size();
                                         std::copy(m_accumulativeWriteQueue.begin(),
                                                   m_accumulativeWriteQueue.end(),
                                                   back_inserter((m_isHandshakeOK) ? m_writeQueue
@@ -733,7 +737,8 @@ namespace dds
                             LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
                         else
                             LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                     "closing the connection: " << ec.message();
+                                                     "closing the connection: "
+                                                  << ec.message();
 
                         stop();
                     }
@@ -785,7 +790,8 @@ namespace dds
                             LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
                         else
                             LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                     "closing the connection: " << ec.message();
+                                                     "closing the connection: "
+                                                  << ec.message();
                         stop();
                     }
                 });
@@ -847,8 +853,8 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                         {
-                            LOG(MiscCommon::debug)
-                                << "Disconnect is detected while on write message: " << _ec.message();
+                            LOG(MiscCommon::debug) << "Disconnect is detected while on write message: "
+                                                   << _ec.message();
                             onDissconnect();
                         }
                         else
@@ -859,7 +865,8 @@ namespace dds
                                                        << _ec.message();
                             else
                                 LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: " << _ec.message();
+                                                         "closing the connection: "
+                                                      << _ec.message();
                             stop();
                         }
                     }

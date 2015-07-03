@@ -91,7 +91,10 @@ int main(int argc, char* argv[])
                 const auto& writePropNames = (type == 0) ? propNames_0 : propNames_1;
                 for (const auto& prop : writePropNames)
                 {
-                    ddsKeyValue.putValue(prop, writePropValue);
+                    if (0 != ddsKeyValue.putValue(prop, writePropValue))
+                    {
+                        LOG(fatal) << "putValue failed.";
+                    }
                 }
 
                 LOG(info) << "Iteration " << i << " all values have been sent.";
@@ -104,7 +107,10 @@ int main(int argc, char* argv[])
                     const auto& readonlyPropNames = (type == 0) ? propNames_1 : propNames_0;
                     for (const auto& prop : readonlyPropNames)
                     {
-                        ddsKeyValue.putValue(prop, writePropValue);
+                        if (0 != ddsKeyValue.putValue(prop, writePropValue))
+                        {
+                            LOG(fatal) << "putValue failed.";
+                        }
                     }
                 }
             }

@@ -36,16 +36,17 @@ namespace dds
         void doAwaitStop();
         bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                             CAgentChannel::weakConnectionPtr_t _channel);
-        CAgentChannel::weakConnectionPtr_t getWeakPtr(CAgentChannel* _client)
+        CAgentChannel::weakConnectionPtr_t getAgentChannel()
         {
-            if (m_channel.get() == _client)
-                return m_channel;
-            return typename CAgentChannel::weakConnectionPtr_t();
+            return m_channel;
         }
 
       private:
         boost::asio::io_service m_service;
         boost::asio::signal_set m_signals;
+        // Don't use m_channel directly, only via getAgentChannel
+        // In case if channel is destoryed, there still could be user calling update key
+        // TODO: need to find a way to hide m_channel from direct access
         CAgentChannel::connectionPtr_t m_channel;
         bool m_bStarted;
         boost::thread_group m_workerThreads;

@@ -128,7 +128,11 @@ void CAgentConnectionManager::stop()
     try
     {
         m_service.stop();
-        m_channel->stop();
+        if (!getAgentChannel().expired())
+        {
+            auto p = getAgentChannel().lock();
+            p->stop();
+        }
     }
     catch (exception& e)
     {
@@ -148,7 +152,11 @@ int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
 {
     try
     {
-        m_channel->pushMsg<cmdUPDATE_KEY>(_cmd);
+        if (getAgentChannel().expired())
+            throw runtime_error("Agent channel is not offline");
+
+        auto p = getAgentChannel().lock();
+        p->pushMsg<cmdUPDATE_KEY>(_cmd);
         return 0;
     }
     catch (const exception& _e)
