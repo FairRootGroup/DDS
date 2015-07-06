@@ -10,6 +10,8 @@
 #include "TopoUtils.h"
 // STD
 #include <string>
+// MiscCommon
+#include "CRC.h"
 
 using namespace std;
 using namespace dds;
@@ -213,7 +215,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             m_hashPathToTaskMap[hashPath] = task;
         }
 
-        uint64_t crc = crc64(hashPath);
+        uint64_t crc = MiscCommon::crc64(hashPath);
         if (m_hashToTaskInfoMap.find(crc) != m_hashToTaskInfoMap.end())
         {
             // std::stringstream ss;
@@ -249,7 +251,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             m_hashPathToTaskCollectionMap[m_currentTaskCollectionHashPath] = collection;
         }
 
-        uint64_t crc = crc64(m_currentTaskCollectionHashPath);
+        uint64_t crc = MiscCommon::crc64(m_currentTaskCollectionHashPath);
         if (m_hashToTaskCollectionMap.find(crc) != m_hashToTaskCollectionMap.end())
         {
             // std::stringstream ss;

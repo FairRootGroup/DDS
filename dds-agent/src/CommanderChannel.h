@@ -28,8 +28,8 @@ namespace dds
             MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
             MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
             MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
-            MESSAGE_HANDLER(cmdGET_UUID, on_cmdGET_UUID)
-            MESSAGE_HANDLER(cmdSET_UUID, on_cmdSET_UUID)
+            MESSAGE_HANDLER(cmdGET_ID, on_cmdGET_ID)
+            MESSAGE_HANDLER(cmdSET_ID, on_cmdSET_ID)
             MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
             MESSAGE_HANDLER(cmdASSIGN_USER_TASK, on_cmdASSIGN_USER_TASK)
             MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
@@ -56,8 +56,8 @@ namespace dds
             bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
-            bool on_cmdGET_UUID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_UUID>::ptr_t _attachment);
-            bool on_cmdSET_UUID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_UUID>::ptr_t _attachment);
+            bool on_cmdGET_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_ID>::ptr_t _attachment);
+            bool on_cmdSET_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_ID>::ptr_t _attachment);
             bool on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment);
             bool on_cmdASSIGN_USER_TASK(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdASSIGN_USER_TASK>::ptr_t _attachment);
@@ -69,12 +69,12 @@ namespace dds
             bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
 
           private:
-            void readAgentUUIDFile();
-            void createAgentUUIDFile() const;
-            void deleteAgentUUIDFile() const;
+            void readAgentIDFile();
+            void createAgentIDFile() const;
+            void deleteAgentIDFile() const;
 
           private:
-            boost::uuids::uuid m_id;
+            uint64_t m_id;
             std::string m_sUsrExe;
             std::string m_sTaskId;
             size_t m_taskIndex;

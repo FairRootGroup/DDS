@@ -11,20 +11,30 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SUUIDCmd::normalizeToLocal() const
+void SIDCmd::normalizeToLocal() const
 {
+    m_id = inet::normalizeRead(m_id);
 }
 
-void SUUIDCmd::normalizeToRemote() const
+void SIDCmd::normalizeToRemote() const
 {
+    m_id = inet::normalizeWrite(m_id);
 }
 
-void SUUIDCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SIDCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    copy(_data.begin(), _data.end(), m_id.begin());
+    if (_data.size() < size())
+    {
+        stringstream ss;
+        ss << "SIDCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
+        throw runtime_error(ss.str());
+    }
+
+    size_t idx(0);
+    inet::readData(&m_id, &_data, &idx);
 }
 
-void SUUIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    copy(m_id.begin(), m_id.end(), back_inserter(*_data));
+    inet::pushData(m_id, _data);
 }

@@ -24,6 +24,7 @@ namespace dds
     {
         enum ECmdType
         {
+
             cmdUNKNOWN = -1,
             cmdSHUTDOWN = 1,
             cmdHANDSHAKE,  // attachment: SVersionCmd
@@ -38,9 +39,9 @@ namespace dds
             cmdBINARY_ATTACHMENT,          // attachment: SBinanryAttachmentCmd. The message contains binary attachment.
             cmdBINARY_ATTACHMENT_RECEIVED, // attachment: SBinaryAttachmentReceivedCmd.
             cmdBINARY_ATTACHMENT_START,    // attachment: SBinaryAttachmentStartCmd.
-            cmdGET_UUID,
-            cmdREPLY_UUID, // attachment: SUUIDCmd
-            cmdSET_UUID,   // attachment: SUUIDCmd
+            cmdGET_ID,
+            cmdREPLY_ID, // attachment: SUUIDCmd
+            cmdSET_ID,   // attachment: SUUIDCmd
             cmdGET_LOG,
             cmdGET_AGENTS_INFO,
             cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
@@ -73,9 +74,9 @@ namespace dds
             { cmdBINARY_ATTACHMENT, NAME_TO_STRING(cmdBINARY_ATTACHMENT) },
             { cmdBINARY_ATTACHMENT_RECEIVED, NAME_TO_STRING(cmdBINARY_ATTACHMENT_RECEIVED) },
             { cmdBINARY_ATTACHMENT_START, NAME_TO_STRING(cmdBINARY_ATTACHMENT_START) },
-            { cmdGET_UUID, NAME_TO_STRING(cmdGET_UUID) },
-            { cmdREPLY_UUID, NAME_TO_STRING(cmdREPLY_UUID) },
-            { cmdSET_UUID, NAME_TO_STRING(cmdSET_UUID) },
+            { cmdGET_ID, NAME_TO_STRING(cmdGET_ID) },
+            { cmdREPLY_ID, NAME_TO_STRING(cmdREPLY_ID) },
+            { cmdSET_ID, NAME_TO_STRING(cmdSET_ID) },
             { cmdGET_LOG, NAME_TO_STRING(cmdGET_LOG) },
             { cmdGET_AGENTS_INFO, NAME_TO_STRING(cmdGET_AGENTS_INFO) },
             { cmdREPLY_AGENTS_INFO, NAME_TO_STRING(cmdREPLY_AGENTS_INFO) },

@@ -7,12 +7,6 @@
 
 // DDS
 #include "BasicCmd.h"
-// BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#pragma clang diagnostic pop
 
 namespace dds
 {

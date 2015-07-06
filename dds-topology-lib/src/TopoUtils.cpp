@@ -7,8 +7,6 @@
 #include "TopoUtils.h"
 // STD
 #include <stdexcept>
-// BOOST
-#include <boost/crc.hpp>
 
 using namespace std;
 namespace dds
@@ -109,13 +107,6 @@ namespace dds
                 return EHostPatternType::HostName;
             else
                 throw runtime_error("Host pattern type with name " + _name + " does not exist.");
-        }
-
-        uint64_t crc64(const string& _str)
-        {
-            boost::crc_optimal<64, 0x04C11DB7, 0, 0, false, false> crc;
-            crc.process_bytes(_str.data(), _str.size());
-            return crc.checksum();
         }
     }
 }

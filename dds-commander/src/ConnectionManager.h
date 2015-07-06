@@ -73,8 +73,12 @@ namespace dds
             bool on_cmdSET_TOPOLOGY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdREPLY_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
+                                CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
+            uint64_t getAgentId();
+
             CGetLogChannelInfo m_getLog;
             CTestChannelInfo m_transportTest;
             CActivateAgentsChannelInfo m_ActivateAgents;
@@ -89,6 +93,10 @@ namespace dds
 
             boost::property_tree::ptree m_propertyPT;
             std::mutex m_propertyPTMutex;
+
+            // Set stores all generated agent ID to be able to detect collisions
+            std::set<uint64_t> m_agentIdSet;
+            std::mutex m_agentIdSetMutex;
         };
     }
 }

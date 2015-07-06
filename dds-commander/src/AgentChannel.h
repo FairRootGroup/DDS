@@ -45,7 +45,7 @@ namespace dds
                                          case protocol_api::EChannelType::AGENT:
                                          {
                                              m_state = EAgentState::idle;
-                                             pushMsg<protocol_api::cmdGET_UUID>();
+                                             pushMsg<protocol_api::cmdGET_ID>();
                                              pushMsg<protocol_api::cmdGET_HOST_INFO>();
                                          }
                                              return;
@@ -72,7 +72,7 @@ namespace dds
             MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
             // - get Agents Info command
             MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
-            MESSAGE_HANDLER(cmdREPLY_UUID, on_cmdREPLY_UUID)
+            MESSAGE_HANDLER(cmdREPLY_ID, on_cmdREPLY_ID)
             MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
             MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
             MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
@@ -90,14 +90,17 @@ namespace dds
             END_MSG_MAP()
 
           public:
-            const boost::uuids::uuid& getId() const;
+            uint64_t getId() const;
+            void setId(uint64_t _id);
+
             const protocol_api::SHostInfoCmd& getRemoteHostInfo() const
             {
                 return m_remoteHostInfo;
             }
-            uint64_t getTaskID() const;
 
+            uint64_t getTaskID() const;
             void setTaskID(uint64_t _taskID);
+
             std::chrono::milliseconds getStartupTime() const
             {
                 return m_startUpTime;
@@ -137,7 +140,7 @@ namespace dds
             bool on_cmdREPLY_HOST_INFO(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_HOST_INFO>::ptr_t _attachment);
             bool on_cmdGED_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGED_PID>::ptr_t _attachment);
-            bool on_cmdREPLY_UUID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_UUID>::ptr_t _attachment);
+            bool on_cmdREPLY_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment);
             bool on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
@@ -161,13 +164,15 @@ namespace dds
             std::string _remoteEndIDString()
             {
                 if (getChannelType() == protocol_api::EChannelType::AGENT)
-                    return boost::uuids::to_string(m_id);
+                    return std::to_string(m_id);
                 else
                     return "UI client";
             }
 
           private:
-            boost::uuids::uuid m_id;
+            // We use unique ID because we need to identify a new agent after shutdown of the system on the same host.
+            // We have to distinguish between new and old agent.
+            uint64_t m_id;
             protocol_api::SHostInfoCmd m_remoteHostInfo;
             std::string m_sCurrentTopoFile;
             uint64_t m_taskID;

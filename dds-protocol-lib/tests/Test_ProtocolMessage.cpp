@@ -213,20 +213,20 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     }
 }
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_UUID)
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_ID)
 {
-    const boost::uuids::uuid id = boost::uuids::random_generator()();
-    const unsigned int cmdSize = 16;
+    const uint64_t id = 123;
+    const unsigned int cmdSize = 8;
 
     // Create a message
-    SUUIDCmd cmd_src;
+    SIDCmd cmd_src;
     cmd_src.m_id = id;
     MiscCommon::BYTEVector_t data;
     cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encode(cmdSET_UUID, data);
+    msg_src.encode(cmdSET_ID, data);
 
-    BOOST_CHECK(msg_src.header().m_cmd == cmdSET_UUID);
+    BOOST_CHECK(msg_src.header().m_cmd == cmdSET_ID);
 
     BOOST_CHECK(cmd_src.size() == cmdSize);
 
@@ -242,27 +242,27 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_UUID)
     BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
 
     // Read the message
-    SUUIDCmd cmd_dest;
+    SIDCmd cmd_dest;
     cmd_dest.convertFromData(msg_dest.bodyToContainer());
 
     BOOST_CHECK(cmd_src == cmd_dest);
     BOOST_CHECK(id == cmd_dest.m_id);
 }
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_UUID)
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_ID)
 {
-    const boost::uuids::uuid id = boost::uuids::random_generator()();
-    const unsigned int cmdSize = 16;
+    const uint64_t id = 123;
+    const unsigned int cmdSize = 8;
 
     // Create a message
-    SUUIDCmd cmd_src;
+    SIDCmd cmd_src;
     cmd_src.m_id = id;
     MiscCommon::BYTEVector_t data;
     cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
-    msg_src.encode(cmdREPLY_UUID, data);
+    msg_src.encode(cmdREPLY_ID, data);
 
-    BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_UUID);
+    BOOST_CHECK(msg_src.header().m_cmd == cmdREPLY_ID);
 
     BOOST_CHECK(cmd_src.size() == cmdSize);
 
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_UUID)
     BOOST_CHECK(msg_src.header().m_cmd == msg_dest.header().m_cmd);
 
     // Read the message
-    SUUIDCmd cmd_dest;
+    SIDCmd cmd_dest;
     cmd_dest.convertFromData(msg_dest.bodyToContainer());
 
     BOOST_CHECK(cmd_src == cmd_dest);

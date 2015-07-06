@@ -5,11 +5,8 @@
 
 // DDS
 #include "AgentChannel.h"
+#include "CRC.h"
 // BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#include <boost/uuid/uuid_generators.hpp>
-#pragma clang diagnostic pop
 #include <boost/filesystem.hpp>
 
 using namespace std;
@@ -19,9 +16,14 @@ using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 
-const boost::uuids::uuid& CAgentChannel::getId() const
+uint64_t CAgentChannel::getId() const
 {
     return m_id;
+}
+
+void CAgentChannel::setId(uint64_t _id)
+{
+    m_id = _id;
 }
 
 uint64_t CAgentChannel::getTaskID() const
@@ -90,24 +92,10 @@ bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _att
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment)
+bool CAgentChannel::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment)
 {
-    LOG(debug) << "cmdREPLY_GET_UUID attachment [" << *_attachment << "] received from: " << remoteEndIDString();
-
-    if (_attachment->m_id.is_nil())
-    {
-        // If UUID was not assigned to agent than generate new UUID and send it to agent
-        m_id = boost::uuids::random_generator()();
-        SUUIDCmd msg_cmd;
-        msg_cmd.m_id = m_id;
-        pushMsg<cmdSET_UUID>(msg_cmd);
-    }
-    else
-    {
-        m_id = _attachment->m_id;
-    }
-
-    return true;
+    // Return false. This message will be processed by ConnectionManager.
+    return false;
 }
 
 bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment)

@@ -155,7 +155,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
 
 bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
 {
-    deleteAgentUUIDFile();
+    deleteAgentIDFile();
     LOG(info) << "The Agent [" << m_id << "] exited.";
     stop();
 
@@ -193,35 +193,37 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_t _attachment)
+bool CCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _attachment)
 {
-    // If file exist return uuid from file.
+    LOG(info) << "cmdGET_ID received from: " << remoteEndIDString();
+
+    // If file exist return id from file.
     // If file does not exist than return uuid_nil.
 
-    const string sAgentUUIDFile(CUserDefaults::instance().getAgentUUIDFile());
-    if (file_exists(sAgentUUIDFile))
+    const string sAgentIDFile(CUserDefaults::instance().getAgentIDFile());
+    if (file_exists(sAgentIDFile))
     {
-        readAgentUUIDFile();
+        readAgentIDFile();
     }
     else
     {
-        m_id = boost::uuids::nil_uuid();
+        m_id = 0;
     }
 
-    SUUIDCmd msg_cmd;
+    SIDCmd msg_cmd;
     msg_cmd.m_id = m_id;
-    pushMsg<cmdREPLY_UUID>(msg_cmd);
+    pushMsg<cmdREPLY_ID>(msg_cmd);
 
     return true;
 }
 
-bool CCommanderChannel::on_cmdSET_UUID(SCommandAttachmentImpl<cmdSET_UUID>::ptr_t _attachment)
+bool CCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment)
 {
-    LOG(info) << "cmdSET_UUID attachment [" << *_attachment << "] from " << remoteEndIDString();
+    LOG(info) << "cmdSET_ID attachment [" << *_attachment << "] from " << remoteEndIDString();
 
     m_id = _attachment->m_id;
 
-    createAgentUUIDFile();
+    createAgentIDFile();
 
     return true;
 }
@@ -296,43 +298,43 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
     return true;
 }
 
-void CCommanderChannel::readAgentUUIDFile()
+void CCommanderChannel::readAgentIDFile()
 {
-    const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
-    LOG(info) << "Reading an agent UUID file: " << sAgentUUIDFile;
-    ifstream f(sAgentUUIDFile.c_str());
+    const string sAgentIDFile(CUserDefaults::getAgentIDFile());
+    LOG(info) << "Reading an agent ID file: " << sAgentIDFile;
+    ifstream f(sAgentIDFile.c_str());
     if (!f.is_open() || !f.good())
     {
-        string msg("Could not open an agent UUID file: ");
-        msg += sAgentUUIDFile;
+        string msg("Could not open an agent ID file: ");
+        msg += sAgentIDFile;
         throw runtime_error(msg);
     }
     f >> m_id;
 }
 
-void CCommanderChannel::createAgentUUIDFile() const
+void CCommanderChannel::createAgentIDFile() const
 {
-    const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
-    LOG(info) << "Creating an agent UUID file: " << sAgentUUIDFile;
-    ofstream f(sAgentUUIDFile.c_str());
+    const string sAgentIDFile(CUserDefaults::getAgentIDFile());
+    LOG(info) << "Creating an agent ID file: " << sAgentIDFile;
+    ofstream f(sAgentIDFile.c_str());
     if (!f.is_open() || !f.good())
     {
-        string msg("Could not open an agent UUID file: ");
-        msg += sAgentUUIDFile;
+        string msg("Could not open an agent ID file: ");
+        msg += sAgentIDFile;
         throw runtime_error(msg);
     }
 
     f << m_id;
 }
 
-void CCommanderChannel::deleteAgentUUIDFile() const
+void CCommanderChannel::deleteAgentIDFile() const
 {
-    const string sAgentUUIDFile(CUserDefaults::getAgentUUIDFile());
-    if (sAgentUUIDFile.empty())
+    const string sAgentIDFile(CUserDefaults::getAgentIDFile());
+    if (sAgentIDFile.empty())
         return;
 
     // TODO: check error code
-    unlink(sAgentUUIDFile.c_str());
+    unlink(sAgentIDFile.c_str());
 }
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
