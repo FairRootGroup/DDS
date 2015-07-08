@@ -89,16 +89,17 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
 
     function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel * _channel)>
-        fBINARY_ATTACHMENT_RECEIVED = [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
-                                             CAgentChannel* _channel) -> bool
+        fBINARY_ATTACHMENT_RECEIVED =
+            [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel* _channel)
+                -> bool
     {
         return this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
 
     function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_AGENTS_INFO = [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                  CAgentChannel* _channel) -> bool
+        fGET_AGENTS_INFO =
+            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_AGENTS_INFO(_attachment, getWeakPtr(_channel));
     };
@@ -112,24 +113,24 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
     function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fACTIVATE_AGENT = [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fACTIVATE_AGENT =
+            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdACTIVATE_AGENT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
     function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fSTOP_USER_TASK =
+            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSTOP_USER_TASK(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
 
     function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fTRANSPORT_TEST = [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fTRANSPORT_TEST =
+            [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdTRANSPORT_TEST(_attachment, getWeakPtr(_channel));
     };
@@ -150,24 +151,24 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
     function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
-        fUSER_TASK_DONE = [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fUSER_TASK_DONE =
+            [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_LIST = [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                CAgentChannel* _channel) -> bool
+        fGET_PROP_LIST =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_PROP_LIST(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_VALUES = [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                  CAgentChannel* _channel) -> bool
+        fGET_PROP_VALUES =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
@@ -422,11 +423,13 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         for (const auto& sch : schedule)
         {
             SAssignUserTaskCmd msg_cmd;
-
-            // Set Task ID
             msg_cmd.m_sID = to_string(sch.m_taskID);
-            msg_cmd.m_taskIndex = sch.m_taskIndex;
-            msg_cmd.m_collectionIndex = sch.m_collectionIndex;
+            msg_cmd.m_taskIndex = sch.m_taskInfo.m_taskIndex;
+            msg_cmd.m_collectionIndex = sch.m_taskInfo.m_collectionIndex;
+            msg_cmd.m_taskPath = sch.m_taskInfo.m_taskPath;
+            msg_cmd.m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
+            msg_cmd.m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
+            msg_cmd.m_taskName = sch.m_taskInfo.m_task->getId();
 
             if (sch.m_channel.expired())
                 continue;
@@ -438,9 +441,9 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             ptr->setTaskID(sch.m_taskID);
             m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
 
-            if (sch.m_task->isExeReachable())
+            if (sch.m_taskInfo.m_task->isExeReachable())
             {
-                msg_cmd.m_sExeFile = sch.m_task->getExe();
+                msg_cmd.m_sExeFile = sch.m_taskInfo.m_task->getExe();
             }
             else
             {
@@ -449,7 +452,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
                 // Expand the string for the program to extract exe name and command line arguments
                 wordexp_t result;
-                switch (wordexp(sch.m_task->getExe().c_str(), &result, 0))
+                switch (wordexp(sch.m_taskInfo.m_task->getExe().c_str(), &result, 0))
                 {
                     case 0:
                     {
@@ -478,32 +481,33 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
                         // If the error was WRDE_NOSPACE,
                         // then perhaps part of the result was allocated.
                         throw runtime_error("memory error occurred while processing the user's executable path: " +
-                                            sch.m_task->getExe());
+                                            sch.m_taskInfo.m_task->getExe());
 
                     case WRDE_BADCHAR:
                         throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
-                                            sch.m_task->getExe());
+                                            sch.m_taskInfo.m_task->getExe());
                         break;
 
                     case WRDE_BADVAL:
                         throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
                                             "told us to consider this an error in " +
-                                            sch.m_task->getExe());
+                                            sch.m_taskInfo.m_task->getExe());
                         break;
 
                     case WRDE_CMDSUB:
                         throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
                                             "consider this an error in " +
-                                            sch.m_task->getExe());
+                                            sch.m_taskInfo.m_task->getExe());
                         break;
                     case WRDE_SYNTAX:
                         throw runtime_error(
                             "Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
-                            sch.m_task->getExe());
+                            sch.m_taskInfo.m_task->getExe());
                         break;
 
                     default: // Some other error.
-                        throw runtime_error("failed to process the user's executable path: " + sch.m_task->getExe());
+                        throw runtime_error("failed to process the user's executable path: " +
+                                            sch.m_taskInfo.m_task->getExe());
                 }
             }
             ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);

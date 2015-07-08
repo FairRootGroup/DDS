@@ -10,7 +10,8 @@ Added: additional log levels. DDS has learned 3 new levels of protocol log event
 Fixed: fix implementation of cmdSHUTDOWN. (GH-65)   
 Fixed: remove shared memory on exit.    
 Fixed: fix monitoring thread to prevent breaks if custom callbacks throw exceptions. (GH-80)  
-Modified: Name of task output file changed to "user_task_<datetime>_<task_id>_<out/err>.log". (GH-75)    
+Modified: Name of task output file changed to "user_task_<datetime>_<task_id>_<out/err>.log". (GH-75)   
+Added: group name, collection name, task name and task path are exported as environment variables for each task. (GH-95)   
 
 ### dds scout
 Modified: New lock algorithm, instead of the lockfile command.    

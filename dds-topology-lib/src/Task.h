@@ -46,6 +46,10 @@ namespace dds
         void addProperty(TopoPropertyPtr_t _property);
         void setRequirement(RequirementPtr_t _requirement);
 
+        // Parent collection and group ID
+        std::string getParentCollectionId() const;
+        std::string getParentGroupId() const;
+
         /// \brief If parent is a group than return N, else return 1.
         size_t getTotalCounter() const;
 

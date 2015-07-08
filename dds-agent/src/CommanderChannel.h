@@ -71,6 +71,10 @@ namespace dds
         std::string m_sTaskId;
         size_t m_taskIndex;
         size_t m_collectionIndex;
+        std::string m_taskPath;
+        std::string m_groupName;
+        std::string m_collectionName;
+        std::string m_taskName;
         handlerOnNewUserTaks_t m_onNewUserTaskCallback;
         uint16_t m_connectionAttempts;
     };

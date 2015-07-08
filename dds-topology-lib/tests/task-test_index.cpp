@@ -14,6 +14,21 @@ using namespace dds;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
+void setVarFromEnv(const string& _name, string& _value)
+{
+    // DDS_GROUP_NAME
+    const char* ddsVar = getenv(_name.c_str());
+    _value = "NOT SET";
+    if (NULL == ddsVar)
+    {
+        LOG(log_stderr) << "USER TASK: $" << _name << " variable is not set";
+    }
+    else
+    {
+        _value = ddsVar;
+    }
+}
+
 int main(int argc, char* argv[])
 {
     try
@@ -46,43 +61,40 @@ int main(int argc, char* argv[])
         CKeyValue ddsKeyValue;
 
         // Get environment variables
-        const char* ddsTaskId = getenv("DDS_TASK_ID");
+        // DDS_TASK_ID
         string taskId;
-        if (NULL == ddsTaskId)
-        {
-            LOG(log_stderr) << "USER TASK: DDS_TASK_ID variable is not set.";
-        }
-        else
-        {
-            taskId = ddsTaskId;
-        }
+        setVarFromEnv("DDS_TASK_ID", taskId);
 
-        const char* ddsTaskIndex = getenv("DDS_TASK_INDEX");
-        string taskIndex("NOT SET");
-        if (NULL == ddsTaskIndex)
-        {
-            LOG(log_stderr) << "USER TASK: DDS_TASK_INDEX variable is not set.";
-        }
-        else
-        {
-            taskIndex = ddsTaskIndex;
-        }
+        // DDS_TASK_INDEX
+        string taskIndex;
+        setVarFromEnv("DDS_TASK_INDEX", taskIndex);
 
-        const char* ddsCollectionIndex = getenv("DDS_COLLECTION_INDEX");
-        string collectionIndex("NOT SET");
-        if (NULL == ddsCollectionIndex)
-        {
-            LOG(log_stderr) << "USER TASK: DDS_COLLECTION_INDEX variable is not set";
-        }
-        else
-        {
-            collectionIndex = ddsCollectionIndex;
-        }
+        // DDS_COLLECTION_INDEX
+        string collectionIndex;
+        setVarFromEnv("DDS_COLLECTION_INDEX", collectionIndex);
+
+        // DDS_TASK_PATH
+        string taskPath;
+        setVarFromEnv("DDS_TASK_PATH", taskPath);
+
+        // DDS_GROUP_NAME
+        string groupName;
+        setVarFromEnv("DDS_GROUP_NAME", groupName);
+
+        // DDS_COLLECTION_NAME
+        string collectionName;
+        setVarFromEnv("DDS_COLLECTION_NAME", collectionName);
+
+        // DDS_TASK_NAME
+        string taskName;
+        setVarFromEnv("DDS_TASK_NAME", taskName);
 
         stringstream ss;
         ss << "DDS_TASK_ID=" << taskId << " optType=" << optType << " optTaskIndex=" << optTaskIndex
            << " optCollectionIndex=" << optCollectionIndex << " DDS_TASK_INDEX=" << taskIndex
-           << " DDS_COLLECTION_INDEX=" << collectionIndex;
+           << " DDS_COLLECTION_INDEX=" << collectionIndex << " DDS_TASK_PATH=" << taskPath
+           << " DDS_GROUP_NAME=" << groupName << " DDS_COLLECTION_NAME=" << collectionName
+           << " DDS_TASK_NAME=" << taskName;
         ddsKeyValue.putValue("IndexInfo", ss.str());
 
         LOG(log_stdout) << "USER TASK: " << ss.str();

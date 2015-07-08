@@ -39,12 +39,16 @@ void SAssignUserTaskCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         advance(iter, tmp.size() + 1);
     }
 
-    // there are so far only 2 string fields in this msg container
-    if (v.size() != 2)
+    // there are so far only 6 string fields in this msg container
+    if (v.size() != 6)
         throw runtime_error("AssignUserTaskCmd: can't import data. Number of fields doesn't match.");
 
     m_sExeFile.assign(v[0]);
     m_sID.assign(v[1]);
+    m_taskPath.assign(v[2]);
+    m_groupName.assign(v[3]);
+    m_collectionName.assign(v[4]);
+    m_taskName.assign(v[5]);
 }
 
 void SAssignUserTaskCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
@@ -56,5 +60,17 @@ void SAssignUserTaskCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     _data->push_back('\0');
 
     copy(m_sID.begin(), m_sID.end(), back_inserter(*_data));
+    _data->push_back('\0');
+
+    copy(m_taskPath.begin(), m_taskPath.end(), back_inserter(*_data));
+    _data->push_back('\0');
+
+    copy(m_groupName.begin(), m_groupName.end(), back_inserter(*_data));
+    _data->push_back('\0');
+
+    copy(m_collectionName.begin(), m_collectionName.end(), back_inserter(*_data));
+    _data->push_back('\0');
+
+    copy(m_taskName.begin(), m_taskName.end(), back_inserter(*_data));
     _data->push_back('\0');
 }

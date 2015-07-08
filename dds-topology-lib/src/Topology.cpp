@@ -226,6 +226,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
         info.m_task = task;
         info.m_taskIndex = index;
         info.m_collectionIndex = collectionCounter;
+        info.m_taskPath = hashPath;
         m_hashToTaskInfoMap[crc] = info;
 
         if (task->getParent()->getType() == ETopoType::COLLECTION)

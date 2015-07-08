@@ -135,6 +135,22 @@ RequirementPtr_t CTask::getRequirement() const
     return m_requirement;
 }
 
+std::string CTask::getParentCollectionId() const
+{
+    return (getParent() == nullptr || getParent()->getType() == ETopoType::GROUP) ? "" : getParent()->getId();
+}
+
+std::string CTask::getParentGroupId() const
+{
+    if (getParent() == nullptr)
+        return "";
+    else if (getParent()->getType() == ETopoType::GROUP)
+        return getParent()->getId();
+    else if (getParent()->getParent() != nullptr)
+        return getParent()->getParent()->getId();
+    return "";
+}
+
 void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try

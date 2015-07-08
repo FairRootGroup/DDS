@@ -124,10 +124,8 @@ void CSSHScheduler::scheduleTasks(const dds::CTopology& _topology,
 
                     SSchedule schedule;
                     schedule.m_channel = channel;
-                    schedule.m_task = task;
+                    schedule.m_taskInfo = it->second;
                     schedule.m_taskID = id;
-                    schedule.m_taskIndex = it->second.m_taskIndex;
-                    schedule.m_collectionIndex = it->second.m_collectionIndex;
                     m_schedule.push_back(schedule);
 
                     v.second.pop_back();
@@ -184,10 +182,8 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
 
                         SSchedule schedule;
                         schedule.m_channel = channel;
-                        schedule.m_task = info.m_task;
+                        schedule.m_taskInfo = info;
                         schedule.m_taskID = hash;
-                        schedule.m_taskIndex = info.m_taskIndex;
-                        schedule.m_collectionIndex = info.m_collectionIndex;
                         m_schedule.push_back(schedule);
 
                         v.second.pop_back();
@@ -226,7 +222,7 @@ void CSSHScheduler::printSchedule()
         auto ptr = s.m_channel.lock();
 
         ss << "<" << s.m_taskID << ">"
-           << " <" << s.m_task->getPath() << "> ---> " << ptr->getRemoteHostInfo().m_host << endl;
+           << " <" << s.m_taskInfo.m_task->getPath() << "> ---> " << ptr->getRemoteHostInfo().m_host << endl;
     }
     LOG(debug) << ss.str();
 }

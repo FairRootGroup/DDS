@@ -34,6 +34,10 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     , m_id()
     , m_taskIndex(0)
     , m_collectionIndex(std::numeric_limits<uint32_t>::max())
+    , m_taskPath()
+    , m_groupName()
+    , m_collectionName()
+    , m_taskName()
     , m_connectionAttempts(1)
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
@@ -324,6 +328,10 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     m_sTaskId = _attachment->m_sID;
     m_taskIndex = _attachment->m_taskIndex;
     m_collectionIndex = _attachment->m_collectionIndex;
+    m_taskPath = _attachment->m_taskPath;
+    m_groupName = _attachment->m_groupName;
+    m_collectionName = _attachment->m_collectionName;
+    m_taskName = _attachment->m_taskName;
 
     // Replace all %taskIndex% and %collectionIndex% in executable path with their values.
     boost::algorithm::replace_all(m_sUsrExe, "%taskIndex%", to_string(m_taskIndex));
@@ -354,7 +362,9 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         // set task's environment
         LOG(info) << "Setting up task's environment: "
                   << "DDS_TASK_ID:" << m_sTaskId << " DDS_TASK_INDEX:" << m_taskIndex
-                  << " DDS_COLLECTION_INDEX:" << m_collectionIndex;
+                  << " DDS_COLLECTION_INDEX:" << m_collectionIndex << " DDS_TASK_PATH:" << m_taskPath
+                  << " DDS_GROUP_NAME:" << m_groupName << " DDS_COLLECTION_NAME:" << m_collectionName
+                  << " DDS_TASK_NAME:" << m_taskName;
         if (::setenv("DDS_TASK_ID", m_sTaskId.c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
         if (::setenv("DDS_TASK_INDEX", to_string(m_taskIndex).c_str(), 1) == -1)
@@ -362,6 +372,14 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         if (m_collectionIndex != std::numeric_limits<uint32_t>::max())
             if (::setenv("DDS_COLLECTION_INDEX", to_string(m_collectionIndex).c_str(), 1) == -1)
                 throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_INDEX");
+        if (::setenv("DDS_TASK_PATH", m_taskPath.c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_TASK_PATH");
+        if (::setenv("DDS_GROUP_NAME", m_groupName.c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_GROUP_NAME");
+        if (::setenv("DDS_COLLECTION_NAME", m_collectionName.c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_NAME");
+        if (::setenv("DDS_TASK_NAME", m_taskName.c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_TASK_NAME");
 
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;

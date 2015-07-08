@@ -325,8 +325,14 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     src.m_sExeFile = "test.exe -l -n --test";
     src.m_taskIndex = 99;
     src.m_collectionIndex = 77;
+    src.m_taskPath = "/main/group1/collection1_1/task_2";
+    src.m_groupName = "group1";
+    src.m_collectionName = "collection1";
+    src.m_taskName = "task1";
     // expected attachment size
-    const unsigned int cmdSize = src.m_sExeFile.size() + 1 + src.m_sID.size() + 1 + sizeof(uint32_t) + sizeof(uint32_t);
+    const unsigned int cmdSize = src.m_sExeFile.size() + 1 + src.m_sID.size() + 1 + sizeof(uint32_t) +
+                                 sizeof(uint32_t) + src.m_taskPath.size() + 1 + src.m_groupName.size() + 1 +
+                                 src.m_collectionName.size() + 1 + src.m_taskName.size() + 1;
     MiscCommon::BYTEVector_t data;
     src.convertToData(&data);
     CProtocolMessage msg_src;

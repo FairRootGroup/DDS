@@ -24,14 +24,16 @@ namespace dds
     struct STaskInfo
     {
         STaskInfo()
-            : m_task()
+            : m_task(nullptr)
             , m_taskIndex(0)
             , m_collectionIndex(std::numeric_limits<uint32_t>::max())
+            , m_taskPath()
         {
         }
         TaskPtr_t m_task;
         size_t m_taskIndex;
         size_t m_collectionIndex;
+        std::string m_taskPath;
     };
 
     class CTopology
