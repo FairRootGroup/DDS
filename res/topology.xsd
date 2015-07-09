@@ -57,13 +57,13 @@
 
 
 <xs:complexType name="propertyType">
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="propertyArrayElementType">
    <xs:simpleContent>  
-       <xs:extension base="stringType">  
+       <xs:extension base="stringIdType">  
             <xs:attribute name="access" type="accessType" use="required"/> 
        </xs:extension>  
    </xs:simpleContent> 
@@ -92,26 +92,26 @@
   <xs:sequence>
     <xs:element name="hostPattern" type="requirementValueType" maxOccurs="1" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 <xs:complexType name="taskType">
   <xs:sequence>
 	<xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
 	<xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
-	<xs:element name="requirement" type="stringType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="requirement" type="stringIdType" maxOccurs="1" minOccurs="0"/>
   	<xs:element name="properties" type="propertyArrayType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 
 <xs:complexType name="collectionType">
   <xs:sequence>
-	<xs:element name="requirement" type="stringType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="requirement" type="stringIdType" maxOccurs="1" minOccurs="0"/>
     <xs:element name="tasks" type="taskArrayType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 
@@ -120,7 +120,7 @@
     <xs:element name="task" type="stringIdType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="collection" type="stringIdType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
   <xs:attribute name="n" type="sizeType" use="required"/>
 </xs:complexType>
 
@@ -131,7 +131,7 @@
     <xs:element name="collection" type="stringIdType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="group" type="groupType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 
@@ -144,7 +144,7 @@
     <xs:element name="declcollection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
-  <xs:attribute name="id" type="stringType" use="required"/>
+  <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
 
 
