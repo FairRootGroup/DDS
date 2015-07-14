@@ -92,7 +92,6 @@ namespace dds
         std::string m_sCfgFilePath;
         sharedMemoryMutexPtr_t m_sharedMemoryMutex;
         managedSharedMemoryPtr_t m_sharedMemory;
-        boost::thread_group m_workerThreads;
 
         std::mutex m_initAgentConnectionMutex;
     };

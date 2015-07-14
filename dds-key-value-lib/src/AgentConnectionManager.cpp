@@ -128,6 +128,7 @@ void CAgentConnectionManager::stop()
     try
     {
         m_service.stop();
+        m_workerThreads.join_all();
         if (!getAgentChannel().expired())
         {
             auto p = getAgentChannel().lock();

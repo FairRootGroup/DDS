@@ -51,6 +51,7 @@ option(BUILD_dds-submit "Build dds-submit" ON)
 option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
 option(BUILD_dds-test "Build dds-test" ON)
 option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
+option(BUILD_dds-tutorials "Build dds-tutorials" ON)
 #
 # Custom targets
 #
@@ -247,6 +248,12 @@ if(BUILD_dds-key-value-lib)
     message(STATUS "Build dds-key-value library - YES")
     add_subdirectory ( dds-key-value-lib )
 endif(BUILD_dds-key-value-lib)
+
+# dds-tutorials
+if(BUILD_dds-tutorials)
+    message(STATUS "Build dds-tutorials - YES")
+    add_subdirectory ( dds-tutorials )
+endif(BUILD_dds-tutorials)
 
 #
 # Install

@@ -12,6 +12,7 @@ using namespace MiscCommon;
 CKeyValue::~CKeyValue()
 {
     unsubscribe();
+    unsubscribeError();
 }
 
 int CKeyValue::putValue(const string& _key, const string& _value)
