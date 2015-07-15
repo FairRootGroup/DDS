@@ -386,7 +386,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
         // Task output files: user_task_<datetime>_<task_id>_<out/err>.log
         stringstream ssTaskOutput;
-        ssTaskOutput << CUserDefaults::getDDSPath() << "user_task";
+        ssTaskOutput << CUserDefaults::getDDSPath() << m_taskName;
 
         // TODO: Change the code below once on gcc5+. GCC 4.9 doesn't support put_time
         //
