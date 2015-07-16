@@ -36,6 +36,7 @@ Modified: removed "--disable-xml-validation" parameter. (GH-56)
 Fixed: reconnect to DDS commander if connection was dropped. (GH-77)   
 Fixed: after reconnection to commander server key update won't be propagate from the effected agent. (GH-81)    
 Modified: Optimized key-value persistence to shared memory.   
+Modified: User log file name starts from the name of the task. (GH-96)    
 
 ### dds-key-value
 Fixed: stability improvements.    
