@@ -384,7 +384,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
 
-        // Task output files: user_task_<datetime>_<task_id>_<out/err>.log
+        // Task output files: <user_task_name>_<datetime>_<task_id>_<out/err>.log
         stringstream ssTaskOutput;
         ssTaskOutput << CUserDefaults::getDDSPath() << m_taskName;
 
