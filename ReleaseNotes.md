@@ -1,5 +1,7 @@
 # DDS Release Notes
 
+## v0.12 (NOT YET RELEASED)
+
 ## v0.10 (2015-07-16)
 ### DDS common
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
