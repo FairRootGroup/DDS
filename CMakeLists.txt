@@ -19,7 +19,7 @@ cmake_minimum_required( VERSION 2.8.11 FATAL_ERROR )
 set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}/etc/version )
 if( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
-  execute_process(COMMAND git describe --match "[0-9].[0-9]" --abbrev=7 HEAD
+  execute_process(COMMAND git describe --match "[0-9]*\\.[0-9]*" --abbrev=7 HEAD
                   COMMAND sed -e "s/-/./g"
                   OUTPUT_VARIABLE DDS_VERSION
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
