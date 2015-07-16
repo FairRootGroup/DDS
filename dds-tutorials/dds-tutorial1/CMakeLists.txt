@@ -5,7 +5,6 @@ project( dds-tutorial1 )
 
 
 include_directories(
-	${MiscCommon_LOCATION}
 	${Boost_INCLUDE_DIRS}
 )
 
