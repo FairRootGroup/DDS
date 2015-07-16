@@ -1,6 +1,9 @@
 # DDS Release Notes
 
 ## v0.12 (NOT YET RELEASED)
+###DDS common
+Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
+
 
 ## v0.10 (2015-07-16)
 ### DDS common
