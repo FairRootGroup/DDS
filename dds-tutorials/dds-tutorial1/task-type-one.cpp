@@ -1,6 +1,5 @@
 // DDS
 #include "KeyValue.h"
-#include "Logger.h"
 // STD
 #include <vector>
 #include <iostream>
@@ -16,7 +15,6 @@
 using namespace std;
 using namespace dds;
 namespace bpo = boost::program_options;
-using namespace MiscCommon;
 
 // IDs of the DDS properties.
 // Must be the same as in the topology file.
@@ -25,10 +23,8 @@ const string ReplyPropertyName = "ReplyProperty";
 
 int main(int argc, char* argv[])
 {
-    Logger::instance().init(); // Initialize log
-
-    std::mutex keyMutex;
-    std::condition_variable keyCondition;
+    mutex keyMutex;
+    condition_variable keyCondition;
 
     try
     {
@@ -76,27 +72,23 @@ int main(int argc, char* argv[])
         // We expect to receive one property from server.
         while (values.size() == 0)
         {
-            std::unique_lock<std::mutex> lock(keyMutex);
-            keyCondition.wait_until(lock, std::chrono::system_clock::now() + chrono::milliseconds(1000));
+            unique_lock<mutex> lock(keyMutex);
+            keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
             ddsKeyValue.getValues(ReplyPropertyName, &values);
         }
-
-        // We are done with key-value propagation
-        // ddsKeyValue.unsubscribe();
-        // ddsKeyValue.unsubscribeError();
 
         // Emulate data procesing of the task
         for (size_t i = 0; i < 5; ++i)
         {
-            LOG(info) << "Work in progress (" << i << "/5)\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            cout << "Work in progress (" << i << "/5)\n";
+            this_thread::sleep_for(chrono::seconds(1));
         }
 
-        LOG(info) << "Task successfully done\n";
+        cout << "Task successfully done\n";
     }
     catch (exception& _e)
     {
-        LOG(error) << "USER TASK Error: " << _e.what() << endl;
+        cerr << "USER TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
 

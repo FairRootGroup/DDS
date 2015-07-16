@@ -45,8 +45,8 @@ int main(int argc, char* argv[])
         }
 
         dds::CKeyValue ddsKeyValue;
-        std::mutex keyMutex;
-        std::condition_variable keyCondition;
+        mutex keyMutex;
+        condition_variable keyCondition;
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
@@ -66,8 +66,8 @@ int main(int argc, char* argv[])
         ddsKeyValue.getValues(TaskIndexPropertyName, &taskValues);
         while (taskValues.size() != nInstances)
         {
-            std::unique_lock<std::mutex> lock(keyMutex);
-            keyCondition.wait_until(lock, std::chrono::system_clock::now() + chrono::milliseconds(1000));
+            unique_lock<mutex> lock(keyMutex);
+            keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
             ddsKeyValue.getValues(TaskIndexPropertyName, &taskValues);
         }
         for (const auto& v : taskValues)
@@ -77,21 +77,17 @@ int main(int argc, char* argv[])
 
         // We have received all properties.
         // Broadcast property to all clients.
-        std::string value = to_string(taskValues.size());
+        string value = to_string(taskValues.size());
         if (0 != ddsKeyValue.putValue(ReplyPropertyName, value))
         {
             cerr << "DDS key-value putValue failed: key=" << ReplyPropertyName << " value=" << value << endl;
         }
 
-        // We are done with key-value propagation
-        // ddsKeyValue.unsubscribe();
-        // ddsKeyValue.unsubscribeError();
-
         // Emulate data procesing of the task
         for (size_t i = 0; i < 7; ++i)
         {
             cout << "Work in progress (" << i << "/7)\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            this_thread::sleep_for(chrono::seconds(1));
         }
 
         cout << "Task successfully done\n";
