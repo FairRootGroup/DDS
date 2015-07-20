@@ -49,14 +49,15 @@ void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         advance(iter, tmp.size() + 1);
     }
 
-    // there are so far only 4 string fields in this msg container
-    if (v.size() != 4)
+    // there are so far only 5 string fields in this msg container
+    if (v.size() != 5)
         throw runtime_error("HostInfoCmd: can't import data. Number of fields doesn't match.");
 
     m_username.assign(v[0]);
     m_host.assign(v[1]);
     m_version.assign(v[2]);
     m_DDSPath.assign(v[3]);
+    m_workerId.assign(v[4]);
 }
 
 void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
@@ -72,5 +73,7 @@ void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
     copy(m_version.begin(), m_version.end(), back_inserter(*_data));
     _data->push_back('\0');
     copy(m_DDSPath.begin(), m_DDSPath.end(), back_inserter(*_data));
+    _data->push_back('\0');
+    copy(m_workerId.begin(), m_workerId.end(), back_inserter(*_data));
     _data->push_back('\0');
 }

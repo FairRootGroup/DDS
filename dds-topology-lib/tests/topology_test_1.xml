@@ -10,7 +10,7 @@
 	<property id="property4"/>
 	
 	<declrequirement id="requirement1">
-    	<hostPattern value="${requirementVar}"/>
+    	<hostPattern type="hostname" value="${requirementVar}"/>
 	</declrequirement>
 	
 	<!-- THIS IS A COMMENT -->

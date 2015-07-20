@@ -13,6 +13,12 @@
 
 namespace dds
 {
+    enum class EHostPatternType
+    {
+        WnName,
+        HostName
+    };
+
     /// \class TopoProperty
     /// \brief Data class to hold topology property.
     class CRequirement : public CTopoBase
@@ -28,8 +34,10 @@ namespace dds
         void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
         const std::string& getHostPattern() const;
+        EHostPatternType getHostPatternType() const;
 
         void setHostPattern(const std::string& _hostPattern);
+        void setHostPatternType(EHostPatternType _hostPatternType);
 
         bool hostPatterMatches(const std::string& _host) const;
 
@@ -43,7 +51,8 @@ namespace dds
         friend std::ostream& operator<<(std::ostream& _strm, const CRequirement& _requirement);
 
       private:
-        std::string m_hostPattern; ///> Pattern of the host name
+        std::string m_hostPattern;          ///> Pattern of the host name
+        EHostPatternType m_hostPatternType; ///> Type of the host pattern
     };
 
     typedef std::shared_ptr<CRequirement> RequirementPtr_t;

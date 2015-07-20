@@ -100,6 +100,16 @@ namespace dds
             throw runtime_error("Property access type with name " + _name + " does not exist.");
     }
 
+    EHostPatternType TagToHostPatternType(const string& _name)
+    {
+        if (_name == "wnname")
+            return EHostPatternType::WnName;
+        if (_name == "hostname")
+            return EHostPatternType::HostName;
+        else
+            throw runtime_error("Host pattern type with name " + _name + " does not exist.");
+    }
+
     uint64_t crc64(const string& _str)
     {
         boost::crc_optimal<64, 0x04C11DB7, 0, 0, false, false> crc;

@@ -1,15 +1,15 @@
 <topology id="myTopology">
 		
 	<declrequirement id="requirement1">
-    	<hostPattern value="host1_([0-9]|[0-9][0-9])"/>
+    	<hostPattern type="hostname" value="host1_([0-9]|[0-9][0-9])"/>
 	</declrequirement>
 	
 	<declrequirement id="requirement2">
-    	<hostPattern value="host2_([0-9]|[0-9][0-9])"/>
+    	<hostPattern type="hostname" value="host2_([0-9]|[0-9][0-9])"/>
 	</declrequirement>
 	
 	<declrequirement id="requirement3">
-    	<hostPattern value="host3_([0-9]|[0-9][0-9])"/>
+    	<hostPattern type="hostname" value="host3_([0-9]|[0-9][0-9])"/>
 	</declrequirement>
 	
   	<decltask id="TestTask1">

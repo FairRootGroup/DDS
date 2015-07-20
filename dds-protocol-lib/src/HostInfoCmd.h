@@ -16,6 +16,11 @@ namespace dds
             : m_agentPort(0)
             , m_agentPid(0)
             , m_submitTime(0)
+            , m_username()
+            , m_host()
+            , m_version()
+            , m_DDSPath()
+            , m_workerId()
         {
         }
         size_t size() const
@@ -27,6 +32,7 @@ namespace dds
             size += sizeof(m_submitTime);
             size += m_version.size() + 1;
             size += m_DDSPath.size() + 1;
+            size += m_workerId.size() + 1;
             return size;
         }
         void normalizeToLocal() const;
@@ -37,7 +43,7 @@ namespace dds
         {
             return (m_username == val.m_username && m_host == val.m_host && m_version == val.m_version &&
                     m_DDSPath == val.m_DDSPath && m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid &&
-                    m_submitTime == val.m_submitTime);
+                    m_submitTime == val.m_submitTime && m_workerId == val.m_workerId);
         }
 
         mutable uint16_t m_agentPort;
@@ -48,11 +54,13 @@ namespace dds
         std::string m_host;
         std::string m_version;
         std::string m_DDSPath;
+        std::string m_workerId;
     };
     inline std::ostream& operator<<(std::ostream& _stream, const SHostInfoCmd& val)
     {
         _stream << val.m_username << ":" << val.m_host << ": " << val.m_version << ":" << val.m_DDSPath << "; agent ["
-                << val.m_agentPid << "] on port " << val.m_agentPort << "; startup time: " << val.m_submitTime;
+                << val.m_agentPid << "] on port " << val.m_agentPort << "; startup time: " << val.m_submitTime
+                << "; worker ID:" << val.m_workerId;
         return _stream;
     }
     inline bool operator!=(const SHostInfoCmd& lhs, const SHostInfoCmd& rhs)

@@ -12,7 +12,7 @@
 <xs:simpleType name="stringIdType">
 	<xs:restriction base="xs:string">
 		<xs:maxLength value="128"/>
-    	<xs:pattern value="([a-zA-Z0-9])+"/>
+    	<xs:pattern value="([a-zA-Z0-9_-])+"/>
 	</xs:restriction>
 </xs:simpleType>
 
@@ -83,8 +83,17 @@
 </xs:complexType>
 
 
+<xs:simpleType name="hostPatternType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="wnname"/>
+    <xs:enumeration value="hostname"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
 <xs:complexType name="requirementValueType">
   <xs:attribute name="value" type="stringType" use="required"/>
+  <xs:attribute name="type" type="hostPatternType" use="required"/>
 </xs:complexType>
 
 

@@ -221,6 +221,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(requirement->getType() == ETopoType::REQUIREMENT);
     BOOST_CHECK(requirement->getParent() == element1.get());
     BOOST_CHECK(requirement->getHostPattern() == ".+.gsi.de");
+    BOOST_CHECK(requirement->getHostPatternType() == EHostPatternType::HostName);
     BOOST_CHECK(requirement->hostPatterMatches("dds.gsi.de") == true);
     BOOST_CHECK(requirement->hostPatterMatches("gsi.de") == false);
     BOOST_CHECK(requirement->hostPatterMatches("google.com") == false);
@@ -469,6 +470,11 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TagToPropertyAccessType("write") == EPropertyAccessType::WRITE);
     BOOST_CHECK(TagToPropertyAccessType("readwrite") == EPropertyAccessType::READWRITE);
     BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
+
+    // TagToHostPatternType
+    BOOST_CHECK(TagToHostPatternType("wnname") == EHostPatternType::WnName);
+    BOOST_CHECK(TagToHostPatternType("hostname") == EHostPatternType::HostName);
+    BOOST_CHECK_THROW(TagToHostPatternType("wn_name"), runtime_error);
 
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);

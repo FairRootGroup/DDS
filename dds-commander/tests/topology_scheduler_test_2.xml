@@ -1,19 +1,27 @@
 <topology id="myTopology">
 		
 	<declrequirement id="requirement1">
-    	<hostPattern value="host1_[0-2]"/>
+    	<hostPattern type="hostname" value="host1_[0-2]"/>
 	</declrequirement>
 	
 	<declrequirement id="requirement2">
-    	<hostPattern value="host2_[0-2]"/>
+    	<hostPattern type="hostname" value="host2_[0-2]"/>
 	</declrequirement>
 	
 	<declrequirement id="requirement3">
-    	<hostPattern value="host3_[0-2]"/>
+    	<hostPattern type="hostname" value="host3_[0-2]"/>
 	</declrequirement>
 	
 	<declrequirement id="requirement4">
-    	<hostPattern value="host4_[0-2]"/>
+    	<hostPattern type="hostname" value="host4_[0-2]"/>
+	</declrequirement>
+	
+	<declrequirement id="requirement5">
+    	<hostPattern type="wnname" value="wn5"/>
+	</declrequirement>
+	
+	<declrequirement id="requirement6">
+    	<hostPattern type="wnname" value="wn6"/>
 	</declrequirement>
 	
   	<decltask id="TestTask1">
@@ -31,6 +39,11 @@
 		<requirement>requirement3</requirement>
 	</decltask>
 	
+  	<decltask id="TestTask4">
+		<exe reachable="false">test_task.exe</exe>
+		<requirement>requirement5</requirement>
+	</decltask>
+	
 	<declcollection id="TestCollection1">
 		<requirement>requirement4</requirement>
 		<tasks>
@@ -46,13 +59,22 @@
 		</tasks>
 	</declcollection>
 	
+	<declcollection id="TestCollection3">
+		<requirement>requirement6</requirement>
+		<tasks>
+			<id>TestTask1</id>
+		</tasks>
+	</declcollection>
+	
 	<main id="main">
 		<group id="group1" n="3">
 			<task>TestTask1</task>
 			<task>TestTask2</task>
 			<task>TestTask3</task>
+			<task>TestTask4</task>
 			<collection>TestCollection1</collection>
 			<collection>TestCollection2</collection>
+			<collection>TestCollection3</collection>
 		</group>
 	</main>
 	

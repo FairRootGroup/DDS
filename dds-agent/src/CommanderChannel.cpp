@@ -125,6 +125,16 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     cmd.m_agentPort = nPort;
     cmd.m_agentPid = pid;
 
+    // get worker ID
+    string sWorkerId;
+    char* pchWorkerId;
+    pchWorkerId = getenv("DDS_WORKER_ID");
+    if (NULL != pchWorkerId)
+    {
+        sWorkerId.assign(pchWorkerId);
+        cmd.m_workerId = sWorkerId;
+    }
+
     // get submit time
     string sSubmitTime;
     char* pchSubmitTime;

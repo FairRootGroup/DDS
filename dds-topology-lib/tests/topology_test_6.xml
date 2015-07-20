@@ -6,7 +6,7 @@
 	<property id="property3"/>
 	
 	<declrequirement id="requirement1">
-    	<hostPattern value="*.gsi.de"/>
+    	<hostPattern type="hostname" value="*.gsi.de"/>
 	</declrequirement>
 	
   	<decltask id="task1">

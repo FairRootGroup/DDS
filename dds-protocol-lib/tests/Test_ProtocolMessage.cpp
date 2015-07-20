@@ -113,7 +113,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     const uint16_t nAgentPort = 20000;
     const uint32_t nAgentPid = 1111;
     const uint64_t lSubmitTime = 23465677;
-    const unsigned int cmdSize = 56;
+    const string sWorkerId = "wn5";
+    const unsigned int cmdSize = 60;
 
     // Create a message
     SHostInfoCmd cmd_src;
@@ -124,6 +125,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     cmd_src.m_agentPort = nAgentPort;
     cmd_src.m_agentPid = nAgentPid;
     cmd_src.m_submitTime = lSubmitTime;
+    cmd_src.m_workerId = sWorkerId;
     MiscCommon::BYTEVector_t data;
     cmd_src.convertToData(&data);
     CProtocolMessage msg_src;
@@ -156,6 +158,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     BOOST_CHECK(nAgentPort == cmd_dest.m_agentPort);
     BOOST_CHECK(nAgentPid == cmd_dest.m_agentPid);
     BOOST_CHECK(lSubmitTime == cmd_dest.m_submitTime);
+    BOOST_CHECK(sWorkerId == cmd_dest.m_workerId);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)

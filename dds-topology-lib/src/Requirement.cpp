@@ -5,6 +5,7 @@
 
 // DDS
 #include "Requirement.h"
+#include "TopoUtils.h"
 // STD
 #include <iostream>
 //#include <regex>
@@ -17,6 +18,7 @@ using namespace dds;
 CRequirement::CRequirement()
     : CTopoBase()
     , m_hostPattern()
+    , m_hostPatternType(EHostPatternType::HostName)
 {
     setType(ETopoType::REQUIREMENT);
 }
@@ -30,9 +32,19 @@ const std::string& CRequirement::getHostPattern() const
     return m_hostPattern;
 }
 
+EHostPatternType CRequirement::getHostPatternType() const
+{
+    return m_hostPatternType;
+}
+
 void CRequirement::setHostPattern(const std::string& _hostPattern)
 {
     m_hostPattern = _hostPattern;
+}
+
+void CRequirement::setHostPatternType(EHostPatternType _hostPatternType)
+{
+    m_hostPatternType = _hostPatternType;
 }
 
 bool CRequirement::hostPatterMatches(const std::string& _host) const
@@ -50,6 +62,7 @@ void CRequirement::initFromPropertyTree(const std::string& _name, const boost::p
         const ptree& requirementPT = CTopoBase::findElement(ETopoType::REQUIREMENT, _name, _pt.get_child("topology"));
         setId(requirementPT.get<string>("<xmlattr>.id"));
         setHostPattern(requirementPT.get<std::string>("hostPattern.<xmlattr>.value", ""));
+        setHostPatternType(TagToHostPatternType(requirementPT.get<std::string>("hostPattern.<xmlattr>.type", "")));
     }
     catch (exception& error) // ptree_error, runtime_error
     {

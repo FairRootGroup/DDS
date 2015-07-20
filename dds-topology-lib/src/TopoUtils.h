@@ -9,6 +9,7 @@
 // DDS
 #include "TopoElement.h"
 #include "TopoProperty.h"
+#include "Requirement.h"
 // STD
 #include <string>
 
@@ -23,6 +24,8 @@ namespace dds
     ETopoType DeclTagToTopoType(const std::string& _name);
 
     EPropertyAccessType TagToPropertyAccessType(const std::string& _name);
+
+    EHostPatternType TagToHostPatternType(const std::string& _name);
 
     uint64_t crc64(const std::string& _str);
 }
