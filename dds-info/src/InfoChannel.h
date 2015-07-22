@@ -12,65 +12,67 @@
 
 namespace dds
 {
-    class CInfoChannel : public CClientChannelImpl<CInfoChannel>
+    namespace info_cmd
     {
-        CInfoChannel(boost::asio::io_service& _service)
-            : CClientChannelImpl<CInfoChannel>(_service, EChannelType::UI)
+        class CInfoChannel : public CClientChannelImpl<CInfoChannel>
         {
-            subscribeOnEvent(EChannelEvents::OnHandshakeOK,
-                             [this](CInfoChannel* _channel)
-                             {
-                                 // ask the server what we wnated to ask :)
-                                 if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
-                                     pushMsg<cmdGED_PID>();
-                                 else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
-                                     pushMsg<cmdGET_AGENTS_INFO>();
-                                 else if (m_options.m_bNeedPropList)
-                                     pushMsg<cmdGET_PROP_LIST>();
-                                 else if (m_options.m_bNeedPropValues)
+            CInfoChannel(boost::asio::io_service& _service)
+                : CClientChannelImpl<CInfoChannel>(_service, EChannelType::UI)
+            {
+                subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                                 [this](CInfoChannel* _channel)
                                  {
-                                     SGetPropValuesCmd cmd;
-                                     cmd.m_sPropertyID = m_options.m_propertyID;
-                                     pushMsg<cmdGET_PROP_VALUES>(cmd);
-                                 }
-                             });
+                                     // ask the server what we wnated to ask :)
+                                     if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
+                                         pushMsg<cmdGED_PID>();
+                                     else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
+                                         pushMsg<cmdGET_AGENTS_INFO>();
+                                     else if (m_options.m_bNeedPropList)
+                                         pushMsg<cmdGET_PROP_LIST>();
+                                     else if (m_options.m_bNeedPropValues)
+                                     {
+                                         SGetPropValuesCmd cmd;
+                                         cmd.m_sPropertyID = m_options.m_propertyID;
+                                         pushMsg<cmdGET_PROP_VALUES>(cmd);
+                                     }
+                                 });
 
-            subscribeOnEvent(EChannelEvents::OnConnected,
-                             [this](CInfoChannel* _channel)
-                             {
-                                 LOG(MiscCommon::info) << "Connected to the commander server";
-                             });
+                subscribeOnEvent(EChannelEvents::OnConnected,
+                                 [this](CInfoChannel* _channel)
+                                 {
+                                     LOG(MiscCommon::info) << "Connected to the commander server";
+                                 });
 
-            subscribeOnEvent(EChannelEvents::OnFailedToConnect,
-                             [this](CInfoChannel* _channel)
-                             {
-                                 LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-                             });
-        }
+                subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                                 [this](CInfoChannel* _channel)
+                                 {
+                                     LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
+                                 });
+            }
 
-        REGISTER_DEFAULT_REMOTE_ID_STRING
+            REGISTER_DEFAULT_REMOTE_ID_STRING
 
-      public:
-        BEGIN_MSG_MAP(CInfoChannel)
-        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-        MESSAGE_HANDLER(cmdREPLY_PID, on_cmdREPLY_PID)
-        MESSAGE_HANDLER(cmdREPLY_AGENTS_INFO, on_cmdREPLY_AGENTS_INFO)
-        END_MSG_MAP()
+          public:
+            BEGIN_MSG_MAP(CInfoChannel)
+            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+            MESSAGE_HANDLER(cmdREPLY_PID, on_cmdREPLY_PID)
+            MESSAGE_HANDLER(cmdREPLY_AGENTS_INFO, on_cmdREPLY_AGENTS_INFO)
+            END_MSG_MAP()
 
-        void setOptions(const dds::SOptions& _options)
-        {
-            m_options = _options;
-        }
+            void setOptions(const SOptions& _options)
+            {
+                m_options = _options;
+            }
 
-      private:
-        // Message Handlers
-        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-        bool on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment);
-        bool on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
+          private:
+            // Message Handlers
+            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment);
+            bool on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
 
-      private:
-        dds::SOptions m_options;
-    };
+          private:
+            SOptions m_options;
+        };
+    }
 }
-
 #endif
