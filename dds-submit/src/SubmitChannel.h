@@ -10,32 +10,35 @@
 
 namespace dds
 {
-    class CSubmitChannel : public CClientChannelImpl<CSubmitChannel>
+    namespace submit_cmd
     {
-        CSubmitChannel(boost::asio::io_service& _service);
+        class CSubmitChannel : public CClientChannelImpl<CSubmitChannel>
+        {
+            CSubmitChannel(boost::asio::io_service& _service);
 
-        REGISTER_DEFAULT_REMOTE_ID_STRING
+            REGISTER_DEFAULT_REMOTE_ID_STRING
 
-      public:
-        BEGIN_MSG_MAP(CSubmitChannel)
-        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-        MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
-        END_MSG_MAP()
+          public:
+            BEGIN_MSG_MAP(CSubmitChannel)
+            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+            MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
+            END_MSG_MAP()
 
-      public:
-        void setSSHCfgFile(const std::string& _val);
-        void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
+          public:
+            void setSSHCfgFile(const std::string& _val);
+            void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
 
-      private:
-        // Message Handlers
-        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-        bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
+          private:
+            // Message Handlers
+            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
 
-      private:
-        std::string m_sSSHCfgFile;
-        SSubmitCmd::ERmsType m_RMS;
-        bool m_bXMLValidationDisabled;
-    };
+          private:
+            std::string m_sSSHCfgFile;
+            SSubmitCmd::ERmsType m_RMS;
+            bool m_bXMLValidationDisabled;
+        };
+    }
 }
 
 #endif

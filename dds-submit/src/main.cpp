@@ -11,7 +11,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace dds::user_defaults_api;
+using namespace dds::submit_cmd;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
     SOptions_t options;
     try
     {
-        Logger::instance().init(); // Initialize log
-        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init();                         // Initialize log
+        dds::user_defaults_api::CUserDefaults::instance(); // Initialize user defaults
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;

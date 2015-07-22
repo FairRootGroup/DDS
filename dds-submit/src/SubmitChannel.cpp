@@ -8,6 +8,7 @@
 
 using namespace MiscCommon;
 using namespace dds;
+using namespace dds::submit_cmd;
 using namespace std;
 
 CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
