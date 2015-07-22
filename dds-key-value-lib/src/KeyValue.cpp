@@ -6,6 +6,7 @@
 #include "KeyValueGuard.h"
 
 using namespace dds;
+using namespace dds::key_value;
 using namespace dds::key_value_api;
 using namespace std;
 using namespace MiscCommon;

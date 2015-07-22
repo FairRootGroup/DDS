@@ -14,7 +14,7 @@
 
 namespace dds
 {
-    namespace key_value_api
+    namespace key_value
     {
         class CKeyValue
         {
