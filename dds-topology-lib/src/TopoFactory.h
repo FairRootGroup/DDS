@@ -12,10 +12,13 @@
 
 namespace dds
 {
-    TopoElementPtr_t CreateTopoElement(ETopoType _type);
+    namespace topology_api
+    {
+        TopoElementPtr_t CreateTopoElement(ETopoType _type);
 
-    TopoPropertyPtr_t CreateTopoProperty(ETopoType _type);
+        TopoPropertyPtr_t CreateTopoProperty(ETopoType _type);
 
-    TopoBasePtr_t CreateTopoBase(ETopoType _type);
+        TopoBasePtr_t CreateTopoBase(ETopoType _type);
+    }
 }
 #endif /* defined(__DDS__TopoFactory__) */

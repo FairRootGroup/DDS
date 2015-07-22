@@ -30,6 +30,7 @@
 using namespace boost::property_tree;
 using namespace std;
 using namespace dds;
+using namespace topology_api;
 
 CTopologyParserXML::CTopologyParserXML()
 {

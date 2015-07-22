@@ -17,7 +17,6 @@ configure_file( ${dds-topology-lib_SOURCE_DIR}/src/version.h.in ${dds-topology-l
 # Source files
 #
 set( SOURCE_FILES
-	./src/main.cpp
 	./src/TopoProperty.cpp
 	./src/TopoBase.cpp
 	./src/TopoUtils.cpp

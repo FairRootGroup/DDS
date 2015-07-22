@@ -29,7 +29,7 @@ namespace dds
                 }
 
                 uint64_t m_taskID;
-                STaskInfo m_taskInfo;
+                topology_api::STaskInfo m_taskInfo;
                 CAgentChannel::weakConnectionPtr_t m_channel;
             };
 
@@ -44,24 +44,25 @@ namespace dds
             CSSHScheduler();
             ~CSSHScheduler();
 
-            void makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels);
+            void makeSchedule(const topology_api::CTopology& _topology,
+                              const CAgentChannel::weakConnectionPtrVector_t& _channels);
 
             const ScheduleVector_t& getSchedule() const;
 
             std::string toString();
 
           private:
-            void makeScheduleImpl(const CTopology& _topology,
+            void makeScheduleImpl(const topology_api::CTopology& _topology,
                                   const CAgentChannel::weakConnectionPtrVector_t& _channels);
 
-            void scheduleCollections(const CTopology& _topology,
+            void scheduleCollections(const topology_api::CTopology& _topology,
                                      const CAgentChannel::weakConnectionPtrVector_t& _channels,
                                      hostToChannelMap_t& _hostToChannelMap,
                                      std::set<uint64_t>& _scheduledTasks,
                                      const CollectionMap_t& _collectionMap,
                                      bool useRequirement);
 
-            void scheduleTasks(const dds::CTopology& _topology,
+            void scheduleTasks(const topology_api::CTopology& _topology,
                                const CAgentChannel::weakConnectionPtrVector_t& _channels,
                                hostToChannelMap_t& _hostToChannelMap,
                                std::set<uint64_t>& _scheduledTasks,

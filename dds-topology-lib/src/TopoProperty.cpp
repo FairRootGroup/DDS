@@ -12,6 +12,7 @@
 using namespace std;
 using namespace boost::property_tree;
 using namespace dds;
+using namespace topology_api;
 
 CTopoProperty::CTopoProperty()
     : CTopoBase()

@@ -8,6 +8,7 @@
 
 using namespace dds;
 using namespace dds::commander;
+using namespace dds::topology_api;
 using namespace std;
 using namespace MiscCommon;
 
@@ -81,7 +82,7 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     LOG(debug) << toString();
 }
 
-void CSSHScheduler::scheduleTasks(const dds::CTopology& _topology,
+void CSSHScheduler::scheduleTasks(const CTopology& _topology,
                                   const CAgentChannel::weakConnectionPtrVector_t& _channels,
                                   hostToChannelMap_t& _hostToChannelMap,
                                   set<uint64_t>& _scheduledTasks,

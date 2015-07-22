@@ -30,6 +30,7 @@ using namespace std;
 using namespace boost::property_tree;
 using boost::test_tools::output_test_stream;
 using namespace dds;
+using namespace dds::topology_api;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 

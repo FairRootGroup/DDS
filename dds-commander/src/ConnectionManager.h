@@ -71,7 +71,7 @@ namespace dds
             CTestChannelInfo m_transportTest;
             CActivateAgentsChannelInfo m_ActivateAgents;
             CStopUserTasksChannelInfo m_StopUserTasks;
-            CTopology m_topo;
+            topology_api::CTopology m_topo;
             CSSHScheduler m_scheduler;
 
             // TODO: This is temporary storage only. Store this information as a part of scheduler.

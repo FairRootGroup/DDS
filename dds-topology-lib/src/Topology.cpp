@@ -13,6 +13,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace topology_api;
 using namespace boost;
 
 CTopology::CTopology()
@@ -212,7 +213,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             m_hashPathToTaskMap[hashPath] = task;
         }
 
-        uint64_t crc = dds::crc64(hashPath);
+        uint64_t crc = crc64(hashPath);
         if (m_hashToTaskInfoMap.find(crc) != m_hashToTaskInfoMap.end())
         {
             // std::stringstream ss;
@@ -248,7 +249,7 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
             m_hashPathToTaskCollectionMap[m_currentTaskCollectionHashPath] = collection;
         }
 
-        uint64_t crc = dds::crc64(m_currentTaskCollectionHashPath);
+        uint64_t crc = crc64(m_currentTaskCollectionHashPath);
         if (m_hashToTaskCollectionMap.find(crc) != m_hashToTaskCollectionMap.end())
         {
             // std::stringstream ss;

@@ -8,12 +8,12 @@
 #include "TopoUtils.h"
 // STD
 #include <iostream>
-//#include <regex>
 #include <boost/regex.hpp>
 
 using namespace std;
 using namespace boost::property_tree;
 using namespace dds;
+using namespace topology_api;
 
 CRequirement::CRequirement()
     : CTopoBase()

@@ -24,6 +24,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::commander;
+using namespace dds::topology_api;
 using namespace MiscCommon;
 
 BOOST_AUTO_TEST_SUITE(test_dds_scheduler_performance)

@@ -12,35 +12,38 @@
 
 namespace dds
 {
-    class CTaskCollection : public CTaskContainer
+    namespace topology_api
     {
-      public:
-        /// \brief Constructor.
-        CTaskCollection();
+        class CTaskCollection : public CTaskContainer
+        {
+          public:
+            /// \brief Constructor.
+            CTaskCollection();
 
-        /// \brief Destructor.
-        virtual ~CTaskCollection();
+            /// \brief Destructor.
+            virtual ~CTaskCollection();
 
-        /// \brief Inherited from TopoElement.
-        virtual size_t getNofTasks() const;
+            /// \brief Inherited from TopoElement.
+            virtual size_t getNofTasks() const;
 
-        /// \brief Inherited from TopoElement.
-        virtual size_t getTotalNofTasks() const;
+            /// \brief Inherited from TopoElement.
+            virtual size_t getTotalNofTasks() const;
 
-        /// \brief Inherited from TopoElement.
-        void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            /// \brief Inherited from TopoElement.
+            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
-        /// \brief If parent is a group than return N, else return 1.
-        size_t getTotalCounter() const;
+            /// \brief If parent is a group than return N, else return 1.
+            size_t getTotalCounter() const;
 
-        RequirementPtr_t getRequirement() const;
-        void setRequirement(RequirementPtr_t _requirement);
+            RequirementPtr_t getRequirement() const;
+            void setRequirement(RequirementPtr_t _requirement);
 
-      private:
-        RequirementPtr_t m_requirement; ///> Requirement
-    };
+          private:
+            RequirementPtr_t m_requirement; ///> Requirement
+        };
 
-    typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;
-    typedef std::vector<TaskCollectionPtr_t> TaskCollectionPtrVector_t;
+        typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;
+        typedef std::vector<TaskCollectionPtr_t> TaskCollectionPtrVector_t;
+    }
 }
 #endif /* defined(__DDS__Topology__) */

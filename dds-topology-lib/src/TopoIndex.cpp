@@ -10,6 +10,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace topology_api;
 
 CTopoIndex::CTopoIndex()
     : m_path()

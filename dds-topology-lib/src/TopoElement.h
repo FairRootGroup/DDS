@@ -13,31 +13,34 @@
 
 namespace dds
 {
-    class CTopoElement : public CTopoBase
+    namespace topology_api
     {
-      public:
-        /// \brief Return number of all tasks including daughter elements.
-        virtual size_t getNofTasks() const = 0;
+        class CTopoElement : public CTopoBase
+        {
+          public:
+            /// \brief Return number of all tasks including daughter elements.
+            virtual size_t getNofTasks() const = 0;
 
-        /// \brief Return total number of tasks, i.e. number of tasks multiplied by n.
-        virtual size_t getTotalNofTasks() const = 0;
+            /// \brief Return total number of tasks, i.e. number of tasks multiplied by n.
+            virtual size_t getTotalNofTasks() const = 0;
 
-      protected:
-        /// \brief Constructor.
-        CTopoElement();
+          protected:
+            /// \brief Constructor.
+            CTopoElement();
 
-        /// \brief Destructor.
-        virtual ~CTopoElement();
+            /// \brief Destructor.
+            virtual ~CTopoElement();
 
-        /// \brief If parent is a group than return N, else return 1.
-        /// Default implementation for Task::getTotalCounter and TaskCollection::getTotalCounter.
-        size_t getTotalCounterDefault() const;
+            /// \brief If parent is a group than return N, else return 1.
+            /// Default implementation for Task::getTotalCounter and TaskCollection::getTotalCounter.
+            size_t getTotalCounterDefault() const;
 
-      private:
-        std::string m_path; // Full path to element, including element name
-    };
+          private:
+            std::string m_path; // Full path to element, including element name
+        };
 
-    typedef std::shared_ptr<CTopoElement> TopoElementPtr_t;
-    typedef std::vector<TopoElementPtr_t> TopoElementPtrVector_t;
+        typedef std::shared_ptr<CTopoElement> TopoElementPtr_t;
+        typedef std::vector<TopoElementPtr_t> TopoElementPtrVector_t;
+    }
 }
 #endif /* defined(__DDS__TopoElement__) */

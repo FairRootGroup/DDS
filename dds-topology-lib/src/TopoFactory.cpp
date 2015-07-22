@@ -16,35 +16,39 @@ using namespace std;
 
 namespace dds
 {
-    TopoElementPtr_t CreateTopoElement(ETopoType _type)
+    namespace topology_api
     {
-        switch (_type)
-        {
-            case ETopoType::TASK:
-                return dynamic_pointer_cast<CTopoElement>(make_shared<CTask>());
-            case ETopoType::COLLECTION:
-                return dynamic_pointer_cast<CTopoElement>(make_shared<CTaskCollection>());
-            case ETopoType::GROUP:
-                return dynamic_pointer_cast<CTopoElement>(make_shared<CTaskGroup>());
-            default:
-                throw runtime_error("Topo element type does not exist.");
-        }
-    }
 
-    TopoBasePtr_t CreateTopoBase(ETopoType _type)
-    {
-        switch (_type)
+        TopoElementPtr_t CreateTopoElement(ETopoType _type)
         {
-            case ETopoType::TASK:
-                return dynamic_pointer_cast<CTopoBase>(make_shared<CTask>());
-            case ETopoType::COLLECTION:
-                return dynamic_pointer_cast<CTopoBase>(make_shared<CTaskCollection>());
-            case ETopoType::GROUP:
-                return dynamic_pointer_cast<CTopoBase>(make_shared<CTaskGroup>());
-            case ETopoType::TOPO_PROPERTY:
-                return dynamic_pointer_cast<CTopoBase>(make_shared<CTopoProperty>());
-            default:
-                throw runtime_error("Topo base type does not exist.");
+            switch (_type)
+            {
+                case ETopoType::TASK:
+                    return dynamic_pointer_cast<CTopoElement>(make_shared<CTask>());
+                case ETopoType::COLLECTION:
+                    return dynamic_pointer_cast<CTopoElement>(make_shared<CTaskCollection>());
+                case ETopoType::GROUP:
+                    return dynamic_pointer_cast<CTopoElement>(make_shared<CTaskGroup>());
+                default:
+                    throw runtime_error("Topo element type does not exist.");
+            }
+        }
+
+        TopoBasePtr_t CreateTopoBase(ETopoType _type)
+        {
+            switch (_type)
+            {
+                case ETopoType::TASK:
+                    return dynamic_pointer_cast<CTopoBase>(make_shared<CTask>());
+                case ETopoType::COLLECTION:
+                    return dynamic_pointer_cast<CTopoBase>(make_shared<CTaskCollection>());
+                case ETopoType::GROUP:
+                    return dynamic_pointer_cast<CTopoBase>(make_shared<CTaskGroup>());
+                case ETopoType::TOPO_PROPERTY:
+                    return dynamic_pointer_cast<CTopoBase>(make_shared<CTopoProperty>());
+                default:
+                    throw runtime_error("Topo base type does not exist.");
+            }
         }
     }
 }
