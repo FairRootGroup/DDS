@@ -12,6 +12,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
+using namespace dds::topology;
 using boost::asio::ip::tcp;
 
 //=============================================================================
