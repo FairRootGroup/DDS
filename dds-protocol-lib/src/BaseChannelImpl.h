@@ -321,8 +321,7 @@ namespace dds
                         LOG(MiscCommon::debug) << "copy accumulated queue to write queue "
                                                   "m_accumulativeWriteQueue.size="
                                                << m_accumulativeWriteQueue.size()
-                                               << " m_writeQueue.size="
-                                               << m_writeQueue.size();
+                                               << " m_writeQueue.size=" << m_writeQueue.size();
 
                         // copy queue to main queue
                         std::copy(m_accumulativeWriteQueue.begin(),
@@ -348,8 +347,7 @@ namespace dds
                                             << "deadline_timer called: copy accumulated queue to write queue "
                                                "m_accumulativeWriteQueue.size="
                                             << m_accumulativeWriteQueue.size()
-                                            << " m_writeQueue.size="
-                                            << m_writeQueue.size();
+                                            << " m_writeQueue.size=" << m_writeQueue.size();
                                         std::copy(m_accumulativeWriteQueue.begin(),
                                                   m_accumulativeWriteQueue.end(),
                                                   back_inserter((m_isHandshakeOK) ? m_writeQueue

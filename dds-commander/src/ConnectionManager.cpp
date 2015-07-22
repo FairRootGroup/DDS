@@ -15,11 +15,12 @@
 #include <mutex>
 
 using namespace dds;
+using namespace dds::commander;
 using namespace std;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
-CConnectionManager::CConnectionManager(const SOptions_t& _options)
+CConnectionManager::CConnectionManager(const commander::SOptions_t& _options)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
 {
     LOG(info) << "CConnectionManager constructor";
@@ -81,8 +82,8 @@ void CConnectionManager::_start()
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
     // Subscribe on protocol messages
-    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
-        [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG = [this](
+        SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_LOG(_attachment, getWeakPtr(_channel));
     };
@@ -104,8 +105,8 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
-    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
-        [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT = [this](
+        SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSUBMIT(_attachment, getWeakPtr(_channel));
     };

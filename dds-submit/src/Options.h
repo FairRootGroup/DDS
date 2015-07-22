@@ -181,8 +181,7 @@ namespace dds
         {
             LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
                                            "--ssh-rms-cfg to specify a desired configuration file."
-                                        << "\n\n"
-                                        << options;
+                                        << "\n\n" << options;
             return false;
         }
 

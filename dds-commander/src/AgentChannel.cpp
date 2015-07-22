@@ -12,9 +12,10 @@
 #pragma clang diagnostic pop
 #include <boost/filesystem.hpp>
 
+using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace std;
+using namespace dds::commander;
 
 const boost::uuids::uuid& CAgentChannel::getId() const
 {

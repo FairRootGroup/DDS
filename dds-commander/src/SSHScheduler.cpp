@@ -1,16 +1,13 @@
-//
-//  SSHScheduler.cpp
-//  DDS
-//
-//  Created by Andrey Lebedev on 28/11/14.
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
 //
-
+//
 #include "SSHScheduler.h"
 #include "TimeMeasure.h"
 #include <set>
 
 using namespace dds;
+using namespace dds::commander;
 using namespace std;
 using namespace MiscCommon;
 

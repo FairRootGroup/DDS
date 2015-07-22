@@ -1,11 +1,7 @@
-//
-//  SSHScheduler.h
-//  DDS
-//
-//  Created by Andrey Lebedev on 28/11/14.
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
 //
-
+//
 #ifndef __DDS__SSHScheduler__
 #define __DDS__SSHScheduler__
 
@@ -18,60 +14,64 @@
 
 namespace dds
 {
-    class CSSHScheduler
+    namespace commander
     {
-      public:
-        struct SSchedule
+        class CSSHScheduler
         {
-            SSchedule()
-                : m_taskID(0)
-                , m_taskInfo()
-                , m_channel()
+          public:
+            struct SSchedule
             {
-            }
+                SSchedule()
+                    : m_taskID(0)
+                    , m_taskInfo()
+                    , m_channel()
+                {
+                }
 
-            uint64_t m_taskID;
-            STaskInfo m_taskInfo;
-            CAgentChannel::weakConnectionPtr_t m_channel;
+                uint64_t m_taskID;
+                STaskInfo m_taskInfo;
+                CAgentChannel::weakConnectionPtr_t m_channel;
+            };
+
+            typedef std::vector<SSchedule> ScheduleVector_t;
+            typedef std::map<size_t, std::vector<uint64_t>, std::greater<size_t>> CollectionMap_t;
+
+          private:
+            // Map pair<host name, worker id> to vector of channel indeces.
+            typedef std::map<std::pair<std::string, std::string>, std::vector<size_t>> hostToChannelMap_t;
+
+          public:
+            CSSHScheduler();
+            ~CSSHScheduler();
+
+            void makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels);
+
+            const ScheduleVector_t& getSchedule() const;
+
+            std::string toString();
+
+          private:
+            void makeScheduleImpl(const CTopology& _topology,
+                                  const CAgentChannel::weakConnectionPtrVector_t& _channels);
+
+            void scheduleCollections(const CTopology& _topology,
+                                     const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                     hostToChannelMap_t& _hostToChannelMap,
+                                     std::set<uint64_t>& _scheduledTasks,
+                                     const CollectionMap_t& _collectionMap,
+                                     bool useRequirement);
+
+            void scheduleTasks(const dds::CTopology& _topology,
+                               const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                               hostToChannelMap_t& _hostToChannelMap,
+                               std::set<uint64_t>& _scheduledTasks,
+                               const std::set<uint64_t>& _tasksInCollections,
+                               bool useRequirement);
+
+          private:
+            ScheduleVector_t m_schedule;
         };
-
-        typedef std::vector<SSchedule> ScheduleVector_t;
-        typedef std::map<size_t, std::vector<uint64_t>, std::greater<size_t>> CollectionMap_t;
-
-      private:
-        // Map pair<host name, worker id> to vector of channel indeces.
-        typedef std::map<std::pair<std::string, std::string>, std::vector<size_t>> hostToChannelMap_t;
-
-      public:
-        CSSHScheduler();
-        ~CSSHScheduler();
-
-        void makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels);
-
-        const ScheduleVector_t& getSchedule() const;
-
-        std::string toString();
-
-      private:
-        void makeScheduleImpl(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels);
-
-        void scheduleCollections(const CTopology& _topology,
-                                 const CAgentChannel::weakConnectionPtrVector_t& _channels,
-                                 hostToChannelMap_t& _hostToChannelMap,
-                                 std::set<uint64_t>& _scheduledTasks,
-                                 const CollectionMap_t& _collectionMap,
-                                 bool useRequirement);
-
-        void scheduleTasks(const dds::CTopology& _topology,
-                           const CAgentChannel::weakConnectionPtrVector_t& _channels,
-                           hostToChannelMap_t& _hostToChannelMap,
-                           std::set<uint64_t>& _scheduledTasks,
-                           const std::set<uint64_t>& _tasksInCollections,
-                           bool useRequirement);
-
-      private:
-        ScheduleVector_t m_schedule;
-    };
+    }
 }
 
 #endif /* defined(__DDS__SSHScheduler__) */
