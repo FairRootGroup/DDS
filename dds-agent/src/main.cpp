@@ -5,9 +5,9 @@
 
 // DDS
 #include "version.h"
+#include "AgentConnectionManager.h"
 #include "Options.h"
 #include "ErrorCode.h"
-#include "AgentConnectionManager.h"
 #include "INet.h"
 #include "Logger.h"
 #include "KeyValueGuard.h"
@@ -21,7 +21,7 @@ using namespace dds::user_defaults_api;
 int main(int argc, char* argv[])
 {
     // Command line parser
-    SOptions_t options;
+    dds::agent::SOptions_t options;
     try
     {
         Logger::instance().init(); // Initialize log
@@ -42,8 +42,9 @@ int main(int argc, char* argv[])
         try
         {
             boost::asio::io_service io_service;
-            shared_ptr<CAgentConnectionManager> agent = make_shared<CAgentConnectionManager>(options, io_service);
-            agent->start();
+            shared_ptr<CAgentConnectionManager> agentptr =
+                make_shared<dds::agent::CAgentConnectionManager>(options, io_service);
+            agentptr->start();
         }
         catch (exception& e)
         {
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
     {
         try
         {
-            CKeyValueGuard::clean();
+            dds::key_value_api::CKeyValueGuard::clean();
         }
         catch (exception& e)
         {

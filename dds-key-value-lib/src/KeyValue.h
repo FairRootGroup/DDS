@@ -14,27 +14,30 @@
 
 namespace dds
 {
-    class CKeyValue
+    namespace key_value_api
     {
-      public:
-        typedef std::map<std::string, std::string> valuesMap_t;
-        typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
-        typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
-        typedef boost::signals2::connection connection_t;
+        class CKeyValue
+        {
+          public:
+            typedef std::map<std::string, std::string> valuesMap_t;
+            typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+            typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
+            typedef boost::signals2::connection connection_t;
 
-      public:
-        ~CKeyValue();
+          public:
+            ~CKeyValue();
 
-      public:
-        int putValue(const std::string& _key, const std::string& _value);
-        void getValues(const std::string& _key, valuesMap_t* _values);
+          public:
+            int putValue(const std::string& _key, const std::string& _value);
+            void getValues(const std::string& _key, valuesMap_t* _values);
 
-        void subscribe(signal_t::slot_function_type _subscriber);
-        void unsubscribe();
+            void subscribe(signal_t::slot_function_type _subscriber);
+            void unsubscribe();
 
-        void subscribeError(errorSignal_t::slot_function_type _subscriber);
-        void unsubscribeError();
-    };
+            void subscribeError(errorSignal_t::slot_function_type _subscriber);
+            void unsubscribeError();
+        };
+    }
 }
 
 #endif /* KEYVALUE_H_ */

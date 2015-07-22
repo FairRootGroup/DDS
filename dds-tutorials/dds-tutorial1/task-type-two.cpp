@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::key_value_api;
 namespace bpo = boost::program_options;
 
 // IDs of the DDS properties.
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        dds::CKeyValue ddsKeyValue;
+        CKeyValue ddsKeyValue;
         mutex keyMutex;
         condition_variable keyCondition;
 
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
                               });
 
         // First get all task index properties
-        dds::CKeyValue::valuesMap_t taskValues;
+        CKeyValue::valuesMap_t taskValues;
         ddsKeyValue.getValues(TaskIndexPropertyName, &taskValues);
         while (taskValues.size() != nInstances)
         {

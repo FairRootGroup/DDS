@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::key_value_api;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 

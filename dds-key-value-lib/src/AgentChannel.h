@@ -3,8 +3,8 @@
 //
 //
 
-#ifndef __DDS__CAgentChannel__
-#define __DDS__CAgentChannel__
+#ifndef __DDS__KEY_VALUE_API__CAgentChannel__
+#define __DDS__KEY_VALUE_API__CAgentChannel__
 // DDS
 #include "ClientChannelImpl.h"
 // STD
@@ -12,34 +12,37 @@
 
 namespace dds
 {
-    struct SSyncHelper;
-
-    class CAgentChannel : public CClientChannelImpl<CAgentChannel>
+    namespace key_value_api
     {
-      public:
-        BEGIN_MSG_MAP(CAgentChannel)
-        MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-        MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
-        MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
-        END_MSG_MAP()
+        struct SSyncHelper;
 
-      public:
-        SSyncHelper* m_syncHelper;
-
-      private:
-        CAgentChannel(boost::asio::io_service& _service);
-
-        std::string _remoteEndIDString()
+        class CAgentChannel : public CClientChannelImpl<CAgentChannel>
         {
-            return "DDS agent";
-        }
+          public:
+            BEGIN_MSG_MAP(CAgentChannel)
+            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+            MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
+            MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+            END_MSG_MAP()
 
-      private:
-        // Message Handlers
-        bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-        bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
-        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-    };
+          public:
+            SSyncHelper* m_syncHelper;
+
+          private:
+            CAgentChannel(boost::asio::io_service& _service);
+
+            std::string _remoteEndIDString()
+            {
+                return "DDS agent";
+            }
+
+          private:
+            // Message Handlers
+            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
+            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+        };
+    }
 }
 
-#endif /* defined(__DDS__CCommanderChannel__) */
+#endif /* defined(__DDS__KEY_VALUE_API__CAgentChannel__) */

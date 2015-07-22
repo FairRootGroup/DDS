@@ -3,8 +3,8 @@
 //
 //
 
-#ifndef __DDS__AgentConnectionManager__
-#define __DDS__AgentConnectionManager__
+#ifndef __DDS__AGENT__AgentConnectionManager__
+#define __DDS__AGENT__AgentConnectionManager__
 
 // DDS
 #include "CommanderChannel.h"
@@ -66,4 +66,4 @@ namespace dds
     }
 }
 
-#endif /* defined(__DDS__AgentConnectionManager__) */
+#endif /* defined(__DDS__AGENT__AgentConnectionManager__) */

@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::key_value_api;
 namespace bpo = boost::program_options;
 
 // IDs of the DDS properties.
@@ -46,7 +47,7 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        dds::CKeyValue ddsKeyValue;
+        CKeyValue ddsKeyValue;
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
@@ -67,7 +68,7 @@ int main(int argc, char* argv[])
                                   keyCondition.notify_all();
                               });
 
-        dds::CKeyValue::valuesMap_t values;
+        CKeyValue::valuesMap_t values;
         ddsKeyValue.getValues(ReplyPropertyName, &values);
         // We expect to receive one property from server.
         while (values.size() == 0)

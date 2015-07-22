@@ -15,7 +15,6 @@
 
 using namespace boost::asio;
 using namespace std;
-using namespace dds;
 using namespace dds::agent;
 using namespace dds::user_defaults_api;
 using namespace MiscCommon;
@@ -304,7 +303,7 @@ bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_
 
 void CAgentConnectionManager::processUpdateKey()
 {
-    CKeyValueGuard::instance().putValues(m_updateKeyQueue);
+    key_value_api::CKeyValueGuard::instance().putValues(m_updateKeyQueue);
 
     if (!m_UIConnectionMng)
         LOG(warning) << "UI connection manager doesn't run. Skipping key notification broadcasting.";
@@ -405,7 +404,8 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
                     return false;
                 }
 
-                // We must call "wait" to check exist status of a child process, otherwise we will crate a zombie :)
+                // We must call "wait" to check exist status of a child process, otherwise we will crate a
+                // zombie :)
                 int status;
                 if (_pid == ::waitpid(_pid, &status, WNOHANG))
                 {

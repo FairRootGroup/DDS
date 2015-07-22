@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef __DDS__AgentConnectionManager__
-#define __DDS__AgentConnectionManager__
+#ifndef __DDS__KEY_VALUE_API__AgentConnectionManager__
+#define __DDS__KEY_VALUE_API__AgentConnectionManager__
 // DDS
 #include "AgentChannel.h"
 // BOOST
@@ -12,45 +12,48 @@
 
 namespace dds
 {
-    struct SSyncHelper;
-
-    class CAgentConnectionManager
+    namespace key_value_api
     {
-      public:
-        CAgentConnectionManager();
-        virtual ~CAgentConnectionManager();
+        struct SSyncHelper;
 
-      public:
-        void start();
-        void stop();
-        bool stopped()
+        class CAgentConnectionManager
         {
-            return m_service.stopped();
-        }
-        int updateKey(const SUpdateKeyCmd& _cmd);
+          public:
+            CAgentConnectionManager();
+            virtual ~CAgentConnectionManager();
 
-      public:
-        SSyncHelper* m_syncHelper;
+          public:
+            void start();
+            void stop();
+            bool stopped()
+            {
+                return m_service.stopped();
+            }
+            int updateKey(const SUpdateKeyCmd& _cmd);
 
-      private:
-        void doAwaitStop();
-        bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                            CAgentChannel::weakConnectionPtr_t _channel);
-        CAgentChannel::weakConnectionPtr_t getAgentChannel()
-        {
-            return m_channel;
-        }
+          public:
+            SSyncHelper* m_syncHelper;
 
-      private:
-        boost::asio::io_service m_service;
-        boost::asio::signal_set m_signals;
-        // Don't use m_channel directly, only via getAgentChannel
-        // In case if channel is destoryed, there still could be user calling update key
-        // TODO: need to find a way to hide m_channel from direct access
-        CAgentChannel::connectionPtr_t m_channel;
-        bool m_bStarted;
-        boost::thread_group m_workerThreads;
-    };
+          private:
+            void doAwaitStop();
+            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+                                CAgentChannel::weakConnectionPtr_t _channel);
+            CAgentChannel::weakConnectionPtr_t getAgentChannel()
+            {
+                return m_channel;
+            }
+
+          private:
+            boost::asio::io_service m_service;
+            boost::asio::signal_set m_signals;
+            // Don't use m_channel directly, only via getAgentChannel
+            // In case if channel is destoryed, there still could be user calling update key
+            // TODO: need to find a way to hide m_channel from direct access
+            CAgentChannel::connectionPtr_t m_channel;
+            bool m_bStarted;
+            boost::thread_group m_workerThreads;
+        };
+    }
 }
 
-#endif /* defined(__DDS__AgentConnectionManager__) */
+#endif /* defined(__DDS__KEY_VALUE_API__AgentConnectionManager__) */

@@ -3,8 +3,8 @@
 //
 //
 
-#ifndef __DDS__CCommanderChannel__
-#define __DDS__CCommanderChannel__
+#ifndef __DDS__AGENT__CCommanderChannel__
+#define __DDS__AGENT__CCommanderChannel__
 
 // DDS
 #include "ClientChannelImpl.h"
@@ -84,4 +84,4 @@ namespace dds
     }
 }
 
-#endif /* defined(__DDS__CCommanderChannel__) */
+#endif /* defined(__DDS__AGENT__CCommanderChannel__) */

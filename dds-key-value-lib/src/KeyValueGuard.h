@@ -22,79 +22,82 @@
 
 namespace dds
 {
-    typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
-    typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
-    typedef boost::signals2::connection connection_t;
-    typedef std::shared_ptr<boost::interprocess::named_mutex> sharedMemoryMutexPtr_t;
-    typedef std::shared_ptr<boost::interprocess::managed_shared_memory> managedSharedMemoryPtr_t;
-    typedef boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager>
-        sharedMemoryCharAllocator_t;
-    typedef boost::interprocess::basic_string<char, std::char_traits<char>, sharedMemoryCharAllocator_t>
-        sharedMemoryString_t;
-    typedef boost::interprocess::basic_vectorstream<sharedMemoryString_t> sharedMemoryVectorStream_t;
-
-    struct SSyncHelper
+    namespace key_value_api
     {
-        signal_t m_updateSig;
-        errorSignal_t m_errorSig;
-    };
+        typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+        typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
+        typedef boost::signals2::connection connection_t;
+        typedef std::shared_ptr<boost::interprocess::named_mutex> sharedMemoryMutexPtr_t;
+        typedef std::shared_ptr<boost::interprocess::managed_shared_memory> managedSharedMemoryPtr_t;
+        typedef boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager>
+            sharedMemoryCharAllocator_t;
+        typedef boost::interprocess::basic_string<char, std::char_traits<char>, sharedMemoryCharAllocator_t>
+            sharedMemoryString_t;
+        typedef boost::interprocess::basic_vectorstream<sharedMemoryString_t> sharedMemoryVectorStream_t;
 
-    class CKeyValueGuard
-    {
-        typedef std::shared_ptr<CAgentConnectionManager> AgentConnectionManagerPtr_t;
-        typedef std::map<std::string, std::string> valuesMap_t;
-        typedef std::vector<std::pair<std::string, std::string>> valuesVector_t;
-
-      private:
-        CKeyValueGuard();
-        ~CKeyValueGuard();
-
-      public:
-        static CKeyValueGuard& instance();
-        void createStorage();
-        void initLock();
-        void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
-        void putValue(const std::string& _key, const std::string& _value);
-        void putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values);
-        void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
-        void getValues(const std::string& _key, valuesMap_t* _values);
-        int updateKey(const SUpdateKeyCmd& _cmd);
-        void deleteKey(const std::string& _key);
-        connection_t connect(signal_t::slot_function_type _subscriber)
+        struct SSyncHelper
         {
-            return m_syncHelper.m_updateSig.connect(_subscriber);
-        }
-        void disconnect()
+            signal_t m_updateSig;
+            errorSignal_t m_errorSig;
+        };
+
+        class CKeyValueGuard
         {
-            return m_syncHelper.m_updateSig.disconnect_all_slots();
-        }
-        connection_t connectError(errorSignal_t::slot_function_type _subscriber)
-        {
-            return m_syncHelper.m_errorSig.connect(_subscriber);
-        }
-        void disconnectError()
-        {
-            return m_syncHelper.m_errorSig.disconnect_all_slots();
-        }
-        static void clean();
+            typedef std::shared_ptr<CAgentConnectionManager> AgentConnectionManagerPtr_t;
+            typedef std::map<std::string, std::string> valuesMap_t;
+            typedef std::vector<std::pair<std::string, std::string>> valuesVector_t;
 
-        // User API
-        void initAgentConnection();
+          private:
+            CKeyValueGuard();
+            ~CKeyValueGuard();
 
-      public:
-        SSyncHelper m_syncHelper;
+          public:
+            static CKeyValueGuard& instance();
+            void createStorage();
+            void initLock();
+            void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
+            void putValue(const std::string& _key, const std::string& _value);
+            void putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values);
+            void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
+            void getValues(const std::string& _key, valuesMap_t* _values);
+            int updateKey(const SUpdateKeyCmd& _cmd);
+            void deleteKey(const std::string& _key);
+            connection_t connect(signal_t::slot_function_type _subscriber)
+            {
+                return m_syncHelper.m_updateSig.connect(_subscriber);
+            }
+            void disconnect()
+            {
+                return m_syncHelper.m_updateSig.disconnect_all_slots();
+            }
+            connection_t connectError(errorSignal_t::slot_function_type _subscriber)
+            {
+                return m_syncHelper.m_errorSig.connect(_subscriber);
+            }
+            void disconnectError()
+            {
+                return m_syncHelper.m_errorSig.disconnect_all_slots();
+            }
+            static void clean();
 
-      private:
-        const std::string getCfgFilePath() const;
+            // User API
+            void initAgentConnection();
 
-      private:
-        AgentConnectionManagerPtr_t m_agentConnectionMng;
-        std::string m_sCfgFilePath;
-        sharedMemoryMutexPtr_t m_sharedMemoryMutex;
-        managedSharedMemoryPtr_t m_sharedMemory;
+          public:
+            SSyncHelper m_syncHelper;
 
-        std::mutex m_initAgentConnectionMutex;
-    };
+          private:
+            const std::string getCfgFilePath() const;
+
+          private:
+            AgentConnectionManagerPtr_t m_agentConnectionMng;
+            std::string m_sCfgFilePath;
+            sharedMemoryMutexPtr_t m_sharedMemoryMutex;
+            managedSharedMemoryPtr_t m_sharedMemory;
+
+            std::mutex m_initAgentConnectionMutex;
+        };
+    }
 }
 
 #endif

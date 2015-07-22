@@ -16,6 +16,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::user_defaults_api;
+using namespace dds::key_value_api;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
@@ -57,17 +58,13 @@ int main(int argc, char* argv[])
 
         testErrors = vm.count("test-errors");
 
-        const std::vector<std::string> propNames_0 = {
-            "property_1", "property_2", "property_3", "property_4", "property_5"
-        };
+        const vector<string> propNames_0 = { "property_1", "property_2", "property_3", "property_4", "property_5" };
 
-        const std::vector<std::string> propNames_1 = {
-            "property_6", "property_7", "property_8", "property_9", "property_10"
-        };
+        const vector<string> propNames_1 = { "property_6", "property_7", "property_8", "property_9", "property_10" };
 
-        dds::CKeyValue ddsKeyValue;
-        std::mutex keyMutex;
-        std::condition_variable keyCondition;
+        CKeyValue ddsKeyValue;
+        mutex keyMutex;
+        condition_variable keyCondition;
 
         if (testErrors)
         {
@@ -129,7 +126,7 @@ int main(int argc, char* argv[])
                 const auto& readPropNames = (type == 0) ? propNames_1 : propNames_0;
                 for (const auto& prop : readPropNames)
                 {
-                    dds::CKeyValue::valuesMap_t values;
+                    CKeyValue::valuesMap_t values;
                     ddsKeyValue.getValues(prop, &values);
                     string value = to_string(i);
 
@@ -142,8 +139,8 @@ int main(int argc, char* argv[])
 
                     while (counter != nInstances)
                     {
-                        std::unique_lock<std::mutex> lock(keyMutex);
-                        keyCondition.wait_until(lock, std::chrono::system_clock::now() + chrono::milliseconds(1000));
+                        unique_lock<mutex> lock(keyMutex);
+                        keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
                         ddsKeyValue.getValues(prop, &values);
 
                         counter = 0;
@@ -159,7 +156,7 @@ int main(int argc, char* argv[])
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(30));
+        this_thread::sleep_for(chrono::seconds(30));
 
         LOG(info) << "Task successfully done";
     }
