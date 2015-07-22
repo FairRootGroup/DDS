@@ -16,6 +16,7 @@
 using namespace boost::asio;
 using namespace std;
 using namespace dds;
+using namespace dds::agent;
 using namespace MiscCommon;
 namespace sp = std::placeholders;
 using boost::asio::ip::tcp;

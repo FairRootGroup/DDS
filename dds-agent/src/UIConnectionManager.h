@@ -15,36 +15,39 @@
 
 namespace dds
 {
-    class CUIConnectionManager : public CConnectionManagerImpl<CUIChannel, CUIConnectionManager>
+    namespace agent
     {
-      public:
-        CUIConnectionManager();
-        virtual ~CUIConnectionManager();
-
-      public:
-        void newClientCreated(CUIChannel::connectionPtr_t _newClient);
-        void _start()
+        class CUIConnectionManager : public CConnectionManagerImpl<CUIChannel, CUIConnectionManager>
         {
-        }
-        void _stop()
-        {
-        }
-        void _createInfoFile(const std::vector<size_t>& _ports) const;
-        void _deleteInfoFile() const;
-        void setCommanderChannel(CCommanderChannel::weakConnectionPtr_t _channel)
-        {
-            m_commanderChannel = _channel;
-        }
-        void notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-        void notifyAboutSimpleMsg(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
+          public:
+            CUIConnectionManager();
+            virtual ~CUIConnectionManager();
 
-      private:
-        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                              CUIChannel::weakConnectionPtr_t _channel);
+          public:
+            void newClientCreated(CUIChannel::connectionPtr_t _newClient);
+            void _start()
+            {
+            }
+            void _stop()
+            {
+            }
+            void _createInfoFile(const std::vector<size_t>& _ports) const;
+            void _deleteInfoFile() const;
+            void setCommanderChannel(CCommanderChannel::weakConnectionPtr_t _channel)
+            {
+                m_commanderChannel = _channel;
+            }
+            void notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+            void notifyAboutSimpleMsg(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
 
-      private:
-        CCommanderChannel::weakConnectionPtr_t m_commanderChannel;
-    };
+          private:
+            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                  CUIChannel::weakConnectionPtr_t _channel);
+
+          private:
+            CCommanderChannel::weakConnectionPtr_t m_commanderChannel;
+        };
+    }
 }
 
 #endif

@@ -11,21 +11,24 @@
 
 namespace dds
 {
-    class CUIChannel : public CServerChannelImpl<CUIChannel>
+    namespace agent
     {
-      private:
-        CUIChannel(boost::asio::io_service& _service);
-        std::string _remoteEndIDString();
+        class CUIChannel : public CServerChannelImpl<CUIChannel>
+        {
+          private:
+            CUIChannel(boost::asio::io_service& _service);
+            std::string _remoteEndIDString();
 
-      public:
-        BEGIN_MSG_MAP(CUIChannel)
-        MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
-        END_MSG_MAP()
+          public:
+            BEGIN_MSG_MAP(CUIChannel)
+            MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+            END_MSG_MAP()
 
-      private:
-        // Message Handlers
-        bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-    };
+          private:
+            // Message Handlers
+            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+        };
+    }
 }
 
 #endif

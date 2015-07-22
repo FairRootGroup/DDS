@@ -24,6 +24,7 @@
 
 using namespace MiscCommon;
 using namespace dds;
+using namespace dds::agent;
 using namespace std;
 namespace fs = boost::filesystem;
 

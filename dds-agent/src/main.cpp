@@ -15,6 +15,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
+using namespace dds::agent;
 
 int main(int argc, char* argv[])
 {
