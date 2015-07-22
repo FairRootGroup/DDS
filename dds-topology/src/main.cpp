@@ -14,6 +14,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::topology;
 using namespace dds::topology_api;
+using namespace dds::user_defaults_api;
 using boost::asio::ip::tcp;
 
 //=============================================================================

@@ -13,6 +13,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 namespace ip = boost::interprocess;
 

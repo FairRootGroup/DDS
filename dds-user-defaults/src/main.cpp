@@ -20,6 +20,7 @@
 #include "Res.h"
 
 using namespace dds;
+using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 using namespace std;
 namespace bpo = boost::program_options;

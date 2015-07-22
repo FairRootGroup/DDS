@@ -8,6 +8,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::agent;
+using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 
 CUIConnectionManager::CUIConnectionManager()

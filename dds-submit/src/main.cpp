@@ -11,6 +11,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
+using namespace dds::user_defaults_api;
 
 //=============================================================================
 int main(int argc, char* argv[])

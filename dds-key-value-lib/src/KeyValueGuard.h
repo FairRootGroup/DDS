@@ -41,7 +41,7 @@ namespace dds
 
     class CKeyValueGuard
     {
-        typedef std::shared_ptr<agent::CAgentConnectionManager> AgentConnectionManagerPtr_t;
+        typedef std::shared_ptr<CAgentConnectionManager> AgentConnectionManagerPtr_t;
         typedef std::map<std::string, std::string> valuesMap_t;
         typedef std::vector<std::pair<std::string, std::string>> valuesVector_t;
 

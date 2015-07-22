@@ -80,7 +80,7 @@ namespace dds
                 pThis->_start();
 
                 // Start monitoring thread
-                const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
+                const float maxIdleTime = user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
                 CMonitoringThread::instance().start(maxIdleTime,
                                                     []()

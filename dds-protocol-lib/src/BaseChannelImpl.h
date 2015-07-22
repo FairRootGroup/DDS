@@ -625,7 +625,7 @@ namespace dds
                         return;
                     }
 
-                    const std::string dir(CUserDefaults::getDDSPath());
+                    const std::string dir(user_defaults_api::CUserDefaults::getDDSPath());
                     const std::string fileName(dir + to_string(fileId));
                     std::ofstream f(fileName.c_str());
                     if (!f.is_open() || !f.good())

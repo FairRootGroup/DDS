@@ -19,6 +19,7 @@
 #include "SysHelper.h"
 #include "MiscUtils.h"
 //=============================================================================
+using namespace dds::user_defaults_api;
 namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds

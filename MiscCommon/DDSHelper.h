@@ -21,7 +21,7 @@ namespace MiscCommon
             throw std::invalid_argument("findCommanderServer: Arguments must not be null");
 
         // Read server info file
-        const std::string sSrvCfg(dds::CUserDefaults::instance().getServerInfoFileLocationSrv());
+        const std::string sSrvCfg(dds::user_defaults_api::CUserDefaults::instance().getServerInfoFileLocationSrv());
         LOG(MiscCommon::info) << "Reading server info from: " << sSrvCfg;
         if (sSrvCfg.empty())
             throw std::runtime_error("Can't find server info file.");

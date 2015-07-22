@@ -83,7 +83,8 @@ namespace MiscCommon
 
             using namespace boost::log;
 
-            const dds::CUserDefaults& userDefaults = dds::CUserDefaults::instance();
+            const dds::user_defaults_api::CUserDefaults& userDefaults =
+                dds::user_defaults_api::CUserDefaults::instance();
 
             std::string sLogFile = userDefaults.getLogFile();
 
