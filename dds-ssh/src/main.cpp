@@ -29,6 +29,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::ssh;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;

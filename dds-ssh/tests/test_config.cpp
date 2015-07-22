@@ -25,6 +25,8 @@
 #include "config.h"
 //=============================================================================
 using namespace std;
+using namespace dds;
+using namespace dds::ssh;
 using boost::unit_test::test_suite;
 
 BOOST_AUTO_TEST_SUITE(pod_ssh_config);
@@ -42,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
 
     config.readFrom(ss);
 
-    configRecords_t recs(config.getRecords());
+    dds::ssh::configRecords_t recs(config.getRecords());
     BOOST_REQUIRE(!recs.empty());
 
     // Checking record #1
