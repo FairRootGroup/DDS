@@ -14,7 +14,7 @@
 
 namespace dds
 {
-    namespace commander
+    namespace commander_cmd
     {
         class CSSHScheduler
         {

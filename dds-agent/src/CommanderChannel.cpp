@@ -24,7 +24,7 @@
 
 using namespace MiscCommon;
 using namespace dds;
-using namespace dds::agent;
+using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::key_value_api;
 using namespace std;

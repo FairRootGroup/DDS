@@ -15,14 +15,14 @@
 #include <mutex>
 
 using namespace dds;
-using namespace dds::commander;
+using namespace dds::commander_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
 using namespace std;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
-CConnectionManager::CConnectionManager(const commander::SOptions_t& _options)
+CConnectionManager::CConnectionManager(const SOptions_t& _options)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
 {
     LOG(info) << "CConnectionManager constructor";

@@ -17,7 +17,7 @@
 using namespace MiscCommon;
 using namespace std;
 using namespace dds;
-using namespace dds::ssh;
+using namespace dds::ssh_cmd;
 //=============================================================================
 const char g_comment_char = '#';
 const string g_bashscript_start = "@bash_begin@";

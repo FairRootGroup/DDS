@@ -26,7 +26,7 @@
 //=============================================================================
 using namespace std;
 using namespace dds;
-using namespace dds::ssh;
+using namespace dds::ssh_cmd;
 using boost::unit_test::test_suite;
 
 BOOST_AUTO_TEST_SUITE(pod_ssh_config);
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
 
     config.readFrom(ss);
 
-    dds::ssh::configRecords_t recs(config.getRecords());
+    configRecords_t recs(config.getRecords());
     BOOST_REQUIRE(!recs.empty());
 
     // Checking record #1

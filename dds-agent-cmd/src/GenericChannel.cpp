@@ -10,6 +10,7 @@
 
 using namespace MiscCommon;
 using namespace dds;
+using namespace agent_cmd_cmd;
 using namespace std;
 
 bool CGenericChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

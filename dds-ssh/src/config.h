@@ -28,7 +28,7 @@
 #include "MiscUtils.h"
 namespace dds
 {
-    namespace ssh
+    namespace ssh_cmd
     {
         //=============================================================================
         /// this class represents a single record of a dds-ssh configuration file

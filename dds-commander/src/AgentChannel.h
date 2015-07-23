@@ -12,7 +12,7 @@
 
 namespace dds
 {
-    namespace commander
+    namespace commander_cmd
     {
         enum EAgentState
         {

@@ -15,13 +15,13 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace dds::agent;
+using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
 
 int main(int argc, char* argv[])
 {
     // Command line parser
-    dds::agent::SOptions_t options;
+    SOptions_t options;
     try
     {
         Logger::instance().init(); // Initialize log
@@ -42,8 +42,7 @@ int main(int argc, char* argv[])
         try
         {
             boost::asio::io_service io_service;
-            shared_ptr<CAgentConnectionManager> agentptr =
-                make_shared<dds::agent::CAgentConnectionManager>(options, io_service);
+            shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options, io_service);
             agentptr->start();
         }
         catch (exception& e)

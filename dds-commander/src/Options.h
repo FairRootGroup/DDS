@@ -18,7 +18,7 @@ namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds
 {
-    namespace commander
+    namespace commander_cmd
     {
         /// \brief dds-commander's container of options
         typedef struct SOptions

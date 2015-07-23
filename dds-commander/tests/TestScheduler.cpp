@@ -23,7 +23,7 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::commander;
+using namespace dds::commander_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
 using namespace MiscCommon;

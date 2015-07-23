@@ -9,6 +9,7 @@
 
 using namespace MiscCommon;
 using namespace dds;
+using namespace test_cmd;
 using namespace std;
 
 bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

@@ -31,7 +31,7 @@
 #include "threadPool.h"
 //=============================================================================
 using namespace std;
-using namespace dds::ssh;
+using namespace dds::ssh_cmd;
 //=============================================================================
 const size_t g_sleeptime = 1; // in secs.
 const size_t g_numTasks = 32;

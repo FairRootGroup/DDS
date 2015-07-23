@@ -10,7 +10,7 @@
 using namespace MiscCommon;
 using namespace dds;
 using namespace std;
-using namespace dds::topology;
+using namespace dds::topology_cmd;
 
 CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI)

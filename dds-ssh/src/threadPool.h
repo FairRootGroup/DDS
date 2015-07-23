@@ -13,7 +13,7 @@
 #include <boost/thread/condition.hpp>
 namespace dds
 {
-    namespace ssh
+    namespace ssh_cmd
     {
         //=============================================================================
         // TODO: Move it to MiscCommon

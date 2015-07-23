@@ -14,7 +14,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace dds::commander;
+using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using boost::asio::ip::tcp;
 

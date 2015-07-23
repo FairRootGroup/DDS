@@ -15,7 +15,7 @@
 
 namespace dds
 {
-    namespace agent
+    namespace agent_cmd
     {
         class CUIConnectionManager : public CConnectionManagerImpl<CUIChannel, CUIConnectionManager>
         {

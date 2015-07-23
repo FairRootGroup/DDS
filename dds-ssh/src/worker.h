@@ -18,7 +18,7 @@
 //=============================================================================
 namespace dds
 {
-    namespace ssh
+    namespace ssh_cmd
     {
         enum ETaskType
         {

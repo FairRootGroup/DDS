@@ -20,7 +20,7 @@ namespace bpo = boost::program_options;
 //=============================================================================
 namespace dds
 {
-    namespace topology
+    namespace topology_cmd
     {
         enum class ETopologyCmdType
         {

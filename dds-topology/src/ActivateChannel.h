@@ -11,7 +11,7 @@
 
 namespace dds
 {
-    namespace topology
+    namespace topology_cmd
     {
         class CActivateChannel : public CClientChannelImpl<CActivateChannel>
         {

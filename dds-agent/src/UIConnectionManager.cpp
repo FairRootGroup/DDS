@@ -7,7 +7,7 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::agent;
+using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 

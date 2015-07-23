@@ -18,7 +18,7 @@
 
 namespace dds
 {
-    namespace commander
+    namespace commander_cmd
     {
         class CConnectionManager : public CConnectionManagerImpl<CAgentChannel, CConnectionManager>,
                                    public std::enable_shared_from_this<CConnectionManager>

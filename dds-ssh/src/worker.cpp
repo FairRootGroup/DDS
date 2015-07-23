@@ -12,7 +12,7 @@
 //=============================================================================
 using namespace std;
 using namespace dds;
-using namespace dds::ssh;
+using namespace dds::ssh_cmd;
 using namespace MiscCommon;
 //=============================================================================
 const size_t g_cmdTimeout = 35; // in sec.

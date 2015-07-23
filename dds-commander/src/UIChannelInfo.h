@@ -15,7 +15,7 @@
 
 namespace dds
 {
-    namespace commander
+    namespace commander_cmd
     {
         template <class T>
         class CUIChannelInfo

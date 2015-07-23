@@ -11,7 +11,7 @@
 
 namespace dds
 {
-    namespace agent
+    namespace agent_cmd
     {
         class CCommanderChannel : public CClientChannelImpl<CCommanderChannel>
         {

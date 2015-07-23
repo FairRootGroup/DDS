@@ -8,7 +8,7 @@
 
 namespace dds
 {
-    namespace ssh
+    namespace ssh_cmd
     {
         typedef boost::function<void(const std::string&, const std::string&, bool)> log_func_t;
 
