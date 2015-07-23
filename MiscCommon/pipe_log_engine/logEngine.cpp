@@ -14,6 +14,7 @@
 //=============================================================================
 using namespace std;
 using namespace dds;
+using namespace dds::pipe_log_engine;
 using namespace MiscCommon;
 //=============================================================================
 CLogEngine::~CLogEngine()

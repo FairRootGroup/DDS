@@ -31,6 +31,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::ssh_cmd;
 using namespace dds::user_defaults_api;
+using namespace dds::pipe_log_engine;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
