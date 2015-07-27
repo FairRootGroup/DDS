@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::protocol_api;
 
 void SUpdateKeyCmd::normalizeToLocal() const
 {

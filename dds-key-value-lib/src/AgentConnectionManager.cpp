@@ -15,6 +15,7 @@ using namespace boost::asio;
 using namespace std;
 using namespace dds::user_defaults_api;
 using namespace dds::key_value_api;
+using namespace dds::protocol_api;
 using namespace MiscCommon;
 namespace sp = std::placeholders;
 using boost::asio::ip::tcp;

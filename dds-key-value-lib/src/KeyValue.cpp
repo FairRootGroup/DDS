@@ -8,6 +8,7 @@
 using namespace dds;
 using namespace dds::key_value;
 using namespace dds::key_value_api;
+using namespace dds::protocol_api;
 using namespace std;
 using namespace MiscCommon;
 

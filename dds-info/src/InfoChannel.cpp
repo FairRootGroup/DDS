@@ -9,6 +9,7 @@
 using namespace MiscCommon;
 using namespace dds;
 using namespace dds::info_cmd;
+using namespace dds::protocol_api;
 using namespace std;
 
 bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

@@ -13,7 +13,7 @@ namespace dds
 {
     namespace topology_cmd
     {
-        class CActivateChannel : public CClientChannelImpl<CActivateChannel>
+        class CActivateChannel : public protocol_api::CClientChannelImpl<CActivateChannel>
         {
             CActivateChannel(boost::asio::io_service& _service);
 
@@ -33,9 +33,9 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
-            bool on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
+            bool on_cmdPROGRESS(protocol_api::SCommandAttachmentImpl<protocol_api::cmdPROGRESS>::ptr_t _attachment);
 
           private:
             SOptions m_options;

@@ -8,6 +8,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::agent_cmd;
+using namespace dds::protocol_api;
 using namespace MiscCommon;
 
 CUIChannel::CUIChannel(boost::asio::io_service& _service)

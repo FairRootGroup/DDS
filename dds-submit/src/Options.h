@@ -23,38 +23,13 @@ namespace bpo = boost::program_options;
 
 namespace dds
 {
-    //=============================================================================
-    // A custom streamer to help boost program options to convert string options to ERmsType
-    inline std::istream& operator>>(std::istream& _in, SSubmitCmd::ERmsType& _rms)
-    {
-        std::string token;
-        _in >> token;
-        if (token == "ssh")
-            _rms = SSubmitCmd::SSH;
-        else
-            throw bpo::invalid_option_value(token);
-        return _in;
-    }
-
-    inline std::ostream& operator<<(std::ostream& _out, SSubmitCmd::ERmsType& _rms)
-    {
-        switch (_rms)
-        {
-            case SSubmitCmd::SSH:
-                _out << "ssh";
-            case SSubmitCmd::UNKNOWN:
-                break;
-        }
-        return _out;
-    }
-
     namespace submit_cmd
     {
         /// \brief dds-commander's container of options
         typedef struct SOptions
         {
             SOptions()
-                : m_RMS(SSubmitCmd::UNKNOWN)
+                : m_RMS(protocol_api::SSubmitCmd::UNKNOWN)
             {
             }
 
@@ -112,7 +87,7 @@ namespace dds
                 write_ini(sCfgFile, pt);
             }
 
-            SSubmitCmd::ERmsType m_RMS;
+            protocol_api::SSubmitCmd::ERmsType m_RMS;
             std::string m_sSSHCfgFile;
         } SOptions_t;
         //=============================================================================
@@ -143,7 +118,7 @@ namespace dds
             options.add_options()("version,v", "Version information");
             options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
             options.add_options()("rms,r",
-                                  bpo::value<SSubmitCmd::ERmsType>(&_options->m_RMS),
+                                  bpo::value<dds::protocol_api::SSubmitCmd::ERmsType>(&_options->m_RMS),
                                   "Defines a destination resource management system. (default: ssh)");
             options.add_options()("ssh-rms-cfg",
                                   bpo::value<std::string>(&_options->m_sSSHCfgFile),
@@ -168,7 +143,7 @@ namespace dds
                 _options->load(&sCfg);
             }
 
-            if (vm.count("help") || (_options->m_RMS == SSubmitCmd::UNKNOWN))
+            if (vm.count("help") || (_options->m_RMS == protocol_api::SSubmitCmd::UNKNOWN))
             {
                 LOG(MiscCommon::log_stdout) << options;
                 return false;
@@ -179,7 +154,7 @@ namespace dds
                 return false;
             }
 
-            if (vm.count("rms") && (_options->m_RMS == SSubmitCmd::SSH && !vm.count("ssh-rms-cfg")))
+            if (vm.count("rms") && (_options->m_RMS == protocol_api::SSubmitCmd::SSH && !vm.count("ssh-rms-cfg")))
             {
                 LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
                                                "--ssh-rms-cfg to specify a desired configuration file."

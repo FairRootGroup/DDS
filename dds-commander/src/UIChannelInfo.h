@@ -68,12 +68,13 @@ namespace dds
                     if (!m_channel.expired())
                     {
                         auto pUI = m_channel.lock();
-                        pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
+                        pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
+                            protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::info));
 
                         // measure time to activate
                         std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
-                        pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(
+                        pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
                             m_nofReceived,
                             m_nofRequests,
                             m_nofReceivedErrors,
@@ -105,12 +106,13 @@ namespace dds
                     if (!m_channel.expired())
                     {
                         auto pUI = m_channel.lock();
-                        pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::error));
+                        pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
+                            protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::error));
 
                         // measure time to activate
                         std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
-                        pUI->template pushMsg<cmdPROGRESS>(SProgressCmd(
+                        pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
                             m_nofReceived,
                             m_nofRequests,
                             m_nofReceivedErrors,
@@ -140,8 +142,9 @@ namespace dds
                         if (!m_channel.expired())
                         {
                             auto pUI = m_channel.lock();
-                            pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(userMessage, MiscCommon::info));
-                            pUI->template pushMsg<cmdSHUTDOWN>();
+                            pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
+                                protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::info));
+                            pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
 
                             m_channel.reset();
                         }
@@ -168,7 +171,7 @@ namespace dds
         class CGetLogChannelInfo : public CUIChannelInfo<CGetLogChannelInfo>
         {
           public:
-            std::string getMessage(const SBinaryAttachmentReceivedCmd& _cmd,
+            std::string getMessage(const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
@@ -178,7 +181,8 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                        CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
@@ -205,7 +209,7 @@ namespace dds
             {
             }
 
-            std::string getMessage(const SBinaryAttachmentReceivedCmd& _cmd,
+            std::string getMessage(const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
@@ -217,7 +221,8 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                        CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
@@ -244,7 +249,8 @@ namespace dds
         class CActivateAgentsChannelInfo : public CUIChannelInfo<CActivateAgentsChannelInfo>
         {
           public:
-            std::string getMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+            std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                   CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
@@ -252,7 +258,8 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                        CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
@@ -273,7 +280,8 @@ namespace dds
         class CStopUserTasksChannelInfo : public CUIChannelInfo<CStopUserTasksChannelInfo>
         {
           public:
-            std::string getMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+            std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                   CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
@@ -281,7 +289,8 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const SSimpleMsgCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel) const
+            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                        CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();

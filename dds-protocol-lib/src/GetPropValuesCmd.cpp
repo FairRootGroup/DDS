@@ -8,6 +8,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::protocol_api;
 
 void SGetPropValuesCmd::normalizeToLocal() const
 {

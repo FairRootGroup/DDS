@@ -27,6 +27,7 @@ using boost::unit_test::test_suite;
 using namespace MiscCommon;
 using namespace std;
 using namespace dds;
+using namespace dds::protocol_api;
 
 BOOST_AUTO_TEST_SUITE(Test_ProtocolMessage);
 

@@ -10,56 +10,59 @@
 
 namespace dds
 {
-    // Channel events, which channels and users of channel objects can subscribe on.
-    enum EChannelEvents
+    namespace protocol_api
     {
-        OnConnected,
-        OnFailedToConnect,
-        OnRemoteEndDissconnected,
-        OnHandshakeOK,
-        OnHandshakeFailed
-    };
-
-    /// This class implements slots subscription and slots calls associated with certain channel events
-    template <class T>
-    class CChannelEventsImpl
-    {
-      public:
-        typedef boost::signals2::signal<void(T*)> signal_t;
-        typedef boost::signals2::connection connection_t;
-
-      private:
-        typedef boost::ptr_map<EChannelEvents, signal_t> signalsContainer_t;
-
-      public:
-        CChannelEventsImpl<T>()
+        // Channel events, which channels and users of channel objects can subscribe on.
+        enum EChannelEvents
         {
-        }
-        ~CChannelEventsImpl<T>()
-        {
-        }
+            OnConnected,
+            OnFailedToConnect,
+            OnRemoteEndDissconnected,
+            OnHandshakeOK,
+            OnHandshakeFailed
+        };
 
-      public:
-        connection_t subscribeOnEvent(EChannelEvents _type, typename signal_t::slot_function_type _subscriber)
+        /// This class implements slots subscription and slots calls associated with certain channel events
+        template <class T>
+        class CChannelEventsImpl
         {
-            return m_sig[_type].connect(_subscriber);
-        }
+          public:
+            typedef boost::signals2::signal<void(T*)> signal_t;
+            typedef boost::signals2::connection connection_t;
 
-        void onEvent(EChannelEvents _type)
-        {
-            try
-            {
-                T* pThis = static_cast<T*>(this);
-                m_sig[_type](pThis);
-            }
-            catch (...)
+          private:
+            typedef boost::ptr_map<EChannelEvents, signal_t> signalsContainer_t;
+
+          public:
+            CChannelEventsImpl<T>()
             {
             }
-        }
+            ~CChannelEventsImpl<T>()
+            {
+            }
 
-      private:
-        signalsContainer_t m_sig;
-    };
+          public:
+            connection_t subscribeOnEvent(EChannelEvents _type, typename signal_t::slot_function_type _subscriber)
+            {
+                return m_sig[_type].connect(_subscriber);
+            }
+
+            void onEvent(EChannelEvents _type)
+            {
+                try
+                {
+                    T* pThis = static_cast<T*>(this);
+                    m_sig[_type](pThis);
+                }
+                catch (...)
+                {
+                }
+            }
+
+          private:
+            signalsContainer_t m_sig;
+        };
+    }
 }
 
 #endif

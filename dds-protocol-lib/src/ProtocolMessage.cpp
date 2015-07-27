@@ -8,6 +8,7 @@
 #include "INet.h"
 
 using namespace dds;
+using namespace dds::protocol_api;
 using namespace std;
 using namespace MiscCommon;
 using namespace MiscCommon::INet;

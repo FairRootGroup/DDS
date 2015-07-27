@@ -29,14 +29,14 @@ namespace dds
             {
                 return m_service.stopped();
             }
-            int updateKey(const SUpdateKeyCmd& _cmd);
+            int updateKey(const protocol_api::SUpdateKeyCmd& _cmd);
 
           public:
             SSyncHelper* m_syncHelper;
 
           private:
             void doAwaitStop();
-            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+            bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
             CAgentChannel::weakConnectionPtr_t getAgentChannel()
             {

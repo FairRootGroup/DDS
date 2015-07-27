@@ -12,12 +12,12 @@ namespace dds
 {
     namespace agent_cmd_cmd
     {
-        class CGenericChannel : public CClientChannelImpl<CGenericChannel>
+        class CGenericChannel : public protocol_api::CClientChannelImpl<CGenericChannel>
         {
             CGenericChannel(boost::asio::io_service& _service)
-                : CClientChannelImpl<CGenericChannel>(_service, EChannelType::UI)
+                : CClientChannelImpl<CGenericChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
                                  [this](CGenericChannel* _channel)
                                  {
                                      LOG(MiscCommon::info) << "The DDS commander ["
@@ -25,22 +25,22 @@ namespace dds
                                                            << "] has closed the connection.";
                                  });
 
-                subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
                                  [this](CGenericChannel* _channel)
                                  {
                                      switch (m_options.m_agentCmd)
                                      {
                                          case EAgentCmdType::GETLOG:
                                              LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
-                                             pushMsg<cmdGET_LOG>();
+                                             pushMsg<protocol_api::cmdGET_LOG>();
                                              break;
                                          case EAgentCmdType::UPDATE_KEY:
                                          {
                                              LOG(MiscCommon::log_stdout) << "Sending key update command...";
-                                             SUpdateKeyCmd cmd;
+                                             protocol_api::SUpdateKeyCmd cmd;
                                              cmd.m_sKey = m_options.m_sUpdKey_key;
                                              cmd.m_sValue = m_options.m_sUpdKey_value;
-                                             pushMsg<cmdUPDATE_KEY>(cmd);
+                                             pushMsg<protocol_api::cmdUPDATE_KEY>(cmd);
                                          }
                                          break;
                                          default:
@@ -54,9 +54,9 @@ namespace dds
 
           public:
             BEGIN_MSG_MAP(CGenericChannel)
-            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG);
-            MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
-            MESSAGE_HANDLER(cmdPROGRESS, on_cmdPROGRESS)
+            MESSAGE_HANDLER(dds::protocol_api::cmdSIMPLE_MSG, on_cmdSIMPLE_MSG);
+            MESSAGE_HANDLER(dds::protocol_api::cmdSHUTDOWN, on_cmdSHUTDOWN)
+            MESSAGE_HANDLER(dds::protocol_api::cmdPROGRESS, on_cmdPROGRESS)
             END_MSG_MAP()
 
             void setOptions(const SOptions& _options)
@@ -66,9 +66,11 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
-            bool on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdSHUTDOWN(
+                dds::protocol_api::SCommandAttachmentImpl<dds::protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
+            bool on_cmdPROGRESS(
+                dds::protocol_api::SCommandAttachmentImpl<dds::protocol_api::cmdPROGRESS>::ptr_t _attachment);
 
           private:
             SOptions m_options;

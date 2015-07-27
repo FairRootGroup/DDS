@@ -57,10 +57,11 @@ namespace dds
             void initLock();
             void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
             void putValue(const std::string& _key, const std::string& _value);
-            void putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values);
+            void putValues(
+                const std::vector<protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t>& _values);
             void getValue(const std::string& _key, std::string* _value, const std::string& _taskId);
             void getValues(const std::string& _key, valuesMap_t* _values);
-            int updateKey(const SUpdateKeyCmd& _cmd);
+            int updateKey(const protocol_api::SUpdateKeyCmd& _cmd);
             void deleteKey(const std::string& _key);
             connection_t connect(signal_t::slot_function_type _subscriber)
             {

@@ -10,6 +10,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
 SVersionCmd::SVersionCmd()

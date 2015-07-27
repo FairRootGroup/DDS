@@ -26,6 +26,7 @@ using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
+using namespace dds::protocol_api;
 using namespace MiscCommon;
 
 BOOST_AUTO_TEST_SUITE(test_dds_scheduler_performance)

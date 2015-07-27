@@ -31,7 +31,7 @@ namespace dds
             };
             SOptions()
                 : m_Command(cmd_start)
-                , m_RMS(SSubmitCmd::SSH)
+                , m_RMS(protocol_api::SSubmitCmd::SSH)
             {
             }
 
@@ -48,7 +48,7 @@ namespace dds
             ECommands m_Command;
             std::string m_sTopoFile;
             bool m_needCommanderPid;
-            SSubmitCmd::ERmsType m_RMS;
+            protocol_api::SSubmitCmd::ERmsType m_RMS;
             std::string m_sSSHCfgFile;
         } SOptions_t;
         //=============================================================================

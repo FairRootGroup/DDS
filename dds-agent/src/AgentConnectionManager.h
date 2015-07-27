@@ -22,7 +22,8 @@ namespace dds
             typedef std::vector<pid_t> childrenPidContainer_t;
             typedef std::shared_ptr<CUIConnectionManager> UIConnectionManagerPtr_t;
             typedef std::shared_ptr<boost::asio::deadline_timer> deadlineTimerPtr_t;
-            typedef std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t> updateKeyAttachmentQueue_t;
+            typedef std::vector<protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t>
+                updateKeyAttachmentQueue_t;
 
           public:
             CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service);
@@ -36,14 +37,15 @@ namespace dds
             void doAwaitStop();
             void onNewUserTask(pid_t _pid);
             void terminateChildrenProcesses();
-            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+            bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
                                 CCommanderChannel::weakConnectionPtr_t _channel);
-            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   CCommanderChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                                   CCommanderChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                      CCommanderChannel::weakConnectionPtr_t _channel);
+            bool on_cmdSTOP_USER_TASK(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment,
+                CCommanderChannel::weakConnectionPtr_t _channel);
 
             void taskExited(int _pid, int _exitCode);
             void processUpdateKey();

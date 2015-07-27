@@ -15,33 +15,36 @@
 
 namespace dds
 {
-    struct SUUIDCmd : public SBasicCmd<SUUIDCmd>
+    namespace protocol_api
     {
-        SUUIDCmd()
-            : m_id()
+        struct SUUIDCmd : public SBasicCmd<SUUIDCmd>
         {
-        }
-        void normalizeToLocal() const;
-        void normalizeToRemote() const;
-        size_t size() const
-        {
-            size_t size(boost::uuids::uuid::static_size());
-            return size;
-        }
-        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
-        bool operator==(const SUUIDCmd& _val) const
-        {
-            return (m_id == _val.m_id);
-        }
+            SUUIDCmd()
+                : m_id()
+            {
+            }
+            void normalizeToLocal() const;
+            void normalizeToRemote() const;
+            size_t size() const
+            {
+                size_t size(boost::uuids::uuid::static_size());
+                return size;
+            }
+            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
+            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            bool operator==(const SUUIDCmd& _val) const
+            {
+                return (m_id == _val.m_id);
+            }
 
-        boost::uuids::uuid m_id;
-    };
-    inline std::ostream& operator<<(std::ostream& _stream, const SUUIDCmd& _val)
-    {
-        _stream << _val.m_id;
-        return _stream;
+            boost::uuids::uuid m_id;
+        };
+        inline std::ostream& operator<<(std::ostream& _stream, const SUUIDCmd& _val)
+        {
+            _stream << _val.m_id;
+            return _stream;
+        }
     }
-};
+}
 
 #endif /* defined(__DDS__UUIDCmd__) */

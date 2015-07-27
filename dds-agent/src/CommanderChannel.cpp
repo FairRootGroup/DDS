@@ -27,6 +27,7 @@ using namespace dds;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::key_value_api;
+using namespace dds::protocol_api;
 using namespace std;
 namespace fs = boost::filesystem;
 

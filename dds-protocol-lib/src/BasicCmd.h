@@ -10,23 +10,26 @@
 
 namespace dds
 {
-    template <class _Owner>
-    struct SBasicCmd
+    namespace protocol_api
     {
-        void convertFromData(const MiscCommon::BYTEVector_t& _data)
+        template <class _Owner>
+        struct SBasicCmd
         {
-            _Owner* p = reinterpret_cast<_Owner*>(this);
-            p->_convertFromData(_data);
-            p->normalizeToLocal();
-        }
-        void convertToData(MiscCommon::BYTEVector_t* _data) const
-        {
-            const _Owner* p = reinterpret_cast<const _Owner*>(this);
-            p->normalizeToRemote();
-            p->_convertToData(_data);
-            p->normalizeToLocal();
-        }
-    };
-};
+            void convertFromData(const MiscCommon::BYTEVector_t& _data)
+            {
+                _Owner* p = reinterpret_cast<_Owner*>(this);
+                p->_convertFromData(_data);
+                p->normalizeToLocal();
+            }
+            void convertToData(MiscCommon::BYTEVector_t* _data) const
+            {
+                const _Owner* p = reinterpret_cast<const _Owner*>(this);
+                p->normalizeToRemote();
+                p->_convertToData(_data);
+                p->normalizeToLocal();
+            }
+        };
+    }
+}
 
 #endif /* defined(__DDS__BasicCmd__) */

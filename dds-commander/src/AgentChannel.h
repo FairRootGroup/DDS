@@ -22,32 +22,34 @@ namespace dds
         };
         const std::array<std::string, 3> g_agentStates = { { "unknown", "idle", "executing" } };
 
-        class CAgentChannel : public CServerChannelImpl<CAgentChannel>
+        class CAgentChannel : public protocol_api::CServerChannelImpl<CAgentChannel>
         {
             CAgentChannel(boost::asio::io_service& _service)
-                : CServerChannelImpl<CAgentChannel>(_service, { EChannelType::AGENT, EChannelType::UI })
+                : CServerChannelImpl<CAgentChannel>(
+                      _service,
+                      { protocol_api::EChannelType::AGENT, protocol_api::EChannelType::UI })
                 , m_taskID(0)
                 , m_state(EAgentState::unknown)
             {
-                subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
                                  [](CAgentChannel* _channel)
                                  {
                                      LOG(MiscCommon::info) << "The Agent has closed the connection.";
                                  });
 
-                subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
                                  [this](CAgentChannel* _channel)
                                  {
                                      switch (getChannelType())
                                      {
-                                         case EChannelType::AGENT:
+                                         case protocol_api::EChannelType::AGENT:
                                          {
                                              m_state = EAgentState::idle;
-                                             pushMsg<cmdGET_UUID>();
-                                             pushMsg<cmdGET_HOST_INFO>();
+                                             pushMsg<protocol_api::cmdGET_UUID>();
+                                             pushMsg<protocol_api::cmdGET_HOST_INFO>();
                                          }
                                              return;
-                                         case EChannelType::UI:
+                                         case protocol_api::EChannelType::UI:
                                              LOG(MiscCommon::info) << "The UI agent ["
                                                                    << socket().remote_endpoint().address().to_string()
                                                                    << "] has successfully connected.";
@@ -89,7 +91,7 @@ namespace dds
 
           public:
             const boost::uuids::uuid& getId() const;
-            const SHostInfoCmd& getRemoteHostInfo() const
+            const protocol_api::SHostInfoCmd& getRemoteHostInfo() const
             {
                 return m_remoteHostInfo;
             }
@@ -110,7 +112,7 @@ namespace dds
             }
 
             // This function only used in tests
-            void setRemoteHostInfo(const SHostInfoCmd& _hostInfo)
+            void setRemoteHostInfo(const protocol_api::SHostInfoCmd::SHostInfoCmd& _hostInfo)
             {
                 m_remoteHostInfo = _hostInfo;
             }
@@ -127,28 +129,38 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment);
-            bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
-            bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment);
-            bool on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment);
-            bool on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment);
-            bool on_cmdREPLY_UUID(SCommandAttachmentImpl<cmdREPLY_UUID>::ptr_t _attachment);
-            bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
+            bool on_cmdSUBMIT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment);
+            bool on_cmdACTIVATE_AGENT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_AGENT>::ptr_t _attachment);
+            bool on_cmdSTOP_USER_TASK(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment);
+            bool on_cmdREPLY_HOST_INFO(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_HOST_INFO>::ptr_t _attachment);
+            bool on_cmdGED_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGED_PID>::ptr_t _attachment);
+            bool on_cmdREPLY_UUID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_UUID>::ptr_t _attachment);
+            bool on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
-                SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
-            bool on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment);
-            bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment);
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-            bool on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment);
-            bool on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment);
-            bool on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment);
-            bool on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment);
-            bool on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment);
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
+            bool on_cmdGET_AGENTS_INFO(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_AGENTS_INFO>::ptr_t _attachment);
+            bool on_cmdTRANSPORT_TEST(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
+            bool on_cmdUSER_TASK_DONE(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment);
+            bool on_cmdWATCHDOG_HEARTBEAT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment);
+            bool on_cmdGET_PROP_LIST(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_LIST>::ptr_t _attachment);
+            bool on_cmdGET_PROP_VALUES(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment);
+            bool on_cmdSET_TOPOLOGY(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment);
 
             std::string _remoteEndIDString()
             {
-                if (getChannelType() == EChannelType::AGENT)
+                if (getChannelType() == protocol_api::EChannelType::AGENT)
                     return boost::uuids::to_string(m_id);
                 else
                     return "UI client";
@@ -156,7 +168,7 @@ namespace dds
 
           private:
             boost::uuids::uuid m_id;
-            SHostInfoCmd m_remoteHostInfo;
+            protocol_api::SHostInfoCmd m_remoteHostInfo;
             std::string m_sCurrentTopoFile;
             uint64_t m_taskID;
             std::chrono::milliseconds m_startUpTime;

@@ -12,7 +12,7 @@ namespace dds
 {
     namespace submit_cmd
     {
-        class CSubmitChannel : public CClientChannelImpl<CSubmitChannel>
+        class CSubmitChannel : public protocol_api::CClientChannelImpl<CSubmitChannel>
         {
             CSubmitChannel(boost::asio::io_service& _service);
 
@@ -26,16 +26,16 @@ namespace dds
 
           public:
             void setSSHCfgFile(const std::string& _val);
-            void setRMSTypeCode(const SSubmitCmd::ERmsType& _val);
+            void setRMSTypeCode(const protocol_api::SSubmitCmd::ERmsType& _val);
 
           private:
             // Message Handlers
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
 
           private:
             std::string m_sSSHCfgFile;
-            SSubmitCmd::ERmsType m_RMS;
+            protocol_api::SSubmitCmd::ERmsType m_RMS;
             bool m_bXMLValidationDisabled;
         };
     }

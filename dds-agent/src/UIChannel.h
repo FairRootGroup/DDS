@@ -13,7 +13,7 @@ namespace dds
 {
     namespace agent_cmd
     {
-        class CUIChannel : public CServerChannelImpl<CUIChannel>
+        class CUIChannel : public protocol_api::CServerChannelImpl<CUIChannel>
         {
           private:
             CUIChannel(boost::asio::io_service& _service);
@@ -26,7 +26,7 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
+            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
         };
     }
 }

@@ -15,6 +15,7 @@ using namespace dds;
 using namespace dds::topology_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
+using namespace dds::protocol_api;
 using boost::asio::ip::tcp;
 
 //=============================================================================

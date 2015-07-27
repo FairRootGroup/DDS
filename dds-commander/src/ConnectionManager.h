@@ -20,7 +20,7 @@ namespace dds
 {
     namespace commander_cmd
     {
-        class CConnectionManager : public CConnectionManagerImpl<CAgentChannel, CConnectionManager>,
+        class CConnectionManager : public protocol_api::CConnectionManagerImpl<CAgentChannel, CConnectionManager>,
                                    public std::enable_shared_from_this<CConnectionManager>
         {
           public:
@@ -38,33 +38,41 @@ namespace dds
             void _deleteInfoFile() const;
 
           private:
-            bool on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                       CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
+            bool on_cmdGET_AGENTS_INFO(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_AGENTS_INFO>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment,
                                CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
-                SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
+            bool on_cmdSUBMIT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                      CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                      CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
-                                      CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+            bool on_cmdACTIVATE_AGENT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_AGENT>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdSTOP_USER_TASK(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdTRANSPORT_TEST(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                      CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                     CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                       CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment,
-                                    CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdUSER_TASK_DONE(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdGET_PROP_LIST(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_LIST>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdGET_PROP_VALUES(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdSET_TOPOLOGY(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
             CGetLogChannelInfo m_getLog;

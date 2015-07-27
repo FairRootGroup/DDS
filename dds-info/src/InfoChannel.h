@@ -14,36 +14,36 @@ namespace dds
 {
     namespace info_cmd
     {
-        class CInfoChannel : public CClientChannelImpl<CInfoChannel>
+        class CInfoChannel : public protocol_api::CClientChannelImpl<CInfoChannel>
         {
             CInfoChannel(boost::asio::io_service& _service)
-                : CClientChannelImpl<CInfoChannel>(_service, EChannelType::UI)
+                : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(EChannelEvents::OnHandshakeOK,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
                                  [this](CInfoChannel* _channel)
                                  {
                                      // ask the server what we wnated to ask :)
                                      if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
-                                         pushMsg<cmdGED_PID>();
+                                         pushMsg<protocol_api::cmdGED_PID>();
                                      else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
-                                         pushMsg<cmdGET_AGENTS_INFO>();
+                                         pushMsg<protocol_api::cmdGET_AGENTS_INFO>();
                                      else if (m_options.m_bNeedPropList)
-                                         pushMsg<cmdGET_PROP_LIST>();
+                                         pushMsg<protocol_api::cmdGET_PROP_LIST>();
                                      else if (m_options.m_bNeedPropValues)
                                      {
-                                         SGetPropValuesCmd cmd;
+                                         protocol_api::SGetPropValuesCmd cmd;
                                          cmd.m_sPropertyID = m_options.m_propertyID;
-                                         pushMsg<cmdGET_PROP_VALUES>(cmd);
+                                         pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
                                      }
                                  });
 
-                subscribeOnEvent(EChannelEvents::OnConnected,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnConnected,
                                  [this](CInfoChannel* _channel)
                                  {
                                      LOG(MiscCommon::info) << "Connected to the commander server";
                                  });
 
-                subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
                                  [this](CInfoChannel* _channel)
                                  {
                                      LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
@@ -66,9 +66,10 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment);
-            bool on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdREPLY_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_PID>::ptr_t _attachment);
+            bool on_cmdREPLY_AGENTS_INFO(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
 
           private:
             SOptions m_options;

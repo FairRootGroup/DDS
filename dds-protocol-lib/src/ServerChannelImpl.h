@@ -10,75 +10,79 @@
 
 namespace dds
 {
-    template <class T>
-    class CServerChannelImpl : public CBaseChannelImpl<T>
+    namespace protocol_api
     {
-      protected:
-        CServerChannelImpl<T>(boost::asio::io_service& _service, const channelTypeVector_t _requiredChannelTypes)
-            : CBaseChannelImpl<T>(_service)
-            , m_requiredChannelTypes(_requiredChannelTypes)
+        template <class T>
+        class CServerChannelImpl : public CBaseChannelImpl<T>
         {
-            // Register handshake callback
-            std::function<bool(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment, CServerChannelImpl * _channel)>
-                funcHandshake = [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment,
-                                       CServerChannelImpl* _channel) -> bool
+          protected:
+            CServerChannelImpl<T>(boost::asio::io_service& _service, const channelTypeVector_t _requiredChannelTypes)
+                : CBaseChannelImpl<T>(_service)
+                , m_requiredChannelTypes(_requiredChannelTypes)
             {
-                // send shutdown if versions are incompatible
-                bool versionCompatible = m_requiredChannelTypes.empty();
-
-                if (!versionCompatible)
+                // Register handshake callback
+                std::function<bool(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment,
+                                   CServerChannelImpl * _channel)> funcHandshake =
+                    [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment,
+                           CServerChannelImpl* _channel) -> bool
                 {
-                    for (const auto& v : m_requiredChannelTypes)
+                    // send shutdown if versions are incompatible
+                    bool versionCompatible = m_requiredChannelTypes.empty();
+
+                    if (!versionCompatible)
                     {
-                        SVersionCmd versionCmd;
-                        versionCmd.m_channelType = v;
-                        versionCompatible = (*_attachment == versionCmd);
-                        if (versionCompatible)
-                            break;
+                        for (const auto& v : m_requiredChannelTypes)
+                        {
+                            SVersionCmd versionCmd;
+                            versionCmd.m_channelType = v;
+                            versionCompatible = (*_attachment == versionCmd);
+                            if (versionCompatible)
+                                break;
+                        }
                     }
-                }
 
-                if (!versionCompatible)
-                {
-                    this->m_isHandshakeOK = false;
-                    this->m_channelType = EChannelType::UNKNOWN;
-                    // Send reply that the version of the protocol is incompatible
-                    std::string msg("Incompatible protocol version of the client");
-                    LOG(MiscCommon::warning) << msg << this->remoteEndIDString();
-                    this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(msg, MiscCommon::fatal));
+                    if (!versionCompatible)
+                    {
+                        this->m_isHandshakeOK = false;
+                        this->m_channelType = EChannelType::UNKNOWN;
+                        // Send reply that the version of the protocol is incompatible
+                        std::string msg("Incompatible protocol version of the client");
+                        LOG(MiscCommon::warning) << msg << this->remoteEndIDString();
+                        this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(msg, MiscCommon::fatal));
 
-                    // notify all subscribers about the event
-                    this->onEvent(EChannelEvents::OnHandshakeFailed);
-                }
-                else
-                {
-                    this->m_isHandshakeOK = true;
-                    this->m_channelType = static_cast<EChannelType>(_attachment->m_channelType);
+                        // notify all subscribers about the event
+                        this->onEvent(EChannelEvents::OnHandshakeFailed);
+                    }
+                    else
+                    {
+                        this->m_isHandshakeOK = true;
+                        this->m_channelType = static_cast<EChannelType>(_attachment->m_channelType);
 
-                    // The following commands starts message processing which might have been queued before.
-                    this->template pushMsg<cmdUNKNOWN>();
+                        // The following commands starts message processing which might have been queued before.
+                        this->template pushMsg<cmdUNKNOWN>();
 
-                    // everything is OK, we can work with this agent
-                    LOG(MiscCommon::info) << "[" << this->socket().remote_endpoint().address().to_string()
-                                          << "] has successfully connected.";
+                        // everything is OK, we can work with this agent
+                        LOG(MiscCommon::info) << "[" << this->socket().remote_endpoint().address().to_string()
+                                              << "] has successfully connected.";
 
-                    this->template pushMsg<cmdREPLY_HANDSHAKE_OK>();
+                        this->template pushMsg<cmdREPLY_HANDSHAKE_OK>();
 
-                    // notify all subscribers about the event
-                    this->onEvent(EChannelEvents::OnHandshakeOK);
-                }
-                return true;
-            };
-            this->template registerMessageHandler<cmdHANDSHAKE>(funcHandshake);
-        }
+                        // notify all subscribers about the event
+                        this->onEvent(EChannelEvents::OnHandshakeOK);
+                    }
+                    return true;
+                };
+                this->template registerMessageHandler<cmdHANDSHAKE>(funcHandshake);
+            }
 
-        ~CServerChannelImpl<T>()
-        {
-        }
+            ~CServerChannelImpl<T>()
+            {
+            }
 
-      private:
-        channelTypeVector_t m_requiredChannelTypes;
-    };
+          private:
+            channelTypeVector_t m_requiredChannelTypes;
+        };
+    }
 }
 
 #endif

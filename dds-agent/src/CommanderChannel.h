@@ -13,7 +13,7 @@ namespace dds
 {
     namespace agent_cmd
     {
-        class CCommanderChannel : public CClientChannelImpl<CCommanderChannel>
+        class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>
         {
             typedef std::function<void(pid_t)> handlerOnNewUserTaks_t;
 
@@ -48,20 +48,25 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdREPLY_HANDSHAKE_OK(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
-            bool on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment);
-            bool on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment);
+            bool on_cmdREPLY_HANDSHAKE_OK(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdGET_HOST_INFO(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_HOST_INFO>::ptr_t _attachment);
+            bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
-                SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
-            bool on_cmdGET_UUID(SCommandAttachmentImpl<cmdGET_UUID>::ptr_t _attachment);
-            bool on_cmdSET_UUID(SCommandAttachmentImpl<cmdSET_UUID>::ptr_t _attachment);
-            bool on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment);
-            bool on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment);
-            bool on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment);
-            bool on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment);
-            bool on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment);
-            bool on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment);
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment);
+            bool on_cmdGET_UUID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_UUID>::ptr_t _attachment);
+            bool on_cmdSET_UUID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_UUID>::ptr_t _attachment);
+            bool on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment);
+            bool on_cmdASSIGN_USER_TASK(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdASSIGN_USER_TASK>::ptr_t _attachment);
+            bool on_cmdACTIVATE_AGENT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_AGENT>::ptr_t _attachment);
+            bool on_cmdSTOP_USER_TASK(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment);
+            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
+            bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
 
           private:
             void readAgentUUIDFile();

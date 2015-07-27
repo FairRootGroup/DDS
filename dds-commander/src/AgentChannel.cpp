@@ -17,6 +17,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
+using namespace dds::protocol_api;
 
 const boost::uuids::uuid& CAgentChannel::getId() const
 {

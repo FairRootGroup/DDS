@@ -15,6 +15,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::user_defaults_api;
 using namespace dds::key_value_api;
+using namespace dds::protocol_api;
 using namespace std;
 
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
