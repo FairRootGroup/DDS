@@ -112,7 +112,7 @@ namespace dds
             }
 
             // This function only used in tests
-            void setRemoteHostInfo(const protocol_api::SHostInfoCmd::SHostInfoCmd& _hostInfo)
+            void setRemoteHostInfo(const protocol_api::SHostInfoCmd& _hostInfo)
             {
                 m_remoteHostInfo = _hostInfo;
             }
