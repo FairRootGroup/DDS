@@ -8,27 +8,27 @@
 # Supported OS:
 #    Linux, Mac OS X (tested on 10.9)
 #
-# 
+#
 # Notes:
 #    On start the script checks whether WNs pre-compiled bins are present, if not, it will down load them.
 #    Users could provide own version of the pre-compiled bins and avoid of downloading of them.
-# 
+#
 #
 #######
 DDS_CFG=$(dds-user-defaults -p)
 if [ -z "$DDS_CFG" ]; then
-   echo "error: can't find DDS user defaults"
-   echo "You can create the default config file by using: dds-user-defaults -f -d -c ~/.DDS/DDS.cfg"
-   exit 1
+  echo "error: can't find DDS user defaults"
+  echo "You can create the default config file by using: dds-user-defaults -f -d -c ~/.DDS/DDS.cfg"
+  exit 1
 fi
 #######
 WORK_DIR=$(dds-user-defaults -V --key server.work_dir)
 if (( $? != 0 )) ; then
-   echo "ERROR: Your DDS user defaults can't be used with this version of DDS."
-   echo "If you want to continue to use this version of DDS, you have the following options:"
-   echo "1. Fix your configuration file."
-   echo "2. Recreate the file using: dds-user-defaults -f -d -c \"$(dds-user-defaults -p)\""
-   exit 1
+  echo "ERROR: Your DDS user defaults can't be used with this version of DDS."
+  echo "If you want to continue to use this version of DDS, you have the following options:"
+  echo "1. Fix your configuration file."
+  echo "2. Recreate the file using: dds-user-defaults -f -d -c \"$(dds-user-defaults -p)\""
+  exit 1
 fi
 eval WORK_DIR="$WORK_DIR"
 #######
@@ -45,279 +45,288 @@ DDS_URL=" http://dds.gsi.de/releases/add"
 # ************************************************************************
 server_status()
 {
-   commander_pid=$(dds-info  --commander-pid  2>/dev/null)
-   if [ -n "$commander_pid" ]; then
-      echo "DDS commander server: $commander_pid"
-      return 0
-   else
-      echo "DDS commander server is NOT running"
-      return 1
-   fi
+  commander_pid=$(dds-info  --commander-pid  2>/dev/null)
+  if [ -n "$commander_pid" ]; then
+    echo "DDS commander server: $commander_pid"
+    return 0
+  else
+    echo "DDS commander server is NOT running"
+    return 1
+  fi
 }
 # ************************************************************************
 # ***** returns a free port from a given range  *****
 # ************************************************************************
 get_freeport()
 {
-   for(( i = $1; i <= $2; ++i ))
-   do
-      if [ "$SERVER_OS" = "Darwin" ]; then
-         netstat -an -p tcp 2>/dev/null | grep ".$i " | egrep -i "listen|time_wait" &>/dev/null || { echo $i; exit 0; }
-      else
-         netstat -ant 2>/dev/null | grep ":$i " | egrep -i "listen|time_wait" &>/dev/null || { echo $i; exit 0; }
-      fi 
-   done
+  for(( i = $1; i <= $2; ++i ))
+  do
+    if [ "$SERVER_OS" = "Darwin" ]; then
+      netstat -an -p tcp 2>/dev/null | grep ".$i " | egrep -i "listen|time_wait" &>/dev/null || { echo $i; exit 0; }
+    else
+      netstat -ant 2>/dev/null | grep ":$i " | egrep -i "listen|time_wait" &>/dev/null || { echo $i; exit 0; }
+    fi
+  done
 
-   echo "Error: Cant find a free socket port in the given range: $1 - $2"
-   exit 1
+  echo "Error: Cant find a free socket port in the given range: $1 - $2"
+  exit 1
 }
 # ************************************************************************
 # ***** Get pre-compiled bins for WNs  *****
 # ************************************************************************
 get_bins()
 {
-   WN_BIN_DIR="$DDS_LOCATION/bin/wn_bins"
-	
-   # check only wn bins of the local system
-   check_only_local=$1
-   if [ "$check_only_local" = "true" ]; then
-	    echo "Checking availability of WN bin of the local system..."
-   		# bin name:
-   	 	# <pakage>-<version>-<OS>-<ARCH>.tar.gz
-   	 	BASE_NAME="dds-wrk-bin"
-   	 	OS=$(uname -s 2>&1)
-   	 	wn_host_arch=$(uname -m  2>&1)
-   	 	case "$wn_host_arch" in
-      	  	i[3-9]86*|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686)
-         		host_arch="x86"
-         	;;
-      	  	x86_64)
-         		host_arch="amd64"
-            ;;
-      	  	*)
-         		echo "Error: unsupported architecture: $host_arch"
-		 	   	exit 1
-	 	    ;;
-   	 	esac
-   	 	#MacOSX is using always universal bins
-   	 	if [ "$OS" == "Darwin" ]; then
-     		host_arch="universal"
-  	  	fi
-   	 	WN_BIN_ARC="$BASE_NAME-$PKG_VERSION-$OS-$host_arch.tar.gz"
-		if [ ! -f "$WN_BIN_DIR/$WN_BIN_ARC" ]; then
-		   echo "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
-		   exit 1
-		fi
-		echo "found compatible WN bin: $WN_BIN_ARC"
-		return 0
-	fi
-  
-   # we hard-code a list of supported architectures
-   FILE_ARCH=("x86" "amd64")
-   # check that bins dir exists and contain all supported bins
-   if [ -d "$WN_BIN_DIR" ]; then
-      for index in 0 1
-      do
-         FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
-         if [ ! -r "$WN_BIN_DIR/$FILE_NAME" ]; then
-            NEED_DOWNLOAD="TRUE"
-         fi
-      done
-   else
-      NEED_DOWNLOAD="TRUE"
-   fi
+  WN_BIN_DIR="$DDS_LOCATION/bin/wn_bins"
 
-   # Check a mac bin independently, since we provide only universal version
-   FILE_NAME="dds-wrk-bin-$PKG_VERSION-Darwin-universal.tar.gz"
-   if [ ! -r "$WN_BIN_DIR/$FILE_NAME" ]; then
-      NEED_DOWNLOAD="TRUE"
-   fi
-
-
-   if [ -z "$NEED_DOWNLOAD" ]; then
-      return 0
-   fi
-  
-   echo "WNs pre-compiled binaries are missing."
-   echo "Downloading WNs pre-compiled binaries..."
-  
-   OPT[0]=" --fail -s -O" # curl options
-   CMD[0]="curl"
-   OPT[1]=" -q " # wget options
-   CMD[1]="wget"
-   # check for wget or curl commands
-   for index in 0 1
-   do
-      ${CMD[index]} --version > /dev/null 2>&1
-      if (( $? != 0 )) ; then
-         continue
-      fi
-      CMD_URL="${CMD[index]}${OPT[index]}"
-   done
-
-   if [ -z "${CMD_URL}" ]; then
-      echo "${UTIL_NAME} error: Can't find neither wget, nor curl commands. At least one of these commands must be available."
+  # check only wn bins of the local system
+  check_only_local=$1
+  if [ "$check_only_local" = "true" ]; then
+    echo "Checking availability of WN bin of the local system..."
+    # bin name:
+    # <pakage>-<version>-<OS>-<ARCH>.tar.gz
+    BASE_NAME="dds-wrk-bin"
+    OS=$(uname -s 2>&1)
+    wn_host_arch=$(uname -m  2>&1)
+    case "$wn_host_arch" in
+      i[3-9]86*|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686)
+      host_arch="x86"
+      ;;
+      x86_64)
+      host_arch="amd64"
+      ;;
+      *)
+      echo "Error: unsupported architecture: $host_arch"
       exit 1
-   fi
+      ;;
+    esac
+    #MacOSX is using always universal bins
+    if [ "$OS" == "Darwin" ]; then
+      host_arch="universal"
+    fi
+    WN_BIN_ARC="$BASE_NAME-$PKG_VERSION-$OS-$host_arch.tar.gz"
+    if [ ! -f "$WN_BIN_DIR/$WN_BIN_ARC" ]; then
+      echo "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
+      echo -e "\nDid you forget to build it? When building from source use: \"make wn_bin; make install\"\n"
+      exit 1
+    fi
+    echo "found compatible WN bin: $WN_BIN_ARC"
+    return 0
+  fi
 
-   pushd $(pwd) &> /dev/null
-   mkdir -p $WN_BIN_DIR || { echo "error: Can't create $WN_BIN_DIR. Check permissions."; exit 1; }
-   cd $WN_BIN_DIR || { echo "error: Can't change to $WN_BIN_DIR. Check permissions."; exit 1; }
-   # download all pre-compiled bins
-   for index in 0 1
-   do
+  echo -e "Checking precompiled binaries:\n"
+  # we hard-code a list of supported architectures
+  FILE_ARCH=("x86" "amd64")
+  # check that bins dir exists and contain all supported bins
+  if [ -d "$WN_BIN_DIR" ]; then
+    for index in 0 1
+    do
       FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
-      $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
-      if (( $? != 0 )); then
-         echo "Error: Can't download pre-compiled binaries for WNs."
-         echo "Please check availability of ${DDS_URL}/$PKG_VERSION/$FILE_NAME"
-         exit 1
+      if [ ! -r "$WN_BIN_DIR/$FILE_NAME" ]; then
+        NEED_DOWNLOAD="TRUE"
+        echo "$FILE_NAME - MISSING"
+      else
+        echo "$FILE_NAME - OK"
       fi
-   done
+    done
+  else
+    NEED_DOWNLOAD="TRUE"
+  fi
 
-   # download a mac bin independently, since we provide only universal version
-   FILE_NAME="dds-wrk-bin-$PKG_VERSION-Darwin-universal.tar.gz"
-   $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
-   if (( $? != 0 )); then
+  # Check a mac bin independently, since we provide only universal version
+  FILE_NAME="dds-wrk-bin-$PKG_VERSION-Darwin-universal.tar.gz"
+  if [ ! -r "$WN_BIN_DIR/$FILE_NAME" ]; then
+    NEED_DOWNLOAD="TRUE"
+    echo "$FILE_NAME - MISSING"
+  else
+    echo "$FILE_NAME - OK"
+  fi
+
+  if [ -z "$NEED_DOWNLOAD" ]; then
+    return 0
+  fi
+
+  echo -e "\nOne or more WNs pre-compiled binaries is missing."
+  echo "Downloading WNs pre-compiled binaries..."
+
+  OPT[0]=" --fail -s -O" # curl options
+  CMD[0]="curl"
+  OPT[1]=" -q " # wget options
+  CMD[1]="wget"
+  # check for wget or curl commands
+  for index in 0 1
+  do
+    ${CMD[index]} --version > /dev/null 2>&1
+    if (( $? != 0 )) ; then
+      continue
+    fi
+    CMD_URL="${CMD[index]}${OPT[index]}"
+  done
+
+  if [ -z "${CMD_URL}" ]; then
+    echo "${UTIL_NAME} error: Can't find neither wget, nor curl commands. At least one of these commands must be available."
+    exit 1
+  fi
+
+  pushd $(pwd) &> /dev/null
+  mkdir -p $WN_BIN_DIR || { echo "error: Can't create $WN_BIN_DIR. Check permissions."; exit 1; }
+  cd $WN_BIN_DIR || { echo "error: Can't change to $WN_BIN_DIR. Check permissions."; exit 1; }
+  # download all pre-compiled bins
+  for index in 0 1
+  do
+    FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
+    $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
+    if (( $? != 0 )); then
       echo "Error: Can't download pre-compiled binaries for WNs."
       echo "Please check availability of ${DDS_URL}/$PKG_VERSION/$FILE_NAME"
+      echo -e "\nHint: You might also want to use a package for the local system only, use \"dds-server start -s\""
       exit 1
-   fi
+    fi
+  done
 
-   popd &> /dev/null
+  # download a mac bin independently, since we provide only universal version
+  FILE_NAME="dds-wrk-bin-$PKG_VERSION-Darwin-universal.tar.gz"
+  $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
+  if (( $? != 0 )); then
+    echo "Error: Can't download pre-compiled binaries for WNs."
+    echo "Please check availability of ${DDS_URL}/$PKG_VERSION/$FILE_NAME"
+    echo -e "\nHint: You might also want to use a package for the local system only, use \"dds-server start -s\""
+    exit 1
+  fi
+
+  popd &> /dev/null
 }
 #=============================================================================
 # ***** create_dir  *****
 #=============================================================================
 create_dir()
 {
-   if [ ! -d "$1" ]; then
-      mkdir -p "$1"
-   fi
+  if [ ! -d "$1" ]; then
+    mkdir -p "$1"
+  fi
 }
 # ************************************************************************
 # ***** create_dir_hierarchy *****
 # ************************************************************************
 create_dir_hierarchy()
 {
-#   create_dir "$WORK_DIR/etc"
-#   create_dir "$DDS_SRV_LOGDIR"
-#   # create workers' sandbox
-   local dir=$(eval dirname $(dds-user-defaults --wrkscript))
-   create_dir "$dir"
-   return 0
+  #   create_dir "$WORK_DIR/etc"
+  #   create_dir "$DDS_SRV_LOGDIR"
+  #   # create workers' sandbox
+  local dir=$(eval dirname $(dds-user-defaults --wrkscript))
+  create_dir "$dir"
+  return 0
 }
 # ************************************************************************
 # ***** Internal START  *****
 # ************************************************************************
-_start() 
+_start()
 {
-   # S T A R T I N G the server
-   echo "Starting DDS commander..."
-   eval LOG_DIR=$(dds-user-defaults -V --key server.log_dir)
-   $DDS_LOCATION/bin/dds-daemonize "$LOG_DIR" dds-commander start
-   if (( $? != 0 )); then
-      echo "Error: can't start dds-commander."
-      return 1
-   fi
-   
-   # give a chance the commander to start
-   sleep 1
+  # S T A R T I N G the server
+  echo "Starting DDS commander..."
+  eval LOG_DIR=$(dds-user-defaults -V --key server.log_dir)
+  $DDS_LOCATION/bin/dds-daemonize "$LOG_DIR" dds-commander start
+  if (( $? != 0 )); then
+    echo "Error: can't start dds-commander."
+    return 1
+  fi
 
-   # show status
-   echo "------------------------"
-   status
-   echo "------------------------"
+  # give a chance the commander to start
+  sleep 1
 
-   return 0
+  # show status
+  echo "------------------------"
+  status
+  echo "------------------------"
+
+  return 0
 }
 # ************************************************************************
 # ***** START  *****
 # ************************************************************************
-start() 
+start()
 {
-   local commander_pid=$(dds-info --commander-pid 2>/dev/null)
-   # don't need to do anything
-   if [ -n "$commander_pid" ]; then
-      echo "DDS Commander is running already."
-      echo "If you observer problems with it, try to restart it."
-      return 0
-   fi
+  local commander_pid=$(dds-info --commander-pid 2>/dev/null)
+  # don't need to do anything
+  if [ -n "$commander_pid" ]; then
+    echo "DDS Commander is running already."
+    echo "If you observer problems with it, try to restart it."
+    return 0
+  fi
   # R E - S T A R T I N G the commander
-   if [ -n "$agent_pid" ]; then
-      restart $1
-      return 1
-   fi
-   # S T A R T I N G the server
-   _start $1 
+  if [ -n "$agent_pid" ]; then
+    restart $1
+    return 1
+  fi
+  # S T A R T I N G the server
+  _start $1
 }
 # ************************************************************************
 # ***** RESTART  *****
 # ************************************************************************
-restart() 
+restart()
 {
-   # S T O P I N G the server first
-   stop $1
-   # S T A R T I N G the server
-   _start $1 
+  # S T O P I N G the server first
+  stop $1
+  # S T A R T I N G the server
+  _start $1
 }
 # ************************************************************************
 # ***** STOP *****
 # ************************************************************************
 wait_and_kill()
 {
-   # if after 10 sec. a given process still exists send a non-ignorable kill
-   WAIT_TIME=10
-   cnt=0
-   while $(kill -0 $1 &>/dev/null); do
-      cnt=$(expr $cnt + 1)
-      if [ $cnt -gt $WAIT_TIME ]; then
-         echo "Process \"$1\" doesn't want to stop. Forcing a non-ignorable kill..."
-         kill -9 $1
-         break
-      fi
-      sleep 1
-   done
+  # if after 10 sec. a given process still exists send a non-ignorable kill
+  WAIT_TIME=10
+  cnt=0
+  while $(kill -0 $1 &>/dev/null); do
+    cnt=$(expr $cnt + 1)
+    if [ $cnt -gt $WAIT_TIME ]; then
+      echo "Process \"$1\" doesn't want to stop. Forcing a non-ignorable kill..."
+      kill -9 $1
+      break
+    fi
+    sleep 1
+  done
 }
 # ************************************************************************
 # ***** STOP *****
 # ************************************************************************
 stop()
-{ 
-   $DDS_LOCATION/bin/dds-commander stop
+{
+  $DDS_LOCATION/bin/dds-commander stop
 
-   local commander_pid=$(dds-info --commander-pid 2>/dev/null)
-   
-   if [ -z "$commander_pid" ]; then
-      return 0
-   fi
+  local commander_pid=$(dds-info --commander-pid 2>/dev/null)
 
-   echo "Stopping DDS server..."
+  if [ -z "$commander_pid" ]; then
+    return 0
+  fi
 
-   # Try to stop the server by first sending a TERM signal
-   # And if after 10 sec. it still exists send a non-ignorable kill
-   echo "Gracefully shut down DDS server process(es): $commander_pid"
-   kill $commander_pid &>/dev/null
+  echo "Stopping DDS server..."
 
-   wait_and_kill $commander_pid
-   
-   return 0
+  # Try to stop the server by first sending a TERM signal
+  # And if after 10 sec. it still exists send a non-ignorable kill
+  echo "Gracefully shut down DDS server process(es): $commander_pid"
+  kill $commander_pid &>/dev/null
+
+  wait_and_kill $commander_pid
+
+  return 0
 }
 # ************************************************************************
 # ***** STATUS *****
 # ************************************************************************
 status()
 {
-   server_status
+  server_status
 }
 # ************************************************************************
 # ***** STATUS with error code *****
 # ************************************************************************
 status_err()
 {
-   server_status
+  server_status
 
-   return $?
+  return $?
 }
 # ************************************************************************
 # ***** MAIN  *****
@@ -328,48 +337,47 @@ create_dir_hierarchy
 
 # work_dir must be a valid dir
 if [ ! -e "$WORK_DIR" ]; then
-   echo "error: working director: \"$WORK_DIR\" doesn't exist!"
-   exit 1
+  echo "error: working director: \"$WORK_DIR\" doesn't exist!"
+  exit 1
 fi
 
 
 check_only_local_wn_bins="false"
 if [ "$2" = "-s" ]; then
-	check_only_local_wn_bins="true"
+  check_only_local_wn_bins="true"
 fi
 
 # star|stop|status|getbins
 case "$1" in
-    start)
-		get_bins $check_only_local_wn_bins	
-		start $WORK_DIR
-		RETVAL=$?
-	;;
-    restart)
-		get_bins $check_only_local_wn_bins
-        restart $WORK_DIR
-        RETVAL=$?
-    ;;
-    stop)
-		stop $WORK_DIR
-		RETVAL=$?
-	;;
-    status)
-		status $WORK_DIR
-	;;
-# internal parameter
-    status_with_code)
-        status_err $WORK_DIR
-        RETVAL=$?
-        ;;
-    getbins)
-        get_bins
-        RETVAL=$?
-        ;;
-    *)
-        echo "Usage: $(basename "$0") {start [-s]|restart [-s]|stop|status|getbins}"
-        exit 1
+  start)
+  get_bins $check_only_local_wn_bins
+  start $WORK_DIR
+  RETVAL=$?
+  ;;
+  restart)
+  get_bins $check_only_local_wn_bins
+  restart $WORK_DIR
+  RETVAL=$?
+  ;;
+  stop)
+  stop $WORK_DIR
+  RETVAL=$?
+  ;;
+  status)
+  status $WORK_DIR
+  ;;
+  # internal parameter
+  status_with_code)
+  status_err $WORK_DIR
+  RETVAL=$?
+  ;;
+  getbins)
+  get_bins
+  RETVAL=$?
+  ;;
+  *)
+  echo "Usage: $(basename "$0") {start [-s]|restart [-s]|stop|status|getbins}"
+  exit 1
 esac
 
 exit $RETVAL
-
