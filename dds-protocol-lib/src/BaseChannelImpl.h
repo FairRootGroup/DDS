@@ -12,7 +12,11 @@
 #include <memory>
 // BOOST
 #include <boost/noncopyable.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/asio.hpp>
+#pragma clang diagnostic pop
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid.hpp>

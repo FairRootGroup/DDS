@@ -9,9 +9,10 @@
 #define BOOST_LOG_DYN_LINK
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
-// TODO: remove this warning suppression when BOOST 1.56 is released (when it is fixed there).
+#if BOOST_VERSION < 105700
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-register"
+#endif
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/sources/logger.hpp>
@@ -24,8 +25,9 @@
 #include <boost/log/attributes/current_process_id.hpp>
 #include <boost/log/attributes/current_process_name.hpp>
 #include <boost/log/attributes/current_thread_id.hpp>
+#if BOOST_VERSION < 105700
 #pragma clang diagnostic pop
-
+#endif
 // STD
 #include <fstream>
 #include <ostream>
@@ -35,9 +37,19 @@
 #include "UserDefaults.h"
 #include "SysHelper.h"
 
+
 // Main macro to be used for logging in DDS
 // Example: LOG(info) << "My message";
-#define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
+//
+//WORKAROUND:  a bug in 1.59 version
+// https://svn.boost.org/trac/boost/ticket/11549
+//
+#if BOOST_VERSION == 105900
+    #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity) << ""
+#else
+    #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
+#endif
+
 // Convenience functions
 #define P_H BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::proto_high)
 #define P_M BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::proto_mid)
