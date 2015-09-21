@@ -5,7 +5,7 @@
 Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
 Fixed: git error when using out of source builds (GH-85)    
 Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
-
+Fixed: check DDS_LOCATION before agent start (GH-98)
 
 ## v0.10 (2015-07-16)
 ### DDS common
@@ -89,7 +89,7 @@ Modified: Hand-shake messages are prioritized now. DDS doesn't send/accept any o
 Fixed: Revised write message algorithms. It is also faster now.    
 Fixed: a bug in the dds-agent, which could cause a SEGFAULT when trying to access a deleted channel object on disconnect.    
 Added: Implemented callbacks (signals) in BaseChannelImpl for different channel events like connect, disconnect, handshakeOK, handshakeFailed. (GH-41)   
-Fixed: Stability improvements. Handling edge cases which could occur during channel destruction. 
+Fixed: Stability improvements. Handling edge cases which could occur during channel destruction.
 
 ### dds-info
 Added: taskId and task name to console output (dds-info -l). (GH-33)    
@@ -151,4 +151,3 @@ Improved: Split binary files uploads into multiple message chunks, instead of us
 ## v0.2 (2014-09-03)
 
 The first stable internal release.
-

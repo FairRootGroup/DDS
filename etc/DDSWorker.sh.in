@@ -14,7 +14,6 @@ eval LOCK_FILE="$WD/DDSWorker.lock"
 eval PID_FILE="$WD/DDSWorker.pid"
 eval DDS_AGENT_ID_FILE="$WD/dds-agent.client.id"
 eval USER_SCRIPT="$WD/user_worker_env.sh"
-eval XPD_CFG="$WD/xpd.cf"
 # bin name:
 # <pakage>-<version>-<OS>-<ARCH>.tar.gz
 BASE_NAME="dds-wrk-bin"
@@ -77,10 +76,10 @@ clean_up()
     kill $DDSAGENT_PID &>/dev/null
 
     wait_and_kill $DDSAGENT_PID
-	
-	logMsg "Calling agent clean up..."
-	$dds_agent clean
-    
+
+  logMsg "Calling agent clean up..."
+  $dds_agent clean
+
 
     # delete the content of the worker package
     # this is needed in case of condor RMS, for example
@@ -88,7 +87,7 @@ clean_up()
     # TODO: delete the rest of files as well
  # BUG: We must not delete pod-user-defaults and its dependencies,
  #      since many plug-ins use it in stage-out processes.
- #      Need to think how to delete it only in the condor plug-in case 
+ #      Need to think how to delete it only in the condor plug-in case
  #   to_delete=$(tar -ztf pod-worker)
  #   if (( $? == 0 )) ; then
  #      rm -vf $to_delete
@@ -118,7 +117,7 @@ get_freeport()
          netstat -an -p tcp 2>/dev/null | grep ".$i " | egrep -i "listen|time_wait" &>/dev/null || { echo $i; exit 0; }
       else
          netstat -ant 2>/dev/null | grep ":$i " | egrep -i "listen|time_wait" &>/dev/null || { echo $i; exit 0; }
-      fi 
+      fi
    done
 
    echo "Error: Cant find a free socket port in the given range: $1 - $2"
@@ -151,10 +150,10 @@ check_arch()
       *)
          logMsg "Error: unsupported architecture: $host_arch"
          clean_up 1
-	 ;;
+   ;;
    esac
    logMsg "host's CPU/instruction set: $host_arch"
-   
+
    #MacOSX is using always universal bins
    if [ "$OS" == "Darwin" ]; then
       host_arch="universal"
@@ -169,33 +168,33 @@ payload_uuencode=1
 payload_binary=0
 function untar_payload()
 {
-	match=$(grep --text --line-number '^PAYLOAD:$' $0 | cut -d ':' -f 1)
-	payload_start=$((match + 1))
-	if [[ $payload_binary -ne 0 ]]; then
-		tail -n +$payload_start $0 | tar -xzvf -
-	fi
-	if [[ $payload_uuencode -ne 0 ]]; then
-		tail -n +$payload_start $0 | uudecode | tar -xzvf -
-	fi
+  match=$(grep --text --line-number '^PAYLOAD:$' $0 | cut -d ':' -f 1)
+  payload_start=$((match + 1))
+  if [[ $payload_binary -ne 0 ]]; then
+    tail -n +$payload_start $0 | tar -xzvf -
+  fi
+  if [[ $payload_uuencode -ne 0 ]]; then
+    tail -n +$payload_start $0 | uudecode | tar -xzvf -
+  fi
 }
 # ************************************************************************
 #
-# 				M A I N
+#         M A I N
 #
 # ************************************************************************
 
 # check for lock file
 if ( set -o noclobber; echo "$$" > "$LOCK_FILE") 2> /dev/null; then
-	logMsg "Starting DDS Scout's main block"
+  logMsg "Starting DDS Scout's main block"
 else
-	logMsg "Error: There is already a DDS session running in the directory: $WD"
-	exit 1
+  logMsg "Error: There is already a DDS session running in the directory: $WD"
+  exit 1
 fi
 
 echo $$ > $PID_FILE
 
 # handle signals
-trap clean_up SIGHUP SIGINT SIGTERM 
+trap clean_up SIGHUP SIGINT SIGTERM
 
 # print the environment
 env
@@ -266,30 +265,37 @@ export DDS_WN_SUBMIT_TIMESTAMP=0000
 
 # deploy more agents on this host if needed
 if [ -n "$1" ]; then
-	if [ $1 -gt 1 ]; then
-		logMsg "This scout is requested to deploy additionally (($1-1)) agents on that machine..."
-		NUM_WNs=1
-		while [ $NUM_WNs -lt $1 ]
-		do
-			# create working dorectory for the child agent
-			WD_child_name="$(basename "$WD")_$NUM_WNs"
-			logMsg "Deploying child: $WD_child_name"
-			eval WD_child="$WD/../$WD_child_name"
-			mkdir $WD_child
-			
-			# copy WN package into childs directory
-			cp $0 $WD_child/
-			
-			pushd $(pwd) &> /dev/null
-			cd $WD_child
-			# execute DDS scout scrip of the child instance
-			logMsg "Executing DDS scout of the child: $(pwd)/$(basename $0)"
-			$(basename $0) &> $WD_child/scout.log &
-			
-			popd &> /dev/null
-			let NUM_WNs+=1
-		done
-	fi
+  if [ $1 -gt 1 ]; then
+    logMsg "This scout is requested to deploy additionally (($1-1)) agents on that machine..."
+    NUM_WNs=1
+    while [ $NUM_WNs -lt $1 ]
+    do
+      # create working dorectory for the child agent
+      WD_child_name="$(basename "$WD")_$NUM_WNs"
+      logMsg "Deploying child: $WD_child_name"
+      eval WD_child="$WD/../$WD_child_name"
+      mkdir $WD_child
+
+      # copy WN package into childs directory
+      cp $0 $WD_child/
+
+      pushd $(pwd) &> /dev/null
+      cd $WD_child
+      # execute DDS scout scrip of the child instance
+      logMsg "Executing DDS scout of the child: $(pwd)/$(basename $0)"
+      $(basename $0) &> $WD_child/scout.log &
+
+      popd &> /dev/null
+      let NUM_WNs+=1
+    done
+  fi
+fi
+
+# User environemnt script could have changed the DDS_LOCATION
+# Check that and reset it with a warning to user
+if [ "$DDS_LOCATION" != "$WD" ]; then
+    export DDS_LOCATION=$WD
+    logMsg "WARNING: DDS_LOCATION envvar has been reset by user. Setting it back to $DDS_LOCATION"
 fi
 
 # if dds-agent goes down or is crashed, we will try to restart it AGENT_MAX_RESTART_COUNT times
@@ -341,4 +347,3 @@ logMsg "--- DONE ---"
 
 # Exit
 clean_up 0
-
