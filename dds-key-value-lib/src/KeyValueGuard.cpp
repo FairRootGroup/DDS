@@ -8,7 +8,17 @@
 #include "BOOST_FILESYSTEM.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
+
+// silance "Unused typedef" warning using clang 3.7+ and boost < 1.59
+#if BOOST_VERSION < 105900
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#endif
 #include <boost/property_tree/ini_parser.hpp>
+#if BOOST_VERSION < 105900
+#pragma clang diagnostic pop
+#endif
+
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 using namespace std;

@@ -20,7 +20,17 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
+
+// silance "Unused typedef" warning using clang 3.7+ and boost < 1.59
+#if BOOST_VERSION < 105900
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#endif
 #include <boost/algorithm/string/replace.hpp>
+#if BOOST_VERSION < 105900
+#pragma clang diagnostic pop
+#endif
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid_generators.hpp>
