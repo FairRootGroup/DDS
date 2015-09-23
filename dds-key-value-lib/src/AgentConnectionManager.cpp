@@ -53,10 +53,13 @@ CAgentConnectionManager::~CAgentConnectionManager()
 
 void CAgentConnectionManager::doAwaitStop()
 {
-    m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
+    m_signals.async_wait([this](boost::system::error_code /*ec*/, int _signo)
                          {
                              // Stop transport engine
                              stop();
+                             // Forward the signal to the calling process giving it a chance to excute its handler if needed
+                             // GH-97
+                             ::raise(_signo);
                          });
 }
 
