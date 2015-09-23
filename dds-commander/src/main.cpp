@@ -20,7 +20,6 @@
 #pragma clang diagnostic pop
 #endif
 
-
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;

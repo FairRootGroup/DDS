@@ -42,17 +42,16 @@
 #include "UserDefaults.h"
 #include "SysHelper.h"
 
-
 // Main macro to be used for logging in DDS
 // Example: LOG(info) << "My message";
 //
-//WORKAROUND:  a bug in 1.59 version
+// WORKAROUND:  a bug in 1.59 version
 // https://svn.boost.org/trac/boost/ticket/11549
 //
 #if BOOST_VERSION == 105900
-    #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity) << ""
+#define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity) << ""
 #else
-    #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
+#define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
 #endif
 
 // Convenience functions

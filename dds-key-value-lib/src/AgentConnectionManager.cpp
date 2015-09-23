@@ -57,7 +57,8 @@ void CAgentConnectionManager::doAwaitStop()
                          {
                              // Stop transport engine
                              stop();
-                             // Forward the signal to the calling process giving it a chance to excute its handler if needed
+                             // Forward the signal to the calling process giving it a chance to excute its handler if
+                             // needed
                              // GH-97
                              ::raise(_signo);
                          });

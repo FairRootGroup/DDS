@@ -17,7 +17,6 @@
 #include <boost/property_tree/ini_parser.hpp>
 #pragma clang diagnostic pop
 
-
 namespace MiscCommon
 {
     inline void findCommanderServerImpl(std::string* _host, std::string* _port, const std::string& _name)
