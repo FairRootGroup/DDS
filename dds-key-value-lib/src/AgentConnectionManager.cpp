@@ -5,7 +5,7 @@
 
 // BOOST
 #include <boost/property_tree/ptree.hpp>
-// silance "Unused typedef" warning using clang 3.7+ and boost < 1.59
+// silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -57,7 +57,7 @@ void CAgentConnectionManager::doAwaitStop()
                          {
                              // Stop transport engine
                              stop();
-                             // Forward the signal to the calling process giving it a chance to excute its handler if
+                             // Forward the signal to the calling process giving it a chance to execute its handler if
                              // needed
                              // GH-97
                              ::raise(_signo);

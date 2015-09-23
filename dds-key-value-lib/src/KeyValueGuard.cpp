@@ -9,7 +9,7 @@
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
-// silance "Unused typedef" warning using clang 3.7+ and boost < 1.59
+// silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
