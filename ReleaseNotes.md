@@ -4,9 +4,12 @@
 ###DDS common
 Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
 Fixed: git error when using out of source builds (GH-85)    
-Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
-Fixed: check DDS_LOCATION before agent start. (GH-98)
-Added: extend error message in case if a worker package is missing. (GH-89)
+Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had     classes with the same name and same header protection).    
+Fixed: check DDS_LOCATION before agent start. (GH-98)   
+Added: extend error message in case if a worker package is missing. (GH-89)    
+
+### dds-key-value
+Fixed: Forward sys. signals to the calling process giving it a chance to execute its handler if needed. (GH-97)    
 
 ## v0.10 (2015-07-16)
 ### DDS common
