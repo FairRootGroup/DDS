@@ -87,6 +87,11 @@ namespace dds
             MESSAGE_HANDLER(cmdWATCHDOG_HEARTBEAT, on_cmdWATCHDOG_HEARTBEAT)
             MESSAGE_HANDLER(cmdGET_PROP_LIST, on_cmdGET_PROP_LIST)
             MESSAGE_HANDLER(cmdGET_PROP_VALUES, on_cmdGET_PROP_VALUES)
+            // Statistics commands
+            MESSAGE_HANDLER(cmdENABLE_STAT, on_cmdENABLE_STAT)
+            MESSAGE_HANDLER(cmdDISABLE_STAT, on_cmdDISABLE_STAT)
+            MESSAGE_HANDLER(cmdGET_STAT, on_cmdGET_STAT)
+
             END_MSG_MAP()
 
           public:
@@ -160,6 +165,11 @@ namespace dds
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment);
             bool on_cmdSET_TOPOLOGY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment);
+            bool on_cmdENABLE_STAT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment);
+            bool on_cmdDISABLE_STAT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment);
+            bool on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment);
 
             std::string _remoteEndIDString()
             {

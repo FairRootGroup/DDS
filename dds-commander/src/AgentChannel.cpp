@@ -226,3 +226,20 @@ bool CAgentChannel::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::
 {
     return false;
 }
+
+bool CAgentChannel::on_cmdENABLE_STAT(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment)
+{
+    return false;
+}
+
+bool CAgentChannel::on_cmdDISABLE_STAT(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment)
+{
+    return false;
+}
+
+bool CAgentChannel::on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment)
+{
+    return false;
+}

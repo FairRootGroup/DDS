@@ -31,6 +31,7 @@ set( SOURCE_FILES
 	./src/UserTaskDoneCmd.cpp
 	./src/GetPropValuesCmd.cpp
 	./src/SetTopologyCmd.cpp
+	./src/StatImpl.cpp
 )
 
 set( SRC_HDRS
@@ -59,6 +60,7 @@ set( SRC_HDRS
 	./src/UserTaskDoneCmd.h
 	./src/GetPropValuesCmd.h
 	./src/SetTopologyCmd.h
+	./src/StatImpl.h
 )
 
 include_directories(
@@ -79,6 +81,8 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries (
 	dds-protocol-lib
 	${Boost_SYSTEM_LIBRARY}
+    ${Boost_LOG_LIBRARY}
+    ${Boost_LOG_SETUP_LIBRARY}
 )
 
 target_include_directories(dds-protocol-lib

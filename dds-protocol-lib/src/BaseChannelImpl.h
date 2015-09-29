@@ -28,6 +28,7 @@
 #include "ChannelEventsImpl.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
+#include "StatImpl.h"
 
 namespace dds
 {
@@ -221,7 +222,8 @@ namespace dds
         template <class T>
         class CBaseChannelImpl : public boost::noncopyable,
                                  public CChannelEventsImpl<T>,
-                                 public std::enable_shared_from_this<T>
+                                 public std::enable_shared_from_this<T>,
+                                 public CStatImpl
         {
             typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
             typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
@@ -237,6 +239,7 @@ namespace dds
           protected:
             CBaseChannelImpl<T>(boost::asio::io_service& _service)
                 : CChannelEventsImpl<T>()
+                , CStatImpl(_service)
                 , m_isHandshakeOK(false)
                 , m_channelType(EChannelType::UNKNOWN)
                 , m_io_service(_service)
@@ -331,10 +334,10 @@ namespace dds
                         copyMessages = m_accumulativeWriteQueue.size() > maxAccumulativeWriteQueueSize;
                         if (copyMessages)
                         {
-                            LOG(MiscCommon::debug) << "copy accumulated queue to write queue "
-                                                      "m_accumulativeWriteQueue.size="
-                                                   << m_accumulativeWriteQueue.size()
-                                                   << " m_writeQueue.size=" << m_writeQueue.size();
+                            LOG(MiscCommon::debug)
+                                << "copy accumulated queue to write queue "
+                                   "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
+                                << " m_writeQueue.size=" << m_writeQueue.size();
 
                             // copy queue to main queue
                             std::copy(m_accumulativeWriteQueue.begin(),
@@ -358,8 +361,7 @@ namespace dds
                                         {
                                             LOG(MiscCommon::debug)
                                                 << "deadline_timer called: copy accumulated queue to write queue "
-                                                   "m_accumulativeWriteQueue.size="
-                                                << m_accumulativeWriteQueue.size()
+                                                   "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
                                                 << " m_writeQueue.size=" << m_writeQueue.size();
                                             std::copy(m_accumulativeWriteQueue.begin(),
                                                       m_accumulativeWriteQueue.end(),
@@ -443,8 +445,8 @@ namespace dds
                                       }
                                       catch (std::exception& ex)
                                       {
-                                          LOG(MiscCommon::error) << "BaseChannelImpl can't write message: "
-                                                                 << ex.what();
+                                          LOG(MiscCommon::error)
+                                              << "BaseChannelImpl can't write message: " << ex.what();
                                       }
                                   });
             }
@@ -744,8 +746,8 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                         {
-                            LOG(MiscCommon::debug) << "Disconnect is detected while on read msg header: "
-                                                   << ec.message();
+                            LOG(MiscCommon::debug)
+                                << "Disconnect is detected while on read msg header: " << ec.message();
                             onDissconnect();
                         }
                         else
@@ -754,8 +756,7 @@ namespace dds
                                 LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
                             else
                                 LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: "
-                                                      << ec.message();
+                                                         "closing the connection: " << ec.message();
 
                             stop();
                         }
@@ -771,6 +772,10 @@ namespace dds
                     // process received message
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
+
+                    // Log read statistics
+                    this->logReadMessage(m_currentMsg);
+
                     // Read next message
                     m_currentMsg->clear();
                     readHeader();
@@ -791,6 +796,10 @@ namespace dds
                             // process received message
                             T* pThis = static_cast<T*>(this);
                             pThis->processMessage(m_currentMsg);
+
+                            // Log read statistics
+                            this->logReadMessage(m_currentMsg);
+
                             // Read next message
                             m_currentMsg->clear();
                             readHeader();
@@ -807,8 +816,7 @@ namespace dds
                                 LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
                             else
                                 LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: "
-                                                      << ec.message();
+                                                         "closing the connection: " << ec.message();
                             stop();
                         }
                     });
@@ -863,6 +871,10 @@ namespace dds
                                 // lock the modification of the container
                                 {
                                     std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+
+                                    // Log write statistics
+                                    this->logWriteMessages(m_writeBufferQueue);
+
                                     m_writeBuffer.clear();
                                     m_writeBufferQueue.clear();
                                 }
@@ -871,8 +883,8 @@ namespace dds
                             }
                             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                             {
-                                LOG(MiscCommon::debug) << "Disconnect is detected while on write message: "
-                                                       << _ec.message();
+                                LOG(MiscCommon::debug)
+                                    << "Disconnect is detected while on write message: " << _ec.message();
                                 onDissconnect();
                             }
                             else
@@ -884,8 +896,7 @@ namespace dds
                                 else
                                     LOG(MiscCommon::info)
                                         << "The stop signal is received, aborting current operation and "
-                                           "closing the connection: "
-                                        << _ec.message();
+                                           "closing the connection: " << _ec.message();
                                 stop();
                             }
                         }

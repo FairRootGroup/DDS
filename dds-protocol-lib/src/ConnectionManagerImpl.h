@@ -10,6 +10,7 @@
 #include "Options.h"
 #include "ProtocolMessage.h"
 #include "CommandAttachmentImpl.h"
+#include "StatImpl.h"
 // STD
 #include <mutex>
 // BOOST
@@ -383,10 +384,17 @@ namespace dds
                 pThis->newClientCreated(newClient);
 
                 // Subscribe on dissconnect event
-                newClient->registerDisconnectEventHandler([this](T* _channel) -> void
-                                                          {
-                                                              return this->removeClient(_channel);
-                                                          });
+                newClient->registerDisconnectEventHandler(
+                    [this](T* _channel) -> void
+                    {
+                        {
+                            // collect statistics for disconnected channels
+                            std::lock_guard<std::mutex> lock(m_statMutex);
+                            m_readStatDisconnectedChannels.addFromStat(_channel->getReadStat());
+                            m_writeStatDisconnectedChannels.addFromStat(_channel->getWriteStat());
+                        }
+                        return this->removeClient(_channel);
+                    });
 
                 _acceptor->async_accept(
                     newClient->socket(),
@@ -429,6 +437,17 @@ namespace dds
                                  m_channels.end());
             }
 
+          public:
+            void addDisconnectedChannelsStatToStat(SReadStat& _readStat, SWriteStat& _writeStat)
+            {
+                // Add disconnected channels statistics to some external statistics.
+                // This is done in order not to copy self stat structures and return them.
+                // Or not to return reference to self stat together with mutex.
+                std::lock_guard<std::mutex> lock(m_statMutex);
+                _readStat.addFromStat(m_readStatDisconnectedChannels);
+                _writeStat.addFromStat(m_writeStatDisconnectedChannels);
+            }
+
           private:
             /// The signal_set is used to register for process termination notifications.
             std::shared_ptr<boost::asio::signal_set> m_signals;
@@ -444,6 +463,11 @@ namespace dds
             std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptorUI;
 
             boost::thread_group m_workerThreads;
+
+            // Statistics of disconnected channels
+            SReadStat m_readStatDisconnectedChannels;
+            SWriteStat m_writeStatDisconnectedChannels;
+            std::mutex m_statMutex;
         };
     }
 }

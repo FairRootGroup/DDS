@@ -40,6 +40,7 @@ namespace fs = boost::filesystem;
 
 CConnectionManager::CConnectionManager(const SOptions_t& _options)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
+    , m_statEnabled(false)
 {
     LOG(info) << "CConnectionManager constructor";
 }
@@ -99,9 +100,11 @@ void CConnectionManager::_start()
 
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
+    _newClient->setStatEnabled(m_statEnabled);
+
     // Subscribe on protocol messages
-    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG = [this](
-        SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
+        [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_LOG(_attachment, getWeakPtr(_channel));
     };
@@ -116,39 +119,39 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
 
     function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_AGENTS_INFO = [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                  CAgentChannel* _channel) -> bool
+        fGET_AGENTS_INFO =
+            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_AGENTS_INFO(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
-    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT = [this](
-        SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
+        [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSUBMIT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
     function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fACTIVATE_AGENT = [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fACTIVATE_AGENT =
+            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdACTIVATE_AGENT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
     function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fSTOP_USER_TASK =
+            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSTOP_USER_TASK(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
 
     function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fTRANSPORT_TEST = [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fTRANSPORT_TEST =
+            [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdTRANSPORT_TEST(_attachment, getWeakPtr(_channel));
     };
@@ -169,24 +172,24 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
     function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
-        fUSER_TASK_DONE = [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fUSER_TASK_DONE =
+            [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_LIST = [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                CAgentChannel* _channel) -> bool
+        fGET_PROP_LIST =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_PROP_LIST(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_VALUES = [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                  CAgentChannel* _channel) -> bool
+        fGET_PROP_VALUES =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
@@ -199,12 +202,33 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdSET_TOPOLOGY>(fSET_TOPOLOGY);
 
-    function<bool(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel * _channel)> fREPLY_ID = [this](
-        SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel * _channel)> fREPLY_ID =
+        [this](SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdREPLY_ID(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdREPLY_ID>(fREPLY_ID);
+
+    function<bool(SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fENABLE_STAT =
+        [this](SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdENABLE_STAT(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdENABLE_STAT>(fENABLE_STAT);
+
+    function<bool(SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fDISABLE_STAT =
+        [this](SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdDISABLE_STAT(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdDISABLE_STAT>(fDISABLE_STAT);
+
+    function<bool(SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fGET_STAT =
+        [this](SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdGET_STAT(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdGET_STAT>(fGET_STAT);
 }
 
 void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
@@ -1070,4 +1094,105 @@ uint64_t CConnectionManager::getAgentId()
         }
     } while (true);
     return 0;
+}
+
+void CConnectionManager::enableDisableStatForChannels(bool _enable)
+{
+    CAgentChannel::weakConnectionPtrVector_t channels(getChannels());
+    //                                                      [](CAgentChannel::connectionPtr_t _v)
+    //                    {
+    //                        return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+    //                    }));
+
+    for (const auto& v : channels)
+    {
+        if (v.expired())
+            continue;
+        auto ptr = v.lock();
+
+        ptr->setStatEnabled(_enable);
+    }
+
+    m_statEnabled = _enable;
+}
+
+bool CConnectionManager::on_cmdENABLE_STAT(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
+{
+    auto p = _channel.lock();
+    try
+    {
+        enableDisableStatForChannels(true);
+
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("Statistics is enabled on DDS commander server", MiscCommon::info, cmdENABLE_STAT));
+    }
+    catch (exception& _e)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdENABLE_STAT));
+    }
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdDISABLE_STAT(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
+{
+    auto p = _channel.lock();
+    try
+    {
+        enableDisableStatForChannels(false);
+
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("Statistics is disabled on DDS commander server", MiscCommon::info, cmdDISABLE_STAT));
+    }
+    catch (exception& _e)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdDISABLE_STAT));
+    }
+
+    return true;
+}
+
+bool CConnectionManager::on_cmdGET_STAT(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
+{
+    auto p = _channel.lock();
+    try
+    {
+        CAgentChannel::weakConnectionPtrVector_t channels(getChannels());
+        //        [](CAgentChannel::connectionPtr_t _v)
+        //                        {
+        //                            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
+        //                        }));
+
+        SReadStat readStat;
+        SWriteStat writeStat;
+
+        for (const auto& v : channels)
+        {
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+
+            readStat.addFromStat(ptr->getReadStat());
+            writeStat.addFromStat(ptr->getWriteStat());
+        }
+
+        addDisconnectedChannelsStatToStat(readStat, writeStat);
+
+        stringstream ss;
+        ss << "Number of active channels: " << channels.size() << endl << readStat.toString() << writeStat.toString();
+
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_STAT));
+    }
+    catch (exception& _e)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdGET_STAT));
+    }
+
+    return true;
 }

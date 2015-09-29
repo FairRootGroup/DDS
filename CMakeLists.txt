@@ -11,6 +11,7 @@ set(USER_DEFAULTS_CFG_VERSION "0.2")
 # we need cmake v2.8.11+ in order to use target_include_directories
 cmake_minimum_required( VERSION 2.8.11 FATAL_ERROR )
 
+
 # Version
 #
 # take the version string from git and write it to a version file
@@ -52,6 +53,7 @@ option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
 option(BUILD_dds-test "Build dds-test" ON)
 option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
 option(BUILD_dds-tutorials "Build dds-tutorials" ON)
+option(BUILD_dds-stat "Build dds-stat" ON)
 #
 # Custom targets
 #
@@ -93,7 +95,7 @@ set(IS_SET_DDS_INSTALL_PREFIX 1 CACHE INTERNAL "")
 #
 # Where to lookup modules
 #
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}; ${CMAKE_SOURCE_DIR}/cmake")
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR};${CMAKE_SOURCE_DIR}/cmake")
 #
 # MiscCommon location
 #
@@ -254,6 +256,12 @@ if(BUILD_dds-tutorials)
     message(STATUS "Build dds-tutorials - YES")
     add_subdirectory ( dds-tutorials )
 endif(BUILD_dds-tutorials)
+
+# dds-stat
+if(BUILD_dds-stat)
+    message(STATUS "Build dds-stat - YES")
+    add_subdirectory ( dds-stat )
+endif(BUILD_dds-stat)
 
 #
 # Install

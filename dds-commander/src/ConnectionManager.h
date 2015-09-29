@@ -75,9 +75,18 @@ namespace dds
                 CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdREPLY_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdENABLE_STAT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdDISABLE_STAT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
+                                CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
             uint64_t getAgentId();
+            void enableDisableStatForChannels(bool _enable);
 
             CGetLogChannelInfo m_getLog;
             CTestChannelInfo m_transportTest;
@@ -97,6 +106,9 @@ namespace dds
             // Set stores all generated agent ID to be able to detect collisions
             std::set<uint64_t> m_agentIdSet;
             std::mutex m_agentIdSetMutex;
+
+            // Statistic on/off flag
+            bool m_statEnabled;
         };
     }
 }
