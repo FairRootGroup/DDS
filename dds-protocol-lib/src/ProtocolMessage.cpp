@@ -122,7 +122,7 @@ void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::da
     swap(m_data, ret_val);
 }
 
-const SMessageHeader CProtocolMessage::header() const
+const SMessageHeader& CProtocolMessage::header() const
 {
     return m_header;
 }

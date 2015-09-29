@@ -101,13 +101,9 @@ namespace dds
             data_t* body();
             size_t body_length() const;
             bool decode_header();
-            const SMessageHeader header() const;
+            const SMessageHeader& header() const;
             std::string toString() const;
-            const dataContainer_t dataToContainer() const
-            {
-                return m_data;
-            }
-            const dataContainer_t bodyToContainer() const
+            dataContainer_t bodyToContainer() const
             {
                 dataContainer_t buf(body(), body() + body_length());
                 return buf;
