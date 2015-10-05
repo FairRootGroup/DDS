@@ -14,6 +14,16 @@
 #    Users could provide own version of the pre-compiled bins and avoid of downloading of them.
 #
 #
+
+SERVER_OS=$(uname -s 2>&1)
+
+#######
+# Since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the subshell environment.
+# We explicitly set DYLD_LIBRARY_PATH to the libraries directory.
+if [ "$SERVER_OS" == "Darwin" ]; then
+   export DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH
+fi
+
 #######
 DDS_CFG=$(dds-user-defaults -p)
 if [ -z "$DDS_CFG" ]; then
@@ -32,8 +42,6 @@ if (( $? != 0 )) ; then
 fi
 eval WORK_DIR="$WORK_DIR"
 #######
-
-SERVER_OS=$(uname -s 2>&1)
 
 # getting the version of DDS
 PKG_VERSION=$(cat $DDS_LOCATION/etc/version)

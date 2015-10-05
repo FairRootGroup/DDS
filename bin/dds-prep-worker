@@ -12,6 +12,15 @@
 #=============================================================================
 # ***** USAGE *****
 #=============================================================================
+
+#######
+# Since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the subshell environment.
+# We explicitly set DYLD_LIBRARY_PATH to the libraries directory.
+OS=$(uname -s 2>&1)
+if [ "$OS" == "Darwin" ]; then
+   export DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH
+fi
+
 usage() {
     cat <<EOF
 DDS command line utility to prepare a worker package - all elements of DDS which need to be uploaded to a worker

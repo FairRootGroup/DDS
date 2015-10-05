@@ -2,6 +2,15 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
+
+#######
+# Since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the subshell environment.
+# We explicitly set DYLD_LIBRARY_PATH to the libraries directory.
+OS=$(uname -s 2>&1)
+if [ "$OS" == "Darwin" ]; then
+   export DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH
+fi
+
 #=============================================================================
 # ***** USAGE *****
 #=============================================================================
