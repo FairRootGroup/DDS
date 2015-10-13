@@ -42,7 +42,7 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SProgressCmd& val) const
             {
-                return (m_completed == val.m_completed && m_total == val.m_completed && m_errors == val.m_errors &&
+                return (m_completed == val.m_completed && m_total == val.m_total && m_errors == val.m_errors &&
                         m_time == val.m_time);
             }
 

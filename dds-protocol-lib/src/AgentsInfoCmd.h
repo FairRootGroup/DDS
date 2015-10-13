@@ -21,7 +21,7 @@ namespace dds
             void normalizeToRemote() const;
             size_t size() const
             {
-                return sizeof(m_nActiveAgents);
+                return sizeof(m_nActiveAgents) + (m_sListOfAgents.size() + 1);
             }
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
@@ -30,7 +30,7 @@ namespace dds
                 return (m_nActiveAgents == _val.m_nActiveAgents && m_sListOfAgents == _val.m_sListOfAgents);
             }
 
-            mutable uint16_t m_nActiveAgents;
+            mutable uint32_t m_nActiveAgents;
             std::string m_sListOfAgents;
         };
         inline std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val)
