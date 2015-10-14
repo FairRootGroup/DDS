@@ -278,6 +278,12 @@ install(FILES ${DDS_SHARE_FILES} DESTINATION share)
 # tests runner
 if( BUILD_TESTS )
 	install(PROGRAMS run_test.sh DESTINATION tests)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/functional_test_hosts.cfg DESTINATION tests)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/functional_test.xml DESTINATION tests)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_functional.sh DESTINATION tests)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test_hosts.cfg DESTINATION tests)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test.xml DESTINATION tests)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION tests)
 endif( BUILD_TESTS )
 
 # WN bin package custom target
