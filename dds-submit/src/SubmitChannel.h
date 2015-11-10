@@ -27,6 +27,7 @@ namespace dds
           public:
             void setSSHCfgFile(const std::string& _val);
             void setRMSTypeCode(const protocol_api::SSubmitCmd::ERmsType& _val);
+            void setNumber(const size_t _val);
 
           private:
             // Message Handlers
@@ -36,6 +37,7 @@ namespace dds
           private:
             std::string m_sSSHCfgFile;
             protocol_api::SSubmitCmd::ERmsType m_RMS;
+            size_t m_number;
             bool m_bXMLValidationDisabled;
         };
     }

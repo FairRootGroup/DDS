@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
 
         client->setSSHCfgFile(options.m_sSSHCfgFile);
         client->setRMSTypeCode(options.m_RMS);
+        client->setNumber(options.m_number);
 
         client->connect(iterator);
 

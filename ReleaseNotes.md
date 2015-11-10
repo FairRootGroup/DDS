@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v0.12 (NOT YET RELEASED)
+## v1.0 (NOT YET RELEASED)
 ###DDS common
 Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
 Fixed: git error when using out of source builds (GH-85)    
@@ -9,10 +9,13 @@ Fixed: check DDS_LOCATION before agent start. (GH-98)
 Added: extend error message in case if a worker package is missing. (GH-89)   
 Added: statistics accumulation: message size, message queue size for read and write operations is accumulated. (GH-99)   
 Added: new dds-stat command is introduced with possible options: enable, disable and get for statistics accumulation. (GH-99)    
-Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the subshell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.   
+Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the sub-shell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.   
 
 ### dds-key-value
 Fixed: Forward sys. signals to the calling process giving it a chance to execute its handler if needed. (GH-97)    
+
+### dds-submit
+Added: the command learned a localhost RMS. (GH-93)   
 
 ## v0.10 (2015-07-16)
 ### DDS common

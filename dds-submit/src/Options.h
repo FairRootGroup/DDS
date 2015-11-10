@@ -40,6 +40,7 @@ namespace dds
         {
             SOptions()
                 : m_RMS(protocol_api::SSubmitCmd::UNKNOWN)
+                , m_number(0)
             {
             }
 
@@ -99,6 +100,7 @@ namespace dds
 
             protocol_api::SSubmitCmd::ERmsType m_RMS;
             std::string m_sSSHCfgFile;
+            size_t m_number;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -129,11 +131,19 @@ namespace dds
             options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
             options.add_options()("rms,r",
                                   bpo::value<dds::protocol_api::SSubmitCmd::ERmsType>(&_options->m_RMS),
-                                  "Defines a destination resource management system. (default: ssh)");
+                                  "Defines a destination resource management system. (default: ssh)\n"
+                                  "Supported RMS:\n"
+                                  "   - ssh\n"
+                                  "   - localhost");
             options.add_options()("ssh-rms-cfg",
                                   bpo::value<std::string>(&_options->m_sSSHCfgFile),
                                   "A DDS's ssh plug-in configuration file. The option can only be used "
                                   "with the submit command when \'ssh\' is used as RMS");
+            options.add_options()("number,n",
+                                  bpo::value<size_t>(&_options->m_number),
+                                  "Defines a number of agents to spawn. It can be used only when \'localhost\' is used "
+                                  "as RMS. A number of available logical cores will be used if the parameter is "
+                                  "omitted.");
 
             // Parsing command-line
             bpo::variables_map vm;
@@ -168,6 +178,13 @@ namespace dds
             {
                 LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
                                                "--ssh-rms-cfg to specify a desired configuration file."
+                                            << "\n\n" << options;
+                return false;
+            }
+
+            if (vm.count("number") && (_options->m_RMS != protocol_api::SSubmitCmd::LOCALHOST))
+            {
+                LOG(MiscCommon::log_stderr) << "The \'number\' argument can only be used with \'localhost\' RMS"
                                             << "\n\n" << options;
                 return false;
             }

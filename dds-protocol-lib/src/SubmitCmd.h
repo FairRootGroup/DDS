@@ -21,9 +21,10 @@ namespace dds
             enum ERmsType
             {
                 UNKNOWN = -1,
-                SSH = 0
+                SSH = 0,
+                LOCALHOST = 1
             };
-            std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" } };
+            std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" }, { LOCALHOST, "localhost" } };
 
             SSubmitCmd()
                 : m_nRMSTypeCode(0)
@@ -48,7 +49,11 @@ namespace dds
         };
         inline std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val)
         {
-            return _stream << "RMS type code: " << val.m_nRMSTypeCode << "; SSH Hosts config: " << val.m_sSSHCfgFile;
+            _stream << "RMS type code: " << val.m_nRMSTypeCode;
+            if (val.m_nRMSTypeCode == SSubmitCmd::SSH)
+                _stream << "; SSH Hosts config: " << val.m_sSSHCfgFile;
+
+            return _stream;
         }
         inline bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
         {
@@ -62,6 +67,8 @@ namespace dds
             _in >> token;
             if (token == "ssh")
                 _rms = protocol_api::SSubmitCmd::SSH;
+            else if (token == "localhost")
+                _rms = protocol_api::SSubmitCmd::LOCALHOST;
             else
                 throw boost::program_options::invalid_option_value(token);
             return _in;
@@ -73,6 +80,10 @@ namespace dds
             {
                 case protocol_api::SSubmitCmd::SSH:
                     _out << "ssh";
+                    break;
+                case protocol_api::SSubmitCmd::LOCALHOST:
+                    _out << "localhost";
+                    break;
                 case protocol_api::SSubmitCmd::UNKNOWN:
                     break;
             }
