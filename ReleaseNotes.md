@@ -12,7 +12,7 @@ Added: new dds-stat command is introduced with possible options: enable, disable
 Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the sub-shell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.   
 
 ### dds-key-value
-Fixed: Forward sys. signals to the calling process giving it a chance to execute its handler if needed. (GH-97)    
+Fixed: Removed sys. signals handler. A user process now is responsible to catch signals if needed. (GH-97)    
 
 ### dds-submit
 Added: the command learned a localhost RMS. (GH-93)   

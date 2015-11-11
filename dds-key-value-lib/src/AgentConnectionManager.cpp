@@ -31,37 +31,13 @@ using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager()
     : m_syncHelper(nullptr)
-    , m_signals(m_service)
     , m_bStarted(false)
 {
-    // Register to handle the signals that indicate when the server should exit.
-    // It is safe to register for the same signal multiple times in a program,
-    // provided all registration for the specified signal is made through Asio.
-    m_signals.add(SIGINT);
-    m_signals.add(SIGTERM);
-#if defined(SIGQUIT)
-    m_signals.add(SIGQUIT);
-#endif // defined(SIGQUIT)
-
-    doAwaitStop();
 }
 
 CAgentConnectionManager::~CAgentConnectionManager()
 {
     stop();
-}
-
-void CAgentConnectionManager::doAwaitStop()
-{
-    m_signals.async_wait([this](boost::system::error_code /*ec*/, int _signo)
-                         {
-                             // Stop transport engine
-                             stop();
-                             // Forward the signal to the calling process giving it a chance to execute its handler if
-                             // needed
-                             // GH-97
-                             ::raise(_signo);
-                         });
 }
 
 void CAgentConnectionManager::start()

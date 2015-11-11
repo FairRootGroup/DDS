@@ -16,7 +16,7 @@ namespace dds
     {
         struct SSyncHelper;
 
-        class CAgentConnectionManager
+        class CAgentConnectionManager : public std::enable_shared_from_this<CAgentConnectionManager>
         {
           public:
             CAgentConnectionManager();
@@ -45,7 +45,6 @@ namespace dds
 
           private:
             boost::asio::io_service m_service;
-            boost::asio::signal_set m_signals;
             // Don't use m_channel directly, only via getAgentChannel
             // In case if channel is destoryed, there still could be user calling update key
             // TODO: need to find a way to hide m_channel from direct access
