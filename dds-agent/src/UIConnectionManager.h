@@ -41,9 +41,13 @@ namespace dds
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
             void notifyAboutSimpleMsg(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            void notifyAboutCustomCmd(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
 
           private:
             bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
+                                  CUIChannel::weakConnectionPtr_t _channel);
+            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
                                   CUIChannel::weakConnectionPtr_t _channel);
 
           private:

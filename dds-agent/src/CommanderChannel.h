@@ -36,6 +36,7 @@ namespace dds
             MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
             MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
             MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
+            MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
             END_MSG_MAP()
 
             // gives the possibility to register a callback, which will be called when a user task is executed
@@ -67,6 +68,7 @@ namespace dds
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment);
             bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
             bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
+            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
 
           private:
             void readAgentIDFile();

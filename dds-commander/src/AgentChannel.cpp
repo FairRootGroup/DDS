@@ -6,6 +6,7 @@
 // DDS
 #include "AgentChannel.h"
 #include "CRC.h"
+#include "ChannelId.h"
 // BOOST
 #include <boost/filesystem.hpp>
 
@@ -15,6 +16,54 @@ using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
+
+CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
+    : CServerChannelImpl<CAgentChannel>(_service, { protocol_api::EChannelType::AGENT, protocol_api::EChannelType::UI })
+    , m_id(0)
+    , m_remoteHostInfo()
+    , m_sCurrentTopoFile()
+    , m_taskID(0)
+    , m_startUpTime(0)
+    , m_state(EAgentState::unknown)
+    , m_propertyPT()
+    , m_propertyPTMutex()
+{
+    subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
+                     [](CAgentChannel* _channel)
+                     {
+                         LOG(MiscCommon::info) << "The Agent has closed the connection.";
+                     });
+
+    subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
+                     [this](CAgentChannel* _channel)
+                     {
+                         switch (getChannelType())
+                         {
+                             case protocol_api::EChannelType::AGENT:
+                             {
+                                 m_state = EAgentState::idle;
+                                 pushMsg<protocol_api::cmdGET_ID>();
+                                 pushMsg<protocol_api::cmdGET_HOST_INFO>();
+                             }
+                                 return;
+                             case protocol_api::EChannelType::UI:
+                             {
+                                 LOG(MiscCommon::info) << "The UI agent ["
+                                                       << socket().remote_endpoint().address().to_string()
+                                                       << "] has successfully connected.";
+
+                                 // All UI channels get unique IDs, so that user tasks and agents can send
+                                 // back the
+                                 // information to a particular UI channel.
+                                 m_id = DDSChannelId::getChannelId();
+                             }
+                                 return;
+                             default:
+                                 // TODO: log unknown connection attempt
+                                 return;
+                         }
+                     });
+}
 
 uint64_t CAgentChannel::getId() const
 {
@@ -34,6 +83,49 @@ uint64_t CAgentChannel::getTaskID() const
 void CAgentChannel::setTaskID(uint64_t _taskID)
 {
     m_taskID = _taskID;
+}
+
+const SHostInfoCmd& CAgentChannel::getRemoteHostInfo() const
+{
+    return m_remoteHostInfo;
+}
+
+void CAgentChannel::setRemoteHostInfo(const SHostInfoCmd& _hostInfo)
+{
+    m_remoteHostInfo = _hostInfo;
+}
+
+std::chrono::milliseconds CAgentChannel::getStartupTime() const
+{
+    return m_startUpTime;
+}
+
+EAgentState CAgentChannel::getState() const
+{
+    return m_state;
+}
+
+void CAgentChannel::setState(EAgentState _state)
+{
+    m_state = _state;
+}
+
+const boost::property_tree::ptree& CAgentChannel::getPropertyPT() const
+{
+    return m_propertyPT;
+}
+
+mutex& CAgentChannel::getPropertyPTMutex()
+{
+    return m_propertyPTMutex;
+}
+
+string CAgentChannel::_remoteEndIDString()
+{
+    if (getChannelType() == EChannelType::AGENT)
+        return to_string(m_id);
+    else
+        return "UI client";
 }
 
 bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment)
@@ -240,6 +332,12 @@ bool CAgentChannel::on_cmdDISABLE_STAT(
 }
 
 bool CAgentChannel::on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment)
+{
+    return false;
+}
+
+bool CAgentChannel::on_cmdCUSTOM_CMD(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
     return false;
 }

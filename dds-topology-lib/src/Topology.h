@@ -78,6 +78,7 @@ namespace dds
             const STaskInfo& getTaskInfoByHash(uint64_t _hash) const;
             TaskCollectionPtr_t getTaskCollectionByHash(uint64_t _hash) const;
             const std::vector<uint64_t>& getTaskHashesByTaskCollectionHash(uint64_t _hash) const;
+            TaskPtr_t getTaskByHashPath(const std::string& _hashPath) const;
 
             /// Accessors to internal data structures. Used for unit tests.
             const TopoIndexToTopoElementMap_t& getTopoIndexToTopoElementMap() const;

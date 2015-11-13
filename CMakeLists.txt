@@ -54,6 +54,8 @@ option(BUILD_dds-test "Build dds-test" ON)
 option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
 option(BUILD_dds-tutorials "Build dds-tutorials" ON)
 option(BUILD_dds-stat "Build dds-stat" ON)
+option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
+option(BUILD_dds-custom-cmd-lib "Build dds-custom-cmd-lib" ON)
 #
 # Custom targets
 #
@@ -263,6 +265,18 @@ if(BUILD_dds-stat)
     add_subdirectory ( dds-stat )
 endif(BUILD_dds-stat)
 
+# dds-custom-cmd
+if(BUILD_dds-custom-cmd)
+    message(STATUS "Build dds-custom-cmd - YES")
+    add_subdirectory ( dds-custom-cmd )
+endif(BUILD_dds-custom-cmd)
+
+# dds-custom-cmd-lib
+if(BUILD_dds-custom-cmd-lib)
+    message(STATUS "Build dds-custom-cmd-lib - YES")
+    add_subdirectory ( dds-custom-cmd-lib )
+endif(BUILD_dds-custom-cmd-lib)
+
 #
 # Install
 #
@@ -326,6 +340,7 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
 		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
 					  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-key-value-lib> "${WN_PKG_DIR}"
+                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-custom-cmd-lib> "${WN_PKG_DIR}"
 		              COMMAND ${lib_cmd} ${lib_cmd_args}
                       COMMAND ${lib_cmd} ${lib_cmd_args_log}
                       COMMAND ${lib_cmd} ${lib_cmd_args_cpp}

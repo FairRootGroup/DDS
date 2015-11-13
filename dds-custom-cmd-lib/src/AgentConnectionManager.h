@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef __DDS__KEY_VALUE_API__AgentConnectionManager__
-#define __DDS__KEY_VALUE_API__AgentConnectionManager__
+#ifndef __DDS__CUSTOM_CMD_API__AgentConnectionManager__
+#define __DDS__CUSTOM_CMD_API__AgentConnectionManager__
 // DDS
 #include "AgentChannel.h"
 // BOOST
@@ -12,7 +12,7 @@
 
 namespace dds
 {
-    namespace key_value_api
+    namespace custom_cmd_api
     {
         struct SSyncHelper;
 
@@ -29,7 +29,7 @@ namespace dds
             {
                 return m_service.stopped();
             }
-            int updateKey(const protocol_api::SUpdateKeyCmd& _cmd);
+            int sendCmd(const protocol_api::SCustomCmdCmd& _command);
 
           public:
             SSyncHelper* m_syncHelper;
@@ -54,4 +54,4 @@ namespace dds
     }
 }
 
-#endif /* defined(__DDS__KEY_VALUE_API__AgentConnectionManager__) */
+#endif /* defined(__DDS__CUSTOM_CMD_API__AgentConnectionManager__) */

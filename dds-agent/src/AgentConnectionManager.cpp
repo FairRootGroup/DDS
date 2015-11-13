@@ -104,8 +104,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                               CCommanderChannel* _channel) -> bool
+            fSHUTDOWN =
+                [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
@@ -115,8 +115,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe for key updates
         std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fUPDATE_KEY = [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                 CCommanderChannel* _channel) -> bool
+            fUPDATE_KEY =
+                [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
@@ -126,8 +126,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe for cmdSIMPLE_MSG
         std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                 CCommanderChannel* _channel) -> bool
+            fSIMPLE_MSG =
+                [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
         {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
@@ -145,6 +145,17 @@ void CAgentConnectionManager::start()
             return this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
         };
         m_agent->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
+
+        // Subscribe for cmdCUSTOM_CMD
+        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CCommanderChannel * _channel)>
+            fCUSTOM_CMD =
+                [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CCommanderChannel* _channel) -> bool
+        {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdCUSTOM_CMD(_attachment, m_agent);
+        };
+        m_agent->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
 
         // Call this callback when a user process is activated
         m_agent->registerOnNewUserTaskCallback([this](pid_t _pid)
@@ -278,6 +289,9 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
 bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
+    // We accumulate update key messages in order to prevent constant writing to shared memory for each update key
+    // message. processUpdateKey is called either in deadline timer or if the queue size exceeded a certain limit.
+
     static const size_t maxAccumulativeWriteQueueSize = 10000;
     try
     {
@@ -331,33 +345,32 @@ void CAgentConnectionManager::processUpdateKey()
 bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
-    switch (_attachment->m_srcCommand)
+    if (_attachment->m_srcCommand == cmdUPDATE_KEY || _attachment->m_srcCommand == cmdCUSTOM_CMD)
     {
-        case cmdUPDATE_KEY:
+        if (_attachment->m_msgSeverity != MiscCommon::error)
         {
-            if (_attachment->m_msgSeverity != MiscCommon::error)
-            {
-                if (m_UIConnectionMng)
-                    m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
-                else
-                    LOG(warning) << "UI connection manager doesn't run. Skipping simple message broadcasting.";
-            }
+            if (m_UIConnectionMng)
+                m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
             else
-            {
-                // We got an error message about property propagation
-                LOG(MiscCommon::error) << _attachment->m_sMsg;
-                // Forward error message to UI channel
-                if (m_UIConnectionMng)
-                    m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
-                else
-                    LOG(warning) << "UI connection manager doesn't run. Skipping forwarding of the error message.";
-            }
-            return true;
+                LOG(warning) << "UI connection manager doesn't run. Skipping simple message broadcasting.";
         }
+        else
+        {
+            // We got an error message about property propagation
+            LOG(MiscCommon::error) << _attachment->m_sMsg;
+            // Forward error message to UI channel
+            if (m_UIConnectionMng)
+                m_UIConnectionMng->notifyAboutSimpleMsg(_attachment);
+            else
+                LOG(warning) << "UI connection manager doesn't run. Skipping forwarding of the error message.";
+        }
+        return true;
+    }
+    else
+    {
 
-        default:
-            LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
-            return true;
+        LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
+        return true;
     }
 
     return true;
@@ -456,5 +469,17 @@ bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTO
     terminateChildrenProcesses();
     auto p = _channel.lock();
     p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
+    return true;
+}
+
+bool CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                               CCommanderChannel::weakConnectionPtr_t _channel)
+{
+    if (!m_UIConnectionMng)
+        LOG(warning) << "UI connection manager doesn't run. Skipping command notification broadcasting.";
+    else
+    {
+        m_UIConnectionMng->notifyAboutCustomCmd(_attachment);
+    }
     return true;
 }

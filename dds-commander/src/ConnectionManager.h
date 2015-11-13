@@ -31,9 +31,7 @@ namespace dds
           public:
             void newClientCreated(CAgentChannel::connectionPtr_t _newClient);
             void _start();
-            void _stop()
-            {
-            }
+            void _stop();
             void _createInfoFile(const std::vector<size_t>& _ports) const;
             void _deleteInfoFile() const;
 
@@ -83,9 +81,10 @@ namespace dds
                 CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
+                                  CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
-            uint64_t getAgentId();
             void enableDisableStatForChannels(bool _enable);
 
             CGetLogChannelInfo m_getLog;
@@ -102,10 +101,6 @@ namespace dds
 
             boost::property_tree::ptree m_propertyPT;
             std::mutex m_propertyPTMutex;
-
-            // Set stores all generated agent ID to be able to detect collisions
-            std::set<uint64_t> m_agentIdSet;
-            std::mutex m_agentIdSetMutex;
 
             // Statistic on/off flag
             bool m_statEnabled;

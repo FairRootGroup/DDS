@@ -6,6 +6,7 @@
 #define __DDS__CAgentChannel__
 // DDS
 #include "ServerChannelImpl.h"
+// STD
 #include <chrono>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
@@ -24,42 +25,7 @@ namespace dds
 
         class CAgentChannel : public protocol_api::CServerChannelImpl<CAgentChannel>
         {
-            CAgentChannel(boost::asio::io_service& _service)
-                : CServerChannelImpl<CAgentChannel>(
-                      _service,
-                      { protocol_api::EChannelType::AGENT, protocol_api::EChannelType::UI })
-                , m_taskID(0)
-                , m_state(EAgentState::unknown)
-            {
-                subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                                 [](CAgentChannel* _channel)
-                                 {
-                                     LOG(MiscCommon::info) << "The Agent has closed the connection.";
-                                 });
-
-                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
-                                 [this](CAgentChannel* _channel)
-                                 {
-                                     switch (getChannelType())
-                                     {
-                                         case protocol_api::EChannelType::AGENT:
-                                         {
-                                             m_state = EAgentState::idle;
-                                             pushMsg<protocol_api::cmdGET_ID>();
-                                             pushMsg<protocol_api::cmdGET_HOST_INFO>();
-                                         }
-                                             return;
-                                         case protocol_api::EChannelType::UI:
-                                             LOG(MiscCommon::info) << "The UI agent ["
-                                                                   << socket().remote_endpoint().address().to_string()
-                                                                   << "] has successfully connected.";
-                                             return;
-                                         default:
-                                             // TODO: log unknown connection attempt
-                                             return;
-                                     }
-                                 });
-            }
+            CAgentChannel(boost::asio::io_service& _service);
 
           public:
             BEGIN_MSG_MAP(CAgentChannel)
@@ -91,49 +57,28 @@ namespace dds
             MESSAGE_HANDLER(cmdENABLE_STAT, on_cmdENABLE_STAT)
             MESSAGE_HANDLER(cmdDISABLE_STAT, on_cmdDISABLE_STAT)
             MESSAGE_HANDLER(cmdGET_STAT, on_cmdGET_STAT)
-
+            // custom command
+            MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
             END_MSG_MAP()
 
           public:
             uint64_t getId() const;
             void setId(uint64_t _id);
 
-            const protocol_api::SHostInfoCmd& getRemoteHostInfo() const
-            {
-                return m_remoteHostInfo;
-            }
+            const protocol_api::SHostInfoCmd& getRemoteHostInfo() const;
+            // This function only used in tests
+            void setRemoteHostInfo(const protocol_api::SHostInfoCmd& _hostInfo);
 
             uint64_t getTaskID() const;
             void setTaskID(uint64_t _taskID);
 
-            std::chrono::milliseconds getStartupTime() const
-            {
-                return m_startUpTime;
-            }
-            EAgentState getState() const
-            {
-                return m_state;
-            }
-            void setState(EAgentState _state)
-            {
-                m_state = _state;
-            }
+            std::chrono::milliseconds getStartupTime() const;
 
-            // This function only used in tests
-            void setRemoteHostInfo(const protocol_api::SHostInfoCmd& _hostInfo)
-            {
-                m_remoteHostInfo = _hostInfo;
-            }
+            EAgentState getState() const;
+            void setState(EAgentState _state);
 
-            const boost::property_tree::ptree& getPropertyPT() const
-            {
-                return m_propertyPT;
-            }
-
-            std::mutex& getPropertyPTMutex()
-            {
-                return m_propertyPTMutex;
-            }
+            const boost::property_tree::ptree& getPropertyPT() const;
+            std::mutex& getPropertyPTMutex();
 
           private:
             // Message Handlers
@@ -170,14 +115,9 @@ namespace dds
             bool on_cmdDISABLE_STAT(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment);
             bool on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment);
+            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
 
-            std::string _remoteEndIDString()
-            {
-                if (getChannelType() == protocol_api::EChannelType::AGENT)
-                    return std::to_string(m_id);
-                else
-                    return "UI client";
-            }
+            std::string _remoteEndIDString();
 
           private:
             // We use unique ID because we need to identify a new agent after shutdown of the system on the same host.

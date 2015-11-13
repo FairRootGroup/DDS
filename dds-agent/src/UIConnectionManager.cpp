@@ -66,6 +66,13 @@ void CUIConnectionManager::newClientCreated(CUIChannel::connectionPtr_t _newClie
         return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+
+    function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CUIChannel * _channel)> fCUSTOM_CMD =
+        [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CUIChannel* _channel) -> bool
+    {
+        return this->on_cmdCUSTOM_CMD(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
 }
 
 bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
@@ -77,13 +84,22 @@ bool CUIConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY
     return true;
 }
 
+bool CUIConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                            CUIChannel::weakConnectionPtr_t _channel)
+{
+    LOG(debug) << "Forwarding a custom command to commander channel: " << *_attachment;
+    auto p = m_commanderChannel.lock();
+    p->pushMsg<cmdCUSTOM_CMD>(*_attachment);
+    return true;
+}
+
 void CUIConnectionManager::notifyAboutKeyUpdate(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
     try
     {
         LOG(debug) << "Broadcasting key update notification to all connected UI channels. Attachment: " << *_attachment;
         // broadcast to all subscribers about key updates
-        auto condition = [](CUIChannel::connectionPtr_t _v)
+        auto condition = [](CUIChannel::connectionPtr_t _v, bool& /*_stop*/)
         {
             return (_v->getChannelType() == EChannelType::KEY_VALUE_GUARD);
         };
@@ -101,6 +117,23 @@ void CUIConnectionManager::notifyAboutSimpleMsg(SCommandAttachmentImpl<cmdSIMPLE
     {
         LOG(debug) << "Broadcasting simple message to all connected UI channels. Attachment: " << *_attachment;
         broadcastMsg<cmdSIMPLE_MSG>(*_attachment);
+    }
+    catch (exception& _e)
+    {
+        LOG(fatal) << _e.what();
+    }
+}
+
+void CUIConnectionManager::notifyAboutCustomCmd(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+{
+    try
+    {
+        LOG(debug) << "Broadcasting custom command to all connected UI channels. Attachment: " << *_attachment;
+        auto condition = [](CUIChannel::connectionPtr_t _v, bool& /*_stop*/)
+        {
+            return (_v->getChannelType() == EChannelType::CUSTOM_CMD_GUARD);
+        };
+        broadcastMsg<cmdCUSTOM_CMD>(*_attachment, condition);
     }
     catch (exception& _e)
     {

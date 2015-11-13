@@ -294,4 +294,16 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_TOPOLOGY)
     TestCommand(cmd, cmdSET_TOPOLOGY, cmdSize);
 }
 
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdCUSTOM_CMD)
+{
+    const unsigned int cmdSize = 22;
+
+    SCustomCmdCmd cmd;
+    cmd.m_sCmd = "cmd";
+    cmd.m_sCondition = "condition";
+    cmd.m_senderId = 123456;
+
+    TestCommand(cmd, cmdCUSTOM_CMD, cmdSize);
+}
+
 BOOST_AUTO_TEST_SUITE_END();

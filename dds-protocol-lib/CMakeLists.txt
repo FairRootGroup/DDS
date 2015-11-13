@@ -32,6 +32,7 @@ set( SOURCE_FILES
 	./src/GetPropValuesCmd.cpp
 	./src/SetTopologyCmd.cpp
 	./src/StatImpl.cpp
+    ./src/CustomCmdCmd.cpp
 )
 
 set( SRC_HDRS
@@ -61,6 +62,7 @@ set( SRC_HDRS
 	./src/GetPropValuesCmd.h
 	./src/SetTopologyCmd.h
 	./src/StatImpl.h
+    ./src/CustomCmdCmd.h
 )
 
 include_directories(

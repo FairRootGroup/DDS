@@ -7,14 +7,7 @@
 #include "ConnectionManager.h"
 #include "Topology.h"
 #include "CommandAttachmentImpl.h"
-#include "CRC.h"
-// BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#pragma clang diagnostic pop
-#include <boost/filesystem.hpp>
+#include "ChannelId.h"
 
 // silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
@@ -25,6 +18,7 @@
 #if BOOST_VERSION < 105900
 #pragma clang diagnostic pop
 #endif
+#include <boost/filesystem.hpp>
 
 // STD
 #include <mutex>
@@ -60,7 +54,7 @@ void CConnectionManager::_start()
                 m_propertyPT.clear();
 
                 CAgentChannel::weakConnectionPtrVector_t channels(
-                    getChannels([](CAgentChannel::connectionPtr_t _v)
+                    getChannels([](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
                                 {
                                     return (_v->getChannelType() == EChannelType::AGENT && _v->started());
                                 }));
@@ -98,13 +92,17 @@ void CConnectionManager::_start()
         chrono::seconds(60));
 }
 
+void CConnectionManager::_stop()
+{
+}
+
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
     _newClient->setStatEnabled(m_statEnabled);
 
     // Subscribe on protocol messages
-    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG = [this](
-        SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel * _channel)> fGET_LOG =
+        [this](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_LOG(_attachment, getWeakPtr(_channel));
     };
@@ -119,39 +117,39 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
 
     function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_AGENTS_INFO = [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                  CAgentChannel* _channel) -> bool
+        fGET_AGENTS_INFO =
+            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_AGENTS_INFO(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
 
-    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT = [this](
-        SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT =
+        [this](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSUBMIT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
     function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fACTIVATE_AGENT = [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fACTIVATE_AGENT =
+            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdACTIVATE_AGENT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
     function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fSTOP_USER_TASK =
+            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdSTOP_USER_TASK(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
 
     function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fTRANSPORT_TEST = [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fTRANSPORT_TEST =
+            [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdTRANSPORT_TEST(_attachment, getWeakPtr(_channel));
     };
@@ -172,24 +170,24 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
     function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
-        fUSER_TASK_DONE = [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                 CAgentChannel* _channel) -> bool
+        fUSER_TASK_DONE =
+            [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_LIST = [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                CAgentChannel* _channel) -> bool
+        fGET_PROP_LIST =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_PROP_LIST(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_VALUES = [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                  CAgentChannel* _channel) -> bool
+        fGET_PROP_VALUES =
+            [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
@@ -202,8 +200,8 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdSET_TOPOLOGY>(fSET_TOPOLOGY);
 
-    function<bool(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel * _channel)> fREPLY_ID = [this](
-        SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel * _channel)> fREPLY_ID =
+        [this](SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdREPLY_ID(_attachment, getWeakPtr(_channel));
     };
@@ -223,12 +221,19 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdDISABLE_STAT>(fDISABLE_STAT);
 
-    function<bool(SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fGET_STAT = [this](
-        SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    function<bool(SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fGET_STAT =
+        [this](SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool
     {
         return this->on_cmdGET_STAT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_STAT>(fGET_STAT);
+
+    function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CAgentChannel * _channel)> fCUSTOM_CMD =
+        [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+    {
+        return this->on_cmdCUSTOM_CMD(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
 }
 
 void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
@@ -304,7 +309,7 @@ bool CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
         return true;
     }
 
-    auto condition = [](CAgentChannel::connectionPtr_t _v)
+    auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
     {
         return (_v->getChannelType() == EChannelType::AGENT && _v->started());
     };
@@ -441,7 +446,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
         // Send binaries of user jobs to all active agents.
         // Send activate signal to all agents. This will trigger start of user jobs on the agents.
-        auto condition = [](CAgentChannel::connectionPtr_t _v)
+        auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
         {
             return (_v->getChannelType() == EChannelType::AGENT && _v->started());
         };
@@ -565,7 +570,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
 
         // Active agents.
         broadcastSimpleMsg<cmdACTIVATE_AGENT>(
-            [](CAgentChannel::connectionPtr_t _v)
+            [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
             {
                 return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
             });
@@ -595,7 +600,7 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
         m_StopUserTasks.zeroCounters();
 
         auto p = m_StopUserTasks.m_channel.lock();
-        auto condition = [](CAgentChannel::connectionPtr_t _v)
+        auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
         {
             return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
         };
@@ -647,7 +652,7 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
     stringstream ss;
 
     CAgentChannel::weakConnectionPtrVector_t channels(
-        getChannels([](CAgentChannel::connectionPtr_t _v)
+        getChannels([](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
                     {
                         return (_v->getChannelType() == EChannelType::AGENT && _v->started());
                     }));
@@ -702,7 +707,7 @@ bool CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
     m_transportTest.m_channel = _channel;
     m_transportTest.zeroCounters();
 
-    auto condition = [](CAgentChannel::connectionPtr_t _v)
+    auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/)
     {
         return (_v != nullptr && _v->getChannelType() == EChannelType::AGENT && _v->started());
     };
@@ -1051,7 +1056,7 @@ bool CConnectionManager::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr
 
         if (_attachment->m_id == 0)
         {
-            uint64_t agentId = getAgentId();
+            uint64_t agentId = DDSChannelId::getChannelId();
             p->setId(agentId);
             SIDCmd msg_cmd;
             msg_cmd.m_id = p->getId();
@@ -1068,32 +1073,6 @@ bool CConnectionManager::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr
     }
 
     return true;
-}
-
-uint64_t CConnectionManager::getAgentId()
-{
-    // TODO: We have to check that ID was not assigned to some other agent.
-    // Think about if it is possible to remove this lock from here?
-
-    do
-    {
-        boost::uuids::uuid id = boost::uuids::random_generator()();
-        stringstream strid;
-        strid << id;
-        uint64_t crc = MiscCommon::crc64(strid.str());
-
-        {
-            lock_guard<mutex> lock(m_agentIdSetMutex);
-
-            bool condition = (crc != 0 && m_agentIdSet.find(crc) == m_agentIdSet.end());
-            if (condition)
-            {
-                m_agentIdSet.insert(crc);
-                return crc;
-            }
-        }
-    } while (true);
-    return 0;
 }
 
 void CConnectionManager::enableDisableStatForChannels(bool _enable)
@@ -1192,6 +1171,108 @@ bool CConnectionManager::on_cmdGET_STAT(
     catch (exception& _e)
     {
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdGET_STAT));
+    }
+
+    return true;
+}
+
+// TODO: probably this has to be replace with boost::lexical_cast.
+// However, in case of Boost one has to use try{}catch{} block which is slow.
+bool dds_is_unsigned_int(const std::string& s)
+{
+    return !s.empty() &&
+           std::find_if(s.begin(),
+                        s.end(),
+                        [](char c)
+                        {
+                            return !std::isdigit(c);
+                        }) == s.end();
+}
+
+bool CConnectionManager::on_cmdCUSTOM_CMD(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
+{
+    auto p = _channel.lock();
+    try
+    {
+        // Assign sender ID of this custom command
+        _attachment->m_senderId = p->getId();
+
+        CAgentChannel::weakConnectionPtrVector_t channels;
+
+        // First check id condition is a positive integer - channel ID - which means that custom command has to be sent
+        // to a particular channel.
+        try
+        {
+            // If condition in the attachment is not of type uint64_t function throws an exception.
+            uint64_t channelId = boost::lexical_cast<uint64_t>(_attachment->m_sCondition);
+            channels = getChannels([channelId](CAgentChannel::connectionPtr_t _v, bool& _stop)
+                                   {
+                                       _stop = (_v->getId() == channelId);
+                                       return _stop;
+                                   });
+        }
+        catch (boost::bad_lexical_cast&)
+        {
+            // Condition is not a positiove integer.
+
+            // Check if we can find task for it's full hash path.
+            bool taskFound = true;
+            try
+            {
+                TaskPtr_t task = m_topo.getTaskByHashPath(_attachment->m_sCondition);
+            }
+            catch (runtime_error& _e)
+            {
+                taskFound = false;
+            }
+
+            // TODO: implement stop flag for getChannels
+
+            channels = getChannels([this, taskFound, &_attachment, p](CAgentChannel::connectionPtr_t _v, bool& _stop)
+                                   {
+                                       // Only for Agents which are started already and executing task
+                                       if (_v->getChannelType() != EChannelType::AGENT || !_v->started() ||
+                                           _v->getState() != EAgentState::executing)
+                                           return false;
+
+                                       // Do not send command to self
+                                       if (_v->getTaskID() == p->getTaskID())
+                                           return false;
+
+                                       // If condition is empty we broadcast command to all agents
+                                       if (_attachment->m_sCondition.empty())
+                                           return true;
+
+                                       const STaskInfo& taskInfo = m_topo.getTaskInfoByHash(_v->getTaskID());
+                                       bool result = (taskFound)
+                                                         ? taskInfo.m_taskPath == _attachment->m_sCondition
+                                                         : taskInfo.m_task->getPath() == _attachment->m_sCondition;
+
+                                       _stop = (taskFound && result);
+
+                                       return result;
+                                   });
+        }
+
+        for (const auto& v : channels)
+        {
+            if (v.expired())
+                continue;
+            auto ptr = v.lock();
+
+            ptr->pushMsg<cmdCUSTOM_CMD>(*_attachment);
+        }
+
+        stringstream ss;
+        ss << "Send custom command to " << channels.size() << " channels." << endl;
+
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD));
+    }
+    catch (exception& _e)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdCUSTOM_CMD));
     }
 
     return true;

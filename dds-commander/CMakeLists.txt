@@ -10,7 +10,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 #
 # configure files
-# 
+#
 configure_file( ${dds-commander_SOURCE_DIR}/src/version.h.in ${dds-commander_BINARY_DIR}/version.h @ONLY )
 
 #
@@ -22,6 +22,7 @@ set( SOURCE_FILES
 	./src/AgentChannel.cpp
     ./src/UIChannelInfo.cpp
     ./src/SSHScheduler.cpp
+		./src/ChannelId.cpp
 )
 
 #
@@ -33,12 +34,13 @@ set( HEADER_FILES
 	./src/AgentChannel.h
     ./src/UIChannelInfo.h
     ./src/SSHScheduler.h
+		./src/ChannelId.h
 )
 
 include_directories(
 	${dds-commander_BINARY_DIR}
 	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} 
+	${Boost_INCLUDE_DIRS}
 )
 
 #
@@ -79,7 +81,7 @@ install(TARGETS dds-commander DESTINATION bin)
 #
 if (BUILD_TESTS)
     message (STATUS "Build dds-commander unit tests - YES")
-    add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests ) 
+    add_subdirectory ( ${dds-commander_SOURCE_DIR}/tests )
 else (BUILD_TESTS)
     message (STATUS "Build dds-commander unit tests - NO")
 endif (BUILD_TESTS)

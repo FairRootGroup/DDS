@@ -144,10 +144,13 @@ namespace dds
             UNKNOWN = 0,
             AGENT,
             UI,
-            KEY_VALUE_GUARD
+            KEY_VALUE_GUARD,
+            CUSTOM_CMD_GUARD
         };
         typedef std::vector<EChannelType> channelTypeVector_t;
-        const std::array<std::string, 4> gChannelTypeName{ { "unknown", "agent", "ui", "key_value_guard" } };
+        const std::array<std::string, 5> gChannelTypeName{
+            { "unknown", "agent", "ui", "key_value_guard", "custom_command_guard" }
+        };
 
         // --- Helpers for events dispatching ---
         // TODO: Move to a separate header
@@ -278,6 +281,11 @@ namespace dds
                 return m_channelType;
             }
 
+            void setChannelType(EChannelType _channelType)
+            {
+                m_channelType = _channelType;
+            }
+
           public:
             void start()
             {
@@ -334,10 +342,10 @@ namespace dds
                         copyMessages = m_accumulativeWriteQueue.size() > maxAccumulativeWriteQueueSize;
                         if (copyMessages)
                         {
-                            LOG(MiscCommon::debug) << "copy accumulated queue to write queue "
-                                                      "m_accumulativeWriteQueue.size="
-                                                   << m_accumulativeWriteQueue.size()
-                                                   << " m_writeQueue.size=" << m_writeQueue.size();
+                            LOG(MiscCommon::debug)
+                                << "copy accumulated queue to write queue "
+                                   "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
+                                << " m_writeQueue.size=" << m_writeQueue.size();
 
                             // copy queue to main queue
                             std::copy(m_accumulativeWriteQueue.begin(),
@@ -361,8 +369,7 @@ namespace dds
                                         {
                                             LOG(MiscCommon::debug)
                                                 << "deadline_timer called: copy accumulated queue to write queue "
-                                                   "m_accumulativeWriteQueue.size="
-                                                << m_accumulativeWriteQueue.size()
+                                                   "m_accumulativeWriteQueue.size=" << m_accumulativeWriteQueue.size()
                                                 << " m_writeQueue.size=" << m_writeQueue.size();
                                             std::copy(m_accumulativeWriteQueue.begin(),
                                                       m_accumulativeWriteQueue.end(),
@@ -446,8 +453,8 @@ namespace dds
                                       }
                                       catch (std::exception& ex)
                                       {
-                                          LOG(MiscCommon::error) << "BaseChannelImpl can't write message: "
-                                                                 << ex.what();
+                                          LOG(MiscCommon::error)
+                                              << "BaseChannelImpl can't write message: " << ex.what();
                                       }
                                   });
             }
@@ -747,8 +754,8 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                         {
-                            LOG(MiscCommon::debug) << "Disconnect is detected while on read msg header: "
-                                                   << ec.message();
+                            LOG(MiscCommon::debug)
+                                << "Disconnect is detected while on read msg header: " << ec.message();
                             onDissconnect();
                         }
                         else
@@ -757,8 +764,7 @@ namespace dds
                                 LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
                             else
                                 LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: "
-                                                      << ec.message();
+                                                         "closing the connection: " << ec.message();
 
                             stop();
                         }
@@ -818,8 +824,7 @@ namespace dds
                                 LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
                             else
                                 LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: "
-                                                      << ec.message();
+                                                         "closing the connection: " << ec.message();
                             stop();
                         }
                     });
@@ -886,8 +891,8 @@ namespace dds
                             }
                             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                             {
-                                LOG(MiscCommon::debug) << "Disconnect is detected while on write message: "
-                                                       << _ec.message();
+                                LOG(MiscCommon::debug)
+                                    << "Disconnect is detected while on write message: " << _ec.message();
                                 onDissconnect();
                             }
                             else
@@ -899,8 +904,7 @@ namespace dds
                                 else
                                     LOG(MiscCommon::info)
                                         << "The stop signal is received, aborting current operation and "
-                                           "closing the connection: "
-                                        << _ec.message();
+                                           "closing the connection: " << _ec.message();
                                 stop();
                             }
                         }

@@ -186,7 +186,7 @@ namespace dds
                         ptr->template pushMsg<cmdSHUTDOWN>();
                     }
 
-                    auto condition = [](typename T::connectionPtr_t _v)
+                    auto condition = [](typename T::connectionPtr_t _v, bool& /*_stop*/)
                     {
                         return (_v->started());
                     };
@@ -249,7 +249,7 @@ namespace dds
             }
 
             typename T::weakConnectionPtrVector_t getChannels(
-                std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+                std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -257,9 +257,12 @@ namespace dds
                 result.reserve(m_channels.size());
                 for (auto& v : m_channels)
                 {
-                    if (_condition == nullptr || _condition(v))
+                    bool stop = false;
+                    if (_condition == nullptr || _condition(v, stop))
                     {
                         result.push_back(v);
+                        if (stop)
+                            break;
                     }
                 }
                 return result;
@@ -267,7 +270,7 @@ namespace dds
 
             template <ECmdType _cmd, class AttachmentType>
             void broadcastMsg(const AttachmentType& _attachment,
-                              std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+                              std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {
                 try
                 {
@@ -289,7 +292,7 @@ namespace dds
 
             template <ECmdType _cmd, class AttachmentType>
             void accumulativeBroadcastMsg(const AttachmentType& _attachment,
-                                          std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+                                          std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {
                 try
                 {
@@ -310,16 +313,17 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void broadcastSimpleMsg(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+            void broadcastSimpleMsg(std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {
                 SEmptyCmd cmd;
                 broadcastMsg<_cmd>(cmd, _condition);
             }
 
-            void broadcastBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
-                                              const std::string& _fileName,
-                                              uint16_t _cmdSource,
-                                              std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+            void broadcastBinaryAttachmentCmd(
+                const MiscCommon::BYTEVector_t& _data,
+                const std::string& _fileName,
+                uint16_t _cmdSource,
+                std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {
                 try
                 {
@@ -339,7 +343,7 @@ namespace dds
                 }
             }
 
-            size_t countNofChannels(std::function<bool(typename T::connectionPtr_t)> _condition = nullptr)
+            size_t countNofChannels(std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -348,9 +352,12 @@ namespace dds
                 size_t counter = 0;
                 for (auto& v : m_channels)
                 {
-                    if (_condition(v))
+                    bool stop = false;
+                    if (_condition(v, stop))
                     {
                         counter++;
+                        if (stop)
+                            break;
                     }
                 }
                 return counter;

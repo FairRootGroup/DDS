@@ -23,6 +23,7 @@
 #include "DeleteKeyCmd.h"
 #include "GetPropValuesCmd.h"
 #include "SetTopologyCmd.h"
+#include "CustomCmdCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \
@@ -93,6 +94,7 @@ namespace dds
         REGISTER_CMD_ATTACHMENT(SDeleteKeyCmd, cmdDELETE_KEY)
         REGISTER_CMD_ATTACHMENT(SGetPropValuesCmd, cmdGET_PROP_VALUES)
         REGISTER_CMD_ATTACHMENT(SSetTopologyCmd, cmdSET_TOPOLOGY)
+        REGISTER_CMD_ATTACHMENT(SCustomCmdCmd, cmdCUSTOM_CMD)
     }
 }
 

@@ -46,6 +46,8 @@ namespace dds
             bool on_cmdSTOP_USER_TASK(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment,
                 CCommanderChannel::weakConnectionPtr_t _channel);
+            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
+                                  CCommanderChannel::weakConnectionPtr_t _channel);
 
             void taskExited(int _pid, int _exitCode);
             void processUpdateKey();

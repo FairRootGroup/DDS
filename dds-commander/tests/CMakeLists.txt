@@ -11,6 +11,7 @@ include_directories(${dds-commander_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 add_executable(dds-scheduler-tests
 TestScheduler.cpp
 ${dds-commander_SOURCE_DIR}/src/AgentChannel.cpp
+${dds-commander_SOURCE_DIR}/src/ChannelId.cpp
 ${dds-commander_SOURCE_DIR}/src/SSHScheduler.cpp)
 
 target_link_libraries (

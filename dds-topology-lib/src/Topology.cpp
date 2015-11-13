@@ -53,7 +53,10 @@ void CTopology::init(const std::string& _fileName, bool _initForTest)
     m_collectionHashToTaskHashesMap.clear();
     m_currentTaskCollectionHashPath = "";
     m_currentTaskCollectionCrc = 0;
-    FillHashToTopoElementMap(m_main, _initForTest);
+    // TODO: _initForTest flag is set permanently to true.
+    // We need hash path maps to be filled.
+    // These maps are used to sent custom command to a particular task.
+    FillHashToTopoElementMap(m_main, true); //_initForTest);
 }
 
 void CTopology::setXMLValidationDisabled(bool _val)
@@ -123,6 +126,14 @@ const std::vector<uint64_t>& CTopology::getTaskHashesByTaskCollectionHash(uint64
     auto it = m_collectionHashToTaskHashesMap.find(_hash);
     if (it == m_collectionHashToTaskHashesMap.end())
         throw runtime_error("Can not find task collection with hash " + to_string(_hash));
+    return it->second;
+}
+
+TaskPtr_t CTopology::getTaskByHashPath(const std::string& _hashPath) const
+{
+    auto it = m_hashPathToTaskMap.find(_hashPath);
+    if (it == m_hashPathToTaskMap.end())
+        throw runtime_error("Can not find task for hash path " + _hashPath);
     return it->second;
 }
 

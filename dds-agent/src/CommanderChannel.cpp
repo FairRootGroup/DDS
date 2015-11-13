@@ -106,6 +106,9 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
         case cmdUPDATE_KEY:
             return false; // let connection manager forward this info to UI channels
 
+        case cmdCUSTOM_CMD:
+            return false; // let connection manager forward this info to UI channels
+
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
             return true;
@@ -522,4 +525,11 @@ bool CCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::
     }
 
     return true;
+}
+
+bool CCommanderChannel::on_cmdCUSTOM_CMD(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
+{
+    LOG(info) << "Received custom command: " << *_attachment;
+    return false;
 }

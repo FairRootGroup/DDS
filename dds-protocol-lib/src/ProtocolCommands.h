@@ -59,7 +59,8 @@ namespace dds
             cmdSET_TOPOLOGY, // attachment: SSetTopologyCmd
             cmdENABLE_STAT,
             cmdDISABLE_STAT,
-            cmdGET_STAT
+            cmdGET_STAT,
+            cmdCUSTOM_CMD // attachment: SCustomCmdCmd
         };
 
         static std::map<uint16_t, std::string> g_cmdToString{
@@ -97,7 +98,8 @@ namespace dds
             { cmdSET_TOPOLOGY, NAME_TO_STRING(cmdSET_TOPOLOGY) },
             { cmdENABLE_STAT, NAME_TO_STRING(cmdENABLE_STAT) },
             { cmdDISABLE_STAT, NAME_TO_STRING(cmdDISABLE_STAT) },
-            { cmdGET_STAT, NAME_TO_STRING(cmdGET_STAT) }
+            { cmdGET_STAT, NAME_TO_STRING(cmdGET_STAT) },
+            { cmdCUSTOM_CMD, NAME_TO_STRING(cmdCUSTOM_CMD) }
         };
     }
 }
