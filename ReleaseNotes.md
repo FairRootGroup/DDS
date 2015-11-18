@@ -2,14 +2,14 @@
 
 ## v1.0 (NOT YET RELEASED)
 ###DDS common
-Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
 Fixed: git error when using out of source builds (GH-85)    
-Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had     classes with the same name and same header protection).    
+Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
 Fixed: check DDS_LOCATION before agent start. (GH-98)   
+Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the sub-shell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.  
+Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
 Added: extend error message in case if a worker package is missing. (GH-89)   
 Added: statistics accumulation: message size, message queue size for read and write operations is accumulated. (GH-99)   
 Added: new dds-stat command is introduced with possible options: enable, disable and get for statistics accumulation. (GH-99)    
-Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the sub-shell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.  
 Added: possibility to send custom commands from user tasks or utils. New library dds-custom-cmd-lib is introduced. (GH-100)   
 Added: DDS Tutorial2 which introduces the use of the new custom dds-custom-cmd-lib library. (GH-100)   
 
