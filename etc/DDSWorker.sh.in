@@ -298,6 +298,9 @@ if [ "$DDS_LOCATION" != "$WD" ]; then
     logMsg "WARNING: DDS_LOCATION envvar has been reset by user. Setting it back to $DDS_LOCATION"
 fi
 
+logMsg "---=== Print current environment ===---"
+env
+
 # if dds-agent goes down or is crashed, we will try to restart it AGENT_MAX_RESTART_COUNT times
 start_time=$((date +%s) 2>/dev/null)
 AGENT_RESTART_COUNT=0

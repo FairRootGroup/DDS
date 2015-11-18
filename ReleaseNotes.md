@@ -22,6 +22,9 @@ Added: the command learned a localhost RMS. (GH-93)
 ### dds-server
 Fixed: Check that DDS_LOCATION is set. (GH-86)    
 
+### dds scout
+Modified: log pre-execution env to make sure environment is correct. (GH-67)   
+
 ## v0.10 (2015-07-16)
 ### DDS common
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
