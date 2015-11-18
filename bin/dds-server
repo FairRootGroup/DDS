@@ -24,6 +24,12 @@ if [ "$SERVER_OS" == "Darwin" ]; then
    export DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH
 fi
 
+# check that DDS_LOCATION is set
+if [ -z ${DDS_LOCATION+x} ]; then 
+	echo -e 'error: $DDS_LOCATION is not set.\nUse \"source DDS_env.sh\" to initialize DDS environment.\n'
+	exit 1
+fi
+
 #######
 DDS_CFG=$(dds-user-defaults -p)
 if [ -z "$DDS_CFG" ]; then
