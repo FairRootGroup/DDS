@@ -1,6 +1,7 @@
 // DDS
 #include "KeyValue.h"
 #include "Logger.h"
+#include "DDSEnvProp.h"
 // STD
 #include <vector>
 #include <iostream>
@@ -16,6 +17,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::key_value;
+using namespace dds::dds_env_prop;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
@@ -58,11 +60,14 @@ int main(int argc, char* argv[])
         }
 
         // Named mutex
-        char* ddsTaskId;
-        ddsTaskId = getenv("DDS_TASK_ID");
-        if (NULL == ddsTaskId)
+        const string taskID = env_prop<task_name>();
+        if (taskID.empty())
             throw runtime_error("USER TASK: Can't initialize semaphore because DDS_TASK_ID variable is not set");
-        const string taskID(ddsTaskId);
+
+        // Test dds env_prop
+        size_t nCollectionIdx = env_prop<collection_index>();
+        cout << "TaskID = " << env_prop<task_name>() << "\nTask Index = " << env_prop<task_index>()
+             << "\nCollection Index = " << nCollectionIdx << "\n";
 
         // TODO: document the test workflow
         // The test workflow

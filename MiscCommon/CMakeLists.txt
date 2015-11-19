@@ -2,9 +2,9 @@
 #
 #
 project( MiscCommon )
-#
+#"
 # Version
-#
+#"
 set(MISCCOMMON_VERSION "5.0.0")
 #
 # Where to lookup modules
@@ -18,7 +18,6 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #   add_custom_target(MiscCommon-api-docs ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
 #       COMMENT "Generating MiscCommon API docs")
 #endif(DOXYGEN_FOUND)
-
 
 #
 # Build pipe_log_engine
@@ -47,3 +46,6 @@ if (BUILD_TESTS)
 else (BUILD_TESTS)
     message (STATUS "Build MiscCommon unit tests - NO")
 endif (BUILD_TESTS)
+
+# install DDSEnvProp.h
+install(FILES DDSEnvProp.h DESTINATION include)

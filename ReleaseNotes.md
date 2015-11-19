@@ -12,6 +12,7 @@ Added: statistics accumulation: message size, message queue size for read and wr
 Added: new dds-stat command is introduced with possible options: enable, disable and get for statistics accumulation. (GH-99)    
 Added: possibility to send custom commands from user tasks or utils. New library dds-custom-cmd-lib is introduced. (GH-100)   
 Added: DDS Tutorial2 which introduces the use of the new custom dds-custom-cmd-lib library. (GH-100)   
+Added: DDS environment properties API - DDSEnvProp (GH-92)    
 
 ### dds-key-value
 Fixed: Removed sys. signals handler. A user process now is responsible to catch signals if needed. (GH-97)    
