@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v1.0 (NOT YET RELEASED)
+## v1.0 (2015-11-20)
 ###DDS common
 Fixed: git error when using out of source builds (GH-85)    
 Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
