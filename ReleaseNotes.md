@@ -1,5 +1,8 @@
 # DDS Release Notes
 
+## v1.2 (Not Yet Released)
+
+
 ## v1.0 (2015-11-20)
 ###DDS common
 Fixed: git error when using out of source builds (GH-85)    
