@@ -11,70 +11,66 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SHostInfoCmd::normalizeToLocal() const
+SHostInfoCmd::SHostInfoCmd()
+    : m_agentPort(0)
+    , m_agentPid(0)
+    , m_submitTime(0)
+    , m_username()
+    , m_host()
+    , m_version()
+    , m_DDSPath()
+    , m_workerId()
 {
-    m_agentPort = inet::normalizeRead(m_agentPort);
-    m_agentPid = inet::normalizeRead(m_agentPid);
-    m_submitTime = inet::normalizeRead(m_submitTime);
 }
 
-void SHostInfoCmd::normalizeToRemote() const
+size_t SHostInfoCmd::size() const
 {
-    m_agentPort = inet::normalizeWrite(m_agentPort);
-    m_agentPid = inet::normalizeWrite(m_agentPid);
-    m_submitTime = inet::normalizeWrite(m_submitTime);
+    return dsize(m_username) + dsize(m_host) + dsize(m_agentPort) + dsize(m_agentPid) + dsize(m_submitTime) +
+           dsize(m_version) + dsize(m_DDSPath) + dsize(m_workerId);
+}
+
+bool SHostInfoCmd::operator==(const SHostInfoCmd& val) const
+{
+    return (m_username == val.m_username && m_host == val.m_host && m_version == val.m_version &&
+            m_DDSPath == val.m_DDSPath && m_agentPort == val.m_agentPort && m_agentPid == val.m_agentPid &&
+            m_submitTime == val.m_submitTime && m_workerId == val.m_workerId);
 }
 
 void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "HostInfoCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_agentPort, &_data, &idx);
-    inet::readData(&m_agentPid, &_data, &idx);
-    inet::readData(&m_submitTime, &_data, &idx);
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    advance(iter, idx);
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 5 string fields in this msg container
-    if (v.size() != 5)
-        throw runtime_error("HostInfoCmd: can't import data. Number of fields doesn't match.");
-
-    m_username.assign(v[0]);
-    m_host.assign(v[1]);
-    m_version.assign(v[2]);
-    m_DDSPath.assign(v[3]);
-    m_workerId.assign(v[4]);
+    SAttachmentDataProvider(_data)
+        .get(m_agentPort)
+        .get(m_agentPid)
+        .get(m_submitTime)
+        .get(m_username)
+        .get(m_host)
+        .get(m_version)
+        .get(m_DDSPath)
+        .get(m_workerId);
 }
 
 void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_agentPort, _data);
-    inet::pushData(m_agentPid, _data);
-    inet::pushData(m_submitTime, _data);
+    SAttachmentDataProvider(_data)
+        .put(m_agentPort)
+        .put(m_agentPid)
+        .put(m_submitTime)
+        .put(m_username)
+        .put(m_host)
+        .put(m_version)
+        .put(m_DDSPath)
+        .put(m_workerId);
+}
 
-    copy(m_username.begin(), m_username.end(), back_inserter(*_data));
-    _data->push_back('\0');
-    copy(m_host.begin(), m_host.end(), back_inserter(*_data));
-    _data->push_back('\0');
-    copy(m_version.begin(), m_version.end(), back_inserter(*_data));
-    _data->push_back('\0');
-    copy(m_DDSPath.begin(), m_DDSPath.end(), back_inserter(*_data));
-    _data->push_back('\0');
-    copy(m_workerId.begin(), m_workerId.end(), back_inserter(*_data));
-    _data->push_back('\0');
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SHostInfoCmd& val)
+{
+    _stream << val.m_username << ":" << val.m_host << ": " << val.m_version << ":" << val.m_DDSPath << "; agent ["
+            << val.m_agentPid << "] on port " << val.m_agentPort << "; startup time: " << val.m_submitTime
+            << "; worker ID:" << val.m_workerId;
+    return _stream;
+}
+
+bool dds::protocol_api::operator!=(const SHostInfoCmd& lhs, const SHostInfoCmd& rhs)
+{
+    return !(lhs == rhs);
 }

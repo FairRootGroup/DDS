@@ -13,34 +13,17 @@ namespace dds
     {
         struct SAgentsInfoCmd : public SBasicCmd<SAgentsInfoCmd>
         {
-            SAgentsInfoCmd()
-                : m_nActiveAgents(0)
-            {
-            }
-            void normalizeToLocal() const;
-            void normalizeToRemote() const;
-            size_t size() const
-            {
-                return sizeof(m_nActiveAgents) + (m_sListOfAgents.size() + 1);
-            }
+            SAgentsInfoCmd();
+            size_t size() const;
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
-            bool operator==(const SAgentsInfoCmd& _val) const
-            {
-                return (m_nActiveAgents == _val.m_nActiveAgents && m_sListOfAgents == _val.m_sListOfAgents);
-            }
+            bool operator==(const SAgentsInfoCmd& _val) const;
 
-            mutable uint32_t m_nActiveAgents;
+            uint32_t m_nActiveAgents;
             std::string m_sListOfAgents;
         };
-        inline std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val)
-        {
-            return _stream << _val.m_nActiveAgents;
-        }
-        inline bool operator!=(const SAgentsInfoCmd& _lhs, const SAgentsInfoCmd& _rhs)
-        {
-            return !(_lhs == _rhs);
-        }
+        std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val);
+        bool operator!=(const SAgentsInfoCmd& _lhs, const SAgentsInfoCmd& _rhs);
     }
 };
 

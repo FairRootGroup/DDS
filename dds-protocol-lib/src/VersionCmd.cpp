@@ -19,34 +19,32 @@ SVersionCmd::SVersionCmd()
 {
 }
 
-void SVersionCmd::normalizeToLocal() const
+size_t SVersionCmd::size() const
 {
-    m_version = inet::normalizeRead(m_version);
-    m_channelType = inet::normalizeRead(m_channelType);
+    return dsize(m_version) + dsize(m_channelType);
 }
 
-void SVersionCmd::normalizeToRemote() const
+bool SVersionCmd::operator==(const SVersionCmd& val) const
 {
-    m_version = inet::normalizeWrite(m_version);
-    m_channelType = inet::normalizeWrite(m_channelType);
+    return (m_version == val.m_version) && (m_channelType == val.m_channelType);
 }
 
 void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "VersionCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_version, &_data, &idx);
-    inet::readData(&m_channelType, &_data, &idx);
+    SAttachmentDataProvider(_data).get(m_version).get(m_channelType);
 }
 
 void SVersionCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_version, _data);
-    inet::pushData(m_channelType, _data);
+    SAttachmentDataProvider(_data).put(m_version).put(m_channelType);
+}
+
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SVersionCmd& val)
+{
+    return _stream << val.m_version << " " << val.m_channelType;
+}
+
+bool dds::protocol_api::operator!=(const SVersionCmd& lhs, const SVersionCmd& rhs)
+{
+    return !(lhs == rhs);
 }

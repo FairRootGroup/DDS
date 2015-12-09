@@ -3,58 +3,44 @@
 //
 //
 #include "AgentsInfoCmd.h"
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
+using namespace MiscCommon;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
-void SAgentsInfoCmd::normalizeToLocal() const
+SAgentsInfoCmd::SAgentsInfoCmd()
+    : m_nActiveAgents(0)
+    , m_sListOfAgents()
 {
-    m_nActiveAgents = inet::normalizeRead(m_nActiveAgents);
 }
 
-void SAgentsInfoCmd::normalizeToRemote() const
+size_t SAgentsInfoCmd::size() const
 {
-    m_nActiveAgents = inet::normalizeWrite(m_nActiveAgents);
+    return dsize(m_nActiveAgents) + dsize(m_sListOfAgents);
 }
 
-void SAgentsInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+bool SAgentsInfoCmd::operator==(const SAgentsInfoCmd& _val) const
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "AgentsInfoCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_nActiveAgents, &_data, &idx);
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    advance(iter, idx);
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 1 string fields in this msg container
-    if (v.size() != 1)
-        throw runtime_error("HostInfoCmd: can't import data. Number of fields doesn't match.");
-
-    m_sListOfAgents.assign(v[0]);
+    return (m_nActiveAgents == _val.m_nActiveAgents && m_sListOfAgents == _val.m_sListOfAgents);
 }
 
-void SAgentsInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SAgentsInfoCmd::_convertFromData(const BYTEVector_t& _data)
 {
-    inet::pushData(m_nActiveAgents, _data);
+    SAttachmentDataProvider(_data).get(m_nActiveAgents).get(m_sListOfAgents);
+}
 
-    copy(m_sListOfAgents.begin(), m_sListOfAgents.end(), back_inserter(*_data));
-    _data->push_back('\0');
+void SAgentsInfoCmd::_convertToData(BYTEVector_t* _data) const
+{
+    SAttachmentDataProvider(_data).put(m_nActiveAgents).put(m_sListOfAgents);
+}
+
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val)
+{
+    return _stream << _val.m_nActiveAgents;
+}
+
+bool dds::protocol_api::operator!=(const SAgentsInfoCmd& _lhs, const SAgentsInfoCmd& _rhs)
+{
+    return !(_lhs == _rhs);
 }

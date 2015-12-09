@@ -13,10 +13,19 @@ include_directories(
 ##################################################################
 
 set( CLNT_SOURCE_FILES
-	./Test_ProtocolMessage.cpp
+   ./Test_ProtocolMessage.cpp
+   ./TestCmd.cpp
 )
 
-add_executable(dds-protocol-lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES})
+set( CLNT_HEADER_FILES
+	./TestCmd.h
+)
+
+if (CMAKE_GENERATOR STREQUAL "Xcode")
+	add_executable(dds-protocol-lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES} ${CLNT_HEADER_FILES})
+else (CMAKE_GENERATOR STREQUAL "Xcode")
+	add_executable(dds-protocol-lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES})
+endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-protocol-lib-ProtocolMessage-tests
@@ -33,4 +42,3 @@ target_include_directories(dds-protocol-lib-ProtocolMessage-tests
 )
 
 install(TARGETS dds-protocol-lib-ProtocolMessage-tests DESTINATION tests)
-

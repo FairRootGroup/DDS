@@ -22,6 +22,7 @@
 #include "ProtocolCommands.h"
 #include "CommandAttachmentImpl.h"
 #include "def.h"
+#include "TestCmd.h"
 
 using boost::unit_test::test_suite;
 using namespace MiscCommon;
@@ -76,7 +77,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 {
-    const unsigned int cmdSize = 25;
+    const unsigned int cmdSize = 26;
 
     SSubmitCmd cmd;
     cmd.m_nRMSTypeCode = 1;
@@ -87,7 +88,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
 {
-    const unsigned int cmdSize = 60;
+    const unsigned int cmdSize = 65;
 
     SHostInfoCmd cmd;
     cmd.m_username = "username";
@@ -111,7 +112,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
     const uint32_t offset = 12345;
     const boost::uuids::uuid fileId = boost::uuids::random_generator()();
 
-    const unsigned int cmdSize = 54;
+    const unsigned int cmdSize = 58;
 
     SBinaryAttachmentCmd cmd;
     cmd.m_data = data;
@@ -125,7 +126,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT_RECEIVED)
 {
-    const unsigned int cmdSize = 49;
+    const unsigned int cmdSize = 51;
 
     SBinaryAttachmentReceivedCmd cmd;
     cmd.m_receivedFilePath = "received_file_name";
@@ -139,7 +140,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT_RECEIVED)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT_START)
 {
-    const unsigned int cmdSize = 36;
+    const unsigned int cmdSize = 37;
 
     SBinaryAttachmentStartCmd cmd;
     cmd.m_fileId = boost::uuids::random_generator()();
@@ -173,7 +174,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_GET_ID)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSIMPLE_MSG)
 {
-    const unsigned int cmdSize = 17;
+    const unsigned int cmdSize = 18;
 
     SSimpleMsgCmd cmd;
     cmd.m_srcCommand = cmdSIMPLE_MSG;
@@ -185,7 +186,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSIMPLE_MSG)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HANDSHAKE_ERR)
 {
-    const unsigned int cmdSize = 20;
+    const unsigned int cmdSize = 21;
 
     SSimpleMsgCmd cmd;
     cmd.m_srcCommand = cmdREPLY_HANDSHAKE_ERR;
@@ -197,7 +198,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HANDSHAKE_ERR)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_PID)
 {
-    const unsigned int cmdSize = 10;
+    const unsigned int cmdSize = 11;
 
     SSimpleMsgCmd cmd;
     cmd.m_srcCommand = cmdREPLY_PID;
@@ -219,9 +220,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     src.m_collectionName = "collection1";
     src.m_taskName = "task1";
     // expected attachment size
-    const unsigned int cmdSize = src.m_sExeFile.size() + 1 + src.m_sID.size() + 1 + sizeof(uint32_t) +
-                                 sizeof(uint32_t) + src.m_taskPath.size() + 1 + src.m_groupName.size() + 1 +
-                                 src.m_collectionName.size() + 1 + src.m_taskName.size() + 1;
+    const unsigned int cmdSize = src.m_sExeFile.size() + sizeof(uint16_t) + src.m_sID.size() + sizeof(uint16_t) +
+                                 sizeof(uint32_t) + sizeof(uint32_t) + src.m_taskPath.size() + sizeof(uint16_t) +
+                                 src.m_groupName.size() + sizeof(uint16_t) + src.m_collectionName.size() +
+                                 sizeof(uint16_t) + src.m_taskName.size() + sizeof(uint16_t);
 
     TestCommand(src, cmdASSIGN_USER_TASK, cmdSize);
 }
@@ -230,7 +232,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
 {
     const string sKey = "test_Key";
     const string sValue = "test_Value";
-    const unsigned int cmdSize = sKey.size() + 1 + sValue.size() + 1;
+    const unsigned int cmdSize = sKey.size() + sizeof(uint16_t) + sValue.size() + sizeof(uint16_t);
 
     SUpdateKeyCmd cmd_src;
     cmd_src.m_sKey = sKey;
@@ -241,7 +243,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdDELETE_KEY)
 {
-    const unsigned int cmdSize = 11;
+    const unsigned int cmdSize = 12;
 
     SDeleteKeyCmd cmd;
     cmd.m_sKey = "0123456789";
@@ -251,7 +253,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdDELETE_KEY)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_AGENTS_INFO)
 {
-    const unsigned int cmdSize = 27;
+    const unsigned int cmdSize = 28;
 
     SAgentsInfoCmd cmd;
     cmd.m_nActiveAgents = 3;
@@ -285,7 +287,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdPROGRESS)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_TOPOLOGY)
 {
-    const unsigned int cmdSize = 27;
+    const unsigned int cmdSize = 28;
 
     SSetTopologyCmd cmd;
     cmd.m_nDisiableValidation = 1;
@@ -296,7 +298,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_TOPOLOGY)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdCUSTOM_CMD)
 {
-    const unsigned int cmdSize = 22;
+    const unsigned int cmdSize = 24;
 
     SCustomCmdCmd cmd;
     cmd.m_sCmd = "cmd";
@@ -304,6 +306,30 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdCUSTOM_CMD)
     cmd.m_senderId = 123456;
 
     TestCommand(cmd, cmdCUSTOM_CMD, cmdSize);
+}
+
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdTEST_CMD)
+{
+    const unsigned int cmdSize = 244;
+    const uint16_t cmdTEST_CMD = 1000;
+
+    STestCmd cmd;
+    cmd.m_uint16 = 16;
+    cmd.m_uint32 = 32;
+    cmd.m_uint64 = 64;
+    cmd.m_string1 = "string1";
+    cmd.m_string2 = "string2";
+    cmd.m_string3 = "string3";
+    cmd.m_string4 = "string4";
+    cmd.m_vuint16 = { 16, 17, 18, 19, 20, 21 };
+    cmd.m_vuint32 = { 32, 33, 34, 35, 36, 37, 38 };
+    cmd.m_vuint64 = { 64, 65, 66, 67, 68, 69, 70 };
+    cmd.m_vstring1 = { "string1_1", "string1_2", "string1_3" };
+    cmd.m_vstring2 = { "string2_1", "string2_2", "string2_3", "string2_4", "string2_5" };
+
+    cout << "TestCmd size: " << cmd.size() << endl;
+
+    TestCommand(cmd, cmdTEST_CMD, cmdSize);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

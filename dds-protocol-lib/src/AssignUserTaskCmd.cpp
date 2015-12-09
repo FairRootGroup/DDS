@@ -3,75 +3,71 @@
 //
 //
 #include "AssignUserTaskCmd.h"
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
-void SAssignUserTaskCmd::normalizeToLocal() const
+SAssignUserTaskCmd::SAssignUserTaskCmd()
+    : m_sExeFile()
+    , m_sID()
+    , m_taskIndex(0)
+    , m_collectionIndex(0)
+    , m_taskPath()
+    , m_groupName()
+    , m_collectionName()
+    , m_taskName()
 {
-    m_taskIndex = inet::normalizeRead(m_taskIndex);
-    m_collectionIndex = inet::normalizeRead(m_collectionIndex);
 }
 
-void SAssignUserTaskCmd::normalizeToRemote() const
+size_t SAssignUserTaskCmd::size() const
 {
-    m_taskIndex = inet::normalizeWrite(m_taskIndex);
-    m_collectionIndex = inet::normalizeWrite(m_collectionIndex);
+    return dsize(m_sExeFile) + dsize(m_sID) + dsize(m_taskIndex) + dsize(m_collectionIndex) + dsize(m_taskPath) +
+           dsize(m_groupName) + dsize(m_collectionName) + dsize(m_taskName);
+}
+
+bool SAssignUserTaskCmd::operator==(const SAssignUserTaskCmd& val) const
+{
+    return (m_sExeFile == val.m_sExeFile && m_sID == val.m_sID && m_taskIndex == val.m_taskIndex &&
+            m_collectionIndex == val.m_collectionIndex && m_taskPath == val.m_taskPath &&
+            m_groupName == val.m_groupName && m_collectionName == val.m_collectionName && m_taskName == val.m_taskName);
 }
 
 void SAssignUserTaskCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    size_t idx(0);
-    inet::readData(&m_taskIndex, &_data, &idx);
-    inet::readData(&m_collectionIndex, &_data, &idx);
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    advance(iter, idx);
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 6 string fields in this msg container
-    if (v.size() != 6)
-        throw runtime_error("AssignUserTaskCmd: can't import data. Number of fields doesn't match.");
-
-    m_sExeFile.assign(v[0]);
-    m_sID.assign(v[1]);
-    m_taskPath.assign(v[2]);
-    m_groupName.assign(v[3]);
-    m_collectionName.assign(v[4]);
-    m_taskName.assign(v[5]);
+    SAttachmentDataProvider(_data)
+        .get(m_taskIndex)
+        .get(m_collectionIndex)
+        .get(m_sExeFile)
+        .get(m_sID)
+        .get(m_taskPath)
+        .get(m_groupName)
+        .get(m_collectionName)
+        .get(m_taskName);
 }
 
 void SAssignUserTaskCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_taskIndex, _data);
-    inet::pushData(m_collectionIndex, _data);
+    SAttachmentDataProvider(_data)
+        .put(m_taskIndex)
+        .put(m_collectionIndex)
+        .put(m_sExeFile)
+        .put(m_sID)
+        .put(m_taskPath)
+        .put(m_groupName)
+        .put(m_collectionName)
+        .put(m_taskName);
+}
 
-    copy(m_sExeFile.begin(), m_sExeFile.end(), back_inserter(*_data));
-    _data->push_back('\0');
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SAssignUserTaskCmd& val)
+{
+    return _stream << "TaskId: " << val.m_sID << "; Exe: " << val.m_sExeFile << "; taskIndex:" << val.m_taskIndex
+                   << "; collectionIndex:" << val.m_collectionIndex << "; taskPath:" << val.m_taskPath
+                   << "; groupName:" << val.m_groupName << "; collectionName:" << val.m_collectionName
+                   << "; taskName: " << val.m_taskName;
+}
 
-    copy(m_sID.begin(), m_sID.end(), back_inserter(*_data));
-    _data->push_back('\0');
-
-    copy(m_taskPath.begin(), m_taskPath.end(), back_inserter(*_data));
-    _data->push_back('\0');
-
-    copy(m_groupName.begin(), m_groupName.end(), back_inserter(*_data));
-    _data->push_back('\0');
-
-    copy(m_collectionName.begin(), m_collectionName.end(), back_inserter(*_data));
-    _data->push_back('\0');
-
-    copy(m_taskName.begin(), m_taskName.end(), back_inserter(*_data));
-    _data->push_back('\0');
+bool dds::protocol_api::operator!=(const SAssignUserTaskCmd& lhs, const SAssignUserTaskCmd& rhs)
+{
+    return !(lhs == rhs);
 }

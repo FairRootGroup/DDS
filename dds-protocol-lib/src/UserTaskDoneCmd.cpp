@@ -11,31 +11,37 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SUserTaskDoneCmd::normalizeToLocal() const
+SUserTaskDoneCmd::SUserTaskDoneCmd()
+    : m_exitCode(0)
 {
-    m_exitCode = inet::normalizeRead(m_exitCode);
 }
 
-void SUserTaskDoneCmd::normalizeToRemote() const
+size_t SUserTaskDoneCmd::size() const
 {
-    m_exitCode = inet::normalizeWrite(m_exitCode);
+    return dsize(m_exitCode);
+}
+
+bool SUserTaskDoneCmd::operator==(const SUserTaskDoneCmd& val) const
+{
+    return (m_exitCode == val.m_exitCode);
 }
 
 void SUserTaskDoneCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "SUserTaskDoneCmd: Protocol message data is too short, expected " << size() << " received "
-           << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_exitCode, &_data, &idx);
+    SAttachmentDataProvider(_data).get(m_exitCode);
 }
 
 void SUserTaskDoneCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_exitCode, _data);
+    SAttachmentDataProvider(_data).put(m_exitCode);
+}
+
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SUserTaskDoneCmd& val)
+{
+    return _stream << "exit code: " << val.m_exitCode;
+}
+
+bool dds::protocol_api::operator!=(const SUserTaskDoneCmd& lhs, const SUserTaskDoneCmd& rhs)
+{
+    return !(lhs == rhs);
 }

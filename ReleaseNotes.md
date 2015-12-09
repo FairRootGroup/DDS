@@ -1,6 +1,11 @@
 # DDS Release Notes
 
 ## v1.2 (Not Yet Released)
+### dds-protocol-lib
+Added: maximum message size for key-value and custom commands (GH-104)
+Added: sending of arrays (GH-105)   
+Added: sending of strings (GH-106)   
+Added: improve protocol attachment architecture. Check maximum size for vectors and strings in commands. Size limitations: 1) all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16; 2) all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32; 3) all std::string's have a maximum size of uint16_t i.e. 2^16.   
 
 
 ## v1.0 (2015-11-20)

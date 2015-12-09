@@ -11,50 +11,42 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SSubmitCmd::normalizeToLocal() const
+SSubmitCmd::SSubmitCmd()
+    : m_nRMSTypeCode(0)
+    , m_sSSHCfgFile()
 {
-    m_nRMSTypeCode = inet::normalizeRead(m_nRMSTypeCode);
 }
 
-void SSubmitCmd::normalizeToRemote() const
+size_t SSubmitCmd::size() const
 {
-    m_nRMSTypeCode = inet::normalizeWrite(m_nRMSTypeCode);
+    return dsize(m_sSSHCfgFile) + dsize(m_nRMSTypeCode);
+}
+
+bool SSubmitCmd::operator==(const SSubmitCmd& val) const
+{
+    return (m_sSSHCfgFile == val.m_sSSHCfgFile && m_nRMSTypeCode == val.m_nRMSTypeCode);
 }
 
 void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "SubmitCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_nRMSTypeCode, &_data, &idx);
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    advance(iter, idx);
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 1 string fields in this msg container
-    if (v.size() != 1)
-        throw runtime_error("SubmitCmd: can't import data. Number of fields doesn't match.");
-
-    m_sSSHCfgFile.assign(v[0]);
+    SAttachmentDataProvider(_data).get(m_nRMSTypeCode).get(m_sSSHCfgFile);
 }
 
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_nRMSTypeCode, _data);
+    SAttachmentDataProvider(_data).put(m_nRMSTypeCode).put(m_sSSHCfgFile);
+}
 
-    copy(m_sSSHCfgFile.begin(), m_sSSHCfgFile.end(), back_inserter(*_data));
-    _data->push_back('\0');
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SSubmitCmd& val)
+{
+    _stream << "RMS type code: " << val.m_nRMSTypeCode;
+    if (val.m_nRMSTypeCode == SSubmitCmd::SSH)
+        _stream << "; SSH Hosts config: " << val.m_sSSHCfgFile;
+
+    return _stream;
+}
+
+bool dds::protocol_api::operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
+{
+    return !(lhs == rhs);
 }

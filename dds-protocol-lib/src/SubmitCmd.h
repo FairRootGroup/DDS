@@ -26,39 +26,17 @@ namespace dds
             };
             std::map<uint16_t, std::string> RMSTypeCodeToString = { { SSH, "ssh" }, { LOCALHOST, "localhost" } };
 
-            SSubmitCmd()
-                : m_nRMSTypeCode(0)
-            {
-            }
-            void normalizeToLocal() const;
-            void normalizeToRemote() const;
-            size_t size() const
-            {
-                size_t s = (m_sSSHCfgFile.size() + 1) + sizeof(m_nRMSTypeCode);
-                return s;
-            }
+            SSubmitCmd();
+            size_t size() const;
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
-            bool operator==(const SSubmitCmd& val) const
-            {
-                return (m_sSSHCfgFile == val.m_sSSHCfgFile && m_nRMSTypeCode == val.m_nRMSTypeCode);
-            }
+            bool operator==(const SSubmitCmd& val) const;
 
-            mutable uint16_t m_nRMSTypeCode;
+            uint16_t m_nRMSTypeCode;
             std::string m_sSSHCfgFile;
         };
-        inline std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val)
-        {
-            _stream << "RMS type code: " << val.m_nRMSTypeCode;
-            if (val.m_nRMSTypeCode == SSubmitCmd::SSH)
-                _stream << "; SSH Hosts config: " << val.m_sSSHCfgFile;
-
-            return _stream;
-        }
-        inline bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val);
+        bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs);
         //=============================================================================
         // A custom streamer to help boost program options to convert string options to ERmsType
         inline std::istream& operator>>(std::istream& _in, SSubmitCmd::ERmsType& _rms)

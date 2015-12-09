@@ -4,47 +4,44 @@
 //
 #include "DeleteKeyCmd.h"
 #include <stdexcept>
+#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+namespace inet = MiscCommon::INet;
 
-void SDeleteKeyCmd::normalizeToLocal() const
+SDeleteKeyCmd::SDeleteKeyCmd()
+    : m_sKey()
 {
 }
 
-void SDeleteKeyCmd::normalizeToRemote() const
+size_t SDeleteKeyCmd::size() const
 {
+    return dsize(m_sKey);
+}
+
+bool SDeleteKeyCmd::operator==(const SDeleteKeyCmd& val) const
+{
+    return (m_sKey == val.m_sKey);
 }
 
 void SDeleteKeyCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "DeleteKeyCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 2 string fields in this msg container
-    if (v.size() != 1)
-        throw runtime_error("DeleteKeyCmd: can't import data. Number of fields doesn't match.");
-
-    m_sKey.assign(v[0]);
+    SAttachmentDataProvider(_data).get(m_sKey);
 }
 
 void SDeleteKeyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    copy(m_sKey.begin(), m_sKey.end(), back_inserter(*_data));
-    _data->push_back('\0');
+    SAttachmentDataProvider(_data).put(m_sKey);
+}
+
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SDeleteKeyCmd& val)
+{
+    return _stream << "key: " << val.m_sKey;
+}
+
+bool dds::protocol_api::operator!=(const SDeleteKeyCmd& lhs, const SDeleteKeyCmd& rhs)
+{
+    return !(lhs == rhs);
 }

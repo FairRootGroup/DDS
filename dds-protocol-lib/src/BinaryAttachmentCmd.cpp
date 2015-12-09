@@ -11,43 +11,53 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SBinaryAttachmentCmd::normalizeToLocal() const
+SBinaryAttachmentCmd::SBinaryAttachmentCmd()
+    : m_fileId()
+    , m_offset(0)
+    , m_size(0)
+    , m_crc32(0)
+    , m_data()
 {
-    m_offset = inet::normalizeRead(m_offset);
-    m_size = inet::normalizeRead(m_size);
-    m_crc32 = inet::normalizeRead(m_crc32);
 }
 
-void SBinaryAttachmentCmd::normalizeToRemote() const
+size_t SBinaryAttachmentCmd::size() const
 {
-    m_offset = inet::normalizeWrite(m_offset);
-    m_size = inet::normalizeWrite(m_size);
-    m_crc32 = inet::normalizeWrite(m_crc32);
+    return dsize(m_fileId) + dsize(m_data) + dsize(m_offset) + dsize(m_size) + dsize(m_crc32);
+}
+
+bool SBinaryAttachmentCmd::operator==(const SBinaryAttachmentCmd& _val) const
+{
+    unsigned int i = 0;
+    for (auto c : _val.m_data)
+    {
+        if (m_data[i++] != c)
+            return false;
+    }
+    return (m_fileId == _val.m_fileId && m_offset == _val.m_offset && m_size == _val.m_size && m_crc32 == _val.m_crc32);
 }
 
 void SBinaryAttachmentCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    size_t idx(0);
-
-    auto iter_id_begin = _data.begin() + idx;
-    auto iter_id_end = iter_id_begin + m_fileId.size();
-    copy(iter_id_begin, iter_id_end, m_fileId.begin());
-    idx += m_fileId.size();
-
-    inet::readData(&m_offset, &_data, &idx);
-    inet::readData(&m_size, &_data, &idx);
-    inet::readData(&m_crc32, &_data, &idx);
-
-    m_data.assign(_data.begin() + idx, _data.end());
+    SAttachmentDataProvider(_data).get(m_fileId).get(m_offset).get(m_size).get(m_crc32).get(m_data);
 }
 
 void SBinaryAttachmentCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    copy(m_fileId.begin(), m_fileId.end(), back_inserter(*_data));
+    SAttachmentDataProvider(_data).put(m_fileId).put(m_offset).put(m_size).put(m_crc32).put(m_data);
+}
 
-    inet::pushData(m_offset, _data);
-    inet::pushData(m_size, _data);
-    inet::pushData(m_crc32, _data);
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val)
+{
+    _stream << "fileId=" << _val.m_fileId << " offset=" << _val.m_offset << " size=" << _val.m_size
+            << " crc32=" << _val.m_crc32;
+    for (const auto& c : _val.m_data)
+    {
+        _stream << c;
+    }
+    return _stream;
+}
 
-    copy(m_data.begin(), m_data.end(), back_inserter(*_data));
+bool dds::protocol_api::operator!=(const SBinaryAttachmentCmd& lhs, const SBinaryAttachmentCmd& rhs)
+{
+    return !(lhs == rhs);
 }

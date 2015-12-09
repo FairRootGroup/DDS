@@ -11,54 +11,55 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SBinaryAttachmentReceivedCmd::normalizeToLocal() const
+SBinaryAttachmentReceivedCmd::SBinaryAttachmentReceivedCmd()
+    : m_receivedFilePath()
+    , m_requestedFileName()
+    , m_srcCommand(0)
+    , m_receivedFileSize(0)
+    , m_downloadTime(0)
 {
-    m_srcCommand = inet::normalizeRead(m_srcCommand);
-    m_receivedFileSize = inet::normalizeRead(m_receivedFileSize);
-    m_downloadTime = inet::normalizeRead(m_downloadTime);
+}
+size_t SBinaryAttachmentReceivedCmd::size() const
+{
+    return dsize(m_receivedFilePath) + dsize(m_requestedFileName) + dsize(m_srcCommand) + dsize(m_receivedFileSize) +
+           dsize(m_downloadTime);
 }
 
-void SBinaryAttachmentReceivedCmd::normalizeToRemote() const
+bool SBinaryAttachmentReceivedCmd::operator==(const SBinaryAttachmentReceivedCmd& _val) const
 {
-    m_srcCommand = inet::normalizeWrite(m_srcCommand);
-    m_receivedFileSize = inet::normalizeWrite(m_receivedFileSize);
-    m_downloadTime = inet::normalizeWrite(m_downloadTime);
+    return (m_receivedFilePath == _val.m_receivedFilePath && m_requestedFileName == _val.m_requestedFileName &&
+            m_srcCommand == _val.m_srcCommand && m_receivedFileSize == _val.m_receivedFileSize &&
+            m_downloadTime == _val.m_downloadTime);
 }
 
 void SBinaryAttachmentReceivedCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    size_t idx(0);
-    inet::readData(&m_srcCommand, &_data, &idx);
-    inet::readData(&m_receivedFileSize, &_data, &idx);
-    inet::readData(&m_downloadTime, &_data, &idx);
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    advance(iter, idx);
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 2 string fields in this msg container
-    if (v.size() != 2)
-        throw runtime_error("SBinaryAttachmentReceivedCmd: can't import data. Number of fields doesn't match.");
-    m_requestedFileName.assign(v[0]);
-    m_receivedFilePath.assign(v[1]);
+    SAttachmentDataProvider(_data)
+        .get(m_srcCommand)
+        .get(m_receivedFileSize)
+        .get(m_downloadTime)
+        .get(m_requestedFileName)
+        .get(m_receivedFilePath);
 }
 
 void SBinaryAttachmentReceivedCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_srcCommand, _data);
-    inet::pushData(m_receivedFileSize, _data);
-    inet::pushData(m_downloadTime, _data);
+    SAttachmentDataProvider(_data)
+        .put(m_srcCommand)
+        .put(m_receivedFileSize)
+        .put(m_downloadTime)
+        .put(m_requestedFileName)
+        .put(m_receivedFilePath);
+}
 
-    copy(m_requestedFileName.begin(), m_requestedFileName.end(), back_inserter(*_data));
-    _data->push_back('\0');
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SBinaryAttachmentReceivedCmd& _val)
+{
+    _stream << "receivedFilePath=" << _val.m_receivedFilePath << " requestedFileName=" << _val.m_requestedFileName
+            << " receivedFileSize=" << _val.m_receivedFileSize << " downloadTime=" << _val.m_downloadTime;
+    return _stream;
+}
 
-    copy(m_receivedFilePath.begin(), m_receivedFilePath.end(), back_inserter(*_data));
-    _data->push_back('\0');
+bool dds::protocol_api::operator!=(const SBinaryAttachmentReceivedCmd& lhs, const SBinaryAttachmentReceivedCmd& rhs)
+{
+    return !(lhs == rhs);
 }

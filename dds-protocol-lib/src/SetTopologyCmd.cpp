@@ -11,51 +11,38 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SSetTopologyCmd::normalizeToLocal() const
+SSetTopologyCmd::SSetTopologyCmd()
+    : m_nDisiableValidation(0)
+    , m_sTopologyFile()
 {
-    m_nDisiableValidation = inet::normalizeRead(m_nDisiableValidation);
 }
 
-void SSetTopologyCmd::normalizeToRemote() const
+size_t SSetTopologyCmd::size() const
 {
-    m_nDisiableValidation = inet::normalizeWrite(m_nDisiableValidation);
+    return dsize(m_sTopologyFile) + dsize(m_nDisiableValidation);
+}
+
+bool SSetTopologyCmd::operator==(const SSetTopologyCmd& val) const
+{
+    return (m_sTopologyFile == val.m_sTopologyFile && m_nDisiableValidation == val.m_nDisiableValidation);
 }
 
 void SSetTopologyCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "SSetTopologyCmd: Protocol message data is too short, expected " << size() << " received "
-           << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_nDisiableValidation, &_data, &idx);
-
-    vector<string> v;
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    advance(iter, idx);
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-    for (; iter != iter_end;)
-    {
-        string tmp((string::value_type*)(&(*iter)));
-        v.push_back(tmp);
-        advance(iter, tmp.size() + 1);
-    }
-
-    // there are so far only 1 string fields in this msg container
-    if (v.size() != 1)
-        throw runtime_error("SSetTopologyCmd: can't import data. Number of fields doesn't match.");
-
-    m_sTopologyFile.assign(v[0]);
+    SAttachmentDataProvider(_data).get(m_nDisiableValidation).get(m_sTopologyFile);
 }
 
 void SSetTopologyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_nDisiableValidation, _data);
+    SAttachmentDataProvider(_data).put(m_nDisiableValidation).put(m_sTopologyFile);
+}
 
-    copy(m_sTopologyFile.begin(), m_sTopologyFile.end(), back_inserter(*_data));
-    _data->push_back('\0');
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SSetTopologyCmd& val)
+{
+    return _stream << "topo file: " << val.m_sTopologyFile << "; validation "
+                   << (val.m_nDisiableValidation ? "disabled" : "enabled");
+}
+bool dds::protocol_api::operator!=(const SSetTopologyCmd& lhs, const SSetTopologyCmd& rhs)
+{
+    return !(lhs == rhs);
 }

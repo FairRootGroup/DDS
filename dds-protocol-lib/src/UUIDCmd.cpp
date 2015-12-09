@@ -11,30 +11,38 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SIDCmd::normalizeToLocal() const
+SIDCmd::SIDCmd()
+    : m_id()
 {
-    m_id = inet::normalizeRead(m_id);
 }
 
-void SIDCmd::normalizeToRemote() const
+size_t SIDCmd::size() const
 {
-    m_id = inet::normalizeWrite(m_id);
+    return dsize(m_id);
+}
+
+bool SIDCmd::operator==(const SIDCmd& _val) const
+{
+    return (m_id == _val.m_id);
 }
 
 void SIDCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    if (_data.size() < size())
-    {
-        stringstream ss;
-        ss << "SIDCmd: Protocol message data is too short, expected " << size() << " received " << _data.size();
-        throw runtime_error(ss.str());
-    }
-
-    size_t idx(0);
-    inet::readData(&m_id, &_data, &idx);
+    SAttachmentDataProvider(_data).get(m_id);
 }
 
 void SIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    inet::pushData(m_id, _data);
+    SAttachmentDataProvider(_data).put(m_id);
+}
+
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SIDCmd& _val)
+{
+    _stream << _val.m_id;
+    return _stream;
+}
+
+bool dds::protocol_api::operator!=(const SIDCmd& lhs, const SIDCmd& rhs)
+{
+    return !(lhs == rhs);
 }

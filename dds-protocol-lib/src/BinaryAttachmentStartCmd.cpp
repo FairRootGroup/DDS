@@ -11,56 +11,43 @@ using namespace dds;
 using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
-void SBinaryAttachmentStartCmd::normalizeToLocal() const
+SBinaryAttachmentStartCmd::SBinaryAttachmentStartCmd()
+    : m_fileId()
+    , m_fileName()
+    , m_fileSize(0)
+    , m_fileCrc32(0)
+    , m_srcCommand(0)
 {
-    m_fileCrc32 = inet::normalizeRead(m_fileCrc32);
-    m_fileSize = inet::normalizeRead(m_fileSize);
-    m_srcCommand = inet::normalizeRead(m_srcCommand);
+}
+size_t SBinaryAttachmentStartCmd::size() const
+{
+    return dsize(m_fileId) + dsize(m_fileName) + dsize(m_fileSize) + dsize(m_fileCrc32) + dsize(m_srcCommand);
 }
 
-void SBinaryAttachmentStartCmd::normalizeToRemote() const
+bool SBinaryAttachmentStartCmd::operator==(const SBinaryAttachmentStartCmd& _val) const
 {
-    m_fileCrc32 = inet::normalizeWrite(m_fileCrc32);
-    m_fileSize = inet::normalizeWrite(m_fileSize);
-    m_srcCommand = inet::normalizeWrite(m_srcCommand);
+    return (m_fileId == _val.m_fileId && m_fileCrc32 == _val.m_fileCrc32 && m_fileName == _val.m_fileName &&
+            m_fileSize == _val.m_fileSize && m_srcCommand == _val.m_srcCommand);
 }
 
 void SBinaryAttachmentStartCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    size_t idx(0);
-    MiscCommon::BYTEVector_t::const_iterator iter = _data.begin();
-    MiscCommon::BYTEVector_t::const_iterator iter_end = _data.end();
-
-    for (; iter != iter_end; ++iter, ++idx)
-    {
-        char c(*iter);
-        if ('\0' == c)
-        {
-            ++iter;
-            ++idx;
-            break;
-        }
-        m_fileName.push_back(c);
-    }
-
-    auto iter_id_begin = _data.begin() + idx;
-    auto iter_id_end = iter_id_begin + m_fileId.size();
-    copy(iter_id_begin, iter_id_end, m_fileId.begin());
-    idx += m_fileId.size();
-
-    inet::readData(&m_fileSize, &_data, &idx);
-    inet::readData(&m_fileCrc32, &_data, &idx);
-    inet::readData(&m_srcCommand, &_data, &idx);
+    SAttachmentDataProvider(_data).get(m_fileId).get(m_fileName).get(m_fileSize).get(m_fileCrc32).get(m_srcCommand);
 }
 
 void SBinaryAttachmentStartCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    copy(m_fileName.begin(), m_fileName.end(), back_inserter(*_data));
-    _data->push_back('\0');
+    SAttachmentDataProvider(_data).put(m_fileId).put(m_fileName).put(m_fileSize).put(m_fileCrc32).put(m_srcCommand);
+}
 
-    copy(m_fileId.begin(), m_fileId.end(), back_inserter(*_data));
+std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SBinaryAttachmentStartCmd& _val)
+{
+    _stream << "fileId=" << _val.m_fileId << " fileName=" << _val.m_fileName << " fileSize=" << _val.m_fileSize
+            << " fileCrc32=" << _val.m_fileCrc32;
+    return _stream;
+}
 
-    inet::pushData(m_fileSize, _data);
-    inet::pushData(m_fileCrc32, _data);
-    inet::pushData(m_srcCommand, _data);
+bool dds::protocol_api::operator!=(const SBinaryAttachmentStartCmd& lhs, const SBinaryAttachmentStartCmd& rhs)
+{
+    return !(lhs == rhs);
 }
