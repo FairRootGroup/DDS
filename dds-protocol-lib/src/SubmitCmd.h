@@ -33,7 +33,7 @@ namespace dds
             bool operator==(const SSubmitCmd& val) const;
 
             uint16_t m_nRMSTypeCode;
-            std::string m_sSSHCfgFile;
+            std::string m_sCfgFile;
         };
         std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val);
         bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs);

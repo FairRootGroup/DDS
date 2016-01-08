@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 
     SSubmitCmd cmd;
     cmd.m_nRMSTypeCode = 1;
-    cmd.m_sSSHCfgFile = "/Users/dummy/dummy.cfg";
+    cmd.m_sCfgFile = "/Users/dummy/dummy.cfg";
 
     TestCommand(cmd, cmdSUBMIT, cmdSize);
 }

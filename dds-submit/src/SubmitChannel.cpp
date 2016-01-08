@@ -36,7 +36,7 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
                 // Create the command's attachment
                 SSubmitCmd cmd;
                 cmd.m_nRMSTypeCode = m_RMS;
-                cmd.m_sSSHCfgFile = m_sSSHCfgFile;
+                cmd.m_sCfgFile = m_sCfgFile;
                 pushMsg<cmdSUBMIT>(cmd);
             }
             else if (SSubmitCmd::LOCALHOST == m_RMS)
@@ -80,7 +80,7 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
                 // Create the command's attachment
                 SSubmitCmd cmd;
                 cmd.m_nRMSTypeCode = m_RMS;
-                cmd.m_sSSHCfgFile = tmpfileName.string();
+                cmd.m_sCfgFile = tmpfileName.string();
                 pushMsg<cmdSUBMIT>(cmd);
             }
         });
@@ -99,9 +99,9 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
                      });
 }
 
-void CSubmitChannel::setSSHCfgFile(const string& _val)
+void CSubmitChannel::setCfgFile(const string& _val)
 {
-    m_sSSHCfgFile = _val;
+    m_sCfgFile = _val;
 }
 
 void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)

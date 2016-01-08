@@ -121,7 +121,7 @@ class CDDSEnvironment
                ret += "etc/pod-remote.cfg";
                return ret;
            }
-           std::string pod_sshCfgFile() const
+           std::string pod_sCfgFile() const
            {
                if( m_wrkDir.empty() )
                    return( "" );

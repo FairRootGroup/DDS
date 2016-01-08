@@ -44,68 +44,14 @@ namespace dds
             {
             }
 
-            std::string defaultConfigFile() const
-            {
-                std::string sWorkDir(dds::user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_workDir);
-                MiscCommon::smart_path(&sWorkDir);
-                // We need to be sure that there is "/" always at the end of the path
-                MiscCommon::smart_append<std::string>(&sWorkDir, '/');
-                std::string sCfgFile(sWorkDir);
-                sCfgFile += "dds-submit.cfg";
-                return sCfgFile;
-            }
-
-            void load(std::string* _filename = nullptr)
-            {
-                std::string sCfgFile((_filename == nullptr) ? defaultConfigFile() : *_filename);
-
-                // Create an empty property tree object
-                using boost::property_tree::ptree;
-                ptree pt;
-
-                try
-                {
-                    LOG(MiscCommon::info) << "Loading options from: " << sCfgFile;
-                    read_ini(sCfgFile, pt);
-
-                    std::stringstream ssRMS;
-                    ssRMS << pt.get<std::string>("dds-submit.RMS");
-                    ssRMS >> m_RMS;
-
-                    m_sSSHCfgFile = pt.get<std::string>("dds-submit.SSHPlugIn-ConfigFile");
-                    LOG(MiscCommon::info) << *this;
-                }
-                catch (...)
-                {
-                    // ignore missing nodes
-                }
-            }
-            void save(std::string* _filename = nullptr)
-            {
-                std::string sCfgFile((_filename == nullptr) ? defaultConfigFile() : *_filename);
-
-                // Create an empty property tree object
-                using boost::property_tree::ptree;
-                ptree pt;
-
-                std::stringstream ssRMS;
-                ssRMS << m_RMS;
-                pt.put("dds-submit.RMS", ssRMS.str());
-
-                pt.put("dds-submit.SSHPlugIn-ConfigFile", m_sSSHCfgFile);
-
-                // Write the property tree to the XML file.
-                write_ini(sCfgFile, pt);
-            }
-
             protocol_api::SSubmitCmd::ERmsType m_RMS;
-            std::string m_sSSHCfgFile;
+            std::string m_sCfgFile;
             size_t m_number;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
         {
-            return _stream << "\nRMS: " << val.m_RMS << "\nSSHPlugIn-ConfigFile" << val.m_sSSHCfgFile;
+            return _stream << "\nRMS: " << val.m_RMS << "\nPlug-in's configuration file: " << val.m_sCfgFile;
         }
         //=============================================================================
         inline void PrintVersion()
@@ -121,24 +67,19 @@ namespace dds
             if (nullptr == _options)
                 throw std::runtime_error("Internal error: options' container is empty.");
 
-            // Init options from the default config file
-            _options->load();
-
             // Generic options
             bpo::options_description options("dds-submit options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
-            options.add_options()("config,c", bpo::value<std::string>(), "A dds-submit configuration file.");
+            options.add_options()("config,c",
+                                  bpo::value<std::string>(&_options->m_sCfgFile),
+                                  "A plug-in's configuration file. It can be used to provid additional RMS options");
             options.add_options()("rms,r",
                                   bpo::value<dds::protocol_api::SSubmitCmd::ERmsType>(&_options->m_RMS),
                                   "Defines a destination resource management system. (default: ssh)\n"
                                   "Supported RMS:\n"
                                   "   - ssh\n"
                                   "   - localhost");
-            options.add_options()("ssh-rms-cfg",
-                                  bpo::value<std::string>(&_options->m_sSSHCfgFile),
-                                  "A DDS's ssh plug-in configuration file. The option can only be used "
-                                  "with the submit command when \'ssh\' is used as RMS");
             options.add_options()("number,n",
                                   bpo::value<size_t>(&_options->m_number),
                                   "Defines a number of agents to spawn. It can be used only when \'localhost\' is used "
@@ -150,20 +91,15 @@ namespace dds
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
 
-            if (vm.count("config"))
-            {
-                // Init options from the given config file
-                std::string sCfg(vm["config"].as<std::string>());
-                MiscCommon::smart_path(&sCfg);
-                if (!boost::filesystem::exists(sCfg))
-                {
-                    LOG(MiscCommon::log_stderr) << "Config file is missing: " << sCfg;
-                    return false;
-                }
-                _options->load(&sCfg);
-            }
+            // check for non-defaulted arguments
+            bpo::variables_map::const_iterator found = find_if(vm.begin(),
+                                                               vm.end(),
+                                                               [](const bpo::variables_map::value_type& _v)
+                                                               {
+                                                                   return (!_v.second.defaulted());
+                                                               });
 
-            if (vm.count("help") || (_options->m_RMS == protocol_api::SSubmitCmd::UNKNOWN))
+            if (vm.count("help") || (_options->m_RMS == protocol_api::SSubmitCmd::UNKNOWN) || vm.end() == found)
             {
                 LOG(MiscCommon::log_stdout) << options;
                 return false;
@@ -190,11 +126,8 @@ namespace dds
             }
 
             // make absolute path
-            boost::filesystem::path pathSSHCfgFile(_options->m_sSSHCfgFile);
-            _options->m_sSSHCfgFile = boost::filesystem::absolute(pathSSHCfgFile).string();
-
-            // Save options to the config file
-            _options->save();
+            boost::filesystem::path pathCfgFile(_options->m_sCfgFile);
+            _options->m_sCfgFile = boost::filesystem::absolute(pathCfgFile).string();
 
             return true;
         }

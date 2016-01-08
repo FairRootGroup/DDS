@@ -361,7 +361,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 
         if (_attachment->m_nRMSTypeCode == SSubmitCmd::SSH || _attachment->m_nRMSTypeCode == SSubmitCmd::LOCALHOST)
         {
-            LOG(info) << "SSH RMS is defined by: [" << _attachment->m_sSSHCfgFile << "]";
+            LOG(info) << "SSH RMS is defined by: [" << _attachment->m_sCfgFile << "]";
             // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
 
             // Submitting the job
@@ -370,7 +370,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
             smart_path(&sCommand);
 
             stringstream ssCmd;
-            ssCmd << sCommand << " -c " << _attachment->m_sSSHCfgFile << " submit";
+            ssCmd << sCommand << " -c " << _attachment->m_sCfgFile << " submit";
             const size_t nCmdTimeout = 60; // in sec.
             int nDdsSSHExitCode(0);
 
@@ -389,7 +389,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
                 }
 
                 string sMsg("Failed to deploy agents from the given setup: ");
-                sMsg += _attachment->m_sSSHCfgFile;
+                sMsg += _attachment->m_sCfgFile;
                 throw runtime_error(sMsg);
             }
             if (!outPut.empty())

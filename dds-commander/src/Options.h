@@ -49,7 +49,7 @@ namespace dds
             std::string m_sTopoFile;
             bool m_needCommanderPid;
             protocol_api::SSubmitCmd::ERmsType m_RMS;
-            std::string m_sSSHCfgFile;
+            std::string m_sCfgFile;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()

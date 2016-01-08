@@ -25,7 +25,7 @@ namespace dds
             END_MSG_MAP()
 
           public:
-            void setSSHCfgFile(const std::string& _val);
+            void setCfgFile(const std::string& _val);
             void setRMSTypeCode(const protocol_api::SSubmitCmd::ERmsType& _val);
             void setNumber(const size_t _val);
 
@@ -35,7 +35,7 @@ namespace dds
             bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
 
           private:
-            std::string m_sSSHCfgFile;
+            std::string m_sCfgFile;
             protocol_api::SSubmitCmd::ERmsType m_RMS;
             size_t m_number;
             bool m_bXMLValidationDisabled;

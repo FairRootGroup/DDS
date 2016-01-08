@@ -1,6 +1,11 @@
 # DDS Release Notes
 
 ## v1.2 (Not Yet Released)
+### dds-submit
+Added: the command learned "--config/-c" parameter, which can be used to specify a configuration file for plug-ins. (GH-111)   
+Modified: drop support of "--ssh-rms-cfg" in favor of "--config". (GH-111)   
+Modified: drop support of auto-config feature of dds-submit, when it remembers last used settings. (GH-111)   
+
 ### dds-protocol-lib
 Added: maximum message size for key-value and custom commands (GH-104)
 Added: sending of arrays (GH-105)   

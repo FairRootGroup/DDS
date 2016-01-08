@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
         CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
 
-        client->setSSHCfgFile(options.m_sSSHCfgFile);
+        client->setCfgFile(options.m_sCfgFile);
         client->setRMSTypeCode(options.m_RMS);
         client->setNumber(options.m_number);
 
