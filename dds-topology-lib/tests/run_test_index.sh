@@ -22,7 +22,7 @@ echo "Starting DDS server..."
 dds-server restart -s
 
 echo "Submiting agents..."
-dds-submit -r ssh --ssh-rms-cfg ${sshFile}
+dds-submit -r ssh --config ${sshFile}
 
 nofAgents=$(dds-info -n)
 while [  ${nofAgents} -lt ${requiredNofAgents} ]; do

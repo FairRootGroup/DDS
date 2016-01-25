@@ -110,7 +110,7 @@ namespace dds
                 return false;
             }
 
-            if (vm.count("rms") && (_options->m_RMS == protocol_api::SSubmitCmd::SSH && !vm.count("ssh-rms-cfg")))
+            if (vm.count("rms") && (_options->m_RMS == protocol_api::SSubmitCmd::SSH && !vm.count("config")))
             {
                 LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
                                                "--ssh-rms-cfg to specify a desired configuration file."
