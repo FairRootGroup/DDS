@@ -1,8 +1,8 @@
 # DDS Release Notes
 
 ## v1.2 (Not Yet Released)
-
 ###DDS common
+Fixed: cmake: Updated OSX RPATH settings.   
 Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)
 
 ### dds-submit

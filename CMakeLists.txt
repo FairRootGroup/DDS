@@ -45,7 +45,6 @@ option(BUILD_dds-commander "Build dds-commander" ON)
 option(BUILD_dds-topology "Build dds-topology" ON)
 option(BUILD_dds_topology_lib "Build dds_topology_lib" ON)
 option(BUILD_dds-agent "Build dds-agent" ON)
-option(BUILD_dds-ssh "Build dds-ssh" ON)
 option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
 option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
@@ -55,6 +54,7 @@ option(BUILD_dds-tutorials "Build dds-tutorials" ON)
 option(BUILD_dds-stat "Build dds-stat" ON)
 option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
 option(BUILD_dds_intercom_lib "Build dds_intercom_lib" ON)
+option(BUILD_dds-submit-ssh "Build dds-submit-ssh" ON)
 #
 # Custom targets
 #
@@ -108,10 +108,24 @@ set(MiscCommon_LOCATION
 )
 #
 # additional compiler and linker flags for C++11
-#
+# 
 if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wthread-safety")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
+
+	# In response to CMake 3.0 generating warnings regarding policy CMP0042,
+	# the OSX RPATH settings have been updated per recommendations found
+	# in the CMake Wiki: http://www.cmake.org/Wiki/CMake_RPATH_handling#Mac_OS_X_and_the_RPATH
+	set(CMAKE_MACOSX_RPATH ON)
+	set(CMAKE_SKIP_BUILD_RPATH FALSE)
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+	list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+	if("${isSystemDir}" STREQUAL "-1")
+		set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	endif()
+
 elseif(UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 endif(APPLE)
@@ -210,12 +224,6 @@ if(BUILD_dds-agent)
     add_subdirectory ( dds-agent )
 endif(BUILD_dds-agent)
 
-# dds-ssh
-if(BUILD_dds-ssh)
-    message(STATUS "Build dds-ssh - YES")
-    add_subdirectory ( dds-ssh )
-endif(BUILD_dds-ssh)
-
 # dds-user-defaults
 if(BUILD_dds-user-defaults)
     message(STATUS "Build dds-user-defaults - YES")
@@ -269,6 +277,12 @@ if(BUILD_dds_intercom_lib)
     message(STATUS "Build dds_intercom_lib - YES")
     add_subdirectory ( dds-intercom-lib )
 endif(BUILD_dds_intercom_lib)
+
+# dds-submit-ssh
+if(BUILD_dds-submit-ssh)
+    message(STATUS "Build dds-submit-ssh - YES")
+    add_subdirectory ( plugins/dds-submit-ssh )
+endif(BUILD_dds-submit-ssh)
 
 #
 # Install
