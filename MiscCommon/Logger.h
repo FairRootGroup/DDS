@@ -20,16 +20,16 @@
 #include <boost/log/support/date_time.hpp>
 #pragma clang diagnostic pop
 
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/sources/global_logger_storage.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/attributes/current_process_id.hpp>
 #include <boost/log/attributes/current_process_name.hpp>
 #include <boost/log/attributes/current_thread_id.hpp>
+#include <boost/log/sources/global_logger_storage.hpp>
+#include <boost/log/sources/logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/console.hpp>
+#include <boost/log/utility/setup/file.hpp>
 #if BOOST_VERSION < 105700
 #pragma clang diagnostic pop
 #endif
@@ -38,9 +38,9 @@
 #include <ostream>
 
 // DDS
-#include "def.h"
-#include "UserDefaults.h"
 #include "SysHelper.h"
+#include "UserDefaults.h"
+#include "def.h"
 
 // Main macro to be used for logging in DDS
 // Example: LOG(info) << "My message";

@@ -1,6 +1,6 @@
 // DDS
 #include "Logger.h"
-#include "KeyValue.h"
+#include "dds_intercom.h"
 // STD
 #include <exception>
 #include <sstream>
@@ -11,7 +11,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::key_value;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
@@ -59,7 +58,7 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue ddsKeyValue;
+        CKeyValue keyValue;
 
         // Get environment variables
         // DDS_TASK_ID
@@ -96,7 +95,7 @@ int main(int argc, char* argv[])
            << " DDS_COLLECTION_INDEX=" << collectionIndex << " DDS_TASK_PATH=" << taskPath
            << " DDS_GROUP_NAME=" << groupName << " DDS_COLLECTION_NAME=" << collectionName
            << " DDS_TASK_NAME=" << taskName;
-        ddsKeyValue.putValue("IndexInfo", ss.str());
+        keyValue.putValue("IndexInfo", ss.str());
 
         LOG(log_stdout) << "USER TASK: " << ss.str();
 

@@ -47,17 +47,17 @@ add_executable(task-test_index ${TEST_INDEX_SOURCE_FILES})
 
 target_link_libraries (
     task-test_index
-    dds-key-value-lib
+    dds_intercom_lib
 )
 
 target_include_directories(task-test_index
 PRIVATE
-     $<TARGET_PROPERTY:dds-key-value-lib,INTERFACE_INCLUDE_DIRECTORIES>
+     $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS task-test_index DESTINATION tests)
 
-            
+
 if( BUILD_TESTS )
   install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_1.xml DESTINATION tests)
   install(FILES ${dds-topology-lib-tests_SOURCE_DIR}/topology_test_2.xml DESTINATION tests)

@@ -7,9 +7,9 @@
 #define DDS_UIConnectionManager_h
 
 // DDS
+#include "CommanderChannel.h"
 #include "ConnectionManagerImpl.h"
 #include "UIChannel.h"
-#include "CommanderChannel.h"
 // BOOST
 #include <boost/asio.hpp>
 

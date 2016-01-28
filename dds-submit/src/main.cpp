@@ -4,9 +4,9 @@
 //
 // DDS
 #include "ErrorCode.h"
-#include "SubmitChannel.h"
-#include "Options.h"
 #include "DDSHelper.h"
+#include "Options.h"
+#include "SubmitChannel.h"
 
 using namespace std;
 using namespace MiscCommon;

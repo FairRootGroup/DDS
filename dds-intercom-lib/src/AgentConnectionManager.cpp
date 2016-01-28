@@ -4,6 +4,7 @@
 //
 
 // BOOST
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 // silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
@@ -23,10 +24,11 @@
 using namespace boost::asio;
 using namespace std;
 using namespace dds::user_defaults_api;
-using namespace dds::key_value_api;
+using namespace dds::internal_api;
 using namespace dds::protocol_api;
 using namespace MiscCommon;
 namespace sp = std::placeholders;
+namespace fs = boost::filesystem;
 using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager()
@@ -48,24 +50,36 @@ void CAgentConnectionManager::start()
     m_bStarted = true;
     try
     {
-        const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
-
-        CMonitoringThread::instance().start(maxIdleTime,
-                                            []()
-                                            {
-                                                LOG(info) << "Idle callback called";
-                                            });
-
         // Read server info file
-        const string sSrvCfg(CUserDefaults::instance().getAgentInfoFileLocation());
-        LOG(info) << "Reading server info from: " << sSrvCfg;
-        if (sSrvCfg.empty())
-            throw runtime_error("Cannot find agent info file.");
-
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
-        const string sHost(pt.get<string>("agent.host"));
-        const string sPort(pt.get<string>("agent.port"));
+        // First check if agent info file exists.
+        // If it does not exist we take the commander server info file.
+        const string sAgentCfg(CUserDefaults::instance().getAgentInfoFileLocation());
+        const string sCommanderCfg(CUserDefaults::instance().getServerInfoFileLocation());
+        string sHost;
+        string sPort;
+        EChannelType channelType(EChannelType::UNKNOWN);
+        if (fs::exists(sAgentCfg))
+        {
+            LOG(info) << "Reading server info from: " << sAgentCfg;
+            boost::property_tree::ptree pt;
+            boost::property_tree::ini_parser::read_ini(sAgentCfg, pt);
+            sHost = pt.get<string>("agent.host");
+            sPort = pt.get<string>("agent.port");
+            channelType = EChannelType::API_GUARD;
+        }
+        else if (fs::exists(sCommanderCfg))
+        {
+            LOG(info) << "Reading server info from: " << sCommanderCfg;
+            boost::property_tree::ptree pt;
+            boost::property_tree::ini_parser::read_ini(sCommanderCfg, pt);
+            sHost = pt.get<string>("ui.host");
+            sPort = pt.get<string>("ui.port");
+            channelType = EChannelType::UI;
+        }
+        else
+        {
+            throw runtime_error("Cannot find agent or commander info file.");
+        }
 
         LOG(info) << "Contacting DDS agent on " << sHost << ":" << sPort;
 
@@ -76,10 +90,11 @@ void CAgentConnectionManager::start()
 
         // Create new communication channel and push handshake message
         m_channel = CAgentChannel::makeNew(m_service);
+        m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel * _channel)>
-            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool
-        {
+            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+                               CAgentChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_channel);
@@ -87,10 +102,7 @@ void CAgentConnectionManager::start()
         m_channel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         m_channel->subscribeOnEvent(EChannelEvents::OnConnected,
-                                    [this](CAgentChannel* _channel)
-                                    {
-                                        m_channel->m_syncHelper = m_syncHelper;
-                                    });
+                                    [this](CAgentChannel* _channel) { m_channel->m_syncHelper = m_syncHelper; });
         m_channel->connect(endpoint_iterator);
 
         // Don't block main thread, start transport service on a thread-pool
@@ -156,5 +168,24 @@ int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
         LOG(fatal) << "Fail to push the property update: " << _cmd << "; Error: " << _e.what();
     }
     LOG(fatal) << "Fail to push the property update: " << _cmd;
+    return 1;
+}
+
+int CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command)
+{
+    try
+    {
+        if (getAgentChannel().expired())
+            throw runtime_error("Agent channel is offline");
+
+        auto p = getAgentChannel().lock();
+        p->pushMsg<cmdCUSTOM_CMD>(_command);
+        return 0;
+    }
+    catch (const exception& _e)
+    {
+        LOG(fatal) << "Fail to push the custom command: " << _command << "; Error: " << _e.what();
+    }
+    LOG(fatal) << "Fail to push the custom command: " << _command;
     return 1;
 }

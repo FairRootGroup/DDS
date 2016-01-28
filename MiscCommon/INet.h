@@ -6,16 +6,16 @@
 #define INET_H
 
 // API
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 #include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 // STD
-#include <unistd.h>
-#include <stdexcept>
-#include <iterator>
 #include <algorithm>
+#include <iterator>
+#include <stdexcept>
+#include <unistd.h>
 // MiscCommon
 #include "ErrorCode.h"
 #include "MiscUtils.h"

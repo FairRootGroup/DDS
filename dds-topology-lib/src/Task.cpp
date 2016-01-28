@@ -7,10 +7,10 @@
 #include "TaskGroup.h"
 #include "TopoUtils.h"
 // STD
-#include <sstream>
-#include <string>
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 

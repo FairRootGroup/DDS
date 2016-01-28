@@ -51,11 +51,10 @@ option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
 option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
 option(BUILD_dds-test "Build dds-test" ON)
-option(BUILD_dds-key-value-lib "Build dds-key-value library" ON)
 option(BUILD_dds-tutorials "Build dds-tutorials" ON)
 option(BUILD_dds-stat "Build dds-stat" ON)
 option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
-option(BUILD_dds-custom-cmd-lib "Build dds-custom-cmd-lib" ON)
+option(BUILD_dds_intercom_lib "Build dds_intercom_lib" ON)
 #
 # Custom targets
 #
@@ -67,20 +66,20 @@ if(DOXYGEN_FOUND)
 	#
     set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR}/documentation/api-docs)
     file(MAKE_DIRECTORY ${DOC_OUTPUT_DIR})
-	
+
 	configure_file( ${PROJECT_SOURCE_DIR}/doxyfile.in ${PROJECT_BINARY_DIR}/doxyfile @ONLY )
-	add_custom_target( api-docs 
+	add_custom_target( api-docs
 		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/doxyfile
 		COMMENT "Generating API docs" )
 
-	add_custom_target( upload-api-docs 
+	add_custom_target( upload-api-docs
 		COMMAND rsync -avz --whole-file --progress --chmod=ugo=rX -e ssh  ${DOC_OUTPUT_DIR} ddswww@lxi001.gsi.de:~/web-docs/doc
 		COMMENT "Upload API documentation to DDS's web server")
 	add_dependencies( upload-api-docs api-docs )
 endif(DOXYGEN_FOUND)
 
 # Source Code Formatting using clang-format
-add_custom_target( format-code 
+add_custom_target( format-code
        COMMAND ${CMAKE_SOURCE_DIR}/utils/update_format.sh ${CMAKE_SOURCE_DIR}
        COMMENT "Updating source code formatting.")
 
@@ -133,7 +132,7 @@ SET(DDS_MISC_FILES
 #
 # "bin" files
 #
-SET(DDS_BIN_FILES 
+SET(DDS_BIN_FILES
 	${CMAKE_SOURCE_DIR}/bin/dds-server
 	${CMAKE_SOURCE_DIR}/bin/dds-prep-worker
 )
@@ -247,12 +246,6 @@ if(BUILD_dds-test)
     add_subdirectory ( dds-test )
 endif(BUILD_dds-test)
 
-# dds-key-value-lib
-if(BUILD_dds-key-value-lib)
-    message(STATUS "Build dds-key-value library - YES")
-    add_subdirectory ( dds-key-value-lib )
-endif(BUILD_dds-key-value-lib)
-
 # dds-tutorials
 if(BUILD_dds-tutorials)
     message(STATUS "Build dds-tutorials - YES")
@@ -271,11 +264,11 @@ if(BUILD_dds-custom-cmd)
     add_subdirectory ( dds-custom-cmd )
 endif(BUILD_dds-custom-cmd)
 
-# dds-custom-cmd-lib
-if(BUILD_dds-custom-cmd-lib)
-    message(STATUS "Build dds-custom-cmd-lib - YES")
-    add_subdirectory ( dds-custom-cmd-lib )
-endif(BUILD_dds-custom-cmd-lib)
+# dds_intercom_lib
+if(BUILD_dds_intercom_lib)
+    message(STATUS "Build dds_intercom_lib - YES")
+    add_subdirectory ( dds-intercom-lib )
+endif(BUILD_dds_intercom_lib)
 
 #
 # Install
@@ -308,7 +301,7 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
 	else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
 		set(TRG_ARCH amd64)
 	endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-   
+
    if(APPLE)
        set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-universal" )
    elseif(UNIX)
@@ -332,32 +325,31 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
      # the log library needs a special handling as it depends on many other boost libraries
      set( lib_cmd_args_log "-c" "ldd ${Boost_LOG_LIBRARY} | grep -E 'boost|icu' | awk '{ system( \"cp \" $3 \" ${WN_PKG_DIR}\") }'" )
    endif(APPLE)
-   
+
    add_custom_target( wn_bin
                       COMMAND -mkdir -p ${WN_PKG_DIR}
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
 		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
-					  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-key-value-lib> "${WN_PKG_DIR}"
-                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-custom-cmd-lib> "${WN_PKG_DIR}"
+                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_intercom_lib> "${WN_PKG_DIR}"
 		              COMMAND ${lib_cmd} ${lib_cmd_args}
                       COMMAND ${lib_cmd} ${lib_cmd_args_log}
                       COMMAND ${lib_cmd} ${lib_cmd_args_cpp}
                       COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
                       COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
-                      COMMENT "Generate WN binary package" 
+                      COMMENT "Generate WN binary package"
                       VERBATIM )
    add_dependencies( wn_bin
 			dds-agent
-			dds-user-defaults-lib 
+			dds-user-defaults-lib
 			dds-protocol-lib
-			dds-key-value-lib)
+			dds_intercom_lib)
 
    add_custom_target( wn_bin_upload
-		      COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"                      
+		      COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"
                       COMMAND scp -p ${WN_PKG_NAME_ARCH} ddswww@lxi001:${WN_PKG_REMOTE_DIR}
-                      COMMENT "Uploading WN binary package to DDS binary repository" 
+                      COMMENT "Uploading WN binary package to DDS binary repository"
                       VERBATIM )
 
    add_dependencies( wn_bin_upload

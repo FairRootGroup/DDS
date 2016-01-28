@@ -5,8 +5,8 @@
 // DDS
 #include "UserDefaults.h"
 #include "ActivateChannel.h"
-#include "Options.h"
 #include "DDSHelper.h"
+#include "Options.h"
 #include "Topology.h"
 
 using namespace std;

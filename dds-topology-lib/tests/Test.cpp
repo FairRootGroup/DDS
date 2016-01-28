@@ -7,21 +7,21 @@
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
-#include <boost/test/unit_test.hpp>
 #include <boost/test/output_test_stream.hpp>
+#include <boost/test/unit_test.hpp>
 
 // DDS
-#include "TopoIndex.h"
-#include "Topology.h"
-#include "TopologyParserXML.h"
-#include "TopoBase.h"
-#include "TopoElement.h"
-#include "TopoProperty.h"
 #include "Task.h"
 #include "TaskCollection.h"
 #include "TaskGroup.h"
-#include "TopoUtils.h"
+#include "TopoBase.h"
+#include "TopoElement.h"
 #include "TopoFactory.h"
+#include "TopoIndex.h"
+#include "TopoProperty.h"
+#include "TopoUtils.h"
+#include "Topology.h"
+#include "TopologyParserXML.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -119,11 +119,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
     // Task iterators
     output_test_stream output1("topology_test_1_iterators_1.txt", true);
     CTopology::TaskInfoIteratorPair_t taskIt1 =
-        topology.getTaskInfoIterator([](const CTopology::TaskInfoIterator_t::value_type& value) -> bool
-                                     {
-                                         TaskPtr_t task = value.second.m_task;
-                                         return (task->getId() == "task1");
-                                     });
+        topology.getTaskInfoIterator([](const CTopology::TaskInfoIterator_t::value_type& value) -> bool {
+            TaskPtr_t task = value.second.m_task;
+            return (task->getId() == "task1");
+        });
     check_topology_iterator_task(taskIt1, output1);
 
     output_test_stream output2("topology_test_1_iterators_2.txt", true);
@@ -132,11 +131,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
     // Task collection iterators
     output_test_stream output3("topology_test_1_iterators_3.txt", true);
     CTopology::TaskCollectionIteratorPair_t tcIt1 =
-        topology.getTaskCollectionIterator([](CTopology::TaskCollectionIterator_t::value_type value) -> bool
-                                           {
-                                               TaskCollectionPtr_t tc = value.second;
-                                               return (tc->getId() == "collection1");
-                                           });
+        topology.getTaskCollectionIterator([](CTopology::TaskCollectionIterator_t::value_type value) -> bool {
+            TaskCollectionPtr_t tc = value.second;
+            return (tc->getId() == "collection1");
+        });
     check_topology_iterator_collection(tcIt1, output3);
 
     output_test_stream output4("topology_test_1_iterators_4.txt", true);

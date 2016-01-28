@@ -10,7 +10,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 #
 # configure files
-# 
+#
 configure_file( ${dds-agent_SOURCE_DIR}/src/version.h.in ${dds-agent_BINARY_DIR}/version.h @ONLY )
 
 #
@@ -38,7 +38,7 @@ set( HEADER_FILES
 include_directories(
 	${dds-agent_BINARY_DIR}
 	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} 
+	${Boost_INCLUDE_DIRS}
 )
 
 #
@@ -54,7 +54,7 @@ target_link_libraries (
 	dds-agent
 	dds-protocol-lib
 	dds-user-defaults-lib
-	dds-key-value-lib
+	dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_LOG_LIBRARY}
@@ -67,7 +67,7 @@ target_include_directories(dds-commander
 	PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
-		$<TARGET_PROPERTY:dds-key-value-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-agent DESTINATION bin)
@@ -77,7 +77,7 @@ install(TARGETS dds-agent DESTINATION bin)
 #
 if (BUILD_TESTS)
     message (STATUS "Build dds-agent unit tests - YES")
- #   add_subdirectory ( ${dds-agent_SOURCE_DIR}/tests ) 
+ #   add_subdirectory ( ${dds-agent_SOURCE_DIR}/tests )
 else (BUILD_TESTS)
     message (STATUS "Build dds-agent unit tests - NO")
 endif (BUILD_TESTS)

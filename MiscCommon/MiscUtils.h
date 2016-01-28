@@ -6,8 +6,8 @@
 #define MISCUTILS_H
 
 // STD
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
 /**
  *

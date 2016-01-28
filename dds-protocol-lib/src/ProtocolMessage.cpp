@@ -3,9 +3,9 @@
 //
 //
 #include "ProtocolMessage.h"
-#include "ProtocolCommands.h"
 #include "HexView.h"
 #include "INet.h"
+#include "ProtocolCommands.h"
 
 using namespace dds;
 using namespace dds::protocol_api;

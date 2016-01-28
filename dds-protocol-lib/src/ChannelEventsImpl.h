@@ -5,8 +5,8 @@
 #ifndef DDS_ChannelEventsImpl_h
 #define DDS_ChannelEventsImpl_h
 // BOOST
-#include <boost/signals2/signal.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
+#include <boost/signals2/signal.hpp>
 
 namespace dds
 {

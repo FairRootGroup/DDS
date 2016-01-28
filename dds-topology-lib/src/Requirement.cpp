@@ -7,8 +7,8 @@
 #include "Requirement.h"
 #include "TopoUtils.h"
 // STD
-#include <iostream>
 #include <boost/regex.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace boost::property_tree;

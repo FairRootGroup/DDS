@@ -3,18 +3,18 @@
 //
 //
 // API
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 // STD
 #include <iostream>
 #include <string>
 // DDS
-#include "version.h"
 #include "Res.h"
 #include "SysHelper.h"
+#include "version.h"
 
 using namespace std;
 using namespace MiscCommon;

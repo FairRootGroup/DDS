@@ -7,8 +7,8 @@
 #define __DDS__InfoChannel__
 // DDS
 #include "ClientChannelImpl.h"
-#include "Options.h"
 #include "GetPropValuesCmd.h"
+#include "Options.h"
 
 namespace dds
 {
@@ -19,35 +19,29 @@ namespace dds
             CInfoChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
-                                 [this](CInfoChannel* _channel)
-                                 {
-                                     // ask the server what we wnated to ask :)
-                                     if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
-                                         pushMsg<protocol_api::cmdGED_PID>();
-                                     else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
-                                         pushMsg<protocol_api::cmdGET_AGENTS_INFO>();
-                                     else if (m_options.m_bNeedPropList)
-                                         pushMsg<protocol_api::cmdGET_PROP_LIST>();
-                                     else if (m_options.m_bNeedPropValues)
-                                     {
-                                         protocol_api::SGetPropValuesCmd cmd;
-                                         cmd.m_sPropertyID = m_options.m_propertyID;
-                                         pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
-                                     }
-                                 });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CInfoChannel* _channel) {
+                    // ask the server what we wnated to ask :)
+                    if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
+                        pushMsg<protocol_api::cmdGED_PID>();
+                    else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
+                        pushMsg<protocol_api::cmdGET_AGENTS_INFO>();
+                    else if (m_options.m_bNeedPropList)
+                        pushMsg<protocol_api::cmdGET_PROP_LIST>();
+                    else if (m_options.m_bNeedPropValues)
+                    {
+                        protocol_api::SGetPropValuesCmd cmd;
+                        cmd.m_sPropertyID = m_options.m_propertyID;
+                        pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
+                    }
+                });
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnConnected,
-                                 [this](CInfoChannel* _channel)
-                                 {
-                                     LOG(MiscCommon::info) << "Connected to the commander server";
-                                 });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnConnected, [this](CInfoChannel* _channel) {
+                    LOG(MiscCommon::info) << "Connected to the commander server";
+                });
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
-                                 [this](CInfoChannel* _channel)
-                                 {
-                                     LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-                                 });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect, [this](CInfoChannel* _channel) {
+                    LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
+                });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

@@ -6,8 +6,8 @@
 #define DDS_DDSHELPER_H
 
 // DDS
-#include "UserDefaults.h"
 #include "Logger.h"
+#include "UserDefaults.h"
 
 // BOOST
 #include <boost/property_tree/ptree.hpp>

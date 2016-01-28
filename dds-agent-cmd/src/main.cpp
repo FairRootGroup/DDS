@@ -4,9 +4,9 @@
 //
 // DDS
 #include "UserDefaults.h"
+#include "DDSHelper.h"
 #include "GenericChannel.h"
 #include "Options.h"
-#include "DDSHelper.h"
 
 using namespace std;
 using namespace MiscCommon;

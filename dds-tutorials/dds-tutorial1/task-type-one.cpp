@@ -1,12 +1,12 @@
 // DDS
-#include "KeyValue.h"
+#include "dds_intercom.h"
 // STD
-#include <vector>
-#include <iostream>
-#include <exception>
-#include <sstream>
 #include <condition_variable>
+#include <exception>
+#include <iostream>
+#include <sstream>
 #include <thread>
+#include <vector>
 // BOOST
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -18,7 +18,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::key_value;
 namespace bpo = boost::program_options;
 
 // IDs of the DDS properties.
@@ -51,35 +50,31 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue ddsKeyValue;
+        CKeyValue keyValue;
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        ddsKeyValue.subscribeError([](const string& _msg)
-                                   {
-                                       cerr << "DDS key-value error: " << _msg;
-                                   });
+        keyValue.subscribeError([](const string& _msg) { cerr << "DDS key-value error: " << _msg; });
 
         // Put task index property
-        if (0 != ddsKeyValue.putValue(TaskIndexPropertyName, optTaskIndex))
+        if (0 != keyValue.putValue(TaskIndexPropertyName, optTaskIndex))
         {
-            cerr << "DDS key-value putValue failed: key=" << TaskIndexPropertyName << " value=" << optTaskIndex << endl;
+            cerr << "DDS ddsIntercom putValue failed: key=" << TaskIndexPropertyName << " value=" << optTaskIndex
+                 << endl;
         }
 
         // Subscribe on key update events
-        ddsKeyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
-                              {
-                                  keyCondition.notify_all();
-                              });
+        keyValue.subscribe(
+            [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
 
         CKeyValue::valuesMap_t values;
-        ddsKeyValue.getValues(ReplyPropertyName, &values);
+        keyValue.getValues(ReplyPropertyName, &values);
         // We expect to receive one property from server.
         while (values.size() == 0)
         {
             unique_lock<mutex> lock(keyMutex);
             keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
-            ddsKeyValue.getValues(ReplyPropertyName, &values);
+            keyValue.getValues(ReplyPropertyName, &values);
         }
 
         // Emulate data procesing of the task

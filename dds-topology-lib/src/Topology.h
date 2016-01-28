@@ -7,15 +7,15 @@
 #define __DDS__Topology__
 
 // DDS Topo
-#include "TopoIndex.h"
-#include "TaskGroup.h"
-#include "TaskCollection.h"
-#include "TopoElement.h"
 #include "Task.h"
+#include "TaskCollection.h"
+#include "TaskGroup.h"
+#include "TopoElement.h"
+#include "TopoIndex.h"
 // STD
+#include <map>
 #include <ostream>
 #include <string>
-#include <map>
 // BOOST
 #include <boost/iterator/filter_iterator.hpp>
 

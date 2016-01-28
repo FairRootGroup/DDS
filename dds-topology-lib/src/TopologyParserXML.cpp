@@ -5,21 +5,21 @@
 
 // DDS
 #include "TopologyParserXML.h"
-#include "Task.h"
-#include "TaskGroup.h"
-#include "TaskCollection.h"
-#include "UserDefaults.h"
 #include "FindCfgFile.h"
+#include "Task.h"
+#include "TaskCollection.h"
+#include "TaskGroup.h"
 #include "TopoVars.h"
+#include "UserDefaults.h"
 // STL
 #include <map>
 // SYSTEM
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 // BOOST
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/filesystem.hpp>
 
 // silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900

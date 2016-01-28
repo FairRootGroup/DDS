@@ -1,13 +1,13 @@
 // DDS
-#include "KeyValue.h"
 #include "Logger.h"
+#include "dds_intercom.h"
 // STD
-#include <vector>
-#include <iostream>
-#include <exception>
-#include <sstream>
 #include <condition_variable>
+#include <exception>
+#include <iostream>
+#include <sstream>
 #include <thread>
+#include <vector>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -16,7 +16,6 @@
 using namespace std;
 using namespace dds;
 using namespace dds::user_defaults_api;
-using namespace dds::key_value;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
@@ -62,16 +61,13 @@ int main(int argc, char* argv[])
 
         const vector<string> propNames_1 = { "property_6", "property_7", "property_8", "property_9", "property_10" };
 
-        CKeyValue ddsKeyValue;
+        CKeyValue keyValue;
         mutex keyMutex;
         condition_variable keyCondition;
 
         if (testErrors)
         {
-            ddsKeyValue.subscribeError([&keyCondition](const string& _msg)
-                                       {
-                                           LOG(error) << "Key-value error: " << _msg;
-                                       });
+            keyValue.subscribeError([&keyCondition](const string& _msg) { LOG(error) << "Key-value error: " << _msg; });
         }
 
         LOG(info) << "Start task with type " << type;
@@ -89,7 +85,7 @@ int main(int argc, char* argv[])
                 const auto& writePropNames = (type == 0) ? propNames_0 : propNames_1;
                 for (const auto& prop : writePropNames)
                 {
-                    if (0 != ddsKeyValue.putValue(prop, writePropValue))
+                    if (0 != keyValue.putValue(prop, writePropValue))
                     {
                         LOG(fatal) << "putValue failed.";
                     }
@@ -101,11 +97,11 @@ int main(int argc, char* argv[])
                 if (testErrors)
                 {
                     LOG(info) << "Iteration " << i << " sending wrong properties.";
-                    ddsKeyValue.putValue("non_existing_property", "non_existing_property_name");
+                    keyValue.putValue("non_existing_property", "non_existing_property_name");
                     const auto& readonlyPropNames = (type == 0) ? propNames_1 : propNames_0;
                     for (const auto& prop : readonlyPropNames)
                     {
-                        if (0 != ddsKeyValue.putValue(prop, writePropValue))
+                        if (0 != keyValue.putValue(prop, writePropValue))
                         {
                             LOG(fatal) << "putValue failed.";
                         }
@@ -118,16 +114,14 @@ int main(int argc, char* argv[])
                 LOG(info) << "Iteration " << i << " subscribe on property updates.";
 
                 // Subscribe on key update events
-                ddsKeyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
-                                      {
-                                          keyCondition.notify_all();
-                                      });
+                keyValue.subscribe(
+                    [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
 
                 const auto& readPropNames = (type == 0) ? propNames_1 : propNames_0;
                 for (const auto& prop : readPropNames)
                 {
                     CKeyValue::valuesMap_t values;
-                    ddsKeyValue.getValues(prop, &values);
+                    keyValue.getValues(prop, &values);
                     string value = to_string(i);
 
                     size_t counter = 0;
@@ -141,7 +135,7 @@ int main(int argc, char* argv[])
                     {
                         unique_lock<mutex> lock(keyMutex);
                         keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
-                        ddsKeyValue.getValues(prop, &values);
+                        keyValue.getValues(prop, &values);
 
                         counter = 0;
                         for (const auto& v : values)

@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 // STD
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace MiscCommon
 {

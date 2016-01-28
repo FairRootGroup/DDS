@@ -5,8 +5,8 @@
 
 // DDS
 #include "GenericChannel.h"
-#include "UpdateKeyCmd.h"
 #include "ProgressDisplay.h"
+#include "UpdateKeyCmd.h"
 
 using namespace MiscCommon;
 using namespace dds;

@@ -28,8 +28,8 @@
 #pragma GCC diagnostic warning "-Wunused-variable"
 #endif
 
-#include <boost/shared_ptr.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <boost/shared_ptr.hpp>
 // MiscCommon
 #include "MiscUtils.h"
 

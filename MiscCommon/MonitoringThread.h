@@ -12,8 +12,8 @@
 // STL
 #include <chrono>
 #include <functional>
-#include <thread>
 #include <mutex>
+#include <thread>
 // API
 #include <csignal>
 
@@ -53,105 +53,100 @@ namespace dds
 
             m_startIdleTime = std::chrono::steady_clock::now();
 
-            std::thread t(
-                [this, &_idleCallback, _idleTime]()
+            std::thread t([this, &_idleCallback, _idleTime]() {
+                try
                 {
-                    try
+                    std::chrono::seconds secInterval(0);
+                    while (true)
                     {
-                        std::chrono::seconds secInterval(0);
-                        while (true)
+                        // handle exceptions of the custom actions separately to prevent breaks of the
+                        // monitoring thread
+                        try
                         {
-                            // handle exceptions of the custom actions separately to prevent breaks of the
+                            std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
+                            // Call registered callback functions
+                            // We use Erase-remove idiom to execute callback and remove expired if needed.
+                            m_registeredCallbackFunctions.erase(
+                                remove_if(m_registeredCallbackFunctions.begin(),
+                                          m_registeredCallbackFunctions.end(),
+                                          [&](callbackValue_t& i) {
+                                              // A callback function can return
+                                              // false, which
+                                              // means it wants to be unregistered
+                                              // (expire)
+                                              const int nCurInterval = std::chrono::duration<int>(secInterval).count();
+                                              const int nInterval = std::chrono::duration<int>(i.second).count();
+                                              if (nCurInterval != 0 && nCurInterval >= nInterval &&
+                                                  0 == (nCurInterval % nInterval))
+                                              {
+                                                  LOG(MiscCommon::debug)
+                                                      << "MONITORING: calling callback at interval of "
+                                                      << std::chrono::duration<int>(i.second).count();
+                                                  return (!i.first());
+                                              }
+                                              return false;
+                                          }),
+                                m_registeredCallbackFunctions.end());
+                        }
+                        catch (std::exception& _e)
+                        {
+                            LOG(MiscCommon::error) << "MonitoringThread exception on custom actions: " << _e.what();
+                        }
+                        catch (...)
+                        {
+                            // Ignore any exception here to let the monitoring thread continue whatever it takes
+                        }
+
+                        std::chrono::seconds idleTime;
+                        // Check if process is idle.
+                        {
+                            std::lock_guard<std::mutex> lock(m_mutex);
+                            std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+                            idleTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startIdleTime);
+                        }
+
+                        if (idleTime.count() > _idleTime)
+                        {
+                            // First call idle callback
+                            LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
+                                                  << " sec. Call idle callback and wait "
+                                                  << std::chrono::duration<int>(WAITING_TIME).count() << "s";
+                            // handle exceptions of the custom idle callback separately to prevent breaks of the
                             // monitoring thread
                             try
                             {
-                                std::lock_guard<std::mutex> lock(m_registeredCallbackFunctionsMutex);
-                                // Call registered callback functions
-                                // We use Erase-remove idiom to execute callback and remove expired if needed.
-                                m_registeredCallbackFunctions.erase(
-                                    remove_if(m_registeredCallbackFunctions.begin(),
-                                              m_registeredCallbackFunctions.end(),
-                                              [&](callbackValue_t& i)
-                                              {
-                                                  // A callback function can return
-                                                  // false, which
-                                                  // means it wants to be unregistered
-                                                  // (expire)
-                                                  const int nCurInterval =
-                                                      std::chrono::duration<int>(secInterval).count();
-                                                  const int nInterval = std::chrono::duration<int>(i.second).count();
-                                                  if (nCurInterval != 0 && nCurInterval >= nInterval &&
-                                                      0 == (nCurInterval % nInterval))
-                                                  {
-                                                      LOG(MiscCommon::debug)
-                                                          << "MONITORING: calling callback at interval of "
-                                                          << std::chrono::duration<int>(i.second).count();
-                                                      return (!i.first());
-                                                  }
-                                                  return false;
-                                              }),
-                                    m_registeredCallbackFunctions.end());
+                                _idleCallback();
                             }
                             catch (std::exception& _e)
                             {
-                                LOG(MiscCommon::error) << "MonitoringThread exception on custom actions: " << _e.what();
+                                LOG(MiscCommon::error) << "MonitoringThread exception on custom idle function: "
+                                                       << _e.what();
                             }
                             catch (...)
                             {
                                 // Ignore any exception here to let the monitoring thread continue whatever it takes
                             }
+                            std::this_thread::sleep_for(WAITING_TIME);
 
-                            std::chrono::seconds idleTime;
-                            // Check if process is idle.
-                            {
-                                std::lock_guard<std::mutex> lock(m_mutex);
-                                std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
-                                idleTime =
-                                    std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startIdleTime);
-                            }
+                            // Call terminate
+                            LOG(MiscCommon::info) << "Sending SIGTERM to this process...";
+                            std::raise(SIGTERM);
+                            std::this_thread::sleep_for(WAITING_TIME);
 
-                            if (idleTime.count() > _idleTime)
-                            {
-                                // First call idle callback
-                                LOG(MiscCommon::info) << "The process is idle for " << idleTime.count()
-                                                      << " sec. Call idle callback and wait "
-                                                      << std::chrono::duration<int>(WAITING_TIME).count() << "s";
-                                // handle exceptions of the custom idle callback separately to prevent breaks of the
-                                // monitoring thread
-                                try
-                                {
-                                    _idleCallback();
-                                }
-                                catch (std::exception& _e)
-                                {
-                                    LOG(MiscCommon::error) << "MonitoringThread exception on custom idle function: "
-                                                           << _e.what();
-                                }
-                                catch (...)
-                                {
-                                    // Ignore any exception here to let the monitoring thread continue whatever it takes
-                                }
-                                std::this_thread::sleep_for(WAITING_TIME);
-
-                                // Call terminate
-                                LOG(MiscCommon::info) << "Sending SIGTERM to this process...";
-                                std::raise(SIGTERM);
-                                std::this_thread::sleep_for(WAITING_TIME);
-
-                                // Kill process
-                                LOG(MiscCommon::info) << "The process still exists. Killing the process...";
-                                killProcess();
-                            }
-
-                            std::this_thread::sleep_for(INTERVAL_STEP);
-                            secInterval += INTERVAL_STEP;
+                            // Kill process
+                            LOG(MiscCommon::info) << "The process still exists. Killing the process...";
+                            killProcess();
                         }
+
+                        std::this_thread::sleep_for(INTERVAL_STEP);
+                        secInterval += INTERVAL_STEP;
                     }
-                    catch (std::exception& _e)
-                    {
-                        LOG(MiscCommon::error) << "MonitoringThread exception: " << _e.what();
-                    }
-                });
+                }
+                catch (std::exception& _e)
+                {
+                    LOG(MiscCommon::error) << "MonitoringThread exception: " << _e.what();
+                }
+            });
             t.detach();
         }
 

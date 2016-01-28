@@ -6,13 +6,13 @@
 #define SYSHELPER_H_
 
 // API
-#include <pwd.h>
-#include <netdb.h>
-#include <sys/syscall.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <netdb.h>
+#include <pwd.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
 #include <unistd.h>
 #ifdef __APPLE__
 #include <sys/sysctl.h>
@@ -27,9 +27,9 @@
 #endif
 
 // MiscCommon
-#include "def.h"
-#include "MiscUtils.h"
 #include "ErrorCode.h"
+#include "MiscUtils.h"
+#include "def.h"
 
 namespace MiscCommon
 {
@@ -191,8 +191,7 @@ namespace MiscCommon
     inline unsigned long gettid()
     {
 #ifdef __APPLE__
-        union
-        {
+        union {
             pthread_t th;
             unsigned long int i;
         } v = {};

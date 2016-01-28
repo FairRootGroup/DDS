@@ -5,8 +5,8 @@
 // DDS
 #include "ErrorCode.h"
 #include "ConnectionManager.h"
-#include "SysHelper.h"
 #include "INet.h"
+#include "SysHelper.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 

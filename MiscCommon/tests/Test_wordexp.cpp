@@ -7,9 +7,9 @@
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
-#include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 #include "wordexp.h"
+#include <boost/filesystem.hpp>
+#include <boost/test/unit_test.hpp>
 
 using namespace std;
 

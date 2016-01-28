@@ -5,25 +5,25 @@
 #ifndef COMMANDATTACHMENTIMPL_H
 #define COMMANDATTACHMENTIMPL_H
 // DDS
-#include "ProtocolCommands.h"
-#include "ProtocolMessage.h"
 #include "AgentsInfoCmd.h"
-#include "SimpleMsgCmd.h"
-#include "UUIDCmd.h"
 #include "AssignUserTaskCmd.h"
 #include "BinaryAttachmentCmd.h"
-#include "HostInfoCmd.h"
-#include "SubmitCmd.h"
-#include "VersionCmd.h"
 #include "BinaryAttachmentReceivedCmd.h"
 #include "BinaryAttachmentStartCmd.h"
-#include "UpdateKeyCmd.h"
-#include "ProgressCmd.h"
-#include "UserTaskDoneCmd.h"
+#include "CustomCmdCmd.h"
 #include "DeleteKeyCmd.h"
 #include "GetPropValuesCmd.h"
+#include "HostInfoCmd.h"
+#include "ProgressCmd.h"
+#include "ProtocolCommands.h"
+#include "ProtocolMessage.h"
 #include "SetTopologyCmd.h"
-#include "CustomCmdCmd.h"
+#include "SimpleMsgCmd.h"
+#include "SubmitCmd.h"
+#include "UUIDCmd.h"
+#include "UpdateKeyCmd.h"
+#include "UserTaskDoneCmd.h"
+#include "VersionCmd.h"
 
 #define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
     template <>                                                                         \

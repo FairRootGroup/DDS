@@ -10,8 +10,8 @@
 #include "TaskGroup.h"
 #include "TopoVars.h"
 // STD
-#include <string>
 #include <map>
+#include <string>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 

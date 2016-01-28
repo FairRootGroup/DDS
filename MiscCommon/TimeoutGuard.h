@@ -6,8 +6,8 @@
 #define TIMEOUTGUARD_H_
 
 // MiscCommon
-#include "Process.h"
 #include "BOOSTHelper.h"
+#include "Process.h"
 
 namespace MiscCommon
 {

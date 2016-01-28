@@ -1,11 +1,11 @@
 // DDS
-#include "CustomCmd.h"
+#include "dds_intercom.h"
 // STD
-#include <iostream>
+#include <atomic>
 #include <exception>
+#include <iostream>
 #include <sstream>
 #include <thread>
-#include <atomic>
 // BOOST
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -17,7 +17,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace custom_cmd;
 namespace bpo = boost::program_options;
 
 int main(int argc, char* argv[])
@@ -33,28 +32,25 @@ int main(int argc, char* argv[])
         bpo::store(bpo::command_line_parser(argc, argv).options(options).run(), vm);
         bpo::notify(vm);
 
-        CCustomCmd ddsCustomCmd;
+        CCustomCmd customCmd;
         atomic<size_t> counterCmdMessages(0);
         atomic<size_t> counterReplyMessages(0);
 
-        ddsCustomCmd.subscribeCmd(
-            [&counterCmdMessages](const string& _command, const string& _condition, uint64_t _senderId)
-            {
+        customCmd.subscribe(
+            [&counterCmdMessages](const string& _command, const string& _condition, uint64_t _senderId) {
                 cout << "Received custom command " << counterCmdMessages << " : " << _command
                      << " condition: " << _condition << " senderId: " << _senderId << endl;
                 counterCmdMessages++;
             });
 
-        ddsCustomCmd.subscribeReply([&counterReplyMessages](const string& _msg)
-                                    {
-                                        cout << "Received reply message " << counterReplyMessages << " : " << _msg
-                                             << endl;
-                                        counterReplyMessages++;
-                                    });
+        customCmd.subscribeReply([&counterReplyMessages](const string& _msg) {
+            cout << "Received reply message " << counterReplyMessages << " : " << _msg << endl;
+            counterReplyMessages++;
+        });
 
         while (true)
         {
-            int result = ddsCustomCmd.sendCmd("please-reply-ui", "");
+            int result = customCmd.send("please-reply-ui", "");
 
             if (result == 1)
             {

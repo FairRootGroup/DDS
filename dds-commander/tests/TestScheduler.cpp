@@ -7,13 +7,13 @@
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
-#include <boost/test/unit_test.hpp>
 #include <boost/test/output_test_stream.hpp>
+#include <boost/test/unit_test.hpp>
 // DDS
-#include "Topology.h"
-#include "SSHScheduler.h"
 #include "AgentChannel.h"
 #include "HostInfoCmd.h"
+#include "SSHScheduler.h"
+#include "Topology.h"
 // MiscCommon
 #include "TimeMeasure.h"
 // BOOST
@@ -72,10 +72,8 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 
     CSSHScheduler scheduler;
 
-    auto execTime = STimeMeasure<std::chrono::microseconds>::execution([&scheduler, &topology, &weakAgents]()
-                                                                       {
-                                                                           scheduler.makeSchedule(topology, weakAgents);
-                                                                       });
+    auto execTime = STimeMeasure<std::chrono::microseconds>::execution(
+        [&scheduler, &topology, &weakAgents]() { scheduler.makeSchedule(topology, weakAgents); });
     double execTimeSeconds = execTime * 1e-6;
 
     BOOST_CHECK(execTimeSeconds < 3.0);
@@ -90,11 +88,9 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
         hostInfo.m_host = "nohost";
         agent->setRemoteHostInfo(hostInfo);
     }
-    auto execFailTime = STimeMeasure<std::chrono::microseconds>::execution(
-        [&scheduler, &topology, &weakAgents]()
-        {
-            BOOST_CHECK_THROW(scheduler.makeSchedule(topology, weakAgents), runtime_error);
-        });
+    auto execFailTime = STimeMeasure<std::chrono::microseconds>::execution([&scheduler, &topology, &weakAgents]() {
+        BOOST_CHECK_THROW(scheduler.makeSchedule(topology, weakAgents), runtime_error);
+    });
     double execFailTimeSeconds = execFailTime * 1e-6;
 
     BOOST_CHECK(execFailTimeSeconds < 0.1);

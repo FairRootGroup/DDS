@@ -1,14 +1,14 @@
 // DDS
-#include "KeyValue.h"
-#include "Logger.h"
 #include "DDSEnvProp.h"
+#include "Logger.h"
+#include "dds_intercom.h"
 // STD
-#include <vector>
-#include <iostream>
-#include <exception>
-#include <sstream>
 #include <condition_variable>
+#include <exception>
+#include <iostream>
+#include <sstream>
 #include <thread>
+#include <vector>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -16,7 +16,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::key_value;
 using namespace dds::dds_env_prop;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
@@ -73,7 +72,7 @@ int main(int argc, char* argv[])
         // The test workflow
         // #1.
 
-        CKeyValue ddsKeyValue;
+        CKeyValue keyValue;
         mutex keyMutex;
         condition_variable keyCondition;
 
@@ -85,9 +84,8 @@ int main(int argc, char* argv[])
         container_t valContainer;
 
         // Subscribe on key update events
-        ddsKeyValue.subscribe(
-            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value)
-            {
+        keyValue.subscribe(
+            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value) {
                 LOG(debug) << "USER TASK received key update notification";
                 {
                     unique_lock<mutex> lk(keyMutex);
@@ -114,7 +112,7 @@ int main(int argc, char* argv[])
         {
             LOG(debug) << "USER TASK is going to set new value " << i;
             const string sCurValue = to_string(i);
-            const int retVal = ddsKeyValue.putValue(sKey, sCurValue);
+            const int retVal = keyValue.putValue(sKey, sCurValue);
             LOG(debug) << "USER TASK put value return code: " << retVal;
         }
 

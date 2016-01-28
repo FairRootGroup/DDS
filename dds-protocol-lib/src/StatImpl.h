@@ -5,20 +5,20 @@
 #ifndef __DDS__StatImpl__
 #define __DDS__StatImpl__
 
-#include <mutex>
-#include <deque>
 #include <atomic>
+#include <deque>
 #include <map>
+#include <mutex>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
-#include <boost/asio.hpp>
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/sum.hpp>
 #include <boost/accumulators/statistics/count.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/sum.hpp>
+#include <boost/asio.hpp>
 #pragma clang diagnostic pop
 
 #include "ProtocolMessage.h"

@@ -21,8 +21,8 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 // pod-ssh
-#include "version.h"
 #include "config.h"
+#include "version.h"
 //=============================================================================
 using namespace std;
 using namespace dds;

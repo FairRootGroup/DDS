@@ -20,13 +20,13 @@ add_executable(task-custom-cmd ${TUTSRV_SOURCE_FILES})
 
 target_link_libraries (
 	task-custom-cmd
-    dds-custom-cmd-lib
+    dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 target_include_directories(task-custom-cmd
    PRIVATE
-     $<TARGET_PROPERTY:dds-custom-cmd-lib,INTERFACE_INCLUDE_DIRECTORIES>
+     $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS task-custom-cmd DESTINATION tutorials/tutorial2)
@@ -43,13 +43,13 @@ add_executable(ui-custom-cmd ${TUTSRV_SOURCE_FILES})
 
 target_link_libraries (
 	ui-custom-cmd
-    dds-custom-cmd-lib
+    dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 target_include_directories(ui-custom-cmd
    PRIVATE
-     $<TARGET_PROPERTY:dds-custom-cmd-lib,INTERFACE_INCLUDE_DIRECTORIES>
+     $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS ui-custom-cmd DESTINATION tutorials/tutorial2)

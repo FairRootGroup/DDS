@@ -20,13 +20,13 @@ add_executable(task-type-one ${TUTSRV_SOURCE_FILES})
 
 target_link_libraries (
 	task-type-one
-	dds-key-value-lib
+	dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 target_include_directories(task-type-one
     PRIVATE
-        $<TARGET_PROPERTY:dds-key-value-lib,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS task-type-one DESTINATION tutorials/tutorial1)
@@ -43,13 +43,13 @@ add_executable(task-type-two ${TUTCLN_SOURCE_FILES})
 
 target_link_libraries (
 	task-type-two
-	dds-key-value-lib
+	dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 target_include_directories(task-type-two
     PRIVATE
-        $<TARGET_PROPERTY:dds-key-value-lib,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS task-type-two DESTINATION tutorials/tutorial1)

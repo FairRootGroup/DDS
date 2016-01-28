@@ -6,8 +6,8 @@
 #define __DDS__BasicCmd__
 
 // MiscCommon
-#include "def.h"
 #include "INet.h"
+#include "def.h"
 // STD
 #include <sstream>
 #include <string>

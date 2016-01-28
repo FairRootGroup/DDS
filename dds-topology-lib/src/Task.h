@@ -7,12 +7,12 @@
 #define __DDS__Task__
 
 // DDS
+#include "Requirement.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
-#include "Requirement.h"
 // STD
-#include <string>
 #include <memory>
+#include <string>
 
 namespace dds
 {

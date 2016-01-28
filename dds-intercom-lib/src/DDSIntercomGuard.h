@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef DDS_KeyValueGuard_h
-#define DDS_KeyValueGuard_h
+#ifndef DDSINTERCOMGUARD_H
+#define DDSINTERCOMGUARD_H
 // DDS
 #include "AgentConnectionManager.h"
 // STD
@@ -15,18 +15,18 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/interprocess/sync/named_mutex.hpp>
 #pragma clang diagnostic pop
-#include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/streams/vectorstream.hpp>
 
 namespace dds
 {
-    namespace key_value_api
+    namespace internal_api
     {
-        typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
-        typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
-        typedef boost::signals2::connection connection_t;
+        // Key-value types
+        typedef boost::signals2::signal<void(const std::string&, const std::string&)> keyValueSignal_t;
+        typedef boost::signals2::signal<void(const std::string&)> keyValueErrorSignal_t;
         typedef std::shared_ptr<boost::interprocess::named_mutex> sharedMemoryMutexPtr_t;
         typedef std::shared_ptr<boost::interprocess::managed_shared_memory> managedSharedMemoryPtr_t;
         typedef boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager>
@@ -35,24 +35,41 @@ namespace dds
             sharedMemoryString_t;
         typedef boost::interprocess::basic_vectorstream<sharedMemoryString_t> sharedMemoryVectorStream_t;
 
+        // Custom command types
+        typedef boost::signals2::signal<void(const std::string&, const std::string&, uint64_t)> customCmdSignal_t;
+        typedef boost::signals2::signal<void(const std::string&)> customCmdReplySignal_t;
+
+        typedef boost::signals2::connection connection_t;
+
         struct SSyncHelper
         {
-            signal_t m_updateSig;
-            errorSignal_t m_errorSig;
+            keyValueSignal_t m_keyValueUpdateSig;
+            keyValueErrorSignal_t m_keyValueErrorSig;
+            customCmdSignal_t m_customCmdSignal;
+            customCmdReplySignal_t m_customCmdReplySignal;
         };
 
-        class CKeyValueGuard
+        class CDDSIntercomGuard
         {
             typedef std::shared_ptr<CAgentConnectionManager> AgentConnectionManagerPtr_t;
+
             typedef std::map<std::string, std::string> valuesMap_t;
             typedef std::vector<std::pair<std::string, std::string>> valuesVector_t;
 
           private:
-            CKeyValueGuard();
-            ~CKeyValueGuard();
+            CDDSIntercomGuard();
+            ~CDDSIntercomGuard();
 
           public:
-            static CKeyValueGuard& instance();
+            static CDDSIntercomGuard& instance();
+
+            connection_t connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber);
+            connection_t connectCustomCmdReply(customCmdReplySignal_t::slot_function_type _subscriber);
+            void disconnectCustomCmd();
+            void disconnectKeyValue();
+
+            int sendCustomCmd(const protocol_api::SCustomCmdCmd& _command);
+
             void createStorage();
             void initLock();
             void putValue(const std::string& _key, const std::string& _value, const std::string& _taskId);
@@ -63,40 +80,22 @@ namespace dds
             void getValues(const std::string& _key, valuesMap_t* _values);
             int updateKey(const protocol_api::SUpdateKeyCmd& _cmd);
             void deleteKey(const std::string& _key);
-            connection_t connect(signal_t::slot_function_type _subscriber)
-            {
-                return m_syncHelper.m_updateSig.connect(_subscriber);
-            }
-            void disconnect()
-            {
-                return m_syncHelper.m_updateSig.disconnect_all_slots();
-            }
-            connection_t connectError(errorSignal_t::slot_function_type _subscriber)
-            {
-                return m_syncHelper.m_errorSig.connect(_subscriber);
-            }
-            void disconnectError()
-            {
-                return m_syncHelper.m_errorSig.disconnect_all_slots();
-            }
+            connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
+            connection_t connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber);
             static void clean();
 
-            // User API
             void initAgentConnection();
 
           public:
             SSyncHelper m_syncHelper;
 
           private:
-            const std::string getCfgFilePath() const;
-
-          private:
             AgentConnectionManagerPtr_t m_agentConnectionMng;
+            std::mutex m_initAgentConnectionMutex;
+
             std::string m_sCfgFilePath;
             sharedMemoryMutexPtr_t m_sharedMemoryMutex;
             managedSharedMemoryPtr_t m_sharedMemory;
-
-            std::mutex m_initAgentConnectionMutex;
         };
     }
 }

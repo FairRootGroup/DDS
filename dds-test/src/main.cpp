@@ -4,12 +4,12 @@
 //
 // DDS
 #include "Process.h"
-#include "TestChannel.h"
-#include "UserDefaults.h"
-#include "SysHelper.h"
+#include "DDSHelper.h"
 #include "INet.h"
 #include "Options.h"
-#include "DDSHelper.h"
+#include "SysHelper.h"
+#include "TestChannel.h"
+#include "UserDefaults.h"
 
 using namespace std;
 using namespace MiscCommon;

@@ -6,12 +6,12 @@
 #define DEF_H
 
 // STD
-#include <string>
-#include <set>
-#include <vector>
-#include <map>
-#include <sstream>
 #include <array>
+#include <map>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 // BOOST
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"

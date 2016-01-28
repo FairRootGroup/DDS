@@ -10,8 +10,8 @@
 #include "ProtocolCommands.h"
 // STD
 #include <mutex>
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace dds
 {

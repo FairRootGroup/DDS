@@ -6,6 +6,7 @@
 #define DDSENVPROP_H_
 
 // STD
+#include <cstdlib>
 #include <string>
 
 namespace dds

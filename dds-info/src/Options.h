@@ -9,9 +9,9 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "version.h"
-#include "Res.h"
 #include "ProtocolCommands.h"
+#include "Res.h"
+#include "version.h"
 // STD
 #include <string>
 //=============================================================================
@@ -88,12 +88,10 @@ namespace dds
             bpo::notify(vm);
 
             // check for non-defaulted arguments
-            bpo::variables_map::const_iterator found = find_if(vm.begin(),
-                                                               vm.end(),
-                                                               [](const bpo::variables_map::value_type& _v)
-                                                               {
-                                                                   return (!_v.second.defaulted());
-                                                               });
+            bpo::variables_map::const_iterator found =
+                find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v) {
+                    return (!_v.second.defaulted());
+                });
 
             if (vm.count("help") || vm.end() == found)
             {

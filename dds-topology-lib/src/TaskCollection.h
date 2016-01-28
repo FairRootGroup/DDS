@@ -7,8 +7,8 @@
 #define __DDS__TaskCollection__
 
 // DDS
-#include "TaskContainer.h"
 #include "Requirement.h"
+#include "TaskContainer.h"
 
 namespace dds
 {

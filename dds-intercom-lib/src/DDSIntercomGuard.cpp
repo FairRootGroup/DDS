@@ -3,9 +3,10 @@
 //
 //
 // DDS
-#include "KeyValueGuard.h"
-#include "UserDefaults.h"
 #include "BOOST_FILESYSTEM.h"
+#include "DDSIntercomGuard.h"
+#include "UserDefaults.h"
+
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
@@ -19,17 +20,15 @@
 #pragma clang diagnostic pop
 #endif
 
-#include <boost/interprocess/sync/scoped_lock.hpp>
-
 using namespace std;
 using namespace dds;
 using namespace dds::user_defaults_api;
-using namespace dds::key_value_api;
+using namespace dds::internal_api;
 using namespace dds::protocol_api;
 using namespace MiscCommon;
 namespace ip = boost::interprocess;
 
-CKeyValueGuard::CKeyValueGuard()
+CDDSIntercomGuard::CDDSIntercomGuard()
 {
     Logger::instance().init(); // Initialize log
 
@@ -38,17 +37,89 @@ CKeyValueGuard::CKeyValueGuard()
     m_sCfgFilePath = cfgFile.generic_string();
 }
 
-CKeyValueGuard::~CKeyValueGuard()
+CDDSIntercomGuard::~CDDSIntercomGuard()
 {
 }
 
-CKeyValueGuard& CKeyValueGuard::instance()
+CDDSIntercomGuard& CDDSIntercomGuard::instance()
 {
-    static CKeyValueGuard instance;
+    static CDDSIntercomGuard instance;
     return instance;
 }
 
-void CKeyValueGuard::createStorage()
+connection_t CDDSIntercomGuard::connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber)
+{
+    return m_syncHelper.m_customCmdSignal.connect(_subscriber);
+}
+
+connection_t CDDSIntercomGuard::connectCustomCmdReply(customCmdReplySignal_t::slot_function_type _subscriber)
+{
+    return m_syncHelper.m_customCmdReplySignal.connect(_subscriber);
+}
+
+connection_t CDDSIntercomGuard::connectKeyValue(keyValueSignal_t::slot_function_type _subscriber)
+{
+    return m_syncHelper.m_keyValueUpdateSig.connect(_subscriber);
+}
+connection_t CDDSIntercomGuard::connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber)
+{
+    return m_syncHelper.m_keyValueErrorSig.connect(_subscriber);
+}
+
+void CDDSIntercomGuard::disconnectCustomCmd()
+{
+    // disconnect custom command signals
+    m_syncHelper.m_customCmdSignal.disconnect_all_slots();
+    m_syncHelper.m_customCmdReplySignal.disconnect_all_slots();
+}
+
+void CDDSIntercomGuard::disconnectKeyValue()
+{
+    // disconnect key-value signals
+    m_syncHelper.m_keyValueUpdateSig.disconnect_all_slots();
+    m_syncHelper.m_keyValueErrorSig.disconnect_all_slots();
+}
+
+void CDDSIntercomGuard::initAgentConnection()
+{
+    lock_guard<std::mutex> lock(m_initAgentConnectionMutex);
+
+    LOG(info) << "CCDDSIntercomGuard::initAgentConnection: is going to init";
+
+    if (!m_agentConnectionMng)
+    {
+        LOG(info) << "CCDDSIntercomGuard::initAgentConnection: start init";
+
+        m_agentConnectionMng.reset();
+        m_agentConnectionMng = make_shared<CAgentConnectionManager>();
+        m_agentConnectionMng->m_syncHelper = &m_syncHelper;
+
+        try
+        {
+            m_agentConnectionMng->start();
+        }
+        catch (exception& _e)
+        {
+            LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
+        }
+    }
+}
+
+int CDDSIntercomGuard::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command)
+{
+    if (!m_agentConnectionMng)
+    {
+        LOG(error)
+            << "CCDDSIntercomGuard::sendCmd: Agent connection channel is not running. Failed to send custom command "
+            << _command;
+        return 1;
+    }
+
+    LOG(info) << "CCDDSIntercomGuard::sendCmd: sending custom command: " << _command;
+    return m_agentConnectionMng->sendCustomCmd(_command);
+}
+
+void CDDSIntercomGuard::createStorage()
 {
     // Create shared memory storage and semaphor to synchronize accesss to shared memory
 
@@ -96,7 +167,7 @@ void CKeyValueGuard::createStorage()
     }
 }
 
-void CKeyValueGuard::initLock()
+void CDDSIntercomGuard::initLock()
 {
     if (m_sharedMemoryMutex)
         return;
@@ -132,20 +203,15 @@ void CKeyValueGuard::initLock()
     }
 }
 
-const std::string CKeyValueGuard::getCfgFilePath() const
-{
-    return m_sCfgFilePath;
-}
-
-void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value, const std::string& _taskId)
+void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _value, const std::string& _taskId)
 {
     const string sKey = _key + "." + _taskId;
     putValue(sKey, _value);
 }
 
-void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value)
+void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _value)
 {
-    LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " ...";
+    LOG(debug) << "CCDDSIntercomGuard::putValue key=" << _key << " value=" << _value << " ...";
     const string sKey = _key;
     {
         try
@@ -169,7 +235,7 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
             boost::property_tree::ini_parser::write_ini(writeStream, ptsm);
 
             writeStream.swap_vector(*ptString);
-            // LOG(debug) << "CKeyValueGuard::putValue file content |" << *ptString << "|";
+            // LOG(debug) << "CCDDSIntercomGuard::putValue file content |" << *ptString << "|";
             LOG(debug) << "Finish putValue key=" << _key << " value=" << _value;
         }
         catch (const ip::interprocess_exception& _e)
@@ -177,12 +243,12 @@ void CKeyValueGuard::putValue(const std::string& _key, const std::string& _value
             LOG(fatal) << "key-value guard putValue exception: " << _e.what();
         }
     }
-    LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " done";
+    LOG(debug) << "CCDDSIntercomGuard::putValue key=" << _key << " value=" << _value << " done";
 }
 
-void CKeyValueGuard::putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values)
+void CDDSIntercomGuard::putValues(const std::vector<SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t>& _values)
 {
-    // LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " ...";
+    // LOG(debug) << "CCDDSIntercomGuard::putValue key=" << _key << " value=" << _value << " ...";
     // const string sKey = _key;
     //{
     try
@@ -209,7 +275,7 @@ void CKeyValueGuard::putValues(const std::vector<SCommandAttachmentImpl<cmdUPDAT
         boost::property_tree::ini_parser::write_ini(writeStream, ptsm);
 
         writeStream.swap_vector(*ptString);
-        // LOG(debug) << "CKeyValueGuard::putValue file content |" << *ptString << "|";
+        // LOG(debug) << "CCDDSIntercomGuard::putValue file content |" << *ptString << "|";
         // LOG(debug) << "Finish putValue key=" << _key << " value=" << _value;
     }
     catch (const ip::interprocess_exception& _e)
@@ -217,14 +283,14 @@ void CKeyValueGuard::putValues(const std::vector<SCommandAttachmentImpl<cmdUPDAT
         LOG(fatal) << "key-value guard putValues exception: " << _e.what();
     }
     // }
-    // LOG(debug) << "CKeyValueGuard::putValue key=" << _key << " value=" << _value << " done";
+    // LOG(debug) << "CCDDSIntercomGuard::putValue key=" << _key << " value=" << _value << " done";
 }
 
-void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, const std::string& _taskId)
+void CDDSIntercomGuard::getValue(const std::string& _key, std::string* _value, const std::string& _taskId)
 {
-    LOG(debug) << "CKeyValueGuard::getValue key=" << _key << " taskId=" << _taskId << " ...";
+    LOG(debug) << "CCDDSIntercomGuard::getValue key=" << _key << " taskId=" << _taskId << " ...";
     if (_value == nullptr)
-        throw invalid_argument("CKeyValueGuard::getValue: Value can't be NULL");
+        throw invalid_argument("CCDDSIntercomGuard::getValue: Value can't be NULL");
 
     const string sKey = _key + "." + _taskId;
     // TODO: Check if need this scope? Probably only for scoped_lock!
@@ -256,18 +322,19 @@ void CKeyValueGuard::getValue(const std::string& _key, std::string* _value, cons
     {
         LOG(error) << "Exception: " << ex.what();
     }
-    LOG(debug) << "CKeyValueGuard::getValue key=" << _key << " taskId=" << _taskId << " done";
+    LOG(debug) << "CCDDSIntercomGuard::getValue key=" << _key << " taskId=" << _taskId << " done";
 }
 
-void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
+void CDDSIntercomGuard::getValues(const std::string& _key, valuesMap_t* _values)
 {
-    LOG(debug) << "CKeyValueGuard::getValues key=" << _key << " ...";
+    LOG(debug) << "CCDDSIntercomGuard::getValues key=" << _key << " ...";
 
     if (!m_sharedMemoryMutex)
-        throw invalid_argument("CKeyValueGuard::getValue: can't lock shared memmory. Probably DDS agent is offline.");
+        throw invalid_argument(
+            "CCDDSIntercomGuard::getValue: can't lock shared memmory. Probably DDS agent is offline.");
 
     if (_values == nullptr)
-        throw invalid_argument("CKeyValueGuard::getValue: _values can't be NULL");
+        throw invalid_argument("CCDDSIntercomGuard::getValue: _values can't be NULL");
 
     _values->clear();
 
@@ -310,49 +377,25 @@ void CKeyValueGuard::getValues(const std::string& _key, valuesMap_t* _values)
         LOG(warning) << "key=" << _key << ": " << ex.what();
         return;
     }
-    LOG(debug) << "CKeyValueGuard::getValues key=" << _key << " done";
+    LOG(debug) << "CCDDSIntercomGuard::getValues key=" << _key << " done";
 }
 
-void CKeyValueGuard::initAgentConnection()
-{
-    lock_guard<std::mutex> lock(m_initAgentConnectionMutex);
-
-    LOG(info) << "CKeyValueGuard::initAgentConnection: is going to init";
-
-    if (!m_agentConnectionMng)
-    {
-        LOG(info) << "CKeyValueGuard::initAgentConnection: start init";
-
-        m_agentConnectionMng.reset();
-        m_agentConnectionMng = make_shared<CAgentConnectionManager>();
-        m_agentConnectionMng->m_syncHelper = &m_syncHelper;
-
-        try
-        {
-            m_agentConnectionMng->start();
-        }
-        catch (exception& _e)
-        {
-            LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
-        }
-    }
-}
-
-int CKeyValueGuard::updateKey(const SUpdateKeyCmd& _cmd)
+int CDDSIntercomGuard::updateKey(const SUpdateKeyCmd& _cmd)
 {
     if (!m_agentConnectionMng)
     {
-        LOG(error) << "CKeyValueGuard::updateKey: Agent connection channel is not running. Failed to update " << _cmd;
+        LOG(error) << "CCDDSIntercomGuard::updateKey: Agent connection channel is not running. Failed to update "
+                   << _cmd;
         return 1;
     }
 
-    LOG(info) << "CKeyValueGuard::updateKey: sending key update: " << _cmd;
+    LOG(info) << "CCDDSIntercomGuard::updateKey: sending key update: " << _cmd;
     return m_agentConnectionMng->updateKey(_cmd);
 }
 
-void CKeyValueGuard::deleteKey(const std::string& _key)
+void CDDSIntercomGuard::deleteKey(const std::string& _key)
 {
-    LOG(debug) << "CKeyValueGuard::deleteKey key=" << _key;
+    LOG(debug) << "CCDDSIntercomGuard::deleteKey key=" << _key;
     const string sKey = _key;
     {
         try
@@ -386,7 +429,7 @@ void CKeyValueGuard::deleteKey(const std::string& _key)
     }
 }
 
-void CKeyValueGuard::clean()
+void CDDSIntercomGuard::clean()
 {
     string storageName(to_string(CUserDefaults::instance().getScoutPid()));
 

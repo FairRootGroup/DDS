@@ -3,25 +3,24 @@
 //
 //
 // DDS
-#include "CustomCmd.h"
-#include "UserDefaults.h"
 #include "Logger.h"
 #include "Options.h"
+#include "UserDefaults.h"
+#include "dds_intercom.h"
 // STD
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace dds::custom_cmd;
 using namespace dds::user_defaults_api;
 
 //=============================================================================
 int main(int argc, char* argv[])
 {
     // Command line parser
-    SOptions_t options;
+    dds::custom_cmd::SOptions_t options;
 
     try
     {
@@ -44,17 +43,16 @@ int main(int argc, char* argv[])
 
     try
     {
-        CCustomCmd ddsCustomCmd;
+        CCustomCmd customCmd;
         mutex replyMutex;
         condition_variable replyCondition;
 
-        ddsCustomCmd.subscribeReply([&replyCondition](const string& _msg)
-                                    {
-                                        cout << "Received reply message: " << _msg << endl;
-                                        replyCondition.notify_all();
-                                    });
+        customCmd.subscribeReply([&replyCondition](const string& _msg) {
+            cout << "Received reply message: " << _msg << endl;
+            replyCondition.notify_all();
+        });
 
-        int result = ddsCustomCmd.sendCmd(options.m_sCmd, options.m_sCondition);
+        int result = customCmd.send(options.m_sCmd, options.m_sCondition);
 
         if (result == 1)
         { // error

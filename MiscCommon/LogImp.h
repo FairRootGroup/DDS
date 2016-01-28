@@ -6,8 +6,8 @@
 #define CLOGIMP_H
 
 // STD
-#include <stdexcept>
 #include <memory>
+#include <stdexcept>
 // MiscCommon
 #include "Log.h"
 

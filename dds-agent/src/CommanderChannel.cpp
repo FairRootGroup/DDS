@@ -4,10 +4,10 @@
 //
 
 // DDS
-#include "version.h"
-#include "CommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
-#include "KeyValueGuard.h"
+#include "CommanderChannel.h"
+#include "DDSIntercomGuard.h"
+#include "version.h"
 // MiscCommon
 #include "FindCfgFile.h"
 // BOOST
@@ -35,8 +35,8 @@
 using namespace MiscCommon;
 using namespace dds;
 using namespace dds::agent_cmd;
+using namespace dds::internal_api;
 using namespace dds::user_defaults_api;
-using namespace dds::key_value_api;
 using namespace dds::protocol_api;
 using namespace std;
 namespace fs = boost::filesystem;
@@ -54,44 +54,40 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     , m_taskName()
     , m_connectionAttempts(1)
 {
-    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
-                     [this](CCommanderChannel* _channel)
-                     {
-                         if (m_connectionAttempts <= g_MaxConnectionAttempts)
-                         {
-                             LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
-                                       << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
-                             this_thread::sleep_for(chrono::seconds(5));
-                             reconnect();
-                             ++m_connectionAttempts;
-                         }
-                         else
-                         {
-                             LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
-                             this->sendYourself<cmdSHUTDOWN>();
-                         }
-                     });
+    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [this](CCommanderChannel* _channel) {
+        if (m_connectionAttempts <= g_MaxConnectionAttempts)
+        {
+            LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
+                      << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+            this_thread::sleep_for(chrono::seconds(5));
+            reconnect();
+            ++m_connectionAttempts;
+        }
+        else
+        {
+            LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
+            this->sendYourself<cmdSHUTDOWN>();
+        }
+    });
 
-    subscribeOnEvent(EChannelEvents::OnFailedToConnect,
-                     [this](CCommanderChannel* _channel)
-                     {
-                         if (m_connectionAttempts <= g_MaxConnectionAttempts)
-                         {
-                             LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt "
-                                       << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
-                             this_thread::sleep_for(chrono::seconds(5));
-                             reconnect();
-                             ++m_connectionAttempts;
-                         }
-                         else
-                         {
-                             LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
-                             this->sendYourself<cmdSHUTDOWN>();
-                         }
-                     });
+    subscribeOnEvent(EChannelEvents::OnFailedToConnect, [this](CCommanderChannel* _channel) {
+        if (m_connectionAttempts <= g_MaxConnectionAttempts)
+        {
+            LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt " << m_connectionAttempts
+                      << " out of " << g_MaxConnectionAttempts;
+            this_thread::sleep_for(chrono::seconds(5));
+            reconnect();
+            ++m_connectionAttempts;
+        }
+        else
+        {
+            LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
+            this->sendYourself<cmdSHUTDOWN>();
+        }
+    });
 
     // Create key-value shared memory storage
-    CKeyValueGuard::instance().createStorage();
+    CDDSIntercomGuard::instance().createStorage();
 }
 
 bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
@@ -500,7 +496,7 @@ void CCommanderChannel::updateKey(const string& _key, const string& _value)
         LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
                    << cmd.m_sValue;
         // write the property locally
-        CKeyValueGuard::instance().putValue(cmd.m_sKey, cmd.m_sValue);
+        CDDSIntercomGuard::instance().putValue(cmd.m_sKey, cmd.m_sValue);
         // Push update to the commander server
         pushMsg<cmdUPDATE_KEY>(cmd);
     }
@@ -515,7 +511,7 @@ bool CCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::
     try
     {
         LOG(info) << "Received a key delete notifications: " << *_attachment;
-        CKeyValueGuard::instance().deleteKey(_attachment->m_sKey);
+        CDDSIntercomGuard::instance().deleteKey(_attachment->m_sKey);
     }
     catch (exception& _e)
     {

@@ -6,14 +6,14 @@
 #define XMLHELPER_H
 
 // Xerces-C++ headers
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/dom/DOMElement.hpp>
 #include <xercesc/dom/DOM.hpp>
+#include <xercesc/dom/DOMElement.hpp>
+#include <xercesc/util/XMLString.hpp>
 
 // STD headers
-#include <string>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 // MiscCommon
 #include "MiscUtils.h"

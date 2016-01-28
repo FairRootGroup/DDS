@@ -12,9 +12,9 @@
 // STD
 #include <fstream>
 // MiscCommon
-#include "SysHelper.h"
-#include "Process.h"
 #include "INet.h"
+#include "Process.h"
+#include "SysHelper.h"
 //=============================================================================
 using namespace std;
 using namespace MiscCommon;

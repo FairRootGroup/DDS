@@ -5,12 +5,12 @@
 #ifndef __DDS__ConnectionManager__
 #define __DDS__ConnectionManager__
 // DDS
-#include "ConnectionManagerImpl.h"
 #include "AgentChannel.h"
-#include "UIChannelInfo.h"
+#include "ConnectionManagerImpl.h"
 #include "Options.h"
-#include "Topology.h"
 #include "SSHScheduler.h"
+#include "Topology.h"
+#include "UIChannelInfo.h"
 // STD
 #include <mutex>
 // BOOST

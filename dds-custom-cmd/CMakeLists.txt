@@ -10,7 +10,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 #
 # configure files
-# 
+#
 configure_file( ${dds-custom-cmd_SOURCE_DIR}/src/version.h.in ${dds-custom-cmd_BINARY_DIR}/version.h @ONLY )
 
 #
@@ -30,7 +30,7 @@ set( HEADER_FILES
 include_directories(
 	${dds-custom-cmd_BINARY_DIR}
 	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} 
+	${Boost_INCLUDE_DIRS}
 )
 
 #
@@ -44,7 +44,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-custom-cmd
-	dds-custom-cmd-lib
+	dds_intercom_lib
     dds-user-defaults-lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
@@ -57,7 +57,7 @@ target_include_directories(dds-custom-cmd
     PRIVATE
 		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
     PRIVATE
-        $<TARGET_PROPERTY:dds-custom-cmd-lib,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-custom-cmd DESTINATION bin)
@@ -67,8 +67,7 @@ install(TARGETS dds-custom-cmd DESTINATION bin)
 #
 #if (BUILD_TESTS)
 #    message (STATUS "Build dds-custom-cmd unit tests - YES")
-#    add_subdirectory ( ${dds-custom-cmd_SOURCE_DIR}/tests ) 
+#    add_subdirectory ( ${dds-custom-cmd_SOURCE_DIR}/tests )
 #else (BUILD_TESTS)
 #    message (STATUS "Build dds-custom-cmd unit tests - NO")
 #endif (BUILD_TESTS)
-

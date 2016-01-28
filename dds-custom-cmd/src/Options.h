@@ -9,9 +9,9 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "version.h"
-#include "Res.h"
 #include "ProtocolCommands.h"
+#include "Res.h"
+#include "version.h"
 // STD
 #include <string>
 //=============================================================================

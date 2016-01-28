@@ -6,14 +6,14 @@
 #define PROCESS_H_
 
 // API
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <signal.h>
 #include <dirent.h>
-#include <wordexp.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <wordexp.h>
 
 #if defined(__APPLE__)
 #include <sys/sysctl.h>
@@ -21,16 +21,16 @@
 
 // STD
 #include <fstream>
-#include <stdexcept>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 // POSIX regexp
 #include <regex.h>
 // MiscCommon
-#include "def.h"
+#include "CustomIterator.h"
 #include "ErrorCode.h"
 #include "MiscUtils.h"
-#include "CustomIterator.h"
+#include "def.h"
 #include "stlx.h"
 
 namespace MiscCommon

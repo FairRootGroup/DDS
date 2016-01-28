@@ -7,9 +7,9 @@
 #define __DDS__TopoUtils__
 
 // DDS
+#include "Requirement.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
-#include "Requirement.h"
 // STD
 #include <string>
 

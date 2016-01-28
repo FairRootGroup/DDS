@@ -4,13 +4,13 @@
 //
 
 // DDS
-#include "version.h"
 #include "AgentConnectionManager.h"
-#include "Options.h"
+#include "DDSIntercomGuard.h"
 #include "ErrorCode.h"
 #include "INet.h"
 #include "Logger.h"
-#include "KeyValueGuard.h"
+#include "Options.h"
+#include "version.h"
 
 using namespace std;
 using namespace MiscCommon;
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     {
         try
         {
-            dds::key_value_api::CKeyValueGuard::clean();
+            dds::internal_api::CDDSIntercomGuard::clean();
         }
         catch (exception& e)
         {

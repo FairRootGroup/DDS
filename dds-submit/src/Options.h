@@ -20,14 +20,15 @@
 #pragma clang diagnostic pop
 #endif
 
-#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 // DDS
-#include "version.h"
-#include "Res.h"
-#include "ProtocolCommands.h"
-#include "SysHelper.h"
 #include "MiscUtils.h"
+#include "ProtocolCommands.h"
+#include "Res.h"
+#include "SubmitCmd.h"
+#include "SysHelper.h"
+#include "version.h"
 
 namespace bpo = boost::program_options;
 
@@ -92,12 +93,10 @@ namespace dds
             bpo::notify(vm);
 
             // check for non-defaulted arguments
-            bpo::variables_map::const_iterator found = find_if(vm.begin(),
-                                                               vm.end(),
-                                                               [](const bpo::variables_map::value_type& _v)
-                                                               {
-                                                                   return (!_v.second.defaulted());
-                                                               });
+            bpo::variables_map::const_iterator found =
+                find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v) {
+                    return (!_v.second.defaulted());
+                });
 
             if (vm.count("help") || (_options->m_RMS == protocol_api::SSubmitCmd::UNKNOWN) || vm.end() == found)
             {

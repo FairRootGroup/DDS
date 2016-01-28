@@ -5,9 +5,9 @@
 
 // DDS
 #include "TaskContainer.h"
-#include "TaskGroup.h"
-#include "TaskCollection.h"
 #include "Task.h"
+#include "TaskCollection.h"
+#include "TaskGroup.h"
 // STD
 #include <memory>
 #include <sstream>

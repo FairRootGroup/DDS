@@ -12,10 +12,10 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "version.h"
+#include "Logger.h"
 #include "Res.h"
 #include "UserDefaults.h"
-#include "Logger.h"
+#include "version.h"
 //=============================================================================
 namespace bpo = boost::program_options;
 //=============================================================================

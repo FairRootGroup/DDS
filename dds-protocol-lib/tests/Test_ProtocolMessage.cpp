@@ -18,11 +18,11 @@
 #pragma clang diagnostic pop
 
 // DDS
-#include "ProtocolMessage.h"
-#include "ProtocolCommands.h"
 #include "CommandAttachmentImpl.h"
-#include "def.h"
+#include "ProtocolCommands.h"
+#include "ProtocolMessage.h"
 #include "TestCmd.h"
+#include "def.h"
 
 using boost::unit_test::test_suite;
 using namespace MiscCommon;

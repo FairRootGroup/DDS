@@ -1,12 +1,12 @@
 // DDS
-#include "KeyValue.h"
+#include "dds_intercom.h"
 // STD
-#include <vector>
-#include <iostream>
-#include <exception>
-#include <sstream>
 #include <condition_variable>
+#include <exception>
+#include <iostream>
+#include <sstream>
 #include <thread>
+#include <vector>
 // BOOST
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -18,7 +18,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::key_value;
 namespace bpo = boost::program_options;
 
 // IDs of the DDS properties.
@@ -49,31 +48,26 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue ddsKeyValue;
+        CKeyValue keyValue;
         mutex keyMutex;
         condition_variable keyCondition;
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        ddsKeyValue.subscribeError([](const string& _msg)
-                                   {
-                                       cerr << "DDS key-value error: " << _msg << endl;
-                                   });
+        keyValue.subscribeError([](const string& _msg) { cerr << "DDS key-value error: " << _msg << endl; });
 
         // Subscribe on key update events
-        ddsKeyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
-                              {
-                                  keyCondition.notify_all();
-                              });
+        keyValue.subscribe(
+            [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
 
         // First get all task index properties
         CKeyValue::valuesMap_t taskValues;
-        ddsKeyValue.getValues(TaskIndexPropertyName, &taskValues);
+        keyValue.getValues(TaskIndexPropertyName, &taskValues);
         while (taskValues.size() != nInstances)
         {
             unique_lock<mutex> lock(keyMutex);
             keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
-            ddsKeyValue.getValues(TaskIndexPropertyName, &taskValues);
+            keyValue.getValues(TaskIndexPropertyName, &taskValues);
         }
         for (const auto& v : taskValues)
         {
@@ -83,9 +77,9 @@ int main(int argc, char* argv[])
         // We have received all properties.
         // Broadcast property to all clients.
         string value = to_string(taskValues.size());
-        if (0 != ddsKeyValue.putValue(ReplyPropertyName, value))
+        if (0 != keyValue.putValue(ReplyPropertyName, value))
         {
-            cerr << "DDS key-value putValue failed: key=" << ReplyPropertyName << " value=" << value << endl;
+            cerr << "DDS ddsIntercom putValue failed: key=" << ReplyPropertyName << " value=" << value << endl;
         }
 
         // Emulate data procesing of the task

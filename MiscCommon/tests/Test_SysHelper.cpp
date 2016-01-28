@@ -9,8 +9,8 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 // STD
-#include <string>
 #include <fstream>
+#include <string>
 // Our
 #include "MiscUtils.h"
 #include "SysHelper.h"

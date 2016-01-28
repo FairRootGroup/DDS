@@ -7,8 +7,8 @@
 // BOOST
 #include <boost/bind.hpp>
 // MiscCommon
-#include "SysHelper.h"
 #include "Logger.h"
+#include "SysHelper.h"
 // API
 #include <limits.h> // for PIPE_BUF
 //=============================================================================
