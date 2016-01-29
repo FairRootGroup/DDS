@@ -1,4 +1,4 @@
-// Copyright 2014 GSI, Inc. All rights reserved.
+// Copyright 2016 GSI, Inc. All rights reserved.
 //
 //
 //
@@ -9,15 +9,15 @@
 #include <boost/tokenizer.hpp>
 // MiscCommon
 #include "CustomIterator.h"
-#include "MiscUtils.h"
 #include "def.h"
+#include "MiscUtils.h"
 // dds-ssh
-#include "config.h"
+#include "ncf.h"
 //=============================================================================
 using namespace MiscCommon;
 using namespace std;
 using namespace dds;
-using namespace dds::ssh_cmd;
+using namespace dds::ncf;
 //=============================================================================
 const char g_comment_char = '#';
 const string g_bashscript_start = "@bash_begin@";
@@ -25,7 +25,7 @@ const string g_bashscript_end = "@bash_end@";
 //=============================================================================
 typedef boost::tokenizer<boost::escaped_list_separator<char>> Tok;
 //=============================================================================
-void CConfig::readFrom(istream& _stream)
+void CNcf::readFrom(istream& _stream)
 {
     // get lines from the configuration
     StringVector_t lines;
@@ -104,7 +104,7 @@ void CConfig::readFrom(istream& _stream)
                             "There is a defined inline script, but the closing tag is missing.");
 }
 //=============================================================================
-configRecords_t CConfig::getRecords()
+configRecords_t CNcf::getRecords()
 {
     return m_records;
 }

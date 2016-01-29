@@ -12,35 +12,34 @@ using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
 SSubmitCmd::SSubmitCmd()
-    : m_nRMSTypeCode(0)
+    : m_nNumberOfAgents(0)
 {
 }
 
 size_t SSubmitCmd::size() const
 {
-    return dsize(m_sCfgFile) + dsize(m_nRMSTypeCode);
+    return dsize(m_sCfgFile) + dsize(m_sRMSType) + dsize(m_nNumberOfAgents);
 }
 
 bool SSubmitCmd::operator==(const SSubmitCmd& val) const
 {
-    return (m_sCfgFile == val.m_sCfgFile && m_nRMSTypeCode == val.m_nRMSTypeCode);
+    return (m_sCfgFile == val.m_sCfgFile && m_sRMSType == val.m_sRMSType && m_nNumberOfAgents == val.m_nNumberOfAgents);
 }
 
 void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    SAttachmentDataProvider(_data).get(m_nRMSTypeCode).get(m_sCfgFile);
+    SAttachmentDataProvider(_data).get(m_sRMSType).get(m_sCfgFile).get(m_nNumberOfAgents);
 }
 
 void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    SAttachmentDataProvider(_data).put(m_nRMSTypeCode).put(m_sCfgFile);
+    SAttachmentDataProvider(_data).put(m_sRMSType).put(m_sCfgFile).put(m_nNumberOfAgents);
 }
 
 std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SSubmitCmd& val)
 {
-    _stream << "RMS type code: " << val.m_nRMSTypeCode;
-    if (val.m_nRMSTypeCode == SSubmitCmd::SSH)
-        _stream << "; SSH Hosts config: " << val.m_sCfgFile;
+    _stream << "RMS type: " << val.m_sRMSType << "; Config: " << val.m_sCfgFile
+            << "; Number of agents: " << val.m_nNumberOfAgents;
 
     return _stream;
 }

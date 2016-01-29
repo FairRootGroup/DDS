@@ -10,7 +10,7 @@
 // MiscCommon
 #include "def.h"
 // pod-ssh
-#include "config.h"
+#include "ncf.h"
 #include "threadPool.h"
 #include "local_types.h"
 // boost
@@ -33,7 +33,7 @@ namespace dds
         class CWorker : public CTaskImp<CWorker, ETaskType>
         {
           public:
-            CWorker(configRecord_t _rec, const SWNOptions& _options);
+            CWorker(ncf::configRecord_t _rec, const SWNOptions& _options);
             ~CWorker();
 
             void printInfo(std::ostream& _stream) const;
@@ -48,7 +48,7 @@ namespace dds
             void log(const std::string& _msg) const;
 
           private:
-            configRecord_t m_rec;
+            ncf::configRecord_t m_rec;
             SWNOptions m_options;
             mutable mutexPtr_t m_mutex;
         };

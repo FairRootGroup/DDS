@@ -8,6 +8,8 @@
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
 #include "Topology.h"
+#include "dds_intercom.h"
+#include "ncf.h"
 
 // silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
@@ -28,6 +30,7 @@ using namespace dds::commander_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
+using namespace dds::ncf;
 using namespace std;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
@@ -236,6 +239,51 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
 }
 
+//=============================================================================
+void CConnectionManager::_createWnPkg(bool _needInlineBashScript) const
+{
+    // re-create the worker package if needed
+    string out;
+    string err;
+    try
+    {
+        // set submit time
+        chrono::system_clock::time_point now = chrono::system_clock::now();
+        stringstream ssSubmitTime;
+        ssSubmitTime << " -s " << chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+
+        // invoking a new bash process can in some case overwrite env. vars
+        // To be sure that our env is there, we call DDS_env.sh
+        string cmd_env("$DDS_LOCATION/DDS_env.sh");
+        smart_path(&cmd_env);
+
+        string cmd("$DDS_LOCATION/bin/dds-prep-worker");
+        smart_path(&cmd);
+        cmd += ssSubmitTime.str();
+        if (_needInlineBashScript)
+            cmd += " -i";
+        string arg("source ");
+        arg += cmd_env;
+        arg += " ; ";
+        arg += cmd;
+
+        stringstream ssCmd;
+        ssCmd << "/bin/bash -c \"" << arg << "\"";
+
+        LOG(debug) << "Preparing WN package: " << ssCmd.str();
+
+        // 10 sec time-out for this command
+        do_execv(ssCmd.str(), 10, &out, &err);
+    }
+    catch (exception& e)
+    {
+        stringstream ssErr;
+        ssErr << "WN Package Tool: " << e.what() << "; STDOUT:" << out << "; STDERR: " << err;
+        throw runtime_error(ssErr.str());
+    }
+    LOG(info) << "WN Package Tool: STDOUT:" << out << "; STDERR: " << err;
+}
+
 void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
 {
     const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
@@ -359,39 +407,83 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
     {
         auto p = _channel.lock();
 
-        if (_attachment->m_nRMSTypeCode == SSubmitCmd::SSH || _attachment->m_nRMSTypeCode == SSubmitCmd::LOCALHOST)
+        stringstream ssPluginExe;
+        ssPluginExe << CUserDefaults::instance().getPluginsDir() << "dds-submit-" << _attachment->m_sRMSType;
+        if (!boost::filesystem::exists(ssPluginExe.str()))
         {
-            LOG(info) << "SSH RMS is defined by: [" << _attachment->m_sCfgFile << "]";
-            // TODO: Compare number of job slots in the ssh (in case of ssh) config file to what topo wants from us.
+            stringstream ssErrMsg;
+            ssErrMsg << "Unknown RMS plug-in requested \"" << _attachment->m_sRMSType << "\" (" << ssPluginExe.str()
+                     << ")";
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ssErrMsg.str(), fatal, cmdSUBMIT));
+            p->pushMsg<cmdSHUTDOWN>();
+            return true;
+        }
 
-            // Submitting the job
-            string outPut;
-            string sCommand("$DDS_LOCATION/bin/dds-ssh");
-            smart_path(&sCommand);
+        // Submitting the job
+        string outPut;
+        stringstream ssCmd;
+        ssCmd << ssPluginExe.str();
+        // TODO: Send ID to the plug-in
+        // if (!_attachment->m_sCfgFile.empty())
+        //     ssCmd << " -c " << _attachment->m_sCfgFile;
 
-            stringstream ssCmd;
-            ssCmd << sCommand << " -c " << _attachment->m_sCfgFile << " submit";
-            const size_t nCmdTimeout = 60; // in sec.
-            int nDdsSSHExitCode(0);
+        const size_t nCmdTimeout = 30; // in sec.
+        int nPluginExitCode(0);
 
-            try
+        // Create a new submit communication info channel
+        lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
+        if (!m_SubmitAgents.m_channel.expired())
+            throw runtime_error("Can not process the request. Submit is already in progress.");
+
+        // Create / re-pack WN package
+        // Include inline script if present
+        string inlineShellScripCmds;
+        if (!_attachment->m_sCfgFile.empty())
+        {
+            ifstream f(_attachment->m_sCfgFile);
+            if (!f.is_open())
             {
-                do_execv(ssCmd.str(), nCmdTimeout, &outPut, nullptr, &nDdsSSHExitCode);
+                string msg("can't open configuration file \"");
+                msg += _attachment->m_sCfgFile;
+                msg += "\"";
+                throw runtime_error(msg);
             }
-            catch (exception& e)
-            {
-                if (!outPut.empty())
-                {
-                    ostringstream ss;
-                    ss << outPut;
-                    LOG(info) << ss.str();
-                    p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
-                }
+            CNcf config;
+            config.readFrom(f);
+            inlineShellScripCmds = config.getBashEnvCmds();
+            LOG(debug)
+                << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
 
-                string sMsg("Failed to deploy agents from the given setup: ");
-                sMsg += _attachment->m_sCfgFile;
-                throw runtime_error(sMsg);
-            }
+            string scriptFileName(CUserDefaults::instance().getWrkPkgDir());
+            scriptFileName += "user_worker_env.sh";
+            smart_path(&scriptFileName);
+            ofstream f_script(scriptFileName.c_str());
+            if (!f_script.is_open())
+                throw runtime_error("Can't open for writing: " + scriptFileName);
+
+            f_script << inlineShellScripCmds;
+            f_script.close();
+        }
+        // pack worker package
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Creating new worker package...", info, cmdSUBMIT));
+        _createWnPkg(!inlineShellScripCmds.empty());
+
+        // remember the UI channel, which requested to submit the job
+        m_SubmitAgents.m_channel = _channel;
+        m_SubmitAgents.zeroCounters();
+
+        // TODO: implement a wraper class to manage Submit commands protocol
+        // As fo now, we just send a simple string with a request of how many workers we need
+        m_SubmitAgents.m_strInitialSubmitRequest = _attachment->m_sCfgFile; // to_string(_attachment->m_nNumberOfAgents);
+
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT));
+
+        try
+        {
+            do_execv(ssCmd.str(), nCmdTimeout, &outPut, nullptr, &nPluginExitCode);
+        }
+        catch (exception& e)
+        {
             if (!outPut.empty())
             {
                 ostringstream ss;
@@ -400,22 +492,33 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
                 p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
             }
 
-            SSimpleMsgCmd msg_cmd;
-            msg_cmd.m_sMsg = (0 == nDdsSSHExitCode) ? "Agents were successfully deployed."
-                                                    : "Looks like we had problems to deploy agents using DDS ssh "
-                                                      "plug-in. Check dds.log for more information.";
-            msg_cmd.m_srcCommand = cmdSUBMIT;
-            msg_cmd.m_msgSeverity = (0 == nDdsSSHExitCode) ? info : warning;
-            p->pushMsg<cmdSIMPLE_MSG>(msg_cmd);
-            p->pushMsg<cmdSHUTDOWN>();
+            stringstream ssMsg;
+            ssMsg << "Failed to deploy agents using \"" << _attachment->m_sRMSType << "\"";
+            if (!_attachment->m_sCfgFile.empty())
+                ssMsg << " with config file \"" << _attachment->m_sCfgFile << "\"";
+            ssMsg << ". Error: " << e.what();
+            throw runtime_error(ssMsg.str());
+        }
+        if (!outPut.empty())
+        {
+            ostringstream ss;
+            ss << outPut;
+            LOG(info) << ss.str();
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
         }
     }
     catch (bad_weak_ptr& e)
     {
         // TODO: Do we need to log something here?
+
+        // In case of any plugin initialization error, reset the info channel
+        m_SubmitAgents.m_channel.reset();
     }
     catch (exception& e)
     {
+        // In case of any plugin initialization error, reset the info channel
+        m_SubmitAgents.m_channel.reset();
+
         if (!_channel.expired())
         {
             auto p = _channel.lock();
@@ -1203,6 +1306,28 @@ bool CConnectionManager::on_cmdCUSTOM_CMD(
         catch (boost::bad_lexical_cast&)
         {
             // Condition is not a positiove integer.
+
+            // check if this is an agent submit request
+            if (_attachment->m_sCondition == g_sRmsAgentSign)
+            {
+                lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
+                if (m_SubmitAgents.m_channel.expired())
+                    throw runtime_error("Internal error. Submit info channel is not initialized.");
+
+                // Remember the submit plug-in channel, which is responsible for job submittions
+                // Send initial request
+                if (m_SubmitAgents.m_channel.expired())
+                {
+                    m_SubmitAgents.m_channelSubmitPlugin = _channel;
+                    m_SubmitAgents.requestAgentSubmittion();
+                }
+                else
+                {
+                    // Process info messages from the plug-in
+                    m_SubmitAgents.processMessage<SCustomCmdCmd>(*_attachment, _channel);
+                }
+                return true;
+            }
 
             // Check if we can find task for it's full hash path.
             bool taskFound = true;

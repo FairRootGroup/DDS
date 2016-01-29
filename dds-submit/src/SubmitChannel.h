@@ -26,7 +26,7 @@ namespace dds
 
           public:
             void setCfgFile(const std::string& _val);
-            void setRMSTypeCode(const protocol_api::SSubmitCmd::ERmsType& _val);
+            void setRMSType(const std::string& _val);
             void setNumber(const size_t _val);
 
           private:
@@ -36,7 +36,7 @@ namespace dds
 
           private:
             std::string m_sCfgFile;
-            protocol_api::SSubmitCmd::ERmsType m_RMS;
+            std::string m_sRMS;
             size_t m_number;
             bool m_bXMLValidationDisabled;
         };

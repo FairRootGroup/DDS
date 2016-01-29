@@ -38,6 +38,12 @@ message(STATUS "Build the dds_sys_files lib - YES")
 add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
 
 #
+# Build dds_ncf
+#
+message(STATUS "Build the dds_ncf lib - YES")
+add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_ncf )
+
+#
 ## Unit tests
 #
 if (BUILD_TESTS)

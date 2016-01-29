@@ -21,12 +21,12 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/auto_unit_test.hpp>
 // pod-ssh
-#include "config.h"
-#include "version.h"
+//#include "version.h"
+#include "ncf.h"
 //=============================================================================
 using namespace std;
 using namespace dds;
-using namespace dds::ssh_cmd;
+using namespace dds::ncf;
 using boost::unit_test::test_suite;
 
 BOOST_AUTO_TEST_SUITE(pod_ssh_config);
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(pod_ssh_config);
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_readconfig)
 {
-    CConfig config;
+    CNcf config;
 
     stringstream ss;
     ss << "r1, \\\"anar@lxg0527.gsi.de\\\", -p24, /tmp/test,4\n"
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
 }
 BOOST_AUTO_TEST_CASE(test_readconfig_bad)
 {
-    CConfig config;
+    CNcf config;
 
     stringstream ss;
     ss << "r1, \\\"anar@lxg0527.gsi.de\\\", -p24, /tmp/test,4\n"
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig_bad)
 }
 BOOST_AUTO_TEST_CASE(test_duplicate_id)
 {
-    CConfig config;
+    CNcf config;
 
     stringstream ss;
     ss << "r1, \\\"anar@lxg0527.gsi.de\\\", -p24, /tmp/test,4\n"

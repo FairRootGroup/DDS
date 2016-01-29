@@ -22,7 +22,7 @@ set( SOURCE_FILES
 	./src/AgentChannel.cpp
     ./src/UIChannelInfo.cpp
     ./src/SSHScheduler.cpp
-		./src/ChannelId.cpp
+    ./src/ChannelId.cpp
 )
 
 #
@@ -34,7 +34,7 @@ set( HEADER_FILES
 	./src/AgentChannel.h
     ./src/UIChannelInfo.h
     ./src/SSHScheduler.h
-		./src/ChannelId.h
+    ./src/ChannelId.h
 )
 
 include_directories(
@@ -57,6 +57,7 @@ target_link_libraries (
 	dds_user_defaults_lib
 	dds_topology_lib
 	dds_protocol_lib
+    dds_ncf
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_LOG_LIBRARY}
@@ -72,6 +73,8 @@ target_include_directories(dds-commander
 		$<TARGET_PROPERTY:dds_topology_lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
 		$<TARGET_PROPERTY:dds_protocol_lib,INTERFACE_INCLUDE_DIRECTORIES>
+    PRIVATE
+        $<TARGET_PROPERTY:dds_ncf,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-commander DESTINATION bin)

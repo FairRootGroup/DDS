@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
     const unsigned int cmdSize = 26;
 
     SSubmitCmd cmd;
-    cmd.m_nRMSTypeCode = 1;
+    cmd.m_sRMSType = "ssh";
     cmd.m_sCfgFile = "/Users/dummy/dummy.cfg";
 
     TestCommand(cmd, cmdSUBMIT, cmdSize);

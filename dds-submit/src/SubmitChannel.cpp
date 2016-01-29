@@ -16,7 +16,6 @@ using namespace std;
 
 CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI)
-    , m_RMS(SSubmitCmd::UNKNOWN)
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
                      [](CSubmitChannel* _channel)
@@ -28,18 +27,16 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
         EChannelEvents::OnHandshakeOK,
         [this](CSubmitChannel* _channel)
         {
-            if (SSubmitCmd::UNKNOWN == m_RMS)
-                return;
-
-            if (SSubmitCmd::SSH == m_RMS)
+            if (m_sRMS != "localhost")
             {
                 // Create the command's attachment
                 SSubmitCmd cmd;
-                cmd.m_nRMSTypeCode = m_RMS;
+                cmd.m_sRMSType = m_sRMS;
                 cmd.m_sCfgFile = m_sCfgFile;
+                cmd.m_nNumberOfAgents = m_number;
                 pushMsg<cmdSUBMIT>(cmd);
             }
-            else if (SSubmitCmd::LOCALHOST == m_RMS)
+            else // localhost RMS requires special treatment
             {
                 // Create temporary ssh configuration
                 const char* tmpdir = std::getenv("TMPDIR");
@@ -79,7 +76,7 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
 
                 // Create the command's attachment
                 SSubmitCmd cmd;
-                cmd.m_nRMSTypeCode = m_RMS;
+                cmd.m_sRMSType = m_sRMS;
                 cmd.m_sCfgFile = tmpfileName.string();
                 pushMsg<cmdSUBMIT>(cmd);
             }
@@ -104,9 +101,9 @@ void CSubmitChannel::setCfgFile(const string& _val)
     m_sCfgFile = _val;
 }
 
-void CSubmitChannel::setRMSTypeCode(const SSubmitCmd::ERmsType& _val)
+void CSubmitChannel::setRMSType(const string& _val)
 {
-    m_RMS = _val;
+    m_sRMS = _val;
 }
 
 void CSubmitChannel::setNumber(const size_t _val)

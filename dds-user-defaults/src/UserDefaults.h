@@ -49,6 +49,7 @@ namespace dds
             std::string getLogFile() const;
             std::string getAgentLogStorageDir() const;
             pid_t getScoutPid() const;
+            std::string getPluginsDir() const;
 
           private:
             std::string convertAnyToString(const boost::any& _any) const;

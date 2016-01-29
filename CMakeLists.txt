@@ -105,6 +105,7 @@ set(MiscCommon_LOCATION
     ${MiscCommon_LOCATION}
     ${MiscCommon_LOCATION}/pipe_log_engine
     ${MiscCommon_LOCATION}/dds_sys_files
+	${MiscCommon_LOCATION}/dds_ncf/src
 )
 #
 # additional compiler and linker flags for C++11
@@ -153,7 +154,6 @@ SET(DDS_BIN_FILES
 
 SET(DDS_BIN_PRIVATE_FILES
 	${CMAKE_SOURCE_DIR}/bin/private/dds-addpayload
-	${CMAKE_SOURCE_DIR}/bin/private/dds-ssh-submit-worker
 )
 #
 # "etc" files

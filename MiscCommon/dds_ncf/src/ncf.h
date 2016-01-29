@@ -2,8 +2,11 @@
 //
 //
 //
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef NCF_H
+#define NCF_H
+//
+// - - - - - = = =     DDS NCF (nodes configuration file parcer)     = = = - - - - -
+//
 // a configuration should be a comma-separated values (CSV) with
 // the following records:
 //
@@ -28,7 +31,7 @@
 #include "MiscUtils.h"
 namespace dds
 {
-    namespace ssh_cmd
+    namespace ncf
     {
         //=============================================================================
         /// this class represents a single record of a dds-ssh configuration file
@@ -88,7 +91,7 @@ namespace dds
         typedef boost::shared_ptr<SConfigRecord> configRecord_t;
         typedef std::vector<configRecord_t> configRecords_t;
         //=============================================================================
-        class CConfig
+        class CNcf
         {
           public:
             void readFrom(std::istream& _stream);

@@ -132,8 +132,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 {
     try
     {
-        LOG(info) << "Received a Submit command; RMS: " << _attachment->RMSTypeCodeToString[_attachment->m_nRMSTypeCode]
-                  << " from: " << remoteEndIDString();
+        LOG(info) << "Received a Submit command; RMS: " << _attachment->m_sRMSType << " from: " << remoteEndIDString();
     }
     catch (exception& e)
     {

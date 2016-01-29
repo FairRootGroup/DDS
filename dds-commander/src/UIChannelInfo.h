@@ -8,6 +8,7 @@
 // DDS
 #include "AgentChannel.h"
 #include "ProtocolCommands.h"
+#include "CustomCmdCmd.h"
 // STD
 #include <mutex>
 #include <sstream>
@@ -305,6 +306,102 @@ namespace dds
                    << ", errors: " << m_nofReceivedErrors;
                 return ss.str();
             }
+        };
+
+        class CSubmitAgentsChannelInfo : public CUIChannelInfo<CSubmitAgentsChannelInfo>
+        {
+          public:
+            std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                   CAgentChannel::weakConnectionPtr_t _channel) const
+            {
+                std::stringstream ss;
+                auto p = _channel.lock();
+                ss << _cmd.m_sMsg;
+                return ss.str();
+            }
+
+            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+                                        CAgentChannel::weakConnectionPtr_t _channel) const
+            {
+                std::stringstream ss;
+                auto p = _channel.lock();
+                ss << _cmd.m_sMsg;
+                return ss.str();
+            }
+
+            std::string getAllReceivedMessage() const
+            {
+                std::stringstream ss;
+                // ss << "total: " << m_nofRequests << ", activations: " << nofReceived()
+                // << ", errors: " << m_nofReceivedErrors << "\n";
+
+                return ss.str();
+            }
+
+            void requestAgentSubmittion()
+            {
+                try
+                {
+                    std::lock_guard<std::mutex> lock(m_mutexReceive);
+                    if (!m_channel.expired())
+                    {
+                        auto pPlugin = m_channelSubmitPlugin.lock();
+                        protocol_api::SCustomCmdCmd cmd;
+                        cmd.m_sCmd = m_strInitialSubmitRequest;
+                        cmd.m_sCondition = "";
+                        pPlugin->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
+                    }
+                }
+                catch (std::bad_weak_ptr& e)
+                {
+                    // TODO: Do we need to log something here?
+                }
+            }
+
+            template <class _T = protocol_api::SCustomCmdCmd>
+            bool processMessage(const _T& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
+            {
+                /*                try
+                                {
+                                    std::lock_guard<std::mutex> lock(m_mutexReceive);
+
+                                    ++m_nofReceived;
+
+                                    T* pThis = static_cast<T*>(this);
+                                    std::string userMessage = pThis->getMessage(_cmd, _channel);
+
+                                    if (!m_channel.expired())
+                                    {
+                                        auto pUI = m_channel.lock();
+                                        pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
+                                                                                           protocol_api::SSimpleMsgCmd(userMessage,
+                   MiscCommon::info));
+
+                                        // measure time to activate
+                                        std::chrono::steady_clock::time_point curTime =
+                   std::chrono::steady_clock::now();
+
+                                        pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
+                                                                                                                    m_nofReceived,
+                                                                                                                    m_nofRequests,
+                                                                                                                    m_nofReceivedErrors,
+                                                                                                                    std::chrono::duration_cast<std::chrono::milliseconds>(curTime
+                   - m_startTime).count()));
+                                    }
+
+                                    checkAllReceived();
+                                }
+                                catch (std::bad_weak_ptr& e)
+                                {
+                                    // TODO: Do we need to log something here?
+                                }*/
+
+                return true;
+            }
+
+          public:
+            CAgentChannel::weakConnectionPtr_t m_channelSubmitPlugin;
+            std::string m_strInitialSubmitRequest;
         };
     }
 }

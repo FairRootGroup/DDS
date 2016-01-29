@@ -322,3 +322,8 @@ pid_t CUserDefaults::getScoutPid() const
     f >> nDDSScoutPid;
     return nDDSScoutPid;
 }
+
+std::string CUserDefaults::getPluginsDir() const
+{
+    return (getDDSPath() + "plugins/");
+}

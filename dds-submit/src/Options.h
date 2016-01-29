@@ -40,19 +40,19 @@ namespace dds
         typedef struct SOptions
         {
             SOptions()
-                : m_RMS(protocol_api::SSubmitCmd::UNKNOWN)
+                : m_sRMS("localhost")
                 , m_number(0)
             {
             }
 
-            protocol_api::SSubmitCmd::ERmsType m_RMS;
+            std::string m_sRMS;
             std::string m_sCfgFile;
             size_t m_number;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
         {
-            return _stream << "\nRMS: " << val.m_RMS << "\nPlug-in's configuration file: " << val.m_sCfgFile;
+            return _stream << "\nRMS: " << val.m_sRMS << "\nPlug-in's configuration file: " << val.m_sCfgFile;
         }
         //=============================================================================
         inline void PrintVersion()
@@ -76,11 +76,8 @@ namespace dds
                                   bpo::value<std::string>(&_options->m_sCfgFile),
                                   "A plug-in's configuration file. It can be used to provid additional RMS options");
             options.add_options()("rms,r",
-                                  bpo::value<dds::protocol_api::SSubmitCmd::ERmsType>(&_options->m_RMS),
-                                  "Defines a destination resource management system. (default: ssh)\n"
-                                  "Supported RMS:\n"
-                                  "   - ssh\n"
-                                  "   - localhost");
+                                  bpo::value<std::string>(&_options->m_sRMS),
+                                  "Defines a destination resource management system. (default: localhost)");
             options.add_options()("number,n",
                                   bpo::value<size_t>(&_options->m_number),
                                   "Defines a number of agents to spawn. It can be used only when \'localhost\' is used "
@@ -100,7 +97,7 @@ namespace dds
                                                                    return (!_v.second.defaulted());
                                                                });
 
-            if (vm.count("help") || (_options->m_RMS == protocol_api::SSubmitCmd::UNKNOWN) || vm.end() == found)
+            if (vm.count("help") | vm.end() == found)
             {
                 LOG(MiscCommon::log_stdout) << options;
                 return false;
@@ -111,25 +108,12 @@ namespace dds
                 return false;
             }
 
-            if (vm.count("rms") && (_options->m_RMS == protocol_api::SSubmitCmd::SSH && !vm.count("config")))
-            {
-                LOG(MiscCommon::log_stderr) << "The SSH plug-in requires a rms configuration file. Please us "
-                                               "--ssh-rms-cfg to specify a desired configuration file."
-                                            << "\n\n" << options;
-                return false;
-            }
-
-            if (vm.count("number") && (_options->m_RMS != protocol_api::SSubmitCmd::LOCALHOST))
-            {
-                LOG(MiscCommon::log_stderr) << "The \'number\' argument can only be used with \'localhost\' RMS"
-                                            << "\n\n" << options;
-                return false;
-            }
+            // RMS plug-ins are always lower cased
+            boost::to_lower(_options->m_sRMS);
 
             // make absolute path
             boost::filesystem::path pathCfgFile(_options->m_sCfgFile);
             _options->m_sCfgFile = boost::filesystem::absolute(pathCfgFile).string();
-
             return true;
         }
     }

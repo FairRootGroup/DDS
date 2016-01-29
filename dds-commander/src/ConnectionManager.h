@@ -86,11 +86,14 @@ namespace dds
 
           private:
             void enableDisableStatForChannels(bool _enable);
+            void _createWnPkg(bool _needInlineBashScript) const;
 
+          private:
             CGetLogChannelInfo m_getLog;
             CTestChannelInfo m_transportTest;
             CActivateAgentsChannelInfo m_ActivateAgents;
             CStopUserTasksChannelInfo m_StopUserTasks;
+            CSubmitAgentsChannelInfo m_SubmitAgents;
             topology_api::CTopology m_topo;
             CSSHScheduler m_scheduler;
 

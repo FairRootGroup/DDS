@@ -1,7 +1,7 @@
-# Copyright 2014 GSI, Inc. All rights reserved.
+# Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds-ssh )
+project( dds-submit-ssh )
 
 #
 # Where to lookup modules
@@ -18,11 +18,9 @@ configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src
 #
 set( SOURCE_FILES
 	./src/main.cpp
-	./src/config.cpp
 	./src/worker.cpp
 )
 set( SRC_HDRS
-	./src/config.h
 	./src/local_types.h
 	./src/threadPool.h
 	./src/worker.h
@@ -39,15 +37,17 @@ include_directories(
 # dds-ssh executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-ssh ${SOURCE_FILES} ${SRC_HDRS})
+    add_executable(dds-submit-ssh ${SOURCE_FILES} ${SRC_HDRS})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-ssh ${SOURCE_FILES})
+    add_executable(dds-submit-ssh ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-	dds-ssh
-	dds-user-defaults-lib
+	dds-submit-ssh
+	dds_user_defaults_lib
+    dds_intercom_lib
 	dds_sys_files
+	dds_ncf
 	pipe_log_engine
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_LOG_LIBRARY}
@@ -55,21 +55,22 @@ target_link_libraries (
 	${Boost_THREAD_LIBRARY}
 )
 
-target_include_directories(dds-ssh
+target_include_directories(dds-submit-ssh
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
+    PRIVATE
+        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-
-install(TARGETS dds-ssh DESTINATION bin)
-
+install(TARGETS dds-submit-ssh DESTINATION plugins)
+install(PROGRAMS ${dds-submit-ssh_SOURCE_DIR}/src/dds-submit-ssh-worker DESTINATION plugins)
 #
 # Unit tests
 #
 if (BUILD_TESTS)
-    message (STATUS "Build dds-ssh unit tests - YES")
-    add_subdirectory ( ${dds-ssh_SOURCE_DIR}/tests ) 
+    message (STATUS "Build dds-submit-ssh unit tests - YES")
+    add_subdirectory ( ${dds-submit-ssh_SOURCE_DIR}/tests ) 
 else (BUILD_TESTS)
-    message (STATUS "Build dds-ssh unit tests - NO")
+    message (STATUS "Build dds-submit-ssh unit tests - NO")
 endif (BUILD_TESTS)
 

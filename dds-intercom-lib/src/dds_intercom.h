@@ -11,6 +11,8 @@
 
 namespace dds
 {
+    const std::string g_sRmsAgentSign = "rms_agent_sign";
+
     class CKeyValue
     {
       public:
