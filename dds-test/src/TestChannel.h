@@ -17,14 +17,19 @@ namespace dds
             CTestChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CTestChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(
-                    protocol_api::EChannelEvents::OnRemoteEndDissconnected, [this](CTestChannel* _channel) {
-                        LOG(MiscCommon::info) << "The Agent [" << this->socket().remote_endpoint().address().to_string()
-                                              << "] has closed the connection.";
-                    });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
+                                 [this](CTestChannel* _channel)
+                                 {
+                                     LOG(MiscCommon::info) << "The Agent ["
+                                                           << this->socket().remote_endpoint().address().to_string()
+                                                           << "] has closed the connection.";
+                                 });
 
                 subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
-                                 [this](CTestChannel* _channel) { pushMsg<protocol_api::cmdTRANSPORT_TEST>(); });
+                                 [this](CTestChannel* _channel)
+                                 {
+                                     pushMsg<protocol_api::cmdTRANSPORT_TEST>();
+                                 });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

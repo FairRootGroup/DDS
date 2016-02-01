@@ -54,37 +54,41 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     , m_taskName()
     , m_connectionAttempts(1)
 {
-    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [this](CCommanderChannel* _channel) {
-        if (m_connectionAttempts <= g_MaxConnectionAttempts)
-        {
-            LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
-                      << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
-            this_thread::sleep_for(chrono::seconds(5));
-            reconnect();
-            ++m_connectionAttempts;
-        }
-        else
-        {
-            LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
-            this->sendYourself<cmdSHUTDOWN>();
-        }
-    });
+    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
+                     [this](CCommanderChannel* _channel)
+                     {
+                         if (m_connectionAttempts <= g_MaxConnectionAttempts)
+                         {
+                             LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
+                                       << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                             this_thread::sleep_for(chrono::seconds(5));
+                             reconnect();
+                             ++m_connectionAttempts;
+                         }
+                         else
+                         {
+                             LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
+                             this->sendYourself<cmdSHUTDOWN>();
+                         }
+                     });
 
-    subscribeOnEvent(EChannelEvents::OnFailedToConnect, [this](CCommanderChannel* _channel) {
-        if (m_connectionAttempts <= g_MaxConnectionAttempts)
-        {
-            LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt " << m_connectionAttempts
-                      << " out of " << g_MaxConnectionAttempts;
-            this_thread::sleep_for(chrono::seconds(5));
-            reconnect();
-            ++m_connectionAttempts;
-        }
-        else
-        {
-            LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
-            this->sendYourself<cmdSHUTDOWN>();
-        }
-    });
+    subscribeOnEvent(EChannelEvents::OnFailedToConnect,
+                     [this](CCommanderChannel* _channel)
+                     {
+                         if (m_connectionAttempts <= g_MaxConnectionAttempts)
+                         {
+                             LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt "
+                                       << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                             this_thread::sleep_for(chrono::seconds(5));
+                             reconnect();
+                             ++m_connectionAttempts;
+                         }
+                         else
+                         {
+                             LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
+                             this->sendYourself<cmdSHUTDOWN>();
+                         }
+                     });
 
     // Create key-value shared memory storage
     CDDSIntercomGuard::instance().createStorage();

@@ -85,7 +85,8 @@ int main(int argc, char* argv[])
 
         // Subscribe on key update events
         keyValue.subscribe(
-            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value) {
+            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value)
+            {
                 LOG(debug) << "USER TASK received key update notification";
                 {
                     unique_lock<mutex> lk(keyMutex);

@@ -195,11 +195,13 @@ void CStatImpl::logReadMessage(CProtocolMessage::protocolMessagePtr_t _message)
     // Message can be destroyed or cleared by external functions.
     SMessageHeader header(_message->header());
 
-    m_io_service.post([this, header] {
-        std::lock_guard<std::mutex> lock(m_logReadMutex);
-        m_readMessageBytesAccumulator(header.m_len + CProtocolMessage::header_length);
-        m_readMessageBytesAccumulatorMap[header.m_cmd](header.m_len + CProtocolMessage::header_length);
-    });
+    m_io_service.post(
+        [this, header]
+        {
+            std::lock_guard<std::mutex> lock(m_logReadMutex);
+            m_readMessageBytesAccumulator(header.m_len + CProtocolMessage::header_length);
+            m_readMessageBytesAccumulatorMap[header.m_cmd](header.m_len + CProtocolMessage::header_length);
+        });
 }
 
 void CStatImpl::logWriteMessages(const protocolMessagePtrQueue_t& _messageQueue)
@@ -208,10 +210,11 @@ void CStatImpl::logWriteMessages(const protocolMessagePtrQueue_t& _messageQueue)
         return;
 
     size_t numberOfMessagesInQueue = _messageQueue.size();
-    m_io_service.post([this, numberOfMessagesInQueue] {
-        std::lock_guard<std::mutex> lock(m_logWriteMutex);
-        m_writeQueueMessagesAccumulator(numberOfMessagesInQueue);
-    });
+    m_io_service.post([this, numberOfMessagesInQueue]
+                      {
+                          std::lock_guard<std::mutex> lock(m_logWriteMutex);
+                          m_writeQueueMessagesAccumulator(numberOfMessagesInQueue);
+                      });
 
     uint64_t numberOfBytes = 0;
     for (const auto& message : _messageQueue)
@@ -222,15 +225,18 @@ void CStatImpl::logWriteMessages(const protocolMessagePtrQueue_t& _messageQueue)
 
         numberOfBytes += (header.m_len + CProtocolMessage::header_length);
 
-        m_io_service.post([this, header] {
-            std::lock_guard<std::mutex> lock(m_logWriteMutex);
-            m_writeMessageBytesAccumulator(header.m_len + CProtocolMessage::header_length);
-            m_writeMessageBytesAccumulatorMap[header.m_cmd](header.m_len + CProtocolMessage::header_length);
-        });
+        m_io_service.post(
+            [this, header]
+            {
+                std::lock_guard<std::mutex> lock(m_logWriteMutex);
+                m_writeMessageBytesAccumulator(header.m_len + CProtocolMessage::header_length);
+                m_writeMessageBytesAccumulatorMap[header.m_cmd](header.m_len + CProtocolMessage::header_length);
+            });
     }
 
-    m_io_service.post([this, numberOfBytes] {
-        std::lock_guard<std::mutex> lock(m_logWriteMutex);
-        m_writeQueueBytesAccumulator(numberOfBytes);
-    });
+    m_io_service.post([this, numberOfBytes]
+                      {
+                          std::lock_guard<std::mutex> lock(m_logWriteMutex);
+                          m_writeQueueBytesAccumulator(numberOfBytes);
+                      });
 }

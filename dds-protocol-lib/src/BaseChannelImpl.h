@@ -314,7 +314,8 @@ namespace dds
                 std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
                 m_writeQueue.erase(std::remove_if(std::begin(m_writeQueue),
                                                   std::end(m_writeQueue),
-                                                  [](const CProtocolMessage::protocolMessagePtr_t& _msg) {
+                                                  [](const CProtocolMessage::protocolMessagePtr_t& _msg)
+                                                  {
                                                       return (_msg->header().m_cmd == _cmd);
                                                   }),
                                    std::end(m_writeQueue));
@@ -353,32 +354,34 @@ namespace dds
                         }
 
                         auto self(this->shared_from_this());
-                        m_deadlineTimer->async_wait([this, self](const boost::system::error_code& error) {
-                            if (!error)
+                        m_deadlineTimer->async_wait(
+                            [this, self](const boost::system::error_code& error)
                             {
-                                bool copyMessages = false;
+                                if (!error)
                                 {
-                                    std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
-                                    copyMessages = !m_accumulativeWriteQueue.empty();
-                                    // copy queue to main queue
-                                    if (copyMessages)
+                                    bool copyMessages = false;
                                     {
-                                        LOG(MiscCommon::debug)
-                                            << "deadline_timer called: copy accumulated queue to write queue "
-                                               "m_accumulativeWriteQueue.size="
-                                            << m_accumulativeWriteQueue.size()
-                                            << " m_writeQueue.size=" << m_writeQueue.size();
-                                        std::copy(m_accumulativeWriteQueue.begin(),
-                                                  m_accumulativeWriteQueue.end(),
-                                                  back_inserter((m_isHandshakeOK) ? m_writeQueue
-                                                                                  : m_writeQueueBeforeHandShake));
-                                        m_accumulativeWriteQueue.clear();
+                                        std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+                                        copyMessages = !m_accumulativeWriteQueue.empty();
+                                        // copy queue to main queue
+                                        if (copyMessages)
+                                        {
+                                            LOG(MiscCommon::debug)
+                                                << "deadline_timer called: copy accumulated queue to write queue "
+                                                   "m_accumulativeWriteQueue.size="
+                                                << m_accumulativeWriteQueue.size()
+                                                << " m_writeQueue.size=" << m_writeQueue.size();
+                                            std::copy(m_accumulativeWriteQueue.begin(),
+                                                      m_accumulativeWriteQueue.end(),
+                                                      back_inserter((m_isHandshakeOK) ? m_writeQueue
+                                                                                      : m_writeQueueBeforeHandShake));
+                                            m_accumulativeWriteQueue.clear();
+                                        }
                                     }
+                                    if (copyMessages)
+                                        pushMsg<cmdUNKNOWN>();
                                 }
-                                if (copyMessages)
-                                    pushMsg<cmdUNKNOWN>();
-                            }
-                        });
+                            });
 
                         LOG(MiscCommon::debug) << "accumulativePushMsg: WriteQueue size = " << m_writeQueue.size()
                                                << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size()
@@ -442,16 +445,18 @@ namespace dds
 
                 // process standard async writing
                 auto self(this->shared_from_this());
-                m_io_service.post([this, self] {
-                    try
-                    {
-                        writeMessage();
-                    }
-                    catch (std::exception& ex)
-                    {
-                        LOG(MiscCommon::error) << "BaseChannelImpl can't write message: " << ex.what();
-                    }
-                });
+                m_io_service.post([this, self]
+                                  {
+                                      try
+                                      {
+                                          writeMessage();
+                                      }
+                                      catch (std::exception& ex)
+                                      {
+                                          LOG(MiscCommon::error) << "BaseChannelImpl can't write message: "
+                                                                 << ex.what();
+                                      }
+                                  });
             }
 
             template <ECmdType _cmd>
@@ -735,7 +740,8 @@ namespace dds
                 boost::asio::async_read(
                     m_socket,
                     boost::asio::buffer(m_currentMsg->data(), CProtocolMessage::header_length),
-                    [this, self](boost::system::error_code ec, std::size_t length) {
+                    [this, self](boost::system::error_code ec, std::size_t length)
+                    {
                         if (!ec)
                         {
                             LOG(MiscCommon::debug) << "Received message HEADER from " << remoteEndIDString() << ": "
@@ -789,7 +795,8 @@ namespace dds
                 boost::asio::async_read(
                     m_socket,
                     boost::asio::buffer(m_currentMsg->body(), m_currentMsg->body_length()),
-                    [this, self](boost::system::error_code ec, std::size_t length) {
+                    [this, self](boost::system::error_code ec, std::size_t length)
+                    {
                         if (!ec)
                         {
                             LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString() << " ("
@@ -855,7 +862,8 @@ namespace dds
                 boost::asio::async_write(
                     m_socket,
                     m_writeBuffer,
-                    [this, self](boost::system::error_code _ec, std::size_t _bytesTransferred) {
+                    [this, self](boost::system::error_code _ec, std::size_t _bytesTransferred)
+                    {
                         try
                         {
                             if (!_ec)

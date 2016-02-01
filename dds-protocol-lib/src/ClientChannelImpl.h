@@ -26,9 +26,10 @@ namespace dds
                 this->m_channelType = _channelType;
                 // Register handshake OK callback
                 std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
-                                   CClientChannelImpl * _channel)>
-                    funcHandshakeOK = [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
-                                             CClientChannelImpl* _channel) -> bool {
+                                   CClientChannelImpl * _channel)> funcHandshakeOK =
+                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
+                           CClientChannelImpl* _channel) -> bool
+                {
                     LOG(MiscCommon::info) << "Successfull handshake";
 
                     this->m_isHandshakeOK = true;
@@ -45,9 +46,10 @@ namespace dds
 
                 // Register handshake ERROR callback
                 std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
-                                   CClientChannelImpl * _channel)>
-                    funcHandshakeERR = [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
-                                              CClientChannelImpl* _channel) -> bool {
+                                   CClientChannelImpl * _channel)> funcHandshakeERR =
+                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
+                           CClientChannelImpl* _channel) -> bool
+                {
                     LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
                     this->m_isHandshakeOK = false;
@@ -77,7 +79,8 @@ namespace dds
                 boost::asio::async_connect(
                     this->socket(),
                     _endpoint_iterator,
-                    [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator) {
+                    [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
+                    {
                         if (!ec)
                         {
                             LOG(MiscCommon::debug) << "Client channel connected.";

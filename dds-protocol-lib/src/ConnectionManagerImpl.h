@@ -59,15 +59,16 @@ namespace dds
                 m_signals->add(SIGQUIT);
 #endif // defined(SIGQUIT)
 
-                m_signals->async_wait([this](boost::system::error_code /*ec*/, int signo) {
-                    // The server is stopped by cancelling all outstanding asynchronous
-                    // operations. Once all operations have finished the io_service::run()
-                    // call will exit.
-                    LOG(MiscCommon::info) << "Received a signal: " << signo;
-                    LOG(MiscCommon::info) << "Sopping DDS transport server";
+                m_signals->async_wait([this](boost::system::error_code /*ec*/, int signo)
+                                      {
+                                          // The server is stopped by cancelling all outstanding asynchronous
+                                          // operations. Once all operations have finished the io_service::run()
+                                          // call will exit.
+                                          LOG(MiscCommon::info) << "Received a signal: " << signo;
+                                          LOG(MiscCommon::info) << "Sopping DDS transport server";
 
-                    stop();
-                });
+                                          stop();
+                                      });
             }
 
             ~CConnectionManagerImpl()
@@ -90,7 +91,10 @@ namespace dds
                         user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
                     CMonitoringThread::instance().start(maxIdleTime,
-                                                        []() { LOG(MiscCommon::info) << "Idle callback called."; });
+                                                        []()
+                                                        {
+                                                            LOG(MiscCommon::info) << "Idle callback called.";
+                                                        });
                     m_acceptor->listen();
                     createClientAndStartAccept(m_acceptor);
 
@@ -115,7 +119,10 @@ namespace dds
                                           << " concurrent threads.";
                     for (int x = 0; x < concurrentThreads; ++x)
                     {
-                        m_workerThreads.create_thread([this]() { runService(10, m_acceptor->get_io_service()); });
+                        m_workerThreads.create_thread([this]()
+                                                      {
+                                                          runService(10, m_acceptor->get_io_service());
+                                                      });
                     }
 
                     // Starting service for UI transport engine
@@ -126,7 +133,10 @@ namespace dds
                                               << " concurrent threads.";
                         for (int x = 0; x < concurrentThreads; ++x)
                         {
-                            m_workerThreads.create_thread([this]() { runService(10, m_acceptorUI->get_io_service()); });
+                            m_workerThreads.create_thread([this]()
+                                                          {
+                                                              runService(10, m_acceptorUI->get_io_service());
+                                                          });
                         }
                     }
 
@@ -176,7 +186,10 @@ namespace dds
                         ptr->template pushMsg<cmdSHUTDOWN>();
                     }
 
-                    auto condition = [](typename T::connectionPtr_t _v, bool& /*_stop*/) { return (_v->started()); };
+                    auto condition = [](typename T::connectionPtr_t _v, bool& /*_stop*/)
+                    {
+                        return (_v->started());
+                    };
 
                     size_t counter = 0;
                     while (true)
@@ -352,8 +365,7 @@ namespace dds
 
           private:
             void acceptHandler(typename T::connectionPtr_t _client,
-                               std::shared_ptr<boost::asio::ip::tcp::acceptor>
-                                   _acceptor,
+                               std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor,
                                const boost::system::error_code& _ec)
             {
                 if (!_ec)
@@ -379,15 +391,17 @@ namespace dds
                 pThis->newClientCreated(newClient);
 
                 // Subscribe on dissconnect event
-                newClient->registerDisconnectEventHandler([this](T* _channel) -> void {
+                newClient->registerDisconnectEventHandler(
+                    [this](T* _channel) -> void
                     {
-                        // collect statistics for disconnected channels
-                        std::lock_guard<std::mutex> lock(m_statMutex);
-                        m_readStatDisconnectedChannels.addFromStat(_channel->getReadStat());
-                        m_writeStatDisconnectedChannels.addFromStat(_channel->getWriteStat());
-                    }
-                    return this->removeClient(_channel);
-                });
+                        {
+                            // collect statistics for disconnected channels
+                            std::lock_guard<std::mutex> lock(m_statMutex);
+                            m_readStatDisconnectedChannels.addFromStat(_channel->getReadStat());
+                            m_writeStatDisconnectedChannels.addFromStat(_channel->getWriteStat());
+                        }
+                        return this->removeClient(_channel);
+                    });
 
                 _acceptor->async_accept(
                     newClient->socket(),
@@ -423,7 +437,10 @@ namespace dds
                 std::lock_guard<std::mutex> lock(m_mutex);
                 m_channels.erase(remove_if(m_channels.begin(),
                                            m_channels.end(),
-                                           [&](typename T::connectionPtr_t& i) { return (i.get() == _client); }),
+                                           [&](typename T::connectionPtr_t& i)
+                                           {
+                                               return (i.get() == _client);
+                                           }),
                                  m_channels.end());
             }
 

@@ -29,34 +29,40 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     , m_propertyPTMutex()
 {
     subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                     [](CAgentChannel* _channel) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
+                     [](CAgentChannel* _channel)
+                     {
+                         LOG(MiscCommon::info) << "The Agent has closed the connection.";
+                     });
 
-    subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CAgentChannel* _channel) {
-        switch (getChannelType())
-        {
-            case protocol_api::EChannelType::AGENT:
-            {
-                m_state = EAgentState::idle;
-                pushMsg<protocol_api::cmdGET_ID>();
-                pushMsg<protocol_api::cmdGET_HOST_INFO>();
-            }
-                return;
-            case protocol_api::EChannelType::UI:
-            {
-                LOG(MiscCommon::info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
-                                      << "] has successfully connected.";
+    subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
+                     [this](CAgentChannel* _channel)
+                     {
+                         switch (getChannelType())
+                         {
+                             case protocol_api::EChannelType::AGENT:
+                             {
+                                 m_state = EAgentState::idle;
+                                 pushMsg<protocol_api::cmdGET_ID>();
+                                 pushMsg<protocol_api::cmdGET_HOST_INFO>();
+                             }
+                                 return;
+                             case protocol_api::EChannelType::UI:
+                             {
+                                 LOG(MiscCommon::info) << "The UI agent ["
+                                                       << socket().remote_endpoint().address().to_string()
+                                                       << "] has successfully connected.";
 
-                // All UI channels get unique IDs, so that user tasks and agents can send
-                // back the
-                // information to a particular UI channel.
-                m_id = DDSChannelId::getChannelId();
-            }
-                return;
-            default:
-                // TODO: log unknown connection attempt
-                return;
-        }
-    });
+                                 // All UI channels get unique IDs, so that user tasks and agents can send
+                                 // back the
+                                 // information to a particular UI channel.
+                                 m_id = DDSChannelId::getChannelId();
+                             }
+                                 return;
+                             default:
+                                 // TODO: log unknown connection attempt
+                                 return;
+                         }
+                     });
 }
 
 uint64_t CAgentChannel::getId() const

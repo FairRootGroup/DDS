@@ -142,7 +142,10 @@ CTopology::TaskInfoIteratorPair_t CTopology::getTaskInfoIterator(TaskInfoConditi
     TaskInfoCondition_t condition = _condition;
     if (condition == nullptr)
     {
-        condition = [](const HashToTaskInfoMap_t::value_type&) -> bool { return true; };
+        condition = [](const HashToTaskInfoMap_t::value_type&) -> bool
+        {
+            return true;
+        };
     }
     TaskInfoIterator_t begin_iterator(condition, m_hashToTaskInfoMap.begin(), m_hashToTaskInfoMap.end());
     TaskInfoIterator_t end_iterator(condition, m_hashToTaskInfoMap.end(), m_hashToTaskInfoMap.end());
@@ -154,7 +157,10 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
     TaskCollectionCondition_t condition = _condition;
     if (condition == nullptr)
     {
-        condition = [](HashToTaskCollectionMap_t::value_type) -> bool { return true; };
+        condition = [](HashToTaskCollectionMap_t::value_type) -> bool
+        {
+            return true;
+        };
     }
     TaskCollectionIterator_t begin_iterator(
         condition, m_hashToTaskCollectionMap.begin(), m_hashToTaskCollectionMap.end());
@@ -164,16 +170,17 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
 
 CTopology::TaskInfoIteratorPair_t CTopology::getTaskInfoIteratorForPropertyId(const std::string& _propertyId) const
 {
-    return getTaskInfoIterator([&_propertyId](const CTopology::TaskInfoIterator_t::value_type& value) -> bool {
-        TaskPtr_t task = value.second.m_task;
-        const TopoPropertyPtrVector_t& properties = task->getProperties();
-        for (const auto& v : properties)
-        {
-            if (v->getId() == _propertyId)
-                return true;
-        }
-        return false;
-    });
+    return getTaskInfoIterator([&_propertyId](const CTopology::TaskInfoIterator_t::value_type& value) -> bool
+                               {
+                                   TaskPtr_t task = value.second.m_task;
+                                   const TopoPropertyPtrVector_t& properties = task->getProperties();
+                                   for (const auto& v : properties)
+                                   {
+                                       if (v->getId() == _propertyId)
+                                           return true;
+                                   }
+                                   return false;
+                               });
 }
 
 void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)

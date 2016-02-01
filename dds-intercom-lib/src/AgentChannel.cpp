@@ -18,16 +18,26 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::UNKNOWN)
     , m_syncHelper(nullptr)
 {
-    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [this](CAgentChannel* _channel) {
-        LOG(info) << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
-        this->sendYourself<cmdSHUTDOWN>();
-    });
+    subscribeOnEvent(
+        EChannelEvents::OnRemoteEndDissconnected,
+        [this](CAgentChannel* _channel)
+        {
+            LOG(info)
+                << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
+            this->sendYourself<cmdSHUTDOWN>();
+        });
 
     subscribeOnEvent(protocol_api::EChannelEvents::OnConnected,
-                     [this](CAgentChannel* _channel) { LOG(info) << "Connected to the commander server"; });
+                     [this](CAgentChannel* _channel)
+                     {
+                         LOG(info) << "Connected to the commander server";
+                     });
 
     subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
-                     [this](CAgentChannel* _channel) { LOG(log_stderr) << "Failed to connect to commander server"; });
+                     [this](CAgentChannel* _channel)
+                     {
+                         LOG(log_stderr) << "Failed to connect to commander server";
+                     });
 }
 
 bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
