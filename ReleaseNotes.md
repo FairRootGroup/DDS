@@ -7,11 +7,16 @@ Modified: drop support of "--ssh-rms-cfg" in favor of "--config". (GH-111)
 Modified: drop support of auto-config feature of dds-submit, when it remembers last used settings. (GH-111)   
 
 ### dds-protocol-lib
-Added: maximum message size for key-value and custom commands (GH-104)
+Added: maximum message size for key-value and custom commands (GH-104)  
 Added: sending of arrays (GH-105)   
 Added: sending of strings (GH-106)   
-Added: improve protocol attachment architecture. Check maximum size for vectors and strings in commands. Size limitations: 1) all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16; 2) all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32; 3) all std::string's have a maximum size of uint16_t i.e. 2^16.   
+Added: improve protocol attachment architecture. Check maximum size for vectors and strings in commands. Size limitations:   
+1.   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
+2.   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
+3.   all std::string's have a maximum size of uint16_t i.e. 2^16.   
 
+###DDS common
+Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)
 
 ## v1.0 (2015-11-20)
 ###DDS common
@@ -26,7 +31,6 @@ Added: new dds-stat command is introduced with possible options: enable, disable
 Added: possibility to send custom commands from user tasks or utils. New library dds-custom-cmd-lib is introduced. (GH-100)   
 Added: DDS Tutorial2 which introduces the use of the new custom dds-custom-cmd-lib library. (GH-100)   
 Added: DDS environment properties API - DDSEnvProp (GH-92)   
-Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. 
 
 ### dds-key-value
 Fixed: Removed sys. signals handler. A user process now is responsible to catch signals if needed. (GH-97)    
