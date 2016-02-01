@@ -1,6 +1,10 @@
 # DDS Release Notes
 
 ## v1.2 (Not Yet Released)
+
+###DDS common
+Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)
+
 ### dds-submit
 Added: the command learned "--config/-c" parameter, which can be used to specify a configuration file for plug-ins. (GH-111)   
 Modified: drop support of "--ssh-rms-cfg" in favor of "--config". (GH-111)   
@@ -10,13 +14,10 @@ Modified: drop support of auto-config feature of dds-submit, when it remembers l
 Added: maximum message size for key-value and custom commands (GH-104)  
 Added: sending of arrays (GH-105)   
 Added: sending of strings (GH-106)   
-Added: improve protocol attachment architecture. Check maximum size for vectors and strings in commands. Size limitations:   
-1.   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
-2.   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
-3.   all std::string's have a maximum size of uint16_t i.e. 2^16.   
-
-###DDS common
-Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)
+Added: improve protocol attachment architecture. Check maximum size for vectors and strings in commands. Size limitations:
+  -   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
+  -   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
+  -   all std::string's have a maximum size of uint16_t i.e. 2^16.   
 
 ## v1.0 (2015-11-20)
 ###DDS common
