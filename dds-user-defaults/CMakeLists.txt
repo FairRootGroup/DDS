@@ -43,18 +43,18 @@ include_directories(
 # dds-user-defaults executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds-user-defaults-lib SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
+    add_library(dds_user_defaults_lib SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
     add_executable(dds-user-defaults ${SOURCE_FILES} ${HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds-user-defaults-lib SHARED ${LIB_SOURCE_FILES})
+    add_library(dds_user_defaults_lib SHARED ${LIB_SOURCE_FILES})
     add_executable(dds-user-defaults ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 # we want to have the same name for the library and for the exe
-SET_TARGET_PROPERTIES(dds-user-defaults-lib PROPERTIES OUTPUT_NAME dds-user-defaults)
+SET_TARGET_PROPERTIES(dds_user_defaults_lib PROPERTIES OUTPUT_NAME dds-user-defaults)
 
 # API headers
-target_include_directories(dds-user-defaults-lib INTERFACE ${dds-user-defaults_SOURCE_DIR}/src)
+target_include_directories(dds_user_defaults_lib INTERFACE ${dds-user-defaults_SOURCE_DIR}/src)
 
 target_link_libraries (
     dds-user-defaults
@@ -63,13 +63,13 @@ target_link_libraries (
 )
 
 target_link_libraries (
-    dds-user-defaults-lib
+    dds_user_defaults_lib
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
 )
 
 install(TARGETS dds-user-defaults DESTINATION bin)
-install(TARGETS dds-user-defaults-lib DESTINATION lib)
+install(TARGETS dds_user_defaults_lib DESTINATION lib)
 
 
 #

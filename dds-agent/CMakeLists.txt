@@ -52,8 +52,8 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-agent
-	dds-protocol-lib
-	dds-user-defaults-lib
+	dds_protocol_lib
+	dds_user_defaults_lib
 	dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
@@ -65,7 +65,7 @@ target_link_libraries (
 
 target_include_directories(dds-commander
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
 		$<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )

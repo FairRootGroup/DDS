@@ -43,7 +43,7 @@ option(BUILD_TESTS "Build DDS unit tests" OFF)
 # modules
 option(BUILD_dds-commander "Build dds-commander" ON)
 option(BUILD_dds-topology "Build dds-topology" ON)
-option(BUILD_dds-topology-lib "Build dds-topology-lib" ON)
+option(BUILD_dds_topology_lib "Build dds_topology_lib" ON)
 option(BUILD_dds-agent "Build dds-agent" ON)
 option(BUILD_dds-ssh "Build dds-ssh" ON)
 option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
@@ -179,7 +179,7 @@ message(STATUS "Build MiscCommon - YES")
 add_subdirectory ( MiscCommon )
 
 # DDS Protocol lib
-message(STATUS "Build dds-protocol-lib - YES")
+message(STATUS "Build dds_protocol_lib - YES")
 add_subdirectory( dds-protocol-lib )
 
 # dds-daemonize
@@ -198,11 +198,11 @@ if(BUILD_dds-topology)
     add_subdirectory ( dds-topology )
 endif(BUILD_dds-topology)
 
-# dds-topology-lib
-if(BUILD_dds-topology-lib)
-    message(STATUS "Build dds-topology-lib - YES")
+# dds_topology_lib
+if(BUILD_dds_topology_lib)
+    message(STATUS "Build dds_topology_lib - YES")
     add_subdirectory ( dds-topology-lib )
-endif(BUILD_dds-topology-lib)
+endif(BUILD_dds_topology_lib)
 
 # dds-agent
 if(BUILD_dds-agent)
@@ -330,8 +330,8 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
                       COMMAND -mkdir -p ${WN_PKG_DIR}
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
-                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults-lib> "${WN_PKG_DIR}"
-		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-protocol-lib> "${WN_PKG_DIR}"
+                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_user_defaults_lib> "${WN_PKG_DIR}"
+		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_protocol_lib> "${WN_PKG_DIR}"
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_intercom_lib> "${WN_PKG_DIR}"
 		              COMMAND ${lib_cmd} ${lib_cmd_args}
                       COMMAND ${lib_cmd} ${lib_cmd_args_log}
@@ -342,8 +342,8 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
                       VERBATIM )
    add_dependencies( wn_bin
 			dds-agent
-			dds-user-defaults-lib
-			dds-protocol-lib
+			dds_user_defaults_lib
+			dds_protocol_lib
 			dds_intercom_lib)
 
    add_custom_target( wn_bin_upload

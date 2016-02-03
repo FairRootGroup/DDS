@@ -46,9 +46,9 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-topology
-	dds-user-defaults-lib
-	dds-protocol-lib
-    dds-topology-lib
+	dds_user_defaults_lib
+	dds_protocol_lib
+    dds_topology_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_LOG_LIBRARY}
@@ -59,9 +59,9 @@ target_link_libraries (
 
 target_include_directories(dds-topology
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
-		$<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_protocol_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 install(TARGETS dds-topology DESTINATION bin)

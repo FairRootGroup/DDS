@@ -1,7 +1,7 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-protocol-lib )
+project( dds_protocol_lib )
 
 #
 # Where to lookup modules
@@ -75,36 +75,36 @@ include_directories(
 # lib
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_library(dds-protocol-lib SHARED ${SOURCE_FILES} ${SRC_HDRS})
+	add_library(dds_protocol_lib SHARED ${SOURCE_FILES} ${SRC_HDRS})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_library(dds-protocol-lib SHARED ${SOURCE_FILES})
+	add_library(dds_protocol_lib SHARED ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-	dds-protocol-lib
+	dds_protocol_lib
 	${Boost_SYSTEM_LIBRARY}
     ${Boost_LOG_LIBRARY}
     ${Boost_LOG_SETUP_LIBRARY}
 )
 
-target_include_directories(dds-protocol-lib
+target_include_directories(dds_protocol_lib
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 # API headers
-target_include_directories(dds-protocol-lib INTERFACE ${dds-protocol-lib_SOURCE_DIR}/src)
+target_include_directories(dds_protocol_lib INTERFACE ${dds_protocol_lib_SOURCE_DIR}/src)
 
-install(TARGETS dds-protocol-lib DESTINATION lib)
+install(TARGETS dds_protocol_lib DESTINATION lib)
 
 
 #
 # Unit tests
 #
 if (BUILD_TESTS)
-	message (STATUS "Build dds-protocol-lib tests - YES")
-	add_subdirectory ( ${dds-protocol-lib_SOURCE_DIR}/tests ) 
+	message (STATUS "Build dds_protocol_lib tests - YES")
+	add_subdirectory ( ${dds_protocol_lib_SOURCE_DIR}/tests ) 
 else (BUILD_TESTS)
-	message (STATUS "Build dds-protocol-lib tests - NO")
+	message (STATUS "Build dds_protocol_lib tests - NO")
 endif (BUILD_TESTS)
 

@@ -46,7 +46,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
 	dds-ssh
-	dds-user-defaults-lib
+	dds_user_defaults_lib
 	dds_sys_files
 	pipe_log_engine
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -57,7 +57,7 @@ target_link_libraries (
 
 target_include_directories(dds-ssh
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 

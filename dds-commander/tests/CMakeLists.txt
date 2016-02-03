@@ -16,9 +16,9 @@ ${dds-commander_SOURCE_DIR}/src/SSHScheduler.cpp)
 
 target_link_libraries (
 	dds-scheduler-tests
-    dds-protocol-lib
-    dds-topology-lib
-	dds-user-defaults-lib
+    dds_protocol_lib
+    dds_topology_lib
+	dds_user_defaults_lib
 	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     ${Boost_LOG_LIBRARY}
     ${Boost_LOG_SETUP_LIBRARY}
@@ -30,11 +30,11 @@ install(TARGETS dds-scheduler-tests DESTINATION tests)
 
 target_include_directories(dds-scheduler-tests
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
     INTERFACE
-        ${dds-topology-lib_SOURCE_DIR}/src
+        ${dds_topology_lib_SOURCE_DIR}/src
     INTERFACE
-        ${dds-protocol-lib_SOURCE_DIR}/src
+        ${dds_protocol_lib_SOURCE_DIR}/src
 )
 
 if( BUILD_TESTS )

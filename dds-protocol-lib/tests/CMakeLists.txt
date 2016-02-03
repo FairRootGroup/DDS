@@ -1,7 +1,7 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-protocol-lib-tests )
+project( dds_protocol_lib-tests )
 
 
 include_directories(
@@ -22,23 +22,23 @@ set( CLNT_HEADER_FILES
 )
 
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_executable(dds-protocol-lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES} ${CLNT_HEADER_FILES})
+	add_executable(dds_protocol_lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES} ${CLNT_HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_executable(dds-protocol-lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES})
+	add_executable(dds_protocol_lib-ProtocolMessage-tests ${CLNT_SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
 target_link_libraries (
-	dds-protocol-lib-ProtocolMessage-tests
-	dds-protocol-lib
+	dds_protocol_lib-ProtocolMessage-tests
+	dds_protocol_lib
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
 
-target_include_directories(dds-protocol-lib-ProtocolMessage-tests
+target_include_directories(dds_protocol_lib-ProtocolMessage-tests
     PRIVATE
-        $<TARGET_PROPERTY:dds-protocol-lib,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:dds_protocol_lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-install(TARGETS dds-protocol-lib-ProtocolMessage-tests DESTINATION tests)
+install(TARGETS dds_protocol_lib-ProtocolMessage-tests DESTINATION tests)

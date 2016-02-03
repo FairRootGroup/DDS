@@ -1,7 +1,7 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-topology-lib )
+project( dds_topology_lib )
 
 #
 # Where to lookup modules
@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 #
 # configure files
 # 
-configure_file( ${dds-topology-lib_SOURCE_DIR}/src/version.h.in ${dds-topology-lib_BINARY_DIR}/version.h @ONLY )
+configure_file( ${dds_topology_lib_SOURCE_DIR}/src/version.h.in ${dds_topology_lib_BINARY_DIR}/version.h @ONLY )
 
 #
 # Source files
@@ -54,47 +54,47 @@ set( HEADER_FILES
 )
 
 include_directories(
-	${dds-topology-lib_BINARY_DIR}
+	${dds_topology_lib_BINARY_DIR}
 	${MiscCommon_LOCATION}
 	${Boost_INCLUDE_DIRS}
 )
 
 #
-# dds-topology-lib executable
+# dds_topology_lib executable
 #
 if (CMAKE_GENERATOR STREQUAL "Xcode")
-#    add_executable(dds-topology-lib ${SOURCE_FILES} ${HEADER_FILES})
-    add_library(dds-topology-lib SHARED ${SOURCE_FILES} ${HEADER_FILES})
+#    add_executable(dds_topology_lib ${SOURCE_FILES} ${HEADER_FILES})
+    add_library(dds_topology_lib SHARED ${SOURCE_FILES} ${HEADER_FILES})
 else (CMAKE_GENERATOR STREQUAL "Xcode")
-#    add_executable(dds-topology-lib ${SOURCE_FILES})
-    add_library(dds-topology-lib SHARED ${SOURCE_FILES})
+#    add_executable(dds_topology_lib ${SOURCE_FILES})
+    add_library(dds_topology_lib SHARED ${SOURCE_FILES})
 endif (CMAKE_GENERATOR STREQUAL "Xcode")
 
-target_link_libraries ( dds-topology-lib
-	dds-user-defaults-lib
+target_link_libraries ( dds_topology_lib
+	dds_user_defaults_lib
 	${Boost_FILESYSTEM_LIBRARY}
     ${Boost_REGEX_LIBRARY}
 )
 
 # API headers
-#target_include_directories(dds-topology-lib INTERFACE ${dds-topology-lib_SOURCE_DIR}/src)
+#target_include_directories(dds_topology_lib INTERFACE ${dds_topology_lib_SOURCE_DIR}/src)
 
 
-target_include_directories(dds-topology-lib
+target_include_directories(dds_topology_lib
     INTERFACE
-        ${dds-topology-lib_SOURCE_DIR}/src
+        ${dds_topology_lib_SOURCE_DIR}/src
 	PRIVATE
-		$<TARGET_PROPERTY:dds-user-defaults-lib,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-install(TARGETS dds-topology-lib DESTINATION lib)
+install(TARGETS dds_topology_lib DESTINATION lib)
 
 #
 # Unit tests
 #
 if (BUILD_TESTS)
-    message (STATUS "Build dds-topology-lib unit tests - YES")
-    add_subdirectory ( ${dds-topology-lib_SOURCE_DIR}/tests ) 
+    message (STATUS "Build dds_topology_lib unit tests - YES")
+    add_subdirectory ( ${dds_topology_lib_SOURCE_DIR}/tests ) 
 else (BUILD_TESTS)
-    message (STATUS "Build dds-topology-lib unit tests - NO")
+    message (STATUS "Build dds_topology_lib unit tests - NO")
 endif (BUILD_TESTS)
