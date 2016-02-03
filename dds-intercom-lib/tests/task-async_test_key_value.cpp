@@ -1,6 +1,6 @@
 // DDS
-#include "DDSEnvProp.h"
 #include "Logger.h"
+#include "dds_env_prop.h"
 #include "dds_intercom.h"
 // STD
 #include <condition_variable>
@@ -16,7 +16,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::dds_env_prop;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
@@ -85,8 +84,7 @@ int main(int argc, char* argv[])
 
         // Subscribe on key update events
         keyValue.subscribe(
-            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value)
-            {
+            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value) {
                 LOG(debug) << "USER TASK received key update notification";
                 {
                     unique_lock<mutex> lk(keyMutex);

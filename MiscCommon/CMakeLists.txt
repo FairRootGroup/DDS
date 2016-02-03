@@ -42,10 +42,10 @@ add_subdirectory( ${MiscCommon_SOURCE_DIR}/dds_sys_files )
 #
 if (BUILD_TESTS)
     message (STATUS "Build MiscCommon unit tests - YES")
-    add_subdirectory ( ${MiscCommon_SOURCE_DIR}/tests ) 
+    add_subdirectory ( ${MiscCommon_SOURCE_DIR}/tests )
 else (BUILD_TESTS)
     message (STATUS "Build MiscCommon unit tests - NO")
 endif (BUILD_TESTS)
 
-# install DDSEnvProp.h
-install(FILES DDSEnvProp.h DESTINATION include)
+# install dds_env_prop.h
+install(FILES dds_env_prop.h DESTINATION include)
