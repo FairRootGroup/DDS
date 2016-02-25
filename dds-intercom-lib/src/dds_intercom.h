@@ -11,8 +11,9 @@
 
 namespace dds
 {
-    const std::string g_sRmsAgentSign = "rms_agent_sign";
-
+    ///////////////////////////////////
+    // DDS key-value
+    ///////////////////////////////////
     class CKeyValue
     {
       public:
@@ -32,6 +33,9 @@ namespace dds
         void unsubscribe();
     };
 
+    ///////////////////////////////////
+    // DDS custom commands
+    ///////////////////////////////////
     class CCustomCmd
     {
       public:
@@ -47,6 +51,61 @@ namespace dds
         void subscribe(signal_t::slot_function_type _subscriber);
         void subscribeReply(replySignal_t::slot_function_type _subscriber);
         void unsubscribe();
+    };
+
+    ///////////////////////////////////
+    // DDS RMS plugins
+    ///////////////////////////////////
+    enum class EMsgSeverity
+    {
+        info,
+        error
+    };
+
+    struct SSubmit
+    {
+        uint32_t m_nInstances;
+        std::string m_cfgFilePath;
+    };
+
+    struct SMessage
+    {
+        EMsgSeverity m_msgSeverity;
+        std::string m_msg;
+    };
+
+    struct SRequirement
+    {
+        std::string m_hostName;
+    };
+
+    class CRMSPluginProtocol
+    {
+      public:
+        typedef boost::signals2::signal<void(const SSubmit&)> signalSubmit_t;
+        typedef boost::signals2::signal<void(const SMessage&)> signalMessage_t;
+        typedef boost::signals2::signal<void(const SRequirement&)> signalRequirement_t;
+
+      public:
+        CRMSPluginProtocol();
+        ~CRMSPluginProtocol();
+
+      public:
+        void subscribeSubmit(signalSubmit_t::slot_function_type _subscriber);
+        void subscribeMessage(signalMessage_t::slot_function_type _subscriber);
+        void subscribeRequirement(signalRequirement_t::slot_function_type _subscriber);
+        void unsubscribe();
+
+        void send(EMsgSeverity _severity, const std::string& _msg);
+
+        void parse(std::istream& _stream);
+
+      private:
+        signalSubmit_t m_signalSubmit;
+        signalMessage_t m_signalMessage;
+        signalRequirement_t m_signalRequirement;
+
+        CCustomCmd m_customCmd;
     };
 }
 

@@ -9,11 +9,11 @@ include_directories(
 )
 
 ##################################################################
-# Test_KeyValue
+# Unit Test
 ##################################################################
 
 set( CLNT_SOURCE_FILES
-	./Test_KeyValue.cpp
+	./Test.cpp
 )
 
 add_executable(dds_intercom_lib-tests ${CLNT_SOURCE_FILES})

@@ -18,6 +18,7 @@ configure_file( ${dds_intercom_lib_SOURCE_DIR}/src/version.h.in ${dds_intercom_l
 #
 set( SOURCE_FILES
 	./src/dds_intercom.cpp
+	./src/dds_rms_plugin_protocol.cpp
 	./src/DDSIntercomGuard.cpp
 	./src/AgentConnectionManager.cpp
 	./src/AgentChannel.cpp

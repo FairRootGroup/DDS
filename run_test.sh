@@ -80,6 +80,11 @@ echo "Commander UNIT-TESTs"
 echo "----------------------"
 exec_test "dds-scheduler-tests" "--catch_system_errors=no"
 
+echo "----------------------"
+echo "Intercom lib UNIT-TESTs"
+echo "----------------------"
+exec_test "dds_intercom_lib-tests" "--catch_system_errors=no"
+
 
 popd
 
