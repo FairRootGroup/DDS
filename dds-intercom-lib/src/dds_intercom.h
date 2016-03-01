@@ -7,6 +7,7 @@
 // STD
 #include <string>
 // BOOST
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/signals2/signal.hpp>
 
 namespace dds
@@ -56,6 +57,9 @@ namespace dds
     ///////////////////////////////////
     // DDS RMS plugins
     ///////////////////////////////////
+
+    const std::string g_sRmsAgentSign = "rms_agent_sign";
+
     enum class EMsgSeverity
     {
         info,
@@ -64,19 +68,55 @@ namespace dds
 
     struct SSubmit
     {
+        SSubmit();
+
+        std::string toJSON();
+        void fromJSON(const std::string& _json);
+        void fromPT(const boost::property_tree::ptree& _pt);
+        bool operator==(const SSubmit& _val) const;
+
         uint32_t m_nInstances;
         std::string m_cfgFilePath;
+        std::string m_id;
     };
 
     struct SMessage
     {
+        SMessage();
+
+        std::string toJSON();
+        void fromJSON(const std::string& _json);
+        void fromPT(const boost::property_tree::ptree& _pt);
+        bool operator==(const SMessage& _val) const;
+
         EMsgSeverity m_msgSeverity;
         std::string m_msg;
+        std::string m_id;
     };
 
     struct SRequirement
     {
+        SRequirement();
+
+        std::string toJSON();
+        void fromJSON(const std::string& _json);
+        void fromPT(const boost::property_tree::ptree& _pt);
+        bool operator==(const SRequirement& _val) const;
+
         std::string m_hostName;
+        std::string m_id;
+    };
+
+    struct SInit
+    {
+        SInit();
+
+        std::string toJSON();
+        void fromJSON(const std::string& _json);
+        void fromPT(const boost::property_tree::ptree& _pt);
+        bool operator==(const SInit& _val) const;
+
+        std::string m_id;
     };
 
     class CRMSPluginProtocol
@@ -87,23 +127,27 @@ namespace dds
         typedef boost::signals2::signal<void(const SRequirement&)> signalRequirement_t;
 
       public:
-        CRMSPluginProtocol();
+        CRMSPluginProtocol(const std::string& _id);
         ~CRMSPluginProtocol();
 
       public:
-        void subscribeSubmit(signalSubmit_t::slot_function_type _subscriber);
-        void subscribeMessage(signalMessage_t::slot_function_type _subscriber);
-        void subscribeRequirement(signalRequirement_t::slot_function_type _subscriber);
-        void unsubscribe();
+        void onSubmit(signalSubmit_t::slot_function_type _subscriber);
+        void onMessage(signalMessage_t::slot_function_type _subscriber);
+        void onRequirement(signalRequirement_t::slot_function_type _subscriber);
 
-        void send(EMsgSeverity _severity, const std::string& _msg);
+        void sendInit();
+        void sendMessage(EMsgSeverity _severity, const std::string& _msg);
 
-        void parse(std::istream& _stream);
+        void notify(std::istream& _stream);
 
       private:
+        void unsubscribe();
+
         signalSubmit_t m_signalSubmit;
         signalMessage_t m_signalMessage;
         signalRequirement_t m_signalRequirement;
+
+        std::string m_id;
 
         CCustomCmd m_customCmd;
     };
