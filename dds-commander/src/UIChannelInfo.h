@@ -7,8 +7,8 @@
 
 // DDS
 #include "AgentChannel.h"
-#include "ProtocolCommands.h"
 #include "CustomCmdCmd.h"
+#include "ProtocolCommands.h"
 #include "dds_intercom.h"
 // STD
 #include <mutex>
