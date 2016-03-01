@@ -222,10 +222,11 @@ bool SInit::operator==(const SInit& val) const
 CRMSPluginProtocol::CRMSPluginProtocol(const std::string& _id)
     : m_id(_id)
 {
-    m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
-        istringstream ss(_command);
-        notify(ss);
-    });
+    m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId)
+                          {
+                              istringstream ss(_command);
+                              notify(ss);
+                          });
 }
 
 CRMSPluginProtocol::~CRMSPluginProtocol()

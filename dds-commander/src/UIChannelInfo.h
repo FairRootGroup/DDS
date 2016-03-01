@@ -9,6 +9,7 @@
 #include "AgentChannel.h"
 #include "ProtocolCommands.h"
 #include "CustomCmdCmd.h"
+#include "dds_intercom.h"
 // STD
 #include <mutex>
 #include <sstream>
@@ -338,29 +339,85 @@ namespace dds
                 return ss.str();
             }
 
-            void requestAgentSubmittion()
-            {
-                try
-                {
-                    std::lock_guard<std::mutex> lock(m_mutexReceive);
-                    if (!m_channel.expired())
-                    {
-                        auto pPlugin = m_channelSubmitPlugin.lock();
-                        protocol_api::SCustomCmdCmd cmd;
-                        cmd.m_sCmd = m_strInitialSubmitRequest;
-                        cmd.m_sCondition = "";
-                        pPlugin->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
-                    }
-                }
-                catch (std::bad_weak_ptr& e)
-                {
-                    // TODO: Do we need to log something here?
-                }
-            }
-
             template <class _T = protocol_api::SCustomCmdCmd>
             bool processMessage(const _T& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
             {
+                boost::property_tree::ptree pt;
+
+                try
+                {
+                    read_json(_cmd.m_sCmd, pt);
+
+                    const boost::property_tree::ptree& childPT = pt.get_child("dds.plug-in");
+
+                    for (const auto& child : childPT)
+                    {
+                        const std::string& tag = child.first;
+                        if (tag == "init")
+                        {
+                            if (!m_channel.expired())
+                            {
+                                auto pUI = m_channel.lock();
+                                pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
+                                    protocol_api::SSimpleMsgCmd("RMS plug-in is online...", MiscCommon::info));
+                            }
+
+                            SInit init;
+                            init.fromPT(pt);
+                            // Sending Submit request to the plug-in
+                            try
+                            {
+                                std::lock_guard<std::mutex> lock(m_mutexReceive);
+                                if (!m_channel.expired())
+                                {
+                                    auto pPlugin = m_channelSubmitPlugin.lock();
+                                    protocol_api::SCustomCmdCmd cmd;
+                                    cmd.m_sCmd = m_strInitialSubmitRequest;
+                                    cmd.m_sCondition = "";
+                                    pPlugin->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
+                                }
+                            }
+                            catch (std::bad_weak_ptr& _e)
+                            {
+                                if (!m_channel.expired())
+                                {
+                                    auto pUI = m_channel.lock();
+                                    pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(protocol_api::SSimpleMsgCmd(
+                                        "Lost connection with the RMS plug-in", MiscCommon::error));
+                                }
+                            }
+                        }
+                        else if (tag == "message")
+                        {
+                            SMessage message;
+                            message.fromPT(pt);
+                            std::stringstream ss;
+                            ss << "Plug-in: " << message.m_msg;
+                            if (!m_channel.expired())
+                            {
+                                auto pUI = m_channel.lock();
+                                pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(protocol_api::SSimpleMsgCmd(
+                                    ss.str(),
+                                    (message.m_msgSeverity == EMsgSeverity::info ? MiscCommon::info
+                                                                                 : MiscCommon::error)));
+                            }
+                        }
+                    }
+                }
+                // catch explicetly ptree_error. On some systems the exact exception message is not propogated to
+                // std::exception parent and can be lost
+                catch (const boost::property_tree::ptree_error& _e)
+                {
+                    std::string msg("Can't parse input message: ");
+                    msg += _e.what();
+                    if (!m_channel.expired())
+                    {
+                        auto pUI = m_channel.lock();
+                        pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
+                            protocol_api::SSimpleMsgCmd(msg, MiscCommon::error));
+                    }
+                }
+
                 /*                try
                                 {
                                     std::lock_guard<std::mutex> lock(m_mutexReceive);
@@ -400,7 +457,7 @@ namespace dds
             }
 
           public:
-            CAgentChannel::weakConnectionPtr_t m_channelSubmitPlugin;
+            CAgentChannel::weakConnectionPtr_t m_channelSubmitPlugin; // pointer to the plug-in
             std::string m_strInitialSubmitRequest;
         };
     }

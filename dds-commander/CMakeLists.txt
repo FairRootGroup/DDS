@@ -58,6 +58,7 @@ target_link_libraries (
 	dds_topology_lib
 	dds_protocol_lib
     dds_ncf
+    dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 	${Boost_LOG_LIBRARY}

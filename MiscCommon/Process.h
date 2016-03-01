@@ -613,7 +613,13 @@ namespace MiscCommon
                 if (!is_status_ok(stat))
                 {
                     std::stringstream ss;
-                    ss << "do_execv: process exited with error: " << stat << " process: \"" << _Command << "\"";
+                    ss << "do_execv: ";
+                    if (WIFSIGNALED(stat))
+                        ss << "Child ended because of an uncaught signal.";
+                    else if (WIFSTOPPED(stat))
+                        ss << "Child process has stopped.";
+
+                    ss << " (exit code: " << WEXITSTATUS(stat) << "). Process: \"" << _Command << "\"";
                     throw std::runtime_error(ss.str());
                 }
                 return 0;

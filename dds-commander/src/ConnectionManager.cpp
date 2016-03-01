@@ -8,8 +8,9 @@
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
 #include "Topology.h"
-#include "dds_intercom.h"
 #include "ncf.h"
+// BOOST
+#include <boost/property_tree/json_parser.hpp>
 
 // silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
@@ -424,8 +425,8 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         stringstream ssCmd;
         ssCmd << ssPluginExe.str();
         // TODO: Send ID to the plug-in
-        // if (!_attachment->m_sCfgFile.empty())
-        //     ssCmd << " -c " << _attachment->m_sCfgFile;
+        ssCmd << " --id "
+              << "FAKE_ID_FOR_TESTS";
 
         const size_t nCmdTimeout = 30; // in sec.
         int nPluginExitCode(0);
@@ -451,7 +452,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
             CNcf config;
             config.readFrom(f);
             inlineShellScripCmds = config.getBashEnvCmds();
-            LOG(debug)
+            LOG(info)
                 << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
 
             string scriptFileName(CUserDefaults::instance().getWrkPkgDir());
@@ -472,11 +473,17 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         m_SubmitAgents.m_channel = _channel;
         m_SubmitAgents.zeroCounters();
 
-        // TODO: implement a wraper class to manage Submit commands protocol
-        // As fo now, we just send a simple string with a request of how many workers we need
-        m_SubmitAgents.m_strInitialSubmitRequest = _attachment->m_sCfgFile; // to_string(_attachment->m_nNumberOfAgents);
+        SSubmit submitRequest;
+        submitRequest.m_cfgFilePath = _attachment->m_sCfgFile;
+        submitRequest.m_nInstances = 0; // to_string(_attachment->m_nNumberOfAgents);
+        m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
+
+        string sPluginInfoMsg("RMS plug-in: ");
+        sPluginInfoMsg += ssPluginExe.str();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(sPluginInfoMsg, info, cmdSUBMIT));
 
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT));
+        LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
 
         try
         {
@@ -493,10 +500,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
             }
 
             stringstream ssMsg;
-            ssMsg << "Failed to deploy agents using \"" << _attachment->m_sRMSType << "\"";
-            if (!_attachment->m_sCfgFile.empty())
-                ssMsg << " with config file \"" << _attachment->m_sCfgFile << "\"";
-            ssMsg << ". Error: " << e.what();
+            ssMsg << "Failed to deploy agents: " << e.what();
             throw runtime_error(ssMsg.str());
         }
         if (!outPut.empty())
@@ -1317,15 +1321,10 @@ bool CConnectionManager::on_cmdCUSTOM_CMD(
                 // Remember the submit plug-in channel, which is responsible for job submittions
                 // Send initial request
                 if (m_SubmitAgents.m_channel.expired())
-                {
                     m_SubmitAgents.m_channelSubmitPlugin = _channel;
-                    m_SubmitAgents.requestAgentSubmittion();
-                }
-                else
-                {
-                    // Process info messages from the plug-in
-                    m_SubmitAgents.processMessage<SCustomCmdCmd>(*_attachment, _channel);
-                }
+
+                // Process messages from the plug-in
+                m_SubmitAgents.processMessage<SCustomCmdCmd>(*_attachment, _channel);
                 return true;
             }
 
