@@ -94,6 +94,23 @@ void CConnectionManager::_start()
             return true;
         },
         chrono::seconds(60));
+
+    // Check RMS plug-in activity
+    CMonitoringThread::instance().registerCallbackFunction(
+        [this, self]() -> bool
+        {
+            try
+            {
+                m_SubmitAgents.checkPluginFailedToStart();
+            }
+            catch (exception& _e)
+            {
+                LOG(error) << "RMS plug-in monitor: error: " << _e.what();
+            }
+
+            return true;
+        },
+        chrono::seconds(15));
 }
 
 void CConnectionManager::_stop()
@@ -428,7 +445,6 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         ssCmd << " --id "
               << "FAKE_ID_FOR_TESTS";
 
-        const size_t nCmdTimeout = 30; // in sec.
         int nPluginExitCode(0);
 
         // Create a new submit communication info channel
@@ -475,7 +491,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 
         SSubmit submitRequest;
         submitRequest.m_cfgFilePath = _attachment->m_sCfgFile;
-        submitRequest.m_nInstances = 0; // to_string(_attachment->m_nNumberOfAgents);
+        submitRequest.m_nInstances = _attachment->m_nNumberOfAgents;
         m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
 
         string sPluginInfoMsg("RMS plug-in: ");
@@ -485,9 +501,12 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT));
         LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
 
+        // Let the submit info channel now, that plug-in is about to start
+        m_SubmitAgents.initPlugin();
+
         try
         {
-            do_execv(ssCmd.str(), nCmdTimeout, &outPut, nullptr, &nPluginExitCode);
+            do_execv(ssCmd.str(), 0 /*don't wait for plug-in*/, &outPut, nullptr, &nPluginExitCode);
         }
         catch (exception& e)
         {
@@ -1314,17 +1333,18 @@ bool CConnectionManager::on_cmdCUSTOM_CMD(
             // check if this is an agent submit request
             if (_attachment->m_sCondition == g_sRmsAgentSign)
             {
+                LOG(info) << "Received a message from RMS plug-in.";
                 lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
                 if (m_SubmitAgents.m_channel.expired())
                     throw runtime_error("Internal error. Submit info channel is not initialized.");
 
-                // Remember the submit plug-in channel, which is responsible for job submittions
+                // Remember the submit plug-in channel, which is responsible for job submissions
                 // Send initial request
-                if (m_SubmitAgents.m_channel.expired())
+                if (m_SubmitAgents.m_channelSubmitPlugin.expired())
                     m_SubmitAgents.m_channelSubmitPlugin = _channel;
 
                 // Process messages from the plug-in
-                m_SubmitAgents.processMessage<SCustomCmdCmd>(*_attachment, _channel);
+                m_SubmitAgents.processCustomCommandMessage(*_attachment, _channel);
                 return true;
             }
 
@@ -1381,6 +1401,7 @@ bool CConnectionManager::on_cmdCUSTOM_CMD(
     }
     catch (exception& _e)
     {
+        LOG(error) << "on_cmdCUSTOM_CMD: " << _e.what();
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdCUSTOM_CMD));
     }
 

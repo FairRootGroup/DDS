@@ -29,6 +29,7 @@
 #include "SubmitCmd.h"
 #include "SysHelper.h"
 #include "version.h"
+#include "BOOSTHelper.h"
 
 namespace bpo = boost::program_options;
 
@@ -72,22 +73,24 @@ namespace dds
             bpo::options_description options("dds-submit options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("rms,r",
+                                  bpo::value<std::string>(&_options->m_sRMS),
+                                  "Defines a destination resource management system.");
             options.add_options()("config,c",
                                   bpo::value<std::string>(&_options->m_sCfgFile),
                                   "A plug-in's configuration file. It can be used to provid additional RMS options");
-            options.add_options()("rms,r",
-                                  bpo::value<std::string>(&_options->m_sRMS),
-                                  "Defines a destination resource management system. (default: localhost)");
             options.add_options()("number,n",
                                   bpo::value<size_t>(&_options->m_number),
-                                  "Defines a number of agents to spawn. It can be used only when \'localhost\' is used "
-                                  "as RMS. A number of available logical cores will be used if the parameter is "
-                                  "omitted.");
+                                  "Defines a number of agents to spawn."
+                                  "If 0 is provided as an argument, thent a number of available logical cores will be "
+                                  "used.\nThis option can not be mixed with \"--config\"");
 
             // Parsing command-line
             bpo::variables_map vm;
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
+
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "config", "number");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found = find_if(vm.begin(),
@@ -97,7 +100,12 @@ namespace dds
                                                                    return (!_v.second.defaulted());
                                                                });
 
-            if (vm.count("help") | vm.end() == found)
+            if (vm.count("help") || vm.end() == found)
+            {
+                LOG(MiscCommon::log_stdout) << options;
+                return false;
+            }
+            if (!vm.count("config") && !vm.count("number"))
             {
                 LOG(MiscCommon::log_stdout) << options;
                 return false;
@@ -112,8 +120,11 @@ namespace dds
             boost::to_lower(_options->m_sRMS);
 
             // make absolute path
-            boost::filesystem::path pathCfgFile(_options->m_sCfgFile);
-            _options->m_sCfgFile = boost::filesystem::absolute(pathCfgFile).string();
+            if (!_options->m_sCfgFile.empty())
+            {
+                boost::filesystem::path pathCfgFile(_options->m_sCfgFile);
+                _options->m_sCfgFile = boost::filesystem::absolute(pathCfgFile).string();
+            }
             return true;
         }
     }

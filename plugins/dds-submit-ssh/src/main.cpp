@@ -10,6 +10,7 @@
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <boost/filesystem/operations.hpp>
 // STD
 #include <chrono>
 #include <fstream>
@@ -70,6 +71,54 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
     return true;
 }
 //=============================================================================
+string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
+{
+    CRMSPluginProtocol proto(_sessionId);
+
+    stringstream ss;
+    ss << "Will use the local host to deply ";
+    if (_nInstances == 0)
+        _nInstances = thread::hardware_concurrency();
+
+    ss << _nInstances << " agents";
+    proto.sendMessage(dds::EMsgSeverity::info, ss.str());
+
+    // Create temporary ssh configuration
+    const char* tmpdir = std::getenv("TMPDIR");
+    if (nullptr == tmpdir)
+    {
+        throw runtime_error("$TMPDIR is not defined. To be able to use \'localhost\' please "
+                            "define location of the temporary directory using TMPDIR "
+                            "environment variable.");
+    }
+    ss.str("");
+    ss << "Using \'" << tmpdir << "\' to spawn agents.";
+    proto.sendMessage(dds::EMsgSeverity::info, ss.str());
+
+    boost::filesystem::path tmpfileName(tmpdir);
+    tmpfileName /= "dds_ssh.cfg";
+    ofstream f(tmpfileName.string());
+
+    string userName;
+    MiscCommon::get_cuser_name(&userName);
+
+    boost::filesystem::path workingDirectoryPath(tmpdir);
+    workingDirectoryPath /= "dds-agents";
+    if (!boost::filesystem::exists(workingDirectoryPath) && !boost::filesystem::create_directory(workingDirectoryPath))
+    {
+        stringstream ssErr;
+        ssErr << "Can't create working directory: " << workingDirectoryPath.string();
+        throw runtime_error(ssErr.str());
+    }
+
+    stringstream ssCfg;
+    ssCfg << "wn, " << userName << "@localhost, ," << workingDirectoryPath.string() << ", " << _nInstances;
+    f << ssCfg.str();
+    f.close();
+
+    return tmpfileName.string();
+}
+//=============================================================================
 int main(int argc, char* argv[])
 {
     CUserDefaults::instance(); // Initialize user defaults
@@ -100,94 +149,107 @@ int main(int argc, char* argv[])
         slog.start(pipeName);
 
         // Subscribe on onSubmit command
-        proto.onSubmit([&proto](const SSubmit& _submit) {
-            string configFile = _submit.m_cfgFilePath;
-            if (!file_exists(configFile))
-                throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
+        proto.onSubmit([&proto, &vm](const SSubmit& _submit)
+                       {
+                           bool needLocalHost = _submit.m_cfgFilePath.empty();
+                           string configFile(_submit.m_cfgFilePath);
+                           size_t nInstances(_submit.m_nInstances);
+                           if (needLocalHost)
+                           {
+                               configFile = createLocalhostCfg(nInstances, vm["id"].as<string>());
+                           }
 
-            ifstream f(configFile.c_str());
-            if (!f.is_open())
-            {
-                string msg("can't open configuration file \"");
-                msg += configFile;
-                msg += "\"";
-                throw runtime_error(msg);
-            }
+                           if (!file_exists(configFile))
+                               throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
 
-            size_t wrkCount(0);
+                           ifstream f(configFile.c_str());
+                           if (!f.is_open())
+                           {
+                               string msg("can't open configuration file \"");
+                               msg += configFile;
+                               msg += "\"";
+                               throw runtime_error(msg);
+                           }
 
-            workersList_t workers;
-            string inlineShellScripCmds;
-            {
-                CNcf config;
-                config.readFrom(f);
-                inlineShellScripCmds = config.getBashEnvCmds();
+                           size_t wrkCount(0);
 
-                SWNOptions options;
-                options.m_debug = true;
-                options.m_logs = false;
-                options.m_fastClean = false;
+                           workersList_t workers;
+                           string inlineShellScripCmds;
+                           {
+                               CNcf config;
+                               config.readFrom(f);
+                               inlineShellScripCmds = config.getBashEnvCmds();
 
-                configRecords_t recs(config.getRecords());
-                configRecords_t::const_iterator iter = recs.begin();
-                configRecords_t::const_iterator iter_end = recs.end();
-                for (; iter != iter_end; ++iter)
-                {
-                    configRecord_t rec(*iter);
-                    CWorker wrk(rec, options);
-                    workers.push_back(wrk);
+                               SWNOptions options;
+                               options.m_debug = true;
+                               options.m_logs = false;
+                               options.m_fastClean = false;
 
-                    // if (0 == rec->m_nWorkers)
-                    //     dynWrk = true; // user wants us to dynamicly decide on how many
-                    //     job slots to create
+                               configRecords_t recs(config.getRecords());
+                               configRecords_t::const_iterator iter = recs.begin();
+                               configRecords_t::const_iterator iter_end = recs.end();
+                               for (; iter != iter_end; ++iter)
+                               {
+                                   configRecord_t rec(*iter);
+                                   CWorker wrk(rec, options);
+                                   workers.push_back(wrk);
 
-                    wrkCount += rec->m_nWorkers;
-                }
-            }
+                                   // if (0 == rec->m_nWorkers)
+                                   //     dynWrk = true; // user wants us to dynamicly decide on how many
+                                   //     job slots to create
 
-            // a thread pool for the DDS transport engine
-            // may return 0 when not able to detect
-            unsigned int concurrentThreads = thread::hardware_concurrency();
-            // we need at least 4 threads
-            if (concurrentThreads < 4)
-                concurrentThreads = 4;
+                                   wrkCount += rec->m_nWorkers;
+                               }
+                           }
+                           stringstream ssMsg;
+                           ssMsg << "Deploying " << wrkCount << " agents...";
+                           proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+                           ssMsg.str("");
 
-            concurrentThreads *= 2;
-            stringstream ssMsg;
-            ssMsg << "Starting dds-ssh thread pool using " << concurrentThreads << " concurrent threads.";
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
-            ssMsg.str("");
+                           // a thread pool for the DDS transport engine
+                           // may return 0 when not able to detect
+                           unsigned int concurrentThreads = thread::hardware_concurrency();
+                           // we need at least 4 threads
+                           if (concurrentThreads < 4)
+                               concurrentThreads = 4;
+                           // we don't need many threads if there are not so many agents to deploy
+                           if (concurrentThreads > wrkCount)
+                               concurrentThreads = wrkCount;
 
-            // start thread-pool and push tasks into it
-            threadPool_t threadPool(concurrentThreads);
+                           ssMsg << "Starting thread pool using " << concurrentThreads << " threads.";
+                           proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+                           ssMsg.str("");
 
-            workersList_t::iterator iter = workers.begin();
-            workersList_t::iterator iter_end = workers.end();
-            for (; iter != iter_end; ++iter)
-            {
-                // pash pre-tasks
-                threadPool.pushTask(*iter, task_exec);
+                           // start thread-pool and push tasks into it
+                           threadPool_t threadPool(concurrentThreads);
 
-                // push main tasks
-                threadPool.pushTask(*iter, task_submit);
-            }
-            threadPool.stop(true);
+                           workersList_t::iterator iter = workers.begin();
+                           workersList_t::iterator iter_end = workers.end();
+                           for (; iter != iter_end; ++iter)
+                           {
+                               // push main tasks
+                               threadPool.pushTask(*iter, task_submit);
+                           }
+                           threadPool.stop(true);
 
-            // Check the status of all tasks Failed
-            size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
-            ssMsg << "Successfully processed tasks: " << threadPool.successfulTasks();
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
-            ssMsg.str("");
-            ssMsg << "Failed tasks: " << badFailedCount;
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+                           // Check the status of all tasks Failed
+                           size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
+                           ssMsg << "Successfully processed tasks: " << threadPool.successfulTasks();
+                           proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+                           ssMsg.str("");
+                           ssMsg << "Failed tasks: " << badFailedCount;
+                           proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
 
-            if (badFailedCount > 0)
-            {
-                proto.sendMessage(dds::EMsgSeverity::info, "WARNING: some tasks have failed.");
-            }
+                           if (badFailedCount > 0)
+                               proto.sendMessage(dds::EMsgSeverity::info, "WARNING: some tasks have failed.");
 
-            proto.sendMessage(dds::EMsgSeverity::info, "DDS agents have been submitted.");
-        });
+                           if (threadPool.successfulTasks() > 0)
+                               proto.sendMessage(dds::EMsgSeverity::info, "DDS agents have been submitted.");
+
+                           proto.stop();
+                       });
+
+        proto.wait();
     }
     catch (exception& e)
     {

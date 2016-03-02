@@ -3,12 +3,15 @@
 ## v1.2 (Not Yet Released)
 ###DDS common
 Fixed: cmake: Updated OSX RPATH settings.   
-Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)
+Added: API for new plug-in system - CRMSPluginProtocol. (GH-108)   
+Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)   
 
 ### dds-submit
+Added: Support of the new plug-in architecture. (GH-108)   
 Added: the command learned "--config/-c" parameter, which can be used to specify a configuration file for plug-ins. (GH-111)   
 Modified: drop support of "--ssh-rms-cfg" in favor of "--config". (GH-111)   
 Modified: drop support of auto-config feature of dds-submit, when it remembers last used settings. (GH-111)   
+
 
 ### dds-protocol-lib
 Added: maximum message size for key-value and custom commands (GH-104)  
@@ -18,6 +21,9 @@ Added: improve protocol attachment architecture. Check maximum size for vectors 
   -   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
   -   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
   -   all std::string's have a maximum size of uint16_t i.e. 2^16.   
+  
+### dds-submit-ssh
+Added: New SSH plug-in - initial release. (GH-108)   
 
 ## v1.0 (2015-11-20)
 ###DDS common

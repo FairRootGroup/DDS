@@ -83,7 +83,7 @@ namespace dds
             connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
             connection_t connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber);
             static void clean();
-            
+
             void waitCondition();
             void stopCondition();
 

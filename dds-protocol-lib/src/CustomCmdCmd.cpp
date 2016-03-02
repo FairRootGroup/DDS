@@ -41,7 +41,7 @@ void SCustomCmdCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 
 std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SCustomCmdCmd& val)
 {
-    return _stream << "senderId:" << val.m_senderId << "cmd: " << val.m_sCmd << " condition: " << val.m_sCondition;
+    return _stream << "senderId:" << val.m_senderId << " cmd: " << val.m_sCmd << " condition: " << val.m_sCondition;
 }
 
 bool dds::protocol_api::operator!=(const SCustomCmdCmd& lhs, const SCustomCmdCmd& rhs)

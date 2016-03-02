@@ -15,7 +15,7 @@ using namespace dds;
 using namespace dds::ssh_cmd;
 using namespace MiscCommon;
 //=============================================================================
-const size_t g_cmdTimeout = 35; // in sec.
+const size_t g_cmdTimeout = 20; // in sec.
 //=============================================================================
 CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options)
     : m_rec(_rec)
@@ -62,7 +62,8 @@ bool CWorker::runTask(ETaskType _param) const
         case task_submit:
         {
             ssParams << " -n " << m_rec->m_nWorkers;
-            string cmd("$DDS_LOCATION/bin/private/dds-ssh-submit-worker");
+            string cmd(user_defaults_api::CUserDefaults::instance().getPluginsDir());
+            cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);
             ssCmd << cmd << " " << ssParams.str();
             break;

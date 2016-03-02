@@ -93,8 +93,8 @@ void CAgentConnectionManager::start()
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel * _channel)>
-            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                               CAgentChannel* _channel) -> bool {
+            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool
+        {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_channel);
@@ -102,13 +102,22 @@ void CAgentConnectionManager::start()
         m_channel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         m_channel->subscribeOnEvent(EChannelEvents::OnConnected,
-                                    [this](CAgentChannel* _channel) { m_channel->m_syncHelper = m_syncHelper; });
+                                    [this](CAgentChannel* _channel)
+                                    {
+                                        m_channel->m_syncHelper = m_syncHelper;
+                                    });
 
         m_channel->subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
-                                    [this](CAgentChannel* _channel) { stopCondition(); });
+                                    [this](CAgentChannel* _channel)
+                                    {
+                                        stopCondition();
+                                    });
 
         m_channel->subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
-                                    [this](CAgentChannel* _channel) { stopCondition(); });
+                                    [this](CAgentChannel* _channel)
+                                    {
+                                        stopCondition();
+                                    });
 
         m_channel->connect(endpoint_iterator);
 

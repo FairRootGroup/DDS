@@ -86,6 +86,8 @@ bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_
     if (m_syncHelper == nullptr)
         throw invalid_argument("syncHelper is NULL");
 
+    LOG(info) << "CAgentChannel::on_cmdCUSTOM_CMD: received custom command: " << *_attachment;
+
     // Call user callback function
     m_syncHelper->m_customCmdSignal(_attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
     return true;
