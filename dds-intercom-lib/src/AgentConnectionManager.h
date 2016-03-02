@@ -35,6 +35,9 @@ namespace dds
           public:
             SSyncHelper* m_syncHelper;
 
+            void waitCondition();
+            void stopCondition();
+
           private:
             bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
@@ -51,6 +54,14 @@ namespace dds
             CAgentChannel::connectionPtr_t m_channel;
             bool m_bStarted;
             boost::thread_group m_workerThreads;
+
+            /// Condition variable used to stop the current thread.
+            /// Execution continues in three cases:
+            /// 1) 10 minutes timeout
+            /// 2) Failed connection or disconnection
+            /// 3) Explicit call to stop
+            std::mutex m_waitMutex;
+            std::condition_variable m_waitCondition;
         };
     }
 }

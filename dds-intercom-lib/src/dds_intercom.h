@@ -140,6 +140,9 @@ namespace dds
 
         void notify(std::istream& _stream);
 
+        void wait();
+        void stop();
+
       private:
         void unsubscribe();
 

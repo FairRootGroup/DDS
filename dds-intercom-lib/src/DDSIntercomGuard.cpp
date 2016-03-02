@@ -453,3 +453,27 @@ void CDDSIntercomGuard::clean()
                         << ": " << _e.what();
     }
 }
+
+void CDDSIntercomGuard::waitCondition()
+{
+    if (!m_agentConnectionMng)
+    {
+        LOG(error) << "CCDDSIntercomGuard::waitCondition: Agent connection channel is not running.";
+        return;
+    }
+
+    LOG(info) << "CCDDSIntercomGuard::waitCondition: stop thread and wait for notification.";
+    return m_agentConnectionMng->waitCondition();
+}
+
+void CDDSIntercomGuard::stopCondition()
+{
+    if (!m_agentConnectionMng)
+    {
+        LOG(error) << "CCDDSIntercomGuard::stopCondition: Agent connection channel is not running.";
+        return;
+    }
+
+    LOG(info) << "CCDDSIntercomGuard::stopCondition: notification received, continue execution.";
+    return m_agentConnectionMng->stopCondition();
+}

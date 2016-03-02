@@ -2,6 +2,7 @@
 //
 //
 // DDS
+#include "DDSIntercomGuard.h"
 #include "dds_intercom.h"
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
@@ -222,11 +223,10 @@ bool SInit::operator==(const SInit& val) const
 CRMSPluginProtocol::CRMSPluginProtocol(const std::string& _id)
     : m_id(_id)
 {
-    m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId)
-                          {
-                              istringstream ss(_command);
-                              notify(ss);
-                          });
+    m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
+        istringstream ss(_command);
+        notify(ss);
+    });
 }
 
 CRMSPluginProtocol::~CRMSPluginProtocol()
@@ -254,6 +254,16 @@ void CRMSPluginProtocol::unsubscribe()
     m_signalSubmit.disconnect_all_slots();
     m_signalMessage.disconnect_all_slots();
     m_signalRequirement.disconnect_all_slots();
+}
+
+void CRMSPluginProtocol::wait()
+{
+    internal_api::CDDSIntercomGuard::instance().waitCondition();
+}
+
+void CRMSPluginProtocol::stop()
+{
+    internal_api::CDDSIntercomGuard::instance().stopCondition();
 }
 
 void CRMSPluginProtocol::sendInit()
