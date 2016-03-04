@@ -27,6 +27,20 @@ using namespace dds;
 
 BOOST_AUTO_TEST_SUITE(test_protocol_parser)
 
+// notify() is protected we need to make it public in order to test it
+class CRMSPluginProtocolTest : public CRMSPluginProtocol
+{
+  public:
+    CRMSPluginProtocolTest(const std::string& _id)
+        : CRMSPluginProtocol(_id)
+    {
+    }
+    void notifyTest(std::istream& _stream)
+    {
+        notify(_stream);
+    }
+};
+
 BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
 {
     stringstream json;
@@ -54,29 +68,26 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
          << "}"
          << "}";
 
-    CRMSPluginProtocol parser("plug-in-id");
+    CRMSPluginProtocolTest parser("plug-in-id");
 
-    parser.onSubmit([](const SSubmit& _submit)
-                    {
-                        BOOST_CHECK(_submit.m_nInstances == 11);
-                        BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
-                        BOOST_CHECK(_submit.m_id == "plug-in-id");
-                    });
+    parser.onSubmit([](const SSubmit& _submit) {
+        BOOST_CHECK(_submit.m_nInstances == 11);
+        BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
+        BOOST_CHECK(_submit.m_id == "plug-in-id");
+    });
 
-    parser.onMessage([](const SMessage& _message)
-                     {
-                         BOOST_CHECK(_message.m_msg == "Message to DDS plugin");
-                         BOOST_CHECK(_message.m_msgSeverity == EMsgSeverity::info);
-                         BOOST_CHECK(_message.m_id == "plug-in-id");
-                     });
+    parser.onMessage([](const SMessage& _message) {
+        BOOST_CHECK(_message.m_msg == "Message to DDS plugin");
+        BOOST_CHECK(_message.m_msgSeverity == EMsgSeverity::info);
+        BOOST_CHECK(_message.m_id == "plug-in-id");
+    });
 
-    parser.onRequirement([](const SRequirement& _requirement)
-                         {
-                             BOOST_CHECK(_requirement.m_hostName == "host.gsi.de");
-                             BOOST_CHECK(_requirement.m_id == "plug-in-id");
-                         });
+    parser.onRequirement([](const SRequirement& _requirement) {
+        BOOST_CHECK(_requirement.m_hostName == "host.gsi.de");
+        BOOST_CHECK(_requirement.m_id == "plug-in-id");
+    });
 
-    parser.notify(json);
+    parser.notifyTest(json);
 }
 
 BOOST_AUTO_TEST_CASE(test_message)
