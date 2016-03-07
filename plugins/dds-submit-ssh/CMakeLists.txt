@@ -62,8 +62,8 @@ target_include_directories(dds-submit-ssh
         $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-install(TARGETS dds-submit-ssh DESTINATION plugins)
-install(PROGRAMS ${dds-submit-ssh_SOURCE_DIR}/src/dds-submit-ssh-worker DESTINATION plugins)
+install(TARGETS dds-submit-ssh DESTINATION plugins/dds-submit-ssh)
+install(PROGRAMS ${dds-submit-ssh_SOURCE_DIR}/src/dds-submit-ssh-worker DESTINATION plugins/dds-submit-ssh)
 #
 # Unit tests
 #

@@ -43,7 +43,7 @@ CUserDefaults& CUserDefaults::instance()
     return instance;
 }
 
-void CUserDefaults::reinit(const std::string& _cfgFileName, bool _get_default)
+void CUserDefaults::reinit(const string& _cfgFileName, bool _get_default)
 {
     init(_cfgFileName, _get_default);
 }
@@ -280,9 +280,9 @@ string CUserDefaults::getWrkScriptPath() const
 
 string CUserDefaults::getUserEnvScript() const
 {
-    CFindCfgFile<std::string> cfg;
+    CFindCfgFile<string> cfg;
     cfg.SetOrder("$HOME/.DDS/user_worker_env.sh")("$DDS_LOCATION/etc/user_worker_env.sh");
-    std::string val;
+    string val;
     cfg.GetCfg(&val);
     smart_path(&val);
     return val;
@@ -299,10 +299,10 @@ string CUserDefaults::getLogFile() const
     char* dds_log_location;
     dds_log_location = getenv("DDS_LOG_LOCATION");
     string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
-    smart_append<std::string>(&sLogDir, '/');
-    std::string sLogFile(sLogDir);
+    smart_append<string>(&sLogDir, '/');
+    string sLogFile(sLogDir);
     sLogFile += "dds_%Y-%m-%d.%N.log";
-    smart_path<std::string>(&sLogFile);
+    smart_path<string>(&sLogFile);
     return sLogFile;
 }
 
@@ -323,7 +323,16 @@ pid_t CUserDefaults::getScoutPid() const
     return nDDSScoutPid;
 }
 
-std::string CUserDefaults::getPluginsDir() const
+string CUserDefaults::getPluginsRootDir() const
 {
-    return (getDDSPath() + "plugins/");
+    stringstream ss;
+    ss << getDDSPath() << "plugins/";
+    return (ss.str());
+}
+
+string CUserDefaults::getPluginDir(const string& _pluginName) const
+{
+    stringstream ss;
+    ss << getPluginsRootDir() << "dds-submit-" << _pluginName << "/";
+    return (ss.str());
 }

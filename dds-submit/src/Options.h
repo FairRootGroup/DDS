@@ -49,6 +49,7 @@ namespace dds
             std::string m_sRMS;
             std::string m_sCfgFile;
             size_t m_number;
+            bool m_bListPlugins;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -73,9 +74,14 @@ namespace dds
             bpo::options_description options("dds-submit options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()(
+                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all avaliable RMS plug-ins");
             options.add_options()("rms,r",
                                   bpo::value<std::string>(&_options->m_sRMS),
-                                  "Defines a destination resource management system.");
+                                  "Defines a destination resource "
+                                  "management system plug-in. Use "
+                                  "\"--list\" to find out names "
+                                  "of available RMS plug-ins.");
             options.add_options()("config,c",
                                   bpo::value<std::string>(&_options->m_sCfgFile),
                                   "A plug-in's configuration file. It can be used to provid additional RMS options");
@@ -90,6 +96,9 @@ namespace dds
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
 
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "number");
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "rms");
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "config");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "config", "number");
 
             // check for non-defaulted arguments
@@ -105,7 +114,8 @@ namespace dds
                 LOG(MiscCommon::log_stdout) << options;
                 return false;
             }
-            if (!vm.count("config") && !vm.count("number"))
+            // "rms" requires either "config" or "number"
+            if (vm.count("rms") && !vm.count("config") && !vm.count("number"))
             {
                 LOG(MiscCommon::log_stdout) << options;
                 return false;

@@ -7,6 +7,9 @@
 #include "DDSHelper.h"
 #include "Options.h"
 #include "SubmitChannel.h"
+// BOOST
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace MiscCommon;
@@ -35,6 +38,35 @@ int main(int argc, char* argv[])
     {
         LOG(log_stderr) << e.what();
         return EXIT_FAILURE;
+    }
+
+    // List all avbaliable plug-ins
+    if (options.m_bListPlugins)
+    {
+        namespace fs = boost::filesystem;
+        fs::path someDir(dds::user_defaults_api::CUserDefaults::instance().getPluginsRootDir());
+        fs::directory_iterator end_iter;
+
+        typedef std::multimap<std::time_t, fs::path> result_set_t;
+        result_set_t result_set;
+
+        if (fs::exists(someDir) && fs::is_directory(someDir))
+        {
+            cout << "Avaliable RMS plug-ins:\n";
+            for (fs::directory_iterator dir_iter(someDir); dir_iter != end_iter; ++dir_iter)
+            {
+                if (fs::is_directory(dir_iter->status()))
+                {
+                    // The plug-ins have names like "dds-submit-xxx", where xxx is a plug-in name
+                    vector<string> parts;
+                    boost::split(parts, dir_iter->path().stem().string(), boost::is_any_of("-"));
+                    if (parts.size() == 3)
+                        cout << "\t" << parts[2] << "\n";
+                }
+            }
+            cout << endl;
+        }
+        return EXIT_SUCCESS;
     }
 
     string sHost;

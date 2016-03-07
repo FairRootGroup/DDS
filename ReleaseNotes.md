@@ -9,6 +9,7 @@ Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single libr
 ### dds-submit
 Added: Support of the new plug-in architecture. (GH-108)   
 Added: the command learned "--config/-c" parameter, which can be used to specify a configuration file for plug-ins. (GH-111)   
+Added: the command learned "--list/-l" parameter, which lists all available RMS plug-ins. (GH-112)   
 Modified: drop support of "--ssh-rms-cfg" in favor of "--config". (GH-111)   
 Modified: drop support of auto-config feature of dds-submit, when it remembers last used settings. (GH-111)   
 

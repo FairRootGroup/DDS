@@ -426,7 +426,8 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         auto p = _channel.lock();
 
         stringstream ssPluginExe;
-        ssPluginExe << CUserDefaults::instance().getPluginsDir() << "dds-submit-" << _attachment->m_sRMSType;
+        ssPluginExe << CUserDefaults::instance().getPluginDir(_attachment->m_sRMSType) << "dds-submit-"
+                    << _attachment->m_sRMSType;
         if (!boost::filesystem::exists(ssPluginExe.str()))
         {
             stringstream ssErrMsg;

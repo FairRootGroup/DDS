@@ -62,7 +62,7 @@ bool CWorker::runTask(ETaskType _param) const
         case task_submit:
         {
             ssParams << " -n " << m_rec->m_nWorkers;
-            string cmd(user_defaults_api::CUserDefaults::instance().getPluginsDir());
+            string cmd(user_defaults_api::CUserDefaults::instance().getPluginDir("ssh"));
             cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);
             ssCmd << cmd << " " << ssParams.str();
