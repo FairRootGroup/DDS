@@ -70,22 +70,25 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
 
     CRMSPluginProtocolTest parser("plug-in-id");
 
-    parser.onSubmit([](const SSubmit& _submit) {
-        BOOST_CHECK(_submit.m_nInstances == 11);
-        BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
-        BOOST_CHECK(_submit.m_id == "plug-in-id");
-    });
+    parser.onSubmit([](const SSubmit& _submit)
+                    {
+                        BOOST_CHECK(_submit.m_nInstances == 11);
+                        BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
+                        BOOST_CHECK(_submit.m_id == "plug-in-id");
+                    });
 
-    parser.onMessage([](const SMessage& _message) {
-        BOOST_CHECK(_message.m_msg == "Message to DDS plugin");
-        BOOST_CHECK(_message.m_msgSeverity == EMsgSeverity::info);
-        BOOST_CHECK(_message.m_id == "plug-in-id");
-    });
+    parser.onMessage([](const SMessage& _message)
+                     {
+                         BOOST_CHECK(_message.m_msg == "Message to DDS plugin");
+                         BOOST_CHECK(_message.m_msgSeverity == EMsgSeverity::info);
+                         BOOST_CHECK(_message.m_id == "plug-in-id");
+                     });
 
-    parser.onRequirement([](const SRequirement& _requirement) {
-        BOOST_CHECK(_requirement.m_hostName == "host.gsi.de");
-        BOOST_CHECK(_requirement.m_id == "plug-in-id");
-    });
+    parser.onRequirement([](const SRequirement& _requirement)
+                         {
+                             BOOST_CHECK(_requirement.m_hostName == "host.gsi.de");
+                             BOOST_CHECK(_requirement.m_id == "plug-in-id");
+                         });
 
     parser.notifyTest(json);
 }
