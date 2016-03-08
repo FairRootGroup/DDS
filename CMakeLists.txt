@@ -73,7 +73,7 @@ if(DOXYGEN_FOUND)
 		COMMENT "Generating API docs" )
 
 	add_custom_target( upload-api-docs
-		COMMAND rsync -avz --whole-file --progress --chmod=ugo=rX -e ssh  ${DOC_OUTPUT_DIR} ddswww@lxi001.gsi.de:~/web-docs/doc
+		COMMAND rsync -avz --whole-file --progress --chmod=Du=rwx,Dgo=rx,Fu=rw,Fog=r -e ssh  ${DOC_OUTPUT_DIR} ddswww@lxi001.gsi.de:~/web-docs/doc
 		COMMENT "Upload API documentation to DDS's web server")
 	add_dependencies( upload-api-docs api-docs )
 endif(DOXYGEN_FOUND)
