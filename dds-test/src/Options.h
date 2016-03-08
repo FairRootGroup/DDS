@@ -36,7 +36,8 @@ namespace dds
         {
             LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
                                         << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
+                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
+                                        << MiscCommon::g_cszReportBugsAddr;
         }
         //=============================================================================
         // Command line parser

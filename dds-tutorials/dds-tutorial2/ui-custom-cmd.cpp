@@ -36,18 +36,17 @@ int main(int argc, char* argv[])
         atomic<size_t> counterCmdMessages(0);
         atomic<size_t> counterReplyMessages(0);
 
-        customCmd.subscribe([&counterCmdMessages](const string& _command, const string& _condition, uint64_t _senderId)
-                            {
-                                cout << "Received custom command " << counterCmdMessages << " : " << _command
-                                     << " condition: " << _condition << " senderId: " << _senderId << endl;
-                                counterCmdMessages++;
-                            });
+        customCmd.subscribe(
+            [&counterCmdMessages](const string& _command, const string& _condition, uint64_t _senderId) {
+                cout << "Received custom command " << counterCmdMessages << " : " << _command
+                     << " condition: " << _condition << " senderId: " << _senderId << endl;
+                counterCmdMessages++;
+            });
 
-        customCmd.subscribeReply([&counterReplyMessages](const string& _msg)
-                                 {
-                                     cout << "Received reply message " << counterReplyMessages << " : " << _msg << endl;
-                                     counterReplyMessages++;
-                                 });
+        customCmd.subscribeReply([&counterReplyMessages](const string& _msg) {
+            cout << "Received reply message " << counterReplyMessages << " : " << _msg << endl;
+            counterReplyMessages++;
+        });
 
         while (true)
         {

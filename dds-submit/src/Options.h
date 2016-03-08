@@ -23,13 +23,13 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 // DDS
+#include "BOOSTHelper.h"
 #include "MiscUtils.h"
 #include "ProtocolCommands.h"
 #include "Res.h"
 #include "SubmitCmd.h"
 #include "SysHelper.h"
 #include "version.h"
-#include "BOOSTHelper.h"
 
 namespace bpo = boost::program_options;
 
@@ -61,7 +61,8 @@ namespace dds
         {
             LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
                                         << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
+                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
+                                        << MiscCommon::g_cszReportBugsAddr;
         }
         //=============================================================================
         // Command line parser
@@ -102,12 +103,10 @@ namespace dds
             MiscCommon::BOOSTHelper::conflicting_options(vm, "config", "number");
 
             // check for non-defaulted arguments
-            bpo::variables_map::const_iterator found = find_if(vm.begin(),
-                                                               vm.end(),
-                                                               [](const bpo::variables_map::value_type& _v)
-                                                               {
-                                                                   return (!_v.second.defaulted());
-                                                               });
+            bpo::variables_map::const_iterator found =
+                find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v) {
+                    return (!_v.second.defaulted());
+                });
 
             if (vm.count("help") || vm.end() == found)
             {

@@ -58,11 +58,10 @@ CAgentConnectionManager::~CAgentConnectionManager()
 
 void CAgentConnectionManager::doAwaitStop()
 {
-    m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/)
-                         {
-                             // Stop transport engine
-                             stop();
-                         });
+    m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/) {
+        // Stop transport engine
+        stop();
+    });
 }
 
 void CAgentConnectionManager::start()
@@ -75,11 +74,7 @@ void CAgentConnectionManager::start()
     {
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
-        CMonitoringThread::instance().start(maxIdleTime,
-                                            []()
-                                            {
-                                                LOG(info) << "Idle callback called";
-                                            });
+        CMonitoringThread::instance().start(maxIdleTime, []() { LOG(info) << "Idle callback called"; });
 
         // Read server info file
         const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocation());
@@ -104,9 +99,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                               CCommanderChannel* _channel) -> bool
-        {
+            fSHUTDOWN =
+                [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_agent);
@@ -115,9 +109,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe for key updates
         std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fUPDATE_KEY = [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                 CCommanderChannel* _channel) -> bool
-        {
+            fUPDATE_KEY =
+                [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdUPDATE_KEY(_attachment, m_agent);
@@ -126,9 +119,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe for cmdSIMPLE_MSG
         std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSIMPLE_MSG = [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                 CCommanderChannel* _channel) -> bool
-        {
+            fSIMPLE_MSG =
+                [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSIMPLE_MSG(_attachment, m_agent);
@@ -138,8 +130,7 @@ void CAgentConnectionManager::start()
         // Subscribe for cmdSTOP_USER_TASK
         std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel * _channel)>
             fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                     CCommanderChannel* _channel) -> bool
-        {
+                                     CCommanderChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
@@ -148,9 +139,8 @@ void CAgentConnectionManager::start()
 
         // Subscribe for cmdCUSTOM_CMD
         std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fCUSTOM_CMD = [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
-                                 CCommanderChannel* _channel) -> bool
-        {
+            fCUSTOM_CMD =
+                [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdCUSTOM_CMD(_attachment, m_agent);
@@ -158,41 +148,35 @@ void CAgentConnectionManager::start()
         m_agent->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
 
         // Call this callback when a user process is activated
-        m_agent->registerOnNewUserTaskCallback([this](pid_t _pid)
-                                               {
-                                                   return this->onNewUserTask(_pid);
-                                               });
+        m_agent->registerOnNewUserTaskCallback([this](pid_t _pid) { return this->onNewUserTask(_pid); });
 
-        m_agent->subscribeOnEvent(EChannelEvents::OnConnected,
-                                  [this](CCommanderChannel* _channel)
-                                  {
-                                      // TODO: revise UIConnection manager logic
-                                      if (m_UIConnectionMng != nullptr)
-                                          return;
+        m_agent->subscribeOnEvent(EChannelEvents::OnConnected, [this](CCommanderChannel* _channel) {
+            // TODO: revise UIConnection manager logic
+            if (m_UIConnectionMng != nullptr)
+                return;
 
-                                      // Start the UI agent server
-                                      m_UIConnectionMng = make_shared<CUIConnectionManager>();
-                                      m_UIConnectionMng->setCommanderChannel(m_agent);
-                                      m_UIConnectionMng->start(false, 2);
+            // Start the UI agent server
+            m_UIConnectionMng = make_shared<CUIConnectionManager>();
+            m_UIConnectionMng->setCommanderChannel(m_agent);
+            m_UIConnectionMng->start(false, 2);
 
-                                  });
+        });
         m_agent->connect(endpoint_iterator);
 
         const int nConcurrentThreads(2);
         LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
         for (int x = 0; x < nConcurrentThreads; ++x)
         {
-            m_workerThreads.create_thread([this]()
-                                          {
-                                              try
-                                              {
-                                                  m_service.run();
-                                              }
-                                              catch (exception& ex)
-                                              {
-                                                  LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
-                                              }
-                                          });
+            m_workerThreads.create_thread([this]() {
+                try
+                {
+                    m_service.run();
+                }
+                catch (exception& ex)
+                {
+                    LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
+                }
+            });
         }
 
         m_workerThreads.join_all();
@@ -306,17 +290,16 @@ bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_
             processUpdateKey();
         }
 
-        m_deadlineTimer->async_wait([this](const boost::system::error_code& error)
-                                    {
-                                        if (!error)
-                                        {
-                                            std::lock_guard<std::mutex> lock(m_updateKeyMutex);
-                                            if (!m_updateKeyQueue.empty())
-                                            {
-                                                processUpdateKey();
-                                            }
-                                        }
-                                    });
+        m_deadlineTimer->async_wait([this](const boost::system::error_code& error) {
+            if (!error)
+            {
+                std::lock_guard<std::mutex> lock(m_updateKeyMutex);
+                if (!m_updateKeyQueue.empty())
+                {
+                    processUpdateKey();
+                }
+            }
+        });
     }
     catch (std::exception& ex)
     {
@@ -409,8 +392,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
     auto self(shared_from_this());
     CMonitoringThread::instance().registerCallbackFunction(
-        [this, self, _pid]() -> bool
-        {
+        [this, self, _pid]() -> bool {
             // Send commander server the watchdog heartbeat.
             // It indicates that the agent is executing a task and is not idle
             m_agent->pushMsg<cmdWATCHDOG_HEARTBEAT>();

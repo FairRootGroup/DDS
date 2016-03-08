@@ -23,7 +23,8 @@ void printVersion()
 {
     cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
          << "DDS configuration"
-         << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << g_cszReportBugsAddr << endl;
+         << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
+         << g_cszReportBugsAddr << endl;
 }
 
 int main(int argc, char* argv[])

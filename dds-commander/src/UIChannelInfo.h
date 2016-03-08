@@ -11,10 +11,10 @@
 #include "ProtocolCommands.h"
 #include "dds_intercom.h"
 // STD
+#include <chrono>
 #include <mutex>
 #include <sstream>
 #include <string>
-#include <chrono>
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
 
@@ -415,8 +415,7 @@ namespace dds
 
                             // Subscribe on plug-in disconnect
                             pPlugin->subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                                                      [this](CAgentChannel* _channel)
-                                                      {
+                                                      [this](CAgentChannel* _channel) {
                                                           // the plug-in is done and went offline, let's close UI
                                                           // connection as well.
                                                           m_channelSubmitPlugin.reset();

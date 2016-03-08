@@ -67,10 +67,7 @@ int main(int argc, char* argv[])
 
         if (testErrors)
         {
-            keyValue.subscribeError([&keyCondition](const string& _msg)
-                                    {
-                                        LOG(error) << "Key-value error: " << _msg;
-                                    });
+            keyValue.subscribeError([&keyCondition](const string& _msg) { LOG(error) << "Key-value error: " << _msg; });
         }
 
         LOG(info) << "Start task with type " << type;
@@ -117,10 +114,8 @@ int main(int argc, char* argv[])
                 LOG(info) << "Iteration " << i << " subscribe on property updates.";
 
                 // Subscribe on key update events
-                keyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
-                                   {
-                                       keyCondition.notify_all();
-                                   });
+                keyValue.subscribe(
+                    [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
 
                 const auto& readPropNames = (type == 0) ? propNames_1 : propNames_0;
                 for (const auto& prop : readPropNames)

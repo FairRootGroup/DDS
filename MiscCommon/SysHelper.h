@@ -191,8 +191,7 @@ namespace MiscCommon
     inline unsigned long gettid()
     {
 #ifdef __APPLE__
-        union
-        {
+        union {
             pthread_t th;
             unsigned long int i;
         } v = {};

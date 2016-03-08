@@ -43,7 +43,8 @@ void CUIConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
         f << "[agent]\n"
           << "host=" << srvHost << "\n"
           << "user=" << srvUser << "\n"
-          << "port=" << _ports[0] << "\n" << endl;
+          << "port=" << _ports[0] << "\n"
+          << endl;
     }
 }
 
@@ -61,15 +62,13 @@ void CUIConnectionManager::newClientCreated(CUIChannel::connectionPtr_t _newClie
 {
     // Subscribe on protocol messages
     function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel * _channel)> fUPDATE_KEY =
-        [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel* _channel) -> bool
-    {
+        [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CUIChannel* _channel) -> bool {
         return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
     function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CUIChannel * _channel)> fCUSTOM_CMD =
-        [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CUIChannel* _channel) -> bool
-    {
+        [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CUIChannel* _channel) -> bool {
         return this->on_cmdCUSTOM_CMD(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);

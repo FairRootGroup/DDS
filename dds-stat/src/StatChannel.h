@@ -18,34 +18,28 @@ namespace dds
             CStatChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CStatChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK,
-                                 [this](CStatChannel* _channel)
-                                 {
-                                     if (m_options.m_bEnable)
-                                     {
-                                         pushMsg<protocol_api::cmdENABLE_STAT>();
-                                     }
-                                     else if (m_options.m_bDisable)
-                                     {
-                                         pushMsg<protocol_api::cmdDISABLE_STAT>();
-                                     }
-                                     else if (m_options.m_bGet)
-                                     {
-                                         pushMsg<protocol_api::cmdGET_STAT>();
-                                     }
-                                 });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CStatChannel* _channel) {
+                    if (m_options.m_bEnable)
+                    {
+                        pushMsg<protocol_api::cmdENABLE_STAT>();
+                    }
+                    else if (m_options.m_bDisable)
+                    {
+                        pushMsg<protocol_api::cmdDISABLE_STAT>();
+                    }
+                    else if (m_options.m_bGet)
+                    {
+                        pushMsg<protocol_api::cmdGET_STAT>();
+                    }
+                });
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnConnected,
-                                 [this](CStatChannel* _channel)
-                                 {
-                                     LOG(MiscCommon::info) << "Connected to the commander server";
-                                 });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnConnected, [this](CStatChannel* _channel) {
+                    LOG(MiscCommon::info) << "Connected to the commander server";
+                });
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
-                                 [this](CStatChannel* _channel)
-                                 {
-                                     LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-                                 });
+                subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect, [this](CStatChannel* _channel) {
+                    LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
+                });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

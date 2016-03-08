@@ -9,8 +9,8 @@
 #include <boost/tokenizer.hpp>
 // MiscCommon
 #include "CustomIterator.h"
-#include "def.h"
 #include "MiscUtils.h"
+#include "def.h"
 // dds-ssh
 #include "ncf.h"
 //=============================================================================

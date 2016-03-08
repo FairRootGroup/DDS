@@ -3,11 +3,11 @@
 //
 //
 // DDS
-#include "UserDefaults.h"
 #include "ActivateChannel.h"
 #include "DDSHelper.h"
 #include "Options.h"
 #include "Topology.h"
+#include "UserDefaults.h"
 
 using namespace std;
 using namespace MiscCommon;

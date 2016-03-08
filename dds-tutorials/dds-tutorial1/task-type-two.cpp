@@ -54,16 +54,11 @@ int main(int argc, char* argv[])
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        keyValue.subscribeError([](const string& _msg)
-                                {
-                                    cerr << "DDS key-value error: " << _msg << endl;
-                                });
+        keyValue.subscribeError([](const string& _msg) { cerr << "DDS key-value error: " << _msg << endl; });
 
         // Subscribe on key update events
-        keyValue.subscribe([&keyCondition](const string& /*_key*/, const string& /*_value*/)
-                           {
-                               keyCondition.notify_all();
-                           });
+        keyValue.subscribe(
+            [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
 
         // First get all task index properties
         CKeyValue::valuesMap_t taskValues;

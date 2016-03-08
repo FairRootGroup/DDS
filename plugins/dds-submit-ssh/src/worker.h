@@ -10,9 +10,9 @@
 // MiscCommon
 #include "def.h"
 // pod-ssh
+#include "local_types.h"
 #include "ncf.h"
 #include "threadPool.h"
-#include "local_types.h"
 // boost
 #include <boost/thread/mutex.hpp>
 //=============================================================================

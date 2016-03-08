@@ -23,8 +23,8 @@
 //
 //=============================================================================
 // std
-#include <vector>
 #include <sstream>
+#include <vector>
 // BOOST
 #include <boost/shared_ptr.hpp>
 // MiscCommon

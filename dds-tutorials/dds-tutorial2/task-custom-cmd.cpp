@@ -34,27 +34,23 @@ int main(int argc, char* argv[])
         CCustomCmd customCmd;
 
         // Subscribe on custom commands
-        customCmd.subscribe([&customCmd](const string& _command, const string& _condition, uint64_t _senderId)
-                            {
-                                cout << "Received custom command: " << _command << " condition: " << _condition
-                                     << " senderId: " << _senderId << endl;
-                                if (_command == "please-reply")
-                                {
-                                    string senderIdStr = to_string(_senderId);
-                                    customCmd.send("reply-to-" + senderIdStr, senderIdStr);
-                                }
-                                else if (_command == "please-reply-ui")
-                                {
-                                    string senderIdStr = to_string(_senderId);
-                                    customCmd.send("reply-to-ui-" + senderIdStr, senderIdStr);
-                                }
-                            });
+        customCmd.subscribe([&customCmd](const string& _command, const string& _condition, uint64_t _senderId) {
+            cout << "Received custom command: " << _command << " condition: " << _condition
+                 << " senderId: " << _senderId << endl;
+            if (_command == "please-reply")
+            {
+                string senderIdStr = to_string(_senderId);
+                customCmd.send("reply-to-" + senderIdStr, senderIdStr);
+            }
+            else if (_command == "please-reply-ui")
+            {
+                string senderIdStr = to_string(_senderId);
+                customCmd.send("reply-to-ui-" + senderIdStr, senderIdStr);
+            }
+        });
 
         // Subscribe on reply from DDS commander server
-        customCmd.subscribeReply([](const string& _msg)
-                                 {
-                                     cout << "Received reply message: " << _msg << endl;
-                                 });
+        customCmd.subscribeReply([](const string& _msg) { cout << "Received reply message: " << _msg << endl; });
 
         // Emulate data procesing of the task
         const int n = 60;

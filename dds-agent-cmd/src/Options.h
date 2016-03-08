@@ -74,7 +74,8 @@ namespace dds
         {
             LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
                                         << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
+                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
+                                        << MiscCommon::g_cszReportBugsAddr;
         }
         //=============================================================================
         // Command line parser
@@ -134,13 +135,15 @@ namespace dds
             if (!vm.count("command") || _options->m_agentCmd == EAgentCmdType::UNKNOWN)
             {
                 LOG(MiscCommon::log_stderr) << "Nothing to do. Please, specify a command"
-                                            << "\n\n" << options;
+                                            << "\n\n"
+                                            << options;
                 return false;
             }
             if (EAgentCmdType::UPDATE_KEY == _options->m_agentCmd && !vm.count("key"))
             {
                 LOG(MiscCommon::log_stderr) << "Please, specify the key to update"
-                                            << "\n\n" << options;
+                                            << "\n\n"
+                                            << options;
                 return false;
             }
             if (vm.count("all"))
