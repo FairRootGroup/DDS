@@ -9,6 +9,7 @@
 // BOOST
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
+#include <condition_variable>
 
 namespace dds
 {
