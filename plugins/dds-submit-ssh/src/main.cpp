@@ -35,6 +35,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::intercom_api;
 using namespace dds::ncf;
 using namespace dds::ssh_cmd;
 using namespace dds::user_defaults_api;
@@ -81,7 +82,7 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
         _nInstances = thread::hardware_concurrency();
 
     ss << _nInstances << " agents";
-    proto.sendMessage(dds::EMsgSeverity::info, ss.str());
+    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
     // Create temporary ssh configuration
     const char* tmpdir = std::getenv("TMPDIR");
@@ -93,7 +94,7 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     }
     ss.str("");
     ss << "Using \'" << tmpdir << "\' to spawn agents.";
-    proto.sendMessage(dds::EMsgSeverity::info, ss.str());
+    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
     boost::filesystem::path tmpfileName(tmpdir);
     tmpfileName /= "dds_ssh.cfg";
@@ -202,7 +203,7 @@ int main(int argc, char* argv[])
             }
             stringstream ssMsg;
             ssMsg << "Deploying " << wrkCount << " agents...";
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
             ssMsg.str("");
 
             // a thread pool for the DDS transport engine
@@ -216,7 +217,7 @@ int main(int argc, char* argv[])
                 concurrentThreads = wrkCount;
 
             ssMsg << "Starting thread pool using " << concurrentThreads << " threads.";
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
             ssMsg.str("");
 
             // start thread-pool and push tasks into it
@@ -234,16 +235,16 @@ int main(int argc, char* argv[])
             // Check the status of all tasks Failed
             size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
             ssMsg << "Successfully processed tasks: " << threadPool.successfulTasks();
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
             ssMsg.str("");
             ssMsg << "Failed tasks: " << badFailedCount;
-            proto.sendMessage(dds::EMsgSeverity::info, ssMsg.str());
+            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
 
             if (badFailedCount > 0)
-                proto.sendMessage(dds::EMsgSeverity::info, "WARNING: some tasks have failed.");
+                proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "WARNING: some tasks have failed.");
 
             if (threadPool.successfulTasks() > 0)
-                proto.sendMessage(dds::EMsgSeverity::info, "DDS agents have been submitted.");
+                proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "DDS agents have been submitted.");
 
             proto.stop();
         });
@@ -252,7 +253,7 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        proto.sendMessage(dds::EMsgSeverity::error, e.what());
+        proto.sendMessage(dds::intercom_api::EMsgSeverity::error, e.what());
         return 1;
     }
 

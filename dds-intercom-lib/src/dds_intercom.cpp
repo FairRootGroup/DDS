@@ -6,6 +6,7 @@
 #include "DDSIntercomGuard.h"
 
 using namespace dds;
+using namespace dds::intercom_api;
 using namespace dds::internal_api;
 using namespace dds::protocol_api;
 using namespace MiscCommon;

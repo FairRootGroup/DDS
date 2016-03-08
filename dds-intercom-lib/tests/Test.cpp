@@ -24,6 +24,7 @@
 using namespace std;
 using namespace boost::property_tree;
 using namespace dds;
+using namespace dds::intercom_api;
 
 BOOST_AUTO_TEST_SUITE(test_protocol_parser)
 

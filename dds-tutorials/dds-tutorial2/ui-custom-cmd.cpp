@@ -17,6 +17,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::intercom_api;
 namespace bpo = boost::program_options;
 
 int main(int argc, char* argv[])

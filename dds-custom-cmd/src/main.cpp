@@ -14,6 +14,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
+using namespace dds::intercom_api;
 using namespace dds::user_defaults_api;
 
 //=============================================================================

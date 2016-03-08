@@ -18,6 +18,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::intercom_api;
 namespace bpo = boost::program_options;
 
 // IDs of the DDS properties.

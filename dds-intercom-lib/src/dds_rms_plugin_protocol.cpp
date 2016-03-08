@@ -11,6 +11,7 @@
 #include <sstream>
 
 using namespace dds;
+using namespace dds::intercom_api;
 using namespace std;
 using namespace boost::property_tree;
 

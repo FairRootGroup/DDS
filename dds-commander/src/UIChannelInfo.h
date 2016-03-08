@@ -405,7 +405,7 @@ namespace dds
                             pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
                                 protocol_api::SSimpleMsgCmd(ssMsg.str(), MiscCommon::info));
 
-                            SInit init;
+                            intercom_api::SInit init;
                             init.fromPT(pt);
                             // Sending Submit request to the plug-in
                             protocol_api::SCustomCmdCmd cmd;
@@ -424,14 +424,15 @@ namespace dds
                         }
                         else if (tag == "message")
                         {
-                            SMessage message;
+                            intercom_api::SMessage message;
                             message.fromPT(pt);
                             std::stringstream ss;
                             ss << "Plug-in: " << message.m_msg;
                             pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(protocol_api::SSimpleMsgCmd(
                                 ss.str(),
-                                (message.m_msgSeverity == EMsgSeverity::info ? MiscCommon::info : MiscCommon::error)));
-                            if (message.m_msgSeverity == EMsgSeverity::error)
+                                (message.m_msgSeverity == intercom_api::EMsgSeverity::info ? MiscCommon::info
+                                                                                           : MiscCommon::error)));
+                            if (message.m_msgSeverity == intercom_api::EMsgSeverity::error)
                             {
                                 pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
                                 m_channel.reset();
