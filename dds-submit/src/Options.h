@@ -76,7 +76,7 @@ namespace dds
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
             options.add_options()(
-                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all avaliable RMS plug-ins");
+                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all available RMS plug-ins");
             options.add_options()("rms,r",
                                   bpo::value<std::string>(&_options->m_sRMS),
                                   "Defines a destination resource "
@@ -85,11 +85,11 @@ namespace dds
                                   "of available RMS plug-ins.");
             options.add_options()("config,c",
                                   bpo::value<std::string>(&_options->m_sCfgFile),
-                                  "A plug-in's configuration file. It can be used to provid additional RMS options");
+                                  "A plug-in's configuration file. It can be used to provide additional RMS options");
             options.add_options()("number,n",
                                   bpo::value<size_t>(&_options->m_number),
                                   "Defines a number of agents to spawn."
-                                  "If 0 is provided as an argument, thent a number of available logical cores will be "
+                                  "If 0 is provided as an argument, then a number of available logical cores will be "
                                   "used.\nThis option can not be mixed with \"--config\"");
 
             // Parsing command-line
