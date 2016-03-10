@@ -60,7 +60,8 @@ std::string SSubmit::toJSON()
          << "\"submit\":"
          << "{"
          << "\"nInstances\": \"" << m_nInstances << "\","
-         << "\"cfgFilePath\": \"" << m_cfgFilePath << "\""
+         << "\"cfgFilePath\": \"" << m_cfgFilePath << "\","
+         << "\"wrkPackagePath\": \"" << m_wrkPackagePath << "\""
          << "}"
          << "" << g_sJSONEndTags;
     return json.str();
@@ -79,12 +80,14 @@ void SSubmit::fromPT(const boost::property_tree::ptree& _pt)
     const ptree& pt = _pt.get_child("dds.plug-in");
     m_nInstances = pt.get<int>("submit.nInstances", 0);
     m_cfgFilePath = pt.get<string>("submit.cfgFilePath", "");
+    m_wrkPackagePath = pt.get<string>("submit.wrkPackagePath", "");
     m_id = pt.get<string>("id");
 }
 
 bool SSubmit::operator==(const SSubmit& val) const
 {
-    return (m_id == val.m_id) && (m_nInstances == val.m_nInstances) && (m_cfgFilePath == val.m_cfgFilePath);
+    return (m_id == val.m_id) && (m_nInstances == val.m_nInstances) && (m_cfgFilePath == val.m_cfgFilePath) &&
+           (m_wrkPackagePath == val.m_wrkPackagePath);
 }
 
 ///////////////////////////////////

@@ -55,6 +55,7 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
          << "{"
          << "\"nInstances\": 11,"
          << "\"cfgFilePath\": \"/path/to/cfg/dds_plugin.cfg\""
+         << "\"wrkPackagePath\": \"/path/to/cfg/DDSWorker\""
          << "},"
          << "\"message\":"
          << "{"
@@ -74,6 +75,7 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
     parser.onSubmit([](const SSubmit& _submit) {
         BOOST_CHECK(_submit.m_nInstances == 11);
         BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
+        BOOST_CHECK(_submit.m_wrkPackagePath == "/path/to/cfg/DDSWorker");
         BOOST_CHECK(_submit.m_id == "plug-in-id");
     });
 

@@ -91,9 +91,10 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SSubmit& _val) const;
 
-            uint32_t m_nInstances;     ///> Number of instances.
-            std::string m_cfgFilePath; ///> Path to the configuration file.
-            std::string m_id;          ///> ID for communication with DDS commander.
+            uint32_t m_nInstances;        ///> Number of instances.
+            std::string m_cfgFilePath;    ///> Path to the configuration file.
+            std::string m_id;             ///> ID for communication with DDS commander.
+            std::string m_wrkPackagePath; ///> A full path of the agent worker package, which needs to be deployed.
         };
 
         /// \brief Structure holds information of message notification.
@@ -122,7 +123,7 @@ namespace dds
             std::string m_id;           ///> ID for communication with DDS commander.
         };
 
-        /// \brief Structure holds information of requrement notification.
+        /// \brief Structure holds information of requirement notification.
         struct SRequirement
         {
             /// \brief Default constructor.
@@ -178,12 +179,14 @@ namespace dds
         ///
         /// try {
         ///    CRMSPluginProtocol prot("plug-in-id");
+        ///
         ///    prot.onSubmit([](const SSubmit& _submit) {
         ///        // Implement submit related functionality here.
         ///
         ///        // After submit has completed call stop() function.
         ///        prot.stop();
         ///    });
+        ///
         ///    prot.onMessage([](const SMessage& _message) {
         ///        // Message from commander received.
         ///        // Implement related functionality here.
@@ -192,7 +195,7 @@ namespace dds
         ///        // Implement functionality related to requirements here.
         ///    });
         ///
-        ///    // This must be the first call to let DDS commnader know that we are online.
+        ///    // This must be the first call to let DDS commander know that we are online.
         ///    prot.sendInit();
         ///
         ///    // Stop here and wait for notifications from commander.
@@ -266,7 +269,7 @@ namespace dds
             signalMessage_t m_signalMessage;         ///> Message signal.
             signalRequirement_t m_signalRequirement; ///> Requirement signal.
 
-            std::string m_id; ///> ID for comunication with DDS commander (provided via constructor).
+            std::string m_id; ///> ID for communication with DDS commander (provided via constructor).
 
             CCustomCmd m_customCmd; ///> Custom commands API which is used for communication with DDS commander.
         };

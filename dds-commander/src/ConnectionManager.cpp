@@ -474,6 +474,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         SSubmit submitRequest;
         submitRequest.m_cfgFilePath = _attachment->m_sCfgFile;
         submitRequest.m_nInstances = _attachment->m_nNumberOfAgents;
+        submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath();
         m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
 
         string sPluginInfoMsg("RMS plug-in: ");
