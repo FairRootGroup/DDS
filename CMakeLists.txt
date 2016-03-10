@@ -70,6 +70,7 @@ if(DOXYGEN_FOUND)
 	configure_file( ${PROJECT_SOURCE_DIR}/doxyfile.in ${PROJECT_BINARY_DIR}/doxyfile @ONLY )
 	add_custom_target( api-docs
 		${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/doxyfile
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 		COMMENT "Generating API docs" )
 
 	add_custom_target( upload-api-docs
