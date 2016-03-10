@@ -823,7 +823,7 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       = */.git/* \
                          */tests/* \
-                         */build*/* \
+                         @CMAKE_CURRENT_SOURCE_DIR@/build*/* \
                          */res/* \
                          */etc/* \
                          */utils/* \
