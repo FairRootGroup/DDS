@@ -39,7 +39,7 @@ namespace dds
             void setRequirement(RequirementPtr_t _requirement);
 
           private:
-            RequirementPtr_t m_requirement; ///> Requirement
+            RequirementPtr_t m_requirement; ///< Requirement
         };
 
         typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;

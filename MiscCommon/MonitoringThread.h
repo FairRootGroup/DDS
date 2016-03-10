@@ -44,7 +44,7 @@ namespace dds
         /// \brief Main function user has to run to start monitoring thread.
         /// \param[in] _idleTime Maximum allowed elapsed time since last activity in seconds.
         /// \param[in] _idleCallback Function which is called after idle is detected.
-        /// \example CMonitoringThread::instance().start(300, [](){ do_something_here() });
+        /// \brief example CMonitoringThread::instance().start(300, [](){ do_something_here() });
         void start(double _idleTime, const std::function<void(void)>& _idleCallback)
         {
             // Looping monitoring thread with a step of 1 sec up to *Unlimited* sec (size of int)

@@ -29,9 +29,7 @@ namespace dds
         /// All vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32.
         /// All std::string's have a maximum size of uint16_t i.e. 2^16.
         ///
-
         ///
-        /// \function dsize
         /// \brief Helper template function calculating size of the variable.
         ///
         template <typename T>
@@ -118,7 +116,6 @@ namespace dds
         }
 
         ///
-        /// \function readData
         /// \brief Helper template function reading data from byte array.
         ///
         template <typename T>
@@ -304,7 +301,7 @@ namespace dds
         }
 
         ///
-        /// \function pushData
+        /// \fn pushData
         /// \brief Helper template function pushing data to byte array.
         ///
         template <typename T>

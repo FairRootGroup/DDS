@@ -49,7 +49,7 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTaskGroup& _taskContainer);
 
           private:
-            size_t m_n; ///> Number of times this group has to be executed
+            size_t m_n; ///< Number of times this group has to be executed
         };
 
         typedef std::shared_ptr<CTaskGroup> TaskGroupPtr_t;

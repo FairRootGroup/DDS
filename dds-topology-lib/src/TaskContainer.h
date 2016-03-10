@@ -55,11 +55,10 @@ namespace dds
 
             /// \brief Default implementation for TopoElement::getNofTasks, TopoElement::getTotalNofTasks.
             /// Calculate recursively number of tasks in all daughter elements.
-            /// \param multiplicator Multiplication factor for all daughter nodes.
             size_t getNofTasksDefault() const;
 
           private:
-            TopoElementPtrVector_t m_elements; ///> Vector of topology elements in collection.
+            TopoElementPtrVector_t m_elements; ///< Vector of topology elements in collection.
         };
 
         typedef std::shared_ptr<CTaskContainer> TaskContainerPtr_t;

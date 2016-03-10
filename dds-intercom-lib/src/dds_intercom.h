@@ -66,8 +66,8 @@ namespace dds
         /// \brief Enumeration with message severity.
         enum class EMsgSeverity
         {
-            info, ///> Information messages.
-            error ///> Error messages.
+            info, ///< Information messages.
+            error ///< Error messages.
         };
 
         /// \brief Structure holds information of submit notification.
@@ -91,10 +91,10 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SSubmit& _val) const;
 
-            uint32_t m_nInstances;        ///> Number of instances.
-            std::string m_cfgFilePath;    ///> Path to the configuration file.
-            std::string m_id;             ///> ID for communication with DDS commander.
-            std::string m_wrkPackagePath; ///> A full path of the agent worker package, which needs to be deployed.
+            uint32_t m_nInstances;          ///< Number of instances.
+            std::string m_cfgFilePath;      ///< Path to the configuration file.
+            std::string m_id;               ///< ID for communication with DDS commander.
+            std::string m_wrkPackagePath;   ///< A full path of the agent worker package, which needs to be deployed.
         };
 
         /// \brief Structure holds information of message notification.
@@ -115,12 +115,12 @@ namespace dds
             /// \param[in] _pt Property tree with structure details.
             void fromPT(const boost::property_tree::ptree& _pt);
 
-            /// \Equality operator.
+            /// \brief Equality operator.
             bool operator==(const SMessage& _val) const;
 
-            EMsgSeverity m_msgSeverity; ///> Message severity.
-            std::string m_msg;          ///> Message text.
-            std::string m_id;           ///> ID for communication with DDS commander.
+            EMsgSeverity m_msgSeverity; ///< Message severity.
+            std::string m_msg;          ///< Message text.
+            std::string m_id;           ///< ID for communication with DDS commander.
         };
 
         /// \brief Structure holds information of requirement notification.
@@ -141,11 +141,11 @@ namespace dds
             /// \param[in] _pt Property tree with structure details.
             void fromPT(const boost::property_tree::ptree& _pt);
 
-            /// \Equality operator.
+            /// \brief Equality operator.
             bool operator==(const SRequirement& _val) const;
 
-            std::string m_hostName; ///> Host name pattern.
-            std::string m_id;       ///> ID for communication with DDS commander.
+            std::string m_hostName; ///< Host name pattern.
+            std::string m_id;       ///< ID for communication with DDS commander.
         };
 
         /// \brief Structure holds information of init notification.
@@ -169,7 +169,7 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SInit& _val) const;
 
-            std::string m_id; ///> ID for communication with DDS commander.
+            std::string m_id; ///< ID for communication with DDS commander.
         };
 
         /// \brief Class implements basic API for DDS RMS plug-ins.
@@ -265,13 +265,13 @@ namespace dds
             /// \brief Unsubscribe all user callbacks.
             void unsubscribe();
 
-            signalSubmit_t m_signalSubmit;           ///> Submit signal.
-            signalMessage_t m_signalMessage;         ///> Message signal.
-            signalRequirement_t m_signalRequirement; ///> Requirement signal.
+            signalSubmit_t m_signalSubmit;           ///< Submit signal.
+            signalMessage_t m_signalMessage;         ///< Message signal.
+            signalRequirement_t m_signalRequirement; ///< Requirement signal.
 
-            std::string m_id; ///> ID for communication with DDS commander (provided via constructor).
+            std::string m_id; ///< ID for communication with DDS commander (provided via constructor).
 
-            CCustomCmd m_customCmd; ///> Custom commands API which is used for communication with DDS commander.
+            CCustomCmd m_customCmd; ///< Custom commands API which is used for communication with DDS commander.
         };
     }
 }

@@ -42,7 +42,7 @@ namespace dds
             const varMap_t& getMap() const;
 
           private:
-            varMap_t m_map; ///> Key-Value storage of variables
+            varMap_t m_map; ///< Key-Value storage of variables
         };
 
         typedef std::shared_ptr<CTopoVars> TopoVarsPtr_t;

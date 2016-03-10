@@ -74,12 +74,12 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTask& _task);
 
           private:
-            std::string m_exe;                    ///> Path to executable
-            std::string m_env;                    ///> Path to environmtnt file
-            bool m_exeReachable;                  ///> If executable is available on the WN
-            bool m_envReachable;                  ///> If environment script is available on the WN
-            TopoPropertyPtrVector_t m_properties; ///> Properties
-            RequirementPtr_t m_requirement;       ///> Requirement
+            std::string m_exe;                    ///< Path to executable
+            std::string m_env;                    ///< Path to environmtnt file
+            bool m_exeReachable;                  ///< If executable is available on the WN
+            bool m_envReachable;                  ///< If environment script is available on the WN
+            TopoPropertyPtrVector_t m_properties; ///< Properties
+            RequirementPtr_t m_requirement;       ///< Requirement
         };
 
         typedef std::shared_ptr<CTask> TaskPtr_t;

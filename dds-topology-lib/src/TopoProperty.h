@@ -56,8 +56,8 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoProperty& _property);
 
           private:
-            std::string m_value;              ///> Property value
-            EPropertyAccessType m_accessType; ///> Property access type
+            std::string m_value;              ///< Property value
+            EPropertyAccessType m_accessType; ///< Property access type
         };
 
         typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;

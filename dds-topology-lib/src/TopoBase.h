@@ -84,9 +84,9 @@ namespace dds
             void setType(ETopoType _type);
 
           private:
-            std::string m_id;    ///> Identificator of topology element
-            ETopoType m_type;    ///> Type of the topology element
-            CTopoBase* m_parent; ///> Pointer to parent element
+            std::string m_id;    ///< Identificator of topology element
+            ETopoType m_type;    ///< Type of the topology element
+            CTopoBase* m_parent; ///< Pointer to parent element
 
             // FIXME: Probably we have to add an ID which will uniquely identifies the object.
         };

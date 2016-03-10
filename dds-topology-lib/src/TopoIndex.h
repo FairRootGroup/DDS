@@ -39,7 +39,7 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoIndex& _index);
 
           private:
-            std::string m_path; ///> Path to element in topology
+            std::string m_path; ///< Path to element in topology
         };
 
         class CompareTopoIndexLess : public std::binary_function<const CTopoIndex&, const CTopoIndex&, bool>

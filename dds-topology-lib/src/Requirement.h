@@ -53,8 +53,8 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CRequirement& _requirement);
 
           private:
-            std::string m_hostPattern;          ///> Pattern of the host name
-            EHostPatternType m_hostPatternType; ///> Type of the host pattern
+            std::string m_hostPattern;          ///< Pattern of the host name
+            EHostPatternType m_hostPatternType; ///< Type of the host pattern
         };
 
         typedef std::shared_ptr<CRequirement> RequirementPtr_t;

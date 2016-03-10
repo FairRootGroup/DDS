@@ -26,11 +26,11 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SBinaryAttachmentCmd& _val) const;
 
-            boost::uuids::uuid m_fileId;     ///> Unique ID of the file
-            uint32_t m_offset;               ///> Offset for this piece of binary data
-            uint32_t m_size;                 ///> Size of this piece of binary data
-            uint32_t m_crc32;                ///> CRC checksum of this piece of binary data
-            MiscCommon::BYTEVector_t m_data; ///> Piece of binary data
+            boost::uuids::uuid m_fileId;     ///< Unique ID of the file
+            uint32_t m_offset;               ///< Offset for this piece of binary data
+            uint32_t m_size;                 ///< Size of this piece of binary data
+            uint32_t m_crc32;                ///< CRC checksum of this piece of binary data
+            MiscCommon::BYTEVector_t m_data; ///< Piece of binary data
         };
         std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentCmd& _val);
         bool operator!=(const SBinaryAttachmentCmd& lhs, const SBinaryAttachmentCmd& rhs);

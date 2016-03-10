@@ -20,11 +20,11 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SBinaryAttachmentReceivedCmd& _val) const;
 
-            std::string m_receivedFilePath;  ///> Path to the received file
-            std::string m_requestedFileName; ///> Requested name of the file
-            uint16_t m_srcCommand;           ///> Source command which initiated file transport
-            uint32_t m_receivedFileSize;     ///> Number of recieved bytes
-            uint32_t m_downloadTime;         ///> Time spent to download file [microseconds]
+            std::string m_receivedFilePath;  ///< Path to the received file
+            std::string m_requestedFileName; ///< Requested name of the file
+            uint16_t m_srcCommand;           ///< Source command which initiated file transport
+            uint32_t m_receivedFileSize;     ///< Number of recieved bytes
+            uint32_t m_downloadTime;         ///< Time spent to download file [microseconds]
         };
         std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentReceivedCmd& _val);
         bool operator!=(const SBinaryAttachmentReceivedCmd& lhs, const SBinaryAttachmentReceivedCmd& rhs);
