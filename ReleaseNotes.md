@@ -3,6 +3,7 @@
 ## v1.2 (Not Yet Released)
 ###DDS common
 Fixed: cmake: Updated OSX RPATH settings.   
+Fixed: cmake: Fail with an explicit error when missing DDS worker package dependency. (GH-117)   
 Added: API for new plug-in system - CRMSPluginProtocol. (GH-108)   
 Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)   
 
