@@ -7,6 +7,7 @@
 //=============================================================================
 #include <boost/thread/thread.hpp>
 #include <csignal>
+#include <string>
 //=============================================================================
 namespace dds
 {
@@ -15,15 +16,13 @@ namespace dds
         class CLogEngine
         {
           public:
-            CLogEngine(bool _debugMode = false)
-                : m_fd(0)
-                , m_thread(NULL)
-                , m_debugMode(_debugMode)
-                , m_stopLogEngine(0)
-            {
-            }
+            typedef std::function<void(const std::string&)> onLogEvent_t;
+
+          public:
+            CLogEngine(bool _debugMode = false);
             ~CLogEngine();
-            void start(const std::string& _pipeFilePath);
+
+            void start(const std::string& _pipeFilePath, onLogEvent_t _callback = nullptr);
             void stop();
             void operator()(const std::string& _msg, const std::string& _id = "**", bool _debugMsg = false) const;
             void debug_msg(const std::string& _msg, const std::string& _id = "**") const
@@ -44,6 +43,7 @@ namespace dds
             std::string m_pipeName;
             bool m_debugMode;
             volatile sig_atomic_t m_stopLogEngine;
+            onLogEvent_t m_callback;
         };
     }
 }

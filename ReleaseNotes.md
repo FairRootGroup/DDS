@@ -25,6 +25,9 @@ Added: improve protocol attachment architecture. Check maximum size for vectors 
   -   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
   -   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
   -   all std::string's have a maximum size of uint16_t i.e. 2^16.   
+ 
+### SLURM plug-in
+Added: SLURM plug-in - initial release. (GH-109)   
 
 ### SSH plug-in
 Added: New SSH plug-in - initial release. (GH-108)   

@@ -126,6 +126,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
                     ss.str(),
                     (message.m_msgSeverity == intercom_api::EMsgSeverity::info ? MiscCommon::info
                                                                                : MiscCommon::error)));
+                // Drop the connection if received an error message from plug-in
                 if (message.m_msgSeverity == intercom_api::EMsgSeverity::error)
                 {
                     pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
@@ -134,7 +135,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
             }
         }
     }
-    // catch explicetly ptree_error. On some systems the exact exception message is not propogated to
+    // catch explicitly ptree_error. On some systems the exact exception message is not propagated to
     // exception parent and can be lost
     catch (const boost::property_tree::ptree_error& _e)
     {

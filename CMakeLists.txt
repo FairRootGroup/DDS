@@ -59,6 +59,7 @@ option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
 option(BUILD_dds_intercom_lib "Build dds_intercom_lib" ON)
 option(BUILD_dds-submit-ssh "Build dds-submit-ssh" ON)
 option(BUILD_dds-submit-localhost "Build dds-submit-localhost" ON)
+option(BUILD_dds-submit-slurm "Build dds-submit-slurm" ON)
 #
 # Custom targets
 #
@@ -294,6 +295,12 @@ if(BUILD_dds-submit-localhost)
     message(STATUS "Build dds-submit-localhost - YES")
     add_subdirectory ( plugins/dds-submit-localhost )
 endif(BUILD_dds-submit-localhost)
+
+# dds-submit-slurm
+if(BUILD_dds-submit-slurm)
+    message(STATUS "Build dds-submit-slurm - YES")
+    add_subdirectory ( plugins/dds-submit-slurm )
+endif(BUILD_dds-submit-slurm)
 
 #
 # Install

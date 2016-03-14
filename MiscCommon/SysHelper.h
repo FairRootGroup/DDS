@@ -164,6 +164,16 @@ namespace MiscCommon
         smart_path(_Path);
     }
     /**
+     *
+     **/
+    template <class _T>
+    inline _T smart_path(const _T& _Path)
+    {
+        _T tmp(_Path);
+        smart_path(&tmp);
+        return tmp;
+    }
+    /**
      * @brief The function is used to access the host name (with FCDN) of the current processor.
      * @param[out] _RetVal - The returned buffer string. Must not be NULL.
      **/

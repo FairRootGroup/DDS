@@ -7,7 +7,6 @@
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/program_options/parsers.hpp>
 #pragma clang diagnostic pop
-
 #include <boost/filesystem/operations.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -42,6 +41,7 @@ using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace bfs = boost::filesystem;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
+
 //=============================================================================
 const LPCSTR g_pipeName = ".dds_ssh_pipe";
 typedef list<CWorker> workersList_t;
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 
     try
     {
-        // Collect workers list
+        // init pipe log engine to get log messages from the child scripts
         string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
         smart_append(&pipeName, '/');
         pipeName += g_pipeName;

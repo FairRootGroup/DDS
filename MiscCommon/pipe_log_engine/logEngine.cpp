@@ -17,13 +17,23 @@ using namespace dds;
 using namespace dds::pipe_log_engine;
 using namespace MiscCommon;
 //=============================================================================
+CLogEngine::CLogEngine(bool _debugMode)
+    : m_fd(0)
+    , m_thread(NULL)
+    , m_debugMode(_debugMode)
+    , m_stopLogEngine(0)
+{
+    Logger::instance().init(); // Initialize log
+}
+//=============================================================================
 CLogEngine::~CLogEngine()
 {
     stop();
 }
 //=============================================================================
-void CLogEngine::start(const string& _pipeFilePath)
+void CLogEngine::start(const string& _pipeFilePath, onLogEvent_t _callback)
 {
+    m_callback = _callback;
     m_stopLogEngine = 0;
     // create a named pipe
     // it's used to collect outputs from the threads and called shell scripts...
@@ -40,6 +50,7 @@ void CLogEngine::start(const string& _pipeFilePath)
 
     // Start the log engine
     m_thread = new boost::thread(boost::bind(&CLogEngine::thread_worker, this, m_fd, m_pipeName));
+    LOG(info) << "pipe log engine has been started: " << m_pipeName;
 }
 //=============================================================================
 void CLogEngine::stop()
@@ -61,6 +72,8 @@ void CLogEngine::stop()
     }
 
     unlink(m_pipeName.c_str());
+
+    LOG(info) << "pipe log engine has been stopped: " << m_pipeName;
 }
 //=============================================================================
 void CLogEngine::operator()(const string& _msg, const string& _id, bool _debugMsg) const
@@ -75,7 +88,7 @@ void CLogEngine::operator()(const string& _msg, const string& _id, bool _debugMs
     if (_msg.empty() && _id.empty())
     {
         if (write(m_fd, "\0", 1) < 0)
-            throw MiscCommon::system_error("LogEngine: Write error");
+            throw MiscCommon::system_error("pipe log engine: Write error");
         return;
     }
 
@@ -129,7 +142,7 @@ void CLogEngine::operator()(const string& _msg, const string& _id, bool _debugMs
     while (total < len)
     {
         if ((n = write(m_fd, &buf[total], len - total)) < 0)
-            throw MiscCommon::system_error("LogEngine: Write error");
+            throw MiscCommon::system_error("pipe log engine: Write error");
         total += n;
     }
 }
@@ -166,7 +179,14 @@ void CLogEngine::thread_worker(int _fd, const string& _pipename)
                 if (m_stopLogEngine && 1 == numread)
                     break;
                 if (numread > 0)
-                    LOG(info) << "pipe log engine: " << string(buf, numread);
+                {
+                    stringstream ss;
+                    ss << "pipe log engine: " << string(buf, numread);
+                    LOG(info) << ss.str();
+                    // call user's callback if needed
+                    if (m_callback != nullptr)
+                        m_callback(ss.str());
+                }
                 else
                     break;
             }

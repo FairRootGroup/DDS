@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+#DDS_NEED_ARRAY
+
+#SBATCH --workdir=%DDS_JOB_ROOT_WRK_DIR%
+
+#DDS_USER_OPTIONS
+
+# create working dir
+eval JOB_WRK_DIR=%DDS_JOB_ROOT_WRK_DIR%/${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}
+mkdir -p $JOB_WRK_DIR
+cd $JOB_WRK_DIR
+
+# copy DDS Scout script into the working dir.
+cp %DDS_SCOUT% $JOB_WRK_DIR/
+
+# execute DDS Scout
+./DDSWorker.sh 
+
+exit 0
