@@ -8,7 +8,8 @@
 #
 
 # current working dir
-WD=$(pwd)
+WD="$(dirname $0)"
+cd $WD
 #
 eval LOCK_FILE="$WD/DDSWorker.lock"
 eval PID_FILE="$WD/DDSWorker.pid"
@@ -283,7 +284,7 @@ if [ -n "$1" ]; then
       cd $WD_child
       # execute DDS scout scrip of the child instance
       logMsg "Executing DDS scout of the child: $(pwd)/$(basename $0)"
-      $(basename $0) &> $WD_child/scout.log &
+      $(pwd)/$(basename $0) &> $WD_child/scout.log &
 
       popd &> /dev/null
       let NUM_WNs+=1
