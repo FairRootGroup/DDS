@@ -108,7 +108,7 @@ std::string SMessage::toJSON()
          << "\"id\": \"" << m_id << "\","
          << "\"message\":"
          << "{"
-         << "\"msg\": \"" << m_msg << "\","
+         << "\"msg\": \"" << boost::replace_all_copy(m_msg, "\"", "\\\"") << "\","
          << "\"msgSeverity\": \"" << MsgSeverityToTag(m_msgSeverity) << "\""
          << "}"
          << "" << g_sJSONEndTags;
