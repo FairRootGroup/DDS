@@ -4,9 +4,9 @@
 //
 
 // DDS
-#include "ConnectionManager.h"
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
+#include "ConnectionManager.h"
 #include "Topology.h"
 #include "ncf.h"
 // BOOST
@@ -489,7 +489,7 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 
         try
         {
-            do_execv(ssCmd.str(), 0 /*don't wait for plug-in*/, &outPut, nullptr, &nPluginExitCode);
+            do_execv(ssCmd.str()); //, 0 /*don't wait for plug-in*/, &outPut, nullptr, &nPluginExitCode);
         }
         catch (exception& e)
         {

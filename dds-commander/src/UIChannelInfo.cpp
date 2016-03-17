@@ -46,7 +46,7 @@ string CSubmitAgentsChannelInfo::getAllReceivedMessage() const
 bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::SCustomCmdCmd& _cmd,
                                                            CAgentChannel::weakConnectionPtr_t _channel)
 {
-    LOG(MiscCommon::info) << "Processing RMS plug-in message...";
+    LOG(MiscCommon::info) << "Processing RMS plug-in message: " << _cmd.m_sCmd;
     boost::property_tree::ptree pt;
 
     try
@@ -89,6 +89,16 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
             const string& tag = child.first;
             if (tag == "init")
             {
+                // Subscribe on plug-in disconnect
+                pPlugin->subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
+                                          [this](CAgentChannel* _channel) {
+                                              LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
+                                              // the plug-in is done and went offline, let's close UI
+                                              // connection as well.
+                                              m_channelSubmitPlugin.reset();
+                                              shutdown();
+                                          });
+
                 auto now = chrono::system_clock::now().time_since_epoch();
                 auto diff = now - m_PluginStartTime;
                 stringstream ssMsg;
@@ -105,15 +115,6 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
                 cmd.m_sCmd = m_strInitialSubmitRequest;
                 cmd.m_sCondition = "";
                 pPlugin->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
-
-                // Subscribe on plug-in disconnect
-                pPlugin->subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                                          [this](CAgentChannel* _channel) {
-                                              // the plug-in is done and went offline, let's close UI
-                                              // connection as well.
-                                              m_channelSubmitPlugin.reset();
-                                              shutdown();
-                                          });
             }
             else if (tag == "message")
             {
