@@ -524,7 +524,8 @@ namespace MiscCommon
         if ((pid1 = fork()))
         {
             /* parent process A */
-            ::waitpid(pid1, &status, 0);
+            ::waitpid(pid1, &status, WUNTRACED);
+            wordfree(&result);
         }
         else if (!pid1)
         {
@@ -551,8 +552,6 @@ namespace MiscCommon
             // Unable to fork
             throw std::runtime_error("do_execv: Unable to fork process");
         }
-
-        wordfree(&result);
     }
 
     // TODO: Document me!

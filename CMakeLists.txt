@@ -19,7 +19,7 @@ cmake_minimum_required( VERSION 2.8.11 FATAL_ERROR )
 # Keep the version file in the source directory to satisfy the source package.
 set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}/etc/version )
 if( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
-	
+
 	# The command produce a verion like "X.Y.Z.gHASH"
 	# The hash suffix is "-g" + 7-char abbreviation for the tip commit of parent.
 	# The "g" prefix stands for "git" and is used to allow describing the version of a software depending on the SCM the software is managed with.
@@ -58,6 +58,7 @@ option(BUILD_dds-stat "Build dds-stat" ON)
 option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
 option(BUILD_dds_intercom_lib "Build dds_intercom_lib" ON)
 option(BUILD_dds-submit-ssh "Build dds-submit-ssh" ON)
+option(BUILD_dds-submit-localhost "Build dds-submit-localhost" ON)
 #
 # Custom targets
 #
@@ -113,7 +114,7 @@ set(MiscCommon_LOCATION
 )
 #
 # additional compiler and linker flags for C++11
-# 
+#
 if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wthread-safety")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
@@ -287,6 +288,12 @@ if(BUILD_dds-submit-ssh)
     message(STATUS "Build dds-submit-ssh - YES")
     add_subdirectory ( plugins/dds-submit-ssh )
 endif(BUILD_dds-submit-ssh)
+
+# dds-submit-localhost
+if(BUILD_dds-submit-localhost)
+    message(STATUS "Build dds-submit-localhost - YES")
+    add_subdirectory ( plugins/dds-submit-localhost )
+endif(BUILD_dds-submit-localhost)
 
 #
 # Install
