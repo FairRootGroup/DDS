@@ -489,6 +489,72 @@ namespace MiscCommon
         return child_pid;
     }
 
+    /// We do not want the parent process to wait for its child process and we do not want to create a zombie.
+    /// We use double fork to achieve this.
+    inline void do_execv(const std::string& _Command) throw(std::exception)
+    {
+        //----- Expand the string for the program to run.
+        wordexp_t result;
+        switch (wordexp(_Command.c_str(), &result, 0))
+        {
+            case 0: // Successful.
+                break;
+            case WRDE_NOSPACE:
+                // If the error was WRDE_NOSPACE, then perhaps part of the result was allocated.
+                wordfree(&result);
+            default: // Some other error.
+                return;
+        }
+        ////-----
+
+        // make sure exe has it's exe falg
+        struct stat info;
+        stat(result.we_wordv[0], &info);
+        if (!(info.st_mode & S_IXUSR))
+        {
+            int ret = chmod(result.we_wordv[0], info.st_mode | S_IXUSR);
+            if (ret != 0)
+                throw system_error("Can't set executable flag on " + std::string(result.we_wordv[0]));
+        }
+
+        pid_t pid1;
+        pid_t pid2;
+        int status;
+
+        if ((pid1 = fork()))
+        {
+            /* parent process A */
+            ::waitpid(pid1, &status, 0);
+        }
+        else if (!pid1)
+        {
+            /* child process B */
+            if ((pid2 = fork()))
+            {
+                exit(0);
+            }
+            else if (!pid2)
+            {
+                // child: execute the required command, on success does not return
+                execv(result.we_wordv[0], result.we_wordv);
+                // not usually reached
+                exit(1);
+            }
+            else
+            {
+                // Unable to fork
+                throw std::runtime_error("do_execv: Unable to fork process");
+            }
+        }
+        else
+        {
+            // Unable to fork
+            throw std::runtime_error("do_execv: Unable to fork process");
+        }
+
+        wordfree(&result);
+    }
+
     // TODO: Document me!
     // If _Delay is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
     // return value is 0.
@@ -627,7 +693,7 @@ namespace MiscCommon
             // TODO: Needs to be fixed! Implement time-function based timeout measurements instead
             sleep(1);
         }
-        throw std::runtime_error("do_execv: Timeout has been reached, command execution will be terminated now.");
+        throw std::runtime_error("do_execv: Timeout has been reached, command execution will be terminated.");
         // kills the child
         kill(child_pid, SIGKILL);
         return 0;
