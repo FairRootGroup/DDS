@@ -292,6 +292,8 @@ namespace dds
                     return;
 
                 m_started = true;
+                // Prevent Asio TCP socket to be inherited by child when using fork/exec
+                ::fcntl(m_socket.native_handle(), F_SETFD, FD_CLOEXEC);
                 readHeader();
             }
 
