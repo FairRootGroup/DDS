@@ -15,9 +15,12 @@
 #include "Res.h"
 #include "SysHelper.h"
 #include "version.h"
+// BOOST
+#include <boost/filesystem/path.hpp>
 
 using namespace std;
 using namespace MiscCommon;
+using namespace boost::filesystem;
 
 void printVersion()
 {
@@ -60,7 +63,8 @@ int main(int argc, char* argv[])
 
     string sStdOut(argv[1]);
     smart_append(&sStdOut, '/');
-    sStdOut += argv[2];
+    path scriptPath(argv[2]);
+    sStdOut += scriptPath.filename().string();
     sStdOut += ".out.log";
 
     // child
