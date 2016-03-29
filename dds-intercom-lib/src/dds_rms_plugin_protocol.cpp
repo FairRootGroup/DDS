@@ -260,21 +260,24 @@ void CRMSPluginProtocol::unsubscribe()
     m_signalRequirement.disconnect_all_slots();
 }
 
-void CRMSPluginProtocol::wait()
+void CRMSPluginProtocol::start(bool _wait)
 {
-    internal_api::CDDSIntercomGuard::instance().waitCondition();
+    SInit init;
+    init.m_id = m_id;
+    m_customCmd.send(init.toJSON(), g_sRmsAgentSign);
+
+    size_t num_slots = m_signalSubmit.num_slots() + m_signalMessage.num_slots() + m_signalRequirement.num_slots();
+
+    // We wait only if _wait is true and we have subscribers
+    if (_wait && num_slots > 0)
+    {
+        internal_api::CDDSIntercomGuard::instance().waitCondition();
+    }
 }
 
 void CRMSPluginProtocol::stop()
 {
     internal_api::CDDSIntercomGuard::instance().stopCondition();
-}
-
-void CRMSPluginProtocol::sendInit()
-{
-    SInit init;
-    init.m_id = m_id;
-    m_customCmd.send(init.toJSON(), g_sRmsAgentSign);
 }
 
 void CRMSPluginProtocol::sendMessage(EMsgSeverity _severity, const std::string& _msg)

@@ -190,9 +190,8 @@ int main(int argc, char* argv[])
 
         });
 
-        proto.sendInit();
-
-        proto.wait();
+        // Let DDS know that we are online and start listening waiting for notifications
+        proto.start();
     }
     catch (exception& e)
     {

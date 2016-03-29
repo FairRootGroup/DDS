@@ -239,19 +239,21 @@ namespace dds
             /// \param[in] _subscriber Callback function that is called when notification arrives.
             void onRequirement(signalRequirement_t::slot_function_type _subscriber);
 
-            /// \brief Send initial request to the commander.
-            void sendInit();
-
             /// \brief Send message to DDS commander.
             /// \param[in] _severity Message severity.
             /// \param[in] _msg Message text.
             void sendMessage(EMsgSeverity _severity, const std::string& _msg);
 
-            /// \brief Stop the thread and wait until one of the conditions is applied.
+            /// \brief Send initial request to the commander and start listening for notifications.
+            /// \brief param[in] _wait If true than we stop the main thread.
+            ///
+            /// If _wait is true function stops the thread and waits until one of the conditions is applied:
             /// 1. 10 minutes timeout;
             /// 2. Failed connection to DDS commander or disconnection from DDS commander;
             /// 3. Explicit call of stop() function.
-            void wait();
+            ///
+            /// \note If there are no subscribers function doesn't wait.
+            void start(bool _wait = true);
 
             /// \brief Stop waiting.
             void stop();
