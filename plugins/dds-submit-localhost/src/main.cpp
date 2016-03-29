@@ -12,9 +12,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 // STD
 #include <chrono>
 #include <fstream>
@@ -24,6 +21,7 @@
 #include <thread>
 // DDS
 #include "BOOSTHelper.h"
+#include "BOOST_FILESYSTEM.h"
 #include "DDSSysFiles.h"
 #include "Process.h"
 #include "Res.h"
@@ -101,18 +99,11 @@ int main(int argc, char* argv[])
             // Create temp directory for DDS agents
             bfs::path tempDirPath = bfs::temp_directory_path();
             bfs::path wrkDirPath(tempDirPath);
+            string tmpDir = BOOSTHelper::get_temp_dir("dds");
+            wrkDirPath /= tmpDir;
+            wrkDirPath /= "wn";
 
-            // Get current time
-            std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-            struct std::tm* ptm = std::localtime(&now);
-            char buffer[20];
-            std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
-            string timeStr(buffer);
-
-            string randomDir(to_string(boost::uuids::random_generator()()));
-            wrkDirPath /= ("dds_" + timeStr + "_" + randomDir);
-
-            if (!bfs::exists(wrkDirPath) && !bfs::create_directory(wrkDirPath))
+            if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
             {
                 ss << "Can't create working directory: " << wrkDirPath.string();
                 proto.sendMessage(EMsgSeverity::error, ss.str());
@@ -120,11 +111,11 @@ int main(int argc, char* argv[])
                 return;
             }
 
-            ss << "Using \'" << tempDirPath.string() << "\' to spawn agents";
+            ss << "Using \'" << wrkDirPath.parent_path().string() << "\' to spawn agents";
             proto.sendMessage(EMsgSeverity::info, ss.str());
             ss.str("");
 
-            ss << "Starting worker package script in \'" << wrkDirPath.string() << "\'";
+            ss << "Starting DDSScout in \'" << wrkDirPath.string() << "\'";
             proto.sendMessage(EMsgSeverity::info, ss.str());
             ss.str("");
 
