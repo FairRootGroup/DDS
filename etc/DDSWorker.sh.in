@@ -8,8 +8,11 @@
 #
 
 # current working dir
-WD="$(dirname $0)"
+pushd "$(dirname $0)" > /dev/null
+WD=`pwd -P`
+popd > /dev/null
 cd $WD
+
 #
 eval LOCK_FILE="$WD/DDSWorker.lock"
 eval PID_FILE="$WD/DDSWorker.pid"
