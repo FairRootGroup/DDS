@@ -14,21 +14,19 @@
 // STD
 #include <chrono>
 #include <fstream>
-#include <iostream>
 #include <list>
 #include <stdexcept>
 #include <thread>
 // DDS
+#include "BOOST_FILESYSTEM.h"
 #include "BOOSTHelper.h"
 #include "DDSSysFiles.h"
 #include "Process.h"
-#include "Res.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "dds_intercom.h"
 #include "local_types.h"
 #include "logEngine.h"
-#include "ncf.h"
 #include "ncf.h"
 #include "version.h"
 #include "worker.h"
@@ -84,31 +82,34 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
 
     ss << _nInstances << " agents";
     proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
+    ss.str("");
 
     // Create temporary ssh configuration
     bfs::path tempDirPath = bfs::temp_directory_path();
+    bfs::path wrkDirPath(tempDirPath);
+    string tmpDir = BOOSTHelper::get_temp_dir("dds");
+    wrkDirPath /= tmpDir;
+    
+    if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
+    {
+        stringstream ssErr;
+        ssErr << "Can't create working directory: " << wrkDirPath.string();
+        throw runtime_error(ssErr.str());
+    }
+    
+    ss << "Using \'" << wrkDirPath.string() << "\' to spawn agents";
+    proto.sendMessage(EMsgSeverity::info, ss.str());
     ss.str("");
-    ss << "Using \'" << tempDirPath.string() << "\' to spawn agents.";
-    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
-
-    boost::filesystem::path tmpfileName(tempDirPath);
+    
+    boost::filesystem::path tmpfileName(wrkDirPath);
     tmpfileName /= "dds_ssh.cfg";
     ofstream f(tmpfileName.string());
 
     string userName;
     MiscCommon::get_cuser_name(&userName);
 
-    boost::filesystem::path workingDirectoryPath(tempDirPath);
-    workingDirectoryPath /= "dds-agents";
-    if (!boost::filesystem::exists(workingDirectoryPath) && !boost::filesystem::create_directory(workingDirectoryPath))
-    {
-        stringstream ssErr;
-        ssErr << "Can't create working directory: " << workingDirectoryPath.string();
-        throw runtime_error(ssErr.str());
-    }
-
     stringstream ssCfg;
-    ssCfg << "wn, " << userName << "@localhost, ," << workingDirectoryPath.string() << ", " << _nInstances;
+    ssCfg << "wn, " << userName << "@localhost, ," << wrkDirPath.string() << ", " << _nInstances;
     f << ssCfg.str();
     f.close();
 
@@ -133,8 +134,6 @@ int main(int argc, char* argv[])
 
     // Init communication with DDS commander server
     CRMSPluginProtocol proto(vm["id"].as<string>());
-    // let DDS know that we are online
-    proto.sendInit();
 
     try
     {
@@ -243,6 +242,9 @@ int main(int argc, char* argv[])
 
             proto.stop();
         });
+        
+        // let DDS know that we are online
+        proto.sendInit();
 
         proto.wait();
     }
