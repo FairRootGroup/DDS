@@ -42,6 +42,7 @@ using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
+namespace bfs = boost::filesystem;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
 //=============================================================================
 const LPCSTR g_pipeName = ".dds_ssh_pipe";
@@ -85,25 +86,19 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
     // Create temporary ssh configuration
-    const char* tmpdir = std::getenv("TMPDIR");
-    if (nullptr == tmpdir)
-    {
-        throw runtime_error("$TMPDIR is not defined. To be able to use \'localhost\' please "
-                            "define location of the temporary directory using TMPDIR "
-                            "environment variable.");
-    }
+    bfs::path tempDirPath = bfs::temp_directory_path();
     ss.str("");
-    ss << "Using \'" << tmpdir << "\' to spawn agents.";
+    ss << "Using \'" << tempDirPath.string() << "\' to spawn agents.";
     proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
-    boost::filesystem::path tmpfileName(tmpdir);
+    boost::filesystem::path tmpfileName(tempDirPath);
     tmpfileName /= "dds_ssh.cfg";
     ofstream f(tmpfileName.string());
 
     string userName;
     MiscCommon::get_cuser_name(&userName);
 
-    boost::filesystem::path workingDirectoryPath(tmpdir);
+    boost::filesystem::path workingDirectoryPath(tempDirPath);
     workingDirectoryPath /= "dds-agents";
     if (!boost::filesystem::exists(workingDirectoryPath) && !boost::filesystem::create_directory(workingDirectoryPath))
     {

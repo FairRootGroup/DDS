@@ -7,6 +7,7 @@ Fixed: cmake: Fail with an explicit error when missing DDS worker package depend
 Fixed: dds-intercome-lib: fails to parse JASON message with quotes. (GH-120)   
 Added: dds-intercome-lib: API for new plug-in system - CRMSPluginProtocol. (GH-108)   
 Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)   
+Modified: Use portable temporary directory path function.   
 
 ### dds-submit
 Added: Support of the new plug-in architecture. (GH-108)   
@@ -24,7 +25,7 @@ Added: improve protocol attachment architecture. Check maximum size for vectors 
   -   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
   -   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
   -   all std::string's have a maximum size of uint16_t i.e. 2^16.   
-  
+
 ### SSH plug-in
 Added: New SSH plug-in - initial release. (GH-108)   
 
