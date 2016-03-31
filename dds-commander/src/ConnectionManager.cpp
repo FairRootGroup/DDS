@@ -4,9 +4,9 @@
 //
 
 // DDS
+#include "ConnectionManager.h"
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
-#include "ConnectionManager.h"
 #include "Topology.h"
 #include "ncf.h"
 // BOOST

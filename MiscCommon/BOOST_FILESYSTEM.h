@@ -21,18 +21,19 @@ namespace MiscCommon
 {
     namespace BOOSTHelper
     {
-        inline std::string get_temp_dir(const std::string& _prefix) {
+        inline std::string get_temp_dir(const std::string& _prefix)
+        {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
             std::time_t nowTimeT = std::chrono::system_clock::to_time_t(now);
             struct std::tm* ptm = std::localtime(&nowTimeT);
             char buffer[128];
             std::strftime(buffer, 128, "%Y-%m-%d-%H-%M-%S-", ptm);
-            std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+            std::chrono::milliseconds ms =
+                std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
             std::stringstream timeSS;
             timeSS << _prefix << "_" << buffer << boost::format("%03i") % (ms.count() % 1000);
             return timeSS.str();
         }
-        
 
         /**
          *

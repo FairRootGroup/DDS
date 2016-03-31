@@ -18,8 +18,8 @@
 #include <stdexcept>
 #include <thread>
 // DDS
-#include "BOOST_FILESYSTEM.h"
 #include "BOOSTHelper.h"
+#include "BOOST_FILESYSTEM.h"
 #include "DDSSysFiles.h"
 #include "Process.h"
 #include "SysHelper.h"
@@ -89,18 +89,18 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     bfs::path wrkDirPath(tempDirPath);
     string tmpDir = BOOSTHelper::get_temp_dir("dds");
     wrkDirPath /= tmpDir;
-    
+
     if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
     {
         stringstream ssErr;
         ssErr << "Can't create working directory: " << wrkDirPath.string();
         throw runtime_error(ssErr.str());
     }
-    
+
     ss << "Using \'" << wrkDirPath.string() << "\' to spawn agents";
     proto.sendMessage(EMsgSeverity::info, ss.str());
     ss.str("");
-    
+
     boost::filesystem::path tmpfileName(wrkDirPath);
     tmpfileName /= "dds_ssh.cfg";
     ofstream f(tmpfileName.string());
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
 
             proto.stop();
         });
-        
+
         // Let DDS know that we are online and start listening waiting for notifications
         proto.start();
     }
