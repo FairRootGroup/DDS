@@ -91,10 +91,10 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SSubmit& _val) const;
 
-            uint32_t m_nInstances;          ///< Number of instances.
-            std::string m_cfgFilePath;      ///< Path to the configuration file.
-            std::string m_id;               ///< ID for communication with DDS commander.
-            std::string m_wrkPackagePath;   ///< A full path of the agent worker package, which needs to be deployed.
+            uint32_t m_nInstances;        ///< Number of instances.
+            std::string m_cfgFilePath;    ///< Path to the configuration file.
+            std::string m_id;             ///< ID for communication with DDS commander.
+            std::string m_wrkPackagePath; ///< A full path of the agent worker package, which needs to be deployed.
         };
 
         /// \brief Structure holds information of message notification.
@@ -195,11 +195,8 @@ namespace dds
         ///        // Implement functionality related to requirements here.
         ///    });
         ///
-        ///    // This must be the first call to let DDS commander know that we are online.
-        ///    prot.sendInit();
-        ///
-        ///    // Stop here and wait for notifications from commander.
-        ///    prot.wait();
+        ///    // Let DDS commander know that we are online and wait for notifications from commander
+        ///    prot.start();
         /// } catch (exception& _e) {
         ///    // Report error to DDS commander
         ///    proto.sendMessage(dds::EMsgSeverity::error, e.what());
@@ -245,15 +242,15 @@ namespace dds
             void sendMessage(EMsgSeverity _severity, const std::string& _msg);
 
             /// \brief Send initial request to the commander and start listening for notifications.
-            /// \brief param[in] _wait If true than we stop the main thread.
+            /// \brief param[in] _block If true than we stop the main thread.
             ///
-            /// If _wait is true function stops the thread and waits until one of the conditions is applied:
+            /// If _block is true function stops the thread and waits until one of the conditions is applied:
             /// 1. 10 minutes timeout;
             /// 2. Failed connection to DDS commander or disconnection from DDS commander;
             /// 3. Explicit call of stop() function.
             ///
             /// \note If there are no subscribers function doesn't wait.
-            void start(bool _wait = true);
+            void start(bool _block = true);
 
             /// \brief Stop waiting.
             void stop();

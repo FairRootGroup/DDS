@@ -260,7 +260,7 @@ void CRMSPluginProtocol::unsubscribe()
     m_signalRequirement.disconnect_all_slots();
 }
 
-void CRMSPluginProtocol::start(bool _wait)
+void CRMSPluginProtocol::start(bool _block)
 {
     SInit init;
     init.m_id = m_id;
@@ -268,8 +268,8 @@ void CRMSPluginProtocol::start(bool _wait)
 
     size_t num_slots = m_signalSubmit.num_slots() + m_signalMessage.num_slots() + m_signalRequirement.num_slots();
 
-    // We wait only if _wait is true and we have subscribers
-    if (_wait && num_slots > 0)
+    // We wait only if _block is true and we have subscribers
+    if (_block && num_slots > 0)
     {
         internal_api::CDDSIntercomGuard::instance().waitCondition();
     }
