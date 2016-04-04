@@ -297,6 +297,7 @@ string CUserDefaults::getAgentIDFile()
 string CUserDefaults::getLogFile() const
 {
     char* dds_log_location;
+    // DDS_LOG_LOCATION is used only by DDS commander server
     dds_log_location = getenv("DDS_LOG_LOCATION");
     string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
     smart_append<string>(&sLogDir, '/');

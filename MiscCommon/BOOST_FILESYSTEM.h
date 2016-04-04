@@ -14,6 +14,7 @@
 #include "MiscUtils.h"
 // STD
 #include <chrono>
+#include <sstream>
 
 namespace fs = boost::filesystem;
 
