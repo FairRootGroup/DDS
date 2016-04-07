@@ -25,7 +25,7 @@ const string g_bashscript_end = "@bash_end@";
 //=============================================================================
 typedef boost::tokenizer<boost::escaped_list_separator<char>> Tok;
 //=============================================================================
-void CNcf::readFrom(istream& _stream)
+void CNcf::readFrom(istream& _stream, bool _readBashOnly)
 {
     // get lines from the configuration
     StringVector_t lines;
@@ -74,29 +74,32 @@ void CNcf::readFrom(istream& _stream)
             continue;
         }
 
-        Tok t(sLine);
-        // create config. records here. But this class is not deleting them.
-        // Each CWorker is responsible to delete it's config record info.
-        configRecord_t rec = configRecord_t(new SConfigRecord());
-        int res = rec->assignValues(t.begin(), t.end());
-        if (res)
+        if (!_readBashOnly)
         {
-            stringstream ss;
-            ss << "dds-ssh configuration: syntax error at line " << i + 1;
-            throw runtime_error(ss.str());
-        }
-        // check for duplicate ids
-        pair<ids_t::iterator, bool> ret = ids.insert(rec->m_id);
-        if (!ret.second)
-        {
-            stringstream ss;
-            ss << "a not unique id has been found: "
-               << "[" << rec->m_id << "]";
-            throw runtime_error(ss.str());
-        }
+            Tok t(sLine);
+            // create config. records here. But this class is not deleting them.
+            // Each CWorker is responsible to delete it's config record info.
+            configRecord_t rec = configRecord_t(new SConfigRecord());
+            int res = rec->assignValues(t.begin(), t.end());
+            if (res)
+            {
+                stringstream ss;
+                ss << "dds-ssh configuration: syntax error at line " << i + 1;
+                throw runtime_error(ss.str());
+            }
+            // check for duplicate ids
+            pair<ids_t::iterator, bool> ret = ids.insert(rec->m_id);
+            if (!ret.second)
+            {
+                stringstream ss;
+                ss << "a not unique id has been found: "
+                   << "[" << rec->m_id << "]";
+                throw runtime_error(ss.str());
+            }
 
-        // save a configuration record to a container
-        m_records.push_back(rec);
+            // save a configuration record to a container
+            m_records.push_back(rec);
+        }
     }
 
     if (bCollectScript)

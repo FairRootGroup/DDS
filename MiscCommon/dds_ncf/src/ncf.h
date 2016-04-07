@@ -94,7 +94,7 @@ namespace dds
         class CNcf
         {
           public:
-            void readFrom(std::istream& _stream);
+            void readFrom(std::istream& _stream, bool _readBashOnly = false);
             configRecords_t getRecords();
             std::string getBashEnvCmds()
             {
