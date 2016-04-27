@@ -8,8 +8,6 @@
 #include <boost/program_options/parsers.hpp>
 #pragma clang diagnostic pop
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 // STD
