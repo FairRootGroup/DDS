@@ -53,6 +53,7 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
     // Generic options
     bpo::options_description options("Options");
     options.add_options()("id", bpo::value<std::string>(), "DDS submission ID");
+    options.add_options()("path", bpo::value<std::string>(), "Path to DDS plugins directory");
 
     // Parsing command-line
     bpo::variables_map vm;
@@ -60,6 +61,12 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
     bpo::notify(vm);
 
     if (!vm.count("id") || vm["id"].as<string>().empty())
+    {
+        cout << options;
+        return false;
+    }
+
+    if (!vm.count("path") || vm["path"].as<string>().empty())
     {
         cout << options;
         return false;
@@ -185,7 +192,7 @@ int main(int argc, char* argv[])
                 for (; iter != iter_end; ++iter)
                 {
                     configRecord_t rec(*iter);
-                    CWorker wrk(rec, options);
+                    CWorker wrk(rec, options, vm["path"].as<string>());
                     workers.push_back(wrk);
 
                     // if (0 == rec->m_nWorkers)

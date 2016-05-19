@@ -22,6 +22,7 @@ namespace dds
 
             std::string m_sRMSType;
             std::string m_sCfgFile;
+            std::string m_sPath;
             uint32_t m_nNumberOfAgents;
         };
         std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val);

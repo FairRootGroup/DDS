@@ -27,6 +27,7 @@ namespace dds
           public:
             void setCfgFile(const std::string& _val);
             void setRMSType(const std::string& _val);
+            void setPath(const std::string& _val);
             void setNumber(const size_t _val);
 
           private:
@@ -37,6 +38,7 @@ namespace dds
           private:
             std::string m_sCfgFile;
             std::string m_sRMS;
+            std::string m_sPath;
             size_t m_number;
             bool m_bXMLValidationDisabled;
         };

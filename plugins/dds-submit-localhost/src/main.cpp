@@ -48,6 +48,7 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
     // Generic options
     bpo::options_description options("Options");
     options.add_options()("id", bpo::value<std::string>(), "DDS submission ID");
+    options.add_options()("path", bpo::value<std::string>(), "Path to DDS plugins directory");
 
     // Parsing command-line
     bpo::variables_map vm;

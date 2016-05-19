@@ -404,9 +404,9 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
     {
         auto p = _channel.lock();
 
+        string pluginDir = CUserDefaults::instance().getPluginDir(_attachment->m_sPath, _attachment->m_sRMSType);
         stringstream ssPluginExe;
-        ssPluginExe << CUserDefaults::instance().getPluginDir(_attachment->m_sRMSType) << "dds-submit-"
-                    << _attachment->m_sRMSType;
+        ssPluginExe << pluginDir << "dds-submit-" << _attachment->m_sRMSType;
         if (!boost::filesystem::exists(ssPluginExe.str()))
         {
             stringstream ssErrMsg;
@@ -423,7 +423,8 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
         ssCmd << ssPluginExe.str();
         // TODO: Send ID to the plug-in
         ssCmd << " --id "
-              << "FAKE_ID_FOR_TESTS";
+              << "FAKE_ID_FOR_TESTS"
+              << " --path \"" << pluginDir << "\"";
 
         int nPluginExitCode(0);
 

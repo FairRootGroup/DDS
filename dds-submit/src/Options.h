@@ -42,12 +42,16 @@ namespace dds
         {
             SOptions()
                 : m_sRMS("localhost")
+                , m_sCfgFile()
+                , m_sPath()
                 , m_number(0)
+                , m_bListPlugins(false)
             {
             }
 
             std::string m_sRMS;
             std::string m_sCfgFile;
+            std::string m_sPath;
             size_t m_number;
             bool m_bListPlugins;
         } SOptions_t;
@@ -61,8 +65,7 @@ namespace dds
         {
             LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
                                         << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-                                        << MiscCommon::g_cszReportBugsAddr;
+                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
         }
         //=============================================================================
         // Command line parser
@@ -86,6 +89,9 @@ namespace dds
             options.add_options()("config,c",
                                   bpo::value<std::string>(&_options->m_sCfgFile),
                                   "A plug-in's configuration file. It can be used to provide additional RMS options");
+            options.add_options()("path",
+                                  bpo::value<std::string>(&_options->m_sPath),
+                                  "A plug-in's directory search path. It can be used for external RMS plug-ins.");
             options.add_options()("number,n",
                                   bpo::value<size_t>(&_options->m_number),
                                   "Defines a number of agents to spawn."

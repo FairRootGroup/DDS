@@ -17,9 +17,10 @@ using namespace MiscCommon;
 //=============================================================================
 const size_t g_cmdTimeout = 20; // in sec.
 //=============================================================================
-CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options)
+CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const string& _path)
     : m_rec(_rec)
     , m_options(_options)
+    , m_path(_path)
     , m_mutex(mutexPtr_t(new boost::mutex()))
 {
     // constructing a full path of the worker for this id
@@ -62,7 +63,7 @@ bool CWorker::runTask(ETaskType _param) const
         case task_submit:
         {
             ssParams << " -n " << m_rec->m_nWorkers;
-            string cmd(user_defaults_api::CUserDefaults::instance().getPluginDir("ssh"));
+            string cmd(m_path);
             cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);
             ssCmd << cmd << " " << ssParams.str();

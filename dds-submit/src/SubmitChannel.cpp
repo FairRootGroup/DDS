@@ -26,6 +26,7 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
         SSubmitCmd cmd;
         cmd.m_sRMSType = m_sRMS;
         cmd.m_sCfgFile = m_sCfgFile;
+        cmd.m_sPath = m_sPath;
         cmd.m_nNumberOfAgents = m_number;
         pushMsg<cmdSUBMIT>(cmd);
     });
@@ -47,6 +48,11 @@ void CSubmitChannel::setCfgFile(const string& _val)
 void CSubmitChannel::setRMSType(const string& _val)
 {
     m_sRMS = _val;
+}
+
+void CSubmitChannel::setPath(const string& _val)
+{
+    m_sPath = _val;
 }
 
 void CSubmitChannel::setNumber(const size_t _val)

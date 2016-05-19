@@ -33,7 +33,7 @@ namespace dds
         class CWorker : public CTaskImp<CWorker, ETaskType>
         {
           public:
-            CWorker(ncf::configRecord_t _rec, const SWNOptions& _options);
+            CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const std::string& _path);
             ~CWorker();
 
             void printInfo(std::ostream& _stream) const;
@@ -50,6 +50,7 @@ namespace dds
           private:
             ncf::configRecord_t m_rec;
             SWNOptions m_options;
+            std::string m_path;
             mutable mutexPtr_t m_mutex;
         };
     }

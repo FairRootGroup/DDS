@@ -35,6 +35,9 @@ Added: Initial release. (GH-115)
 ### dds-daemonize
 Fixed: failed to execute if the full path to the executable is provided. (GH-121)   
 
+### dds-submit
+Added: customizable plugin location. --path option which specifies the root directory of the plugins was edded. If the directory is not provided - default path will be used. (GH-118)   
+
 ## v1.0 (2015-11-20)
 ###DDS common
 Fixed: git error when using out of source builds (GH-85)    

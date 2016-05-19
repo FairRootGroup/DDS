@@ -44,7 +44,10 @@ int main(int argc, char* argv[])
     if (options.m_bListPlugins)
     {
         namespace fs = boost::filesystem;
-        fs::path someDir(dds::user_defaults_api::CUserDefaults::instance().getPluginsRootDir());
+        string pluginsRootDir = (options.m_sPath.empty())
+                                    ? dds::user_defaults_api::CUserDefaults::instance().getPluginsRootDir()
+                                    : options.m_sPath;
+        fs::path someDir(pluginsRootDir);
         fs::directory_iterator end_iter;
 
         typedef std::multimap<std::time_t, fs::path> result_set_t;
@@ -65,6 +68,10 @@ int main(int argc, char* argv[])
                 }
             }
             cout << endl;
+        }
+        else
+        {
+            cout << "Directory " << someDir << " doesn't exist or is not a directory.\n";
         }
         return EXIT_SUCCESS;
     }
@@ -98,6 +105,7 @@ int main(int argc, char* argv[])
 
         client->setCfgFile(options.m_sCfgFile);
         client->setRMSType(options.m_sRMS);
+        client->setPath(options.m_sPath);
         client->setNumber(options.m_number);
 
         client->connect(iterator);

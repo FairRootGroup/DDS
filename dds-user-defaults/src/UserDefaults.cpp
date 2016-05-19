@@ -331,9 +331,20 @@ string CUserDefaults::getPluginsRootDir() const
     return (ss.str());
 }
 
-string CUserDefaults::getPluginDir(const string& _pluginName) const
+string CUserDefaults::getPluginDir(const string& _path, const string& _pluginName) const
 {
     stringstream ss;
-    ss << getPluginsRootDir() << "dds-submit-" << _pluginName << "/";
+    std::string path;
+    if (!_path.empty())
+    {
+        path = _path;
+        smart_path(&path);
+        smart_append(&path, '/');
+    }
+    else
+    {
+        path = getPluginsRootDir();
+    }
+    ss << path << "dds-submit-" << _pluginName << "/";
     return (ss.str());
 }
