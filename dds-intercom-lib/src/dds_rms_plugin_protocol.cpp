@@ -15,9 +15,6 @@ using namespace dds::intercom_api;
 using namespace std;
 using namespace boost::property_tree;
 
-const std::string g_sJSONStartTags = "{\"dds\" : {\"plug-in\" : {";
-const std::string g_sJSONEndTags = "}}}";
-
 std::string MsgSeverityToTag(EMsgSeverity _severity)
 {
     switch (_severity)
@@ -54,16 +51,16 @@ SSubmit::SSubmit()
 
 std::string SSubmit::toJSON()
 {
+    ptree pt;
+
+    pt.put<string>("dds.plug-in.id", m_id);
+    pt.put<int>("dds.plug-in.submit.nInstances", m_nInstances);
+    pt.put<string>("dds.plug-in.submit.cfgFilePath", m_cfgFilePath);
+    pt.put<string>("dds.plug-in.submit.wrkPackagePath", m_wrkPackagePath);
+
     stringstream json;
-    json << g_sJSONStartTags << ""
-         << "\"id\": \"" << m_id << "\","
-         << "\"submit\":"
-         << "{"
-         << "\"nInstances\": \"" << m_nInstances << "\","
-         << "\"cfgFilePath\": \"" << m_cfgFilePath << "\","
-         << "\"wrkPackagePath\": \"" << m_wrkPackagePath << "\""
-         << "}"
-         << "" << g_sJSONEndTags;
+    write_json(json, pt);
+
     return json.str();
 }
 
@@ -103,16 +100,14 @@ SMessage::SMessage()
 
 std::string SMessage::toJSON()
 {
+    ptree pt;
+
+    pt.put<string>("dds.plug-in.id", m_id);
+    pt.put<string>("dds.plug-in.message.msg", m_msg);
+    pt.put<string>("dds.plug-in.message.msgSeverity", MsgSeverityToTag(m_msgSeverity));
+
     stringstream json;
-    json << g_sJSONStartTags << ""
-         << "\"id\": \"" << m_id << "\","
-         << "\"message\":"
-         << "{"
-         << "\"msg\": \"" << boost::replace_all_copy(m_msg, "\"", "\\\"") << "\","
-         << "\"msgSeverity\": \"" << MsgSeverityToTag(m_msgSeverity) << "\""
-         << "}"
-         << "" << g_sJSONEndTags;
-    ;
+    write_json(json, pt);
 
     return json.str();
 }
@@ -139,50 +134,6 @@ bool SMessage::operator==(const SMessage& val) const
 }
 
 ///////////////////////////////////
-// SRequirement
-///////////////////////////////////
-
-SRequirement::SRequirement()
-    : m_hostName()
-    , m_id()
-{
-}
-
-std::string SRequirement::toJSON()
-{
-    stringstream json;
-    json << g_sJSONStartTags << ""
-         << "\"id\": \"" << m_id << "\","
-         << "\"requirement\":"
-         << "{"
-         << "\"hostName\": \"" << m_hostName << "\""
-         << "}"
-         << "" << g_sJSONEndTags;
-
-    return json.str();
-}
-
-void SRequirement::fromJSON(const std::string& _json)
-{
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    fromPT(pt);
-}
-
-void SRequirement::fromPT(const boost::property_tree::ptree& _pt)
-{
-    const ptree& pt = _pt.get_child("dds.plug-in");
-    m_hostName = pt.get<string>("requirement.hostName", "");
-    m_id = pt.get<string>("id");
-}
-
-bool SRequirement::operator==(const SRequirement& val) const
-{
-    return (m_id == val.m_id) && (m_hostName == val.m_hostName);
-}
-
-///////////////////////////////////
 // SInit
 ///////////////////////////////////
 
@@ -192,11 +143,13 @@ SInit::SInit()
 
 std::string SInit::toJSON()
 {
+    ptree pt;
+
+    pt.put<string>("dds.plug-in.id", m_id);
+    pt.put<string>("dds.plug-in.init", "");
+
     stringstream json;
-    json << g_sJSONStartTags << ""
-         << "\"id\": \"" << m_id << "\","
-         << "\"init\": \"\""
-         << "" << g_sJSONEndTags;
+    write_json(json, pt);
 
     return json.str();
 }
@@ -248,16 +201,10 @@ void CRMSPluginProtocol::onMessage(signalMessage_t::slot_function_type _subscrib
     m_signalMessage.connect(_subscriber);
 }
 
-void CRMSPluginProtocol::onRequirement(signalRequirement_t::slot_function_type _subscriber)
-{
-    m_signalRequirement.connect(_subscriber);
-}
-
 void CRMSPluginProtocol::unsubscribe()
 {
     m_signalSubmit.disconnect_all_slots();
     m_signalMessage.disconnect_all_slots();
-    m_signalRequirement.disconnect_all_slots();
 }
 
 void CRMSPluginProtocol::start(bool _block)
@@ -266,7 +213,7 @@ void CRMSPluginProtocol::start(bool _block)
     init.m_id = m_id;
     m_customCmd.send(init.toJSON(), g_sRmsAgentSign);
 
-    size_t num_slots = m_signalSubmit.num_slots() + m_signalMessage.num_slots() + m_signalRequirement.num_slots();
+    size_t num_slots = m_signalSubmit.num_slots() + m_signalMessage.num_slots();
 
     // We wait only if _block is true and we have subscribers
     if (_block && num_slots > 0)
@@ -313,12 +260,6 @@ void CRMSPluginProtocol::notify(std::istream& _stream)
                 SMessage message;
                 message.fromPT(pt);
                 m_signalMessage(message);
-            }
-            else if (tag == "requirement")
-            {
-                SRequirement requirement;
-                requirement.fromPT(pt);
-                m_signalRequirement(requirement);
             }
         }
     }

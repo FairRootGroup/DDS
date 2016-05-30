@@ -85,11 +85,6 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
         BOOST_CHECK(_message.m_id == "plug-in-id");
     });
 
-    parser.onRequirement([](const SRequirement& _requirement) {
-        BOOST_CHECK(_requirement.m_hostName == "host.gsi.de");
-        BOOST_CHECK(_requirement.m_id == "plug-in-id");
-    });
-
     parser.notifyTest(json);
 }
 
@@ -97,7 +92,7 @@ BOOST_AUTO_TEST_CASE(test_message)
 {
     SMessage src;
     src.m_id = "plug-in-id";
-    src.m_msg = "Sample message";
+    src.m_msg = "Sample message\"\t /// \\\\ '\\'";
     src.m_msgSeverity = EMsgSeverity::info;
 
     string json = src.toJSON();
@@ -118,20 +113,6 @@ BOOST_AUTO_TEST_CASE(test_submit)
     string json = src.toJSON();
 
     SSubmit out;
-    out.fromJSON(json);
-
-    BOOST_CHECK(src == out);
-}
-
-BOOST_AUTO_TEST_CASE(test_requirement)
-{
-    SRequirement src;
-    src.m_id = "plug-in-id";
-    src.m_hostName = "host.gsi.de";
-
-    string json = src.toJSON();
-
-    SRequirement out;
     out.fromJSON(json);
 
     BOOST_CHECK(src == out);

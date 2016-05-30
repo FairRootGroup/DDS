@@ -123,31 +123,6 @@ namespace dds
             std::string m_id;           ///< ID for communication with DDS commander.
         };
 
-        /// \brief Structure holds information of requirement notification.
-        struct SRequirement
-        {
-            /// \brief Default constructor.
-            SRequirement();
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string toJSON();
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
-            void fromPT(const boost::property_tree::ptree& _pt);
-
-            /// \brief Equality operator.
-            bool operator==(const SRequirement& _val) const;
-
-            std::string m_hostName; ///< Host name pattern.
-            std::string m_id;       ///< ID for communication with DDS commander.
-        };
-
         /// \brief Structure holds information of init notification.
         struct SInit
         {
@@ -191,9 +166,6 @@ namespace dds
         ///        // Message from commander received.
         ///        // Implement related functionality here.
         ///    });
-        ///    prot.onRequirement([](const SRequirement& _requirement) {
-        ///        // Implement functionality related to requirements here.
-        ///    });
         ///
         ///    // Let DDS commander know that we are online and wait for notifications from commander
         ///    prot.start();
@@ -212,9 +184,6 @@ namespace dds
             /// \brief Callback function for message notifications.
             typedef boost::signals2::signal<void(const SMessage&)> signalMessage_t;
 
-            /// \brief Callback function for requirements notifications.
-            typedef boost::signals2::signal<void(const SRequirement&)> signalRequirement_t;
-
           public:
             /// \brief Constructor with ID.
             /// \param[in] _id DDS commander provides an ID which has to be used for the communication.
@@ -231,10 +200,6 @@ namespace dds
             /// \brief Subscribe for message notifications.
             /// \param[in] _subscriber Callback function that is called when notification arrives.
             void onMessage(signalMessage_t::slot_function_type _subscriber);
-
-            /// \brief Subscribe for requirement notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            void onRequirement(signalRequirement_t::slot_function_type _subscriber);
 
             /// \brief Send message to DDS commander.
             /// \param[in] _severity Message severity.
@@ -264,9 +229,8 @@ namespace dds
             /// \brief Unsubscribe all user callbacks.
             void unsubscribe();
 
-            signalSubmit_t m_signalSubmit;           ///< Submit signal.
-            signalMessage_t m_signalMessage;         ///< Message signal.
-            signalRequirement_t m_signalRequirement; ///< Requirement signal.
+            signalSubmit_t m_signalSubmit;   ///< Submit signal.
+            signalMessage_t m_signalMessage; ///< Message signal.
 
             std::string m_id; ///< ID for communication with DDS commander (provided via constructor).
 
