@@ -337,13 +337,19 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
    set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
 
-   if(APPLE)
+set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
+if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
+  set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
+endif()
+message( STATUS "Using BOOST Library dir: " ${DDS_BOOST_LIB_DIR})
+
+if(APPLE)
      set( lib_cmd "bash" )
-     set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{gsub(\"@rpath\", \"${Boost_LIBRARY_DIR_RELEASE}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+     set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
      set( lib_cmd_args_cpp "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep libstdc++ | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
      # the log library needs a special handling as it depends on many other boost libraries
-     set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@rpath\", \"${Boost_LIBRARY_DIR_RELEASE}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-	 set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@loader_path\", \"${Boost_LIBRARY_DIR_RELEASE}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )   
+     set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+	 set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@loader_path\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )   
    elseif(UNIX)
      set( lib_cmd "bash" )
      set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
@@ -353,7 +359,9 @@ if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
    endif(APPLE)
 
    add_custom_target( wn_bin
-                      COMMAND -mkdir -p ${WN_PKG_DIR}
+                      # TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
+                      # COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=\"$ENV{LD_LIBRARY_PATH}:${DDS_BOOST_LIB_DIR}\""
+		      COMMAND -mkdir -p ${WN_PKG_DIR}
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_user_defaults_lib> "${WN_PKG_DIR}"
