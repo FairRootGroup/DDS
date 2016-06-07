@@ -33,10 +33,19 @@ int main(int argc, char* argv[])
         bpo::store(bpo::command_line_parser(argc, argv).options(options).run(), vm);
         bpo::notify(vm);
 
+        // DDS custom command API
         CCustomCmd customCmd;
+
+        // Best practice is to subscribe on errors first, before doing any other function calls.
+        // Otherwise there is a chance to miss some of the error messages from DDS.
+        customCmd.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
+            cout << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
+        });
+
         atomic<size_t> counterCmdMessages(0);
         atomic<size_t> counterReplyMessages(0);
 
+        // Subscribe on custom commands
         customCmd.subscribe(
             [&counterCmdMessages](const string& _command, const string& _condition, uint64_t _senderId) {
                 cout << "Received custom command " << counterCmdMessages << " : " << _command
@@ -44,7 +53,8 @@ int main(int argc, char* argv[])
                 counterCmdMessages++;
             });
 
-        customCmd.subscribeReply([&counterReplyMessages](const string& _msg) {
+        // Subscribe on reply from DDS commander server
+        customCmd.subscribeOnReply([&counterReplyMessages](const string& _msg) {
             cout << "Received reply message " << counterReplyMessages << " : " << _msg << endl;
             counterReplyMessages++;
         });

@@ -32,6 +32,7 @@ set( SRC_HDRS_INT
 
 set( SRC_HDRS
 	./src/dds_intercom.h
+	./src/dds_intercom_error_codes.h
 )
 
 include_directories(

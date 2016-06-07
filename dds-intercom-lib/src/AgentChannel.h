@@ -27,6 +27,9 @@ namespace dds
           public:
             SSyncHelper* m_syncHelper;
 
+          public:
+            void reconnectAgentWithErrorHandler(const std::function<void(const std::string&)>& callback);
+
           private:
             CAgentChannel(boost::asio::io_service& _service);
 
@@ -41,6 +44,8 @@ namespace dds
             bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment);
             bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
             bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
+
+            uint16_t m_connectionAttempts;
         };
     }
 }

@@ -18,6 +18,7 @@
 
 // DDS
 #include "AgentConnectionManager.h"
+#include "DDSIntercomGuard.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 
@@ -93,8 +94,8 @@ void CAgentConnectionManager::start()
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
         std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel * _channel)>
-            fSHUTDOWN =
-                [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+            fSHUTDOWN = [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+                               CAgentChannel* _channel) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_channel);
@@ -107,8 +108,13 @@ void CAgentConnectionManager::start()
         m_channel->subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
                                     [this](CAgentChannel* _channel) { stopCondition(); });
 
-        m_channel->subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
-                                    [this](CAgentChannel* _channel) { stopCondition(); });
+        m_channel->subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect, [this](CAgentChannel* _channel) {
+            m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
+                if (m_syncHelper != nullptr)
+                    m_syncHelper->m_errorSignal(intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
+                stopCondition();
+            });
+        });
 
         m_channel->connect(endpoint_iterator);
 
@@ -122,7 +128,12 @@ void CAgentConnectionManager::start()
     }
     catch (exception& e)
     {
-        LOG(fatal) << e.what();
+        string errorMsg("Error in the transport service: ");
+        errorMsg += e.what();
+
+        LOG(fatal) << errorMsg;
+        if (m_syncHelper != nullptr)
+            m_syncHelper->m_errorSignal(intercom_api::EErrorCode::TransportServiceFailed, errorMsg);
     }
 }
 
@@ -172,9 +183,18 @@ int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
     }
     catch (const exception& _e)
     {
-        LOG(fatal) << "Fail to push the property update: " << _cmd << "; Error: " << _e.what();
+        stringstream ss;
+        ss << "Fail to push the key-value update: " << _cmd << "; Error: " << _e.what();
+        LOG(fatal) << ss.str();
+        if (m_syncHelper != nullptr)
+            m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
+        return 1;
     }
-    LOG(fatal) << "Fail to push the property update: " << _cmd;
+    stringstream ss;
+    ss << "Fail to push the key-value update: " << _cmd;
+    LOG(fatal) << ss.str();
+    if (m_syncHelper != nullptr)
+        m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
     return 1;
 }
 
@@ -191,9 +211,18 @@ int CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _c
     }
     catch (const exception& _e)
     {
-        LOG(fatal) << "Fail to push the custom command: " << _command << "; Error: " << _e.what();
+        stringstream ss;
+        ss << "Fail to push the custom command: " << _command << "; Error: " << _e.what();
+        LOG(fatal) << ss.str();
+        if (m_syncHelper != nullptr)
+            m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
+        return 1;
     }
-    LOG(fatal) << "Fail to push the custom command: " << _command;
+    stringstream ss;
+    ss << "Fail to push the custom command: " << _command;
+    LOG(fatal) << ss.str();
+    if (m_syncHelper != nullptr)
+        m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
     return 1;
 }
 

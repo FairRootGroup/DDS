@@ -68,7 +68,9 @@ int main(int argc, char* argv[])
 
         if (testErrors)
         {
-            keyValue.subscribeError([&keyCondition](const string& _msg) { LOG(error) << "Key-value error: " << _msg; });
+            keyValue.subscribeOnError([&keyCondition](EErrorCode _errorCode, const string& _msg) {
+                LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
+            });
         }
 
         LOG(info) << "Start task with type " << type;

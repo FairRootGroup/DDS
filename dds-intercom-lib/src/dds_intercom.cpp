@@ -2,8 +2,8 @@
 //
 //
 // DDS
-#include "dds_intercom.h"
 #include "DDSIntercomGuard.h"
+#include "dds_intercom.h"
 
 using namespace dds;
 using namespace dds::intercom_api;
@@ -11,6 +11,15 @@ using namespace dds::internal_api;
 using namespace dds::protocol_api;
 using namespace MiscCommon;
 using namespace std;
+
+void CIntercomBase::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
+{
+    connection_t connection = CDDSIntercomGuard::instance().connectError(_subscriber);
+}
+
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 CKeyValue::~CKeyValue()
 {
@@ -25,10 +34,8 @@ int CKeyValue::putValue(const string& _key, const string& _value)
     SUpdateKeyCmd cmd;
     cmd.m_sKey = _key;
     cmd.m_sValue = _value;
-    if (1 == CDDSIntercomGuard::instance().updateKey(cmd))
-        return 1;
 
-    return 0;
+    return CDDSIntercomGuard::instance().updateKey(cmd);
 }
 
 void CKeyValue::getValues(const std::string& _key, valuesMap_t* _values)
@@ -39,20 +46,11 @@ void CKeyValue::getValues(const std::string& _key, valuesMap_t* _values)
 
 void CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
 {
+    connection_t connection = CDDSIntercomGuard::instance().connectKeyValue(_subscriber);
+
     CDDSIntercomGuard::instance().initLock();
     CDDSIntercomGuard::instance().initAgentConnection();
     LOG(info) << "User process is waiting for property keys updates.";
-
-    connection_t connection = CDDSIntercomGuard::instance().connectKeyValue(_subscriber);
-}
-
-void CKeyValue::subscribeError(errorSignal_t::slot_function_type _subscriber)
-{
-    CDDSIntercomGuard::instance().initLock();
-    CDDSIntercomGuard::instance().initAgentConnection();
-    LOG(info) << "User process is waiting error messages.";
-
-    connection_t connection = CDDSIntercomGuard::instance().connectKeyValueError(_subscriber);
 }
 
 void CKeyValue::unsubscribe()
@@ -77,26 +75,24 @@ int CCustomCmd::send(const std::string& _command, const std::string& _condition)
     SCustomCmdCmd cmd;
     cmd.m_sCmd = _command;
     cmd.m_sCondition = _condition;
-    if (1 == CDDSIntercomGuard::instance().sendCustomCmd(cmd))
-        return 1;
 
-    return 0;
+    return CDDSIntercomGuard::instance().sendCustomCmd(cmd);
 }
 
 void CCustomCmd::subscribe(signal_t::slot_function_type _subscriber)
 {
+    connection_t connection = CDDSIntercomGuard::instance().connectCustomCmd(_subscriber);
+
     CDDSIntercomGuard::instance().initAgentConnection();
     LOG(info) << "User process is waiting for custom commands.";
-
-    connection_t connection = CDDSIntercomGuard::instance().connectCustomCmd(_subscriber);
 }
 
-void CCustomCmd::subscribeReply(replySignal_t::slot_function_type _subscriber)
+void CCustomCmd::subscribeOnReply(replySignal_t::slot_function_type _subscriber)
 {
+    connection_t connection = CDDSIntercomGuard::instance().connectCustomCmdReply(_subscriber);
+
     CDDSIntercomGuard::instance().initAgentConnection();
     LOG(info) << "User process is waiting for replys from custom commands.";
-
-    connection_t connection = CDDSIntercomGuard::instance().connectCustomCmdReply(_subscriber);
 }
 
 void CCustomCmd::unsubscribe()

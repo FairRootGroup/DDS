@@ -3,8 +3,8 @@
 //
 //
 // DDS
-#include "DDSIntercomGuard.h"
 #include "BOOST_FILESYSTEM.h"
+#include "DDSIntercomGuard.h"
 #include "UserDefaults.h"
 
 // BOOST
@@ -47,6 +47,11 @@ CDDSIntercomGuard& CDDSIntercomGuard::instance()
     return instance;
 }
 
+connection_t CDDSIntercomGuard::connectError(intercom_api::errorSignal_t::slot_function_type _subscriber)
+{
+    return m_syncHelper.m_errorSignal.connect(_subscriber);
+}
+
 connection_t CDDSIntercomGuard::connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber)
 {
     return m_syncHelper.m_customCmdSignal.connect(_subscriber);
@@ -61,23 +66,20 @@ connection_t CDDSIntercomGuard::connectKeyValue(keyValueSignal_t::slot_function_
 {
     return m_syncHelper.m_keyValueUpdateSig.connect(_subscriber);
 }
-connection_t CDDSIntercomGuard::connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber)
-{
-    return m_syncHelper.m_keyValueErrorSig.connect(_subscriber);
-}
 
 void CDDSIntercomGuard::disconnectCustomCmd()
 {
     // disconnect custom command signals
     m_syncHelper.m_customCmdSignal.disconnect_all_slots();
     m_syncHelper.m_customCmdReplySignal.disconnect_all_slots();
+    m_syncHelper.m_errorSignal.disconnect_all_slots();
 }
 
 void CDDSIntercomGuard::disconnectKeyValue()
 {
     // disconnect key-value signals
     m_syncHelper.m_keyValueUpdateSig.disconnect_all_slots();
-    m_syncHelper.m_keyValueErrorSig.disconnect_all_slots();
+    m_syncHelper.m_errorSignal.disconnect_all_slots();
 }
 
 void CDDSIntercomGuard::initAgentConnection()
@@ -93,15 +95,7 @@ void CDDSIntercomGuard::initAgentConnection()
         m_agentConnectionMng.reset();
         m_agentConnectionMng = make_shared<CAgentConnectionManager>();
         m_agentConnectionMng->m_syncHelper = &m_syncHelper;
-
-        try
-        {
-            m_agentConnectionMng->start();
-        }
-        catch (exception& _e)
-        {
-            LOG(fatal) << "AgentConnectionManager: exception in the transport service: " << _e.what();
-        }
+        m_agentConnectionMng->start();
     }
 }
 
@@ -109,9 +103,10 @@ int CDDSIntercomGuard::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command
 {
     if (!m_agentConnectionMng)
     {
-        LOG(error)
-            << "CCDDSIntercomGuard::sendCmd: Agent connection channel is not running. Failed to send custom command "
-            << _command;
+        stringstream ss;
+        ss << "Agent connection channel is not running. Failed to send custom command: " << _command;
+        LOG(error) << ss.str();
+        m_syncHelper.m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
         return 1;
     }
 
@@ -384,8 +379,10 @@ int CDDSIntercomGuard::updateKey(const SUpdateKeyCmd& _cmd)
 {
     if (!m_agentConnectionMng)
     {
-        LOG(error) << "CCDDSIntercomGuard::updateKey: Agent connection channel is not running. Failed to update "
-                   << _cmd;
+        stringstream ss;
+        ss << "Agent connection channel is not running. Failed to update key-value: " << _cmd;
+        LOG(error) << ss.str();
+        m_syncHelper.m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
         return 1;
     }
 

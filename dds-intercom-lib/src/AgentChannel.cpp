@@ -14,9 +14,12 @@ using namespace dds::internal_api;
 using namespace dds::protocol_api;
 using namespace std;
 
+const uint16_t g_MaxConnectionAttempts = 12;
+
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::UNKNOWN)
     , m_syncHelper(nullptr)
+    , m_connectionAttempts(1)
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [this](CAgentChannel* _channel) {
         LOG(info) << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
@@ -27,7 +30,27 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
                      [this](CAgentChannel* _channel) { LOG(info) << "Connected to the commander server"; });
 
     subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect,
-                     [this](CAgentChannel* _channel) { LOG(log_stderr) << "Failed to connect to commander server"; });
+                     [this](CAgentChannel* _channel) { LOG(log_stderr) << "Failed to connect to commander server."; });
+}
+
+void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const string&)>& callback)
+{
+    if (m_connectionAttempts <= g_MaxConnectionAttempts)
+    {
+        LOG(log_stderr) << "Failed to connect to commander server. Trying to reconnect. Attempt "
+                        << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+        this_thread::sleep_for(chrono::seconds(10));
+        reconnect();
+        ++m_connectionAttempts;
+    }
+    else
+    {
+        string errorMsg("Failed to connect to commander server. Sending yourself a shutdown command.");
+        LOG(log_stderr) << errorMsg;
+        this->sendYourself<cmdSHUTDOWN>();
+
+        callback(errorMsg);
+    }
 }
 
 bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
@@ -52,7 +75,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
             {
                 if (m_syncHelper == nullptr)
                     throw invalid_argument("syncHelper is NULL");
-                m_syncHelper->m_keyValueErrorSig(_attachment->m_sMsg);
+                m_syncHelper->m_errorSignal(intercom_api::EErrorCode::UpdateKeyValueFailed, _attachment->m_sMsg);
             }
             break;
 

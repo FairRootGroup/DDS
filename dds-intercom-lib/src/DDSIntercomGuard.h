@@ -6,6 +6,7 @@
 #define DDSINTERCOMGUARD_H
 // DDS
 #include "AgentConnectionManager.h"
+#include "dds_intercom_error_codes.h"
 // STD
 #include <string>
 #include <vector>
@@ -26,7 +27,7 @@ namespace dds
     {
         // Key-value types
         typedef boost::signals2::signal<void(const std::string&, const std::string&)> keyValueSignal_t;
-        typedef boost::signals2::signal<void(const std::string&)> keyValueErrorSignal_t;
+        // typedef boost::signals2::signal<void(const std::string&)> keyValueErrorSignal_t;
         typedef std::shared_ptr<boost::interprocess::named_mutex> sharedMemoryMutexPtr_t;
         typedef std::shared_ptr<boost::interprocess::managed_shared_memory> managedSharedMemoryPtr_t;
         typedef boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager>
@@ -43,8 +44,8 @@ namespace dds
 
         struct SSyncHelper
         {
+            intercom_api::errorSignal_t m_errorSignal;
             keyValueSignal_t m_keyValueUpdateSig;
-            keyValueErrorSignal_t m_keyValueErrorSig;
             customCmdSignal_t m_customCmdSignal;
             customCmdReplySignal_t m_customCmdReplySignal;
         };
@@ -63,8 +64,10 @@ namespace dds
           public:
             static CDDSIntercomGuard& instance();
 
+            connection_t connectError(intercom_api::errorSignal_t::slot_function_type _subscriber);
             connection_t connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber);
             connection_t connectCustomCmdReply(customCmdReplySignal_t::slot_function_type _subscriber);
+            connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
             void disconnectCustomCmd();
             void disconnectKeyValue();
 
@@ -80,8 +83,6 @@ namespace dds
             void getValues(const std::string& _key, valuesMap_t* _values);
             int updateKey(const protocol_api::SUpdateKeyCmd& _cmd);
             void deleteKey(const std::string& _key);
-            connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
-            connection_t connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber);
             static void clean();
 
             void waitCondition();

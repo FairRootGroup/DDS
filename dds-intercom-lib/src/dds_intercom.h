@@ -7,23 +7,43 @@
 // STD
 #include <string>
 // BOOST
+#include "dds_intercom_error_codes.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/signals2/signal.hpp>
 
 namespace dds
 {
+    /// \brief DDS intercom API
+    ///
+    /// \detail
+    /// Internally CKeyValue and CCustomCmd connect to the DDS service. In case of a problem they try to reconnect for 2
+    /// minutes and if not connected send an error with EErrorCode::ConnectionFailed error code. If none of the DDS
+    /// services are running a different error is sent - EErrorCode::TransportServiceFailed. In the error message a
+    /// detailed information is provided about what caused the error.
+    /// In order to get an error messages from DDS one should subscribe using
+    /// CIntercomBase::subscribeOnError(errorSignal_t::slot_function_type _subscriber) function.
+    ///
     namespace intercom_api
     {
         ///////////////////////////////////
+        // DDS intercom base
+        ///////////////////////////////////
+        class CIntercomBase
+        {
+          public:
+            typedef boost::signals2::connection connection_t;
+
+            void subscribeOnError(errorSignal_t::slot_function_type _subscriber);
+        };
+
+        ///////////////////////////////////
         // DDS key-value
         ///////////////////////////////////
-        class CKeyValue
+        class CKeyValue : public CIntercomBase
         {
           public:
             typedef std::map<std::string, std::string> valuesMap_t;
             typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
-            typedef boost::signals2::signal<void(const std::string&)> errorSignal_t;
-            typedef boost::signals2::connection connection_t;
 
           public:
             ~CKeyValue();
@@ -32,19 +52,17 @@ namespace dds
             int putValue(const std::string& _key, const std::string& _value);
             void getValues(const std::string& _key, valuesMap_t* _values);
             void subscribe(signal_t::slot_function_type _subscriber);
-            void subscribeError(errorSignal_t::slot_function_type _subscriber);
             void unsubscribe();
         };
 
         ///////////////////////////////////
         // DDS custom commands
         ///////////////////////////////////
-        class CCustomCmd
+        class CCustomCmd : public CIntercomBase
         {
           public:
             typedef boost::signals2::signal<void(const std::string&, const std::string&, uint64_t)> signal_t;
             typedef boost::signals2::signal<void(const std::string&)> replySignal_t;
-            typedef boost::signals2::connection connection_t;
 
           public:
             ~CCustomCmd();
@@ -52,7 +70,7 @@ namespace dds
           public:
             int send(const std::string& _command, const std::string& _condition);
             void subscribe(signal_t::slot_function_type _subscriber);
-            void subscribeReply(replySignal_t::slot_function_type _subscriber);
+            void subscribeOnReply(replySignal_t::slot_function_type _subscriber);
             void unsubscribe();
         };
 
