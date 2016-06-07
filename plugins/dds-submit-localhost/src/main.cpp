@@ -90,8 +90,12 @@ int main(int argc, char* argv[])
         // Subscribe on onSubmit command
         proto.onSubmit([&proto](const SSubmit& _submit) {
 
+            // If number of requested instances is zero than we take it based on the number of logical cores in CPU
+            unsigned int nInstances =
+                (_submit.m_nInstances == 0) ? thread::hardware_concurrency() : _submit.m_nInstances;
+
             stringstream ss;
-            ss << "Will use the local host to deploy " << _submit.m_nInstances << " agents";
+            ss << "Will use the local host to deploy " << nInstances << " agents";
             proto.sendMessage(EMsgSeverity::info, ss.str());
             ss.str("");
 
@@ -126,8 +130,7 @@ int main(int argc, char* argv[])
 
             stringstream cmd;
             cmd << "$DDS_LOCATION/bin/dds-daemonize " << wrkDirPath.string()
-                << " /bin/bash -c \"unset DDS_LOG_LOCATION; " << dstWrkScriptPath.string() << " "
-                << _submit.m_nInstances << "\"";
+                << " /bin/bash -c \"unset DDS_LOG_LOCATION; " << dstWrkScriptPath.string() << " " << nInstances << "\"";
 
             try
             {
@@ -146,7 +149,7 @@ int main(int argc, char* argv[])
                     {
                         started = true;
                         // Check whether all agent have started successfully
-                        for (int i = 0; i < _submit.m_nInstances; i++)
+                        for (int i = 0; i < nInstances; i++)
                         {
                             bfs::path lockFilePath((i == 0) ? wrkDirPath.string()
                                                             : wrkDirPath.string() + "_" + to_string(i));
