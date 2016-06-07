@@ -22,7 +22,7 @@ namespace dds
             ~CUserDefaults();
 
           public:
-            // \brief Return singleton instance
+            /// \brief Return singleton instance
             static CUserDefaults& instance();
             void reinit(const std::string& _cfgFileName, bool _get_default = false);
 
@@ -50,6 +50,11 @@ namespace dds
             std::string getAgentLogStorageDir() const;
             pid_t getScoutPid() const;
             std::string getPluginsRootDir() const;
+
+            /// \brief Returns path to the plugin's directory for specified plug-in name.
+            /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)
+            /// than default root plug-ins directory is used.
+            /// \param[in] _pluginName Name of the plug-in.
             std::string getPluginDir(const std::string& _path, const std::string& _pluginName) const;
 
           private:
