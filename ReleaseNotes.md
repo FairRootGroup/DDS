@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v1.2 (Not Yet Released)
+## v1.2 (2016-06-07)
 ###DDS common
 Fixed: cmake: Updated OSX RPATH settings.   
 Fixed: cmake: Fail with an explicit error when missing DDS worker package dependency. (GH-117)   
@@ -41,6 +41,7 @@ Fixed: failed to execute if the full path to the executable is provided. (GH-121
 
 ### dds-submit
 Added: customizable plugin location. --path option which specifies the root directory of the plugins was edded. If the directory is not provided - default path will be used. (GH-118)   
+Modified: accept both -n and -c command line options.   
 
 ## v1.0 (2015-11-20)
 ###DDS common
