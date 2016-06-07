@@ -4,10 +4,11 @@
 ###DDS common
 Fixed: cmake: Updated OSX RPATH settings.   
 Fixed: cmake: Fail with an explicit error when missing DDS worker package dependency. (GH-117)   
-Fixed: dds-intercome-lib: fails to parse JASON message with quotes. (GH-120)   
-Added: dds-intercome-lib: API for new plug-in system - CRMSPluginProtocol. (GH-108)   
+Fixed: dds-intercom-lib: fails to parse JASON message with quotes. (GH-120)   
+Added: dds-intercom-lib: API for new plug-in system - CRMSPluginProtocol. (GH-108)   
 Modified: dds-key-value-lib and dds-custom-cmd-lib are combined to a single library dds_intercom_lib. (GH-101)   
-Modified: Use portable temporary directory path function.   
+Modified: Use portable temporary directory path function.  
+Modified: Proper error message if DDS can't find xmllint. (GH-140)    
 
 ### dds-submit
 Added: Support of the new plug-in architecture. (GH-108)   
@@ -25,7 +26,7 @@ Added: improve protocol attachment architecture. Check maximum size for vectors 
   -   all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;   
   -   all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;   
   -   all std::string's have a maximum size of uint16_t i.e. 2^16.   
- 
+
 ### SLURM plug-in
 Added: SLURM plug-in - initial release. (GH-109)   
 

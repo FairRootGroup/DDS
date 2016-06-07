@@ -4,12 +4,12 @@
 //
 
 // DDS
-#include "TopologyParserXML.h"
 #include "FindCfgFile.h"
 #include "Task.h"
 #include "TaskCollection.h"
 #include "TaskGroup.h"
 #include "TopoVars.h"
+#include "TopologyParserXML.h"
 #include "UserDefaults.h"
 // STL
 #include <map>
@@ -71,6 +71,11 @@ bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidati
             cfg.SetOrder("/usr/bin/xmllint")("/usr/local/bin/xmllint")("/opt/local/bin/xmllint")("/bin/xmllint");
             string xmllintPath;
             cfg.GetCfg(&xmllintPath);
+
+            // If we can't find xmllint throw exception with the proper error message
+            if (xmllintPath.empty())
+                throw runtime_error(
+                    "Can't find xmllint. Use --disable-validation option in order to disable XML validation.");
 
             execl(xmllintPath.c_str(), "xmllint", "--noout", "--schema", topoXSDPath.c_str(), _fileName.c_str(), NULL);
 
@@ -150,7 +155,7 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
     }
     catch (exception& error) // ptree_error, out_of_range, logic_error
     {
-        throw runtime_error(string("Initialization of Main failed with the following error") + error.what());
+        throw runtime_error(string("Initialization of Main failed with the following error: ") + error.what());
     }
 }
 
