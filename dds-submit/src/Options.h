@@ -107,7 +107,6 @@ namespace dds
             MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "number");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "rms");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "config");
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "config", "number");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
