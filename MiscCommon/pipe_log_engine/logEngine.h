@@ -36,6 +36,7 @@ namespace dds
 
           private:
             void thread_worker(int _fd, const std::string& _pipename);
+            void logMsg(const std::string& _msg);
 
           private:
             int m_fd;

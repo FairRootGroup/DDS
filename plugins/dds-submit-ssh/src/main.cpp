@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
         string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
         smart_append(&pipeName, '/');
         pipeName += g_pipeName;
-        slog.start(pipeName);
+        slog.start(pipeName, [&proto](const string& _msg) { proto.sendMessage(EMsgSeverity::info, _msg); });
 
         // Subscribe on onSubmit command
         proto.onSubmit([&proto, &vm](const SSubmit& _submit) {
@@ -182,7 +182,6 @@ int main(int argc, char* argv[])
                 inlineShellScripCmds = config.getBashEnvCmds();
 
                 SWNOptions options;
-                options.m_debug = true;
                 options.m_logs = false;
                 options.m_fastClean = false;
 

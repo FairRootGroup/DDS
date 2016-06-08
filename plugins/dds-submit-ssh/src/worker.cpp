@@ -54,8 +54,6 @@ bool CWorker::runTask(ETaskType _param) const
     ssParams << " -i " << m_rec->m_id << " -l " << m_rec->m_addr << " -w " << m_rec->m_wrkDir;
     if (!m_rec->m_sshOptions.empty())
         ssParams << " -o " << m_rec->m_sshOptions;
-    if (m_options.m_debug)
-        ssParams << " -d ";
 
     stringstream ssCmd;
     switch (_param)

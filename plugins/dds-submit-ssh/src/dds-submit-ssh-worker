@@ -25,7 +25,6 @@ Usage: $(basename $0) [OPTION]
      -w dir      		Remote working directory.
      -n X        		Desired number of workers.
      -o SSH_Opt			Additinal SSH parameters.
-     -d				Verbose mode. Causes dds-ssh-submit-worker to print debugging messages about its progress.
      -h          		Show summary of options.
 
 Report bugs to http://dds.gsi.de
@@ -39,8 +38,7 @@ SSH_CON_STR=""
 RDIR=""
 NWORKERS=1
 SSHOPT=""
-DEBUG=""
-while getopts ":i:l:w:n:o:dh" opt; do
+while getopts ":i:l:w:n:oh" opt; do
   case $opt in
   i)
     WORKER_ID="$OPTARG"
@@ -56,9 +54,6 @@ while getopts ":i:l:w:n:o:dh" opt; do
     ;;
   o)
     SSHOPT="$OPTARG"
-    ;;
-  d)
-    DEBUG="YES"
     ;;
   h) 
     usage
@@ -110,14 +105,7 @@ logMsgPipe()
 }
 logMsg()
 {
-# date format
-#RFC-2822:
-# *    www, dd mmm yyyy hh:mm:ss +zzzz
-#
-# Don't use date -R since it's a GNU specific implementation (doesn't work on Mac, for example)
-   if [ -n "$DEBUG" ]; then
-      echo -e "$WORKER_ID\t[$(date '+%a, %d %b %Y %T %z')]\t$1" > $pipe
-   fi
+	echo -e "$TOOL_NAME: $WORKER_ID: $1" > $pipe
 }
 #=============================================================================
 # ***** MAIN *****

@@ -5,6 +5,7 @@
 //=============================================================================
 #include "logEngine.h"
 // BOOST
+#include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 // MiscCommon
 #include "Logger.h"
@@ -147,6 +148,26 @@ void CLogEngine::operator()(const string& _msg, const string& _id, bool _debugMs
     }
 }
 //=============================================================================
+void CLogEngine::logMsg(const string& _msg)
+{
+    string sMsg(_msg);
+    // trim it
+    boost::trim(sMsg);
+    // remove new line before logging the message
+    boost::trim_left_if(sMsg, boost::is_any_of("\r\n"));
+
+    // do we need to do anything?
+    if (sMsg.empty())
+        return; // I guess not
+
+    stringstream ss;
+    ss << sMsg;
+    LOG(info) << ss.str();
+    // call user's callback if needed
+    if (m_callback != nullptr)
+        m_callback(ss.str());
+}
+//=============================================================================
 void CLogEngine::thread_worker(int _fd, const string& _pipename)
 {
     while (_fd > 0 && !m_stopLogEngine)
@@ -170,26 +191,37 @@ void CLogEngine::thread_worker(int _fd, const string& _pipename)
         {
             const int read_size = 64;
             char buf[read_size];
-            int numread(0);
+            string input;
             while (true)
             {
-                numread = read(_fd, buf, read_size);
+                int numread = read(_fd, buf, read_size);
                 // don't print the last Control character
                 // it was sent just to wake up the thread
                 if (m_stopLogEngine && 1 == numread)
                     break;
                 if (numread > 0)
                 {
-                    stringstream ss;
-                    ss << "pipe log engine: " << string(buf, numread);
-                    LOG(info) << ss.str();
-                    // call user's callback if needed
-                    if (m_callback != nullptr)
-                        m_callback(ss.str());
+                    input += string(buf, numread);
+
+                    if (input.find('\n') != string::npos)
+                    {
+                        std::string full_line(input.begin(), std::find(input.begin(), input.end(), '\n'));
+                        std::string rest_lines(std::find(input.begin(), input.end(), '\n'), input.end());
+                        if (!full_line.empty())
+                        {
+                            input.clear();
+                            // log the message
+                            logMsg(full_line);
+                        }
+                        input = rest_lines;
+                    }
                 }
                 else
                     break;
             }
+            // log the rest of the line
+            if (!input.empty())
+                logMsg(input);
         }
     }
 }

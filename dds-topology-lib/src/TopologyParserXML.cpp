@@ -4,12 +4,12 @@
 //
 
 // DDS
+#include "TopologyParserXML.h"
 #include "FindCfgFile.h"
 #include "Task.h"
 #include "TaskCollection.h"
 #include "TaskGroup.h"
 #include "TopoVars.h"
-#include "TopologyParserXML.h"
 #include "UserDefaults.h"
 // STL
 #include <map>

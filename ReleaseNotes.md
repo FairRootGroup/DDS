@@ -2,6 +2,12 @@
 
 ## v1.4 (Not Yet Released)
 
+### DDS common
+Modified: pipe log engine is improved to log events line by line, rather than using a fixed string length.   
+
+### SSH plug-in
+Modified: events from the submitter script are reflected on dds-submit output. (GH-139)   
+
 
 ## v1.2 (2016-06-07)
 ###DDS common
