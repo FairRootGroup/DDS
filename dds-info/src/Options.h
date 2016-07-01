@@ -48,8 +48,7 @@ namespace dds
         {
             LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
                                         << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-                                        << MiscCommon::g_cszReportBugsAddr;
+                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n" << MiscCommon::g_cszReportBugsAddr;
         }
         //=============================================================================
         // Command line parser
@@ -104,7 +103,7 @@ namespace dds
                 PrintVersion();
                 return false;
             }
-            if (vm.count("prop-id") && !(vm.count("prop-values")))
+            if (vm.count("prop-id") && !_options->m_bNeedPropValues)
             {
                 LOG(MiscCommon::log_stdout) << "Option prop-id has to be used together with prop-values.";
                 return false;

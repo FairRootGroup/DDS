@@ -23,6 +23,7 @@ set( SOURCE_FILES
     ./src/UIChannelInfo.cpp
     ./src/SSHScheduler.cpp
     ./src/ChannelId.cpp
+		./src/KeyValueManager.cpp
 )
 
 #
@@ -35,6 +36,7 @@ set( HEADER_FILES
     ./src/UIChannelInfo.h
     ./src/SSHScheduler.h
     ./src/ChannelId.h
+		./src/KeyValueManager.h
 )
 
 include_directories(

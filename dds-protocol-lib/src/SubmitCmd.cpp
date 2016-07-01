@@ -18,7 +18,7 @@ SSubmitCmd::SSubmitCmd()
 
 size_t SSubmitCmd::size() const
 {
-    return dsize(m_sCfgFile) + dsize(m_sRMSType) + dsize(m_nNumberOfAgents);
+    return dsize(m_sCfgFile) + dsize(m_sRMSType) + dsize(m_sPath) + dsize(m_nNumberOfAgents);
 }
 
 bool SSubmitCmd::operator==(const SSubmitCmd& val) const

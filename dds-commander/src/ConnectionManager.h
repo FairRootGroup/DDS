@@ -7,14 +7,13 @@
 // DDS
 #include "AgentChannel.h"
 #include "ConnectionManagerImpl.h"
+#include "KeyValueManager.h"
 #include "Options.h"
 #include "SSHScheduler.h"
 #include "Topology.h"
 #include "UIChannelInfo.h"
 // STD
 #include <mutex>
-// BOOST
-#include <boost/property_tree/ptree.hpp>
 
 namespace dds
 {
@@ -102,8 +101,7 @@ namespace dds
             TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
             std::mutex m_mapMutex;
 
-            boost::property_tree::ptree m_propertyPT;
-            std::mutex m_propertyPTMutex;
+            CKeyValueManager m_keyValueManager;
 
             // Statistic on/off flag
             bool m_statEnabled;

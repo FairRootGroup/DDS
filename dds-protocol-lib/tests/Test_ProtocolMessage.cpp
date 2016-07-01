@@ -77,11 +77,13 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 {
-    const unsigned int cmdSize = 26;
+    const unsigned int cmdSize = 39;
 
     SSubmitCmd cmd;
     cmd.m_sRMSType = "ssh";
     cmd.m_sCfgFile = "/Users/dummy/dummy.cfg";
+    cmd.m_sPath = "path";
+    cmd.m_nNumberOfAgents = 100;
 
     TestCommand(cmd, cmdSUBMIT, cmdSize);
 }
@@ -239,6 +241,22 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
     cmd_src.m_sValue = sValue;
 
     TestCommand(cmd_src, cmdUPDATE_KEY, cmdSize);
+
+    SUpdateKeyCmd cmd;
+    cmd.setKey("property1", 123456789);
+    BOOST_CHECK(cmd.m_sKey == "property1.123456789");
+    BOOST_CHECK(cmd.getPropertyID() == "property1");
+    BOOST_CHECK(cmd.getTaskID() == 123456789);
+
+    SUpdateKeyCmd cmd1;
+    cmd1.m_sKey = "property1";
+    BOOST_CHECK(cmd1.getPropertyID() == "");
+    BOOST_CHECK(cmd1.getTaskID() == 0);
+
+    SUpdateKeyCmd cmd2;
+    cmd2.m_sKey = "property1.property1";
+    BOOST_CHECK(cmd2.getPropertyID() == "property1");
+    BOOST_CHECK(cmd2.getTaskID() == 0);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdDELETE_KEY)

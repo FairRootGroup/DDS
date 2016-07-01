@@ -8,8 +8,6 @@
 #include "ServerChannelImpl.h"
 // STD
 #include <chrono>
-// BOOST
-#include <boost/property_tree/ptree.hpp>
 
 namespace dds
 {
@@ -77,9 +75,6 @@ namespace dds
             EAgentState getState() const;
             void setState(EAgentState _state);
 
-            const boost::property_tree::ptree& getPropertyPT() const;
-            std::mutex& getPropertyPTMutex();
-
           private:
             // Message Handlers
             bool on_cmdSUBMIT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment);
@@ -128,8 +123,6 @@ namespace dds
             uint64_t m_taskID;
             std::chrono::milliseconds m_startUpTime;
             EAgentState m_state;
-            boost::property_tree::ptree m_propertyPT;
-            std::mutex m_propertyPTMutex;
         };
     }
 }

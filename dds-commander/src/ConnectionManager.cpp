@@ -4,9 +4,9 @@
 //
 
 // DDS
-#include "ConnectionManager.h"
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
+#include "ConnectionManager.h"
 #include "Topology.h"
 #include "ncf.h"
 // BOOST
@@ -51,48 +51,6 @@ CConnectionManager::~CConnectionManager()
 void CConnectionManager::_start()
 {
     auto self(this->shared_from_this());
-    CMonitoringThread::instance().registerCallbackFunction(
-        [this, self]() -> bool {
-            try
-            {
-                m_propertyPT.clear();
-
-                CAgentChannel::weakConnectionPtrVector_t channels(
-                    getChannels([](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
-                        return (_v->getChannelType() == EChannelType::AGENT && _v->started());
-                    }));
-
-                for (const auto& v : channels)
-                {
-                    if (v.expired())
-                        continue;
-                    auto ptr = v.lock();
-
-                    {
-                        lock_guard<mutex> lock(ptr->getPropertyPTMutex());
-                        const boost::property_tree::ptree& pt = ptr->getPropertyPT();
-                        for (const auto& v1 : pt)
-                        {
-                            for (const auto& v2 : v1.second)
-                            {
-                                {
-                                    lock_guard<mutex> lock(m_propertyPTMutex);
-                                    m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
-                                }
-                            }
-                        }
-                    }
-                }
-                LOG(info) << "key-value lazy collector: checking available channels for new updates...";
-            }
-            catch (exception& _e)
-            {
-                LOG(fatal) << "key-value lazy collector: error: " << _e.what();
-            }
-
-            return true;
-        },
-        chrono::seconds(60));
 
     // Check RMS plug-in activity
     CMonitoringThread::instance().registerCallbackFunction(
@@ -134,8 +92,8 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
 
     function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_AGENTS_INFO =
-            [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fGET_AGENTS_INFO = [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
+                                  CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_AGENTS_INFO(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
@@ -147,22 +105,22 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
     function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fACTIVATE_AGENT =
-            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fACTIVATE_AGENT = [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
+                                 CAgentChannel* _channel) -> bool {
         return this->on_cmdACTIVATE_AGENT(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
 
     function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSTOP_USER_TASK =
-            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                 CAgentChannel* _channel) -> bool {
         return this->on_cmdSTOP_USER_TASK(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
 
     function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fTRANSPORT_TEST =
-            [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fTRANSPORT_TEST = [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
+                                 CAgentChannel* _channel) -> bool {
         return this->on_cmdTRANSPORT_TEST(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdTRANSPORT_TEST>(fTRANSPORT_TEST);
@@ -180,22 +138,22 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
     function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
-        fUSER_TASK_DONE =
-            [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fUSER_TASK_DONE = [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
+                                 CAgentChannel* _channel) -> bool {
         return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_LIST =
-            [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fGET_PROP_LIST = [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
+                                CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_PROP_LIST(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
-        fGET_PROP_VALUES =
-            [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        fGET_PROP_VALUES = [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
+                                  CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_VALUES>(fGET_PROP_VALUES);
@@ -304,8 +262,7 @@ void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
         f << "[server]\n"
           << "host=" << srvHost << "\n"
           << "user=" << srvUser << "\n"
-          << "port=" << _ports[0] << "\n"
-          << endl;
+          << "port=" << _ports[0] << "\n" << endl;
     }
 
     if (_ports.size() > 1)
@@ -313,8 +270,7 @@ void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
         f << "[ui]\n"
           << "host=" << srvHost << "\n"
           << "user=" << srvUser << "\n"
-          << "port=" << _ports[1] << "\n"
-          << endl;
+          << "port=" << _ports[1] << "\n" << endl;
     }
 }
 
@@ -884,11 +840,8 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
 bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    // TODO: in general writing to m_propertyPT has to be locked with mutex
-    // TODO: for the moment we only update property tree here and do not delete anything from it, otherwise we have to
-    // lock, which leads to potential bottleneck.
-    // m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
-    //    boost::property_tree::ini_parser::write_ini(m_sCfgFilePath, m_propertyPT);
+    // Update key-value from commander's key-value manager
+    m_keyValueManager.updateKeyValue(*_attachment);
 
     // If UI channel sends a property update than property key does not contain a hash.
     // In this case each agent set the property key hash himself.
@@ -900,9 +853,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
     {
         // If we get property key from agent we have to parse it to get the property ID.
         // propertyID.17621121989812
-        const string propertyKey(_attachment->m_sKey);
-        const size_t pos(propertyKey.find_last_of('.'));
-        propertyID = propertyKey.substr(0, pos);
+        propertyID = _attachment->getPropertyID();
     }
 
     // Check if the property has a write access to property.
@@ -956,11 +907,9 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                 {
                     // If property changed from UI we have to change hash in the property key.
                     SUpdateKeyCmd attachment(*_attachment);
-                    stringstream ss;
-                    ss << propertyID << "." << ptr->getTaskID();
-                    attachment.m_sKey = ss.str();
+                    attachment.setKey(propertyID, ptr->getTaskID());
                     ptr->pushMsg<cmdUPDATE_KEY>(attachment);
-                    LOG(info) << "Property update from UI channel: " << ss.str();
+                    LOG(info) << "Property update from UI channel: " << attachment.m_sKey;
                 }
                 else
                 {
@@ -1004,6 +953,13 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
     auto taskID = channelPtr->getTaskID();
     auto task = m_topo.getTaskByHash(taskID);
 
+    // TODO: it would be better to move key deletion on top of this function.
+    // However it is not clear than how to get the taskID, which is a property of the channel.
+    // If channel expires the key will not be deleted from KeyValue manager.
+    // As a solution we can send the task ID with cmdUSER_TASK_DONE attachment.
+    // Delete key-value from commander's key-value manager
+    m_keyValueManager.deleteKeyValue(taskID);
+
     const TopoPropertyPtrVector_t& properties = task->getProperties();
     for (const auto& property : properties)
     {
@@ -1024,9 +980,7 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
                 auto ptr = iter->second.lock();
 
                 SDeleteKeyCmd cmd;
-                stringstream ss;
-                ss << property->getId() << "." << taskID;
-                cmd.m_sKey = ss.str();
+                cmd.setKey(property->getId(), taskID);
                 if (ptr->getTaskID() != 0 && ptr->getTaskID() != channelPtr->getTaskID())
                 {
                     ptr->pushMsg<cmdDELETE_KEY>(cmd);
@@ -1058,17 +1012,11 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
 bool CConnectionManager::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
-    lock_guard<mutex> lock(m_propertyPTMutex);
-    stringstream ss;
-    for (const auto& v1 : m_propertyPT)
-    {
-        ss << v1.first << endl;
-    }
-
     if (!_channel.expired())
     {
         auto ptr = _channel.lock();
-        ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_PROP_LIST));
+        ptr->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd(m_keyValueManager.getPropertyString(), MiscCommon::info, cmdGET_PROP_LIST));
     }
 
     return true;
@@ -1077,50 +1025,24 @@ bool CConnectionManager::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_
 bool CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
-    stringstream ss;
+    try
     {
-        try
+        if (!_channel.expired())
         {
-            lock_guard<mutex> lock(m_propertyPTMutex);
-            if (_attachment->m_sPropertyID.empty())
-            {
-                for (const auto& v1 : m_propertyPT)
-                {
-                    ss << "[" << v1.first << "]" << endl;
-                    for (const auto& v2 : v1.second)
-                    {
-                        m_propertyPT.put((v1.first + "." + v2.first), v2.second.data());
-                        ss << (v1.first + "." + v2.first) << " --> " << v2.second.data() << endl;
-                    }
-                }
-            }
-            else
-            {
-                auto v1 = m_propertyPT.get_child(_attachment->m_sPropertyID);
-                ss << "[" << _attachment->m_sPropertyID << "]" << endl;
-                for (const auto& v2 : v1)
-                {
-                    m_propertyPT.put((_attachment->m_sPropertyID + "." + v2.first), v2.second.data());
-                    ss << (_attachment->m_sPropertyID + "." + v2.first) << ": " << v2.second.data() << endl;
-                }
-            }
-        }
-        catch (exception& e)
-        {
-            if (!_channel.expired())
-            {
-                stringstream ss;
-                ss << "Error getting values for property " << _attachment->m_sPropertyID << ": " << e.what();
-                auto ptr = _channel.lock();
-                ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdGET_PROP_LIST));
-            }
+            auto ptr = _channel.lock();
+            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
+                m_keyValueManager.getKeyValueString(_attachment->m_sPropertyID), MiscCommon::info, cmdGET_PROP_VALUES));
         }
     }
-
-    if (!_channel.expired())
+    catch (exception& e)
     {
-        auto ptr = _channel.lock();
-        ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_PROP_LIST));
+        if (!_channel.expired())
+        {
+            stringstream ss;
+            ss << "Error getting values for property " << _attachment->m_sPropertyID << ": " << e.what();
+            auto ptr = _channel.lock();
+            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdGET_PROP_VALUES));
+        }
     }
 
     return true;
@@ -1136,6 +1058,7 @@ bool CConnectionManager::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLO
         // Resolve topology
         m_topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
         m_topo.init(_attachment->m_sTopologyFile);
+        m_keyValueManager.initWithTopology(m_topo);
         auto p = _channel.lock();
         p->pushMsg<cmdSIMPLE_MSG>(
             SSimpleMsgCmd("new Topology is set to: " + _attachment->m_sTopologyFile, info, cmdSET_TOPOLOGY));

@@ -4,8 +4,8 @@
 //
 
 // DDS
-#include "CommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
+#include "CommanderChannel.h"
 #include "DDSIntercomGuard.h"
 #include "version.h"
 // MiscCommon

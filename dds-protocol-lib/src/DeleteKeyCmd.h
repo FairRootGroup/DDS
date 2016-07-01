@@ -21,6 +21,9 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SDeleteKeyCmd& val) const;
 
+            /// Helper function to set a key string in a form "propetrtyID.47598590403".
+            void setKey(const std::string& _propID, uint64_t _taskID);
+
             std::string m_sKey;
         };
         std::ostream& operator<<(std::ostream& _stream, const SDeleteKeyCmd& val);

@@ -25,8 +25,6 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     , m_taskID(0)
     , m_startUpTime(0)
     , m_state(EAgentState::unknown)
-    , m_propertyPT()
-    , m_propertyPTMutex()
 {
     subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
                      [](CAgentChannel* _channel) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
@@ -102,16 +100,6 @@ EAgentState CAgentChannel::getState() const
 void CAgentChannel::setState(EAgentState _state)
 {
     m_state = _state;
-}
-
-const boost::property_tree::ptree& CAgentChannel::getPropertyPT() const
-{
-    return m_propertyPT;
-}
-
-mutex& CAgentChannel::getPropertyPTMutex()
-{
-    return m_propertyPTMutex;
 }
 
 string CAgentChannel::_remoteEndIDString()
@@ -266,11 +254,6 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    {
-        lock_guard<mutex> lock(m_propertyPTMutex);
-        m_propertyPT.put(_attachment->m_sKey, _attachment->m_sValue);
-    }
-
     // Return false.
     // The command can only be processed by the higher level object
     return false;
@@ -278,10 +261,6 @@ bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_
 
 bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment)
 {
-    {
-        lock_guard<mutex> lock(m_propertyPTMutex);
-        m_propertyPT.clear();
-    }
     // Return false.
     // The command can only be processed by the higher level object
     return false;
@@ -292,7 +271,7 @@ bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_
     // The main reason for this message is to tell commander that agents are note idle (see. GH-54)
     LOG(debug) << "Received Watchdog heartbeat from agent " << m_id << " running task = " << m_taskID;
 
-    // TODO: So far we don nothing with this info.
+    // TODO: So far we do nothing with this info.
     // In the future we might want to send more information about tasks being executed (pid, CPU info, memory)
     return true;
 }

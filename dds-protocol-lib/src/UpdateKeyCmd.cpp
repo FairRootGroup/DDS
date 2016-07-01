@@ -2,8 +2,8 @@
 //
 //
 //
-#include "UpdateKeyCmd.h"
 #include "INet.h"
+#include "UpdateKeyCmd.h"
 #include <stdexcept>
 
 using namespace std;
@@ -45,4 +45,34 @@ std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SUpdate
 bool dds::protocol_api::operator!=(const SUpdateKeyCmd& lhs, const SUpdateKeyCmd& rhs)
 {
     return !(lhs == rhs);
+}
+
+void SUpdateKeyCmd::setKey(const string& _propID, uint64_t _taskID)
+{
+    stringstream ss;
+    ss << _propID << "." << _taskID;
+    m_sKey = ss.str();
+}
+
+string SUpdateKeyCmd::getPropertyID() const
+{
+    const size_t pos(m_sKey.find_last_of('.'));
+    return (pos == string::npos) ? "" : m_sKey.substr(0, pos);
+}
+
+uint64_t SUpdateKeyCmd::getTaskID() const
+{
+    const size_t pos(m_sKey.find_last_of('.'));
+    if (pos == string::npos)
+    {
+        return 0;
+    }
+    try
+    {
+        return std::stoull(m_sKey.substr(pos + 1));
+    }
+    catch (exception& _e)
+    {
+        return 0;
+    }
 }

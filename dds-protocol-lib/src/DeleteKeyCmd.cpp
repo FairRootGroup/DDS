@@ -45,3 +45,10 @@ bool dds::protocol_api::operator!=(const SDeleteKeyCmd& lhs, const SDeleteKeyCmd
 {
     return !(lhs == rhs);
 }
+
+void SDeleteKeyCmd::setKey(const string& _propID, uint64_t _taskID)
+{
+    stringstream ss;
+    ss << _propID << "." << _taskID;
+    m_sKey = ss.str();
+}
