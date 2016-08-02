@@ -200,6 +200,9 @@ echo $$ > $PID_FILE
 # handle signals
 trap clean_up SIGHUP SIGINT SIGTERM
 
+# On some machines LC_ALL is not set which leads to an exception in BOOST.
+export LC_ALL=C
+
 # print the environment
 env
 
