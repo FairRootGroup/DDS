@@ -8,7 +8,7 @@ Modified: pipe log engine is improved to log events line by line, rather than us
 ### SSH plug-in
 Modified: events from the submitter script are reflected on dds-submit output. (GH-139)   
 
-### dds_intercom__lib
+### dds_intercom\_lib
 Added: reconnect if connection fails. (GH-138)
 Added: possibility to subscribe to the error messages.
 
