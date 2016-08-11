@@ -2,8 +2,8 @@
 //
 //
 // DDS
-#include "DDSIntercomGuard.h"
 #include "dds_intercom.h"
+#include "DDSIntercomGuard.h"
 
 using namespace dds;
 using namespace dds::intercom_api;

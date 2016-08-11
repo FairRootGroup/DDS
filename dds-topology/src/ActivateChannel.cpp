@@ -95,9 +95,20 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
 
         std::chrono::milliseconds timeToActivate(_attachment->m_time);
 
-        cout << "Activated tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
-             << "\nTotal: " << _attachment->m_total
-             << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
+        switch (m_options.m_topologyCmd)
+        {
+            case ETopologyCmdType::ACTIVATE:
+                cout << "Activated tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
+                     << "\nTotal: " << _attachment->m_total
+                     << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
+                break;
+            case ETopologyCmdType::STOP:
+                cout << "Stopped tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
+                     << "\nTotal: " << _attachment->m_total
+                     << "\nTime to Stop: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
+                break;
+            default:;
+        }
     }
     return true;
 }
