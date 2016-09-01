@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include "dds_intercom.h"
 // STD
+#include <chrono>
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -24,6 +25,8 @@ const size_t g_maxValue = 1000;
 
 int main(int argc, char* argv[])
 {
+    chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
+
     Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
 
@@ -62,22 +65,54 @@ int main(int argc, char* argv[])
 
         const vector<string> propNames_1 = { "property_6", "property_7", "property_8", "property_9", "property_10" };
 
+        LOG(info) << "Start task with type " << type;
+
         CKeyValue keyValue;
         mutex keyMutex;
         condition_variable keyCondition;
 
-        if (testErrors)
-        {
-            keyValue.subscribeOnError([&keyCondition](EErrorCode _errorCode, const string& _msg) {
-                LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
-            });
-        }
+        map<string, string> keyValueCache;
+        string currentValue("0");
 
-        LOG(info) << "Start task with type " << type;
+        // Subscribe on error events
+        keyValue.subscribeOnError([&keyCondition](EErrorCode _errorCode, const string& _msg) {
+            LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
+        });
+
+        // Subscribe on key update events
+        // DDS garantees that this callback function will not be called in parallel from multiple threads.
+        // It is safe to update global data without locks inside the callback.
+        keyValue.subscribe([&keyCondition, &currentValue, &keyValueCache, &nInstances](
+            const string& _propertyID, const string& _key, const string& _value) {
+            keyValueCache[_key] = _value;
+
+            // Check that all values in the key-value cache have a correct value
+            size_t counter = 0;
+            for (const auto& v : keyValueCache)
+            {
+                if (v.second == currentValue)
+                    counter++;
+            }
+
+            if (counter == nInstances)
+            {
+                keyCondition.notify_all();
+            }
+        });
+
+        // Subscribe on delete key notifications
+        keyValue.subscribeOnDelete([](const string& _propertyID, const string& _key) {
+            LOG(info) << "Delete key notification received for key " << _key;
+        });
+
+        // Start listening to events we have subscribed on
+        keyValue.start();
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {
             LOG(info) << "Start iteration " << i;
+
+            currentValue = to_string(i);
 
             // For tasks with type 0 we start with writing the properties.
             if ((i % 2 == 0 && type == 0) || (i % 2 == 1 && type == 1))
@@ -88,10 +123,7 @@ int main(int argc, char* argv[])
                 const auto& writePropNames = (type == 0) ? propNames_0 : propNames_1;
                 for (const auto& prop : writePropNames)
                 {
-                    if (0 != keyValue.putValue(prop, writePropValue))
-                    {
-                        LOG(fatal) << "putValue failed.";
-                    }
+                    keyValue.putValue(prop, writePropValue);
                 }
 
                 LOG(info) << "Iteration " << i << " all values have been sent.";
@@ -104,10 +136,7 @@ int main(int argc, char* argv[])
                     const auto& readonlyPropNames = (type == 0) ? propNames_1 : propNames_0;
                     for (const auto& prop : readonlyPropNames)
                     {
-                        if (0 != keyValue.putValue(prop, writePropValue))
-                        {
-                            LOG(fatal) << "putValue failed.";
-                        }
+                        keyValue.putValue(prop, writePropValue);
                     }
                 }
             }
@@ -116,44 +145,15 @@ int main(int argc, char* argv[])
             {
                 LOG(info) << "Iteration " << i << " subscribe on property updates.";
 
-                // Subscribe on key update events
-                keyValue.subscribe(
-                    [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
-
-                const auto& readPropNames = (type == 0) ? propNames_1 : propNames_0;
-                for (const auto& prop : readPropNames)
-                {
-                    CKeyValue::valuesMap_t values;
-                    keyValue.getValues(prop, &values);
-                    string value = to_string(i);
-
-                    size_t counter = 0;
-                    for (const auto& v : values)
-                    {
-                        if (v.second == value)
-                            counter++;
-                    }
-
-                    while (counter != nInstances)
-                    {
-                        unique_lock<mutex> lock(keyMutex);
-                        keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
-                        keyValue.getValues(prop, &values);
-
-                        counter = 0;
-                        for (const auto& v : values)
-                        {
-                            if (v.second == value)
-                                counter++;
-                        }
-                    }
-                }
+                unique_lock<mutex> lock(keyMutex);
+                keyCondition.wait(lock);
 
                 LOG(info) << "Iteration " << i << " got all properties.";
             }
         }
 
-        this_thread::sleep_for(chrono::seconds(30));
+        // size_t sleepTime = (type == 0) ? 0 : 10;
+        // this_thread::sleep_for(chrono::seconds(sleepTime));
 
         LOG(info) << "Task successfully done";
     }
@@ -162,5 +162,10 @@ int main(int argc, char* argv[])
         LOG(fatal) << "USER TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
+
+    chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
+    LOG(info) << "Calculation time: " << duration << " seconds";
+
     return EXIT_SUCCESS;
 }

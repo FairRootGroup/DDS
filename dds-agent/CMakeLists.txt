@@ -19,9 +19,8 @@ configure_file( ${dds-agent_SOURCE_DIR}/src/version.h.in ${dds-agent_BINARY_DIR}
 set( SOURCE_FILES
 	./src/main.cpp
 	./src/CommanderChannel.cpp
-	./src/UIChannel.cpp
 	./src/AgentConnectionManager.cpp
-	./src/UIConnectionManager.cpp
+	./src/SMUIChannel.cpp
 )
 
 #
@@ -30,9 +29,8 @@ set( SOURCE_FILES
 set( HEADER_FILES
 	./src/Options.h
 	./src/CommanderChannel.h
-	./src/UIChannel.h
 	./src/AgentConnectionManager.h
-	./src/UIConnectionManager.h
+	./src/SMUIChannel.h
 )
 
 include_directories(
@@ -40,6 +38,13 @@ include_directories(
 	${MiscCommon_LOCATION}
 	${Boost_INCLUDE_DIRS}
 )
+
+if(APPLE)
+    set( RT_LIB )
+elseif(UNIX)
+    # On Linux we have to link against rt library which is needed for boost::interprocess
+    set( RT_LIB rt )
+endif(APPLE)
 
 #
 # dds-agent executable
@@ -61,6 +66,7 @@ target_link_libraries (
 	${Boost_LOG_SETUP_LIBRARY}
 	${Boost_THREAD_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
+    ${RT_LIB}
 )
 
 target_include_directories(dds-commander

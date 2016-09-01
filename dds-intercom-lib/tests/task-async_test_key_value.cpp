@@ -21,7 +21,6 @@ namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
 const size_t g_maxValue = 1000;
-const size_t g_maxWaitTime = 100; // milliseconds
 
 int main(int argc, char* argv[])
 {
@@ -30,8 +29,6 @@ int main(int argc, char* argv[])
         string sKey;
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
-        size_t nMaxWaitTime(g_maxWaitTime);
-        size_t sleepTime(0);
 
         // Generic options
         bpo::options_description options("task-async_test_key_value options");
@@ -41,11 +38,6 @@ int main(int argc, char* argv[])
             "instances,i", bpo::value<size_t>(&nInstances)->default_value(0), "A number of instances");
         options.add_options()(
             "max-value", bpo::value<size_t>(&nMaxValue)->default_value(g_maxValue), "A max value of the property");
-        options.add_options()("max-wait-time",
-                              bpo::value<size_t>(&nMaxWaitTime)->default_value(g_maxWaitTime),
-                              "A max wait time (in milliseconds), which an instannces should wait before exit");
-        options.add_options()(
-            "sleep-time", bpo::value<size_t>(&sleepTime)->default_value(0), "sleep time after task finishes its work.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -58,102 +50,63 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        // Named mutex
-        const string taskID = env_prop<task_name>();
-        if (taskID.empty())
-            throw runtime_error("USER TASK: Can't initialize semaphore because DDS_TASK_ID variable is not set");
-
-        // Test dds env_prop
-        size_t nCollectionIdx = env_prop<collection_index>();
-        cout << "TaskID = " << env_prop<task_name>() << "\nTask Index = " << env_prop<task_index>()
-             << "\nCollection Index = " << nCollectionIdx << "\n";
-
-        // TODO: document the test workflow
-        // The test workflow
-        // #1.
-
         CKeyValue keyValue;
         mutex keyMutex;
         condition_variable keyCondition;
 
-        bool bGoodToGo = false;
+        // key-value cache
+        typedef set<string /*prop values*/> values_t;
+        typedef map<string /*propname*/, values_t> container_t;
+        container_t valuesCache;
 
-        // container
-        typedef set<string /*prop values*/> val_t;
-        typedef map<string /*propname*/, val_t> container_t;
-        container_t valContainer;
+        // Subscribe to DDS key-value error events.
+        // Whenever an error occurs lambda will be called.
+        keyValue.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
+            LOG(error) << "DDS key-value error code: " << _errorCode << ", message: " << _msg << endl;
+        });
 
         // Subscribe on key update events
-        keyValue.subscribe(
-            [&keyCondition, &keyMutex, &valContainer, &bGoodToGo, &nMaxValue](const string& _key, const string _value) {
-                LOG(debug) << "USER TASK received key update notification";
+        keyValue.subscribe([&keyCondition, &keyMutex, &valuesCache, &nMaxValue](
+            const string& _propertyID, const string& _key, const string _value) {
+            LOG(debug) << "USER TASK received key update notification";
+
+            values_t& values = valuesCache[_key];
+            values.insert(_value);
+            // check wheather all values are already there
+            bool goodToGo(true);
+            for (const auto& v : valuesCache)
+            {
+                // Not all values received
+                if (v.second.size() != nMaxValue)
                 {
-                    unique_lock<mutex> lk(keyMutex);
-                    // Add new value
-
-                    val_t* values = &valContainer[_key];
-                    values->insert(_value);
-                    // check wheather all values are already there
-                    for (const auto& prop : valContainer)
-                    {
-                        // LOG(info) << "prop.second.size()=" << prop.second.size() <<
-                        bGoodToGo = (prop.second.size() == nMaxValue);
-                        if (!bGoodToGo)
-                            break;
-                    }
+                    goodToGo = false;
+                    break;
                 }
+            }
+            // All values received
+            if (goodToGo)
+            {
                 keyCondition.notify_all();
-            });
+            }
+        });
 
-        const std::chrono::seconds waitingTime(10);
-        this_thread::sleep_for(waitingTime);
+        keyValue.start();
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {
             LOG(debug) << "USER TASK is going to set new value " << i;
             const string sCurValue = to_string(i);
-            const int retVal = keyValue.putValue(sKey, sCurValue);
-            LOG(debug) << "USER TASK put value return code: " << retVal;
+            keyValue.putValue(sKey, sCurValue);
         }
 
-        while (true)
-        {
-            unique_lock<mutex> lk(keyMutex);
-            if (bGoodToGo)
-            {
-                LOG(log_stdout) << "Task succesffuylly done";
-                if (sleepTime > 0)
-                {
-                    LOG(log_stdout) << "Task is waiting for " << sleepTime << " sec before exit";
-                    sleep(sleepTime);
-                }
-                return 0;
-            }
-            // wait for a key update event
-            auto now = chrono::system_clock::now();
-            int isTimeout = keyCondition.wait_until(lk, now + chrono::milliseconds(nMaxWaitTime)) == cv_status::timeout;
-            if (bGoodToGo)
-            {
-                LOG(log_stdout) << "Task succesffuylly done";
-                if (sleepTime > 0)
-                {
-                    LOG(log_stdout) << "Task is waiting for " << sleepTime << " sec before exit";
-                    sleep(sleepTime);
-                }
-                return 0;
-            }
-            if (isTimeout)
-            {
-                LOG(log_stderr) << "USER TASK - timeout is reached, but not all values have been received.";
-
-                return 1;
-            }
-        }
+        // Waiting for condition
+        unique_lock<mutex> lock(keyMutex);
+        keyCondition.wait(lock);
     }
     catch (const exception& _e)
     {
         LOG(log_stderr) << "USER TASK Error: " << _e.what() << endl;
         return 1;
     }
-    return 1;
+    return 0;
 }

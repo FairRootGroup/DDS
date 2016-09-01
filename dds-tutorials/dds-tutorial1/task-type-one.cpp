@@ -59,26 +59,22 @@ int main(int argc, char* argv[])
             cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg;
         });
 
-        // Put task index property
-        if (0 != keyValue.putValue(TaskIndexPropertyName, optTaskIndex))
-        {
-            cerr << "DDS ddsIntercom putValue failed: key=" << TaskIndexPropertyName << " value=" << optTaskIndex
-                 << endl;
-        }
-
         // Subscribe on key update events
-        keyValue.subscribe(
-            [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
+        keyValue.subscribe([&keyCondition](const string& _propertyID, const string& _key, const string& _value) {
+            cout << "Received key-value update: propertyID=" << _propertyID << " key=" << _key << " value=" << _value
+                 << std::endl;
+            keyCondition.notify_all();
+        });
 
-        CKeyValue::valuesMap_t values;
-        keyValue.getValues(ReplyPropertyName, &values);
-        // We expect to receive one property from server.
-        while (values.size() == 0)
-        {
-            unique_lock<mutex> lock(keyMutex);
-            keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
-            keyValue.getValues(ReplyPropertyName, &values);
-        }
+        // Start listening to key-value updates
+        keyValue.start();
+
+        // Put task index property
+        keyValue.putValue(TaskIndexPropertyName, optTaskIndex);
+
+        // Wait for condition. We have to receive only one key-value update.
+        unique_lock<mutex> lock(keyMutex);
+        keyCondition.wait(lock);
 
         // Emulate data procesing of the task
         for (size_t i = 0; i < 5; ++i)

@@ -45,8 +45,6 @@ namespace dds
                 m_onNewUserTaskCallback = _callback;
             }
 
-            void updateKey(const std::string& _key, const std::string& _value);
-
           private:
             // Message Handlers
             bool on_cmdREPLY_HANDSHAKE_OK(
@@ -70,6 +68,12 @@ namespace dds
             bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
             bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
 
+          public:
+            uint64_t getTaskID() const
+            {
+                return m_taskID;
+            }
+
           private:
             void readAgentIDFile();
             void createAgentIDFile() const;
@@ -78,7 +82,7 @@ namespace dds
           private:
             uint64_t m_id;
             std::string m_sUsrExe;
-            std::string m_sTaskId;
+            uint64_t m_taskID;
             size_t m_taskIndex;
             size_t m_collectionIndex;
             std::string m_taskPath;

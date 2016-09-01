@@ -23,6 +23,10 @@ namespace dds
 
             /// Helper function to set a key string in a form "propetrtyID.47598590403".
             void setKey(const std::string& _propID, uint64_t _taskID);
+            /// Helper function to extract property ID from key.
+            std::string getPropertyID() const;
+            /// Helper function to extract task ID from key.
+            uint64_t getTaskID() const;
 
             std::string m_sKey;
         };

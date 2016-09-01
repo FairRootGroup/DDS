@@ -39,9 +39,11 @@ set( SRC_HDRS
 	./src/ProtocolCommands.h
 	./src/ProtocolMessage.h
 	./src/BaseChannelImpl.h
+	./src/BaseSMChannelImpl.h
 	./src/ClientChannelImpl.h
 	./src/ServerChannelImpl.h
 	./src/ChannelEventsImpl.h
+	./src/ChannelMessageHandlersImpl.h
 	./src/CommandAttachmentImpl.h
 	./src/ConnectionManagerImpl.h
 	./src/BasicCmd.h
@@ -103,8 +105,7 @@ install(TARGETS dds_protocol_lib DESTINATION lib)
 #
 if (BUILD_TESTS)
 	message (STATUS "Build dds_protocol_lib tests - YES")
-	add_subdirectory ( ${dds_protocol_lib_SOURCE_DIR}/tests ) 
+	add_subdirectory ( ${dds_protocol_lib_SOURCE_DIR}/tests )
 else (BUILD_TESTS)
 	message (STATUS "Build dds_protocol_lib tests - NO")
 endif (BUILD_TESTS)
-

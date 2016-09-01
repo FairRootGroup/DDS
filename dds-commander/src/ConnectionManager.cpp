@@ -540,7 +540,7 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
         for (const auto& sch : schedule)
         {
             SAssignUserTaskCmd msg_cmd;
-            msg_cmd.m_sID = to_string(sch.m_taskID);
+            msg_cmd.m_taskID = sch.m_taskID;
             msg_cmd.m_taskIndex = sch.m_taskInfo.m_taskIndex;
             msg_cmd.m_collectionIndex = sch.m_taskInfo.m_collectionIndex;
             msg_cmd.m_taskPath = sch.m_taskInfo.m_taskPath;
@@ -866,7 +866,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         {
             stringstream ss;
             if (property == nullptr)
-                ss << "Can't propagate property that doesn't exist for task " << task->getId();
+                ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task " << task->getId();
             else
                 ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
                    << task->getId();
@@ -931,7 +931,7 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
     }
 
     channelPtr->pushMsg<cmdSIMPLE_MSG>(
-        SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::info, cmdUPDATE_KEY));
+        SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::debug, cmdUPDATE_KEY));
     // Shutdown the initial channel if it's an UI one
     if (sentFromUIChannel)
     {
@@ -946,19 +946,11 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
-    if (_channel.expired())
-        return true;
-    auto channelPtr = _channel.lock();
-
-    auto taskID = channelPtr->getTaskID();
-    auto task = m_topo.getTaskByHash(taskID);
-
-    // TODO: it would be better to move key deletion on top of this function.
-    // However it is not clear than how to get the taskID, which is a property of the channel.
-    // If channel expires the key will not be deleted from KeyValue manager.
-    // As a solution we can send the task ID with cmdUSER_TASK_DONE attachment.
+    uint64_t taskID = _attachment->m_taskID;
     // Delete key-value from commander's key-value manager
     m_keyValueManager.deleteKeyValue(taskID);
+
+    auto task = m_topo.getTaskByHash(taskID);
 
     const TopoPropertyPtrVector_t& properties = task->getProperties();
     for (const auto& property : properties)
@@ -981,7 +973,7 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
 
                 SDeleteKeyCmd cmd;
                 cmd.setKey(property->getId(), taskID);
-                if (ptr->getTaskID() != 0 && ptr->getTaskID() != channelPtr->getTaskID())
+                if (ptr->getTaskID() != 0 && ptr->getTaskID() != taskID)
                 {
                     ptr->pushMsg<cmdDELETE_KEY>(cmd);
                     LOG(debug) << "Property deleted from agent channel: <" << *_attachment << ">";
@@ -990,9 +982,13 @@ bool CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
         }
     }
 
-    // remove task ID from the channel
-    channelPtr->setTaskID(0);
-    channelPtr->setState(EAgentState::idle);
+    if (!_channel.expired())
+    {
+        auto channelPtr = _channel.lock();
+        // remove task ID from the channel
+        channelPtr->setTaskID(0);
+        channelPtr->setState(EAgentState::idle);
+    }
 
     // remove task ID from the map
     // TODO: Temporary solution. We do not remove tasks from the map to avoid synchronization bottlenecks in

@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
         }
 
         CKeyValue keyValue;
+        keyValue.start();
 
         // Get environment variables
         // DDS_TASK_ID

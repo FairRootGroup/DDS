@@ -60,6 +60,8 @@ int main(int argc, char* argv[])
         // Subscribe on reply from DDS commander server
         customCmd.subscribeOnReply([](const string& _msg) { cout << "Received reply message: " << _msg << endl; });
 
+        customCmd.start();
+
         // Emulate data procesing of the task
         const int n = 60;
         for (size_t i = 0; i < n; ++i)

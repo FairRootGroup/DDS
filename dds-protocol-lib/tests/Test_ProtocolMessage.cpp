@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_PID)
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
 {
     SAssignUserTaskCmd src;
-    src.m_sID = "121";
+    src.m_taskID = 121;
     src.m_sExeFile = "test.exe -l -n --test";
     src.m_taskIndex = 99;
     src.m_collectionIndex = 77;
@@ -222,10 +222,10 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     src.m_collectionName = "collection1";
     src.m_taskName = "task1";
     // expected attachment size
-    const unsigned int cmdSize = src.m_sExeFile.size() + sizeof(uint16_t) + src.m_sID.size() + sizeof(uint16_t) +
-                                 sizeof(uint32_t) + sizeof(uint32_t) + src.m_taskPath.size() + sizeof(uint16_t) +
-                                 src.m_groupName.size() + sizeof(uint16_t) + src.m_collectionName.size() +
-                                 sizeof(uint16_t) + src.m_taskName.size() + sizeof(uint16_t);
+    const unsigned int cmdSize = src.m_sExeFile.size() + sizeof(uint16_t) + sizeof(uint64_t) + sizeof(uint32_t) +
+                                 sizeof(uint32_t) + src.m_taskPath.size() + sizeof(uint16_t) + src.m_groupName.size() +
+                                 sizeof(uint16_t) + src.m_collectionName.size() + sizeof(uint16_t) +
+                                 src.m_taskName.size() + sizeof(uint16_t);
 
     TestCommand(src, cmdASSIGN_USER_TASK, cmdSize);
 }
@@ -282,10 +282,11 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_AGENTS_INFO)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUSER_TASK_DONE)
 {
-    const unsigned int cmdSize = 4;
+    const unsigned int cmdSize = 12;
 
     SUserTaskDoneCmd cmd;
     cmd.m_exitCode = 12345;
+    cmd.m_taskID = 54321;
 
     TestCommand(cmd, cmdUSER_TASK_DONE, cmdSize);
 }

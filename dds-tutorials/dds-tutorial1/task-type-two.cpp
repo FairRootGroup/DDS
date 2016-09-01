@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
         CKeyValue keyValue;
         mutex keyMutex;
         condition_variable keyCondition;
+        map<string, string> keyValueCache;
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
@@ -60,32 +61,37 @@ int main(int argc, char* argv[])
         });
 
         // Subscribe on key update events
-        keyValue.subscribe(
-            [&keyCondition](const string& /*_key*/, const string& /*_value*/) { keyCondition.notify_all(); });
+        // DDS garantees that this callback function will not be called in parallel from multiple threads.
+        // It is safe to update global data without locks inside the callback.
+        keyValue.subscribe([&keyCondition, &nInstances, &keyValueCache](
+            const string& _propertyID, const string& _key, const string& _value) {
+            cout << "Received key-value update: propertyID=" << _propertyID << " key=" << _key << " value=" << _value
+                 << std::endl;
+            keyValueCache[_key] = _value;
+            if (keyValueCache.size() == nInstances)
+            {
+                keyCondition.notify_all();
+            }
+        });
 
-        // First get all task index properties
-        CKeyValue::valuesMap_t taskValues;
-        keyValue.getValues(TaskIndexPropertyName, &taskValues);
-        while (taskValues.size() != nInstances)
+        keyValue.start();
+
+        // Wait for condition. We have to receive nInstances key-value updates.
+        unique_lock<mutex> lock(keyMutex);
+        keyCondition.wait(lock);
+
+        // Print key-value cache
+        for (const auto& v : keyValueCache)
         {
-            unique_lock<mutex> lock(keyMutex);
-            keyCondition.wait_until(lock, chrono::system_clock::now() + chrono::milliseconds(1000));
-            keyValue.getValues(TaskIndexPropertyName, &taskValues);
-        }
-        for (const auto& v : taskValues)
-        {
-            cout << "Received task index: " << v.first << " --> " << v.second << endl;
+            cout << v.first << " --> " << v.second << std::endl;
         }
 
         // We have received all properties.
         // Broadcast property to all clients.
-        string value = to_string(taskValues.size());
-        if (0 != keyValue.putValue(ReplyPropertyName, value))
-        {
-            cerr << "DDS ddsIntercom putValue failed: key=" << ReplyPropertyName << " value=" << value << endl;
-        }
+        string value = to_string(keyValueCache.size());
+        keyValue.putValue(ReplyPropertyName, value);
 
-        // Emulate data procesing of the task
+        // Emulate data processing of the task
         for (size_t i = 0; i < 7; ++i)
         {
             cout << "Work in progress (" << i << "/7)\n";

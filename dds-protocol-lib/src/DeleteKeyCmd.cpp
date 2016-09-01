@@ -52,3 +52,26 @@ void SDeleteKeyCmd::setKey(const string& _propID, uint64_t _taskID)
     ss << _propID << "." << _taskID;
     m_sKey = ss.str();
 }
+
+string SDeleteKeyCmd::getPropertyID() const
+{
+    const size_t pos(m_sKey.find_last_of('.'));
+    return (pos == string::npos) ? "" : m_sKey.substr(0, pos);
+}
+
+uint64_t SDeleteKeyCmd::getTaskID() const
+{
+    const size_t pos(m_sKey.find_last_of('.'));
+    if (pos == string::npos)
+    {
+        return 0;
+    }
+    try
+    {
+        return std::stoull(m_sKey.substr(pos + 1));
+    }
+    catch (exception& _e)
+    {
+        return 0;
+    }
+}

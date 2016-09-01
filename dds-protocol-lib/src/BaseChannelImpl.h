@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef __DDS__Connection__
-#define __DDS__Connection__
+#ifndef __DDS__BaseChannelImpl__
+#define __DDS__BaseChannelImpl__
 // STD
 #include <chrono>
 #include <deque>
@@ -25,6 +25,7 @@
 #pragma clang diagnostic pop
 // DDS
 #include "ChannelEventsImpl.h"
+#include "ChannelMessageHandlersImpl.h"
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
@@ -77,21 +78,21 @@ namespace dds
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
                         SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
-                    dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                    dispatchMessageHandlers(currentCmd, attachmentPtr, this);                                          \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_OK:                                                                            \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
-                    dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                    dispatchMessageHandlers(currentCmd, attachmentPtr, this);                                          \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_ERR:                                                                           \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
-                    dispatch(currentCmd, m_registeredMessageHandlers, attachmentPtr, this);                            \
+                    dispatchMessageHandlers(currentCmd, attachmentPtr, this);                                          \
                     return;                                                                                            \
                 }
 
@@ -104,14 +105,14 @@ namespace dds
         processed = func(attachmentPtr);                                                                           \
         if (!processed)                                                                                            \
         {                                                                                                          \
-            if (m_registeredMessageHandlers.count(msg) == 0)                                                       \
+            if (getNofMessageHandlers<msg>() == 0)                                                                 \
             {                                                                                                      \
                 LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
                                        << _currentMsg->toString();                                                 \
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatch(msg, m_registeredMessageHandlers, attachmentPtr, this);                                   \
+                dispatchMessageHandlers(msg, attachmentPtr, this);                                                 \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \
@@ -124,7 +125,7 @@ namespace dds
         }                                                                                                     \
         catch (std::exception & _e)                                                                           \
         {                                                                                                     \
-            LOG(MiscCommon::error) << "processMessage: " << _e.what();                                        \
+            LOG(MiscCommon::error) << "Channel processMessage: " << _e.what();                                \
         }                                                                                                     \
         }
 
@@ -150,53 +151,6 @@ namespace dds
         const std::array<std::string, 5> gChannelTypeName{
             { "unknown", "agent", "ui", "key_value_guard", "custom_command_guard" }
         };
-
-        // --- Helpers for events dispatching ---
-        // TODO: Move to a separate header
-        struct SHandlerHlpFunc
-        {
-        };
-        template <typename T>
-        struct SHandlerHlpBaseFunc : SHandlerHlpFunc
-        {
-            T m_function;
-
-            SHandlerHlpBaseFunc(T _function)
-                : m_function(_function)
-            {
-            }
-        };
-
-        // Generic container of listeners for any type of function
-        typedef std::multimap<ECmdType, std::unique_ptr<SHandlerHlpFunc>> Listeners_t;
-
-        template <ECmdType _cmd, typename Func>
-        static void addListener(Listeners_t& _listeners, Func _function)
-        {
-            std::unique_ptr<SHandlerHlpFunc> func_ptr(new SHandlerHlpBaseFunc<Func>(_function));
-            _listeners.insert(Listeners_t::value_type(_cmd, std::move(func_ptr)));
-        }
-
-        template <typename... Args>
-        static void callListeners(ECmdType _cmd, const Listeners_t& listeners, Args&&... args)
-        {
-            // typedef bool Func(Args...);
-            typedef std::function<bool(Args...)> Func_t;
-            auto functions = listeners.equal_range(_cmd);
-            for (auto it = functions.first; it != functions.second; ++it)
-            {
-                const SHandlerHlpFunc& f = *it->second;
-                Func_t func = static_cast<const SHandlerHlpBaseFunc<Func_t>&>(f).m_function;
-                func(std::forward<Args>(args)...);
-            }
-        }
-
-        template <class... Args>
-        void dispatch(ECmdType _cmd, Listeners_t& _listeneres, Args&&... args)
-        {
-            callListeners(_cmd, _listeneres, std::forward<Args>(args)...);
-        }
-        // ------------------------------------
 
         struct SBinaryAttachmentInfo
         {
@@ -224,6 +178,7 @@ namespace dds
         template <class T>
         class CBaseChannelImpl : public boost::noncopyable,
                                  public CChannelEventsImpl<T>,
+                                 public CChannelMessageHandlersImpl,
                                  public std::enable_shared_from_this<T>,
                                  public CStatImpl
         {
@@ -241,6 +196,7 @@ namespace dds
           protected:
             CBaseChannelImpl<T>(boost::asio::io_service& _service)
                 : CChannelEventsImpl<T>()
+                , CChannelMessageHandlersImpl()
                 , CStatImpl(_service)
                 , m_isHandshakeOK(false)
                 , m_channelType(EChannelType::UNKNOWN)
@@ -697,12 +653,6 @@ namespace dds
                 }
             }
 
-            template <ECmdType _cmd, typename Func>
-            void registerMessageHandler(Func _handler)
-            {
-                addListener<_cmd, Func>(m_registeredMessageHandlers, _handler);
-            }
-
             void registerDisconnectEventHandler(handlerDisconnectEventFunction_t _handler)
             {
                 m_disconnectEventHandler = _handler;
@@ -944,7 +894,6 @@ namespace dds
             handlerDisconnectEventFunction_t m_disconnectEventHandler;
 
           protected:
-            Listeners_t m_registeredMessageHandlers;
             bool m_isHandshakeOK;
             EChannelType m_channelType;
 
@@ -974,4 +923,4 @@ namespace dds
     }
 }
 
-#endif /* defined(__DDS__Connection__) */
+#endif /* defined(__DDS__BaseChannelImpl__) */

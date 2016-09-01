@@ -49,6 +49,8 @@ namespace dds
             std::string getLogFile() const;
             std::string getAgentLogStorageDir() const;
             pid_t getScoutPid() const;
+            std::string getSMInputName() const;
+            std::string getSMOutputName() const;
             std::string getPluginsRootDir() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.

@@ -21,6 +21,7 @@ namespace dds
             bool operator==(const SUserTaskDoneCmd& val) const;
 
             uint32_t m_exitCode;
+            uint64_t m_taskID;
         };
         std::ostream& operator<<(std::ostream& _stream, const SUserTaskDoneCmd& val);
         bool operator!=(const SUserTaskDoneCmd& lhs, const SUserTaskDoneCmd& rhs);

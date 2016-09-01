@@ -324,6 +324,20 @@ pid_t CUserDefaults::getScoutPid() const
     return nDDSScoutPid;
 }
 
+std::string CUserDefaults::getSMInputName() const
+{
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    storageName += "_DDSSMI";
+    return storageName;
+}
+
+std::string CUserDefaults::getSMOutputName() const
+{
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    storageName += "_DDSSMO";
+    return storageName;
+}
+
 string CUserDefaults::getPluginsRootDir() const
 {
     stringstream ss;

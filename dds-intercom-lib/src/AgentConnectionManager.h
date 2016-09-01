@@ -15,11 +15,13 @@ namespace dds
 {
     namespace internal_api
     {
-        struct SSyncHelper;
+        // struct SSyncHelper;
 
         class CAgentConnectionManager : public std::enable_shared_from_this<CAgentConnectionManager>
         {
           public:
+            typedef std::shared_ptr<CAgentConnectionManager> ptr_t;
+
             CAgentConnectionManager();
             virtual ~CAgentConnectionManager();
 
@@ -30,12 +32,9 @@ namespace dds
             {
                 return m_service.stopped();
             }
-            int updateKey(const protocol_api::SUpdateKeyCmd& _cmd);
-            int sendCustomCmd(const protocol_api::SCustomCmdCmd& _command);
+            void sendCustomCmd(const protocol_api::SCustomCmdCmd& _command);
 
           public:
-            SSyncHelper* m_syncHelper;
-
             void waitCondition();
             void stopCondition();
 

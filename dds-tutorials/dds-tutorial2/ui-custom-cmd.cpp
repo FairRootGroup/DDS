@@ -33,6 +33,9 @@ int main(int argc, char* argv[])
         bpo::store(bpo::command_line_parser(argc, argv).options(options).run(), vm);
         bpo::notify(vm);
 
+        atomic<size_t> counterCmdMessages(0);
+        atomic<size_t> counterReplyMessages(0);
+
         // DDS custom command API
         CCustomCmd customCmd;
 
@@ -41,9 +44,6 @@ int main(int argc, char* argv[])
         customCmd.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
             cout << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
         });
-
-        atomic<size_t> counterCmdMessages(0);
-        atomic<size_t> counterReplyMessages(0);
 
         // Subscribe on custom commands
         customCmd.subscribe(
@@ -59,14 +59,11 @@ int main(int argc, char* argv[])
             counterReplyMessages++;
         });
 
+        customCmd.start();
+
         while (true)
         {
-            int result = customCmd.send("please-reply-ui", "");
-
-            if (result == 1)
-            {
-                cerr << "Error sending custom command" << endl;
-            }
+            customCmd.send("please-reply-ui", "");
 
             this_thread::sleep_for(chrono::seconds(1));
         }

@@ -33,8 +33,7 @@ namespace fs = boost::filesystem;
 using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager()
-    : m_syncHelper(nullptr)
-    , m_bStarted(false)
+    : m_bStarted(false)
 {
 }
 
@@ -59,16 +58,7 @@ void CAgentConnectionManager::start()
         string sHost;
         string sPort;
         EChannelType channelType(EChannelType::UNKNOWN);
-        if (fs::exists(sAgentCfg))
-        {
-            LOG(info) << "Reading server info from: " << sAgentCfg;
-            boost::property_tree::ptree pt;
-            boost::property_tree::ini_parser::read_ini(sAgentCfg, pt);
-            sHost = pt.get<string>("agent.host");
-            sPort = pt.get<string>("agent.port");
-            channelType = EChannelType::API_GUARD;
-        }
-        else if (fs::exists(sCommanderCfg))
+        if (fs::exists(sCommanderCfg))
         {
             LOG(info) << "Reading server info from: " << sCommanderCfg;
             boost::property_tree::ptree pt;
@@ -79,10 +69,10 @@ void CAgentConnectionManager::start()
         }
         else
         {
-            throw runtime_error("Cannot find agent or commander info file.");
+            throw runtime_error("Cannot find DDS commander info file.");
         }
 
-        LOG(info) << "Contacting DDS agent on " << sHost << ":" << sPort;
+        LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
         // Resolve endpoint iterator from host and port
         tcp::resolver resolver(m_service);
@@ -102,16 +92,14 @@ void CAgentConnectionManager::start()
         };
         m_channel->registerMessageHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
-        m_channel->subscribeOnEvent(EChannelEvents::OnConnected,
-                                    [this](CAgentChannel* _channel) { m_channel->m_syncHelper = m_syncHelper; });
+        m_channel->subscribeOnEvent(EChannelEvents::OnConnected, [this](CAgentChannel* _channel) {});
 
         m_channel->subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
                                     [this](CAgentChannel* _channel) { stopCondition(); });
 
         m_channel->subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect, [this](CAgentChannel* _channel) {
             m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
-                if (m_syncHelper != nullptr)
-                    m_syncHelper->m_errorSignal(intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
+                CDDSIntercomGuard::instance().m_errorSignal(intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
                 stopCondition();
             });
         });
@@ -132,8 +120,7 @@ void CAgentConnectionManager::start()
         errorMsg += e.what();
 
         LOG(fatal) << errorMsg;
-        if (m_syncHelper != nullptr)
-            m_syncHelper->m_errorSignal(intercom_api::EErrorCode::TransportServiceFailed, errorMsg);
+        CDDSIntercomGuard::instance().m_errorSignal(intercom_api::EErrorCode::TransportServiceFailed, errorMsg);
     }
 }
 
@@ -170,35 +157,7 @@ bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
     return true;
 }
 
-int CAgentConnectionManager::updateKey(const SUpdateKeyCmd& _cmd)
-{
-    try
-    {
-        if (getAgentChannel().expired())
-            throw runtime_error("Agent channel is not offline");
-
-        auto p = getAgentChannel().lock();
-        p->pushMsg<cmdUPDATE_KEY>(_cmd);
-        return 0;
-    }
-    catch (const exception& _e)
-    {
-        stringstream ss;
-        ss << "Fail to push the key-value update: " << _cmd << "; Error: " << _e.what();
-        LOG(fatal) << ss.str();
-        if (m_syncHelper != nullptr)
-            m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
-        return 1;
-    }
-    stringstream ss;
-    ss << "Fail to push the key-value update: " << _cmd;
-    LOG(fatal) << ss.str();
-    if (m_syncHelper != nullptr)
-        m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
-    return 1;
-}
-
-int CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command)
+void CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command)
 {
     try
     {
@@ -207,23 +166,14 @@ int CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _c
 
         auto p = getAgentChannel().lock();
         p->pushMsg<cmdCUSTOM_CMD>(_command);
-        return 0;
     }
     catch (const exception& _e)
     {
         stringstream ss;
         ss << "Fail to push the custom command: " << _command << "; Error: " << _e.what();
         LOG(fatal) << ss.str();
-        if (m_syncHelper != nullptr)
-            m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
-        return 1;
+        CDDSIntercomGuard::instance().m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
     }
-    stringstream ss;
-    ss << "Fail to push the custom command: " << _command;
-    LOG(fatal) << ss.str();
-    if (m_syncHelper != nullptr)
-        m_syncHelper->m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
-    return 1;
 }
 
 void CAgentConnectionManager::waitCondition()

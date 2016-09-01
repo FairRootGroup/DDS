@@ -59,24 +59,9 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
     {
         case cmdCUSTOM_CMD:
             LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
-            if (m_syncHelper == nullptr)
-                throw invalid_argument("syncHelper is NULL");
 
             // Call user callback function
-            m_syncHelper->m_customCmdReplySignal(_attachment->m_sMsg);
-            break;
-
-        case cmdUPDATE_KEY:
-            LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
-            if (m_syncHelper == nullptr)
-                throw invalid_argument("syncHelper is NULL");
-            // m_syncHelper->m_cvUpdateKey.notify_all();
-            if (_attachment->m_msgSeverity == MiscCommon::error)
-            {
-                if (m_syncHelper == nullptr)
-                    throw invalid_argument("syncHelper is NULL");
-                m_syncHelper->m_errorSignal(intercom_api::EErrorCode::UpdateKeyValueFailed, _attachment->m_sMsg);
-            }
+            CDDSIntercomGuard::instance().m_customCmdReplySignal(_attachment->m_sMsg);
             break;
 
         default:
@@ -96,20 +81,10 @@ bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _a
 
 bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
 {
-    if (m_syncHelper == nullptr)
-        throw invalid_argument("syncHelper is NULL");
-
     LOG(info) << "CAgentChannel::on_cmdCUSTOM_CMD: received custom command: " << *_attachment;
 
     // Call user callback function
-    m_syncHelper->m_customCmdSignal(_attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
-    return true;
-}
-
-bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
-{
-    if (m_syncHelper == nullptr)
-        throw invalid_argument("syncHelper is NULL");
-    m_syncHelper->m_keyValueUpdateSig(_attachment->m_sKey, _attachment->m_sValue);
+    CDDSIntercomGuard::instance().m_customCmdSignal(
+        _attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
     return true;
 }

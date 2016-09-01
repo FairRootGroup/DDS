@@ -34,6 +34,7 @@ namespace dds
             typedef boost::signals2::connection connection_t;
 
             void subscribeOnError(errorSignal_t::slot_function_type _subscriber);
+            void start();
         };
 
         ///////////////////////////////////
@@ -42,16 +43,21 @@ namespace dds
         class CKeyValue : public CIntercomBase
         {
           public:
-            typedef std::map<std::string, std::string> valuesMap_t;
-            typedef boost::signals2::signal<void(const std::string&, const std::string&)> signal_t;
+            /// \typedef Update key callback function
+            typedef boost::signals2::signal<void(
+                const std::string& /*_propertyID*/, const std::string& /*_key*/, const std::string& /*_value*/)>
+                signal_t;
+            /// \typedef Delete key callback function
+            typedef boost::signals2::signal<void(const std::string& /*_propertyID*/, const std::string& /*_key*/)>
+                deleteSignal_t;
 
           public:
             ~CKeyValue();
 
           public:
-            int putValue(const std::string& _key, const std::string& _value);
-            void getValues(const std::string& _key, valuesMap_t* _values);
+            void putValue(const std::string& _key, const std::string& _value);
             void subscribe(signal_t::slot_function_type _subscriber);
+            void subscribeOnDelete(deleteSignal_t::slot_function_type _subscriber);
             void unsubscribe();
         };
 
@@ -61,14 +67,17 @@ namespace dds
         class CCustomCmd : public CIntercomBase
         {
           public:
-            typedef boost::signals2::signal<void(const std::string&, const std::string&, uint64_t)> signal_t;
+            /// \typedef Custom command cllback function
+            typedef boost::signals2::signal<void(
+                const std::string& /*_command*/, const std::string& /*_condition*/, uint64_t /*_senderID*/)>
+                signal_t;
             typedef boost::signals2::signal<void(const std::string&)> replySignal_t;
 
           public:
             ~CCustomCmd();
 
           public:
-            int send(const std::string& _command, const std::string& _condition);
+            void send(const std::string& _command, const std::string& _condition);
             void subscribe(signal_t::slot_function_type _subscriber);
             void subscribeOnReply(replySignal_t::slot_function_type _subscriber);
             void unsubscribe();

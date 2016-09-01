@@ -184,6 +184,8 @@ CRMSPluginProtocol::CRMSPluginProtocol(const std::string& _id)
         istringstream ss(_command);
         notify(ss);
     });
+
+    m_customCmd.start();
 }
 
 CRMSPluginProtocol::~CRMSPluginProtocol()

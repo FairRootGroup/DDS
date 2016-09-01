@@ -53,13 +53,7 @@ int main(int argc, char* argv[])
             replyCondition.notify_all();
         });
 
-        int result = customCmd.send(options.m_sCmd, options.m_sCondition);
-
-        if (result == 1)
-        { // error
-            cerr << "Error sending custom command" << endl;
-            return EXIT_FAILURE;
-        }
+        customCmd.send(options.m_sCmd, options.m_sCondition);
 
         // TODO: theoretically reply callback can be called before the next lines are executed.
         // In this case the program  will not exit.

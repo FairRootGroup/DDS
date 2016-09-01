@@ -21,7 +21,7 @@ namespace dds
             bool operator==(const SAssignUserTaskCmd& val) const;
 
             std::string m_sExeFile;
-            std::string m_sID;
+            uint64_t m_taskID;
             uint32_t m_taskIndex;
             uint32_t m_collectionIndex;
             std::string m_taskPath;

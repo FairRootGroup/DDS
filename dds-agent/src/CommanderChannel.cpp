@@ -6,7 +6,6 @@
 // DDS
 #include "BOOST_FILESYSTEM.h"
 #include "CommanderChannel.h"
-#include "DDSIntercomGuard.h"
 #include "version.h"
 // MiscCommon
 #include "FindCfgFile.h"
@@ -35,7 +34,6 @@
 using namespace MiscCommon;
 using namespace dds;
 using namespace dds::agent_cmd;
-using namespace dds::internal_api;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 using namespace std;
@@ -46,6 +44,7 @@ const uint16_t g_MaxConnectionAttempts = 5;
 CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
     , m_id()
+    , m_taskID(0)
     , m_taskIndex(0)
     , m_collectionIndex(std::numeric_limits<uint32_t>::max())
     , m_taskPath()
@@ -85,9 +84,6 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
             this->sendYourself<cmdSHUTDOWN>();
         }
     });
-
-    // Create key-value shared memory storage
-    CDDSIntercomGuard::instance().createStorage();
 }
 
 bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
@@ -350,7 +346,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
 {
     LOG(info) << "Received a user task assignment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
-    m_sTaskId = _attachment->m_sID;
+    m_taskID = _attachment->m_taskID;
     m_taskIndex = _attachment->m_taskIndex;
     m_collectionIndex = _attachment->m_collectionIndex;
     m_taskPath = _attachment->m_taskPath;
@@ -386,11 +382,11 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     {
         // set task's environment
         LOG(info) << "Setting up task's environment: "
-                  << "DDS_TASK_ID:" << m_sTaskId << " DDS_TASK_INDEX:" << m_taskIndex
+                  << "DDS_TASK_ID:" << m_taskID << " DDS_TASK_INDEX:" << m_taskIndex
                   << " DDS_COLLECTION_INDEX:" << m_collectionIndex << " DDS_TASK_PATH:" << m_taskPath
                   << " DDS_GROUP_NAME:" << m_groupName << " DDS_COLLECTION_NAME:" << m_collectionName
                   << " DDS_TASK_NAME:" << m_taskName;
-        if (::setenv("DDS_TASK_ID", m_sTaskId.c_str(), 1) == -1)
+        if (::setenv("DDS_TASK_ID", to_string(m_taskID).c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
         if (::setenv("DDS_TASK_INDEX", to_string(m_taskIndex).c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_INDEX");
@@ -427,7 +423,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
         ssTaskOutput << "_" << buffer;
 
         // task id
-        ssTaskOutput << "_" << m_sTaskId;
+        ssTaskOutput << "_" << m_taskID;
 
         string sTaskStdOut(ssTaskOutput.str() + "_out.log");
         string sTaskStdErr(ssTaskOutput.str() + "_err.log");
@@ -455,7 +451,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
 
 bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment)
 {
-    if (m_sTaskId.empty())
+    if (m_taskID == 0)
     {
         // No running tasks, nothing to stop
         // Send response back to server
@@ -469,63 +465,19 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
 
 bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    // try
-    // {
-    LOG(info) << "Received a key update notifications: " << *_attachment;
-    //     CKeyValueGuard::instance().putValue(_attachment->m_sKey, _attachment->m_sValue);
-    // }
-    // catch (exception& _e)
-    // {
-    //     LOG(error) << _e.what();
-    // Send response back to server
-    //     pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdUPDATE_KEY));
-    // }
-
-    // give a chance to others to receive update notifications
+    LOG(debug) << "Received a key update notifications: " << *_attachment;
     return false;
-}
-
-void CCommanderChannel::updateKey(const string& _key, const string& _value)
-{
-    try
-    {
-        SUpdateKeyCmd cmd;
-        // Update key name with the task id
-        cmd.m_sKey = _key + "." + m_sTaskId;
-        cmd.m_sValue = _value;
-        LOG(debug) << "Sending commander a notification about the key update (key:value) " << cmd.m_sKey << ":"
-                   << cmd.m_sValue;
-        // write the property locally
-        CDDSIntercomGuard::instance().putValue(cmd.m_sKey, cmd.m_sValue);
-        // Push update to the commander server
-        pushMsg<cmdUPDATE_KEY>(cmd);
-    }
-    catch (exception& _e)
-    {
-        LOG(error) << _e.what();
-    }
 }
 
 bool CCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)
 {
-    try
-    {
-        LOG(info) << "Received a key delete notifications: " << *_attachment;
-        CDDSIntercomGuard::instance().deleteKey(_attachment->m_sKey);
-    }
-    catch (exception& _e)
-    {
-        LOG(error) << _e.what();
-        // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdDELETE_KEY));
-    }
-
-    return true;
+    LOG(debug) << "Received a key delete notifications: " << *_attachment;
+    return false;
 }
 
 bool CCommanderChannel::on_cmdCUSTOM_CMD(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
-    LOG(info) << "Received custom command: " << *_attachment;
+    LOG(debug) << "Received custom command: " << *_attachment;
     return false;
 }
