@@ -11,6 +11,9 @@ Added: shared memory message queue transport. New shared memory channel which is
 ### SSH plug-in
 Modified: events from the submitter script are reflected on dds-submit output. (GH-139)   
 
+### PBS plug-in
+Added: Initial release. (GH-113)    
+
 ### dds_intercom\_lib
 Added: reconnect if connection fails. (GH-138)
 Added: possibility to subscribe to the error messages.

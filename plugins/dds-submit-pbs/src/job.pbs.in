@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+#DDS_NEED_ARRAY
+
+#DDS_USER_OPTIONS
+
+# PARENT_PBS_JOBID is just a PBS_JOBID without an "-ARRAY_INDEX" part
+# We consider, that the first digits up to the first non-digit character is a parent index.
+PARENT_PBS_JOBID=$(echo $PBS_JOBID | egrep -o '^[[:digit:]]*')
+
+# Subjob index in job array:
+# in PBS we have $PBS_ARRAYID
+# in PBS Pro we have $PBS_ARRAY_INDEX
+ARRAYID=$PBS_ARRAYID
+if [ -z  $ARRAYID ]; then
+   ARRAYID=$PBS_ARRAY_INDEX
+fi
+
+# create working dir
+eval JOB_WRK_DIR=%DDS_JOB_ROOT_WRK_DIR%/${PARENT_PBS_JOBID}_${ARRAYID}
+mkdir -p $JOB_WRK_DIR
+cd $JOB_WRK_DIR
+
+# copy DDS Scout script into the working dir.
+cp %DDS_SCOUT% $JOB_WRK_DIR/
+
+# execute DDS Scout
+./DDSWorker.sh 
+
+exit 0
