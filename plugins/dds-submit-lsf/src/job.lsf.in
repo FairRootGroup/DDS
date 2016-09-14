@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+#BSUB -J dds_agent[1-#DDS_NEED_ARRAY]
+#BSUB -o %DDS_JOB_ROOT_WRK_DIR%/stdout-%J_%I.log
+#BSUB -e %DDS_JOB_ROOT_WRK_DIR%/stderr-%J_%I.log
+#DDS_USER_OPTIONS
+
+# create working dir
+eval JOB_WRK_DIR=%DDS_JOB_ROOT_WRK_DIR%/${LSB_JOBID}_${LSB_JOBINDEX}
+mkdir -p $JOB_WRK_DIR
+cd $JOB_WRK_DIR
+
+# copy DDS Scout script into the working dir.
+cp %DDS_SCOUT% $JOB_WRK_DIR/
+
+# execute DDS Scout
+./DDSWorker.sh 
+
+exit 0

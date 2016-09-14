@@ -61,6 +61,7 @@ option(BUILD_dds-submit-ssh "Build dds-submit-ssh" ON)
 option(BUILD_dds-submit-localhost "Build dds-submit-localhost" ON)
 option(BUILD_dds-submit-slurm "Build dds-submit-slurm" ON)
 option(BUILD_dds-submit-pbs "Build dds-submit-pbs" ON)
+option(BUILD_dds-submit-lsf "Build dds-submit-lsf" ON)
 #
 # Custom targets
 #
@@ -308,6 +309,12 @@ if(BUILD_dds-submit-pbs)
     message(STATUS "Build dds-submit-pbs - YES")
     add_subdirectory ( plugins/dds-submit-pbs )
 endif(BUILD_dds-submit-pbs)
+
+# dds-submit-lsf
+if(BUILD_dds-submit-lsf)
+    message(STATUS "Build dds-submit-lsf - YES")
+    add_subdirectory ( plugins/dds-submit-lsf )
+endif(BUILD_dds-submit-lsf)
 
 #
 # Install

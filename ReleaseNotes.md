@@ -14,6 +14,9 @@ Modified: events from the submitter script are reflected on dds-submit output. (
 ### PBS plug-in
 Added: Initial release. (GH-113)    
 
+### LSF plug-in
+Added: Initial release. (GH-148)   
+
 ### dds_intercom\_lib
 Added: reconnect if connection fails. (GH-138)
 Added: possibility to subscribe to the error messages.

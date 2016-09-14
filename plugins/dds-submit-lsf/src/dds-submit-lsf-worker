@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Copyright 2014 GSI, Inc. All rights reserved.
+#
+#
+
+TOOL_NAME="$(basename $0)"
+eval WORK_DIR=$(dds-user-defaults --key server.work_dir)
+#=============================================================================
+# ***** DDS NAMED PIPE *****
+#=============================================================================
+# a dds-lsf communication pipe (log engine)
+eval pipe_dir="$WORK_DIR"
+pipe="$pipe_dir/.dds_lsf_pipe"
+if [[ ! -p $pipe ]]; then
+    echo "$TOOL_NAME error: dds-lsf log engine is not running"
+    exit 1
+fi
+#=============================================================================
+# ***** LOG *****
+#=============================================================================
+# function read input from stdin and write output to the stdout
+# caller must take care about where come stdin and where go stdout
+logMsgPipe() 
+{
+  while read data
+  do
+      logMsg "$data" 
+  done
+}
+logMsg()
+{
+	echo -e "$TOOL_NAME: $1" > $pipe
+}
+
+#=============================================================================
+# ***** MAIN *****
+#=============================================================================
+
+# if sandbox dir is not equal to working dir,
+# copy worker package to the sandbox dir
+eval RMS_SANDBOX=$(dds-user-defaults --rms-sandbox-dir)
+eval WORK_DIR=$(dds-user-defaults --key server.work_dir)
+eval WRK_S_L=$(dds-user-defaults --wrkscript)
+
+if [ "$RMS_SANDBOX" != "$WORK_DIR" ]; then
+	cp "$WRK_S_L" "$RMS_SANDBOX"
+fi
+
+logMsg "Submitting DDS Job on the lsf cluster..."
+JOB_ID=$(bsub < $RMS_SANDBOX/job.lsf)
+if (( $? != 0 )) ; then
+	logMsg "Error: Failed to submit lsf job ($?)"
+	exit $?
+fi
+logMsg "lsf: $JOB_ID"
+echo $JOB_ID > "$WORK_DIR/.dds_lsf_jobid"
+
+exit 0
