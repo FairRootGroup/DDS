@@ -111,13 +111,13 @@ namespace dds
                     m_transportIn =
                         std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create,
                                                                              m_inputMessageQueueName.c_str(),
-                                                                             maxMessageSize,
-                                                                             maxNofMessages);
+                                                                             maxNofMessages,
+                                                                             maxMessageSize);
                     m_transportOut =
                         std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create,
                                                                              m_outputMessageQueueName.c_str(),
-                                                                             maxMessageSize,
-                                                                             maxNofMessages);
+                                                                             maxNofMessages,
+                                                                             maxMessageSize);
                 }
                 catch (boost::interprocess::interprocess_exception& _e)
                 {
