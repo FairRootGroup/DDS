@@ -143,8 +143,7 @@ int main(int argc, char* argv[])
                 if (fs::exists(pathUserOptions))
                 {
                     fs::ifstream f_userOptions(pathUserOptions);
-                    string sUserOptions;
-                    f_userOptions >> sUserOptions;
+                    string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
                     boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
                 }
 
