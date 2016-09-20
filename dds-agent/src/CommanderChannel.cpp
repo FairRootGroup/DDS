@@ -4,8 +4,8 @@
 //
 
 // DDS
-#include "BOOST_FILESYSTEM.h"
 #include "CommanderChannel.h"
+#include "BOOST_FILESYSTEM.h"
 #include "version.h"
 // MiscCommon
 #include "FindCfgFile.h"

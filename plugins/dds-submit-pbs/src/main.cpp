@@ -123,8 +123,7 @@ int main(int argc, char* argv[])
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Generating PBS Job script...");
                 // Replace #DDS_NEED_ARRAY
                 if (_submit.m_nInstances > 0)
-                    boost::replace_all(
-                        sSrcScript, "#DDS_NEED_ARRAY", "#PBS -t=1-" + to_string(_submit.m_nInstances));
+                    boost::replace_all(sSrcScript, "#DDS_NEED_ARRAY", "#PBS -t=1-" + to_string(_submit.m_nInstances));
 
                 // Replace %DDS_JOB_ROOT_WRK_DIR%
                 std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());

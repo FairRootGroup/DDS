@@ -123,8 +123,7 @@ int main(int argc, char* argv[])
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Generating lsf Job script...");
                 // Replace #DDS_NEED_ARRAY
                 if (_submit.m_nInstances > 0)
-                    boost::replace_all(
-                        sSrcScript, "#DDS_NEED_ARRAY", to_string(_submit.m_nInstances));
+                    boost::replace_all(sSrcScript, "#DDS_NEED_ARRAY", to_string(_submit.m_nInstances));
 
                 // Replace %DDS_JOB_ROOT_WRK_DIR%
                 std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
@@ -134,7 +133,7 @@ int main(int argc, char* argv[])
                 string sSandboxDir(smart_path(CUserDefaults::instance().getValueForKey("server.sandbox_dir")));
                 fs::path pathJobWrkDir(sSandboxDir);
                 pathJobWrkDir /= "lsf_jobs";
-		pathJobWrkDir /= buffer;
+                pathJobWrkDir /= buffer;
                 boost::replace_all(sSrcScript, "%DDS_JOB_ROOT_WRK_DIR%", pathJobWrkDir.string());
                 // create ROOT wrk dir for jobs
                 fs::create_directories(pathJobWrkDir);
@@ -144,8 +143,7 @@ int main(int argc, char* argv[])
                 if (fs::exists(pathUserOptions))
                 {
                     fs::ifstream f_userOptions(pathUserOptions);
-		    string sUserOptions((istreambuf_iterator<char>(f_userOptions)),
-                    			istreambuf_iterator<char>());
+                    string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
                     boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
                 }
 
@@ -161,7 +159,9 @@ int main(int argc, char* argv[])
                 f_dest << sSrcScript;
                 f_dest.flush();
                 f_dest.close();
-		fs::permissions(pathJobScriptFilepath, fs::add_perms|fs::owner_all|fs::group_read|fs::group_exe|fs::others_read|fs::others_exe);
+                fs::permissions(
+                    pathJobScriptFilepath,
+                    fs::add_perms | fs::owner_all | fs::group_read | fs::group_exe | fs::others_read | fs::others_exe);
 
                 // Execute the submitter script
                 fs::path pathlsfScript(pathPluginDir);
