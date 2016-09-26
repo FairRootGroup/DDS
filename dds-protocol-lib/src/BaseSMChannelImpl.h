@@ -17,6 +17,7 @@
 #include <boost/thread/thread.hpp>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/asio.hpp>
 #pragma clang diagnostic pop
 // DDS

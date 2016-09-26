@@ -11,6 +11,7 @@
 #include <mutex>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/count.hpp>
 #include <boost/accumulators/statistics/max.hpp>

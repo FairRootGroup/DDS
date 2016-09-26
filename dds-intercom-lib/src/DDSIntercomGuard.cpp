@@ -235,15 +235,15 @@ bool CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
 {
     string propertyID(_attachment->m_serverCmd.getPropertyID());
     bool isVersionOK = updateCacheIfNeeded(_attachment->m_serverCmd);
-    
+
     if (!isVersionOK)
     {
         LOG(warning) << "Cache not updated. Attachment: " << *_attachment;
     }
-    
+
     LOG(warning) << "Key-value update error: propertyID: " << propertyID << "; ServerCmd: " << _attachment->m_serverCmd
-        << "; UserCmd: " << _attachment->m_userCmd << "; errorCode: " << _attachment->m_errorCode;
-    
+                 << "; UserCmd: " << _attachment->m_userCmd << "; errorCode: " << _attachment->m_errorCode;
+
     // In case of error we force the key update with a current value stored in a cache
     string value("");
     {
@@ -391,7 +391,7 @@ void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _va
             cmd.m_version = it->second;
         }
     }
-    
+
     {
         std::lock_guard<std::mutex> lock(m_putValueCacheMutex);
         m_putValueCache[_key] = _value;

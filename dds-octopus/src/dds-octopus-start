@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# Copyright 2016 GSI, Inc. All rights reserved.
+#
+#
+
+eval DDS_OCTOPUS_LOCATION="$DDS_LOCATION/tests/dds-octopus"
+
+usage() {
+    cat <<EOF
+DDS test utility
+   Copyright 2016 GSI, Inc. All rights reserved.
+
+Usage: $(basename $0) [OPTION]
+     -n 			Number of tasks to deploy.
+
+Report bugs to http://dds.gsi.de
+EOF
+}
+
+clean_up()
+{
+	dds-server stop
+	
+	exit $1
+}
+#=============================================================================
+# ***** OPTARG *****
+#=============================================================================
+NUMBER_OF_AGENT=0
+while getopts "h:n:" opt; do
+  case $opt in
+  	n)
+    	NUMBER_OF_AGENT=$OPTARG
+		;;
+  	h) 
+    usage
+    exit 0
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+
+if [ "$NUMBER_OF_AGENT" -eq 0]; then
+	echo "Error: Number of agents is required. Use -n X, where X is the desired number of agents."
+	exit 1
+fi
+
+echo "Starting DDS commander server..."
+dds-server start -s
+if (( $? != 0 )) ; then
+	echo "Failed to start DDS commander server. Exit code: $?"
+	clean_up 1
+fi
+
+echo "waiting for commander server to start..."
+dds-server status $> /dev/null
+COUNT=0
+# max 10 sec.
+MAX_COUNT=100
+while [ $? -ne 0 ]; do
+	if [ $COUNT -gt $MAX_COUNT ]; then
+		echo "Error: Timeout is reached."
+		clean_up 1
+	fi
+	sleep 0.1
+	COUNT=$(expr $COUNT + 1)
+	dds-server status $> /dev/null
+done
+dds-server status
+
+echo "Submitting [$NUMBER_OF_AGENT] agents..."
+dds-submit -r localhost -n $NUMBER_OF_AGENT
+if (( $? != 0 )) ; then
+	echo "Failed to submit agents. Exit code: $?"
+	clean_up 1
+fi
+
+COUNT=0
+# max 30 sec.
+MAX_COUNT=300
+AGENTS_COUNT=$(dds-info -n)
+while [ true ]; do
+	if [ $COUNT -gt $MAX_COUNT ]; then
+		echo "Error: Timeout is reached."
+		clean_up 1
+	fi
+	sleep 0.1
+	COUNT=$(expr $COUNT + 1)
+	AGENTS_COUNT=$(dds-info -n)
+	if [ $AGENTS_COUNT -eq $NUMBER_OF_AGENT ]; then
+		echo "Number of agents online: $AGENTS_COUNT"
+		break
+	fi
+done
+
+echo "Agents are ready."
+
+echo "Setting up the topology and activating it..."
+
+dds-topology --set octopus_topo_1.xml
+if (( $? != 0 )) ; then
+	echo "Failed to set topology. Exit code: $?"
+	clean_up 1
+fi
+
+dds-topology --activate 
+if (( $? != 0 )) ; then
+	echo "Failed to activate topology. Exit code: $?"
+	clean_up 1
+fi
+
+echo "START TEST"
+
+$DDS_OCTOPUS_LOCATION/dds-octopus -n 10
+
+clean_up 0

@@ -1,0 +1,15 @@
+<topology id="Tutorial2">
+	
+	<var id="nInstances" value="10" />
+	
+  	<decltask id="OctopusTask">
+		<exe reachable="false">$DDS_LOCATION/tests/dds-octopus/dds-octopus-task</exe>
+	</decltask>
+	
+	<main id="main">
+		<group id="GroupCustomCmd" n="${nInstances}">
+			<task>OctopusTask</task>
+		</group>
+	</main>
+	
+</topology>

@@ -40,7 +40,7 @@ namespace dds
         {
             // key -> SUpdateKeyCmd::version_t command
             typedef std::map<std::string, protocol_api::SUpdateKeyCmd::version_t> updateKeyCache_t;
-            
+
             // key -> value
             typedef std::map<std::string, std::string> putValueCache_t;
 
@@ -101,9 +101,9 @@ namespace dds
 
             updateKeyCache_t m_updateKeyCache; ///< Local cache of Update Key command
             std::mutex m_updateKeyCacheMutex;  ///< Mutex for local cache
-            
+
             putValueCache_t m_putValueCache; ///< Local cache for putValue
-            std::mutex m_putValueCacheMutex;  ///< Mutex for local cache
+            std::mutex m_putValueCacheMutex; ///< Mutex for local cache
 
             CSMAgentChannel::connectionPtr_t m_SMChannel; ///< Shared memory channel for comunication with DDS agent
 

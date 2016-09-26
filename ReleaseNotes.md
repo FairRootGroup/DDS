@@ -19,14 +19,17 @@ Added: Initial release. (GH-113)
 ### LSF plug-in
 Added: Initial release. (GH-148)   
 
-### dds_intercom_lib
+### dds\_intercom\_lib
 Added: reconnect if connection fails. (GH-138)
 Added: possibility to subscribe to the error messages.
 Added: new shared memory transport is used in dds_intercom_lib for key-value propagation and custom commands. (GH-129, GH-130, GH-131)
-Modified: Shared memory transport allows to improve the user API. DDS garantees that update key notification callback will be called on each update key or delete key command. Users are responsible to store the local cache for key-value if required. (GH-129, GH-130, GH-131)  
+Modified: Shared memory transport allows to improve the user API. DDS guarantees that update key notification callback will be called on each update key or delete key command. Users are responsible to store the local cache for key-value if required. (GH-129, GH-130, GH-131)  
 
 ### dds-topology
 Fixed: wrong dds-topology --stop output. (GH-146)   
+
+### dds-octopus    
+Added: Initial release. (GH-150)    
 
 ## v1.2 (2016-06-07)
 ###DDS common
