@@ -16,31 +16,32 @@ namespace dds
     /// \brief DDS intercom API
     ///
     /// \detail
-    /// Internally CKeyValue and CCustomCmd connect to the DDS service. In case of a problem they try to reconnect for 2
+    /// Internally CKeyValue and CCustomCmd use shared memory transport to talk to DDS agent.
+    /// CCustomCmd can also connect to DDS commander. In case of a problem it tries to reconnect for 2
     /// minutes and if not connected send an error with EErrorCode::ConnectionFailed error code. If none of the DDS
     /// services are running a different error is sent - EErrorCode::TransportServiceFailed. In the error message a
     /// detailed information is provided about what caused the error.
     /// In order to get an error messages from DDS one should subscribe using
-    /// CIntercomBase::subscribeOnError(errorSignal_t::slot_function_type _subscriber) function.
+    /// CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subscriber) function.
     ///
     namespace intercom_api
     {
         ///////////////////////////////////
-        // DDS intercom base
+        // DDS intercom service
         ///////////////////////////////////
-        class CIntercomBase
+        class CIntercomService
         {
           public:
-            typedef boost::signals2::connection connection_t;
-
+            /// \brief Subscribe on error messages from DDS intercom service
             void subscribeOnError(errorSignal_t::slot_function_type _subscriber);
+            /// \brief Start DDS service, i.e. receiving and sending messages.
             void start();
         };
 
         ///////////////////////////////////
         // DDS key-value
         ///////////////////////////////////
-        class CKeyValue : public CIntercomBase
+        class CKeyValue
         {
           public:
             /// \typedef Update key callback function
@@ -52,6 +53,7 @@ namespace dds
                 deleteSignal_t;
 
           public:
+            CKeyValue(CIntercomService& _service);
             ~CKeyValue();
 
           public:
@@ -59,12 +61,17 @@ namespace dds
             void subscribe(signal_t::slot_function_type _subscriber);
             void subscribeOnDelete(deleteSignal_t::slot_function_type _subscriber);
             void unsubscribe();
+
+          public:
+            CIntercomService& m_service; ///< Reference to intercom service. Internally we don't use this object. We
+                                         /// store the reference in order to keep the relation between CKeyValue and
+                                         /// CIntercomService.
         };
 
         ///////////////////////////////////
         // DDS custom commands
         ///////////////////////////////////
-        class CCustomCmd : public CIntercomBase
+        class CCustomCmd
         {
           public:
             /// \typedef Custom command cllback function
@@ -74,6 +81,7 @@ namespace dds
             typedef boost::signals2::signal<void(const std::string&)> replySignal_t;
 
           public:
+            CCustomCmd(CIntercomService& _service);
             ~CCustomCmd();
 
           public:
@@ -81,6 +89,11 @@ namespace dds
             void subscribe(signal_t::slot_function_type _subscriber);
             void subscribeOnReply(replySignal_t::slot_function_type _subscriber);
             void unsubscribe();
+
+          public:
+            CIntercomService& m_service; ///< Reference to intercom service. Internally we don't use this object. We
+                                         /// store the reference in order to keep the relation between CCustomCmd and
+                                         /// CIntercomService.
         };
 
         ///////////////////////////////////
@@ -261,7 +274,8 @@ namespace dds
 
             std::string m_id; ///< ID for communication with DDS commander (provided via constructor).
 
-            CCustomCmd m_customCmd; ///< Custom commands API which is used for communication with DDS commander.
+            CIntercomService m_service; ///< Intercom service.
+            CCustomCmd m_customCmd;     ///< Custom commands API which is used for communication with DDS commander.
         };
     }
 }

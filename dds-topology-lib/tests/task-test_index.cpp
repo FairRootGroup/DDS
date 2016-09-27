@@ -59,8 +59,9 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue keyValue;
-        keyValue.start();
+        CIntercomService service;
+        CKeyValue keyValue(service);
+        service.start();
 
         // Get environment variables
         // DDS_TASK_ID

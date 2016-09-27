@@ -49,14 +49,15 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue keyValue;
+        CIntercomService service;
+        CKeyValue keyValue(service);
         mutex keyMutex;
         condition_variable keyCondition;
         map<string, string> keyValueCache;
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        keyValue.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
+        service.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
             cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg << endl;
         });
 
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
             }
         });
 
-        keyValue.start();
+        service.start();
 
         // Wait for condition. We have to receive nInstances key-value updates.
         unique_lock<mutex> lock(keyMutex);

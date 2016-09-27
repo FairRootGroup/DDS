@@ -67,7 +67,8 @@ int main(int argc, char* argv[])
 
         LOG(info) << "Start task with type " << type;
 
-        CKeyValue keyValue;
+        CIntercomService service;
+        CKeyValue keyValue(service);
         mutex keyMutex;
         condition_variable keyCondition;
 
@@ -75,7 +76,7 @@ int main(int argc, char* argv[])
         string currentValue("0");
 
         // Subscribe on error events
-        keyValue.subscribeOnError([&keyCondition](EErrorCode _errorCode, const string& _msg) {
+        service.subscribeOnError([&keyCondition](EErrorCode _errorCode, const string& _msg) {
             LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
         });
 
@@ -106,7 +107,7 @@ int main(int argc, char* argv[])
         });
 
         // Start listening to events we have subscribed on
-        keyValue.start();
+        service.start();
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {

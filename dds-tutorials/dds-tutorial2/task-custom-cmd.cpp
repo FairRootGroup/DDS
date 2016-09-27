@@ -33,11 +33,12 @@ int main(int argc, char* argv[])
         bpo::notify(vm);
 
         // DDS custom command API
-        CCustomCmd customCmd;
+        CIntercomService service;
+        CCustomCmd customCmd(service);
 
         // Best practice is to subscribe on errors first, before doing any other function calls.
         // Otherwise there is a chance to miss some of the error messages from DDS.
-        customCmd.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
+        service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
             cout << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
         });
 
@@ -60,7 +61,7 @@ int main(int argc, char* argv[])
         // Subscribe on reply from DDS commander server
         customCmd.subscribeOnReply([](const string& _msg) { cout << "Received reply message: " << _msg << endl; });
 
-        customCmd.start();
+        service.start();
 
         // Emulate data procesing of the task
         const int n = 60;

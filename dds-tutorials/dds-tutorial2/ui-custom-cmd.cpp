@@ -37,11 +37,12 @@ int main(int argc, char* argv[])
         atomic<size_t> counterReplyMessages(0);
 
         // DDS custom command API
-        CCustomCmd customCmd;
+        CIntercomService service;
+        CCustomCmd customCmd(service);
 
         // Best practice is to subscribe on errors first, before doing any other function calls.
         // Otherwise there is a chance to miss some of the error messages from DDS.
-        customCmd.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
+        service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
             cout << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
         });
 
@@ -59,7 +60,7 @@ int main(int argc, char* argv[])
             counterReplyMessages++;
         });
 
-        customCmd.start();
+        service.start();
 
         while (true)
         {

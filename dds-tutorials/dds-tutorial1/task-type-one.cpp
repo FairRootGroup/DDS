@@ -51,11 +51,12 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue keyValue;
+        CIntercomService service;
+        CKeyValue keyValue(service);
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        keyValue.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
+        service.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
             cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg;
         });
 
@@ -67,7 +68,7 @@ int main(int argc, char* argv[])
         });
 
         // Start listening to key-value updates
-        keyValue.start();
+        service.start();
 
         // Put task index property
         keyValue.putValue(TaskIndexPropertyName, optTaskIndex);

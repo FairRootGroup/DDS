@@ -44,7 +44,8 @@ int main(int argc, char* argv[])
 
     try
     {
-        CCustomCmd customCmd;
+        CIntercomService service;
+        CCustomCmd customCmd(service);
         mutex replyMutex;
         condition_variable replyCondition;
 

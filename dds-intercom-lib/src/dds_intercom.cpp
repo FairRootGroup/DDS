@@ -12,12 +12,12 @@ using namespace dds::protocol_api;
 using namespace MiscCommon;
 using namespace std;
 
-void CIntercomBase::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
+void CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
 {
     connection_t connection = CDDSIntercomGuard::instance().connectError(_subscriber);
 }
 
-void CIntercomBase::start()
+void CIntercomService::start()
 {
     CDDSIntercomGuard::instance().start();
 }
@@ -25,6 +25,11 @@ void CIntercomBase::start()
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
+
+CKeyValue::CKeyValue(CIntercomService& _service)
+    : m_service(_service)
+{
+}
 
 CKeyValue::~CKeyValue()
 {
@@ -57,6 +62,11 @@ void CKeyValue::unsubscribe()
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
+
+CCustomCmd::CCustomCmd(CIntercomService& _service)
+    : m_service(_service)
+{
+}
 
 CCustomCmd::~CCustomCmd()
 {

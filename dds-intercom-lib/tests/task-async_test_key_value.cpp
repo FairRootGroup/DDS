@@ -50,7 +50,8 @@ int main(int argc, char* argv[])
             return false;
         }
 
-        CKeyValue keyValue;
+        CIntercomService service;
+        CKeyValue keyValue(service);
         mutex keyMutex;
         condition_variable keyCondition;
 
@@ -61,7 +62,7 @@ int main(int argc, char* argv[])
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        keyValue.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
+        service.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
             LOG(error) << "DDS key-value error code: " << _errorCode << ", message: " << _msg << endl;
         });
 
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
             }
         });
 
-        keyValue.start();
+        service.start();
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {
