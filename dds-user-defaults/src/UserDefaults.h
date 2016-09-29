@@ -38,8 +38,6 @@ namespace dds
             static std::string getDDSPath();
             std::string getServerInfoFileLocationSrv() const;
             std::string getServerInfoFileName() const;
-            std::string getAgentInfoFileName() const;
-            std::string getAgentInfoFileLocation() const;
             std::string getServerInfoFileLocation() const;
             std::string getWrkPkgDir() const;
             std::string getWrkPkgPath() const;

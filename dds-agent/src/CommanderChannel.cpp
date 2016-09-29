@@ -114,24 +114,11 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     // pid
     pid_t pid = getpid();
 
-    // UI port number
-    size_t nPort(0);
-    // Read server info file
-    const string sSrvCfg(CUserDefaults::instance().getAgentInfoFileLocation());
-    LOG(info) << "Reading server info from: " << sSrvCfg;
-    if (sSrvCfg.empty())
-        throw runtime_error("Cannot find agent info file.");
-
-    boost::property_tree::ptree pt;
-    boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
-    nPort = pt.get<size_t>("agent.port");
-
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);
     get_hostname(&cmd.m_host);
     cmd.m_version = PROJECT_VERSION_STRING;
     cmd.m_DDSPath = CUserDefaults::getDDSPath();
-    cmd.m_agentPort = nPort;
     cmd.m_agentPid = pid;
 
     // get worker ID

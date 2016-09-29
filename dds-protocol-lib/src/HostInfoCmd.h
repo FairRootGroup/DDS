@@ -20,7 +20,6 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SHostInfoCmd& val) const;
 
-            uint16_t m_agentPort;
             uint32_t m_agentPid;
             // milliseconds since 1970-01-01 00:00:00 UTC
             uint64_t m_submitTime;

@@ -231,16 +231,6 @@ string CUserDefaults::getServerInfoFileName() const
     return ("server_info.cfg");
 }
 
-string CUserDefaults::getAgentInfoFileName() const
-{
-    return ("agent_info.cfg");
-}
-
-string CUserDefaults::getAgentInfoFileLocation() const
-{
-    return (getDDSPath() + getAgentInfoFileName());
-}
-
 string CUserDefaults::getServerInfoFileLocation() const
 {
     const string sFileName(getServerInfoFileName());

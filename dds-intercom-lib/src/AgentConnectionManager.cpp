@@ -51,9 +51,6 @@ void CAgentConnectionManager::start()
     try
     {
         // Read server info file
-        // First check if agent info file exists.
-        // If it does not exist we take the commander server info file.
-        const string sAgentCfg(CUserDefaults::instance().getAgentInfoFileLocation());
         const string sCommanderCfg(CUserDefaults::instance().getServerInfoFileLocation());
         string sHost;
         string sPort;

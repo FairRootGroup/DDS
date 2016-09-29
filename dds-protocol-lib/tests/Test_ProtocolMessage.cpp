@@ -90,14 +90,13 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
 {
-    const unsigned int cmdSize = 65;
+    const unsigned int cmdSize = 63;
 
     SHostInfoCmd cmd;
     cmd.m_username = "username";
     cmd.m_host = "host.com";
     cmd.m_version = "1.0.0";
     cmd.m_DDSPath = "/Users/andrey/DDS";
-    cmd.m_agentPort = 20000;
     cmd.m_agentPid = 1111;
     cmd.m_submitTime = 23465677;
     cmd.m_workerId = "wn5";

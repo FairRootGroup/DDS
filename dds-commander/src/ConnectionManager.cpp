@@ -737,7 +737,6 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
         ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
            << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
            << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
-           << "\nAgent UI port: " << ptr->getRemoteHostInfo().m_agentPort
            << "\nAgent startup time: " << chrono::duration<double>(ptr->getStartupTime()).count() << " s"
            << "\nState: " << g_agentStates.at(ptr->getState()) << "\n"
            << "\nTask ID: " << sTaskName << "\n";
