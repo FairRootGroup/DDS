@@ -76,6 +76,7 @@ namespace dds
             void stopCondition();
 
             void start();
+            void stop();
 
             void initAgentConnection();
 

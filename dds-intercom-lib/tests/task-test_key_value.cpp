@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
                     counter++;
             }
 
-            if (counter == nInstances)
+            if (counter == nInstances * 5)
             {
                 keyCondition.notify_all();
             }
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         }
 
         // size_t sleepTime = (type == 0) ? 0 : 10;
-        // this_thread::sleep_for(chrono::seconds(sleepTime));
+        this_thread::sleep_for(chrono::seconds(10));
 
         LOG(info) << "Task successfully done";
     }

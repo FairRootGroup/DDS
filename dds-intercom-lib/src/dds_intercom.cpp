@@ -12,6 +12,11 @@ using namespace dds::protocol_api;
 using namespace MiscCommon;
 using namespace std;
 
+CIntercomService::~CIntercomService()
+{
+    CDDSIntercomGuard::instance().stop();
+}
+
 void CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
 {
     connection_t connection = CDDSIntercomGuard::instance().connectError(_subscriber);

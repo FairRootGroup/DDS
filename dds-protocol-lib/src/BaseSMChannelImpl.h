@@ -29,6 +29,9 @@
     friend protocol_api::CBaseSMChannelImpl<theClass>;                                    \
     void processMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) \
     {                                                                                     \
+        if (!m_started)                                                                   \
+            return;                                                                       \
+                                                                                          \
         using namespace dds;                                                              \
         using namespace dds::protocol_api;                                                \
         bool processed = true;                                                            \
@@ -175,7 +178,14 @@ namespace dds
 
             void stop()
             {
+                if (!m_started)
+                    return;
+
+                m_started = false;
+                sendYourselfShutdown();
+
                 m_io_service.stop();
+                m_workerThreads.join_all();
             }
 
             void removeMessageQueue()
@@ -236,6 +246,14 @@ namespace dds
             }
 
           private:
+            void sendYourselfShutdown()
+            {
+                // Send cmdSHUTDOWN with higher priority in order to stop read operation.
+                SEmptyCmd cmd;
+                CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd);
+                m_transportIn->send(msg->data(), msg->length(), 1);
+            }
+
             void readMessage()
             {
                 try
@@ -259,8 +277,16 @@ namespace dds
                         m_currentMsg->resize(receivedSize);
                         if (m_currentMsg->decode_header())
                         {
-                            // If the header is ok, process the body of the message
-                            processBody(receivedSize - CProtocolMessage::header_length);
+                            ECmdType currentCmd = static_cast<ECmdType>(m_currentMsg->header().m_cmd);
+                            if (currentCmd == cmdSHUTDOWN)
+                            {
+                                // Do not execute processBody which starts readMessage
+                            }
+                            else
+                            {
+                                // If the header is ok, process the body of the message
+                                processBody(receivedSize - CProtocolMessage::header_length);
+                            }
                         }
                         else
                         {
@@ -349,12 +375,14 @@ namespace dds
                 writeMessage();
             }
 
+          protected:
+            std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
+
           private:
-            messageQueuePtr_t m_transportIn;      ///< Input message queue, i.e. we read from this queue
-            messageQueuePtr_t m_transportOut;     ///< Output message queue, i.e. we write to this queue
-            boost::asio::io_service m_io_service; ///< IO service that is used as a thread pool
-            boost::thread_group m_workerThreads;  ///< Threads for IO service
-            bool m_started;                       ///< True if we were able to start the channel, False otherwise
+            messageQueuePtr_t m_transportIn;                     ///< Input message queue, i.e. we read from this queue
+            messageQueuePtr_t m_transportOut;                    ///< Output message queue, i.e. we write to this queue
+            boost::asio::io_service m_io_service;                ///< IO service that is used as a thread pool
+            boost::thread_group m_workerThreads;                 ///< Threads for IO service
             CProtocolMessage::protocolMessagePtr_t m_currentMsg; ///> Current message that we read and process
 
             std::string m_inputMessageQueueName;  ///< Input message queue name

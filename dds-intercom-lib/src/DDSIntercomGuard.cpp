@@ -120,6 +120,22 @@ void CDDSIntercomGuard::start()
     m_started = true;
 }
 
+void CDDSIntercomGuard::stop()
+{
+    if (!m_started)
+        return;
+
+    m_started = false;
+
+    disconnectCustomCmd();
+    disconnectKeyValue();
+
+    if (m_SMChannel != nullptr)
+    {
+        m_SMChannel->stop();
+    }
+}
+
 connection_t CDDSIntercomGuard::connectError(intercom_api::errorSignal_t::slot_function_type _subscriber)
 {
     return m_errorSignal.connect(_subscriber);
@@ -147,6 +163,7 @@ connection_t CDDSIntercomGuard::connectKeyValueDelete(keyValueDeleteSignal_t::sl
 
 void CDDSIntercomGuard::disconnectCustomCmd()
 {
+    // TODO: Thread safe disconnect?
     // disconnect custom command signals
     m_customCmdSignal.disconnect_all_slots();
     m_customCmdReplySignal.disconnect_all_slots();
@@ -155,6 +172,7 @@ void CDDSIntercomGuard::disconnectCustomCmd()
 
 void CDDSIntercomGuard::disconnectKeyValue()
 {
+    // TODO: Thread safe disconnect?
     // disconnect key-value signals
     m_keyValueUpdateSignal.disconnect_all_slots();
     m_errorSignal.disconnect_all_slots();

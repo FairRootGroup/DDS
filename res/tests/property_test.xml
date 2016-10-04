@@ -1,5 +1,5 @@
 <topology id="myTopology">
-	
+
 	<property id="property_1" />
 	<property id="property_2" />
 	<property id="property_3" />
@@ -10,11 +10,11 @@
 	<property id="property_8" />
 	<property id="property_9" />
 	<property id="property_10" />
-		
+
 	<!--declrequirement id="requirement1">
     	<hostPattern type="hostname" value="cbmmac001.gsi.de"/>
 	</declrequirement-->
-	
+
   	<decltask id="TestKeyValue0">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value -i 5 --max-value 10 -t 0 --test-errors</exe>
 		<!--requirement>requirement1</requirement-->
@@ -31,7 +31,7 @@
 			<id access="read">property_10</id>
 		</properties>
 	</decltask>
-	
+
   	<decltask id="TestKeyValue1">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value -i 5 --max-value 10 -t 1 --test-errors</exe>
 		<!--requirement>requirement1</requirement-->
@@ -48,12 +48,12 @@
 			<id access="write">property_10</id>
 		</properties>
 	</decltask>
-	
+
 	<main id="main">
 		<group id="group1" n="5">
 			<task>TestKeyValue0</task>
 			<task>TestKeyValue1</task>
 		</group>
 	</main>
-	
+
 </topology>
