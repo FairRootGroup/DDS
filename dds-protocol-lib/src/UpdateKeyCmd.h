@@ -13,6 +13,8 @@ namespace dds
     {
         struct SUpdateKeyCmd : public SBasicCmd<SUpdateKeyCmd>
         {
+            typedef uint32_t version_t;
+
             SUpdateKeyCmd();
             size_t size() const;
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
@@ -28,6 +30,7 @@ namespace dds
 
             std::string m_sKey;
             std::string m_sValue;
+            version_t m_version;
         };
         std::ostream& operator<<(std::ostream& _stream, const SUpdateKeyCmd& val);
         bool operator!=(const SUpdateKeyCmd& lhs, const SUpdateKeyCmd& rhs);

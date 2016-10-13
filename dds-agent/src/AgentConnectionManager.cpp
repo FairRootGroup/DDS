@@ -136,6 +136,17 @@ void CAgentConnectionManager::start()
         };
         m_agent->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
+        // Subscribe for key update errors
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+                           CCommanderChannel * _channel)>
+            fUPDATE_KEY_ERROR = [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+                                       CCommanderChannel* _channel) -> bool {
+            // TODO: adjust the algorithm if we would need to support several agents
+            // we have only one agent (newAgent) at the moment
+            return this->on_cmdUPDATE_KEY_ERROR(_attachment, m_agent);
+        };
+        m_agent->registerMessageHandler<cmdUPDATE_KEY_ERROR>(fUPDATE_KEY_ERROR);
+
         // Subscribe for key delete events
         std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
             fDELETE_KEY =
@@ -297,6 +308,15 @@ bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_
     return true;
 }
 
+bool CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+    CCommanderChannel::weakConnectionPtr_t _channel)
+{
+    // Forward message to user task
+    m_SMChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
+    return true;
+}
+
 bool CAgentConnectionManager::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
@@ -340,13 +360,8 @@ bool CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_
 bool CAgentConnectionManager::on_cmdUPDATE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    SUpdateKeyCmd cmd;
-    // Update key name with the task id
-    cmd.m_sKey = _attachment->m_sKey + "." + to_string(m_agent->getTaskID());
-    cmd.m_sValue = _attachment->m_sValue;
-
     // Forwared a message to the commander
-    m_agent->pushMsg<cmdUPDATE_KEY>(cmd);
+    m_agent->pushMsg<cmdUPDATE_KEY>(*_attachment);
     return true;
 }
 

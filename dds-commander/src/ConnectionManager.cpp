@@ -842,37 +842,39 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
     // Update key-value from commander's key-value manager
-    m_keyValueManager.updateKeyValue(*_attachment);
+    SUpdateKeyCmd serverCmd;
+    bool isUpdateOK = m_keyValueManager.updateKeyValue(*_attachment, serverCmd);
 
-    // If UI channel sends a property update than property key does not contain a hash.
-    // In this case each agent set the property key hash himself.
-    auto channelPtr = _channel.lock();
-    const bool sentFromUIChannel = (channelPtr->getChannelType() == EChannelType::UI);
-
-    string propertyID(_attachment->m_sKey);
-    if (!sentFromUIChannel)
+    // Key-value update was not possible
+    if (!isUpdateOK)
     {
-        // If we get property key from agent we have to parse it to get the property ID.
-        // propertyID.17621121989812
-        propertyID = _attachment->getPropertyID();
+        SUpdateKeyErrorCmd errorCmd;
+        errorCmd.m_serverCmd = serverCmd;
+        errorCmd.m_userCmd = *_attachment;
+        errorCmd.m_errorCode = EErrorCode::KeyValueVersionMismatch;
+
+        auto channelPtr = _channel.lock();
+        channelPtr->pushMsg<cmdUPDATE_KEY_ERROR>(errorCmd);
+
+        return true;
     }
+
+    auto channelPtr = _channel.lock();
+    string propertyID(_attachment->getPropertyID());
 
     // Check if the property has a write access to property.
     // If not just send back an error.
-    if (!sentFromUIChannel)
+    auto task = m_topo.getTaskByHash(channelPtr->getTaskID());
+    auto property = task->getProperty(propertyID);
+    if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
     {
-        auto task = m_topo.getTaskByHash(channelPtr->getTaskID());
-        auto property = task->getProperty(propertyID);
-        if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
-        {
-            stringstream ss;
-            if (property == nullptr)
-                ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task " << task->getId();
-            else
-                ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
-                   << task->getId();
-            channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
-        }
+        stringstream ss;
+        if (property == nullptr)
+            ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task " << task->getId();
+        else
+            ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
+               << task->getId();
+        channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
     }
 
     CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
@@ -904,27 +906,15 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 
             if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
             {
-                if (sentFromUIChannel)
+                if (ptr->getTaskID() != channelPtr->getTaskID())
                 {
-                    // If property changed from UI we have to change hash in the property key.
-                    SUpdateKeyCmd attachment(*_attachment);
-                    attachment.setKey(propertyID, ptr->getTaskID());
-                    ptr->pushMsg<cmdUPDATE_KEY>(attachment);
-                    LOG(info) << "Property update from UI channel: " << attachment.m_sKey;
-                }
-                else
-                {
-                    if (ptr->getTaskID() != channelPtr->getTaskID())
+                    auto task = m_topo.getTaskByHash(ptr->getTaskID());
+                    auto property = task->getProperty(propertyID);
+                    if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
+                                                property->getAccessType() == EPropertyAccessType::READWRITE))
                     {
-                        auto task = m_topo.getTaskByHash(ptr->getTaskID());
-                        auto property = task->getProperty(propertyID);
-                        if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
-                                                    property->getAccessType() == EPropertyAccessType::READWRITE))
-                        {
-                            // ptr->pushMsg<cmdUPDATE_KEY>(*_attachment);
-                            ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment);
-                            LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
-                        }
+                        ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment);
+                        LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
                     }
                 }
             }
@@ -933,13 +923,6 @@ bool CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 
     channelPtr->pushMsg<cmdSIMPLE_MSG>(
         SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::debug, cmdUPDATE_KEY));
-    // Shutdown the initial channel if it's an UI one
-    if (sentFromUIChannel)
-    {
-        LOG(debug) << "A key-value notification has been broadcasted:" << *_attachment
-                   << " There are no more requests from the UI channel, therefore shutting it down.";
-        channelPtr->pushMsg<cmdSHUTDOWN>();
-    }
 
     return true;
 }

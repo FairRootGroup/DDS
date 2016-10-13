@@ -55,7 +55,9 @@ BOOST_AUTO_TEST_CASE(test_dds_key_value_manager_1)
             cmd.m_sKey = ss.str();
             cmd.m_sValue = to_string(valueCounter);
 
-            kvm.updateKeyValue(cmd);
+            SUpdateKeyCmd serverCmd;
+
+            kvm.updateKeyValue(cmd, serverCmd);
 
             valueCounter++;
         }

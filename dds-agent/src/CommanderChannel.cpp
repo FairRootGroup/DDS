@@ -456,6 +456,13 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     return false;
 }
 
+bool CCommanderChannel::on_cmdUPDATE_KEY_ERROR(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
+{
+    LOG(debug) << "Received a key update error notifications: " << *_attachment;
+    return false;
+}
+
 bool CCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)
 {
     LOG(debug) << "Received a key delete notifications: " << *_attachment;

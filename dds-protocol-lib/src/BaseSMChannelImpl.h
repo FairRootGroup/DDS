@@ -63,15 +63,15 @@
         break;                                                                                                     \
     }
 
-#define END_SM_MSG_MAP()                                                                                      \
-    default:                                                                                                  \
-        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString(); \
-        }                                                                                                     \
-        }                                                                                                     \
-        catch (std::exception & _e)                                                                           \
-        {                                                                                                     \
-            LOG(MiscCommon::error) << "SMChannel processMessage: " << _e.what();                              \
-        }                                                                                                     \
+#define END_SM_MSG_MAP()                                                                                         \
+    default:                                                                                                     \
+        LOG(MiscCommon::error) << "The received SM message doesn't have a handler: " << _currentMsg->toString(); \
+        }                                                                                                        \
+        }                                                                                                        \
+        catch (std::exception & _e)                                                                              \
+        {                                                                                                        \
+            LOG(MiscCommon::error) << "SMChannel processMessage: " << _e.what();                                 \
+        }                                                                                                        \
         }
 
 namespace dds

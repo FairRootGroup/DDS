@@ -14,7 +14,8 @@ namespace dds
     /// a list of envioronment properties
     enum EEnvProp
     {
-        task_index, ///< associated with $DDS_TASK_INDEX environemnt variable.
+        task_id,    ///< associated with $DDS_TASK_ID environment variable.
+        task_index, ///< associated with $DDS_TASK_INDEX environment variable.
         task_name,  ///< associated with $DDS_TASK_NAME - ID of the task.
         task_path,  ///< associated with $DDS_TASK_PATH - full path to the user task, for example,
         /// main/group1/collection_12/task_3.
@@ -23,6 +24,43 @@ namespace dds
         group_name,       ///< associated with $DDS_GROUP_NAME - ID of the parent group.
         dds_location      ///< associated with $DDS_LOCATION  environemnt variable.
     };
+
+    /// \brief The function returns a value for a given environment property.
+    /// \brief Example Usage:
+    /// \code
+    /// #include "DDSEnvProp.h"
+    /// uint64_t val = env_prop<task_id>();
+    /// \endcode
+    /// \tparam T type one of the environment property listed in #EEnvProp.
+    /// \return a numeric value for a given environment property.
+    template <EEnvProp T>
+    inline typename std::enable_if<T == task_id, uint64_t>::type env_prop()
+    {
+        size_t ret(0);
+        std::string envName;
+        switch (T)
+        {
+            case task_id:
+                envName = "DDS_TASK_ID";
+                break;
+            default:
+                return 0;
+        }
+        const char* env = std::getenv(envName.c_str());
+        if (nullptr == env)
+            return ret;
+
+        try
+        {
+            ret = std::stoul(env);
+        }
+        catch (...)
+        {
+            return 0;
+        }
+
+        return ret;
+    }
 
     /// \brief The function returns a value for a given environment property.
     /// \brief Example Usage:

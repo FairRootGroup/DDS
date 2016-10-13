@@ -233,11 +233,13 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
 {
     const string sKey = "test_Key";
     const string sValue = "test_Value";
-    const unsigned int cmdSize = sKey.size() + sizeof(uint16_t) + sValue.size() + sizeof(uint16_t);
+    const unsigned int cmdSize =
+        sKey.size() + sizeof(uint16_t) + sValue.size() + sizeof(uint16_t) + sizeof(SUpdateKeyCmd::version_t);
 
     SUpdateKeyCmd cmd_src;
     cmd_src.m_sKey = sKey;
     cmd_src.m_sValue = sValue;
+    cmd_src.m_version = 11;
 
     TestCommand(cmd_src, cmdUPDATE_KEY, cmdSize);
 
@@ -256,6 +258,38 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
     cmd2.m_sKey = "property1.property1";
     BOOST_CHECK(cmd2.getPropertyID() == "property1");
     BOOST_CHECK(cmd2.getTaskID() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY_ERROR)
+{
+    const string sServerKey = "Server_Key";
+    const string sServerValue = "Server_Value";
+    const SUpdateKeyCmd::version_t serverVersion = 1;
+    const string sUserKey = "User_Key";
+    const string sUserValue = "User_Value";
+    const SUpdateKeyCmd::version_t userVersion = 3;
+    const uint16_t errorCode = 2;
+    const unsigned int cmdSize = sServerKey.size() + sizeof(uint16_t) + sServerValue.size() + sizeof(uint16_t) +
+                                 sizeof(SUpdateKeyCmd::version_t) + sUserKey.size() + sizeof(uint16_t) +
+                                 sUserValue.size() + sizeof(uint16_t) + sizeof(SUpdateKeyCmd::version_t) +
+                                 sizeof(uint16_t);
+
+    SUpdateKeyCmd serverCmd;
+    serverCmd.m_sKey = sServerKey;
+    serverCmd.m_sValue = sServerValue;
+    serverCmd.m_version = serverVersion;
+
+    SUpdateKeyCmd userCmd;
+    userCmd.m_sKey = sUserKey;
+    userCmd.m_sValue = sUserValue;
+    userCmd.m_version = userVersion;
+
+    SUpdateKeyErrorCmd cmd_src;
+    cmd_src.m_serverCmd = serverCmd;
+    cmd_src.m_userCmd = userCmd;
+    cmd_src.m_errorCode = errorCode;
+
+    TestCommand(cmd_src, cmdUPDATE_KEY_ERROR, cmdSize);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdDELETE_KEY)

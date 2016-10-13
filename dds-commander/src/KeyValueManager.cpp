@@ -28,11 +28,20 @@ SKeyValueRecord::~SKeyValueRecord()
 {
 }
 
-void SKeyValueRecord::updateKeyValue(const SUpdateKeyCmd& _cmd)
+bool SKeyValueRecord::updateKeyValue(const SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd)
 {
     lock_guard<mutex> lock(m_mutex);
 
-    m_keyValue = _cmd;
+    // Check version and if it is correct update key-value record and increase the record's current version
+    bool isVersionOK = m_keyValue.m_version == _cmd.m_version;
+    if (isVersionOK)
+    {
+        m_keyValue = _cmd;
+        m_keyValue.m_version++;
+    }
+    _serverCmd = m_keyValue;
+
+    return isVersionOK;
 }
 
 void SKeyValueRecord::deleteKeyValue()
@@ -68,7 +77,7 @@ void SPropertyRecord::addKeyValueRecord(uint64_t _taskID, SKeyValueRecord::ptr_t
     m_taskMap.insert(pair<uint64_t, SKeyValueRecord::ptr_t>(_taskID, _keyValueRecord));
 }
 
-void SPropertyRecord::updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd)
+bool SPropertyRecord::updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, SUpdateKeyCmd& _serverCmd)
 {
     uint64_t taskID = _cmd.getTaskID();
 
@@ -76,9 +85,9 @@ void SPropertyRecord::updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd)
     if (it == m_taskMap.end())
     {
         LOG(fatal) << "SPropertyRecord: Key-value update failed because property doesn't exists in the container.";
-        return;
+        return false;
     }
-    it->second->updateKeyValue(_cmd);
+    return it->second->updateKeyValue(_cmd, _serverCmd);
 }
 
 std::string SPropertyRecord::getKeyValueString() const
@@ -174,7 +183,7 @@ void CKeyValueManager::initWithTopology(const CTopology& _topology)
     }
 }
 
-void CKeyValueManager::updateKeyValue(const SUpdateKeyCmd& _cmd)
+bool CKeyValueManager::updateKeyValue(const SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd)
 {
     string propertyID = _cmd.getPropertyID();
 
@@ -182,9 +191,9 @@ void CKeyValueManager::updateKeyValue(const SUpdateKeyCmd& _cmd)
     if (it == m_propertyMap.end())
     {
         LOG(fatal) << "CKeyValueManager: Key-value update failed because property doesn't exists in the container.";
-        return;
+        return false;
     }
-    it->second->updateKeyValue(_cmd);
+    return it->second->updateKeyValue(_cmd, _serverCmd);
 }
 
 void CKeyValueManager::deleteKeyValue(uint64_t _taskID)

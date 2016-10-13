@@ -40,7 +40,7 @@ namespace dds
             SKeyValueRecord();
             ~SKeyValueRecord();
 
-            void updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd);
+            bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
             void deleteKeyValue();
             std::string getKeyValueString() const;
 
@@ -73,7 +73,7 @@ namespace dds
 
             void addKeyValueRecord(uint64_t _taskID, SKeyValueRecord::ptr_t _keyValueRecord);
 
-            void updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd);
+            bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
 
             std::string getKeyValueString() const;
 
@@ -109,7 +109,7 @@ namespace dds
             ~CKeyValueManager();
 
             void initWithTopology(const topology_api::CTopology& _topology);
-            void updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd);
+            bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
             void deleteKeyValue(uint64_t _taskID);
 
             std::string getKeyValueString(const std::string _propertyID) const;

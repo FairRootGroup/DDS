@@ -1,47 +1,48 @@
 CKeyValueManager
 [Property map]
    property1 --> SPropertyRecord
-   12537218845274766263 --> SKeyValueRecord cmd: key: property1.12537218845274766263 Value: 0 deleted: 1
-   12636888823021649262 --> SKeyValueRecord cmd: key: property1.12636888823021649262 Value: 6 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property1.12636888823092879577 Value: 10 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property1.12636888823235353527 Value: 14 deleted: 0
+   12537218845274766263 --> SKeyValueRecord cmd: key: property1.12537218845274766263 value: 0 version: 1 deleted: 1
+   12636888823021649262 --> SKeyValueRecord cmd: key: property1.12636888823021649262 value: 6 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property1.12636888823092879577 value: 10 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property1.12636888823235353527 value: 14 version: 1 deleted: 0
 
    property2 --> SPropertyRecord
-   12537218845274766263 --> SKeyValueRecord cmd: key: property2.12537218845274766263 Value: 1 deleted: 1
-   12636888823021649262 --> SKeyValueRecord cmd: key: property2.12636888823021649262 Value: 7 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property2.12636888823092879577 Value: 11 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property2.12636888823235353527 Value: 15 deleted: 0
+   12537218845274766263 --> SKeyValueRecord cmd: key: property2.12537218845274766263 value: 1 version: 1 deleted: 1
+   12636888823021649262 --> SKeyValueRecord cmd: key: property2.12636888823021649262 value: 7 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property2.12636888823092879577 value: 11 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property2.12636888823235353527 value: 15 version: 1 deleted: 0
 
    property3 --> SPropertyRecord
-   12542019014580145518 --> SKeyValueRecord cmd: key: property3.12542019014580145518 Value: 2 deleted: 0
-   12542019014659903705 --> SKeyValueRecord cmd: key: property3.12542019014659903705 Value: 4 deleted: 0
-   12636888823021649262 --> SKeyValueRecord cmd: key: property3.12636888823021649262 Value: 8 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property3.12636888823092879577 Value: 12 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property3.12636888823235353527 Value: 16 deleted: 0
+   12542019014580145518 --> SKeyValueRecord cmd: key: property3.12542019014580145518 value: 2 version: 1 deleted: 0
+   12542019014659903705 --> SKeyValueRecord cmd: key: property3.12542019014659903705 value: 4 version: 1 deleted: 0
+   12636888823021649262 --> SKeyValueRecord cmd: key: property3.12636888823021649262 value: 8 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property3.12636888823092879577 value: 12 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property3.12636888823235353527 value: 16 version: 1 deleted: 0
 
    property4 --> SPropertyRecord
-   12542019014580145518 --> SKeyValueRecord cmd: key: property4.12542019014580145518 Value: 3 deleted: 0
-   12542019014659903705 --> SKeyValueRecord cmd: key: property4.12542019014659903705 Value: 5 deleted: 0
-   12636888823021649262 --> SKeyValueRecord cmd: key: property4.12636888823021649262 Value: 9 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property4.12636888823092879577 Value: 13 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property4.12636888823235353527 Value: 17 deleted: 0
+   12542019014580145518 --> SKeyValueRecord cmd: key: property4.12542019014580145518 value: 3 version: 1 deleted: 0
+   12542019014659903705 --> SKeyValueRecord cmd: key: property4.12542019014659903705 value: 5 version: 1 deleted: 0
+   12636888823021649262 --> SKeyValueRecord cmd: key: property4.12636888823021649262 value: 9 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property4.12636888823092879577 value: 13 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property4.12636888823235353527 value: 17 version: 1 deleted: 0
 
 [Task map]
-   12537218845274766263 --> SKeyValueRecord cmd: key: property1.12537218845274766263 Value: 0 deleted: 1
-   12537218845274766263 --> SKeyValueRecord cmd: key: property2.12537218845274766263 Value: 1 deleted: 1
-   12542019014580145518 --> SKeyValueRecord cmd: key: property3.12542019014580145518 Value: 2 deleted: 0
-   12542019014580145518 --> SKeyValueRecord cmd: key: property4.12542019014580145518 Value: 3 deleted: 0
-   12542019014659903705 --> SKeyValueRecord cmd: key: property3.12542019014659903705 Value: 4 deleted: 0
-   12542019014659903705 --> SKeyValueRecord cmd: key: property4.12542019014659903705 Value: 5 deleted: 0
-   12636888823021649262 --> SKeyValueRecord cmd: key: property1.12636888823021649262 Value: 6 deleted: 0
-   12636888823021649262 --> SKeyValueRecord cmd: key: property2.12636888823021649262 Value: 7 deleted: 0
-   12636888823021649262 --> SKeyValueRecord cmd: key: property3.12636888823021649262 Value: 8 deleted: 0
-   12636888823021649262 --> SKeyValueRecord cmd: key: property4.12636888823021649262 Value: 9 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property1.12636888823092879577 Value: 10 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property2.12636888823092879577 Value: 11 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property3.12636888823092879577 Value: 12 deleted: 0
-   12636888823092879577 --> SKeyValueRecord cmd: key: property4.12636888823092879577 Value: 13 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property1.12636888823235353527 Value: 14 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property2.12636888823235353527 Value: 15 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property3.12636888823235353527 Value: 16 deleted: 0
-   12636888823235353527 --> SKeyValueRecord cmd: key: property4.12636888823235353527 Value: 17 deleted: 0
+   12537218845274766263 --> SKeyValueRecord cmd: key: property1.12537218845274766263 value: 0 version: 1 deleted: 1
+   12537218845274766263 --> SKeyValueRecord cmd: key: property2.12537218845274766263 value: 1 version: 1 deleted: 1
+   12542019014580145518 --> SKeyValueRecord cmd: key: property3.12542019014580145518 value: 2 version: 1 deleted: 0
+   12542019014580145518 --> SKeyValueRecord cmd: key: property4.12542019014580145518 value: 3 version: 1 deleted: 0
+   12542019014659903705 --> SKeyValueRecord cmd: key: property3.12542019014659903705 value: 4 version: 1 deleted: 0
+   12542019014659903705 --> SKeyValueRecord cmd: key: property4.12542019014659903705 value: 5 version: 1 deleted: 0
+   12636888823021649262 --> SKeyValueRecord cmd: key: property1.12636888823021649262 value: 6 version: 1 deleted: 0
+   12636888823021649262 --> SKeyValueRecord cmd: key: property2.12636888823021649262 value: 7 version: 1 deleted: 0
+   12636888823021649262 --> SKeyValueRecord cmd: key: property3.12636888823021649262 value: 8 version: 1 deleted: 0
+   12636888823021649262 --> SKeyValueRecord cmd: key: property4.12636888823021649262 value: 9 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property1.12636888823092879577 value: 10 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property2.12636888823092879577 value: 11 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property3.12636888823092879577 value: 12 version: 1 deleted: 0
+   12636888823092879577 --> SKeyValueRecord cmd: key: property4.12636888823092879577 value: 13 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property1.12636888823235353527 value: 14 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property2.12636888823235353527 value: 15 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property3.12636888823235353527 value: 16 version: 1 deleted: 0
+   12636888823235353527 --> SKeyValueRecord cmd: key: property4.12636888823235353527 value: 17 version: 1 deleted: 0
+   

@@ -39,6 +39,9 @@ namespace dds
                                 CCommanderChannel::weakConnectionPtr_t _channel);
             bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   CCommanderChannel::weakConnectionPtr_t _channel);
+            bool on_cmdUPDATE_KEY_ERROR(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+                CCommanderChannel::weakConnectionPtr_t _channel);
             bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment,
                                   CCommanderChannel::weakConnectionPtr_t _channel);
             bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,

@@ -19,6 +19,14 @@ bool CSMAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::pt
     return false;
 }
 
+bool CSMAgentChannel::on_cmdUPDATE_KEY_ERROR(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
+{
+    LOG(debug) << "Update key error message received: " << *_attachment;
+
+    return false;
+}
+
 bool CSMAgentChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)
 {
     LOG(debug) << "Delete key message received: " << *_attachment;

@@ -91,6 +91,17 @@ int main(int argc, char* argv[])
             }
         });
 
+        keyValue.subscribeOnError([&keyValue](const std::string& _propertyID,
+                                              const std::string& _key,
+                                              const std::string& _serverValue,
+                                              const std::string& _userValue,
+                                              EErrorCode _errorCode) {
+            LOG(info) << "Key-value update error: propertyID: " << _propertyID << " key: " << _key
+                      << " serverValue: " << _serverValue << " userValue: " << _userValue
+                      << " errorCode: " << _errorCode;
+            keyValue.putValue(_propertyID, _userValue);
+        });
+
         service.start();
 
         for (size_t i = 0; i < nMaxValue; ++i)
