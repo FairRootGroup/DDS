@@ -50,13 +50,7 @@ namespace dds
             typedef boost::signals2::signal<void(
                 const std::string& /*_propertyID*/, const std::string& /*_key*/, const std::string& /*_value*/)>
                 signal_t;
-            /// \typedef Update key error callback function
-            typedef boost::signals2::signal<void(const std::string& /*_propertyID*/,
-                                                 const std::string& /*_key*/,
-                                                 const std::string& /*_serverValue*/,
-                                                 const std::string& /*_userValue*/,
-                                                 EErrorCode /*_errorCode*/)>
-                errorSignal_t;
+
             /// \typedef Delete key callback function
             typedef boost::signals2::signal<void(const std::string& /*_propertyID*/, const std::string& /*_key*/)>
                 deleteSignal_t;
@@ -68,7 +62,6 @@ namespace dds
           public:
             void putValue(const std::string& _key, const std::string& _value);
             void subscribe(signal_t::slot_function_type _subscriber);
-            void subscribeOnError(errorSignal_t::slot_function_type _subscriber);
             void subscribeOnDelete(deleteSignal_t::slot_function_type _subscriber);
             void unsubscribe();
 

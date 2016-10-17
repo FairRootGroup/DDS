@@ -101,17 +101,6 @@ int main(int argc, char* argv[])
             }
         });
 
-        keyValue.subscribeOnError([&keyValue](const std::string& _propertyID,
-                                              const std::string& _key,
-                                              const std::string& _serverValue,
-                                              const std::string& _userValue,
-                                              EErrorCode _errorCode) {
-            LOG(info) << "Key-value update error: propertyID: " << _propertyID << " key: " << _key
-                      << " serverValue: " << _serverValue << " userValue: " << _userValue
-                      << " errorCode: " << _errorCode;
-            keyValue.putValue(_propertyID, _userValue);
-        });
-
         // Subscribe on delete key notifications
         keyValue.subscribeOnDelete([](const string& _propertyID, const string& _key) {
             LOG(info) << "Delete key notification received for key " << _key;

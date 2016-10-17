@@ -164,11 +164,6 @@ connection_t CDDSIntercomGuard::connectKeyValue(keyValueSignal_t::slot_function_
     return m_keyValueUpdateSignal.connect(_subscriber);
 }
 
-connection_t CDDSIntercomGuard::connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber)
-{
-    return m_keyValueUpdateErrorSignal.connect(_subscriber);
-}
-
 connection_t CDDSIntercomGuard::connectKeyValueDelete(keyValueDeleteSignal_t::slot_function_type _subscriber)
 {
     return m_keyValueDeleteSignal.connect(_subscriber);
@@ -188,38 +183,27 @@ void CDDSIntercomGuard::disconnectKeyValue()
     // TODO: Thread safe disconnect?
     // disconnect key-value signals
     m_keyValueUpdateSignal.disconnect_all_slots();
-    m_keyValueUpdateErrorSignal.disconnect_all_slots();
     m_errorSignal.disconnect_all_slots();
 }
 
-bool CDDSIntercomGuard::updateCacheIfNeeded(const SUpdateKeyCmd& _cmd,
-                                            string& _propertyID,
-                                            SUpdateKeyCmd::version_t& _currentVersion)
+bool CDDSIntercomGuard::updateCacheIfNeeded(const SUpdateKeyCmd& _cmd)
 {
     bool isVersionOK(true);
-    _currentVersion = 0;
-    _propertyID = _cmd.getPropertyID();
     {
         std::lock_guard<std::mutex> lock(m_updateKeyCacheMutex);
 
         // Check if version in the attachment is more than the version in the cache.
         // If this is true than we update cache and call user's callback, otherwise not.
-        auto it_prop = m_updateKeyCache.find(_propertyID);
-        if (it_prop != m_updateKeyCache.end())
+        auto it = m_updateKeyCache.find(_cmd.m_sKey);
+        if (it != m_updateKeyCache.end())
         {
-            auto it_att = it_prop->second.find(_cmd.m_sKey);
-            if (it_att != it_prop->second.end())
-            {
-                _currentVersion = it_att->second;
-                isVersionOK = (_currentVersion < _cmd.m_version);
-            }
+            isVersionOK = (it->second < _cmd.m_version);
         }
 
         if (isVersionOK)
         {
-            // TODO: do we need to store copy? or we can store shared ptr?
             // Version is correct - update local key-value cache
-            m_updateKeyCache[_propertyID][_cmd.m_sKey] = _cmd.m_version;
+            m_updateKeyCache[_cmd.m_sKey] = _cmd.m_version;
         }
     }
     return isVersionOK;
@@ -229,9 +213,8 @@ bool CDDSIntercomGuard::updateCacheIfNeeded(const SUpdateKeyCmd& _cmd,
 bool CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    SUpdateKeyCmd::version_t currentVersion(0);
-    string propertyID("");
-    bool isVersionOK = updateCacheIfNeeded(*_attachment, propertyID, currentVersion);
+    string propertyID(_attachment->getPropertyID());
+    bool isVersionOK = updateCacheIfNeeded(*_attachment);
 
     // Version is correct - call user's callback
     if (isVersionOK)
@@ -241,7 +224,7 @@ bool CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
     else
     {
         LOG(warning) << "Cache not updated. Version mismatch for key " << _attachment->m_sKey
-                     << ": current version: " << currentVersion << " update version: " << _attachment->m_version;
+                     << "; update version: " << _attachment->m_version;
     }
 
     return true;
@@ -250,19 +233,24 @@ bool CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
 bool CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
 {
-    SUpdateKeyCmd::version_t currentVersion(0);
-    string propertyID("");
-    bool isVersionOK = updateCacheIfNeeded(_attachment->m_serverCmd, propertyID, currentVersion);
-
-    m_keyValueUpdateErrorSignal(propertyID,
-                                _attachment->m_serverCmd.m_sKey,
-                                _attachment->m_serverCmd.m_sValue,
-                                _attachment->m_userCmd.m_sValue,
-                                (intercom_api::EErrorCode)_attachment->m_errorCode);
+    string propertyID(_attachment->m_serverCmd.getPropertyID());
+    bool isVersionOK = updateCacheIfNeeded(_attachment->m_serverCmd);
+    
     if (!isVersionOK)
     {
-        LOG(warning) << "Cache not updated. Current version: " << currentVersion << "; Attachment: " << *_attachment;
+        LOG(warning) << "Cache not updated. Attachment: " << *_attachment;
     }
+    
+    LOG(warning) << "Key-value update error: propertyID: " << propertyID << "; ServerCmd: " << _attachment->m_serverCmd
+        << "; UserCmd: " << _attachment->m_userCmd << "; errorCode: " << _attachment->m_errorCode;
+    
+    // In case of error we force the key update with a current value stored in a cache
+    string value("");
+    {
+        std::lock_guard<std::mutex> lock(m_putValueCacheMutex);
+        value = m_putValueCache[propertyID];
+    }
+    putValue(propertyID, value);
 
     return true;
 }
@@ -273,11 +261,7 @@ bool CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
     string propertyID = _attachment->getPropertyID();
     {
         std::lock_guard<std::mutex> lock(m_updateKeyCacheMutex);
-        auto iter = m_updateKeyCache.find(propertyID);
-        if (iter != m_updateKeyCache.end())
-        {
-            iter->second.erase(_attachment->m_sKey);
-        }
+        m_updateKeyCache.erase(_attachment->m_sKey);
     }
 
     m_keyValueDeleteSignal(propertyID, _attachment->m_sKey);
@@ -401,15 +385,16 @@ void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _va
         std::lock_guard<std::mutex> lock(m_updateKeyCacheMutex);
 
         // Get current version from cache if it exists
-        auto it_prop = m_updateKeyCache.find(_key);
-        if (it_prop != m_updateKeyCache.end())
+        auto it = m_updateKeyCache.find(cmd.m_sKey);
+        if (it != m_updateKeyCache.end())
         {
-            auto it_att = it_prop->second.find(cmd.m_sKey);
-            if (it_att != it_prop->second.end())
-            {
-                cmd.m_version = it_att->second;
-            }
+            cmd.m_version = it->second;
         }
+    }
+    
+    {
+        std::lock_guard<std::mutex> lock(m_putValueCacheMutex);
+        m_putValueCache[_key] = _value;
     }
 
     m_SMChannel->pushMsg<cmdUPDATE_KEY>(cmd);

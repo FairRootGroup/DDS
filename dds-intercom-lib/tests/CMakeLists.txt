@@ -55,28 +55,6 @@ target_include_directories(task-test_key_value
 
 install(TARGETS task-test_key_value DESTINATION tests)
 
-##################################################################
-# task-async_test_key_value.cpp
-##################################################################
-
-set( KV_ASYNC_TEST_APP_SOURCE_FILES
-	./task-async_test_key_value.cpp
-)
-
-add_executable(task-async_test_key_value ${KV_ASYNC_TEST_APP_SOURCE_FILES})
-
-target_link_libraries (
-	task-async_test_key_value
-	dds_intercom_lib
-)
-
-target_include_directories(task-async_test_key_value
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
-)
-
-install(TARGETS task-async_test_key_value DESTINATION tests)
-
 
 install(FILES ${dds_intercom_lib-tests_SOURCE_DIR}/topo_test_key-value-1.xml DESTINATION tests)
 install(FILES ${dds_intercom_lib-tests_SOURCE_DIR}/topo_test_key-value-2.xml DESTINATION tests)

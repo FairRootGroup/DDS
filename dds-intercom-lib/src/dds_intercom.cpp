@@ -52,12 +52,6 @@ void CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
     LOG(info) << "User process is waiting for property keys updates.";
 }
 
-void CKeyValue::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
-{
-    connection_t connection = CDDSIntercomGuard::instance().connectKeyValueError(_subscriber);
-    LOG(info) << "User process is waiting for property keys update errors.";
-}
-
 void CKeyValue::subscribeOnDelete(deleteSignal_t::slot_function_type _subscriber)
 {
     connection_t connection = CDDSIntercomGuard::instance().connectKeyValueDelete(_subscriber);

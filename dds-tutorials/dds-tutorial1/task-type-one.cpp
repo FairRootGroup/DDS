@@ -67,16 +67,6 @@ int main(int argc, char* argv[])
             keyCondition.notify_all();
         });
 
-        keyValue.subscribeOnError([&keyValue](const std::string& _propertyID,
-                                              const std::string& _key,
-                                              const std::string& _serverValue,
-                                              const std::string& _userValue,
-                                              EErrorCode _errorCode) {
-            cout << "Key-value update error: propertyID: " << _propertyID << " key: " << _key
-                 << " serverValue: " << _serverValue << " userValue: " << _userValue << " errorCode: " << _errorCode;
-            keyValue.putValue(_propertyID, _userValue);
-        });
-
         // Start listening to key-value updates
         service.start();
 

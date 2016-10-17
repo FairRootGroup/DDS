@@ -23,8 +23,7 @@ Added: Initial release. (GH-148)
 Added: reconnect if connection fails. (GH-138)
 Added: possibility to subscribe to the error messages.
 Added: new shared memory transport is used in dds_intercom_lib for key-value propagation and custom commands. (GH-129, GH-130, GH-131)
-Modified: Shared memory transport allows to improve the user API. DDS garantees that update key notification callback will be called on each update key or delete key command. Users are responsible to store the local cache for key-value if required. (GH-129, GH-130, GH-131)
-Modified: key-value interface is adapted for versioning: it is possible to subscribe to key-value update errors. (GH-131)    
+Modified: Shared memory transport allows to improve the user API. DDS garantees that update key notification callback will be called on each update key or delete key command. Users are responsible to store the local cache for key-value if required. (GH-129, GH-130, GH-131)  
 
 ### dds-topology
 Fixed: wrong dds-topology --stop output. (GH-146)   

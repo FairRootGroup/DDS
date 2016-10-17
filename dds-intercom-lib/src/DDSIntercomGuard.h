@@ -23,19 +23,12 @@ namespace dds
         typedef boost::signals2::signal<void(
             const std::string& /*_propertyID*/, const std::string& /*_key*/, const std::string& /*_value*/)>
             keyValueSignal_t;
-        /// \typedef Update key error callback function
-        typedef boost::signals2::signal<void(const std::string& /*_propertyID*/,
-                                             const std::string& /*_key*/,
-                                             const std::string& /*_serverValue*/,
-                                             const std::string& /*_userValue*/,
-                                             intercom_api::EErrorCode /*_errorCode*/)>
-            keyValueErrorSignal_t;
         /// \typedef Delete key callback function
         typedef boost::signals2::signal<void(const std::string& /*_propertyID*/, const std::string& /*_key*/)>
             keyValueDeleteSignal_t;
 
         // Custom command typeы
-        /// \typedef Custom command cllback function
+        /// \typedef Custom command callback function
         typedef boost::signals2::signal<void(
             const std::string& /*_command*/, const std::string& /*_condition*/, uint64_t /*_senderID*/)>
             customCmdSignal_t;
@@ -45,9 +38,11 @@ namespace dds
 
         class CDDSIntercomGuard
         {
-            // key -> SUpdateKeyCmd command
-            typedef std::map<std::string, std::map<std::string, protocol_api::SUpdateKeyCmd::version_t>>
-                updateKeyCache_t;
+            // key -> SUpdateKeyCmd::version_t command
+            typedef std::map<std::string, protocol_api::SUpdateKeyCmd::version_t> updateKeyCache_t;
+            
+            // key -> value
+            typedef std::map<std::string, std::string> putValueCache_t;
 
           private:
             CDDSIntercomGuard();
@@ -60,14 +55,11 @@ namespace dds
             connection_t connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber);
             connection_t connectCustomCmdReply(customCmdReplySignal_t::slot_function_type _subscriber);
             connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
-            connection_t connectKeyValueError(keyValueErrorSignal_t::slot_function_type _subscriber);
             connection_t connectKeyValueDelete(keyValueDeleteSignal_t::slot_function_type _subscriber);
             void disconnectCustomCmd();
             void disconnectKeyValue();
 
-            bool updateCacheIfNeeded(const protocol_api::SUpdateKeyCmd& _cmd,
-                                     std::string& _propertyID,
-                                     protocol_api::SUpdateKeyCmd::version_t& _currentVersion);
+            bool updateCacheIfNeeded(const protocol_api::SUpdateKeyCmd& _cmd);
 
             // Messages from shared memory
             bool on_cmdUPDATE_KEY_SM(
@@ -99,7 +91,6 @@ namespace dds
             // Signals for subscriptions
             intercom_api::errorSignal_t m_errorSignal;
             keyValueSignal_t m_keyValueUpdateSignal;
-            keyValueErrorSignal_t m_keyValueUpdateErrorSignal;
             keyValueDeleteSignal_t m_keyValueDeleteSignal;
             customCmdSignal_t m_customCmdSignal;
             customCmdReplySignal_t m_customCmdReplySignal;
@@ -110,6 +101,9 @@ namespace dds
 
             updateKeyCache_t m_updateKeyCache; ///< Local cache of Update Key command
             std::mutex m_updateKeyCacheMutex;  ///< Mutex for local cache
+            
+            putValueCache_t m_putValueCache; ///< Local cache for putValue
+            std::mutex m_putValueCacheMutex;  ///< Mutex for local cache
 
             CSMAgentChannel::connectionPtr_t m_SMChannel; ///< Shared memory channel for comunication with DDS agent
 
