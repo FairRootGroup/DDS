@@ -363,18 +363,17 @@ message( STATUS "Using BOOST Library dir: " ${DDS_BOOST_LIB_DIR})
 
 if(APPLE)
      set( lib_cmd "bash" )
-     set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-     set( lib_cmd_args_cpp "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep libstdc++ | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+     set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \;  sub(\"@loader_path\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+     set( lib_cmd_args_cpp "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep libstdc++ | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #1): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
      # the log library needs a special handling as it depends on many other boost libraries
-     set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-	 set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@loader_path\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-   elseif(UNIX)
+     set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \;  sub(\"@loader_path\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #2): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+elseif(UNIX)
      set( lib_cmd "bash" )
-     set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-     set( lib_cmd_args_cpp "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep libstdc++ | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+     set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #3): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+     set( lib_cmd_args_cpp "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep libstdc++ | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #4): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
      # the log library needs a special handling as it depends on many other boost libraries
-     set( lib_cmd_args_log "-c" "ldd ${Boost_LOG_LIBRARY} | grep -E 'boost|icu' | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-   endif(APPLE)
+     set( lib_cmd_args_log "-c" "ldd ${Boost_LOG_LIBRARY} | grep -E 'boost|icu' | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #5): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
+endif(APPLE)
 
    add_custom_target( wn_bin
                       # TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
