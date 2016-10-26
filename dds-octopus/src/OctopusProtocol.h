@@ -14,87 +14,59 @@ namespace dds
 {
     namespace dds_octopus
     {
+        template <class T>
+        struct SOctopusProtocol_KeyValueImpl
+        {
+            void init(const boost::property_tree::ptree& _pt)
+            {
+                T* pThis = static_cast<T*>(this);
+                m_sVal = _pt.get<std::string>(pThis->class_name(), "");
+            }
+
+            void get(boost::property_tree::ptree* _pt)
+            {
+                if (!_pt)
+                    return;
+
+                T* pThis = static_cast<T*>(this);
+                _pt->put(pThis->class_name(), m_sVal);
+            }
+
+            std::string m_sVal;
+        };
+
         // Log command
         // {
-        //   "log":
-        //   {
-        //      "msg": "text"
-        //   }
+        //   "log": "text"
         // }
-        struct SOctopusProtocol_Log
+        struct SOctopusProtocol_Log : SOctopusProtocol_KeyValueImpl<SOctopusProtocol_Log>
         {
-            enum
-            {
-                class_id = 1
-            };
             static std::string class_name()
             {
                 return "log";
             }
-            void init(const boost::property_tree::ptree& _pt)
-            {
-                m_sMsg = _pt.get<std::string>("msg");
-            }
-
-            std::string m_sMsg;
         };
         // Log command
         // {
         //   "get_ping": "text"
         // }
-        struct SOctopusProtocol_GetPing
+        struct SOctopusProtocol_GetPing : SOctopusProtocol_KeyValueImpl<SOctopusProtocol_GetPing>
         {
-            enum
-            {
-                class_id = 1
-            };
             static std::string class_name()
             {
                 return "get_ping";
             }
-            void init(const boost::property_tree::ptree& _pt)
-            {
-                m_sMsg = _pt.get<std::string>(class_name(), "");
-            }
-
-            void get(boost::property_tree::ptree* _pt)
-            {
-                if (!_pt)
-                    return;
-
-                _pt->put(class_name(), m_sMsg);
-            }
-
-            std::string m_sMsg;
         };
         // Log command
         // {
         //   "ping": "text"
         // }
-        struct SOctopusProtocol_Ping
+        struct SOctopusProtocol_Ping : SOctopusProtocol_KeyValueImpl<SOctopusProtocol_Ping>
         {
-            enum
-            {
-                class_id = 1
-            };
             static std::string class_name()
             {
                 return "ping";
             }
-            void init(const boost::property_tree::ptree& _pt)
-            {
-                m_sMsg = _pt.get<std::string>(class_name(), "");
-            }
-
-            void get(boost::property_tree::ptree* _pt)
-            {
-                if (!_pt)
-                    return;
-
-                _pt->put(class_name(), m_sMsg);
-            }
-
-            std::string m_sMsg;
         };
     }
 }

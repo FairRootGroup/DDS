@@ -32,7 +32,7 @@
             {                                                                                         \
                 dds_octopus::SOctopusProtocol_Log log;                                                \
                 log.init(node.second);                                                                \
-                std::cout << "Task: " << log.m_sMsg << std::endl;                                     \
+                std::cout << "Task: " << log.m_sVal << std::endl;                                     \
                 continue;                                                                             \
             }
 
