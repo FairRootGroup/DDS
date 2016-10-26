@@ -84,7 +84,7 @@ namespace dds
 
             ETestStatus execute(const size_t _timeoutInSec)
             {
-                auto start_time = std::chrono::system_clock::now();
+                auto start_time = std::chrono::high_resolution_clock::now();
 
                 T* pThis = static_cast<T*>(this);
                 std::cout << "================================\n";
@@ -97,19 +97,22 @@ namespace dds
                     m_waitCondition.wait_until(lock, start_time + std::chrono::seconds(_timeoutInSec)))
                 {
                     m_status = TS_TIMEOUT;
-                    std::cout << "Test case FAILED. Timeout (" << _timeoutInSec << " sec) reached" << std::endl;
+                    std::cout << "RESULT: FAILED. Timeout (" << _timeoutInSec << " sec) reached\n";
                 }
                 else
                 {
                     switch (m_status)
                     {
                         case TS_OK:
-                            std::cout << "Test case result: OK\n";
+                            std::cout << "RESULT: OK\n";
                             break;
                         default:
-                            std::cout << "Test case result: FAILED\n";
+                            std::cout << "RESULT: FAILED\n";
                     }
                 }
+                auto execTime = std::chrono::high_resolution_clock::now() - start_time;
+                std::chrono::milliseconds execTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(execTime);
+                std::cout << "Execution time: " << std::chrono::duration<double>(execTimeMs).count() << " s\n";
                 std::cout << "================================" << std::endl;
 
                 return m_status;

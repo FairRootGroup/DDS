@@ -206,7 +206,7 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript) const
         // set submit time
         chrono::system_clock::time_point now = chrono::system_clock::now();
         stringstream ssSubmitTime;
-        ssSubmitTime << " -s " << chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+        ssSubmitTime << " -s " << chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
         // invoking a new bash process can in some case overwrite env. vars
         // To be sure that our env is there, we call DDS_env.sh
