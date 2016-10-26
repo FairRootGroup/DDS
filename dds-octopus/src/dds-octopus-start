@@ -4,6 +4,8 @@
 #
 
 eval DDS_OCTOPUS_LOCATION="$DDS_LOCATION/tests/dds-octopus"
+TOPO_1=$DDS_OCTOPUS_LOCATION/octopus_topo_1.xml
+TOPO_1_NUMBER_OF_AGENTS=10
 
 usage() {
     cat <<EOF
@@ -26,27 +28,27 @@ clean_up()
 #=============================================================================
 # ***** OPTARG *****
 #=============================================================================
-NUMBER_OF_AGENT=0
-while getopts "h:n:" opt; do
-  case $opt in
-  	n)
-    	NUMBER_OF_AGENT=$OPTARG
-		;;
-  	h) 
-    usage
-    exit 0
-    ;;
-  \?)
-    echo "Invalid option: -$OPTARG" >&2
-    exit 1
-    ;;
-  esac
-done
+#NUMBER_OF_AGENT=0
+#while getopts "h:n:" opt; do
+#  case $opt in
+#  	n)
+#    	NUMBER_OF_AGENT=$OPTARG
+#		;;
+#  	h) 
+#    usage
+#    exit 0
+#    ;;
+#  \?)
+#    echo "Invalid option: -$OPTARG" >&2
+#    exit 1
+#    ;;
+#  esac
+#done
 
-if [ "$NUMBER_OF_AGENT" -eq 0]; then
-	echo "Error: Number of agents is required. Use -n X, where X is the desired number of agents."
-	exit 1
-fi
+#if [ "$NUMBER_OF_AGENT" -eq 0]; then
+#	echo "Error: Number of agents is required. Use -n X, where X is the desired number of agents."
+#	exit 1
+#fi
 
 echo "Starting DDS commander server..."
 dds-server start -s
@@ -71,8 +73,8 @@ while [ $? -ne 0 ]; do
 done
 dds-server status
 
-echo "Submitting [$NUMBER_OF_AGENT] agents..."
-dds-submit -r localhost -n $NUMBER_OF_AGENT
+echo "Submitting [$TOPO_1_NUMBER_OF_AGENTS] agents..."
+dds-submit -r localhost -n $TOPO_1_NUMBER_OF_AGENTS
 if (( $? != 0 )) ; then
 	echo "Failed to submit agents. Exit code: $?"
 	clean_up 1
@@ -90,7 +92,7 @@ while [ true ]; do
 	sleep 0.1
 	COUNT=$(expr $COUNT + 1)
 	AGENTS_COUNT=$(dds-info -n)
-	if [ $AGENTS_COUNT -eq $NUMBER_OF_AGENT ]; then
+	if [ $AGENTS_COUNT -eq $TOPO_1_NUMBER_OF_AGENTS ]; then
 		echo "Number of agents online: $AGENTS_COUNT"
 		break
 	fi
@@ -100,7 +102,7 @@ echo "Agents are ready."
 
 echo "Setting up the topology and activating it..."
 
-dds-topology --set octopus_topo_1.xml
+dds-topology --set "$TOPO_1"
 if (( $? != 0 )) ; then
 	echo "Failed to set topology. Exit code: $?"
 	clean_up 1
