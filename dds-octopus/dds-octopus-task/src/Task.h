@@ -22,11 +22,13 @@ namespace dds
 
             BEGIN_OCTOPUS_MSG_MAP("OctopusTask")
             OCTOPUS_MSG_HANDLER(onGetPingCmd, dds_octopus::SOctopusProtocol_GetPing)
+            OCTOPUS_MSG_HANDLER(onBigCmdCmd, dds_octopus::SOctopusProtocol_BigCmd)
             END_OCTOPUS_MSG_MAP
 
           public:
             void init();
-            void onGetPingCmd(const dds_octopus::SOctopusProtocol_GetPing& _ping, uint64_t _senderId);
+            void onGetPingCmd(const dds_octopus::SOctopusProtocol_GetPing& _cmd, uint64_t _senderId);
+            void onBigCmdCmd(const dds_octopus::SOctopusProtocol_BigCmd& _cmd, uint64_t _senderId);
 
           private:
             dds::intercom_api::CIntercomService m_intercomService;

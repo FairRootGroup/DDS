@@ -22,12 +22,12 @@ namespace dds
 
           public:
             BEGIN_OCTOPUS_MSG_MAP("Ping")
-            OCTOPUS_MSG_HANDLER(onPingCmd, SOctopusProtocol_Ping)
+            OCTOPUS_MSG_HANDLER(onReturnCmd, SOctopusProtocol_Return)
             END_OCTOPUS_MSG_MAP
 
           public:
             void _init();
-            void onPingCmd(const SOctopusProtocol_Ping& _ping, uint64_t _senderId);
+            void onReturnCmd(const SOctopusProtocol_Return& _ping, uint64_t _senderId);
 
           private:
             size_t m_nConfirmedPings;

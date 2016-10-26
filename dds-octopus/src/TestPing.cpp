@@ -27,7 +27,7 @@ void CTestPing::_init()
     m_customCmd.send(ss.str(), "");
 }
 
-void CTestPing::onPingCmd(const SOctopusProtocol_Ping& _ping, uint64_t _senderId)
+void CTestPing::onReturnCmd(const SOctopusProtocol_Return& /*_return*/, uint64_t _senderId)
 {
     cout << "Recieved ping from [" << _senderId << "]" << endl;
     ++m_nConfirmedPings;

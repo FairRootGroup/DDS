@@ -4,6 +4,7 @@
 //
 // DDS
 #include "Options.h"
+#include "TestBigCustomCmd.h"
 #include "TestPing.h"
 
 using namespace std;
@@ -31,6 +32,16 @@ int main(int argc, char* argv[])
             CTestPing test_ping(options);
             test_ping.init();
             if (TS_OK != test_ping.execute(20))
+                return 1;
+        }
+
+        // =====================================================
+        // Test Big custom command
+        // =====================================================
+        {
+            CTestBigCustomCmd big_cmd(options);
+            big_cmd.init();
+            if (TS_OK != big_cmd.execute(20))
                 return 1;
         }
     }

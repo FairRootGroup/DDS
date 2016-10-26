@@ -21,6 +21,7 @@ set( SOURCE_FILES
 	./src/OctopusTestImpl.cpp
 	./src/OctopusProtocol.cpp
 	./src/TestPing.cpp
+	./src/TestBigCustomCmd.cpp
 )
 
 #
@@ -31,6 +32,7 @@ set( HEADER_FILES
 	./src/OctopusTestImpl.h
 	./src/OctopusProtocol.h
 	./src/TestPing.h
+	./src/TestBigCustomCmd.h
 )
 
 include_directories(

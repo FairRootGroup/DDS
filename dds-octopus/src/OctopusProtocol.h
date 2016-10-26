@@ -19,8 +19,7 @@ namespace dds
         {
             void init(const boost::property_tree::ptree& _pt)
             {
-                T* pThis = static_cast<T*>(this);
-                m_sVal = _pt.get<std::string>(pThis->class_name(), "");
+                m_sVal = _pt.data();
             }
 
             void get(boost::property_tree::ptree* _pt)
@@ -46,7 +45,7 @@ namespace dds
                 return "log";
             }
         };
-        // Log command
+        // Get Ping command
         // {
         //   "get_ping": "text"
         // }
@@ -57,15 +56,26 @@ namespace dds
                 return "get_ping";
             }
         };
-        // Log command
+        // Return command
         // {
         //   "ping": "text"
         // }
-        struct SOctopusProtocol_Ping : SOctopusProtocol_KeyValueImpl<SOctopusProtocol_Ping>
+        struct SOctopusProtocol_Return : SOctopusProtocol_KeyValueImpl<SOctopusProtocol_Return>
         {
             static std::string class_name()
             {
-                return "ping";
+                return "return";
+            }
+        };
+        // Return command
+        // {
+        //   "big_cmd": "text"
+        // }
+        struct SOctopusProtocol_BigCmd : SOctopusProtocol_KeyValueImpl<SOctopusProtocol_BigCmd>
+        {
+            static std::string class_name()
+            {
+                return "big_cmd";
             }
         };
     }
