@@ -5,7 +5,8 @@
 ### DDS common
 Modified: pipe log engine is improved to log events line by line, rather than using a fixed string length.  
 Modified: key-value updates from external utilities are not supported now.   
-Modified: support versioning in key-value propagation. (GH-131)   
+Modified: support versioning in key-value propagation. (GH-131)  
+Fixed: Purge local key-value store of agents on task stop. (GH-130)   
 
 ### DDS protocol
 Added: shared memory message queue transport. New shared memory channel which is based on  boost::message_queue. Pushing and receiving of commands is done via shared memory. In some cases this can significantly improve communication speed. (GH-129, GH-130, GH-131)

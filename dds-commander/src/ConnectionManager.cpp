@@ -904,13 +904,9 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
             continue;
         auto ptr = v.lock();
 
-        LOG(info) << "DBG: activeAgents=" << cmd.m_nActiveAgents << " taskID=" << ptr->getTaskID()
-                  << " state=" << ptr->getState();
-
         string sTaskName("no task is assigned");
         if (ptr->getTaskID() > 0 && ptr->getState() == EAgentState::executing)
         {
-            LOG(info) << "DBG: search taksID=" << ptr->getTaskID();
             TaskPtr_t task = m_topo.getTaskByHash(ptr->getTaskID());
             stringstream ssTaskString;
             ssTaskString << ptr->getTaskID() << " (" << task->getId() << ")";

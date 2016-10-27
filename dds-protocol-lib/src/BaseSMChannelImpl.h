@@ -97,9 +97,29 @@ namespace dds
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
                 , m_inputMessageQueueName(_inputName)
                 , m_outputMessageQueueName(_outputName)
+                , m_workerThreads()
                 , m_writeQueue()
                 , m_mutexWriteBuffer()
                 , m_writeBufferQueue()
+            {
+                createMessageQueue();
+            }
+
+          public:
+            ~CBaseSMChannelImpl<T>()
+            {
+                LOG(MiscCommon::info) << "Shared memory channel destructor is called";
+                stop();
+            }
+
+            static connectionPtr_t makeNew(const std::string& _inputName, const std::string& _outputName)
+            {
+                connectionPtr_t newObject(new T(_inputName, _outputName));
+                return newObject;
+            }
+
+          private:
+            void createMessageQueue()
             {
                 try
                 {
@@ -125,27 +145,34 @@ namespace dds
                 }
                 catch (boost::interprocess::interprocess_exception& _e)
                 {
-                    LOG(MiscCommon::fatal) << "Can't initialize shared memory transport with input name " << _inputName
-                                           << " and output name " << _outputName << ": " << _e.what();
+                    LOG(MiscCommon::fatal) << "Can't initialize shared memory transport with input name "
+                                           << m_inputMessageQueueName << " and output name " << m_outputMessageQueueName
+                                           << ": " << _e.what();
                     m_transportIn.reset();
                     m_transportOut.reset();
                 }
             }
 
           public:
-            ~CBaseSMChannelImpl<T>()
+            void reinit()
             {
-                LOG(MiscCommon::info) << "Shared memory channel destructor is called";
+                if (!m_started)
+                    return;
+
+                LOG(MiscCommon::info) << "Reinitializing shared memory channel...";
+
                 stop();
+                removeMessageQueue();
+                createMessageQueue();
+                {
+                    // Clear message buffers
+                    std::lock_guard<std::mutex> lockWriteBuffer(m_mutexWriteBuffer);
+                    m_writeBufferQueue.clear();
+                    m_writeQueue.clear();
+                }
+                start();
             }
 
-            static connectionPtr_t makeNew(const std::string& _inputName, const std::string& _outputName)
-            {
-                connectionPtr_t newObject(new T(_inputName, _outputName));
-                return newObject;
-            }
-
-          public:
             void start()
             {
                 if (m_transportIn == nullptr || m_transportOut == nullptr)
@@ -157,6 +184,8 @@ namespace dds
                 }
 
                 m_started = true;
+
+                m_io_service.reset();
 
                 auto self(this->shared_from_this());
                 m_io_service.post([this, self] {
@@ -171,9 +200,10 @@ namespace dds
                 });
 
                 const int nConcurrentThreads(3);
+                m_workerThreads = std::make_shared<boost::thread_group>();
                 for (int x = 0; x < nConcurrentThreads; ++x)
                 {
-                    m_workerThreads.create_thread(boost::bind(&boost::asio::io_service::run, &(m_io_service)));
+                    m_workerThreads->create_thread(boost::bind(&boost::asio::io_service::run, &(m_io_service)));
                 }
             }
 
@@ -186,7 +216,8 @@ namespace dds
                 sendYourselfShutdown();
 
                 m_io_service.stop();
-                m_workerThreads.join_all();
+                m_workerThreads->join_all();
+                m_workerThreads.reset();
             }
 
             void removeMessageQueue()
@@ -380,11 +411,11 @@ namespace dds
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
 
           private:
-            messageQueuePtr_t m_transportIn;                     ///< Input message queue, i.e. we read from this queue
-            messageQueuePtr_t m_transportOut;                    ///< Output message queue, i.e. we write to this queue
-            boost::asio::io_service m_io_service;                ///< IO service that is used as a thread pool
-            boost::thread_group m_workerThreads;                 ///< Threads for IO service
-            CProtocolMessage::protocolMessagePtr_t m_currentMsg; ///> Current message that we read and process
+            messageQueuePtr_t m_transportIn;                      ///< Input message queue, i.e. we read from this queue
+            messageQueuePtr_t m_transportOut;                     ///< Output message queue, i.e. we write to this queue
+            boost::asio::io_service m_io_service;                 ///< IO service that is used as a thread pool
+            std::shared_ptr<boost::thread_group> m_workerThreads; ///< Threads for IO service
+            CProtocolMessage::protocolMessagePtr_t m_currentMsg;  ///> Current message that we read and process
 
             std::string m_inputMessageQueueName;  ///< Input message queue name
             std::string m_outputMessageQueueName; ///< Output message queue name

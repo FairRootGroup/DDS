@@ -384,6 +384,8 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     cmd.m_exitCode = _exitCode;
     cmd.m_taskID = m_agent->getTaskID();
     m_agent->pushMsg<cmdUSER_TASK_DONE>(cmd);
+
+    m_SMChannel->reinit();
 }
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
@@ -466,5 +468,6 @@ bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTO
     terminateChildrenProcesses();
     auto p = _channel.lock();
     p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
+    m_SMChannel->reinit();
     return true;
 }
