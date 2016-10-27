@@ -12,6 +12,9 @@
 #include <string>
 // MiscCommon
 #include "CRC.h"
+// BOOST
+#include "boost/range/adaptor/map.hpp"
+#include <boost/range/algorithm/copy.hpp>
 
 using namespace std;
 using namespace dds;
@@ -57,6 +60,49 @@ void CTopology::init(const std::string& _fileName, bool _initForTest)
     // We need hash path maps to be filled.
     // These maps are used to sent custom command to a particular task.
     FillHashToTopoElementMap(m_main, true); //_initForTest);
+}
+
+void CTopology::getDifference(const CTopology& _topology,
+                              HashSet_t& _removedTasks,
+                              HashSet_t& _removedCollections,
+                              HashSet_t& _addedTasks,
+                              HashSet_t& _addedCollections)
+{
+    _removedTasks.clear();
+    _removedCollections.clear();
+    _addedTasks.clear();
+    _addedCollections.clear();
+
+    HashSet_t tasks;
+    HashSet_t newTasks;
+    HashSet_t collections;
+    HashSet_t newCollections;
+
+    // Get all keys from maps as a set
+    boost::copy(m_hashToTaskInfoMap | boost::adaptors::map_keys, std::inserter(tasks, tasks.end()));
+    boost::copy(_topology.getHashToTaskInfoMap() | boost::adaptors::map_keys, std::inserter(newTasks, newTasks.end()));
+    boost::copy(m_hashToTaskCollectionMap | boost::adaptors::map_keys, std::inserter(collections, collections.end()));
+    boost::copy(_topology.getHashToTaskCollectionMap() | boost::adaptors::map_keys,
+                std::inserter(newCollections, newCollections.end()));
+
+    // Get difference between two sets
+    std::set_difference(tasks.begin(),
+                        tasks.end(),
+                        newTasks.begin(),
+                        newTasks.end(),
+                        std::inserter(_removedTasks, _removedTasks.end()));
+    std::set_difference(
+        newTasks.begin(), newTasks.end(), tasks.begin(), tasks.end(), std::inserter(_addedTasks, _addedTasks.begin()));
+    std::set_difference(collections.begin(),
+                        collections.end(),
+                        newCollections.begin(),
+                        newCollections.end(),
+                        std::inserter(_removedCollections, _removedCollections.end()));
+    std::set_difference(newCollections.begin(),
+                        newCollections.end(),
+                        collections.begin(),
+                        collections.end(),
+                        std::inserter(_addedCollections, _addedCollections.begin()));
 }
 
 void CTopology::setXMLValidationDisabled(bool _val)
@@ -306,6 +352,52 @@ uint64_t CTopology::getNextHashForTaskCollection(uint64_t _crc) const
         ++crc;
     } while (m_hashToTaskCollectionMap.find(crc) == m_hashToTaskCollectionMap.end());
     return crc;
+}
+
+std::string CTopology::stringOfTasks(const HashSet_t& _ids) const
+{
+    set<string> tasksSet;
+    multiset<string> tasksMultiset;
+    for (auto taskID : _ids)
+    {
+        auto it = m_hashToTaskInfoMap.find(taskID);
+        if (it != m_hashToTaskInfoMap.end())
+        {
+            tasksSet.insert(it->second.m_task->getPath());
+            tasksMultiset.insert(it->second.m_task->getPath());
+        }
+    }
+
+    stringstream ss;
+    for (auto path : tasksSet)
+    {
+        ss << tasksMultiset.count(path) << " x " << path << "\n";
+    }
+
+    return ss.str();
+}
+
+std::string CTopology::stringOfCollections(const HashSet_t& _ids) const
+{
+    set<string> collectionsSet;
+    multiset<string> collectionsMultiset;
+    for (auto collectionID : _ids)
+    {
+        auto it = m_hashToTaskCollectionMap.find(collectionID);
+        if (it != m_hashToTaskCollectionMap.end())
+        {
+            collectionsSet.insert(it->second->getPath());
+            collectionsMultiset.insert(it->second->getPath());
+        }
+    }
+
+    stringstream ss;
+    for (auto path : collectionsSet)
+    {
+        ss << collectionsMultiset.count(path) << " x " << path << "\n";
+    }
+
+    return ss.str();
 }
 
 string CTopology::toString() const

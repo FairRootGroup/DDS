@@ -33,11 +33,13 @@ namespace dds
                 , m_nofReceivedErrors(0)
                 , m_mutexStart()
                 , m_mutexReceive()
+                , m_shutdownOnComplete(true)
+                , m_srcCommand(0)
                 , m_startTime(std::chrono::steady_clock::now())
             {
             }
 
-          protected:
+          public:
             size_t nofReceived() const
             {
                 return (m_nofReceived + m_nofReceivedErrors);
@@ -80,6 +82,7 @@ namespace dds
                         std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
                         pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
+                            m_srcCommand,
                             m_nofReceived,
                             m_nofRequests,
                             m_nofReceivedErrors,
@@ -118,6 +121,7 @@ namespace dds
                         std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
                         pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
+                            m_srcCommand,
                             m_nofReceived,
                             m_nofRequests,
                             m_nofReceivedErrors,
@@ -149,8 +153,11 @@ namespace dds
                             auto pUI = m_channel.lock();
                             pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
                                 protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::info));
-                            pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
 
+                            if (m_shutdownOnComplete)
+                            {
+                                pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
+                            }
                             m_channel.reset();
                         }
                     }
@@ -168,6 +175,8 @@ namespace dds
             CAgentChannel::weakConnectionPtr_t m_channel;
             std::mutex m_mutexStart;
             std::mutex m_mutexReceive;
+            bool m_shutdownOnComplete;
+            uint16_t m_srcCommand;
 
           private:
             std::chrono::steady_clock::time_point m_startTime;
@@ -176,6 +185,12 @@ namespace dds
         class CGetLogChannelInfo : public CUIChannelInfo<CGetLogChannelInfo>
         {
           public:
+            CGetLogChannelInfo()
+                : CUIChannelInfo<CGetLogChannelInfo>()
+            {
+                m_srcCommand = protocol_api::cmdGET_LOG;
+            }
+
             std::string getMessage(const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
@@ -212,6 +227,7 @@ namespace dds
                 , m_totalReceived(0)
                 , m_totalTime(0)
             {
+                m_srcCommand = protocol_api::cmdTRANSPORT_TEST;
             }
 
             std::string getMessage(const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
@@ -254,6 +270,12 @@ namespace dds
         class CActivateAgentsChannelInfo : public CUIChannelInfo<CActivateAgentsChannelInfo>
         {
           public:
+            CActivateAgentsChannelInfo()
+                : CUIChannelInfo<CActivateAgentsChannelInfo>()
+            {
+                m_srcCommand = protocol_api::cmdACTIVATE_AGENT;
+            }
+
             std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
@@ -285,6 +307,12 @@ namespace dds
         class CStopUserTasksChannelInfo : public CUIChannelInfo<CStopUserTasksChannelInfo>
         {
           public:
+            CStopUserTasksChannelInfo()
+                : CUIChannelInfo<CStopUserTasksChannelInfo>()
+            {
+                m_srcCommand = protocol_api::cmdSTOP_USER_TASK;
+            }
+
             std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {

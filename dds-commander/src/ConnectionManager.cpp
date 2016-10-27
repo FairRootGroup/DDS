@@ -164,6 +164,13 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdSET_TOPOLOGY>(fSET_TOPOLOGY);
 
+    function<bool(SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment, CAgentChannel * _channel)>
+        fUPDATE_TOPOLOGY =
+            [this](SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        return this->on_cmdUPDATE_TOPOLOGY(_attachment, getWeakPtr(_channel));
+    };
+    _newClient->registerMessageHandler<cmdUPDATE_TOPOLOGY>(fUPDATE_TOPOLOGY);
+
     function<bool(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel * _channel)> fREPLY_ID = [this](
         SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdREPLY_ID(_attachment, getWeakPtr(_channel));
@@ -492,6 +499,161 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
     return true;
 }
 
+bool CConnectionManager::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment,
+                                            CAgentChannel::weakConnectionPtr_t _channel)
+{
+    LOG(info) << "UI channel requested to set up a new topology. " << *_attachment;
+    auto p = _channel.lock();
+    try
+    {
+        // Resolve topology
+        m_topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
+        m_topo.init(_attachment->m_sTopologyFile);
+        m_keyValueManager.initWithTopology(m_topo);
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("new Topology is set to: " + _attachment->m_sTopologyFile, info, cmdSET_TOPOLOGY));
+    }
+    catch (exception& _e)
+    {
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSET_TOPOLOGY));
+    }
+    p->pushMsg<cmdSHUTDOWN>();
+    return true;
+}
+
+bool CConnectionManager::on_cmdUPDATE_TOPOLOGY(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
+{
+    LOG(info) << "UI channel requested to update a topology. " << *_attachment;
+
+    try
+    {
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("Updating topology to " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+
+        //
+        // Get new topology and calculate the difference
+        //
+        CTopology topo;
+        topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
+        topo.init(_attachment->m_sTopologyFile);
+
+        topology_api::CTopology::HashSet_t removedTasks;
+        topology_api::CTopology::HashSet_t removedCollections;
+        topology_api::CTopology::HashSet_t addedTasks;
+        topology_api::CTopology::HashSet_t addedCollections;
+        m_topo.getDifference(topo, removedTasks, removedCollections, addedTasks, addedCollections);
+
+        m_keyValueManager.updateWithTopology(topo, removedTasks, addedTasks);
+
+        stringstream ss;
+        ss << "\nRemoved tasks:" << removedTasks.size() << "\n"
+           << m_topo.stringOfTasks(removedTasks) << "Removed collections:" << removedCollections.size() << "\n"
+           << m_topo.stringOfCollections(removedCollections) << "Added tasks:" << addedTasks.size() << "\n"
+           << topo.stringOfTasks(addedTasks) << "Added collections:" << addedCollections.size() << "\n"
+           << topo.stringOfCollections(addedCollections);
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), log_stdout, cmdUPDATE_TOPOLOGY));
+
+        m_topo = topo; // Assign new topology
+        //
+
+        //
+        // Stop removed tasks
+        //
+        if (removedTasks.size() > 0)
+        {
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Stopping removed tasks...", log_stdout, cmdUPDATE_TOPOLOGY));
+
+            CAgentChannel::weakConnectionPtrVector_t agents;
+            for (auto taskID : removedTasks)
+            {
+                auto agentChannel = m_taskIDToAgentChannelMap[taskID];
+                agents.push_back(agentChannel);
+            }
+            bool sendShutdown = addedTasks.size() == 0;
+            stopTasks(agents, _channel, sendShutdown);
+
+            // We have to wait until all removed tasks are done before activating new tasks
+            unique_lock<mutex> conditionLock(m_stopTasksMutex);
+            m_stopTasksCondition.wait(conditionLock);
+        }
+        //
+
+        //
+        // Activate added tasks
+        //
+        if (addedTasks.size() > 0)
+        {
+            lock_guard<mutex> lock(m_ActivateAgents.m_mutexStart);
+
+            if (!m_ActivateAgents.m_channel.expired())
+                throw runtime_error(
+                    "Can not process the request. Activation or update of the agents is already in progress.");
+
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Activating added tasks...", log_stdout, cmdUPDATE_TOPOLOGY));
+
+            // remember the UI channel, which requested to submit the job
+            m_ActivateAgents.m_channel = _channel;
+            m_ActivateAgents.zeroCounters();
+
+            auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
+                return (_v->getChannelType() == EChannelType::AGENT && _v->started() &&
+                        _v->getState() == EAgentState::idle);
+            };
+
+            m_ActivateAgents.m_nofRequests = addedTasks.size();
+            size_t nofAgents = countNofChannels(condition);
+
+            LOG(info) << "Available agents = " << nofAgents;
+
+            if (nofAgents == 0)
+                throw runtime_error("There are no connected agents.");
+            if (nofAgents < m_ActivateAgents.m_nofRequests)
+                throw runtime_error("The number of agents is not sufficient for this topology.");
+
+            // initiate UI progress
+            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_ActivateAgents.m_nofRequests, 0));
+
+            // Schedule the tasks
+            CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
+            CSSHScheduler scheduler;
+            scheduler.makeSchedule(m_topo, channels, addedTasks, addedCollections);
+            const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
+
+            // Erase removed tasks
+            for (auto taskID : removedTasks)
+            {
+                m_taskIDToAgentChannelMap.erase(taskID);
+            }
+            // Add new elements
+            for (const auto& sch : schedule)
+            {
+                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
+            }
+
+            activateTasks(scheduler);
+        }
+        // Send cmdSHUTDOWN to UI if neccessary
+        bool sendShutdown = removedTasks.size() == 0 && addedTasks.size() == 0;
+        if (sendShutdown)
+        {
+            p->pushMsg<cmdSHUTDOWN>();
+        }
+    }
+    catch (exception& _e)
+    {
+        auto p = _channel.lock();
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdUPDATE_TOPOLOGY));
+
+        m_ActivateAgents.m_channel.reset();
+        return true;
+    }
+    return true;
+}
+
 bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -500,7 +662,8 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
     try
     {
         if (!m_ActivateAgents.m_channel.expired())
-            throw runtime_error("Can not process the request. Activation of the agents is already in progress.");
+            throw runtime_error(
+                "Can not process the request. Activation or update of the agents is already in progress.");
 
         // remember the UI channel, which requested to submit the job
         m_ActivateAgents.m_channel = _channel;
@@ -527,116 +690,22 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
             throw runtime_error("The number of agents is not sufficient for this topology.");
 
         // initiate UI progress
-        p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_ActivateAgents.m_nofRequests, 0));
+        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_ActivateAgents.m_nofRequests, 0));
 
         CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
 
-        m_scheduler.makeSchedule(m_topo, channels);
-        const CSSHScheduler::ScheduleVector_t& schedule = m_scheduler.getSchedule();
+        CSSHScheduler scheduler;
+        scheduler.makeSchedule(m_topo, channels);
+        const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
 
-        // Clear the map on each activation
+        // Clear the map and fill it again on each activation
         m_taskIDToAgentChannelMap.clear();
-        // Clear property tree
-        // m_propertyPT.clear();
-
         for (const auto& sch : schedule)
         {
-            SAssignUserTaskCmd msg_cmd;
-            msg_cmd.m_taskID = sch.m_taskID;
-            msg_cmd.m_taskIndex = sch.m_taskInfo.m_taskIndex;
-            msg_cmd.m_collectionIndex = sch.m_taskInfo.m_collectionIndex;
-            msg_cmd.m_taskPath = sch.m_taskInfo.m_taskPath;
-            msg_cmd.m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
-            msg_cmd.m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
-            msg_cmd.m_taskName = sch.m_taskInfo.m_task->getId();
-
-            if (sch.m_channel.expired())
-                continue;
-            auto ptr = sch.m_channel.lock();
-
-            // Set task ID for agent and add it to map
-            // TODO: Do we have to assign taskID here?
-            // TODO: Probably it has to be assigned when the task is successfully activated.
-            ptr->setTaskID(sch.m_taskID);
             m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
-
-            if (sch.m_taskInfo.m_task->isExeReachable())
-            {
-                msg_cmd.m_sExeFile = sch.m_taskInfo.m_task->getExe();
-            }
-            else
-            {
-                // Executable is not reachable by the agent.
-                // Upload it and change its path to $DDS_LOCATION on the WN
-
-                // Expand the string for the program to extract exe name and command line arguments
-                wordexp_t result;
-                switch (wordexp(sch.m_taskInfo.m_task->getExe().c_str(), &result, 0))
-                {
-                    case 0:
-                    {
-                        string sExeFilePath = result.we_wordv[0];
-
-                        boost::filesystem::path exeFilePath(sExeFilePath);
-                        string sExeFileName = exeFilePath.filename().generic_string();
-
-                        string sExeFileNameWithArgs = sExeFileName;
-                        for (size_t i = 1; i < result.we_wordc; ++i)
-                        {
-                            sExeFileNameWithArgs += " ";
-                            sExeFileNameWithArgs += result.we_wordv[i];
-                        }
-
-                        msg_cmd.m_sExeFile = "$DDS_LOCATION/";
-                        msg_cmd.m_sExeFile += sExeFileNameWithArgs;
-
-                        wordfree(&result);
-
-                        //
-                        ptr->pushBinaryAttachmentCmd(sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK);
-                    }
-                    break;
-                    case WRDE_NOSPACE:
-                        // If the error was WRDE_NOSPACE,
-                        // then perhaps part of the result was allocated.
-                        throw runtime_error("memory error occurred while processing the user's executable path: " +
-                                            sch.m_taskInfo.m_task->getExe());
-
-                    case WRDE_BADCHAR:
-                        throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
-                                            sch.m_taskInfo.m_task->getExe());
-                        break;
-
-                    case WRDE_BADVAL:
-                        throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
-                                            "told us to consider this an error in " +
-                                            sch.m_taskInfo.m_task->getExe());
-                        break;
-
-                    case WRDE_CMDSUB:
-                        throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
-                                            "consider this an error in " +
-                                            sch.m_taskInfo.m_task->getExe());
-                        break;
-                    case WRDE_SYNTAX:
-                        throw runtime_error(
-                            "Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
-                            sch.m_taskInfo.m_task->getExe());
-                        break;
-
-                    default: // Some other error.
-                        throw runtime_error("failed to process the user's executable path: " +
-                                            sch.m_taskInfo.m_task->getExe());
-                }
-            }
-            ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
-            ptr->setState(EAgentState::executing);
         }
 
-        // Active agents.
-        broadcastSimpleMsg<cmdACTIVATE_AGENT>([](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
-            return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
-        });
+        activateTasks(scheduler);
     }
     catch (exception& _e)
     {
@@ -649,10 +718,128 @@ bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE
     return true;
 }
 
+void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
+{
+    const CSSHScheduler::ScheduleVector_t& schedule = _scheduler.getSchedule();
+
+    for (const auto& sch : schedule)
+    {
+        SAssignUserTaskCmd msg_cmd;
+        msg_cmd.m_taskID = sch.m_taskID;
+        msg_cmd.m_taskIndex = sch.m_taskInfo.m_taskIndex;
+        msg_cmd.m_collectionIndex = sch.m_taskInfo.m_collectionIndex;
+        msg_cmd.m_taskPath = sch.m_taskInfo.m_taskPath;
+        msg_cmd.m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
+        msg_cmd.m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
+        msg_cmd.m_taskName = sch.m_taskInfo.m_task->getId();
+
+        if (sch.m_channel.expired())
+            continue;
+        auto ptr = sch.m_channel.lock();
+
+        // Set task ID for agent
+        // TODO: Do we have to assign taskID here?
+        // TODO: Probably it has to be assigned when the task is successfully activated.
+        ptr->setTaskID(sch.m_taskID);
+
+        if (sch.m_taskInfo.m_task->isExeReachable())
+        {
+            msg_cmd.m_sExeFile = sch.m_taskInfo.m_task->getExe();
+        }
+        else
+        {
+            // Executable is not reachable by the agent.
+            // Upload it and change its path to $DDS_LOCATION on the WN
+
+            // Expand the string for the program to extract exe name and command line arguments
+            wordexp_t result;
+            switch (wordexp(sch.m_taskInfo.m_task->getExe().c_str(), &result, 0))
+            {
+                case 0:
+                {
+                    string sExeFilePath = result.we_wordv[0];
+
+                    boost::filesystem::path exeFilePath(sExeFilePath);
+                    string sExeFileName = exeFilePath.filename().generic_string();
+
+                    string sExeFileNameWithArgs = sExeFileName;
+                    for (size_t i = 1; i < result.we_wordc; ++i)
+                    {
+                        sExeFileNameWithArgs += " ";
+                        sExeFileNameWithArgs += result.we_wordv[i];
+                    }
+
+                    msg_cmd.m_sExeFile = "$DDS_LOCATION/";
+                    msg_cmd.m_sExeFile += sExeFileNameWithArgs;
+
+                    wordfree(&result);
+
+                    //
+                    ptr->pushBinaryAttachmentCmd(sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK);
+                }
+                break;
+                case WRDE_NOSPACE:
+                    // If the error was WRDE_NOSPACE,
+                    // then perhaps part of the result was allocated.
+                    throw runtime_error("memory error occurred while processing the user's executable path: " +
+                                        sch.m_taskInfo.m_task->getExe());
+
+                case WRDE_BADCHAR:
+                    throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
+                                        sch.m_taskInfo.m_task->getExe());
+                    break;
+
+                case WRDE_BADVAL:
+                    throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
+                                        "told us to consider this an error in " +
+                                        sch.m_taskInfo.m_task->getExe());
+                    break;
+
+                case WRDE_CMDSUB:
+                    throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
+                                        "consider this an error in " +
+                                        sch.m_taskInfo.m_task->getExe());
+                    break;
+                case WRDE_SYNTAX:
+                    throw runtime_error("Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
+                                        sch.m_taskInfo.m_task->getExe());
+                    break;
+
+                default: // Some other error.
+                    throw runtime_error("failed to process the user's executable path: " +
+                                        sch.m_taskInfo.m_task->getExe());
+            }
+        }
+        ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
+        ptr->setState(EAgentState::executing);
+    }
+
+    // Active agents.
+    broadcastSimpleMsg<cmdACTIVATE_AGENT>([](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
+        return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+    });
+}
+
 bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
+    auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
+        return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
+    };
+
+    CAgentChannel::weakConnectionPtrVector_t agents(getChannels(condition));
+
+    stopTasks(agents, _channel, true);
+
+    return true;
+}
+
+void CConnectionManager::stopTasks(const CAgentChannel::weakConnectionPtrVector_t& _agents,
+                                   CAgentChannel::weakConnectionPtr_t _channel,
+                                   bool _shutdownOnComplete)
+{
     lock_guard<mutex> lock(m_StopUserTasks.m_mutexStart);
+    m_StopUserTasks.m_shutdownOnComplete = _shutdownOnComplete;
     try
     {
         if (!m_StopUserTasks.m_channel.expired())
@@ -663,37 +850,31 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
         m_StopUserTasks.zeroCounters();
 
         auto p = m_StopUserTasks.m_channel.lock();
-        auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
-            return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
-        };
 
-        m_StopUserTasks.m_nofRequests = countNofChannels(condition);
+        m_StopUserTasks.m_nofRequests = _agents.size();
 
         // Stop UI if no tasks are running
         if (m_StopUserTasks.m_nofRequests <= 0)
         {
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", fatal, cmdSTOP_USER_TASK));
+            ELogSeverityLevel level = (_shutdownOnComplete) ? fatal : warning;
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", level, cmdSTOP_USER_TASK));
             m_StopUserTasks.m_channel.reset();
-            return true;
+            return;
         }
 
         // initiate the progress on the UI
-        p->pushMsg<cmdPROGRESS>(SProgressCmd(0, m_StopUserTasks.m_nofRequests, 0));
+        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdSTOP_USER_TASK, 0, m_StopUserTasks.m_nofRequests, 0));
 
-        CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-        for (const auto& v : channels)
+        for (const auto& v : _agents)
         {
             if (v.expired())
                 continue;
             auto ptr = v.lock();
-            // remove task ID from the channel
-            // ptr->setTaskID(0);
             // dequeue important (or expensive) messages
             ptr->dequeueMsg<cmdUPDATE_KEY>();
             ptr->dequeueMsg<cmdDELETE_KEY>();
             // send stop message
             ptr->template pushMsg<cmdSTOP_USER_TASK>();
-            // ptr->setState(EAgentState::idle);
         }
     }
     catch (exception& _e)
@@ -702,9 +883,8 @@ bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USE
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSTOP_USER_TASK));
 
         m_StopUserTasks.m_channel.reset();
-        return true;
+        return;
     }
-    return true;
 }
 
 bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
@@ -724,9 +904,13 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
             continue;
         auto ptr = v.lock();
 
+        LOG(info) << "DBG: activeAgents=" << cmd.m_nActiveAgents << " taskID=" << ptr->getTaskID()
+                  << " state=" << ptr->getState();
+
         string sTaskName("no task is assigned");
-        if (ptr->getTaskID() > 0)
+        if (ptr->getTaskID() > 0 && ptr->getState() == EAgentState::executing)
         {
+            LOG(info) << "DBG: search taksID=" << ptr->getTaskID();
             TaskPtr_t task = m_topo.getTaskByHash(ptr->getTaskID());
             stringstream ssTaskString;
             ssTaskString << ptr->getTaskID() << " (" << task->getId() << ")";
@@ -804,6 +988,7 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
     switch (_attachment->m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
+            // case cmdUPDATE_TOPOLOGY:
             switch (_attachment->m_msgSeverity)
             {
                 case info:
@@ -821,11 +1006,24 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
             {
                 case info:
                     m_StopUserTasks.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    {
+                        // Task was successfully stopped, set the idle state
+                        if (!_channel.expired())
+                        {
+                            auto p = _channel.lock();
+                            p->setState(EAgentState::idle);
+                            p->setTaskID(0);
+                        }
+                    }
                     break;
                 case error:
                 case fatal:
                     m_StopUserTasks.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
+            }
+            if (m_StopUserTasks.allReceived())
+            {
+                m_stopTasksCondition.notify_all();
             }
             return true; // let others to process this message
 
@@ -1025,29 +1223,6 @@ bool CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PRO
         }
     }
 
-    return true;
-}
-
-bool CConnectionManager::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment,
-                                            CAgentChannel::weakConnectionPtr_t _channel)
-{
-    LOG(info) << "UI channel requested to set up a new ropology. " << *_attachment;
-    auto p = _channel.lock();
-    try
-    {
-        // Resolve topology
-        m_topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
-        m_topo.init(_attachment->m_sTopologyFile);
-        m_keyValueManager.initWithTopology(m_topo);
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("new Topology is set to: " + _attachment->m_sTopologyFile, info, cmdSET_TOPOLOGY));
-    }
-    catch (exception& _e)
-    {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSET_TOPOLOGY));
-    }
-    p->pushMsg<cmdSHUTDOWN>();
     return true;
 }
 

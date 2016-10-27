@@ -14,6 +14,7 @@ CSubmitAgentsChannelInfo::CSubmitAgentsChannelInfo()
     , m_PluginStartTime(chrono::system_clock::duration::zero())
     , m_bInit(false)
 {
+    m_srcCommand = protocol_api::cmdSUBMIT;
 }
 
 string CSubmitAgentsChannelInfo::getMessage(const protocol_api::SSimpleMsgCmd& _cmd,

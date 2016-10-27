@@ -24,12 +24,26 @@ CSSHScheduler::~CSSHScheduler()
 void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
-        [this, &_topology, &_channels]() { makeScheduleImpl(_topology, _channels); });
+        [this, &_topology, &_channels]() { makeScheduleImpl(_topology, _channels, nullptr, nullptr); });
+    LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
+}
+
+void CSSHScheduler::makeSchedule(const topology_api::CTopology& _topology,
+                                 const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                 const CTopology::HashSet_t& _addedTasks,
+                                 const CTopology::HashSet_t& _addedCollections)
+{
+    auto execTime = STimeMeasure<chrono::microseconds>::execution(
+        [this, &_topology, &_channels, &_addedTasks, &_addedCollections]() {
+            makeScheduleImpl(_topology, _channels, &_addedTasks, &_addedCollections);
+        });
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
 void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
-                                     const CAgentChannel::weakConnectionPtrVector_t& _channels)
+                                     const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                     const CTopology::HashSet_t* _addedTasks,
+                                     const CTopology::HashSet_t* _addedCollections)
 {
     m_schedule.clear();
 
@@ -43,6 +57,11 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
         if (v.expired())
             continue;
         auto ptr = v.lock();
+
+        // Only idle DDS agents
+        if (ptr->getState() != EAgentState::idle)
+            continue;
+
         const SHostInfoCmd& hostInfo = ptr->getRemoteHostInfo();
         hostToChannelMap[make_pair(hostInfo.m_host, hostInfo.m_workerId)].push_back(iChannel);
     }
@@ -56,6 +75,10 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     CTopology::TaskCollectionIteratorPair_t collections = _topology.getTaskCollectionIterator();
     for (auto it = collections.first; it != collections.second; it++)
     {
+        // Only collections that were added has to be scheduled
+        if (_addedCollections != nullptr && _addedCollections->find(it->first) == _addedCollections->end())
+            continue;
+
         const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(it->first);
         tasksInCollections.insert(taskHashes.begin(), taskHashes.end());
         collectionMap[it->second->getNofTasks()].push_back(it->first);
@@ -64,11 +87,12 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     set<uint64_t> scheduledTasks;
 
     scheduleCollections(_topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, true);
-    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, true);
+    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, true, _addedTasks);
     scheduleCollections(_topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, false);
-    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, false);
+    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, false, _addedTasks);
 
-    size_t totalNofTasks = _topology.getMainGroup()->getTotalNofTasks();
+    size_t totalNofTasks =
+        (_addedTasks == nullptr) ? _topology.getMainGroup()->getTotalNofTasks() : _addedTasks->size();
     if (totalNofTasks != m_schedule.size())
     {
         LOG(debug) << toString();
@@ -86,12 +110,17 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
                                   hostToChannelMap_t& _hostToChannelMap,
                                   set<uint64_t>& _scheduledTasks,
                                   const set<uint64_t>& _tasksInCollections,
-                                  bool useRequirement)
+                                  bool useRequirement,
+                                  const CTopology::HashSet_t* _addedTasks)
 {
     CTopology::TaskInfoIteratorPair_t tasks = _topology.getTaskInfoIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
     {
         uint64_t id = it->first;
+
+        // Check if tasks is in the added tasks
+        if (_addedTasks != nullptr && _addedTasks->find(it->first) == _addedTasks->end())
+            continue;
 
         // Check if task has to be scheduled in the collection
         if (_tasksInCollections.find(id) != _tasksInCollections.end())

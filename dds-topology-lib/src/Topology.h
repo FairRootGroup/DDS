@@ -15,6 +15,7 @@
 // STD
 #include <map>
 #include <ostream>
+#include <set>
 #include <string>
 // BOOST
 #include <boost/iterator/filter_iterator.hpp>
@@ -59,6 +60,8 @@ namespace dds
             typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
             typedef std::map<uint64_t, std::vector<uint64_t>> CollectionHashToTaskHashesMap_t;
 
+            typedef std::set<uint64_t> HashSet_t;
+
             /// \brief Constructor.
             CTopology();
 
@@ -68,6 +71,18 @@ namespace dds
             /// \brief Initializes topology from specified file.
             /// \throw runtime_error
             void init(const std::string& _fileName, bool _initForTest = false);
+
+            /// \brief Get difference between THIS topology and a new one.
+            /// \param[in] _topology New topology to calculate the difference with.
+            /// \param[out] _removedTasks Tasks which exist in THIS topology and don't exist in new one.
+            /// \param[out] _removedCollections Collections which exist in THIS topology and don't exist in new one.
+            /// \param[out] _addedTasks Tasks which exist in new topology and don't exist in THIS one.
+            /// \param[out] _addedCollections Collections which exist in new topology and don't exist in THIS one.
+            void getDifference(const CTopology& _topology,
+                               HashSet_t& _removedTasks,
+                               HashSet_t& _removedCollections,
+                               HashSet_t& _addedTasks,
+                               HashSet_t& _addedCollections);
 
             void setXMLValidationDisabled(bool _val);
 
@@ -93,6 +108,9 @@ namespace dds
                 TaskCollectionCondition_t _condition = nullptr) const;
             TaskInfoIteratorPair_t getTaskInfoIteratorForPropertyId(const std::string& _propertyId) const;
 
+            std::string stringOfTasks(const HashSet_t& _ids) const;
+            std::string stringOfCollections(const HashSet_t& _ids) const;
+
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
             virtual std::string toString() const;
@@ -113,7 +131,6 @@ namespace dds
 
             TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
 
-            // HashToTaskMap_t m_hashToTaskMap;
             HashToTaskCollectionMap_t m_hashToTaskCollectionMap;
             HashToTaskInfoMap_t m_hashToTaskInfoMap;
             std::map<std::string, size_t> m_counterMap;

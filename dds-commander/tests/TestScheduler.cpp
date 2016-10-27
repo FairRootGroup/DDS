@@ -51,6 +51,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
         for (size_t j = 0; j < nofAgentsPerTask; ++j)
         {
             CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service);
+            agent->setState(EAgentState::idle);
 
             stringstream ss;
             ss << "host" << (i + 1) << "_" << j % 100;
@@ -103,6 +104,7 @@ void make_agent(boost::asio::io_service& _io_service,
                 const string& _workerId)
 {
     CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_service);
+    agent->setState(EAgentState::idle);
     SHostInfoCmd hostInfo;
     hostInfo.m_host = _hostName;
     hostInfo.m_workerId = _workerId;
@@ -126,7 +128,6 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
     agents.reserve(n * 9);
     for (size_t i = 0; i < n; ++i)
     {
-
         string indexStr = to_string(i);
         // Requirement type "hostname"
         make_agent(io_service, agents, "host1_" + indexStr, "wn1");
@@ -153,6 +154,48 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 
     CSSHScheduler scheduler;
     scheduler.makeSchedule(topology, weakAgents);
+    cout << scheduler.toString();
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
+{
+    Logger::instance().init(); // Initialize log
+    CUserDefaults::instance(); // Initialize user defaults
+
+    boost::asio::io_service io_service;
+
+    CAgentChannel::connectionPtrVector_t agents;
+
+    size_t n = 15;
+    agents.reserve(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+        // string indexStr = to_string(i);
+        make_agent(io_service, agents, "host.com", "wn");
+    }
+
+    CAgentChannel::weakConnectionPtrVector_t weakAgents;
+    weakAgents.reserve(agents.size());
+    for (auto& v : agents)
+    {
+        weakAgents.push_back(v);
+    }
+
+    CTopology topo;
+    topo.init("topology_test_diff_1.xml", true);
+
+    CTopology newTopo;
+    newTopo.init("topology_test_diff_2.xml", true);
+
+    CTopology::HashSet_t removedTasks;
+    CTopology::HashSet_t removedCollections;
+    CTopology::HashSet_t addedTasks;
+    CTopology::HashSet_t addedCollections;
+
+    topo.getDifference(newTopo, removedTasks, removedCollections, addedTasks, addedCollections);
+
+    CSSHScheduler scheduler;
+    scheduler.makeSchedule(newTopo, weakAgents, addedTasks, addedCollections);
     cout << scheduler.toString();
 }
 

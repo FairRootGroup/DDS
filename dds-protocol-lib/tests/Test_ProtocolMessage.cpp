@@ -326,13 +326,14 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUSER_TASK_DONE)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdPROGRESS)
 {
-    const unsigned int cmdSize = 16;
+    const unsigned int cmdSize = 18;
 
     SProgressCmd cmd;
     cmd.m_completed = 10;
     cmd.m_errors = 3;
     cmd.m_total = 20;
     cmd.m_time = 2345;
+    cmd.m_srcCommand = 0;
 
     TestCommand(cmd, cmdPROGRESS, cmdSize);
 }

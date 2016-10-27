@@ -44,6 +44,7 @@ namespace dds
             MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
             MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
             MESSAGE_HANDLER(cmdSET_TOPOLOGY, on_cmdSET_TOPOLOGY)
+            MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
             // - Agents commands
             MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
             MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
@@ -105,6 +106,8 @@ namespace dds
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment);
             bool on_cmdSET_TOPOLOGY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment);
+            bool on_cmdUPDATE_TOPOLOGY(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment);
             bool on_cmdENABLE_STAT(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment);
             bool on_cmdDISABLE_STAT(

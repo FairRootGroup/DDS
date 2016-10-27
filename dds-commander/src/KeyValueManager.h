@@ -109,6 +109,9 @@ namespace dds
             ~CKeyValueManager();
 
             void initWithTopology(const topology_api::CTopology& _topology);
+            void updateWithTopology(const topology_api::CTopology& _topology,
+                                    const topology_api::CTopology::HashSet_t& _removedTasks,
+                                    const topology_api::CTopology::HashSet_t& _addedTasks);
             bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
             void deleteKeyValue(uint64_t _taskID);
 
@@ -118,6 +121,9 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _stream, const CKeyValueManager& _value);
 
           private:
+            void initWithTopologyImpl(const topology_api::CTopology& _topology,
+                                      const topology_api::CTopology::HashSet_t* _addedTasks);
+
             SPropertyRecord::propertyMap_t m_propertyMap;
             // The map is used to query specific records by task ID, for example, to fetch or delete all records for a
             // specific task ID.

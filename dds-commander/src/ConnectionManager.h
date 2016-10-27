@@ -70,6 +70,9 @@ namespace dds
             bool on_cmdSET_TOPOLOGY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
+            bool on_cmdUPDATE_TOPOLOGY(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdREPLY_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdENABLE_STAT(
@@ -84,6 +87,10 @@ namespace dds
                                   CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
+            void activateTasks(const CSSHScheduler& _shceduler);
+            void stopTasks(const CAgentChannel::weakConnectionPtrVector_t& _agents,
+                           CAgentChannel::weakConnectionPtr_t _channel,
+                           bool _shutdownOnComplete);
             void enableDisableStatForChannels(bool _enable);
             void _createWnPkg(bool _needInlineBashScript) const;
 
@@ -94,7 +101,6 @@ namespace dds
             CStopUserTasksChannelInfo m_StopUserTasks;
             CSubmitAgentsChannelInfo m_SubmitAgents;
             topology_api::CTopology m_topo;
-            CSSHScheduler m_scheduler;
 
             // TODO: This is temporary storage only. Store this information as a part of scheduler.
             typedef std::map<uint64_t, CAgentChannel::weakConnectionPtr_t> TaskIDToAgentChannelMap_t;
@@ -102,6 +108,9 @@ namespace dds
             std::mutex m_mapMutex;
 
             CKeyValueManager m_keyValueManager;
+
+            std::mutex m_stopTasksMutex;
+            std::condition_variable m_stopTasksCondition;
 
             // Statistic on/off flag
             bool m_statEnabled;

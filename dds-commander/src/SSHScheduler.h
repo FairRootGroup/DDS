@@ -47,13 +47,20 @@ namespace dds
             void makeSchedule(const topology_api::CTopology& _topology,
                               const CAgentChannel::weakConnectionPtrVector_t& _channels);
 
+            void makeSchedule(const topology_api::CTopology& _topology,
+                              const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                              const topology_api::CTopology::HashSet_t& _addedTasks,
+                              const topology_api::CTopology::HashSet_t& _addedCollections);
+
             const ScheduleVector_t& getSchedule() const;
 
             std::string toString();
 
           private:
             void makeScheduleImpl(const topology_api::CTopology& _topology,
-                                  const CAgentChannel::weakConnectionPtrVector_t& _channels);
+                                  const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                  const topology_api::CTopology::HashSet_t* _addedTasks,
+                                  const topology_api::CTopology::HashSet_t* _addedCollections);
 
             void scheduleCollections(const topology_api::CTopology& _topology,
                                      const CAgentChannel::weakConnectionPtrVector_t& _channels,
@@ -67,7 +74,8 @@ namespace dds
                                hostToChannelMap_t& _hostToChannelMap,
                                std::set<uint64_t>& _scheduledTasks,
                                const std::set<uint64_t>& _tasksInCollections,
-                               bool useRequirement);
+                               bool useRequirement,
+                               const topology_api::CTopology::HashSet_t* _addedTasks);
 
           private:
             ScheduleVector_t m_schedule;

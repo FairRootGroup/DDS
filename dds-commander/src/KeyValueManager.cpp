@@ -155,11 +155,35 @@ void CKeyValueManager::initWithTopology(const CTopology& _topology)
     m_taskMap.clear();
     m_propertyMap.clear();
 
+    initWithTopologyImpl(_topology, nullptr);
+}
+
+void CKeyValueManager::updateWithTopology(const topology_api::CTopology& _topology,
+                                          const topology_api::CTopology::HashSet_t& _removedTasks,
+                                          const topology_api::CTopology::HashSet_t& _addedTasks)
+{
+    // Erase removed tasks
+    // TODO: remove tasks also from m_propertyMap
+    for (auto taskID : _removedTasks)
+    {
+        m_taskMap.erase(taskID);
+    }
+
+    initWithTopologyImpl(_topology, &_addedTasks);
+}
+
+void CKeyValueManager::initWithTopologyImpl(const CTopology& _topology,
+                                            const topology_api::CTopology::HashSet_t* _addedTasks)
+{
     // Loop over all tasks. For each task loop over tasks's properties and insert them to map.
     CTopology::TaskInfoIteratorPair_t tasks = _topology.getTaskInfoIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
     {
         uint64_t taskID = it->first;
+
+        if (_addedTasks != nullptr && _addedTasks->find(taskID) == _addedTasks->end())
+            continue;
+
         const STaskInfo& taskInfo = it->second;
 
         const TopoPropertyPtrVector_t& properties = taskInfo.m_task->getProperties();

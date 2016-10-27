@@ -28,7 +28,8 @@ namespace dds
             ACTIVATE = 0,
             STOP,
             VALIDATE,
-            SET_TOPOLOGY
+            SET,
+            UPDATE
         };
 
         /// \brief dds-agent-cmd's container of options
@@ -67,6 +68,9 @@ namespace dds
             options.add_options()("version,v", "Version information");
             options.add_options()(
                 "set,t", bpo::value<std::string>(&_options->m_sTopoFile), "Define a topology to deploy.");
+            options.add_options()("update,u",
+                                  bpo::value<std::string>(&_options->m_sTopoFile),
+                                  "Define a topology to update currently active topology.");
             options.add_options()("disable-validation",
                                   bpo::bool_switch(&_options->m_bDisiableValidation),
                                   "Disiable topology valiadation.");
@@ -83,9 +87,13 @@ namespace dds
             bpo::notify(vm);
 
             MiscCommon::BOOSTHelper::option_dependency(vm, "disable-validation", "set");
+            MiscCommon::BOOSTHelper::option_dependency(vm, "disable-validation", "update");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "set", "activate");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "set", "stop");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "activate", "stop");
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "stop");
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "activate");
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "set");
 
             if (vm.count("help") || vm.empty())
             {
@@ -119,7 +127,23 @@ namespace dds
                     throw std::runtime_error(sMsg);
                 }
 
-                _options->m_topologyCmd = ETopologyCmdType::SET_TOPOLOGY;
+                _options->m_topologyCmd = ETopologyCmdType::SET;
+                // make absolute path
+                boost::filesystem::path pathTopoFile(_options->m_sTopoFile);
+                _options->m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
+                return true;
+            }
+            else if (vm.count("update"))
+            {
+                // check, that topo file exists
+                if (!boost::filesystem::exists(_options->m_sTopoFile))
+                {
+                    std::string sMsg("Can't find the topo file: ");
+                    sMsg += _options->m_sTopoFile;
+                    throw std::runtime_error(sMsg);
+                }
+
+                _options->m_topologyCmd = ETopologyCmdType::UPDATE;
                 // make absolute path
                 boost::filesystem::path pathTopoFile(_options->m_sTopoFile);
                 _options->m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();

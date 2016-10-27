@@ -27,6 +27,7 @@ Modified: Shared memory transport allows to improve the user API. DDS guarantees
 
 ### dds-topology
 Fixed: wrong dds-topology --stop output. (GH-146)   
+Added: dds-topology --update. (GH-129)   
 
 ### dds-octopus    
 Added: Initial release. (GH-150)    

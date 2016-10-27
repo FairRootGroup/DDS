@@ -29,13 +29,22 @@ CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
     subscribeOnEvent(EChannelEvents::OnHandshakeOK, [this](CActivateChannel* _channel) {
         switch (m_options.m_topologyCmd)
         {
-            case ETopologyCmdType::SET_TOPOLOGY:
+            case ETopologyCmdType::SET:
             {
                 LOG(MiscCommon::log_stdout) << "Requesting server to set a new topology...";
                 SSetTopologyCmd cmd;
                 cmd.m_sTopologyFile = m_options.m_sTopoFile;
                 cmd.m_nDisiableValidation = m_options.m_bDisiableValidation;
                 pushMsg<cmdSET_TOPOLOGY>(cmd);
+            }
+            break;
+            case ETopologyCmdType::UPDATE:
+            {
+                LOG(MiscCommon::log_stdout) << "Requesting server to update a topology...";
+                SUpdateTopologyCmd cmd;
+                cmd.m_sTopologyFile = m_options.m_sTopoFile;
+                cmd.m_nDisiableValidation = m_options.m_bDisiableValidation;
+                pushMsg<cmdUPDATE_TOPOLOGY>(cmd);
             }
             break;
             case ETopologyCmdType::ACTIVATE:
@@ -95,14 +104,14 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
 
         std::chrono::milliseconds timeToActivate(_attachment->m_time);
 
-        switch (m_options.m_topologyCmd)
+        switch (_attachment->m_srcCommand)
         {
-            case ETopologyCmdType::ACTIVATE:
+            case cmdACTIVATE_AGENT:
                 cout << "Activated tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
                      << "\nTotal: " << _attachment->m_total
                      << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
                 break;
-            case ETopologyCmdType::STOP:
+            case cmdSTOP_USER_TASK:
                 cout << "Stopped tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
                      << "\nTotal: " << _attachment->m_total
                      << "\nTime to Stop: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;

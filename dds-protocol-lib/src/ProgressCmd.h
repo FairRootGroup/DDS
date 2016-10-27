@@ -19,7 +19,7 @@ namespace dds
         struct SProgressCmd : public SBasicCmd<SProgressCmd>
         {
             SProgressCmd();
-            SProgressCmd(uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0);
+            SProgressCmd(uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0);
             size_t size() const;
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
@@ -29,6 +29,7 @@ namespace dds
             uint32_t m_total;
             uint32_t m_errors;
             uint32_t m_time;
+            uint16_t m_srcCommand;
         };
         std::ostream& operator<<(std::ostream& _stream, const SProgressCmd& val);
         bool operator!=(const SProgressCmd& lhs, const SProgressCmd& rhs);

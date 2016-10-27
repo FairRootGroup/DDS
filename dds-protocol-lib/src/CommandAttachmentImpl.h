@@ -23,6 +23,7 @@
 #include "UUIDCmd.h"
 #include "UpdateKeyCmd.h"
 #include "UpdateKeyErrorCmd.h"
+#include "UpdateTopologyCmd.h"
 #include "UserTaskDoneCmd.h"
 #include "VersionCmd.h"
 
@@ -96,6 +97,7 @@ namespace dds
         REGISTER_CMD_ATTACHMENT(SDeleteKeyCmd, cmdDELETE_KEY)
         REGISTER_CMD_ATTACHMENT(SGetPropValuesCmd, cmdGET_PROP_VALUES)
         REGISTER_CMD_ATTACHMENT(SSetTopologyCmd, cmdSET_TOPOLOGY)
+        REGISTER_CMD_ATTACHMENT(SUpdateTopologyCmd, cmdUPDATE_TOPOLOGY)
         REGISTER_CMD_ATTACHMENT(SCustomCmdCmd, cmdCUSTOM_CMD)
     }
 }

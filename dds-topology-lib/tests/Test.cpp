@@ -526,4 +526,52 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
                       logic_error);
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
+{
+    CTopology topo;
+    topo.init("topology_test_diff_1.xml", true);
+
+    CTopology newTopo;
+    newTopo.init("topology_test_diff_2.xml", true);
+
+    CTopology::HashSet_t removedTasks;
+    CTopology::HashSet_t removedCollections;
+    CTopology::HashSet_t addedTasks;
+    CTopology::HashSet_t addedCollections;
+
+    topo.getDifference(newTopo, removedTasks, removedCollections, addedTasks, addedCollections);
+
+    output_test_stream output1("topology_test_diff.txt", true);
+
+    output1 << "----- Removed tasks -----\n";
+    for (auto& v : removedTasks)
+    {
+        const STaskInfo& info = topo.getTaskInfoByHash(v);
+        output1 << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
+    }
+
+    output1 << "----- Removed collections -----\n";
+    for (auto& v : removedCollections)
+    {
+        TaskCollectionPtr_t collection = topo.getTaskCollectionByHash(v);
+        output1 << v << " " << collection->getPath() << "\n";
+    }
+
+    output1 << "----- Added tasks -----\n";
+    for (auto& v : addedTasks)
+    {
+        const STaskInfo& info = newTopo.getTaskInfoByHash(v);
+        output1 << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
+    }
+
+    output1 << "----- Added collections -----\n";
+    for (auto& v : addedCollections)
+    {
+        TaskCollectionPtr_t collection = newTopo.getTaskCollectionByHash(v);
+        output1 << v << " " << collection->getPath() << "\n";
+    }
+
+    BOOST_CHECK(output1.match_pattern());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
