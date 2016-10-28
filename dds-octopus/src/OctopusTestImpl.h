@@ -10,7 +10,9 @@
 #include "Options.h"
 #include "dds_intercom.h"
 // STD
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
 

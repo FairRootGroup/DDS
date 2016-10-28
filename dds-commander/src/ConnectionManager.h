@@ -13,6 +13,7 @@
 #include "Topology.h"
 #include "UIChannelInfo.h"
 // STD
+#include <condition_variable>
 #include <mutex>
 
 namespace dds
