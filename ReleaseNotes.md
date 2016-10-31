@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v1.4 (Not Yet Released)
+## v1.4 (2016-10-31)
 
 ### DDS common
 Modified: pipe log engine is improved to log events line by line, rather than using a fixed string length.  
