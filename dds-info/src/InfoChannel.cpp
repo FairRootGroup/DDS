@@ -52,11 +52,21 @@ bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENT
 {
     LOG(debug) << "UI agent has recieved Agents Info from the commander server.";
     if (m_options.m_bNeedAgentsNumber)
+    {
         LOG(log_stdout_clean) << _attachment->m_nActiveAgents;
-    if (m_options.m_bNeedAgentsList && !_attachment->m_sListOfAgents.empty())
-        LOG(log_stdout_clean) << _attachment->m_sListOfAgents;
+        // Close communication channel
+        stop();
+    }
 
-    // Close communication channel
-    stop();
+    if (m_options.m_bNeedAgentsList && !_attachment->m_sAgentInfo.empty())
+    {
+        std::lock_guard<std::mutex> lock(m_mutexCounter);
+        ++m_nCounter;
+        LOG(log_stdout_clean) << _attachment->m_sAgentInfo;
+
+        if (m_nCounter == _attachment->m_nActiveAgents)
+            stop();
+    }
+
     return true;
 }

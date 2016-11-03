@@ -890,16 +890,17 @@ void CConnectionManager::stopTasks(const CAgentChannel::weakConnectionPtrVector_
 bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
-    SAgentsInfoCmd cmd;
-    stringstream ss;
-
     CAgentChannel::weakConnectionPtrVector_t channels(
         getChannels([](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
             return (_v->getChannelType() == EChannelType::AGENT && _v->started());
         }));
 
+    size_t i = 0;
     for (const auto& v : channels)
     {
+        SAgentsInfoCmd cmd;
+        stringstream ss;
+
         if (v.expired())
             continue;
         auto ptr = v.lock();
@@ -913,20 +914,22 @@ bool CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
             sTaskName = ssTaskString.str();
         }
 
-        ++cmd.m_nActiveAgents;
         ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
            << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
            << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
            << "\nAgent startup time: " << chrono::duration<double>(ptr->getStartupTime()).count() << " s"
            << "\nState: " << g_agentStates.at(ptr->getState()) << "\n"
            << "\nTask ID: " << sTaskName << "\n";
-    }
-    cmd.m_sListOfAgents = ss.str();
 
-    if (!_channel.expired())
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
+        cmd.m_nActiveAgents = channels.size();
+        cmd.m_nIndex = i++;
+        cmd.m_sAgentInfo = ss.str();
+
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
+        }
     }
 
     return true;

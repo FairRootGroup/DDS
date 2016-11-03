@@ -2,6 +2,8 @@
 
 ## v1.6 (NOT YET RELEASED)
 
+### dds-info
+Fixed: send list of agents one by one to avoid protocol string limits. (GH-158)    
 
 ## v1.4 (2016-10-31)
 

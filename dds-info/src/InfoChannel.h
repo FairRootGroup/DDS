@@ -18,6 +18,7 @@ namespace dds
         {
             CInfoChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI)
+                , m_nCounter(0)
             {
                 subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CInfoChannel* _channel) {
                     // ask the server what we wnated to ask :)
@@ -67,6 +68,8 @@ namespace dds
 
           private:
             SOptions m_options;
+            std::mutex m_mutexCounter;
+            size_t m_nCounter;
         };
     }
 }

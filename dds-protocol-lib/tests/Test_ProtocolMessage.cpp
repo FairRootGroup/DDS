@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_AGENTS_INFO)
 
     SAgentsInfoCmd cmd;
     cmd.m_nActiveAgents = 3;
-    cmd.m_sListOfAgents = "Agent1, Agent2, Agent3";
+    cmd.m_sAgentInfo = "Agent1, Agent2, Agent3";
 
     TestCommand(cmd, cmdREPLY_AGENTS_INFO, cmdSize);
 }
