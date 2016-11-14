@@ -104,20 +104,6 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     };
     _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
 
-    function<bool(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel * _channel)>
-        fACTIVATE_AGENT =
-            [this](SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
-        return this->on_cmdACTIVATE_AGENT(_attachment, getWeakPtr(_channel));
-    };
-    _newClient->registerMessageHandler<cmdACTIVATE_AGENT>(fACTIVATE_AGENT);
-
-    function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel * _channel)>
-        fSTOP_USER_TASK =
-            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
-        return this->on_cmdSTOP_USER_TASK(_attachment, getWeakPtr(_channel));
-    };
-    _newClient->registerMessageHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
-
     function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
         fTRANSPORT_TEST =
             [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
@@ -157,12 +143,6 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
     _newClient->registerMessageHandler<cmdGET_PROP_VALUES>(fGET_PROP_VALUES);
-
-    function<bool(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment, CAgentChannel * _channel)> fSET_TOPOLOGY =
-        [this](SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
-        return this->on_cmdSET_TOPOLOGY(_attachment, getWeakPtr(_channel));
-    };
-    _newClient->registerMessageHandler<cmdSET_TOPOLOGY>(fSET_TOPOLOGY);
 
     function<bool(SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment, CAgentChannel * _channel)>
         fUPDATE_TOPOLOGY =
@@ -499,47 +479,72 @@ bool CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
     return true;
 }
 
-bool CConnectionManager::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment,
-                                            CAgentChannel::weakConnectionPtr_t _channel)
-{
-    LOG(info) << "UI channel requested to set up a new topology. " << *_attachment;
-    auto p = _channel.lock();
-    try
-    {
-        // Resolve topology
-        m_topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
-        m_topo.init(_attachment->m_sTopologyFile);
-        m_keyValueManager.initWithTopology(m_topo);
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("new Topology is set to: " + _attachment->m_sTopologyFile, info, cmdSET_TOPOLOGY));
-    }
-    catch (exception& _e)
-    {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSET_TOPOLOGY));
-    }
-    p->pushMsg<cmdSHUTDOWN>();
-    return true;
-}
-
 bool CConnectionManager::on_cmdUPDATE_TOPOLOGY(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
-    LOG(info) << "UI channel requested to update a topology. " << *_attachment;
+    LOG(info) << "UI channel requested to update/activate/stop a topology. " << *_attachment;
+
+    // Only a single topology update/activate/stop can be active at a time
+    lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
 
     try
     {
         auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Updating topology to " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+
+        SUpdateTopologyCmd::EUpdateType updateType = (SUpdateTopologyCmd::EUpdateType)_attachment->m_updateType;
+
+        switch (updateType)
+        {
+            case SUpdateTopologyCmd::EUpdateType::UPDATE:
+                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
+                    "Updating topology to " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+                break;
+            case SUpdateTopologyCmd::EUpdateType::ACTIVATE:
+                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
+                    "Activating topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+                break;
+            case SUpdateTopologyCmd::EUpdateType::STOP:
+                p->pushMsg<cmdSIMPLE_MSG>(
+                    SSimpleMsgCmd("Stopping topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+                break;
+            default:
+                break;
+        }
+
+        //
+        // Check if topology is currently active, i.e. there are executing tasks
+        //
+        CAgentChannel::weakConnectionPtrVector_t channels(
+            getChannels([](CAgentChannel::connectionPtr_t _v, bool& _stop) {
+                _stop = (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() > 0 &&
+                         _v->getState() == EAgentState::executing);
+                return _stop;
+            }));
+        bool topologyActive = !channels.empty();
+        // Current topology is not active we reset
+        if (!topologyActive)
+        {
+            m_topo = CTopology();
+        }
+        //
+
+        // If topology is active we can't activate it again
+        if (updateType == SUpdateTopologyCmd::EUpdateType::ACTIVATE && topologyActive)
+        {
+            throw runtime_error("Topology is currently active, can't activate it again.");
+        }
 
         //
         // Get new topology and calculate the difference
         //
         CTopology topo;
-        topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
-        topo.init(_attachment->m_sTopologyFile);
+        // If topo file is empty than we stop the topology
+        if (!_attachment->m_sTopologyFile.empty())
+        {
+            topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
+            topo.init(_attachment->m_sTopologyFile);
+        }
 
         topology_api::CTopology::HashSet_t removedTasks;
         topology_api::CTopology::HashSet_t removedCollections;
@@ -550,10 +555,10 @@ bool CConnectionManager::on_cmdUPDATE_TOPOLOGY(
         m_keyValueManager.updateWithTopology(topo, removedTasks, addedTasks);
 
         stringstream ss;
-        ss << "\nRemoved tasks:" << removedTasks.size() << "\n"
+        ss << "\nRemoved tasks: " << removedTasks.size() << "\n"
            << m_topo.stringOfTasks(removedTasks) << "Removed collections:" << removedCollections.size() << "\n"
-           << m_topo.stringOfCollections(removedCollections) << "Added tasks:" << addedTasks.size() << "\n"
-           << topo.stringOfTasks(addedTasks) << "Added collections:" << addedCollections.size() << "\n"
+           << m_topo.stringOfCollections(removedCollections) << "Added tasks :" << addedTasks.size() << "\n"
+           << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
            << topo.stringOfCollections(addedCollections);
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), log_stdout, cmdUPDATE_TOPOLOGY));
 
@@ -587,35 +592,36 @@ bool CConnectionManager::on_cmdUPDATE_TOPOLOGY(
         //
         if (addedTasks.size() > 0)
         {
-            lock_guard<mutex> lock(m_ActivateAgents.m_mutexStart);
+            m_updateTopology.m_srcCommand = cmdACTIVATE_AGENT;
+            m_updateTopology.m_shutdownOnComplete = true;
 
-            if (!m_ActivateAgents.m_channel.expired())
+            if (!m_updateTopology.m_channel.expired())
                 throw runtime_error(
                     "Can not process the request. Activation or update of the agents is already in progress.");
 
             p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Activating added tasks...", log_stdout, cmdUPDATE_TOPOLOGY));
 
             // remember the UI channel, which requested to submit the job
-            m_ActivateAgents.m_channel = _channel;
-            m_ActivateAgents.zeroCounters();
+            m_updateTopology.m_channel = _channel;
+            m_updateTopology.zeroCounters();
 
             auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
                 return (_v->getChannelType() == EChannelType::AGENT && _v->started() &&
                         _v->getState() == EAgentState::idle);
             };
 
-            m_ActivateAgents.m_nofRequests = addedTasks.size();
+            m_updateTopology.m_nofRequests = addedTasks.size();
             size_t nofAgents = countNofChannels(condition);
 
-            LOG(info) << "Available agents = " << nofAgents;
+            LOG(info) << "Number of available agents: " << nofAgents;
 
             if (nofAgents == 0)
                 throw runtime_error("There are no connected agents.");
-            if (nofAgents < m_ActivateAgents.m_nofRequests)
+            if (nofAgents < m_updateTopology.m_nofRequests)
                 throw runtime_error("The number of agents is not sufficient for this topology.");
 
             // initiate UI progress
-            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_ActivateAgents.m_nofRequests, 0));
+            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_updateTopology.m_nofRequests, 0));
 
             // Schedule the tasks
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
@@ -648,71 +654,7 @@ bool CConnectionManager::on_cmdUPDATE_TOPOLOGY(
         auto p = _channel.lock();
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdUPDATE_TOPOLOGY));
 
-        m_ActivateAgents.m_channel.reset();
-        return true;
-    }
-    return true;
-}
-
-bool CConnectionManager::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                              CAgentChannel::weakConnectionPtr_t _channel)
-{
-    LOG(info) << "UI channel requested a topology activation...";
-    lock_guard<mutex> lock(m_ActivateAgents.m_mutexStart);
-    try
-    {
-        if (!m_ActivateAgents.m_channel.expired())
-            throw runtime_error(
-                "Can not process the request. Activation or update of the agents is already in progress.");
-
-        // remember the UI channel, which requested to submit the job
-        m_ActivateAgents.m_channel = _channel;
-        m_ActivateAgents.zeroCounters();
-
-        auto p = m_ActivateAgents.m_channel.lock();
-        // Start distributing user tasks between agents
-        // TODO: We might need to create a thread here to avoid blocking a thread of the transport
-
-        // Send binaries of user jobs to all active agents.
-        // Send activate signal to all agents. This will trigger start of user jobs on the agents.
-        auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
-            return (_v->getChannelType() == EChannelType::AGENT && _v->started());
-        };
-
-        m_ActivateAgents.m_nofRequests = m_topo.getMainGroup()->getTotalNofTasks();
-        size_t nofAgents = countNofChannels(condition);
-
-        LOG(info) << "Available agents = " << nofAgents;
-
-        if (nofAgents == 0)
-            throw runtime_error("There are no connected agents.");
-        if (nofAgents < m_ActivateAgents.m_nofRequests)
-            throw runtime_error("The number of agents is not sufficient for this topology.");
-
-        // initiate UI progress
-        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_ActivateAgents.m_nofRequests, 0));
-
-        CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
-
-        CSSHScheduler scheduler;
-        scheduler.makeSchedule(m_topo, channels);
-        const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
-
-        // Clear the map and fill it again on each activation
-        m_taskIDToAgentChannelMap.clear();
-        for (const auto& sch : schedule)
-        {
-            m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_channel;
-        }
-
-        activateTasks(scheduler);
-    }
-    catch (exception& _e)
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdACTIVATE_AGENT));
-
-        m_ActivateAgents.m_channel.reset();
+        m_updateTopology.m_channel.reset();
         return true;
     }
     return true;
@@ -820,70 +762,46 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
     });
 }
 
-bool CConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                              CAgentChannel::weakConnectionPtr_t _channel)
-{
-    auto condition = [](CAgentChannel::connectionPtr_t _v, bool& /*_stop*/) {
-        return (_v->getChannelType() == EChannelType::AGENT && _v->started() && _v->getTaskID() != 0);
-    };
-
-    CAgentChannel::weakConnectionPtrVector_t agents(getChannels(condition));
-
-    stopTasks(agents, _channel, true);
-
-    return true;
-}
-
 void CConnectionManager::stopTasks(const CAgentChannel::weakConnectionPtrVector_t& _agents,
                                    CAgentChannel::weakConnectionPtr_t _channel,
                                    bool _shutdownOnComplete)
 {
-    lock_guard<mutex> lock(m_StopUserTasks.m_mutexStart);
-    m_StopUserTasks.m_shutdownOnComplete = _shutdownOnComplete;
-    try
+    m_updateTopology.m_srcCommand = cmdSTOP_USER_TASK;
+    m_updateTopology.m_shutdownOnComplete = _shutdownOnComplete;
+
+    if (!m_updateTopology.m_channel.expired())
+        throw runtime_error("Can not process the request. Stopping of tasks is already in progress.");
+
+    // remember the UI channel, which requested to submit the job
+    m_updateTopology.m_channel = _channel;
+    m_updateTopology.zeroCounters();
+
+    auto p = m_updateTopology.m_channel.lock();
+
+    m_updateTopology.m_nofRequests = _agents.size();
+
+    // Stop UI if no tasks are running
+    if (m_updateTopology.m_nofRequests <= 0)
     {
-        if (!m_StopUserTasks.m_channel.expired())
-            throw runtime_error("Can not process the request. Stopping of tasks is already in progress.");
-
-        // remember the UI channel, which requested to submit the job
-        m_StopUserTasks.m_channel = _channel;
-        m_StopUserTasks.zeroCounters();
-
-        auto p = m_StopUserTasks.m_channel.lock();
-
-        m_StopUserTasks.m_nofRequests = _agents.size();
-
-        // Stop UI if no tasks are running
-        if (m_StopUserTasks.m_nofRequests <= 0)
-        {
-            ELogSeverityLevel level = (_shutdownOnComplete) ? fatal : warning;
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", level, cmdSTOP_USER_TASK));
-            m_StopUserTasks.m_channel.reset();
-            return;
-        }
-
-        // initiate the progress on the UI
-        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdSTOP_USER_TASK, 0, m_StopUserTasks.m_nofRequests, 0));
-
-        for (const auto& v : _agents)
-        {
-            if (v.expired())
-                continue;
-            auto ptr = v.lock();
-            // dequeue important (or expensive) messages
-            ptr->dequeueMsg<cmdUPDATE_KEY>();
-            ptr->dequeueMsg<cmdDELETE_KEY>();
-            // send stop message
-            ptr->template pushMsg<cmdSTOP_USER_TASK>();
-        }
-    }
-    catch (exception& _e)
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdSTOP_USER_TASK));
-
-        m_StopUserTasks.m_channel.reset();
+        ELogSeverityLevel level = (_shutdownOnComplete) ? fatal : warning;
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", level, cmdSTOP_USER_TASK));
+        m_updateTopology.m_channel.reset();
         return;
+    }
+
+    // initiate the progress on the UI
+    p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdSTOP_USER_TASK, 0, m_updateTopology.m_nofRequests, 0));
+
+    for (const auto& v : _agents)
+    {
+        if (v.expired())
+            continue;
+        auto ptr = v.lock();
+        // dequeue important (or expensive) messages
+        ptr->dequeueMsg<cmdUPDATE_KEY>();
+        ptr->dequeueMsg<cmdDELETE_KEY>();
+        // send stop message
+        ptr->template pushMsg<cmdSTOP_USER_TASK>();
     }
 }
 
@@ -987,15 +905,14 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
     switch (_attachment->m_srcCommand)
     {
         case cmdACTIVATE_AGENT:
-            // case cmdUPDATE_TOPOLOGY:
             switch (_attachment->m_msgSeverity)
             {
                 case info:
-                    m_ActivateAgents.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
                 case error:
                 case fatal:
-                    m_ActivateAgents.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
             }
             return true; // let others to process this message
@@ -1004,7 +921,7 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
             switch (_attachment->m_msgSeverity)
             {
                 case info:
-                    m_StopUserTasks.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     {
                         // Task was successfully stopped, set the idle state
                         if (!_channel.expired())
@@ -1017,10 +934,10 @@ bool CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
                     break;
                 case error:
                 case fatal:
-                    m_StopUserTasks.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
                     break;
             }
-            if (m_StopUserTasks.allReceived())
+            if (m_updateTopology.allReceived())
             {
                 m_stopTasksCondition.notify_all();
             }

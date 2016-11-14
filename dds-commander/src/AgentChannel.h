@@ -41,9 +41,6 @@ namespace dds
             MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
             MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
             // - Topology commands
-            MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
-            MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
-            MESSAGE_HANDLER(cmdSET_TOPOLOGY, on_cmdSET_TOPOLOGY)
             MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
             // - Agents commands
             MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
@@ -79,10 +76,6 @@ namespace dds
           private:
             // Message Handlers
             bool on_cmdSUBMIT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment);
-            bool on_cmdACTIVATE_AGENT(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_AGENT>::ptr_t _attachment);
-            bool on_cmdSTOP_USER_TASK(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment);
             bool on_cmdREPLY_HOST_INFO(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_HOST_INFO>::ptr_t _attachment);
             bool on_cmdGED_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGED_PID>::ptr_t _attachment);
@@ -104,8 +97,6 @@ namespace dds
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_LIST>::ptr_t _attachment);
             bool on_cmdGET_PROP_VALUES(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment);
-            bool on_cmdSET_TOPOLOGY(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment);
             bool on_cmdUPDATE_TOPOLOGY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment);
             bool on_cmdENABLE_STAT(

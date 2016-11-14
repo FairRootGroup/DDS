@@ -14,6 +14,13 @@ namespace dds
     {
         struct SUpdateTopologyCmd : public SBasicCmd<SUpdateTopologyCmd>
         {
+            enum class EUpdateType : uint8_t
+            {
+                UPDATE = 0,
+                ACTIVATE,
+                STOP
+            };
+
             SUpdateTopologyCmd();
             size_t size() const;
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
@@ -24,6 +31,8 @@ namespace dds
             uint16_t m_nDisiableValidation;
             // topology file
             std::string m_sTopologyFile;
+            // topology update type
+            uint8_t m_updateType;
         };
         std::ostream& operator<<(std::ostream& _stream, const SUpdateTopologyCmd& val);
         bool operator!=(const SUpdateTopologyCmd& lhs, const SUpdateTopologyCmd& rhs);

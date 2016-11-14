@@ -29,32 +29,24 @@ CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
     subscribeOnEvent(EChannelEvents::OnHandshakeOK, [this](CActivateChannel* _channel) {
         switch (m_options.m_topologyCmd)
         {
-            case ETopologyCmdType::SET:
-            {
-                LOG(MiscCommon::log_stdout) << "Requesting server to set a new topology...";
-                SSetTopologyCmd cmd;
-                cmd.m_sTopologyFile = m_options.m_sTopoFile;
-                cmd.m_nDisiableValidation = m_options.m_bDisiableValidation;
-                pushMsg<cmdSET_TOPOLOGY>(cmd);
-            }
-            break;
+            case ETopologyCmdType::ACTIVATE:
+            case ETopologyCmdType::STOP:
             case ETopologyCmdType::UPDATE:
             {
-                LOG(MiscCommon::log_stdout) << "Requesting server to update a topology...";
+                LOG(MiscCommon::log_stdout) << "Requesting server to activate/update/stop a topology...";
                 SUpdateTopologyCmd cmd;
                 cmd.m_sTopologyFile = m_options.m_sTopoFile;
                 cmd.m_nDisiableValidation = m_options.m_bDisiableValidation;
+                // Set the proper update type
+                if (m_options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
+                    cmd.m_updateType = (uint8_t)SUpdateTopologyCmd::EUpdateType::ACTIVATE;
+                else if (m_options.m_topologyCmd == ETopologyCmdType::UPDATE)
+                    cmd.m_updateType = (uint8_t)SUpdateTopologyCmd::EUpdateType::UPDATE;
+                else if (m_options.m_topologyCmd == ETopologyCmdType::STOP)
+                    cmd.m_updateType = (uint8_t)SUpdateTopologyCmd::EUpdateType::STOP;
                 pushMsg<cmdUPDATE_TOPOLOGY>(cmd);
             }
             break;
-            case ETopologyCmdType::ACTIVATE:
-                LOG(MiscCommon::log_stdout) << "Requesting server to activate user tasks...";
-                pushMsg<cmdACTIVATE_AGENT>();
-                break;
-            case ETopologyCmdType::STOP:
-                LOG(MiscCommon::log_stdout) << "Requesting server to stop user tasks...";
-                pushMsg<cmdSTOP_USER_TASK>();
-                break;
             default:
                 return;
         }

@@ -29,11 +29,8 @@ while [  ${nofAgents} -lt ${requiredNofAgents} ]; do
 	nofAgents=$(dds-info -n)
 done
 
-echo "Setting topology file..."
-dds-topology -t ${topologyFile}
-
 echo "Activating topology..."
-dds-topology --activate
+dds-topology --activate ${topologyFile}
 
 # DDS commander updates property list each 60 seconds
 sleep 65

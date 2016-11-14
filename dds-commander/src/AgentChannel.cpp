@@ -126,18 +126,6 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
     return false;
 }
 
-bool CAgentChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment)
-{
-    // The agent channel can't access all agents, therefore other should process this message.
-    return false;
-}
-
-bool CAgentChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment)
-{
-    // The agent channel can't access all agents, therefore other should process this message.
-    return false;
-}
-
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment)
 {
     m_remoteHostInfo = *_attachment;
@@ -231,9 +219,6 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 
     switch (_attachment->m_srcCommand)
     {
-        case cmdSET_TOPOLOGY:
-            return false; // let others to process this message
-
         case cmdACTIVATE_AGENT:
             return false; // let others to process this message
 
@@ -282,11 +267,6 @@ bool CAgentChannel::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>
 }
 
 bool CAgentChannel::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdSET_TOPOLOGY(SCommandAttachmentImpl<cmdSET_TOPOLOGY>::ptr_t _attachment)
 {
     return false;
 }

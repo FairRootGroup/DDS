@@ -339,17 +339,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdPROGRESS)
     TestCommand(cmd, cmdPROGRESS, cmdSize);
 }
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSET_TOPOLOGY)
-{
-    const unsigned int cmdSize = 28;
-
-    SSetTopologyCmd cmd;
-    cmd.m_nDisiableValidation = 1;
-    cmd.m_sTopologyFile = "/Users/topology/topo.xml";
-
-    TestCommand(cmd, cmdSET_TOPOLOGY, cmdSize);
-}
-
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdCUSTOM_CMD)
 {
     const unsigned int cmdSize = 24;

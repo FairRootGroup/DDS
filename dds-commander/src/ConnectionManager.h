@@ -46,12 +46,6 @@ namespace dds
                 CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdSUBMIT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdACTIVATE_AGENT(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_AGENT>::ptr_t _attachment,
-                CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSTOP_USER_TASK(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment,
-                CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdTRANSPORT_TEST(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
@@ -67,9 +61,6 @@ namespace dds
                 CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdGET_PROP_VALUES(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment,
-                CAgentChannel::weakConnectionPtr_t _channel);
-            bool on_cmdSET_TOPOLOGY(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdSET_TOPOLOGY>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
             bool on_cmdUPDATE_TOPOLOGY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
@@ -98,8 +89,7 @@ namespace dds
           private:
             CGetLogChannelInfo m_getLog;
             CTestChannelInfo m_transportTest;
-            CActivateAgentsChannelInfo m_ActivateAgents;
-            CStopUserTasksChannelInfo m_StopUserTasks;
+            CUpdateTopologyChannelInfo m_updateTopology;
             CSubmitAgentsChannelInfo m_SubmitAgents;
             topology_api::CTopology m_topo;
 

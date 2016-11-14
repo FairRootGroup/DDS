@@ -267,11 +267,11 @@ namespace dds
             size_t m_totalTime;     // [ms]
         };
 
-        class CActivateAgentsChannelInfo : public CUIChannelInfo<CActivateAgentsChannelInfo>
+        class CUpdateTopologyChannelInfo : public CUIChannelInfo<CUpdateTopologyChannelInfo>
         {
           public:
-            CActivateAgentsChannelInfo()
-                : CUIChannelInfo<CActivateAgentsChannelInfo>()
+            CUpdateTopologyChannelInfo()
+                : CUIChannelInfo<CUpdateTopologyChannelInfo>()
             {
                 m_srcCommand = protocol_api::cmdACTIVATE_AGENT;
             }
@@ -281,7 +281,8 @@ namespace dds
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> Activated";
+                std::string str = (m_srcCommand == protocol_api::cmdACTIVATE_AGENT) ? "Activated" : "Stopped";
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> " << str;
                 return ss.str();
             }
 
@@ -297,45 +298,10 @@ namespace dds
             std::string getAllReceivedMessage() const
             {
                 std::stringstream ss;
-                ss << "total: " << m_nofRequests << ", activations: " << nofReceived()
+                std::string str = (m_srcCommand == protocol_api::cmdACTIVATE_AGENT) ? "activations" : "stopped";
+                ss << "total: " << m_nofRequests << ", " << str << ": " << nofReceived()
                    << ", errors: " << m_nofReceivedErrors << "\n";
 
-                return ss.str();
-            }
-        };
-
-        class CStopUserTasksChannelInfo : public CUIChannelInfo<CStopUserTasksChannelInfo>
-        {
-          public:
-            CStopUserTasksChannelInfo()
-                : CUIChannelInfo<CStopUserTasksChannelInfo>()
-            {
-                m_srcCommand = protocol_api::cmdSTOP_USER_TASK;
-            }
-
-            std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
-                                   CAgentChannel::weakConnectionPtr_t _channel) const
-            {
-                std::stringstream ss;
-                auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> Stopped";
-                return ss.str();
-            }
-
-            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
-                                        CAgentChannel::weakConnectionPtr_t _channel) const
-            {
-                std::stringstream ss;
-                auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
-                return ss.str();
-            }
-
-            std::string getAllReceivedMessage() const
-            {
-                std::stringstream ss;
-                ss << "total: " << m_nofRequests << ", stopped: " << nofReceived()
-                   << ", errors: " << m_nofReceivedErrors;
                 return ss.str();
             }
         };

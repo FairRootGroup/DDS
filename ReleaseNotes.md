@@ -5,6 +5,10 @@
 ### dds-info
 Fixed: send list of agents one by one to avoid protocol string limits. (GH-158)    
 
+### dds-topology
+Modified: dds-topology's activate, stop, update and set commands are refactored. (GH-153)    
+Modified: "dds-topology --set" is obsolete now, use "dds-topology --activate topo_file.xml" instead. (GH-153)    
+
 ## v1.4 (2016-10-31)
 
 ### DDS common
