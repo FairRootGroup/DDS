@@ -53,4 +53,7 @@ SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 4
 CommentPragmas:  '^ IWYU pragma:'
 SpaceBeforeParens: ControlStatements
+
+MacroBlockBegin: "^BEGIN_[A-Z_]*$"
+MacroBlockEnd: "^END_[A-Z_]*$"
 ...
