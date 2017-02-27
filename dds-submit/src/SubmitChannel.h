@@ -20,8 +20,8 @@ namespace dds
 
           public:
             BEGIN_MSG_MAP(CSubmitChannel)
-            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-            MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
+                MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
             END_MSG_MAP()
 
           public:

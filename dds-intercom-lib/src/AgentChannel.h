@@ -18,9 +18,9 @@ namespace dds
         {
           public:
             BEGIN_MSG_MAP(CAgentChannel)
-            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-            MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
-            MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
+                MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
+                MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
             // MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
             END_MSG_MAP()
 

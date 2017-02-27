@@ -22,7 +22,7 @@ namespace dds
 
           public:
             BEGIN_OCTOPUS_MSG_MAP("Ping")
-            OCTOPUS_MSG_HANDLER(onReturnCmd, SOctopusProtocol_Return)
+                OCTOPUS_MSG_HANDLER(onReturnCmd, SOctopusProtocol_Return)
             END_OCTOPUS_MSG_MAP
 
           public:

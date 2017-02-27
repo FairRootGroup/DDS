@@ -27,34 +27,34 @@ namespace dds
 
           public:
             BEGIN_MSG_MAP(CAgentChannel)
-            MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
-            //====> replay on the "submit" command request
-            MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
-            MESSAGE_HANDLER(cmdUSER_TASK_DONE, on_cmdUSER_TASK_DONE)
-            //====> replay on the "info" command request
-            // - get pid of the commander server
-            MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
-            // - get Agents Info command
-            MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
-            MESSAGE_HANDLER(cmdREPLY_ID, on_cmdREPLY_ID)
-            MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
-            MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
-            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-            // - Topology commands
-            MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
-            // - Agents commands
-            MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
-            MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
-            // Watchdog
-            MESSAGE_HANDLER(cmdWATCHDOG_HEARTBEAT, on_cmdWATCHDOG_HEARTBEAT)
-            MESSAGE_HANDLER(cmdGET_PROP_LIST, on_cmdGET_PROP_LIST)
-            MESSAGE_HANDLER(cmdGET_PROP_VALUES, on_cmdGET_PROP_VALUES)
-            // Statistics commands
-            MESSAGE_HANDLER(cmdENABLE_STAT, on_cmdENABLE_STAT)
-            MESSAGE_HANDLER(cmdDISABLE_STAT, on_cmdDISABLE_STAT)
-            MESSAGE_HANDLER(cmdGET_STAT, on_cmdGET_STAT)
-            // custom command
-            MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
+                MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
+                //====> replay on the "submit" command request
+                MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
+                MESSAGE_HANDLER(cmdUSER_TASK_DONE, on_cmdUSER_TASK_DONE)
+                //====> replay on the "info" command request
+                // - get pid of the commander server
+                MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
+                // - get Agents Info command
+                MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
+                MESSAGE_HANDLER(cmdREPLY_ID, on_cmdREPLY_ID)
+                MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
+                MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
+                MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                // - Topology commands
+                MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
+                // - Agents commands
+                MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
+                MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+                // Watchdog
+                MESSAGE_HANDLER(cmdWATCHDOG_HEARTBEAT, on_cmdWATCHDOG_HEARTBEAT)
+                MESSAGE_HANDLER(cmdGET_PROP_LIST, on_cmdGET_PROP_LIST)
+                MESSAGE_HANDLER(cmdGET_PROP_VALUES, on_cmdGET_PROP_VALUES)
+                // Statistics commands
+                MESSAGE_HANDLER(cmdENABLE_STAT, on_cmdENABLE_STAT)
+                MESSAGE_HANDLER(cmdDISABLE_STAT, on_cmdDISABLE_STAT)
+                MESSAGE_HANDLER(cmdGET_STAT, on_cmdGET_STAT)
+                // custom command
+                MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
             END_MSG_MAP()
 
           public:

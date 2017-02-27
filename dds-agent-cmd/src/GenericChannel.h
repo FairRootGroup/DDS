@@ -51,9 +51,9 @@ namespace dds
 
           public:
             BEGIN_MSG_MAP(CGenericChannel)
-            MESSAGE_HANDLER(dds::protocol_api::cmdSIMPLE_MSG, on_cmdSIMPLE_MSG);
-            MESSAGE_HANDLER(dds::protocol_api::cmdSHUTDOWN, on_cmdSHUTDOWN)
-            MESSAGE_HANDLER(dds::protocol_api::cmdPROGRESS, on_cmdPROGRESS)
+                MESSAGE_HANDLER(dds::protocol_api::cmdSIMPLE_MSG, on_cmdSIMPLE_MSG);
+                MESSAGE_HANDLER(dds::protocol_api::cmdSHUTDOWN, on_cmdSHUTDOWN)
+                MESSAGE_HANDLER(dds::protocol_api::cmdPROGRESS, on_cmdPROGRESS)
             END_MSG_MAP()
 
             void setOptions(const SOptions& _options)

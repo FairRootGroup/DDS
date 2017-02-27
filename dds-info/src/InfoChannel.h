@@ -49,9 +49,9 @@ namespace dds
 
           public:
             BEGIN_MSG_MAP(CInfoChannel)
-            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
-            MESSAGE_HANDLER(cmdREPLY_PID, on_cmdREPLY_PID)
-            MESSAGE_HANDLER(cmdREPLY_AGENTS_INFO, on_cmdREPLY_AGENTS_INFO)
+                MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                MESSAGE_HANDLER(cmdREPLY_PID, on_cmdREPLY_PID)
+                MESSAGE_HANDLER(cmdREPLY_AGENTS_INFO, on_cmdREPLY_AGENTS_INFO)
             END_MSG_MAP()
 
             void setOptions(const SOptions& _options)

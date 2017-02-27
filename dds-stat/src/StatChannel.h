@@ -46,7 +46,7 @@ namespace dds
 
           public:
             BEGIN_MSG_MAP(CStatChannel)
-            MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
             END_MSG_MAP()
 
             void setOptions(const SOptions& _options)

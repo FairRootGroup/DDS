@@ -26,8 +26,8 @@ namespace dds
 
       public:
         BEGIN_SM_MSG_MAP(CSMUIChannel)
-        SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
-        SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+            SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
+            SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
         END_SM_MSG_MAP()
 
       private:
