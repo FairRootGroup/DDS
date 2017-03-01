@@ -8,8 +8,7 @@ set(USER_DEFAULTS_CFG_VERSION "0.2")
 #
 # Check if cmake has the required version
 #
-# we need cmake v2.8.11+ in order to use target_include_directories
-cmake_minimum_required( VERSION 2.8.11 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.0.2 FATAL_ERROR )
 
 
 # Version
@@ -192,7 +191,7 @@ if( BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
 endif( BUILD_TESTS)
 
-find_package(Boost 1.54 REQUIRED COMPONENTS  ${Boost_Components})
+find_package(Boost 1.61 REQUIRED COMPONENTS  ${Boost_Components})
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif(Boost_FOUND)
