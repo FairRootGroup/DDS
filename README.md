@@ -17,7 +17,7 @@ DDS:
 ### BOOST on macOS
 
 ~~~~~~~
-./bootstrap.sh --prefix=[INSTALL DIR]
-./b2 --prefix=[INSTALL DIR] -j8 --layout=tagged threading=multi,single link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
+./bootstrap.sh --prefix=[INSTALL DIR] --without-icu
+./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=tagged threading=multi,single link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
 
 ~~~~~~~
