@@ -11,3 +11,13 @@ DDS:
 - deploys private facilities on demand with isolated sandboxes,
 - provides a key-value properties propagation service for tasks,
 - provides a rules based execution of tasks.
+
+## Building 3rd-party
+
+### BOOST on macOS
+
+~~~~~~~
+./bootstrap.sh --prefix=[INSTALL DIR]
+./b2 --prefix=[INSTALL DIR] -j8 --layout=tagged threading=multi,single link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
+
+~~~~~~~

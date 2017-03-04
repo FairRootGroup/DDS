@@ -8,8 +8,9 @@ set(USER_DEFAULTS_CFG_VERSION "0.2")
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.0.2 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.1.3 FATAL_ERROR )
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 # Version
 #
@@ -342,80 +343,63 @@ if( BUILD_TESTS )
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION tests)
 endif( BUILD_TESTS )
 
-# WN bin package custom target
-# Because of $<TARGET_FILE:tgt> it works only in cmake 2.8.4
-if( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
-	if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-		set(TRG_ARCH x86)
-	else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-		set(TRG_ARCH amd64)
-	endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
 
-   if(APPLE)
-       set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-universal" )
-   elseif(UNIX)
-        set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-${TRG_ARCH}" )
-   endif(APPLE)
+#
+# Build DDS WN Package
+#
+if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+	set(TRG_ARCH x86)
+else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+	set(TRG_ARCH amd64)
+endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
 
-   set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
-   set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
-   set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
+if(APPLE)
+	set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-universal" )
+elseif(UNIX)
+	set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-${TRG_ARCH}" )
+endif(APPLE)
+
+set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
+set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
+set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
 
 set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
 if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
-  set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
+	set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
 endif()
-message( STATUS "Using BOOST Library dir: " ${DDS_BOOST_LIB_DIR})
+set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>")
+set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
 
-if(APPLE)
-     set( lib_cmd "bash" )
-     set( lib_cmd_args "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep boost | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \;  sub(\"@loader_path\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR: Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-     set( lib_cmd_args_cpp "-c" "otool -L ${WN_PKG_DIR}/dds-agent  | grep libstdc++ | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #1): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-     # the log library needs a special handling as it depends on many other boost libraries
-     set( lib_cmd_args_log "-c" "otool -L ${Boost_LOG_LIBRARY}  | grep -E 'boost|icu' | tail -n +2 | awk '{gsub(\"@rpath\", \"${DDS_BOOST_LIB_DIR}\", $1) \;  sub(\"@loader_path\", \"${DDS_BOOST_LIB_DIR}\", $1) \; print}' | awk '{ ret=system( \"install -m 644 \" $1 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #2): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-elseif(UNIX)
-     set( lib_cmd "bash" )
-     set( lib_cmd_args "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep boost | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #3): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-     set( lib_cmd_args_cpp "-c" "ldd ${WN_PKG_DIR}/dds-agent | grep libstdc++ | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #4): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-     # the log library needs a special handling as it depends on many other boost libraries
-     set( lib_cmd_args_log "-c" "ldd ${Boost_LOG_LIBRARY} | grep -E 'boost|icu' | awk '{ ret=system( \"cp \" $3 \" ${WN_PKG_DIR}\") \; if (ret != 0) { print \"ERROR (Step code #5): Can not build DDS worker package. Missing dependency.\" \; exit 1} }'" )
-endif(APPLE)
+add_custom_target( wn_bin
+	# TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
+	# COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=\"$ENV{LD_LIBRARY_PATH}:${DDS_BOOST_LIB_DIR}\""
+	COMMAND -mkdir -p ${WN_PKG_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
+	COMMAND ${CMAKE_COMMAND} -DWN_PKG_DIR=${WN_PKG_DIR} -DDDS_AGENT_BIN_PATH=${DDS_AGENT_BIN_PATH}
+		-DPREREQ_DIRS=${PREREQ_DIRS} -DDDS_BOOST_LIB_DIR=${DDS_BOOST_LIB_DIR} -P "${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisites.cmake"
+	COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
+	COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
+	COMMENT "Generate WN binary package"
+	VERBATIM )
+	
+add_dependencies( wn_bin
+		dds-agent
+		dds_user_defaults_lib
+		dds_protocol_lib
+		dds_intercom_lib)
 
-   add_custom_target( wn_bin
-                      # TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
-                      # COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=\"$ENV{LD_LIBRARY_PATH}:${DDS_BOOST_LIB_DIR}\""
-		      COMMAND -mkdir -p ${WN_PKG_DIR}
-                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
-		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
-                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_user_defaults_lib> "${WN_PKG_DIR}"
-		              COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_protocol_lib> "${WN_PKG_DIR}"
-                      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds_intercom_lib> "${WN_PKG_DIR}"
-		              COMMAND ${lib_cmd} ${lib_cmd_args}
-                      COMMAND ${lib_cmd} ${lib_cmd_args_log}
-                      COMMAND ${lib_cmd} ${lib_cmd_args_cpp}
-                      COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
-                      COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
-                      COMMENT "Generate WN binary package"
-                      VERBATIM )
-   add_dependencies( wn_bin
-			dds-agent
-			dds_user_defaults_lib
-			dds_protocol_lib
-			dds_intercom_lib)
+add_custom_target( wn_bin_upload
+	COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"
+	COMMAND scp -p ${WN_PKG_NAME_ARCH} ddswww@lxi001:${WN_PKG_REMOTE_DIR}
+	COMMENT "Uploading WN binary package to DDS binary repository"
+	VERBATIM )
 
-   add_custom_target( wn_bin_upload
-		      COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"
-                      COMMAND scp -p ${WN_PKG_NAME_ARCH} ddswww@lxi001:${WN_PKG_REMOTE_DIR}
-                      COMMENT "Uploading WN binary package to DDS binary repository"
-                      VERBATIM )
-
-   add_dependencies( wn_bin_upload
-                     wn_bin )
+add_dependencies( wn_bin_upload
+	wn_bin )
 
 
-   INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
-
-endif(${CMAKE_VERSION} VERSION_GREATER 2.8.3)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
 
 #
 # Package
