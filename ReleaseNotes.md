@@ -3,7 +3,8 @@
 ## v1.6 (NOT YET RELEASED)
 
 ### DDS common
-Added: Dependency look up and bundling of WN package using cmake. (GH-166)
+Added: Dependency look up and bundling of WN package using cmake. (GH-166)       
+Added: Bundle-like installation. (GH-167)    
 
 ### dds-info
 Fixed: send list of agents one by one to avoid protocol string limits. (GH-158)    

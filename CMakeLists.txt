@@ -370,13 +370,29 @@ endif()
 set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>")
 set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
 
+set(PREREQ_DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
+#
+# WORKAROUND: the issue is configure_file currently does not appear to honor generator expressions,
+# but it is still needed to configure @...@ expressions.
+# We therefore use two-step procedure to configure a file.
+#
+# 1. Deal with @...@ configurable items:
+configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured @ONLY)
+# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
+FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake
+			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
+
+#
+# TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
+#			  
 add_custom_target( wn_bin
 	# TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
 	# COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=\"$ENV{LD_LIBRARY_PATH}:${DDS_BOOST_LIB_DIR}\""
 	COMMAND -mkdir -p ${WN_PKG_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
-	COMMAND ${CMAKE_COMMAND} -DWN_PKG_DIR=${WN_PKG_DIR} -DDDS_AGENT_BIN_PATH=${DDS_AGENT_BIN_PATH}
+	COMMAND ${CMAKE_COMMAND} -DPREREQ_DESTINATION=${WN_PKG_DIR} -DDDS_AGENT_BIN_PATH=${DDS_AGENT_BIN_PATH}
 		-DPREREQ_DIRS=${PREREQ_DIRS} -DDDS_BOOST_LIB_DIR=${DDS_BOOST_LIB_DIR} -P "${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisites.cmake"
 	COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
 	COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
@@ -384,10 +400,10 @@ add_custom_target( wn_bin
 	VERBATIM )
 	
 add_dependencies( wn_bin
-		dds-agent
-		dds_user_defaults_lib
-		dds_protocol_lib
-		dds_intercom_lib)
+	dds-agent
+	dds_user_defaults_lib
+	dds_protocol_lib
+	dds_intercom_lib)
 
 add_custom_target( wn_bin_upload
 	COMMAND ssh ddswww@lxi001 "mkdir -p ${WN_PKG_REMOTE_DIR} && chmod go+xr ${WN_PKG_REMOTE_DIR}"
@@ -395,11 +411,9 @@ add_custom_target( wn_bin_upload
 	COMMENT "Uploading WN binary package to DDS binary repository"
 	VERBATIM )
 
-add_dependencies( wn_bin_upload
-	wn_bin )
-
-
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
+
+INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
 
 #
 # Package
