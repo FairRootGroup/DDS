@@ -367,8 +367,9 @@ set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
 if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
 	set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
 endif()
-set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>")
+set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>")
 set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
+set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds-commander>)
 
 set(PREREQ_DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

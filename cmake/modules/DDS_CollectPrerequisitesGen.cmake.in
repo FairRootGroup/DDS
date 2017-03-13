@@ -22,13 +22,13 @@ include(GetPrerequisites)
 		 LIST(APPEND PREREQ_DIRS_LIST_REBUILT ${dir})
 	 endforeach()
 
-	get_prerequisites(@DDS_AGENT_BIN_PATH@ DEPENDENCIES 1 0 "" "${PREREQ_DIRS_LIST_REBUILT}")
+	get_prerequisites(@DDS_PREREQ_SOURCE_BIN_PATH@ DEPENDENCIES 1 1 "" "${PREREQ_DIRS_LIST_REBUILT}")
 
 	
 	foreach(DEPENDENCY_FILE ${DEPENDENCIES})
 		# get file name to be able to resolve files with @rpath on macOS
 		get_filename_component(PREREQNAME "${DEPENDENCY_FILE}"  NAME)
-	  	gp_resolve_item(@DDS_AGENT_BIN_PATH@ "${PREREQNAME}" "" "${PREREQ_DIRS_LIST_REBUILT}" resolved_file)
+	  	gp_resolve_item(@DDS_PREREQ_SOURCE_BIN_PATH@ "${PREREQNAME}" "" "${PREREQ_DIRS_LIST_REBUILT}" resolved_file)
 	 	message("WN PKG prerequisite='${resolved_file}'")
 		file(COPY ${resolved_file} DESTINATION @PREREQ_DESTINATION@)
 	endforeach()
