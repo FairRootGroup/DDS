@@ -22,7 +22,7 @@ include(GetPrerequisites)
 		 LIST(APPEND PREREQ_DIRS_LIST_REBUILT ${dir})
 	 endforeach()
 
-	get_prerequisites(${DDS_AGENT_BIN_PATH} DEPENDENCIES 1 0 "" "${PREREQ_DIRS_LIST_REBUILT}")
+	get_prerequisites(${DDS_AGENT_BIN_PATH} DEPENDENCIES 1 1 "" "${PREREQ_DIRS_LIST_REBUILT}")
 
 	
 	foreach(DEPENDENCY_FILE ${DEPENDENCIES})
