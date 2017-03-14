@@ -414,7 +414,7 @@ add_custom_target( wn_bin_upload
 
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
 
-INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
+INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake DESTINATION lib)
 
 #
 # Package
