@@ -171,7 +171,10 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
         {
             LOG(debug) << toString();
             stringstream ss;
-            ss << "Unable to schedule task <" << id << "> with path " << task->getPath();
+            string requirementStr = (useRequirement)
+                                        ? ("Requirement " + requirement->getId() + " couldn't be satisfied.")
+                                        : "Not enough worker nodes.";
+            ss << "Unable to schedule task <" << id << "> with path " << task->getPath() << ".\n" << requirementStr;
             throw runtime_error(ss.str());
         }
     }
