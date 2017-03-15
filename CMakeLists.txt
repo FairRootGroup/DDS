@@ -414,7 +414,10 @@ add_custom_target( wn_bin_upload
 
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
 
-INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake DESTINATION lib)
+# WORKAROUND: create destination "lib" directory.
+# INSTALL SCRIPT is called before any other lib is installed, therefore we need to create a dest. dir.
+INSTALL(DIRECTORY DESTINATION lib)
+INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
 
 #
 # Package
