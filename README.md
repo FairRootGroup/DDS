@@ -21,3 +21,7 @@ DDS:
 ./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=tagged threading=multi,single link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
 
 ~~~~~~~
+
+### clang-format on macOS
+
+[LLVM binary builds](http://releases.llvm.org/download.html)

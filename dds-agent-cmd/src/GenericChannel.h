@@ -17,12 +17,12 @@ namespace dds
             CGenericChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CGenericChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                                 [this](CGenericChannel* _channel) {
-                                     LOG(MiscCommon::info) << "The DDS commander ["
-                                                           << this->socket().remote_endpoint().address().to_string()
-                                                           << "] has closed the connection.";
-                                 });
+                subscribeOnEvent(
+                    protocol_api::EChannelEvents::OnRemoteEndDissconnected, [this](CGenericChannel* _channel) {
+                        LOG(MiscCommon::info)
+                            << "The DDS commander [" << this->socket().remote_endpoint().address().to_string()
+                            << "] has closed the connection.";
+                    });
 
                 subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CGenericChannel* _channel) {
                     switch (m_options.m_agentCmd)

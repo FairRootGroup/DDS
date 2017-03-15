@@ -111,8 +111,8 @@ namespace dds
                     // we need at least 2 threads
                     if (concurrentThreads < 2)
                         concurrentThreads = 2;
-                    LOG(MiscCommon::info) << "Starting DDS transport engine using " << concurrentThreads
-                                          << " concurrent threads.";
+                    LOG(MiscCommon::info)
+                        << "Starting DDS transport engine using " << concurrentThreads << " concurrent threads.";
                     for (int x = 0; x < concurrentThreads; ++x)
                     {
                         m_workerThreads.create_thread([this]() { runService(10, m_acceptor->get_io_service()); });
@@ -122,8 +122,8 @@ namespace dds
                     if (m_acceptorUI != nullptr)
                     {
                         const unsigned int concurrentThreads = 2;
-                        LOG(MiscCommon::info) << "Starting DDS UI transport engine using " << concurrentThreads
-                                              << " concurrent threads.";
+                        LOG(MiscCommon::info)
+                            << "Starting DDS UI transport engine using " << concurrentThreads << " concurrent threads.";
                         for (int x = 0; x < concurrentThreads; ++x)
                         {
                             m_workerThreads.create_thread([this]() { runService(10, m_acceptorUI->get_io_service()); });

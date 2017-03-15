@@ -299,10 +299,10 @@ namespace dds
                         copyMessages = m_accumulativeWriteQueue.size() > maxAccumulativeWriteQueueSize;
                         if (copyMessages)
                         {
-                            LOG(MiscCommon::debug) << "copy accumulated queue to write queue "
-                                                      "m_accumulativeWriteQueue.size="
-                                                   << m_accumulativeWriteQueue.size()
-                                                   << " m_writeQueue.size=" << m_writeQueue.size();
+                            LOG(MiscCommon::debug)
+                                << "copy accumulated queue to write queue "
+                                   "m_accumulativeWriteQueue.size="
+                                << m_accumulativeWriteQueue.size() << " m_writeQueue.size=" << m_writeQueue.size();
 
                             // copy queue to main queue
                             std::copy(m_accumulativeWriteQueue.begin(),
@@ -544,8 +544,8 @@ namespace dds
 
                     if (!exists)
                     {
-                        LOG(MiscCommon::error) << "Received binary attachment [" << fileId
-                                               << "] which does not exist. Skip this message.";
+                        LOG(MiscCommon::error)
+                            << "Received binary attachment [" << fileId << "] which does not exist. Skip this message.";
                         return;
                     }
                     info = iter_info->second;
@@ -701,8 +701,8 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                         {
-                            LOG(MiscCommon::debug) << "Disconnect is detected while on read msg header: "
-                                                   << ec.message();
+                            LOG(MiscCommon::debug)
+                                << "Disconnect is detected while on read msg header: " << ec.message();
                             onDissconnect();
                         }
                         else
@@ -794,8 +794,8 @@ namespace dds
 
                     for (auto i : m_writeQueue)
                     {
-                        LOG(MiscCommon::debug) << "Sending to " << remoteEndIDString()
-                                               << " a message: " << i->toString();
+                        LOG(MiscCommon::debug)
+                            << "Sending to " << remoteEndIDString() << " a message: " << i->toString();
                         if (cmdSHUTDOWN == i->header().m_cmd)
                             m_isShuttingDown = true;
                         m_writeBuffer.push_back(boost::asio::buffer(i->data(), i->length()));
@@ -818,8 +818,8 @@ namespace dds
 
                                 if (m_isShuttingDown)
                                 {
-                                    LOG(MiscCommon::info) << "Shutdown signal has been successfully sent to "
-                                                          << remoteEndIDString();
+                                    LOG(MiscCommon::info)
+                                        << "Shutdown signal has been successfully sent to " << remoteEndIDString();
                                     stop();
                                 }
 
@@ -838,16 +838,16 @@ namespace dds
                             }
                             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                             {
-                                LOG(MiscCommon::debug) << "Disconnect is detected while on write message: "
-                                                       << _ec.message();
+                                LOG(MiscCommon::debug)
+                                    << "Disconnect is detected while on write message: " << _ec.message();
                                 onDissconnect();
                             }
                             else
                             {
                                 // don't show error if service is closed
                                 if (m_started)
-                                    LOG(MiscCommon::error) << "Error sending to " << remoteEndIDString() << ": "
-                                                           << _ec.message();
+                                    LOG(MiscCommon::error)
+                                        << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
                                 else
                                     LOG(MiscCommon::info)
                                         << "The stop signal is received, aborting current operation and "

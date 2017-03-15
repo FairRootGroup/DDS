@@ -94,10 +94,10 @@ namespace dds
             CBaseSMChannelImpl<T>(const std::string& _inputName, const std::string& _outputName)
                 : CChannelMessageHandlersImpl()
                 , m_started(false)
+                , m_workerThreads()
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
                 , m_inputMessageQueueName(_inputName)
                 , m_outputMessageQueueName(_outputName)
-                , m_workerThreads()
                 , m_writeQueue()
                 , m_mutexWriteBuffer()
                 , m_writeBufferQueue()
@@ -145,9 +145,9 @@ namespace dds
                 }
                 catch (boost::interprocess::interprocess_exception& _e)
                 {
-                    LOG(MiscCommon::fatal) << "Can't initialize shared memory transport with input name "
-                                           << m_inputMessageQueueName << " and output name " << m_outputMessageQueueName
-                                           << ": " << _e.what();
+                    LOG(MiscCommon::fatal)
+                        << "Can't initialize shared memory transport with input name " << m_inputMessageQueueName
+                        << " and output name " << m_outputMessageQueueName << ": " << _e.what();
                     m_transportIn.reset();
                     m_transportOut.reset();
                 }
@@ -336,8 +336,8 @@ namespace dds
             {
                 if (_bodySize != m_currentMsg->body_length())
                 {
-                    LOG(MiscCommon::error) << "Received message BODY: " << _bodySize << " bytes, expected "
-                                           << m_currentMsg->body_length();
+                    LOG(MiscCommon::error)
+                        << "Received message BODY: " << _bodySize << " bytes, expected " << m_currentMsg->body_length();
                 }
                 else
                 {
@@ -347,8 +347,8 @@ namespace dds
                     }
                     else
                     {
-                        LOG(MiscCommon::debug) << "Received message BODY (" << _bodySize
-                                               << " bytes): " << m_currentMsg->toString();
+                        LOG(MiscCommon::debug)
+                            << "Received message BODY (" << _bodySize << " bytes): " << m_currentMsg->toString();
                     }
 
                     // process received message

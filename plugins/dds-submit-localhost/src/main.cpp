@@ -28,7 +28,6 @@
 #include "dds_intercom.h"
 #include "logEngine.h"
 #include "ncf.h"
-#include "ncf.h"
 #include "version.h"
 
 using namespace std;

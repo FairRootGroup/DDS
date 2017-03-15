@@ -119,8 +119,8 @@ namespace dds
                             }
                             catch (std::exception& _e)
                             {
-                                LOG(MiscCommon::error) << "MonitoringThread exception on custom idle function: "
-                                                       << _e.what();
+                                LOG(MiscCommon::error)
+                                    << "MonitoringThread exception on custom idle function: " << _e.what();
                             }
                             catch (...)
                             {
