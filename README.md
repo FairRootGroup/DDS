@@ -25,3 +25,7 @@ DDS:
 ### clang-format on macOS
 
 [LLVM binary builds](http://releases.llvm.org/download.html)
+
+### devtools-3 on CentOS
+
+[Instructions](https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/)
