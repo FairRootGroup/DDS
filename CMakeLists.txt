@@ -417,6 +417,9 @@ add_custom_target( wn_bin_upload
 	COMMENT "Uploading WN binary package to DDS binary repository"
 	VERBATIM )
 
+add_dependencies( wn_bin_upload
+	wn_bin )
+
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
 
 
