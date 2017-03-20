@@ -99,12 +99,14 @@ namespace dds
                 throw runtime_error("Property access type with name " + _name + " does not exist.");
         }
 
-        EHostPatternType TagToHostPatternType(const string& _name)
+        ERequirementType TagToRequirementType(const string& _name)
         {
             if (_name == "wnname")
-                return EHostPatternType::WnName;
+                return ERequirementType::WnName;
             if (_name == "hostname")
-                return EHostPatternType::HostName;
+                return ERequirementType::HostName;
+            if (_name == "gpu")
+                return ERequirementType::Gpu;
             else
                 throw runtime_error("Host pattern type with name " + _name + " does not exist.");
         }

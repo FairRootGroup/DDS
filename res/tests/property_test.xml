@@ -11,13 +11,8 @@
 	<property id="property_9" />
 	<property id="property_10" />
 
-	<!--declrequirement id="requirement1">
-    	<hostPattern type="hostname" value="cbmmac001.gsi.de"/>
-	</declrequirement-->
-
   	<decltask id="TestKeyValue0">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value -i 5 --max-value 10 -t 0 --test-errors</exe>
-		<!--requirement>requirement1</requirement-->
 		<properties>
 			<id access="write">property_1</id>
 			<id access="write">property_2</id>
@@ -34,7 +29,6 @@
 
   	<decltask id="TestKeyValue1">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value -i 5 --max-value 10 -t 1 --test-errors</exe>
-		<!--requirement>requirement1</requirement-->
 		<properties>
 			<id access="read">property_1</id>
 			<id access="read">property_2</id>

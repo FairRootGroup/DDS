@@ -15,10 +15,11 @@ namespace dds
 {
     namespace topology_api
     {
-        enum class EHostPatternType
+        enum class ERequirementType
         {
             WnName,
-            HostName
+            HostName,
+            Gpu
         };
 
         /// \class TopoProperty
@@ -35,13 +36,13 @@ namespace dds
             /// \brief Inherited from TopoBase
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
-            const std::string& getHostPattern() const;
-            EHostPatternType getHostPatternType() const;
+            const std::string& getValue() const;
+            ERequirementType getRequirementType() const;
 
-            void setHostPattern(const std::string& _hostPattern);
-            void setHostPatternType(EHostPatternType _hostPatternType);
+            void setValue(const std::string& _value);
+            void setRequirementType(ERequirementType _requireemntType);
 
-            bool hostPatterMatches(const std::string& _host) const;
+            // bool hostPatterMatches(const std::string& _host) const;
 
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
@@ -53,8 +54,8 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CRequirement& _requirement);
 
           private:
-            std::string m_hostPattern;          ///< Pattern of the host name
-            EHostPatternType m_hostPatternType; ///< Type of the host pattern
+            std::string m_value;                ///< Requirement value
+            ERequirementType m_requirementType; ///< Requirement type
         };
 
         typedef std::shared_ptr<CRequirement> RequirementPtr_t;

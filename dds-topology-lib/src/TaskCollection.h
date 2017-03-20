@@ -35,11 +35,13 @@ namespace dds
             /// \brief If parent is a group than return N, else return 1.
             size_t getTotalCounter() const;
 
-            RequirementPtr_t getRequirement() const;
-            void setRequirement(RequirementPtr_t _requirement);
+            size_t getNofRequirements() const;
+            const RequirementPtrVector_t& getRequirements() const;
+            void setRequirement(const RequirementPtrVector_t& _requirements);
+            void addRequirement(RequirementPtr_t _requirement);
 
           private:
-            RequirementPtr_t m_requirement; ///< Requirement
+            RequirementPtrVector_t m_requirements; ///< Array of requirement
         };
 
         typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;

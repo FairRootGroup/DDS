@@ -54,6 +54,8 @@ namespace dds
 
             const ScheduleVector_t& getSchedule() const;
 
+            static bool hostPatternMatches(const std::string& _hostPattern, const std::string& _host);
+
             std::string toString();
 
           private:

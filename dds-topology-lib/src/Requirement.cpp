@@ -17,8 +17,8 @@ using namespace topology_api;
 
 CRequirement::CRequirement()
     : CTopoBase()
-    , m_hostPattern()
-    , m_hostPatternType(EHostPatternType::HostName)
+    , m_value()
+    , m_requirementType(ERequirementType::HostName)
 {
     setType(ETopoType::REQUIREMENT);
 }
@@ -27,32 +27,24 @@ CRequirement::~CRequirement()
 {
 }
 
-const std::string& CRequirement::getHostPattern() const
+const std::string& CRequirement::getValue() const
 {
-    return m_hostPattern;
+    return m_value;
 }
 
-EHostPatternType CRequirement::getHostPatternType() const
+ERequirementType CRequirement::getRequirementType() const
 {
-    return m_hostPatternType;
+    return m_requirementType;
 }
 
-void CRequirement::setHostPattern(const std::string& _hostPattern)
+void CRequirement::setValue(const std::string& _value)
 {
-    m_hostPattern = _hostPattern;
+    m_value = _value;
 }
 
-void CRequirement::setHostPatternType(EHostPatternType _hostPatternType)
+void CRequirement::setRequirementType(ERequirementType _requirementType)
 {
-    m_hostPatternType = _hostPatternType;
-}
-
-bool CRequirement::hostPatterMatches(const std::string& _host) const
-{
-    if (getHostPattern().empty())
-        return true;
-    const boost::regex e(getHostPattern());
-    return boost::regex_match(_host, e);
+    m_requirementType = _requirementType;
 }
 
 void CRequirement::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
@@ -61,8 +53,8 @@ void CRequirement::initFromPropertyTree(const std::string& _name, const boost::p
     {
         const ptree& requirementPT = CTopoBase::findElement(ETopoType::REQUIREMENT, _name, _pt.get_child("topology"));
         setId(requirementPT.get<string>("<xmlattr>.id"));
-        setHostPattern(requirementPT.get<std::string>("hostPattern.<xmlattr>.value", ""));
-        setHostPatternType(TagToHostPatternType(requirementPT.get<std::string>("hostPattern.<xmlattr>.type", "")));
+        setValue(requirementPT.get<std::string>("<xmlattr>.value", ""));
+        setRequirementType(TagToRequirementType(requirementPT.get<std::string>("<xmlattr>.type", "")));
     }
     catch (exception& error) // ptree_error, runtime_error
     {
@@ -73,7 +65,7 @@ void CRequirement::initFromPropertyTree(const std::string& _name, const boost::p
 string CRequirement::toString() const
 {
     stringstream ss;
-    ss << "DDSRequirement: m_id=" << getId() << " m_hostPattern=" << getHostPattern();
+    ss << "DDSRequirement: m_id=" << getId() << " m_value=" << getValue();
     return ss.str();
 }
 

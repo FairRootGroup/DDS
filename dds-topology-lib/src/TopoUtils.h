@@ -27,7 +27,7 @@ namespace dds
 
         EPropertyAccessType TagToPropertyAccessType(const std::string& _name);
 
-        EHostPatternType TagToHostPatternType(const std::string& _name);
+        ERequirementType TagToRequirementType(const std::string& _name);
     }
 }
 #endif /* defined(__DDS__TopoUtils__) */

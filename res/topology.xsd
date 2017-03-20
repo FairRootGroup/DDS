@@ -48,11 +48,11 @@
 
 
 <xs:complexType name="exeType">
-   <xs:simpleContent>  
-       <xs:extension base="stringType">  
-           <xs:attribute name="reachable" type="xs:boolean" use="optional"/>  
-       </xs:extension>  
-   </xs:simpleContent> 
+   <xs:simpleContent>
+       <xs:extension base="stringType">
+           <xs:attribute name="reachable" type="xs:boolean" use="optional"/>
+       </xs:extension>
+   </xs:simpleContent>
 </xs:complexType>
 
 
@@ -62,11 +62,11 @@
 
 
 <xs:complexType name="propertyArrayElementType">
-   <xs:simpleContent>  
-       <xs:extension base="stringIdType">  
-            <xs:attribute name="access" type="accessType" use="required"/> 
-       </xs:extension>  
-   </xs:simpleContent> 
+   <xs:simpleContent>
+       <xs:extension base="stringIdType">
+            <xs:attribute name="access" type="accessType" use="required"/>
+       </xs:extension>
+   </xs:simpleContent>
 </xs:complexType>
 
 
@@ -82,34 +82,35 @@
   </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="requirementArrayType">
+  <xs:sequence>
+  	<xs:element name="id" type="stringIdType" maxOccurs="unbounded" minOccurs="0"/>
+  </xs:sequence>
+</xs:complexType>
 
-<xs:simpleType name="hostPatternType">
+
+<xs:simpleType name="requirementTypeType">
   <xs:restriction base="xs:string">
     <xs:enumeration value="wnname"/>
     <xs:enumeration value="hostname"/>
+    <xs:enumeration value="gpu"/>
   </xs:restriction>
 </xs:simpleType>
 
 
-<xs:complexType name="requirementValueType">
-  <xs:attribute name="value" type="stringType" use="required"/>
-  <xs:attribute name="type" type="hostPatternType" use="required"/>
-</xs:complexType>
-
-
 <xs:complexType name="requirementType">
-  <xs:sequence>
-    <xs:element name="hostPattern" type="requirementValueType" maxOccurs="1" minOccurs="0"/>
-  </xs:sequence>
   <xs:attribute name="id" type="stringIdType" use="required"/>
+  <xs:attribute name="type" type="requirementTypeType" use="required"/>
+  <xs:attribute name="value" type="stringType" use="required"/>
 </xs:complexType>
+
 
 <xs:complexType name="taskType">
   <xs:sequence>
 	<xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
 	<xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
-	<xs:element name="requirement" type="stringIdType" maxOccurs="1" minOccurs="0"/>
-  	<xs:element name="properties" type="propertyArrayType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="requirements" type="requirementArrayType" maxOccurs="1" minOccurs="0"/>
+  <xs:element name="properties" type="propertyArrayType" maxOccurs="1" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
@@ -117,8 +118,8 @@
 
 <xs:complexType name="collectionType">
   <xs:sequence>
-	<xs:element name="requirement" type="stringIdType" maxOccurs="1" minOccurs="0"/>
-    <xs:element name="tasks" type="taskArrayType" maxOccurs="1" minOccurs="1"/>
+	<xs:element name="requirements" type="requirementArrayType" maxOccurs="1" minOccurs="0"/>
+  <xs:element name="tasks" type="taskArrayType" maxOccurs="1" minOccurs="1"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>

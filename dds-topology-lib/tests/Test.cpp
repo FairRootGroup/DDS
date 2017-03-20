@@ -215,15 +215,13 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->getEnv() == "env1");
     BOOST_CHECK(casted1->isExeReachable() == true);
     BOOST_CHECK(casted1->isEnvReachable() == false);
-    RequirementPtr_t requirement = casted1->getRequirement();
+    BOOST_CHECK(casted1->getNofRequirements() == 1);
+    RequirementPtr_t requirement = casted1->getRequirements()[0];
     BOOST_CHECK(requirement->getId() == "requirement1");
     BOOST_CHECK(requirement->getType() == ETopoType::REQUIREMENT);
     BOOST_CHECK(requirement->getParent() == element1.get());
-    BOOST_CHECK(requirement->getHostPattern() == ".+.gsi.de");
-    BOOST_CHECK(requirement->getHostPatternType() == EHostPatternType::HostName);
-    BOOST_CHECK(requirement->hostPatterMatches("dds.gsi.de") == true);
-    BOOST_CHECK(requirement->hostPatterMatches("gsi.de") == false);
-    BOOST_CHECK(requirement->hostPatterMatches("google.com") == false);
+    BOOST_CHECK(requirement->getValue() == ".+.gsi.de");
+    BOOST_CHECK(requirement->getRequirementType() == ERequirementType::HostName);
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
     BOOST_CHECK(element2->getType() == ETopoType::COLLECTION);
@@ -273,7 +271,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted5->getNofTasks() == 4);
     BOOST_CHECK(casted5->getTotalNofTasks() == 4);
     BOOST_CHECK(casted5->getNofElements() == 4);
-    BOOST_CHECK(casted5->getRequirement()->getId() == "requirement1");
+    BOOST_CHECK(casted5->getRequirements()[0]->getId() == "requirement1");
     BOOST_CHECK_THROW(casted5->getElement(4), std::out_of_range);
     BOOST_CHECK(casted5->getTotalCounter() == 15);
 
@@ -471,9 +469,10 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
 
     // TagToHostPatternType
-    BOOST_CHECK(TagToHostPatternType("wnname") == EHostPatternType::WnName);
-    BOOST_CHECK(TagToHostPatternType("hostname") == EHostPatternType::HostName);
-    BOOST_CHECK_THROW(TagToHostPatternType("wn_name"), runtime_error);
+    BOOST_CHECK(TagToRequirementType("wnname") == ERequirementType::WnName);
+    BOOST_CHECK(TagToRequirementType("hostname") == ERequirementType::HostName);
+    BOOST_CHECK(TagToRequirementType("gpu") == ERequirementType::Gpu);
+    BOOST_CHECK_THROW(TagToRequirementType("wn_name"), runtime_error);
 
     // DDSCreateTopoElement
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);

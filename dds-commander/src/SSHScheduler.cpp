@@ -4,6 +4,7 @@
 //
 #include "SSHScheduler.h"
 #include "TimeMeasure.h"
+#include <boost/regex.hpp>
 #include <set>
 
 using namespace dds;
@@ -134,7 +135,17 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
 
         // First path only for tasks with requirements;
         // Second path for tasks without requirements.
-        RequirementPtr_t requirement = task->getRequirement();
+
+        // SSH scheduler doesn't support multiple requirements
+        if (task->getNofRequirements() > 1)
+        {
+            stringstream ss;
+            ss << "Unable to schedule task <" << id << "> with path " << task->getPath()
+               << ": SSH scheduler doesn't support multiple requirements.";
+            throw runtime_error(ss.str());
+        }
+
+        RequirementPtr_t requirement = (task->getNofRequirements() == 1) ? task->getRequirements()[0] : nullptr;
         if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
             continue;
 
@@ -144,9 +155,10 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
         {
             if (!useRequirement ||
                 (useRequirement &&
-                 requirement->hostPatterMatches((requirement->getHostPatternType() == EHostPatternType::HostName)
-                                                    ? v.first.first
-                                                    : v.first.second)))
+                 CSSHScheduler::hostPatternMatches(requirement->getValue(),
+                                                   (requirement->getRequirementType() == ERequirementType::HostName)
+                                                       ? v.first.first
+                                                       : v.first.second)))
             {
                 if (!v.second.empty())
                 {
@@ -195,7 +207,18 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
 
             // First path only for collections with requirements;
             // Second path for collections without requirements.
-            RequirementPtr_t requirement = collection->getRequirement();
+
+            // SSH scheduler doesn't support multiple requirements
+            if (collection->getNofRequirements() > 1)
+            {
+                stringstream ss;
+                ss << "Unable to schedule collection <" << id << "> with path " << collection->getPath()
+                   << ": SSH scheduler doesn't support multiple requirements.";
+                throw runtime_error(ss.str());
+            }
+
+            RequirementPtr_t requirement =
+                (collection->getNofRequirements() == 1) ? collection->getRequirements()[0] : nullptr;
             if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
                 continue;
 
@@ -206,9 +229,10 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                 if (v.second.size() >= collection->getNofTasks() &&
                     (!useRequirement ||
                      (useRequirement &&
-                      requirement->hostPatterMatches((requirement->getHostPatternType() == EHostPatternType::HostName)
-                                                         ? v.first.first
-                                                         : v.first.second))))
+                      CSSHScheduler::hostPatternMatches(
+                          requirement->getValue(),
+                          (requirement->getRequirementType() == ERequirementType::HostName) ? v.first.first
+                                                                                            : v.first.second))))
                 {
                     const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(id);
                     for (auto hash : taskHashes)
@@ -247,6 +271,14 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
 const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const
 {
     return m_schedule;
+}
+
+bool CSSHScheduler::hostPatternMatches(const std::string& _hostPattern, const std::string& _host)
+{
+    if (_hostPattern.empty())
+        return true;
+    const boost::regex e(_hostPattern);
+    return boost::regex_match(_host, e);
 }
 
 string CSSHScheduler::toString()

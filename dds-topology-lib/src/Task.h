@@ -33,9 +33,10 @@ namespace dds
             bool isExeReachable() const;
             bool isEnvReachable() const;
             size_t getNofProperties() const;
+            size_t getNofRequirements() const;
             TopoPropertyPtr_t getProperty(size_t _i) const;
             const TopoPropertyPtrVector_t& getProperties() const;
-            RequirementPtr_t getRequirement() const;
+            const RequirementPtrVector_t& getRequirements() const;
             /// Get property by ID. If property not fount than return nullptr.
             TopoPropertyPtr_t getProperty(const std::string& _id) const;
 
@@ -46,7 +47,8 @@ namespace dds
             void setEnvReachable(bool _envReachable);
             void setProperties(const TopoPropertyPtrVector_t& _properties);
             void addProperty(TopoPropertyPtr_t _property);
-            void setRequirement(RequirementPtr_t _requirement);
+            void setRequirements(const RequirementPtrVector_t& _requirements);
+            void addRequirement(RequirementPtr_t _requirement);
 
             // Parent collection and group ID
             std::string getParentCollectionId() const;
@@ -74,12 +76,12 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTask& _task);
 
           private:
-            std::string m_exe;                    ///< Path to executable
-            std::string m_env;                    ///< Path to environmtnt file
-            bool m_exeReachable;                  ///< If executable is available on the WN
-            bool m_envReachable;                  ///< If environment script is available on the WN
-            TopoPropertyPtrVector_t m_properties; ///< Properties
-            RequirementPtr_t m_requirement;       ///< Requirement
+            std::string m_exe;                     ///< Path to executable
+            std::string m_env;                     ///< Path to environmtnt file
+            bool m_exeReachable;                   ///< If executable is available on the WN
+            bool m_envReachable;                   ///< If environment script is available on the WN
+            TopoPropertyPtrVector_t m_properties;  ///< Properties
+            RequirementPtrVector_t m_requirements; ///< Array of requirements
         };
 
         typedef std::shared_ptr<CTask> TaskPtr_t;

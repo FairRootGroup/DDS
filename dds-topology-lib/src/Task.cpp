@@ -64,9 +64,14 @@ void CTask::addProperty(TopoPropertyPtr_t _property)
     m_properties.push_back(_property);
 }
 
-void CTask::setRequirement(RequirementPtr_t _requirement)
+void CTask::setRequirements(const RequirementPtrVector_t& _requirements)
 {
-    m_requirement = _requirement;
+    m_requirements = _requirements;
+}
+
+void CTask::addRequirement(RequirementPtr_t _requirement)
+{
+    m_requirements.push_back(_requirement);
 }
 
 size_t CTask::getNofTasks() const
@@ -104,6 +109,11 @@ size_t CTask::getNofProperties() const
     return m_properties.size();
 }
 
+size_t CTask::getNofRequirements() const
+{
+    return m_requirements.size();
+}
+
 size_t CTask::getTotalCounter() const
 {
     return getTotalCounterDefault();
@@ -131,9 +141,9 @@ const TopoPropertyPtrVector_t& CTask::getProperties() const
     return m_properties;
 }
 
-RequirementPtr_t CTask::getRequirement() const
+const RequirementPtrVector_t& CTask::getRequirements() const
 {
-    return m_requirement;
+    return m_requirements;
 }
 
 std::string CTask::getParentCollectionId() const
@@ -164,13 +174,16 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));
         setEnvReachable(taskPT.get<bool>("env.<xmlattr>.reachable", true));
 
-        string requirementId = taskPT.get<string>(TopoTypeToUseTag(ETopoType::REQUIREMENT), "");
-        if (!requirementId.empty())
+        boost::optional<const ptree&> requirementsPT = taskPT.get_child_optional("requirements");
+        if (requirementsPT)
         {
-            RequirementPtr_t newRequirement = make_shared<CRequirement>();
-            newRequirement->setParent(this);
-            newRequirement->initFromPropertyTree(requirementId, _pt);
-            setRequirement(newRequirement);
+            for (const auto& requirement : requirementsPT.get())
+            {
+                RequirementPtr_t newRequirement = make_shared<CRequirement>();
+                newRequirement->setParent(this);
+                newRequirement->initFromPropertyTree(requirement.second.data(), _pt);
+                addRequirement(newRequirement);
+            }
         }
 
         boost::optional<const ptree&> propertiesPT = taskPT.get_child_optional("properties");

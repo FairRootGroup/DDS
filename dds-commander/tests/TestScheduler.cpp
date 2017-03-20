@@ -199,4 +199,11 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     cout << scheduler.toString();
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_scheduler_host_pattern_matches)
+{
+    BOOST_CHECK(CSSHScheduler::hostPatternMatches(".+.gsi.de", "dds.gsi.de") == true);
+    BOOST_CHECK(CSSHScheduler::hostPatternMatches(".+.gsi.de", "gsi.de") == false);
+    BOOST_CHECK(CSSHScheduler::hostPatternMatches(".+.gsi.de", "google.com") == false);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

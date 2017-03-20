@@ -39,14 +39,24 @@ size_t CTaskCollection::getTotalCounter() const
     return getTotalCounterDefault();
 }
 
-void CTaskCollection::setRequirement(RequirementPtr_t _requirement)
+size_t CTaskCollection::getNofRequirements() const
 {
-    m_requirement = _requirement;
+    return m_requirements.size();
 }
 
-RequirementPtr_t CTaskCollection::getRequirement() const
+const RequirementPtrVector_t& CTaskCollection::getRequirements() const
 {
-    return m_requirement;
+    return m_requirements;
+}
+
+void CTaskCollection::setRequirement(const RequirementPtrVector_t& _requirements)
+{
+    m_requirements = _requirements;
+}
+
+void CTaskCollection::addRequirement(RequirementPtr_t _requirement)
+{
+    m_requirements.push_back(_requirement);
 }
 
 void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
@@ -57,13 +67,16 @@ void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt
 
         setId(collectionPT.get<string>("<xmlattr>.id"));
 
-        string requirementId = collectionPT.get<string>(TopoTypeToUseTag(ETopoType::REQUIREMENT), "");
-        if (!requirementId.empty())
+        boost::optional<const ptree&> requirementsPT = collectionPT.get_child_optional("requirements");
+        if (requirementsPT)
         {
-            RequirementPtr_t newRequirement = make_shared<CRequirement>();
-            newRequirement->setParent(this);
-            newRequirement->initFromPropertyTree(requirementId, _pt);
-            setRequirement(newRequirement);
+            for (const auto& requirement : requirementsPT.get())
+            {
+                RequirementPtr_t newRequirement = make_shared<CRequirement>();
+                newRequirement->setParent(this);
+                newRequirement->initFromPropertyTree(requirement.second.data(), _pt);
+                addRequirement(newRequirement);
+            }
         }
 
         boost::optional<const ptree&> tasksPT = collectionPT.get_child_optional("tasks");

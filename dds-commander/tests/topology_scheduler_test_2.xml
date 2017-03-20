@@ -1,71 +1,71 @@
 <topology id="myTopology">
-		
-	<declrequirement id="requirement1">
-    	<hostPattern type="hostname" value="host1_[0-2]"/>
-	</declrequirement>
-	
-	<declrequirement id="requirement2">
-    	<hostPattern type="hostname" value="host2_[0-2]"/>
-	</declrequirement>
-	
-	<declrequirement id="requirement3">
-    	<hostPattern type="hostname" value="host3_[0-2]"/>
-	</declrequirement>
-	
-	<declrequirement id="requirement4">
-    	<hostPattern type="hostname" value="host4_[0-2]"/>
-	</declrequirement>
-	
-	<declrequirement id="requirement5">
-    	<hostPattern type="wnname" value="wn5"/>
-	</declrequirement>
-	
-	<declrequirement id="requirement6">
-    	<hostPattern type="wnname" value="wn6"/>
-	</declrequirement>
-	
+
+	<declrequirement id="requirement1" type="hostname" value="host1_[0-2]"/>
+
+	<declrequirement id="requirement2" type="hostname" value="host2_[0-2]"/>
+
+	<declrequirement id="requirement3" type="hostname" value="host3_[0-2]"/>
+
+	<declrequirement id="requirement4" type="hostname" value="host4_[0-2]"/>
+
+	<declrequirement id="requirement5" type="wnname" value="wn5"/>
+
+	<declrequirement id="requirement6" type="wnname" value="wn6"/>
+
   	<decltask id="TestTask1">
 		<exe reachable="false">test_task.exe</exe>
-		<requirement>requirement1</requirement>
+		<requirements>
+			<id>requirement1</id>
+	  </requirements>
 	</decltask>
-	
+
   	<decltask id="TestTask2">
 		<exe reachable="false">test_task.exe</exe>
-		<requirement>requirement2</requirement>
+		<requirements>
+			<id>requirement2</id>
+		</requirements>
 	</decltask>
-	
+
   	<decltask id="TestTask3">
 		<exe reachable="false">test_task.exe</exe>
-		<requirement>requirement3</requirement>
+		<requirements>
+			<id>requirement3</id>
+		</requirements>
 	</decltask>
-	
+
   	<decltask id="TestTask4">
 		<exe reachable="false">test_task.exe</exe>
-		<requirement>requirement5</requirement>
+		<requirements>
+			<id>requirement5</id>
+		</requirements>
 	</decltask>
-	
+
 	<declcollection id="TestCollection1">
-		<requirement>requirement4</requirement>
+		<requirements>
+			<id>requirement4</id>
+		</requirements>
 		<tasks>
 			<id>TestTask1</id>
 			<id>TestTask2</id>
 			<id>TestTask3</id>
 		</tasks>
 	</declcollection>
-	
+
 	<declcollection id="TestCollection2">
 		<tasks>
 			<id>TestTask1</id>
 		</tasks>
 	</declcollection>
-	
+
 	<declcollection id="TestCollection3">
-		<requirement>requirement6</requirement>
+		<requirements>
+			<id>requirement6</id>
+		</requirement>
 		<tasks>
 			<id>TestTask1</id>
 		</tasks>
 	</declcollection>
-	
+
 	<main id="main">
 		<group id="group1" n="3">
 			<task>TestTask1</task>
@@ -77,5 +77,5 @@
 			<collection>TestCollection3</collection>
 		</group>
 	</main>
-	
+
 </topology>
