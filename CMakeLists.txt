@@ -389,6 +389,20 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
 endif()
 
+if( BUILD_TESTS )
+	set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds_topology_lib-tests>)
+	#
+	# WORKAROUND: the issue is configure_file currently does not appear to honor generator expressions,
+	# but it is still needed to configure @...@ expressions.
+	# We therefore use two-step procedure to configure a file.
+	#
+	# 1. Deal with @...@ configurable items:
+	configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured @ONLY)
+	# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
+	FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake
+			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured CONDITION 1)
+endif( BUILD_TESTS )
+
 #
 # TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
 #			  
@@ -430,6 +444,9 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# INSTALL SCRIPT is called before any other lib is installed, therefore we need to create a dest. dir.
 	INSTALL(DIRECTORY DESTINATION lib)
 	INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
+	if( BUILD_TESTS )
+		INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake)
+	endif( BUILD_TESTS )
 endif()
 
 #
