@@ -6,6 +6,9 @@
 Added: Dependency look up and bundling of WN package using cmake. (GH-166)       
 Added: Bundle-like installation. (GH-167)    
 
+### dds-commander
+Modified: Error message about insufficient number of agents shows now how many is required and how many agents are available. (GH-161)    
+
 ### dds-info
 Fixed: send list of agents one by one to avoid protocol string limits. (GH-158)    
 

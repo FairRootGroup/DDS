@@ -618,8 +618,12 @@ bool CConnectionManager::on_cmdUPDATE_TOPOLOGY(
             if (nofAgents == 0)
                 throw runtime_error("There are no connected agents.");
             if (nofAgents < m_updateTopology.m_nofRequests)
-                throw runtime_error("The number of agents is not sufficient for this topology.");
-
+            {
+                stringstream ssMsg;
+                ssMsg << "The number of agents is not sufficient for this topology (required/available "
+                      << m_updateTopology.m_nofRequests << "/" << nofAgents << ").";
+                throw runtime_error(ssMsg.str());
+            }
             // initiate UI progress
             p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_updateTopology.m_nofRequests, 0));
 
