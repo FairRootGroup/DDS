@@ -387,21 +387,21 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
 	FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake
 			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
+			  
+	if( BUILD_TESTS )
+		set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds_topology_lib-tests>)
+		#
+		# WORKAROUND: the issue is configure_file currently does not appear to honor generator expressions,
+		# but it is still needed to configure @...@ expressions.
+		# We therefore use two-step procedure to configure a file.
+		#
+		# 1. Deal with @...@ configurable items:
+		configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured @ONLY)
+		# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
+		FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake
+			  	INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured CONDITION 1)
+	endif( BUILD_TESTS )
 endif()
-
-if( BUILD_TESTS )
-	set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds_topology_lib-tests>)
-	#
-	# WORKAROUND: the issue is configure_file currently does not appear to honor generator expressions,
-	# but it is still needed to configure @...@ expressions.
-	# We therefore use two-step procedure to configure a file.
-	#
-	# 1. Deal with @...@ configurable items:
-	configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured @ONLY)
-	# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
-	FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake
-			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured CONDITION 1)
-endif( BUILD_TESTS )
 
 #
 # TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
