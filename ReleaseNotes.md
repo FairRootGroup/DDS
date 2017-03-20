@@ -5,6 +5,7 @@
 ### DDS common
 Added: Dependency look up and bundling of WN package using cmake. (GH-166)       
 Added: Bundle-like installation. (GH-167)    
+Modified: BOOST libs from WN packages are built now without libicudata support to reduce the package size. (GH-141)    
 
 ### dds-commander
 Modified: Error message about insufficient number of agents shows now how many is required and how many agents are available. (GH-161)    
