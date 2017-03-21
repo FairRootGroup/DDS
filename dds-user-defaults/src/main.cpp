@@ -46,7 +46,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("path,p", "Show DDS user defaults config file path");
     visible.add_options()("default,d", "Generate a default DDS configuration file");
     visible.add_options()(
-        "config,c", bpo::value<string>()->default_value("~/.DDS/DDS.cfg"), "DDS user defaults configuration file");
+        "config,c", bpo::value<string>(), "DDS user defaults configuration file");
     visible.add_options()("key", bpo::value<string>(), "Get a value for the given key");
     visible.add_options()(
         "force,f",
@@ -137,6 +137,9 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     //    }
 
     CUserDefaults& userDefaults = CUserDefaults::instance();
+    if(sCfgFileName.empty())
+        sCfgFileName = CUserDefaults::currentUDFile();
+        
     userDefaults.reinit(sCfgFileName);
 
     if (vm.count("wrkpkg"))
