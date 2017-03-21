@@ -92,6 +92,9 @@ namespace MiscCommon
     template <class _T>
     inline void smart_path(_T* _Path)
     {
+        if (nullptr == _Path || _Path->empty())
+            return;
+
         // Checking for "~/"
         std::string path(*_Path);
         MiscCommon::trim_left(&path, ' ');
