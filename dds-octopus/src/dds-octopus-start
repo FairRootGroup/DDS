@@ -2,6 +2,10 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
+location=$1
+echo "DDS from this location is used ${location}"
+source ${location}/DDS_env.sh
+
 
 eval DDS_OCTOPUS_LOCATION="$DDS_LOCATION/tests/dds-octopus"
 TOPO_1=$DDS_OCTOPUS_LOCATION/octopus_topo_1.xml

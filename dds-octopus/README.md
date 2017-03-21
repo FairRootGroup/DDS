@@ -4,6 +4,6 @@ A full blown functional test facility for DDS. Test DDS using DDS.
 ## Usage
 ~~~~~~~~~~
 cd $DDS_LOCATIONS/tests/dds-octopus
-./dds-octopus-start
+./dds-octopus-start &lt;dds location path&gt;
 ~~~~~~~~~~
 
