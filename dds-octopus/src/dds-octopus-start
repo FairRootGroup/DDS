@@ -106,13 +106,7 @@ echo "Agents are ready."
 
 echo "Setting up the topology and activating it..."
 
-dds-topology --set "$TOPO_1"
-if (( $? != 0 )) ; then
-	echo "Failed to set topology. Exit code: $?"
-	clean_up 1
-fi
-
-dds-topology --activate 
+dds-topology --activate "$TOPO_1"
 if (( $? != 0 )) ; then
 	echo "Failed to activate topology. Exit code: $?"
 	clean_up 1
