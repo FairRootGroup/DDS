@@ -11,6 +11,9 @@
 
 	<declrequirement id="requirement1" type="hostname" value="${requirementVar}"/>
 
+	<decltrigger id="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
+	<decltrigger id="trigger2" condition="TaskCrashed" action="RestartTask" arg="10"/>
+
 	<!-- THIS IS A COMMENT -->
 
   	<decltask id="task1">
@@ -24,11 +27,10 @@
 			<id access="write">property4</id>
 			<id access="readwrite">property1</id>
 		</properties>
-	<!--	<properties>
-		   <id>property1</id>
-		   <id>property4</id>
-		   <id>property1</id>
-	    </properties>-->
+    <triggers>
+			<id>trigger1</id>
+			<id>trigger2</id>
+		</triggers>
 	</decltask>
 	<decltask id="task2">
 		<exe>app2</exe>
@@ -42,7 +44,10 @@
 		<properties>
 		   <id access="read">property2</id>
 		   <id access="read">property3</id>
-	    </properties>
+	  </properties>
+		<triggers>
+			<id>trigger1</id>
+		</triggers>
 	</decltask>
 	<decltask id="task4">
 		<exe>app4</exe>

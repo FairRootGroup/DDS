@@ -28,7 +28,8 @@ namespace dds
             COLLECTION,
             GROUP,
             REQUIREMENT,
-            TOPO_VARS
+            TOPO_VARS,
+            TRIGGER
         };
 
         class CTopoBase

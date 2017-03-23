@@ -17,6 +17,7 @@ Fixed: send list of agents one by one to avoid protocol string limits. (GH-158)
 Modified: dds-topology's activate, stop, update and set commands are refactored. (GH-153)    
 Modified: "dds-topology --set" is obsolete now, use "dds-topology --activate topo_file.xml" instead. (GH-153)
 Modified: Change declaration of the requirements in XML file. Check user's manual for the new syntax.    
+Modified: Support task triggers in topology. User can define condition and corresponding action for the trigger. DDS run the action whenever specified condition is triggered. Conditions and actions are predefined. (GH-151)    
 
 ## v1.4 (2016-10-31)
 

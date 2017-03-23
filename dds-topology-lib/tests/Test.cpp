@@ -222,6 +222,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(requirement->getParent() == element1.get());
     BOOST_CHECK(requirement->getValue() == ".+.gsi.de");
     BOOST_CHECK(requirement->getRequirementType() == ERequirementType::HostName);
+    BOOST_CHECK(casted1->getNofTriggers() == 2);
+    TriggerPtr_t trigger = casted1->getTriggers()[0];
+    BOOST_CHECK(trigger->getId() == "trigger1");
+    BOOST_CHECK(trigger->getType() == ETopoType::TRIGGER);
+    BOOST_CHECK(trigger->getParent() == element1.get());
+    BOOST_CHECK(trigger->getCondition() == EConditionType::TaskCrashed);
+    BOOST_CHECK(trigger->getAction() == EActionType::RestartTask);
+    BOOST_CHECK(trigger->getArgument() == "5");
     TopoElementPtr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
     BOOST_CHECK(element2->getType() == ETopoType::COLLECTION);
@@ -441,6 +449,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::GROUP) == "group");
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::TOPO_PROPERTY) == "property");
     BOOST_CHECK(TopoTypeToUseTag(ETopoType::REQUIREMENT) == "requirement");
+    BOOST_CHECK(TopoTypeToUseTag(ETopoType::TRIGGER) == "trigger");
 
     // UseTagToTopoType
     BOOST_CHECK_THROW(UseTagToTopoType(""), runtime_error);
@@ -451,6 +460,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(UseTagToTopoType("group") == ETopoType::GROUP);
     BOOST_CHECK(UseTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
     BOOST_CHECK(UseTagToTopoType("requirement") == ETopoType::REQUIREMENT);
+    BOOST_CHECK(UseTagToTopoType("trigger") == ETopoType::TRIGGER);
 
     // TopoTypeToDeclTag
     BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_BASE), runtime_error);
@@ -461,6 +471,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "property");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::REQUIREMENT) == "declrequirement");
     BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_VARS) == "var");
+    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TRIGGER) == "decltrigger");
 
     // TagToPropertyAccessType
     BOOST_CHECK(TagToPropertyAccessType("read") == EPropertyAccessType::READ);
@@ -468,13 +479,30 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TagToPropertyAccessType("readwrite") == EPropertyAccessType::READWRITE);
     BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
 
-    // TagToHostPatternType
+    // TagToRequirementType
     BOOST_CHECK(TagToRequirementType("wnname") == ERequirementType::WnName);
     BOOST_CHECK(TagToRequirementType("hostname") == ERequirementType::HostName);
     BOOST_CHECK(TagToRequirementType("gpu") == ERequirementType::Gpu);
     BOOST_CHECK_THROW(TagToRequirementType("wn_name"), runtime_error);
 
-    // DDSCreateTopoElement
+    // RequirementTypeToTag
+    BOOST_CHECK(RequirementTypeToTag(ERequirementType::WnName) == "WnName");
+    BOOST_CHECK(RequirementTypeToTag(ERequirementType::HostName) == "HostName");
+    BOOST_CHECK(RequirementTypeToTag(ERequirementType::Gpu) == "Gpu");
+
+    // TagToConditionType
+    BOOST_CHECK(TagToConditionType("TaskCrashed") == EConditionType::TaskCrashed);
+
+    // ConditionTypeToTag
+    BOOST_CHECK(ConditionTypeToTag(EConditionType::TaskCrashed) == "TaskCrashed");
+
+    // TagToActionType
+    BOOST_CHECK(TagToActionType("RestartTask") == EActionType::RestartTask);
+
+    // ActionTypeToTag
+    BOOST_CHECK(ActionTypeToTag(EActionType::RestartTask) == "RestartTask");
+
+    // DeclTagToTopoType
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topobase"), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topoelement"), runtime_error);
@@ -484,6 +512,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(DeclTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
     BOOST_CHECK(DeclTagToTopoType("declrequirement") == ETopoType::REQUIREMENT);
     BOOST_CHECK(DeclTagToTopoType("var") == ETopoType::TOPO_VARS);
+    BOOST_CHECK(DeclTagToTopoType("decltrigger") == ETopoType::TRIGGER);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)

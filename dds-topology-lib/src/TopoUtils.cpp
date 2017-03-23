@@ -27,6 +27,8 @@ namespace dds
                     return "property";
                 case ETopoType::REQUIREMENT:
                     return "requirement";
+                case ETopoType::TRIGGER:
+                    return "trigger";
                 default:
                     throw runtime_error("Topology element not found.");
             }
@@ -44,6 +46,8 @@ namespace dds
                 return ETopoType::TOPO_PROPERTY;
             else if (_name == "requirement")
                 return ETopoType::REQUIREMENT;
+            else if (_name == "trigger")
+                return ETopoType::TRIGGER;
             else
                 throw runtime_error("Topology element with name " + _name + " does not exist.");
         }
@@ -64,6 +68,8 @@ namespace dds
                     return "declrequirement";
                 case ETopoType::TOPO_VARS:
                     return "var";
+                case ETopoType::TRIGGER:
+                    return "decltrigger";
                 default:
                     throw runtime_error("Topology element not found.");
             }
@@ -83,6 +89,8 @@ namespace dds
                 return ETopoType::REQUIREMENT;
             else if (_name == "var")
                 return ETopoType::TOPO_VARS;
+            else if (_name == "decltrigger")
+                return ETopoType::TRIGGER;
             else
                 throw runtime_error("Topology element with name " + _name + " does not exist.");
         }
@@ -109,6 +117,59 @@ namespace dds
                 return ERequirementType::Gpu;
             else
                 throw runtime_error("Host pattern type with name " + _name + " does not exist.");
+        }
+
+        std::string RequirementTypeToTag(ERequirementType _type)
+        {
+            switch (_type)
+            {
+                case ERequirementType::WnName:
+                    return "WnName";
+                case ERequirementType::HostName:
+                    return "HostName";
+                case ERequirementType::Gpu:
+                    return "Gpu";
+                default:
+                    throw runtime_error("Topology element not found.");
+            }
+        }
+
+        EConditionType TagToConditionType(const std::string& _name)
+        {
+            if (_name == "TaskCrashed")
+                return EConditionType::TaskCrashed;
+            else
+                throw runtime_error("Condition type with name " + _name + " does not exist.");
+        }
+
+        std::string ConditionTypeToTag(EConditionType _type)
+        {
+            switch (_type)
+            {
+                case EConditionType::TaskCrashed:
+                    return "TaskCrashed";
+                default:
+                    throw runtime_error("Topology element not found.");
+            }
+        }
+
+        EActionType TagToActionType(const std::string& _name)
+        {
+            if (_name == "RestartTask")
+                return EActionType::RestartTask;
+            else
+                throw runtime_error("Action type with name " + _name + " does not exist.");
+        }
+
+        std::string ActionTypeToTag(EActionType _type)
+        {
+            switch (_type)
+            {
+                case EActionType::RestartTask:
+                    return "RestartTask";
+                default:
+                    throw runtime_error("Topology element not found.");
+            }
         }
     }
 }

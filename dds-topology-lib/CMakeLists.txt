@@ -10,7 +10,7 @@ set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 #
 # configure files
-# 
+#
 configure_file( ${dds_topology_lib_SOURCE_DIR}/src/version.h.in ${dds_topology_lib_BINARY_DIR}/version.h @ONLY )
 
 #
@@ -31,6 +31,7 @@ set( SOURCE_FILES
 	./src/TopoIndex.cpp
     ./src/Requirement.cpp
     ./src/TopoVars.cpp
+		./src/Trigger.cpp
 )
 
 #
@@ -51,6 +52,7 @@ set( HEADER_FILES
 	./src/TopoIndex.h
     ./src/Requirement.h
     ./src/TopoVars.h
+		./src/Trigger.h
 )
 
 include_directories(
@@ -94,7 +96,7 @@ install(TARGETS dds_topology_lib DESTINATION lib)
 #
 if (BUILD_TESTS)
     message (STATUS "Build dds_topology_lib unit tests - YES")
-    add_subdirectory ( ${dds_topology_lib_SOURCE_DIR}/tests ) 
+    add_subdirectory ( ${dds_topology_lib_SOURCE_DIR}/tests )
 else (BUILD_TESTS)
     message (STATUS "Build dds_topology_lib unit tests - NO")
 endif (BUILD_TESTS)

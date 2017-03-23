@@ -42,8 +42,6 @@ namespace dds
             void setValue(const std::string& _value);
             void setRequirementType(ERequirementType _requireemntType);
 
-            // bool hostPatterMatches(const std::string& _host) const;
-
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
             virtual std::string toString() const;

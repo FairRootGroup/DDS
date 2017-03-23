@@ -10,6 +10,7 @@
 #include "Requirement.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
+#include "Trigger.h"
 // STD
 #include <memory>
 #include <string>
@@ -34,9 +35,11 @@ namespace dds
             bool isEnvReachable() const;
             size_t getNofProperties() const;
             size_t getNofRequirements() const;
+            size_t getNofTriggers() const;
             TopoPropertyPtr_t getProperty(size_t _i) const;
             const TopoPropertyPtrVector_t& getProperties() const;
             const RequirementPtrVector_t& getRequirements() const;
+            const TriggerPtrVector_t& getTriggers() const;
             /// Get property by ID. If property not fount than return nullptr.
             TopoPropertyPtr_t getProperty(const std::string& _id) const;
 
@@ -49,6 +52,8 @@ namespace dds
             void addProperty(TopoPropertyPtr_t _property);
             void setRequirements(const RequirementPtrVector_t& _requirements);
             void addRequirement(RequirementPtr_t _requirement);
+            void setTriggers(const TriggerPtrVector_t& _triggers);
+            void addTrigger(TriggerPtr_t _trigger);
 
             // Parent collection and group ID
             std::string getParentCollectionId() const;
@@ -82,6 +87,7 @@ namespace dds
             bool m_envReachable;                   ///< If environment script is available on the WN
             TopoPropertyPtrVector_t m_properties;  ///< Properties
             RequirementPtrVector_t m_requirements; ///< Array of requirements
+            TriggerPtrVector_t m_triggers;         ///< Array of triggers
         };
 
         typedef std::shared_ptr<CTask> TaskPtr_t;

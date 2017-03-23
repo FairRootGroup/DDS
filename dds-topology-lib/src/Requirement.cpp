@@ -65,7 +65,8 @@ void CRequirement::initFromPropertyTree(const std::string& _name, const boost::p
 string CRequirement::toString() const
 {
     stringstream ss;
-    ss << "DDSRequirement: m_id=" << getId() << " m_value=" << getValue();
+    ss << "DDSRequirement: id=" << getId() << " type=" << RequirementTypeToTag(getRequirementType())
+       << " value=" << getValue();
     return ss.str();
 }
 

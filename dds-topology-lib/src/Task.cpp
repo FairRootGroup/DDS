@@ -74,6 +74,16 @@ void CTask::addRequirement(RequirementPtr_t _requirement)
     m_requirements.push_back(_requirement);
 }
 
+void CTask::setTriggers(const TriggerPtrVector_t& _triggers)
+{
+    m_triggers = _triggers;
+}
+
+void CTask::addTrigger(TriggerPtr_t _trigger)
+{
+    m_triggers.push_back(_trigger);
+}
+
 size_t CTask::getNofTasks() const
 {
     return 1;
@@ -114,6 +124,11 @@ size_t CTask::getNofRequirements() const
     return m_requirements.size();
 }
 
+size_t CTask::getNofTriggers() const
+{
+    return m_triggers.size();
+}
+
 size_t CTask::getTotalCounter() const
 {
     return getTotalCounterDefault();
@@ -144,6 +159,11 @@ const TopoPropertyPtrVector_t& CTask::getProperties() const
 const RequirementPtrVector_t& CTask::getRequirements() const
 {
     return m_requirements;
+}
+
+const TriggerPtrVector_t& CTask::getTriggers() const
+{
+    return m_triggers;
 }
 
 std::string CTask::getParentCollectionId() const
@@ -196,6 +216,18 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
                 newProperty->initFromPropertyTree(property.second.data(), _pt);
                 newProperty->setAccessType(TagToPropertyAccessType(property.second.get<string>("<xmlattr>.access")));
                 addProperty(newProperty);
+            }
+        }
+
+        boost::optional<const ptree&> triggersPT = taskPT.get_child_optional("triggers");
+        if (triggersPT)
+        {
+            for (const auto& trigger : triggersPT.get())
+            {
+                TriggerPtr_t newTrigger = make_shared<CTrigger>();
+                newTrigger->setParent(this);
+                newTrigger->initFromPropertyTree(trigger.second.data(), _pt);
+                addTrigger(newTrigger);
             }
         }
     }

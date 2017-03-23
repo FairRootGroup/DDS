@@ -105,12 +105,42 @@
 </xs:complexType>
 
 
+<xs:complexType name="triggerArrayType">
+  <xs:sequence>
+  	<xs:element name="id" type="stringIdType" maxOccurs="unbounded" minOccurs="0"/>
+  </xs:sequence>
+</xs:complexType>
+
+
+<xs:simpleType name="triggerConditionType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="TaskCrashed"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="triggerActionType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="RestartTask"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:complexType name="triggerType">
+  <xs:attribute name="id" type="stringIdType" use="required"/>
+  <xs:attribute name="condition" type="triggerConditionType" use="required"/>
+  <xs:attribute name="action" type="triggerActionType" use="required"/>
+  <xs:attribute name="arg" type="stringType" use="required"/>
+</xs:complexType>
+
+
 <xs:complexType name="taskType">
   <xs:sequence>
 	<xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
 	<xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
 	<xs:element name="requirements" type="requirementArrayType" maxOccurs="1" minOccurs="0"/>
   <xs:element name="properties" type="propertyArrayType" maxOccurs="1" minOccurs="0"/>
+  <xs:element name="triggers" type="triggerArrayType" maxOccurs="1" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="id" type="stringIdType" use="required"/>
 </xs:complexType>
@@ -149,7 +179,8 @@
   <xs:sequence>
 	<xs:element name="var" type="varType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="property" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
-	<xs:element name="declrequirement" type="requirementType" maxOccurs="unbounded" minOccurs="0"/>
+	  <xs:element name="declrequirement" type="requirementType" maxOccurs="unbounded" minOccurs="0"/>
+    <xs:element name="decltrigger" type="triggerType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="decltask" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
     <xs:element name="declcollection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>
 	<xs:element name="main" type="mainType" maxOccurs="1" minOccurs="1"/>
