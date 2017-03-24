@@ -94,6 +94,7 @@ namespace dds
             std::string m_taskName;
             handlerOnNewUserTaks_t m_onNewUserTaskCallback;
             uint16_t m_connectionAttempts;
+            std::mutex m_activateMutex;
         };
     }
 }

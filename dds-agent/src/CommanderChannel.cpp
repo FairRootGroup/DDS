@@ -52,6 +52,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     , m_collectionName()
     , m_taskName()
     , m_connectionAttempts(1)
+    , m_activateMutex()
 {
     subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [this](CCommanderChannel* _channel) {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
@@ -331,6 +332,10 @@ void CCommanderChannel::deleteAgentIDFile() const
 
 bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
 {
+    // Mutex is used to garantee that cmdASSIGN_USER_TASK and cmdACTIVATE_AGENT are not executed at the same time.
+    // Note that mutex doesn't garantee that cmdASSIGN_USER_TASK is executed before cmdACTIVATE_AGENT this can be implemented later using condition_variable.
+    lock_guard<mutex> lock(m_activateMutex);
+    
     LOG(info) << "Received a user task assignment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
     m_taskID = _attachment->m_taskID;
@@ -351,6 +356,9 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
 
 bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment)
 {
+    // See comment in on_cmdASSIGN_USER_TASK for details.
+    lock_guard<mutex> lock(m_activateMutex);
+    
     string sUsrExe(m_sUsrExe);
     smart_path(&sUsrExe);
 
