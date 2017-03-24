@@ -85,8 +85,6 @@ namespace dds
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
 
-            MiscCommon::BOOSTHelper::option_dependency(vm, "disable-validation", "activate");
-            MiscCommon::BOOSTHelper::option_dependency(vm, "disable-validation", "update");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "activate", "stop");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "stop");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "activate");
@@ -104,6 +102,13 @@ namespace dds
             if (vm.count("verbose"))
             {
                 _options->m_verbose = true;
+            }
+            if (vm.count("disable-validation"))
+            {
+                if (!vm.count("activate") && !vm.count("update"))
+                {
+                    throw std::runtime_error("--disable-validation must be used together with --activate or --update");
+                }
             }
             if (vm.count("validate") && !_options->m_sTopoFile.empty())
             {
