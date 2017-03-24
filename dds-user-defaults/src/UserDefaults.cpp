@@ -290,6 +290,11 @@ string CUserDefaults::getLogFile() const
     // DDS_LOG_LOCATION is used only by DDS commander server
     dds_log_location = getenv("DDS_LOG_LOCATION");
     string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
+
+    if (sLogDir.empty())
+        throw runtime_error("Can't init Log engine. Log location is not specified. Make sure DDS environment is "
+                            "properly initialised (by using DDS_env.sh).");
+
     smart_append<string>(&sLogDir, '/');
     string sLogFile(sLogDir);
     sLogFile += "dds_%Y-%m-%d.%N.log";

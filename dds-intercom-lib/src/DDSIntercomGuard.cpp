@@ -34,7 +34,14 @@ CDDSIntercomGuard::CDDSIntercomGuard()
     : m_useSMTransport(true)
     , m_started(false)
 {
-    Logger::instance().init(); // Initialize log
+    try
+    {
+        Logger::instance().init(); // Initialize log
+    }
+    catch (const std::exception& _e)
+    {
+        cerr << "DDSIntercomGuard: Error: " << _e.what();
+    }
 }
 
 CDDSIntercomGuard::~CDDSIntercomGuard()
