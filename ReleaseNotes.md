@@ -1,5 +1,8 @@
 # DDS Release Notes
 
+## v1.8 (NOT YET RELEASED)
+
+
 ## v1.6 (2017-03-26)
 
 ### DDS common
