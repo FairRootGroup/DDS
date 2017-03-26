@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v1.6 (NOT YET RELEASED)
+## v1.6 (2017-03-26)
 
 ### DDS common
 Added: Dependency look up and bundling of WN package using cmake. (GH-166)       
@@ -16,7 +16,7 @@ Fixed: send list of agents one by one to avoid protocol string limits. (GH-158)
 
 ### dds-topology
 Modified: dds-topology's activate, stop, update and set commands are refactored. (GH-153)    
-Modified: "dds-topology --set" is obsolete now, use "dds-topology --activate topo_file.xml" instead. (GH-153)
+Modified: "dds-topology --set" is obsolete now, use "dds-topology --activate topo_file.xml" instead. (GH-153)   
 Modified: Change declaration of the requirements in XML file. Check user's manual for the new syntax.    
 Modified: Support task triggers in topology. User can define condition and corresponding action for the trigger. DDS run the action whenever specified condition is triggered. Conditions and actions are predefined. (GH-151)    
 Fixed: dds-topology: proper check that --disable-validation option has to be used only with --activate and --update options.    
@@ -68,7 +68,7 @@ Modified: Proper error message if DDS can't find xmllint. (GH-140)
 Added: Support of the new plug-in architecture. (GH-108)   
 Added: the command learned "--config/-c" parameter, which can be used to specify a configuration file for plug-ins. (GH-111)   
 Added: the command learned "--list/-l" parameter, which lists all available RMS plug-ins. (GH-112)   
-Modified: drop support of "--ssh-rms-cfg" in favor of "--config". (GH-111)   
+Modified: drop support of "--ssh-rms-cfg" in favour of "--config". (GH-111)   
 Modified: drop support of auto-config feature of dds-submit, when it remembers last used settings. (GH-111)   
 
 
@@ -94,13 +94,13 @@ Added: Initial release. (GH-115)
 Fixed: failed to execute if the full path to the executable is provided. (GH-121)   
 
 ### dds-submit
-Added: customizable plugin location. --path option which specifies the root directory of the plugins was edded. If the directory is not provided - default path will be used. (GH-118)   
+Added: customisable plugin location. --path option which specifies the root directory of the plugins was added. If the directory is not provided - default path will be used. (GH-118)   
 Modified: accept both -n and -c command line options.   
 
 ## v1.0 (2015-11-20)
 ###DDS common
 Fixed: git error when using out of source builds (GH-85)    
-Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
+Fixed: a class name lookup issues, which could result in unpredictable behaviour during run-time (agent and key-value-lib had classes with the same name and same header protection).    
 Fixed: check DDS_LOCATION before agent start. (GH-98)   
 Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the sub-shell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.  
 Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
@@ -201,7 +201,7 @@ Added: shared memory storage for key-value. (GH-35)
 
 ### dds-protocol-lib
 Modified: The DDS transport learned to accumulate commands before sending, instead of sending them one by one. (GH-38)   
-Modified: Hand-shake messages are prioritized now. DDS doesn't send/accept any other message until hand-shake is successful. (GH-37)   
+Modified: Hand-shake messages are prioritised now. DDS doesn't send/accept any other message until hand-shake is successful. (GH-37)   
 Fixed: Revised write message algorithms. It is also faster now.    
 Fixed: a bug in the dds-agent, which could cause a SEGFAULT when trying to access a deleted channel object on disconnect.    
 Added: Implemented callbacks (signals) in BaseChannelImpl for different channel events like connect, disconnect, handshakeOK, handshakeFailed. (GH-41)   
