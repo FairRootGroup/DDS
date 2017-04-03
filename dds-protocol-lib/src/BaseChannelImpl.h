@@ -79,21 +79,21 @@ namespace dds
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
                         SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
-                    dispatchMessageHandlers(currentCmd, attachmentPtr, this);                                          \
+                    dispatchHandlers(currentCmd, attachmentPtr, this);                                          \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_OK:                                                                            \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
-                    dispatchMessageHandlers(currentCmd, attachmentPtr, this);                                          \
+                    dispatchHandlers(currentCmd, attachmentPtr, this);                                          \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_ERR:                                                                           \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
-                    dispatchMessageHandlers(currentCmd, attachmentPtr, this);                                          \
+                    dispatchHandlers(currentCmd, attachmentPtr, this);                                          \
                     return;                                                                                            \
                 }
 
@@ -106,14 +106,14 @@ namespace dds
         processed = func(attachmentPtr);                                                                           \
         if (!processed)                                                                                            \
         {                                                                                                          \
-            if (getNofMessageHandlers<msg>() == 0)                                                                 \
+            if (getNofHandlers(msg) == 0)                                                                 \
             {                                                                                                      \
                 LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
                                        << _currentMsg->toString();                                                 \
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatchMessageHandlers(msg, attachmentPtr, this);                                                 \
+                dispatchHandlers(msg, attachmentPtr, this);                                                 \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \

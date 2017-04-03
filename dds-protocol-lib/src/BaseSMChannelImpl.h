@@ -51,14 +51,14 @@
         processed = func(attachmentPtr);                                                                           \
         if (!processed)                                                                                            \
         {                                                                                                          \
-            if (getNofMessageHandlers<msg>() == 0)                                                                 \
+            if (getNofHandlers(msg) == 0)                                                                 \
             {                                                                                                      \
                 LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
                                        << _currentMsg->toString();                                                 \
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatchMessageHandlers(msg, attachmentPtr, this);                                                 \
+                dispatchHandlers(msg, attachmentPtr, this);                                                 \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \

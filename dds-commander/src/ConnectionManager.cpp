@@ -82,104 +82,104 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
         SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_LOG(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdGET_LOG>(fGET_LOG);
+    _newClient->registerHandler<>(cmdGET_LOG, fGET_LOG);
 
     function<bool(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, CAgentChannel * _channel)>
         fBINARY_ATTACHMENT_RECEIVED = [this](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
                                              CAgentChannel* _channel) -> bool {
         return this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdBINARY_ATTACHMENT_RECEIVED>(fBINARY_ATTACHMENT_RECEIVED);
+    _newClient->registerHandler<>(cmdBINARY_ATTACHMENT_RECEIVED, fBINARY_ATTACHMENT_RECEIVED);
 
     function<bool(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_AGENTS_INFO =
             [this](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_AGENTS_INFO(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdGET_AGENTS_INFO>(fGET_AGENTS_INFO);
+    _newClient->registerHandler<>(cmdGET_AGENTS_INFO, fGET_AGENTS_INFO);
 
     function<bool(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel * _channel)> fSUBMIT = [this](
         SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdSUBMIT(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdSUBMIT>(fSUBMIT);
+    _newClient->registerHandler<>(cmdSUBMIT, fSUBMIT);
 
     function<bool(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel * _channel)>
         fTRANSPORT_TEST =
             [this](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdTRANSPORT_TEST(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdTRANSPORT_TEST>(fTRANSPORT_TEST);
+    _newClient->registerHandler<>(cmdTRANSPORT_TEST, fTRANSPORT_TEST);
 
     function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel * _channel)> fSIMPLE_MSG =
         [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdSIMPLE_MSG(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
+    _newClient->registerHandler<>(cmdSIMPLE_MSG, fSIMPLE_MSG);
 
     function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel * _channel)> fUPDATE_KEY =
         [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdUPDATE_KEY(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+    _newClient->registerHandler<>(cmdUPDATE_KEY, fUPDATE_KEY);
 
     function<bool(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel * _channel)>
         fUSER_TASK_DONE =
             [this](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdUSER_TASK_DONE(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdUSER_TASK_DONE>(fUSER_TASK_DONE);
+    _newClient->registerHandler<>(cmdUSER_TASK_DONE, fUSER_TASK_DONE);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_PROP_LIST =
             [this](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_PROP_LIST(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdGET_PROP_LIST>(fGET_PROP_LIST);
+    _newClient->registerHandler<>(cmdGET_PROP_LIST, fGET_PROP_LIST);
 
     function<bool(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel * _channel)>
         fGET_PROP_VALUES =
             [this](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_PROP_VALUES(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdGET_PROP_VALUES>(fGET_PROP_VALUES);
+    _newClient->registerHandler<>(cmdGET_PROP_VALUES, fGET_PROP_VALUES);
 
     function<bool(SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment, CAgentChannel * _channel)>
         fUPDATE_TOPOLOGY =
             [this](SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdUPDATE_TOPOLOGY(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdUPDATE_TOPOLOGY>(fUPDATE_TOPOLOGY);
+    _newClient->registerHandler<>(cmdUPDATE_TOPOLOGY, fUPDATE_TOPOLOGY);
 
     function<bool(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel * _channel)> fREPLY_ID = [this](
         SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdREPLY_ID(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdREPLY_ID>(fREPLY_ID);
+    _newClient->registerHandler<>(cmdREPLY_ID, fREPLY_ID);
 
     function<bool(SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fENABLE_STAT =
         [this](SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdENABLE_STAT(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdENABLE_STAT>(fENABLE_STAT);
+    _newClient->registerHandler<>(cmdENABLE_STAT, fENABLE_STAT);
 
     function<bool(SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fDISABLE_STAT =
         [this](SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdDISABLE_STAT(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdDISABLE_STAT>(fDISABLE_STAT);
+    _newClient->registerHandler<>(cmdDISABLE_STAT, fDISABLE_STAT);
 
     function<bool(SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel * _channel)> fGET_STAT = [this](
         SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdGET_STAT(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdGET_STAT>(fGET_STAT);
+    _newClient->registerHandler<>(cmdGET_STAT, fGET_STAT);
 
     function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CAgentChannel * _channel)> fCUSTOM_CMD =
         [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
         return this->on_cmdCUSTOM_CMD(_attachment, getWeakPtr(_channel));
     };
-    _newClient->registerMessageHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
+    _newClient->registerHandler<>(cmdCUSTOM_CMD, fCUSTOM_CMD);
 }
 
 //=============================================================================

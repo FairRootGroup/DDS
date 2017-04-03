@@ -67,6 +67,7 @@ set( SRC_HDRS
 	./src/StatImpl.h
     ./src/CustomCmdCmd.h
     ./src/UpdateTopologyCmd.h
+		./src/BaseEventHandlersImpl.h
 )
 
 include_directories(

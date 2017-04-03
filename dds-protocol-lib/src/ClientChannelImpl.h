@@ -41,7 +41,7 @@ namespace dds
 
                     return true;
                 };
-                this->template registerMessageHandler<cmdREPLY_HANDSHAKE_OK>(funcHandshakeOK);
+                this->template registerHandler<>(cmdREPLY_HANDSHAKE_OK, funcHandshakeOK);
 
                 // Register handshake ERROR callback
                 std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
@@ -58,7 +58,7 @@ namespace dds
 
                     return true;
                 };
-                this->template registerMessageHandler<cmdREPLY_HANDSHAKE_ERR>(funcHandshakeERR);
+                this->template registerHandler<>(cmdREPLY_HANDSHAKE_ERR, funcHandshakeERR);
             }
 
             ~CClientChannelImpl<T>()
