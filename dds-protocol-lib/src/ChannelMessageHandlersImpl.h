@@ -5,16 +5,15 @@
 #ifndef DDS_ChannelMessageHandlersImpl_h
 #define DDS_ChannelMessageHandlersImpl_h
 // DDS
-#include "ProtocolCommands.h"
 #include "BaseEventHandlersImpl.h"
+#include "ProtocolCommands.h"
 
 namespace dds
 {
     namespace protocol_api
     {
-        
+
         typedef CBaseEventHandlersImpl<ECmdType> CChannelMessageHandlersImpl;
-        
     }
 }
 

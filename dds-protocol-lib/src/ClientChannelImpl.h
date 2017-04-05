@@ -25,8 +25,7 @@ namespace dds
             {
                 this->m_channelType = _channelType;
                 // Register handshake OK callback
-                std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
-                                   CClientChannelImpl * _channel)>
+                std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t, CClientChannelImpl*)>
                     funcHandshakeOK = [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment,
                                              CClientChannelImpl* _channel) -> bool {
                     LOG(MiscCommon::info) << "Successfull handshake";
@@ -44,8 +43,7 @@ namespace dds
                 this->template registerHandler<>(cmdREPLY_HANDSHAKE_OK, funcHandshakeOK);
 
                 // Register handshake ERROR callback
-                std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
-                                   CClientChannelImpl * _channel)>
+                std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t, CClientChannelImpl*)>
                     funcHandshakeERR = [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment,
                                               CClientChannelImpl* _channel) -> bool {
                     LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;

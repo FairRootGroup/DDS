@@ -4,7 +4,8 @@
 //
 #ifndef DDS_BaseEventHandlersImpl_h
 #define DDS_BaseEventHandlersImpl_h
-// DDS
+
+#include <boost/signals2/signal.hpp>
 
 namespace dds
 {
@@ -17,10 +18,10 @@ namespace dds
         template <typename T>
         struct SHandlerHlpBaseFunc : SHandlerHlpFunc
         {
-            T m_function;
+            T m_signal;
 
-            SHandlerHlpBaseFunc(T _function)
-                : m_function(_function)
+            SHandlerHlpBaseFunc()
+                : m_signal()
             {
             }
         };
@@ -29,37 +30,49 @@ namespace dds
         class CBaseEventHandlersImpl
         {
           private:
-            // Generic container of listeners for any type of function
-            typedef std::multimap<Event_t, std::unique_ptr<SHandlerHlpFunc>> Listeners_t;
+            typedef std::map<Event_t, std::unique_ptr<SHandlerHlpFunc>> signalsContainer_t;
 
           public:
-            template <typename Func>
-            void registerHandler(Event_t _cmd, Func _handler)
+            template <typename R, typename... Args>
+            void registerHandler(Event_t _cmd, std::function<R(Args...)> _handler)
             {
-                std::unique_ptr<SHandlerHlpFunc> func_ptr(new SHandlerHlpBaseFunc<Func>(_handler));
-                m_registeredMessageHandlers.insert(std::make_pair(_cmd, std::move(func_ptr)));
+                typedef boost::signals2::signal<R(Args...)> signal_t;
+
+                auto it = m_signals.find(_cmd);
+                if (it == m_signals.end())
+                {
+                    std::unique_ptr<SHandlerHlpBaseFunc<signal_t>> signal(new SHandlerHlpBaseFunc<signal_t>());
+                    signal->m_signal.connect(_handler);
+                    m_signals.insert(std::make_pair(_cmd, std::move(signal)));
+                }
+                else
+                {
+                    SHandlerHlpFunc& f = *it->second;
+                    signal_t& signal = static_cast<SHandlerHlpBaseFunc<signal_t>&>(f).m_signal;
+                    signal.connect(_handler);
+                }
             }
 
             template <class... Args>
             void dispatchHandlers(Event_t _cmd, Args&&... args)
             {
-                typedef std::function<bool(Args...)> Func_t;
-                auto functions = m_registeredMessageHandlers.equal_range(_cmd);
-                for (auto it = functions.first; it != functions.second; ++it)
+                typedef boost::signals2::signal<bool(Args...)> signal_t;
+                auto it = m_signals.find(_cmd);
+                if (it != m_signals.end())
                 {
                     const SHandlerHlpFunc& f = *it->second;
-                    Func_t func = static_cast<const SHandlerHlpBaseFunc<Func_t>&>(f).m_function;
-                    func(std::forward<Args>(args)...);
+                    const signal_t& signal = static_cast<const SHandlerHlpBaseFunc<signal_t>&>(f).m_signal;
+                    signal(std::forward<Args>(args)...);
                 }
             }
 
-            size_t getNofHandlers(Event_t _cmd) const
+            bool handlerExists(Event_t _cmd) const
             {
-                return m_registeredMessageHandlers.count(_cmd);
+                return (m_signals.find(_cmd) != m_signals.end());
             }
 
           private:
-            Listeners_t m_registeredMessageHandlers;
+            signalsContainer_t m_signals;
         };
     }
 }
