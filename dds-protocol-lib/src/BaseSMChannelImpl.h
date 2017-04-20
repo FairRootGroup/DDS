@@ -58,7 +58,7 @@
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatchHandlers(msg, attachmentPtr, this);                                                        \
+                dispatchHandlers(msg, attachmentPtr);                                                              \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \

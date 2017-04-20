@@ -223,17 +223,6 @@ namespace dds
             }
 
           protected:
-            typename T::weakConnectionPtr_t getWeakPtr(T* _client)
-            {
-                std::lock_guard<std::mutex> lock(m_mutex);
-
-                for (auto& v : m_channels)
-                {
-                    if (v.get() == _client)
-                        return v;
-                }
-                return typename T::weakConnectionPtr_t();
-            }
 
             typename T::weakConnectionPtrVector_t getChannels(
                 std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)

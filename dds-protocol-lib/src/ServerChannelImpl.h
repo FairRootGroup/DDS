@@ -21,10 +21,8 @@ namespace dds
                 , m_requiredChannelTypes(_requiredChannelTypes)
             {
                 // Register handshake callback
-                std::function<bool(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment,
-                                   CServerChannelImpl * _channel)>
-                    funcHandshake = [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment,
-                                           CServerChannelImpl* _channel) -> bool {
+                std::function<bool(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t)> funcHandshake =
+                    [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment) -> bool {
                     // send shutdown if versions are incompatible
                     bool versionCompatible = m_requiredChannelTypes.empty();
 

@@ -79,21 +79,21 @@ namespace dds
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
                         SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
-                    dispatchHandlers(currentCmd, attachmentPtr, this);                                                 \
+                    dispatchHandlers(currentCmd, attachmentPtr);                                                       \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_OK:                                                                            \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
-                    dispatchHandlers(currentCmd, attachmentPtr, this);                                                 \
+                    dispatchHandlers(currentCmd, attachmentPtr);                                                       \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_ERR:                                                                           \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
-                    dispatchHandlers(currentCmd, attachmentPtr, this);                                                 \
+                    dispatchHandlers(currentCmd, attachmentPtr);                                                       \
                     return;                                                                                            \
                 }
 
@@ -113,7 +113,7 @@ namespace dds
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatchHandlers(msg, attachmentPtr, this);                                                        \
+                dispatchHandlers(msg, attachmentPtr);                                                              \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \

@@ -80,9 +80,8 @@ void CAgentConnectionManager::start()
         m_channel = CAgentChannel::makeNew(m_service);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
-        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel * _channel)>
-            fSHUTDOWN =
-                [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CAgentChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
+            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_channel);

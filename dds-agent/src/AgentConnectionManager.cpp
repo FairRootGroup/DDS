@@ -77,14 +77,14 @@ void CAgentConnectionManager::start()
         m_SMChannel = CSMUIChannel::makeNew(inputName, outputName);
 
         // Subscribe for key updates from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)> fUPDATE_KEY_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM =
             [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) -> bool {
             return this->on_cmdUPDATE_KEY_SM(_attachment);
         };
         m_SMChannel->registerHandler<>(cmdUPDATE_KEY, fUPDATE_KEY_SM);
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)> fCUSTOM_CMD_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM =
             [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) -> bool {
             return this->on_cmdCUSTOM_CMD_SM(_attachment);
         };
@@ -117,9 +117,8 @@ void CAgentConnectionManager::start()
         m_agent = CCommanderChannel::makeNew(m_service);
 
         // Subscribe to Shutdown command
-        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSHUTDOWN =
-                [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
+            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_agent);
@@ -127,9 +126,8 @@ void CAgentConnectionManager::start()
         m_agent->registerHandler<>(cmdSHUTDOWN, fSHUTDOWN);
 
         // Subscribe for key updates
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fUPDATE_KEY =
-                [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY =
+            [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdUPDATE_KEY(_attachment, m_agent);
@@ -137,10 +135,8 @@ void CAgentConnectionManager::start()
         m_agent->registerHandler<>(cmdUPDATE_KEY, fUPDATE_KEY);
 
         // Subscribe for key update errors
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-                           CCommanderChannel * _channel)>
-            fUPDATE_KEY_ERROR = [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-                                       CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR =
+            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdUPDATE_KEY_ERROR(_attachment, m_agent);
@@ -148,9 +144,8 @@ void CAgentConnectionManager::start()
         m_agent->registerHandler<>(cmdUPDATE_KEY_ERROR, fUPDATE_KEY_ERROR);
 
         // Subscribe for key delete events
-        std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fDELETE_KEY =
-                [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY =
+            [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdDELETE_KEY(_attachment, m_agent);
@@ -158,9 +153,8 @@ void CAgentConnectionManager::start()
         m_agent->registerHandler<>(cmdDELETE_KEY, fDELETE_KEY);
 
         // Subscribe for cmdSIMPLE_MSG
-        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSIMPLE_MSG =
-                [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG =
+            [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSIMPLE_MSG(_attachment, m_agent);
@@ -168,9 +162,8 @@ void CAgentConnectionManager::start()
         m_agent->registerHandler<>(cmdSIMPLE_MSG, fSIMPLE_MSG);
 
         // Subscribe for cmdSTOP_USER_TASK
-        std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fSTOP_USER_TASK = [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                     CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t)> fSTOP_USER_TASK =
+            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
@@ -178,9 +171,8 @@ void CAgentConnectionManager::start()
         m_agent->registerHandler<>(cmdSTOP_USER_TASK, fSTOP_USER_TASK);
 
         // Subscribe for cmdCUSTOM_CMD
-        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CCommanderChannel * _channel)>
-            fCUSTOM_CMD =
-                [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, CCommanderChannel* _channel) -> bool {
+        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD =
+            [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) -> bool {
             // TODO: adjust the algorithm if we would need to support several agents
             // we have only one agent (newAgent) at the moment
             return this->on_cmdCUSTOM_CMD(_attachment, m_agent);

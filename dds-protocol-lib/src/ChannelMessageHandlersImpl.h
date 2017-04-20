@@ -14,6 +14,14 @@ namespace dds
     {
 
         typedef CBaseEventHandlersImpl<ECmdType> CChannelMessageHandlersImpl;
+
+        //class CChannelMessageHandlersImpl : public CBaseEventHandlersImpl<ECmdType>
+        //{
+            // void registerHandler(ECmdType _cmd, std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)
+            //{
+            //    CBaseEventHandlersImpl<ECmdType>::registerHandler(_cmd, _handler);
+            //}
+        //};
     }
 }
 

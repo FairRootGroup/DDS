@@ -75,28 +75,28 @@ void CDDSIntercomGuard::start()
         m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName);
 
         // Subscribe for cmdUPDATE_KEY from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)> fUPDATE_KEY_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM =
             [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) -> bool {
             return this->on_cmdUPDATE_KEY_SM(_attachment);
         };
         m_SMChannel->registerHandler<>(cmdUPDATE_KEY, fUPDATE_KEY_SM);
 
         // Subscribe for cmdUPDATE_KEY_ERROR from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment)> fUPDATE_KEY_ERROR_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR_SM =
             [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) -> bool {
             return this->on_cmdUPDATE_KEY_ERROR_SM(_attachment);
         };
         m_SMChannel->registerHandler<>(cmdUPDATE_KEY_ERROR, fUPDATE_KEY_ERROR_SM);
 
         // Subscribe for cmdDELETE_KEY from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)> fDELETE_KEY_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY_SM =
             [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) -> bool {
             return this->on_cmdDELETE_KEY_SM(_attachment);
         };
         m_SMChannel->registerHandler<>(cmdDELETE_KEY, fDELETE_KEY_SM);
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)> fCUSTOM_CMD_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM =
             [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) -> bool {
             return this->on_cmdCUSTOM_CMD_SM(_attachment);
         };
@@ -104,7 +104,7 @@ void CDDSIntercomGuard::start()
         //
 
         // Subscribe for cmdSIMPLE_MSG from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)> fSIMPLE_MSG_SM =
+        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG_SM =
             [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) -> bool {
             return this->on_cmdSIMPLE_MSG_SM(_attachment);
         };
