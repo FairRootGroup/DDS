@@ -301,7 +301,7 @@ namespace MiscCommon
     // TODO: need a new algorithms for a longer app names retrieval
     class CProcStatus
     {
-        typedef std::auto_ptr<std::ifstream> ifstream_ptr;
+        typedef std::shared_ptr<std::ifstream> ifstream_ptr;
         typedef std::map<std::string, std::string> keyvalue_t;
 
       public:
