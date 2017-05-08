@@ -223,7 +223,6 @@ namespace dds
             }
 
           protected:
-
             typename T::weakConnectionPtrVector_t getChannels(
                 std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
             {

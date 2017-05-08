@@ -5,6 +5,7 @@
 #ifndef DDS_BaseEventHandlersImpl_h
 #define DDS_BaseEventHandlersImpl_h
 
+#include "ProtocolCommands.h"
 #include <boost/signals2/signal.hpp>
 
 namespace dds
@@ -29,12 +30,15 @@ namespace dds
         template <typename Event_t>
         class CBaseEventHandlersImpl
         {
+          public:
+            typedef std::shared_ptr<CBaseEventHandlersImpl<Event_t>> ptr_t;
+
           private:
             typedef std::map<Event_t, std::unique_ptr<SHandlerHlpFunc>> signalsContainer_t;
 
           public:
-            template <typename R, typename... Args>
-            void registerHandler(Event_t _cmd, std::function<R(Args...)> _handler)
+            template <Event_t _cmd, typename R, typename... Args>
+            void registerHandler(std::function<R(Args...)> _handler)
             {
                 typedef boost::signals2::signal<R(Args...)> signal_t;
 
@@ -53,6 +57,7 @@ namespace dds
                 }
             }
 
+          public:
             template <class... Args>
             void dispatchHandlers(Event_t _cmd, Args&&... args)
             {
@@ -66,6 +71,7 @@ namespace dds
                 }
             }
 
+          public:
             bool handlerExists(Event_t _cmd) const
             {
                 return (m_signals.find(_cmd) != m_signals.end());

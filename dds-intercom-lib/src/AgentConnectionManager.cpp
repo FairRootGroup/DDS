@@ -86,7 +86,7 @@ void CAgentConnectionManager::start()
             // we have only one agent (newAgent) at the moment
             return this->on_cmdSHUTDOWN(_attachment, m_channel);
         };
-        m_channel->registerHandler<>(cmdSHUTDOWN, fSHUTDOWN);
+        m_channel->registerHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         m_channel->subscribeOnEvent(EChannelEvents::OnConnected, [this](CAgentChannel* _channel) {});
 
