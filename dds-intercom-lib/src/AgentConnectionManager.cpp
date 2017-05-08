@@ -80,12 +80,12 @@ void CAgentConnectionManager::start()
         m_channel = CAgentChannel::makeNew(m_service);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
-        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
-            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdSHUTDOWN(_attachment, m_channel);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
+            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdSHUTDOWN(_attachment, m_channel);
+            };
         m_channel->registerHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         m_channel->subscribeOnEvent(EChannelEvents::OnConnected, [this](CAgentChannel* _channel) {});
@@ -146,11 +146,10 @@ void CAgentConnectionManager::stop()
     LOG(info) << "Shutting down DDS transport - DONE";
 }
 
-bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
     stop();
-    return true;
 }
 
 void CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command)

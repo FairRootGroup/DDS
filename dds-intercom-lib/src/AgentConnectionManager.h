@@ -39,7 +39,7 @@ namespace dds
             void stopCondition();
 
           private:
-            bool on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
+            void on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
             CAgentChannel::weakConnectionPtr_t getAgentChannel()
             {

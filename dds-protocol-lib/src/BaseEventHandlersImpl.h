@@ -30,9 +30,6 @@ namespace dds
         template <typename Event_t>
         class CBaseEventHandlersImpl
         {
-          public:
-            typedef std::shared_ptr<CBaseEventHandlersImpl<Event_t>> ptr_t;
-
           private:
             typedef std::map<Event_t, std::unique_ptr<SHandlerHlpFunc>> signalsContainer_t;
 
@@ -61,7 +58,7 @@ namespace dds
             template <class... Args>
             void dispatchHandlers(Event_t _cmd, Args&&... args)
             {
-                typedef boost::signals2::signal<bool(Args...)> signal_t;
+                typedef boost::signals2::signal<void(Args...)> signal_t;
                 auto it = m_signals.find(_cmd);
                 if (it != m_signals.end())
                 {

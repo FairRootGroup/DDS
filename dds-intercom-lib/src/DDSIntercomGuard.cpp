@@ -75,39 +75,31 @@ void CDDSIntercomGuard::start()
         m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName);
 
         // Subscribe for cmdUPDATE_KEY from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM =
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) -> bool {
-            return this->on_cmdUPDATE_KEY_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM = [this](
+            SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) { this->on_cmdUPDATE_KEY_SM(_attachment); };
         m_SMChannel->registerHandler<cmdUPDATE_KEY>(fUPDATE_KEY_SM);
 
         // Subscribe for cmdUPDATE_KEY_ERROR from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR_SM =
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) -> bool {
-            return this->on_cmdUPDATE_KEY_ERROR_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR_SM =
+            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
+                this->on_cmdUPDATE_KEY_ERROR_SM(_attachment);
+            };
         m_SMChannel->registerHandler<cmdUPDATE_KEY_ERROR>(fUPDATE_KEY_ERROR_SM);
 
         // Subscribe for cmdDELETE_KEY from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY_SM =
-            [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) -> bool {
-            return this->on_cmdDELETE_KEY_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY_SM = [this](
+            SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) { this->on_cmdDELETE_KEY_SM(_attachment); };
         m_SMChannel->registerHandler<cmdDELETE_KEY>(fDELETE_KEY_SM);
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM =
-            [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) -> bool {
-            return this->on_cmdCUSTOM_CMD_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM = [this](
+            SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) { this->on_cmdCUSTOM_CMD_SM(_attachment); };
         m_SMChannel->registerHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD_SM);
         //
 
         // Subscribe for cmdSIMPLE_MSG from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG_SM =
-            [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) -> bool {
-            return this->on_cmdSIMPLE_MSG_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG_SM = [this](
+            SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) { this->on_cmdSIMPLE_MSG_SM(_attachment); };
         m_SMChannel->registerHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG_SM);
         //
 
@@ -217,7 +209,7 @@ bool CDDSIntercomGuard::updateCacheIfNeeded(const SUpdateKeyCmd& _cmd)
 }
 
 // Messages from shared memory
-bool CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
+void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
     string propertyID(_attachment->getPropertyID());
@@ -233,11 +225,9 @@ bool CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
         LOG(warning) << "Cache not updated. Version mismatch for key " << _attachment->m_sKey
                      << "; update version: " << _attachment->m_version;
     }
-
-    return true;
 }
 
-bool CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
+void CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
 {
     string propertyID(_attachment->m_serverCmd.getPropertyID());
@@ -258,11 +248,9 @@ bool CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
         value = m_putValueCache[propertyID];
     }
     putValue(propertyID, value);
-
-    return true;
 }
 
-bool CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
+void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment)
 {
     string propertyID = _attachment->getPropertyID();
@@ -272,19 +260,15 @@ bool CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
     }
 
     m_keyValueDeleteSignal(propertyID, _attachment->m_sKey);
-
-    return true;
 }
 
-bool CDDSIntercomGuard::on_cmdCUSTOM_CMD_SM(
+void CDDSIntercomGuard::on_cmdCUSTOM_CMD_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
     m_customCmdSignal(_attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
-
-    return true;
 }
 
-bool CDDSIntercomGuard::on_cmdSIMPLE_MSG_SM(
+void CDDSIntercomGuard::on_cmdSIMPLE_MSG_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     switch (_attachment->m_srcCommand)
@@ -304,10 +288,8 @@ bool CDDSIntercomGuard::on_cmdSIMPLE_MSG_SM(
 
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
-            return true;
+            return;
     }
-
-    return true;
 }
 //
 

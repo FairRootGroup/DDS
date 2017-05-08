@@ -77,17 +77,13 @@ void CAgentConnectionManager::start()
         m_SMChannel = CSMUIChannel::makeNew(inputName, outputName);
 
         // Subscribe for key updates from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM =
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) -> bool {
-            return this->on_cmdUPDATE_KEY_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM = [this](
+            SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) { this->on_cmdUPDATE_KEY_SM(_attachment); };
         m_SMChannel->registerHandler<cmdUPDATE_KEY>(fUPDATE_KEY_SM);
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM =
-            [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) -> bool {
-            return this->on_cmdCUSTOM_CMD_SM(_attachment);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM = [this](
+            SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) { this->on_cmdCUSTOM_CMD_SM(_attachment); };
         m_SMChannel->registerHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD_SM);
         //
 
@@ -117,66 +113,66 @@ void CAgentConnectionManager::start()
         m_agent = CCommanderChannel::makeNew(m_service);
 
         // Subscribe to Shutdown command
-        std::function<bool(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
-            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdSHUTDOWN(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
+            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdSHUTDOWN(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
         // Subscribe for key updates
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY =
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdUPDATE_KEY(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY =
+            [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdUPDATE_KEY(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
 
         // Subscribe for key update errors
-        std::function<bool(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR =
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdUPDATE_KEY_ERROR(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR =
+            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdUPDATE_KEY_ERROR(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdUPDATE_KEY_ERROR>(fUPDATE_KEY_ERROR);
 
         // Subscribe for key delete events
-        std::function<bool(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY =
-            [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdDELETE_KEY(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY =
+            [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdDELETE_KEY(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdDELETE_KEY>(fDELETE_KEY);
 
         // Subscribe for cmdSIMPLE_MSG
-        std::function<bool(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG =
-            [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdSIMPLE_MSG(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG =
+            [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdSIMPLE_MSG(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
 
         // Subscribe for cmdSTOP_USER_TASK
-        std::function<bool(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t)> fSTOP_USER_TASK =
-            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t)> fSTOP_USER_TASK =
+            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
 
         // Subscribe for cmdCUSTOM_CMD
-        std::function<bool(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD =
-            [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) -> bool {
-            // TODO: adjust the algorithm if we would need to support several agents
-            // we have only one agent (newAgent) at the moment
-            return this->on_cmdCUSTOM_CMD(_attachment, m_agent);
-        };
+        std::function<void(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD =
+            [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+                // TODO: adjust the algorithm if we would need to support several agents
+                // we have only one agent (newAgent) at the moment
+                this->on_cmdCUSTOM_CMD(_attachment, m_agent);
+            };
         m_agent->registerHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
 
         // Call this callback when a user process is activated
@@ -285,39 +281,35 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     }
 }
 
-bool CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CCommanderChannel::weakConnectionPtr_t _channel)
 {
     stop();
-    return true;
 }
 
-bool CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
-    return true;
 }
 
-bool CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(
+void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
     CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
-    return true;
 }
 
-bool CAgentConnectionManager::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
-    return true;
 }
 
-bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
     if (_attachment->m_srcCommand == cmdUPDATE_KEY || _attachment->m_srcCommand == cmdCUSTOM_CMD)
@@ -328,41 +320,33 @@ bool CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
         }
         // Forward message to user task
         m_SMChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment);
-
-        return true;
     }
     else
     {
         LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
-        return true;
     }
-
-    return true;
 }
 
-bool CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
                                                CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
-    return true;
 }
 
 // Messages from shared memory
-bool CAgentConnectionManager::on_cmdUPDATE_KEY_SM(
+void CAgentConnectionManager::on_cmdUPDATE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
     // Forwared a message to the commander
     m_agent->pushMsg<cmdUPDATE_KEY>(*_attachment);
-    return true;
 }
 
-bool CAgentConnectionManager::on_cmdCUSTOM_CMD_SM(
+void CAgentConnectionManager::on_cmdCUSTOM_CMD_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
     // Forward a message to the commander
     m_agent->pushMsg<cmdCUSTOM_CMD>(*_attachment);
-    return true;
 }
 
 void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
@@ -453,7 +437,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
 }
 
-bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
                                                    CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // TODO: add error processing, in case if user tasks won't quite
@@ -461,5 +445,4 @@ bool CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTO
     auto p = _channel.lock();
     p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
     m_SMChannel->reinit();
-    return true;
 }

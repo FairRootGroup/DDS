@@ -25,35 +25,31 @@ namespace dds
             {
                 this->m_channelType = _channelType;
                 // Register handshake OK callback
-                std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t)> funcHandshakeOK =
-                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment) -> bool {
-                    LOG(MiscCommon::info) << "Successfull handshake";
+                std::function<void(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t)> funcHandshakeOK =
+                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment) {
+                        LOG(MiscCommon::info) << "Successfull handshake";
 
-                    this->m_isHandshakeOK = true;
+                        this->m_isHandshakeOK = true;
 
-                    // The following commands starts message processing which might be queued before.
-                    this->template pushMsg<cmdUNKNOWN>();
+                        // The following commands starts message processing which might be queued before.
+                        this->template pushMsg<cmdUNKNOWN>();
 
-                    // notify all subscribers about the event
-                    this->onEvent(EChannelEvents::OnHandshakeOK);
-
-                    return true;
-                };
+                        // notify all subscribers about the event
+                        this->onEvent(EChannelEvents::OnHandshakeOK);
+                    };
                 this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(funcHandshakeOK);
 
                 // Register handshake ERROR callback
-                std::function<bool(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t)> funcHandshakeERR =
-                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment) -> bool {
-                    LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
+                std::function<void(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t)> funcHandshakeERR =
+                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment) {
+                        LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
-                    this->m_isHandshakeOK = false;
-                    this->m_channelType = EChannelType::UNKNOWN;
+                        this->m_isHandshakeOK = false;
+                        this->m_channelType = EChannelType::UNKNOWN;
 
-                    // notify all subscribers about the event
-                    this->onEvent(EChannelEvents::OnHandshakeFailed);
-
-                    return true;
-                };
+                        // notify all subscribers about the event
+                        this->onEvent(EChannelEvents::OnHandshakeFailed);
+                    };
                 this->template registerHandler<cmdREPLY_HANDSHAKE_ERR>(funcHandshakeERR);
             }
 

@@ -16,7 +16,7 @@
         func_t _handler,                                                                                              \
         typename std::enable_if<                                                                                      \
             std::is_same<std::integral_constant<ECmdType, _cmd>, std::integral_constant<ECmdType, eventID>>::value && \
-            std::is_same<func_t, std::function<bool(SCommandAttachmentImpl<eventID>::ptr_t)>>::value>::type* =        \
+            std::is_same<func_t, std::function<void(SCommandAttachmentImpl<eventID>::ptr_t)>>::value>::type* =        \
             nullptr)                                                                                                  \
     {                                                                                                                 \
         CBaseEventHandlersImpl<ECmdType>::registerHandler<_cmd>(_handler);                                            \
