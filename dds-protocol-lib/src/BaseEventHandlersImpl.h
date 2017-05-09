@@ -23,16 +23,17 @@
 
 #define DDS_END_EVENT_HANDLERS
 
-#define DDS_REGISTER_EVENT_HANDLER(eventType, eventID, funcType)                                        \
-  public:                                                                                               \
-    template <eventType _cmd, typename func_t>                                                          \
-    void registerHandler(                                                                               \
-        func_t _handler,                                                                                \
-        typename std::enable_if<std::is_same<std::integral_constant<eventType, _cmd>,                   \
-                                             std::integral_constant<eventType, eventID>>::value &&      \
-                                std::is_same<func_t, std::function<funcType>>::value>::type* = nullptr) \
-    {                                                                                                   \
-        CBaseEventHandlersImpl<eventType>::registerHandlerImpl<_cmd>(_handler);                         \
+#define DDS_REGISTER_EVENT_HANDLER(eventType, eventID, funcType)                                               \
+  public:                                                                                                      \
+    template <eventType _cmd, typename func_t>                                                                 \
+    void registerHandler(                                                                                      \
+        func_t _handler,                                                                                       \
+        typename std::enable_if<std::is_same<std::integral_constant<eventType, _cmd>,                          \
+                                             std::integral_constant<eventType, eventID>>::value &&             \
+                                std::is_convertible<func_t, std::function<funcType>>::value>::type* = nullptr) \
+    {                                                                                                          \
+        std::function<funcType> funcHandler(_handler);                                                         \
+        CBaseEventHandlersImpl<eventType>::registerHandlerImpl<_cmd>(funcHandler);                             \
     }
 
 #define DDS_DECLARE_EVENT_HANDLER_CLASS(theClass) \

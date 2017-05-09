@@ -18,7 +18,7 @@ namespace dds
             CStatChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CStatChannel>(_service, protocol_api::EChannelType::UI)
             {
-                std::function<void()> funcHandshakeOK = [this]() {
+                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>([this]() {
                     if (m_options.m_bEnable)
                     {
                         pushMsg<protocol_api::cmdENABLE_STAT>();
@@ -31,18 +31,13 @@ namespace dds
                     {
                         pushMsg<protocol_api::cmdGET_STAT>();
                     }
-                };
-                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(funcHandshakeOK);
+                });
 
-                std::function<void()> funcOnConnected = []() {
-                    LOG(MiscCommon::info) << "Connected to the commander server";
-                };
-                registerHandler<protocol_api::EChannelEvents::OnConnected>(funcOnConnected);
+                registerHandler<protocol_api::EChannelEvents::OnConnected>(
+                    []() { LOG(MiscCommon::info) << "Connected to the commander server"; });
 
-                std::function<void()> funcOnFailedToConnect = []() {
-                    LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-                };
-                registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
+                registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(
+                    []() { LOG(MiscCommon::log_stderr) << "Failed to connect to commander server."; });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

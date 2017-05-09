@@ -77,14 +77,14 @@ void CAgentConnectionManager::start()
         m_SMChannel = CSMUIChannel::makeNew(inputName, outputName);
 
         // Subscribe for key updates from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM = [this](
-            SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) { this->on_cmdUPDATE_KEY_SM(_attachment); };
-        m_SMChannel->registerHandler<cmdUPDATE_KEY>(fUPDATE_KEY_SM);
+        m_SMChannel->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY_SM(_attachment);
+        });
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM = [this](
-            SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) { this->on_cmdCUSTOM_CMD_SM(_attachment); };
-        m_SMChannel->registerHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD_SM);
+        m_SMChannel->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD_SM(_attachment);
+        });
         //
 
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
@@ -113,67 +113,41 @@ void CAgentConnectionManager::start()
         m_agent = CCommanderChannel::makeNew(m_service);
 
         // Subscribe to Shutdown command
-        std::function<void(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
-            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                this->on_cmdSHUTDOWN(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdSHUTDOWN>(fSHUTDOWN);
+        m_agent->registerHandler<cmdSHUTDOWN>([this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+            this->on_cmdSHUTDOWN(_attachment, m_agent);
+        });
 
         // Subscribe for key updates
-        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY =
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                this->on_cmdUPDATE_KEY(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdUPDATE_KEY>(fUPDATE_KEY);
+        m_agent->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY(_attachment, m_agent);
+        });
 
         // Subscribe for key update errors
-        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR =
+        m_agent->registerHandler<cmdUPDATE_KEY_ERROR>(
             [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
                 this->on_cmdUPDATE_KEY_ERROR(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdUPDATE_KEY_ERROR>(fUPDATE_KEY_ERROR);
+            });
 
         // Subscribe for key delete events
-        std::function<void(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY =
-            [this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                this->on_cmdDELETE_KEY(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdDELETE_KEY>(fDELETE_KEY);
+        m_agent->registerHandler<cmdDELETE_KEY>([this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+            this->on_cmdDELETE_KEY(_attachment, m_agent);
+        });
 
         // Subscribe for cmdSIMPLE_MSG
-        std::function<void(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG =
-            [this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                this->on_cmdSIMPLE_MSG(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG);
+        m_agent->registerHandler<cmdSIMPLE_MSG>([this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG(_attachment, m_agent);
+        });
 
         // Subscribe for cmdSTOP_USER_TASK
-        std::function<void(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t)> fSTOP_USER_TASK =
+        m_agent->registerHandler<cmdSTOP_USER_TASK>(
             [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
                 this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdSTOP_USER_TASK>(fSTOP_USER_TASK);
+            });
 
         // Subscribe for cmdCUSTOM_CMD
-        std::function<void(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD =
-            [this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                this->on_cmdCUSTOM_CMD(_attachment, m_agent);
-            };
-        m_agent->registerHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD);
+        m_agent->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD(_attachment, m_agent);
+        });
 
         // Call this callback when a user process is activated
         m_agent->registerOnNewUserTaskCallback([this](pid_t _pid) { return this->onNewUserTask(_pid); });

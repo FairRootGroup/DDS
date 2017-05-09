@@ -75,32 +75,31 @@ void CDDSIntercomGuard::start()
         m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName);
 
         // Subscribe for cmdUPDATE_KEY from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t)> fUPDATE_KEY_SM = [this](
-            SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) { this->on_cmdUPDATE_KEY_SM(_attachment); };
-        m_SMChannel->registerHandler<cmdUPDATE_KEY>(fUPDATE_KEY_SM);
+        m_SMChannel->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY_SM(_attachment);
+        });
 
         // Subscribe for cmdUPDATE_KEY_ERROR from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t)> fUPDATE_KEY_ERROR_SM =
+        m_SMChannel->registerHandler<cmdUPDATE_KEY_ERROR>(
             [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
                 this->on_cmdUPDATE_KEY_ERROR_SM(_attachment);
-            };
-        m_SMChannel->registerHandler<cmdUPDATE_KEY_ERROR>(fUPDATE_KEY_ERROR_SM);
+            });
 
         // Subscribe for cmdDELETE_KEY from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t)> fDELETE_KEY_SM = [this](
-            SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) { this->on_cmdDELETE_KEY_SM(_attachment); };
-        m_SMChannel->registerHandler<cmdDELETE_KEY>(fDELETE_KEY_SM);
+        m_SMChannel->registerHandler<cmdDELETE_KEY>([this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+            this->on_cmdDELETE_KEY_SM(_attachment);
+        });
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t)> fCUSTOM_CMD_SM = [this](
-            SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) { this->on_cmdCUSTOM_CMD_SM(_attachment); };
-        m_SMChannel->registerHandler<cmdCUSTOM_CMD>(fCUSTOM_CMD_SM);
+        m_SMChannel->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD_SM(_attachment);
+        });
         //
 
         // Subscribe for cmdSIMPLE_MSG from SM channel
-        std::function<void(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t)> fSIMPLE_MSG_SM = [this](
-            SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) { this->on_cmdSIMPLE_MSG_SM(_attachment); };
-        m_SMChannel->registerHandler<cmdSIMPLE_MSG>(fSIMPLE_MSG_SM);
+        m_SMChannel->registerHandler<cmdSIMPLE_MSG>([this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG_SM(_attachment);
+        });
         //
 
         m_SMChannel->start();

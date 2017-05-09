@@ -80,24 +80,18 @@ void CAgentConnectionManager::start()
         m_channel = CAgentChannel::makeNew(m_service);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
-        std::function<void(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t)> fSHUTDOWN =
-            [this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-                // TODO: adjust the algorithm if we would need to support several agents
-                // we have only one agent (newAgent) at the moment
-                this->on_cmdSHUTDOWN(_attachment, m_channel);
-            };
-        m_channel->registerHandler<cmdSHUTDOWN>(fSHUTDOWN);
+        m_channel->registerHandler<cmdSHUTDOWN>([this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+            this->on_cmdSHUTDOWN(_attachment, m_channel);
+        });
 
-        std::function<void()> funcOnRemoteEndDissconnected = [this]() { stopCondition(); };
-        m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
+        m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this]() { stopCondition(); });
 
-        std::function<void()> funcOnFailedToConnect = [this]() {
+        m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([this]() {
             m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
                 CDDSIntercomGuard::instance().m_errorSignal(intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
                 stopCondition();
             });
-        };
-        m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
+        });
 
         m_channel->connect(endpoint_iterator);
 

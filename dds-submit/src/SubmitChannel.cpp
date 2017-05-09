@@ -17,12 +17,10 @@ using namespace std;
 CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI)
 {
-    std::function<void()> funcOnRemoteEndDissconnected = []() {
-        LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
-    };
-    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
+        []() { LOG(MiscCommon::log_stderr) << "Server has closed the connection."; });
 
-    std::function<void()> funcOnHandshakeOK = [this]() {
+    registerHandler<EChannelEvents::OnHandshakeOK>([this]() {
         // Create the command's attachment
         SSubmitCmd cmd;
         cmd.m_sRMSType = m_sRMS;
@@ -30,17 +28,14 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
         cmd.m_sPath = m_sPath;
         cmd.m_nNumberOfAgents = m_number;
         pushMsg<cmdSUBMIT>(cmd);
-    };
-    registerHandler<EChannelEvents::OnHandshakeOK>(funcOnHandshakeOK);
+    });
 
-    std::function<void()> funcOnConnected = []() {
+    registerHandler<EChannelEvents::OnConnected>([]() {
         LOG(MiscCommon::log_stdout) << "Connection established.";
         LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
-    };
-    registerHandler<EChannelEvents::OnConnected>(funcOnConnected);
+    });
 
-    std::function<void()> funcOnFailedToConnect = []() { LOG(MiscCommon::log_stderr) << "Failed to connect."; };
-    registerHandler<EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
+    registerHandler<EChannelEvents::OnFailedToConnect>([]() { LOG(MiscCommon::log_stderr) << "Failed to connect."; });
 }
 
 void CSubmitChannel::setCfgFile(const string& _val)

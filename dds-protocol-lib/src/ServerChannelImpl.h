@@ -21,7 +21,7 @@ namespace dds
                 , m_requiredChannelTypes(_requiredChannelTypes)
             {
                 // Register handshake callback
-                std::function<void(SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t)> funcHandshake =
+                this->template registerHandler<cmdHANDSHAKE>(
                     [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment) {
                         // send shutdown if versions are incompatible
                         bool versionCompatible = m_requiredChannelTypes.empty();
@@ -67,8 +67,7 @@ namespace dds
                             // notify all subscribers about the event
                             this->dispatchHandlers(EChannelEvents::OnHandshakeOK);
                         }
-                    };
-                this->template registerHandler<cmdHANDSHAKE>(funcHandshake);
+                    });
             }
 
             ~CServerChannelImpl<T>()

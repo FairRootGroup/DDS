@@ -25,7 +25,7 @@ namespace dds
             {
                 this->m_channelType = _channelType;
                 // Register handshake OK callback
-                std::function<void(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t)> funcHandshakeOK =
+                this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(
                     [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment) {
                         LOG(MiscCommon::info) << "Successfull handshake";
 
@@ -36,11 +36,10 @@ namespace dds
 
                         // notify all subscribers about the event
                         this->dispatchHandlers(EChannelEvents::OnHandshakeOK);
-                    };
-                this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(funcHandshakeOK);
+                    });
 
                 // Register handshake ERROR callback
-                std::function<void(SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t)> funcHandshakeERR =
+                this->template registerHandler<cmdREPLY_HANDSHAKE_ERR>(
                     [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment) {
                         LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
@@ -49,8 +48,7 @@ namespace dds
 
                         // notify all subscribers about the event
                         this->dispatchHandlers(EChannelEvents::OnHandshakeFailed);
-                    };
-                this->template registerHandler<cmdREPLY_HANDSHAKE_ERR>(funcHandshakeERR);
+                    });
             }
 
             ~CClientChannelImpl<T>()
