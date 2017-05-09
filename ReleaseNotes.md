@@ -24,6 +24,9 @@ Modified: Change declaration of the requirements in XML file. Check user's manua
 Modified: Support task triggers in topology. User can define condition and corresponding action for the trigger. DDS run the action whenever specified condition is triggered. Conditions and actions are predefined. (GH-151)    
 Fixed: dds-topology: proper check that --disable-validation option has to be used only with --activate and --update options.    
 
+### dds-protocol-lib
+Enhanced handling of the messages and events. Common base class for message and event handlers. Check at compile time consistency between event or command and callback function. (GH-169)   
+
 ## v1.4 (2016-10-31)
 
 ### DDS common
