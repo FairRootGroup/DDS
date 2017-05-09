@@ -9,23 +9,8 @@
 #include "CommandAttachmentImpl.h"
 #include "ProtocolCommands.h"
 
-#define DECLARE_CHANNEL_MESSAGES_INTERFACE               \
-    using CChannelMessageHandlersImpl::registerHandler;  \
-    using CChannelMessageHandlersImpl::dispatchHandlers; \
-    using CChannelMessageHandlersImpl::handlerExists;
-
-#define REGISTER_MESSAGE_EVENT_HANDLER(eventID)                                                                       \
-  public:                                                                                                             \
-    template <ECmdType _cmd, typename func_t>                                                                         \
-    void registerHandler(                                                                                             \
-        func_t _handler,                                                                                              \
-        typename std::enable_if<                                                                                      \
-            std::is_same<std::integral_constant<ECmdType, _cmd>, std::integral_constant<ECmdType, eventID>>::value && \
-            std::is_same<func_t, std::function<void(SCommandAttachmentImpl<eventID>::ptr_t)>>::value>::type* =        \
-            nullptr)                                                                                                  \
-    {                                                                                                                 \
-        CBaseEventHandlersImpl<ECmdType>::registerHandlerImpl<_cmd>(_handler);                                        \
-    }
+#define DDS_REGISTER_MESSAGE_HANDLER(eventID) \
+    DDS_REGISTER_EVENT_HANDLER(ECmdType, eventID, void(SCommandAttachmentImpl<eventID>::ptr_t))
 
 namespace dds
 {
@@ -34,43 +19,31 @@ namespace dds
 
         class CChannelMessageHandlersImpl : private CBaseEventHandlersImpl<ECmdType>
         {
-
-          public:
-            template <class... Args>
-            void dispatchHandlers(ECmdType _cmd, Args&&... args)
-            {
-                CBaseEventHandlersImpl<ECmdType>::dispatchHandlersImpl<>(_cmd, std::forward<Args>(args)...);
-            }
-
-          public:
-            bool handlerExists(ECmdType _cmd) const
-            {
-                return CBaseEventHandlersImpl<ECmdType>::handlerExistsImpl(_cmd);
-            }
-
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdREPLY_HANDSHAKE_OK)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdREPLY_HANDSHAKE_ERR)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdSHUTDOWN)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdUPDATE_KEY)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdUPDATE_KEY_ERROR)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdDELETE_KEY)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdCUSTOM_CMD)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdSIMPLE_MSG)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdHANDSHAKE)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdGET_LOG)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdGET_AGENTS_INFO)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdSUBMIT)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdTRANSPORT_TEST)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdUSER_TASK_DONE)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdGET_PROP_LIST)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdGET_PROP_VALUES)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdUPDATE_TOPOLOGY)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdREPLY_ID)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdENABLE_STAT)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdGET_STAT)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdDISABLE_STAT)
-            REGISTER_MESSAGE_EVENT_HANDLER(cmdSTOP_USER_TASK)
+            DDS_BEGIN_EVENT_HANDLERS(ECmdType)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_ERR)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdSHUTDOWN)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdUPDATE_KEY)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdUPDATE_KEY_ERROR)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdDELETE_KEY)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdCUSTOM_CMD)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdSIMPLE_MSG)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdHANDSHAKE)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdGET_LOG)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdGET_AGENTS_INFO)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdSUBMIT)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdTRANSPORT_TEST)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdUSER_TASK_DONE)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdGET_PROP_LIST)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdGET_PROP_VALUES)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdREPLY_ID)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdENABLE_STAT)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdGET_STAT)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdDISABLE_STAT)
+            DDS_REGISTER_MESSAGE_HANDLER(cmdSTOP_USER_TASK)
+            DDS_END_EVENT_HANDLERS
         };
     }
 }

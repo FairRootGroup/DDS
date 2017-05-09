@@ -196,8 +196,8 @@ namespace dds
 
             // Both are needed because unqualified name lookup terminates at the first scope that has anything with the
             // right name
-            DECLARE_CHANNEL_EVENTS_INTERFACE
-            DECLARE_CHANNEL_MESSAGES_INTERFACE
+            DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelEventHandlersImpl)
+            DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
             CBaseChannelImpl<T>(boost::asio::io_service& _service)

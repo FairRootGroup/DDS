@@ -5,8 +5,40 @@
 #ifndef DDS_BaseEventHandlersImpl_h
 #define DDS_BaseEventHandlersImpl_h
 
-#include "ProtocolCommands.h"
 #include <boost/signals2/signal.hpp>
+
+#define DDS_BEGIN_EVENT_HANDLERS(eventType)                                                           \
+  public:                                                                                             \
+    template <class... Args>                                                                          \
+    void dispatchHandlers(eventType _cmd, Args&&... args)                                             \
+    {                                                                                                 \
+        CBaseEventHandlersImpl<eventType>::dispatchHandlersImpl<>(_cmd, std::forward<Args>(args)...); \
+    }                                                                                                 \
+                                                                                                      \
+  public:                                                                                             \
+    bool handlerExists(eventType _cmd) const                                                          \
+    {                                                                                                 \
+        return CBaseEventHandlersImpl<eventType>::handlerExistsImpl(_cmd);                            \
+    }
+
+#define DDS_END_EVENT_HANDLERS
+
+#define DDS_REGISTER_EVENT_HANDLER(eventType, eventID, funcType)                                        \
+  public:                                                                                               \
+    template <eventType _cmd, typename func_t>                                                          \
+    void registerHandler(                                                                               \
+        func_t _handler,                                                                                \
+        typename std::enable_if<std::is_same<std::integral_constant<eventType, _cmd>,                   \
+                                             std::integral_constant<eventType, eventID>>::value &&      \
+                                std::is_same<func_t, std::function<funcType>>::value>::type* = nullptr) \
+    {                                                                                                   \
+        CBaseEventHandlersImpl<eventType>::registerHandlerImpl<_cmd>(_handler);                         \
+    }
+
+#define DDS_DECLARE_EVENT_HANDLER_CLASS(theClass) \
+    using theClass::registerHandler;              \
+    using theClass::dispatchHandlers;             \
+    using theClass::handlerExists;
 
 namespace dds
 {
