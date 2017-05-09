@@ -35,7 +35,7 @@ namespace dds
                         this->template pushMsg<cmdUNKNOWN>();
 
                         // notify all subscribers about the event
-                        this->onEvent(EChannelEvents::OnHandshakeOK);
+                        this->dispatchHandlers(EChannelEvents::OnHandshakeOK);
                     };
                 this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(funcHandshakeOK);
 
@@ -48,7 +48,7 @@ namespace dds
                         this->m_channelType = EChannelType::UNKNOWN;
 
                         // notify all subscribers about the event
-                        this->onEvent(EChannelEvents::OnHandshakeFailed);
+                        this->dispatchHandlers(EChannelEvents::OnHandshakeFailed);
                     };
                 this->template registerHandler<cmdREPLY_HANDSHAKE_ERR>(funcHandshakeERR);
             }
@@ -74,7 +74,7 @@ namespace dds
                         {
                             LOG(MiscCommon::debug) << "Client channel connected.";
                             // notify all subscribers about the event
-                            this->onEvent(EChannelEvents::OnConnected);
+                            this->dispatchHandlers(EChannelEvents::OnConnected);
 
                             // start the communication channel
                             this->start();
@@ -88,7 +88,7 @@ namespace dds
                         {
                             LOG(MiscCommon::error) << "Failed to connect to remote end.";
                             // notify all subscribers about the event
-                            this->onEvent(EChannelEvents::OnFailedToConnect);
+                            this->dispatchHandlers(EChannelEvents::OnFailedToConnect);
                         }
                     });
             }

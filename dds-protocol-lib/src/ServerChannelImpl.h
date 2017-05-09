@@ -48,7 +48,7 @@ namespace dds
                             this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(msg, MiscCommon::fatal));
 
                             // notify all subscribers about the event
-                            this->onEvent(EChannelEvents::OnHandshakeFailed);
+                            this->dispatchHandlers(EChannelEvents::OnHandshakeFailed);
                         }
                         else
                         {
@@ -65,7 +65,7 @@ namespace dds
                             this->template pushMsg<cmdREPLY_HANDSHAKE_OK>();
 
                             // notify all subscribers about the event
-                            this->onEvent(EChannelEvents::OnHandshakeOK);
+                            this->dispatchHandlers(EChannelEvents::OnHandshakeOK);
                         }
                     };
                 this->template registerHandler<cmdHANDSHAKE>(funcHandshake);

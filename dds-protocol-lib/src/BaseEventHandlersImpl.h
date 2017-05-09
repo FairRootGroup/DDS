@@ -33,9 +33,9 @@ namespace dds
           private:
             typedef std::map<Event_t, std::unique_ptr<SHandlerHlpFunc>> signalsContainer_t;
 
-          public:
+          protected:
             template <Event_t _cmd, typename R, typename... Args>
-            void registerHandler(std::function<R(Args...)> _handler)
+            void registerHandlerImpl(std::function<R(Args...)> _handler)
             {
                 typedef boost::signals2::signal<R(Args...)> signal_t;
 
@@ -54,9 +54,9 @@ namespace dds
                 }
             }
 
-          public:
+          protected:
             template <class... Args>
-            void dispatchHandlers(Event_t _cmd, Args&&... args)
+            void dispatchHandlersImpl(Event_t _cmd, Args&&... args)
             {
                 typedef boost::signals2::signal<void(Args...)> signal_t;
                 auto it = m_signals.find(_cmd);
@@ -68,8 +68,8 @@ namespace dds
                 }
             }
 
-          public:
-            bool handlerExists(Event_t _cmd) const
+          protected:
+            bool handlerExistsImpl(Event_t _cmd) const
             {
                 return (m_signals.find(_cmd) != m_signals.end());
             }

@@ -26,10 +26,12 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
     , m_startUpTime(0)
     , m_state(EAgentState::unknown)
 {
-    subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                     [](CAgentChannel* _channel) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
+    std::function<void()> funcOnRemoteEndDissconnected = []() {
+        LOG(MiscCommon::info) << "The Agent has closed the connection.";
+    };
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
 
-    subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CAgentChannel* _channel) {
+    std::function<void()> funcOnHandshakeOK = [this]() {
         switch (getChannelType())
         {
             case protocol_api::EChannelType::AGENT:
@@ -54,7 +56,8 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
                 // TODO: log unknown connection attempt
                 return;
         }
-    });
+    };
+    registerHandler<EChannelEvents::OnHandshakeOK>(funcOnHandshakeOK);
 }
 
 uint64_t CAgentChannel::getId() const

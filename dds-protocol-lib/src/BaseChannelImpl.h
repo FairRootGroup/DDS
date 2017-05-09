@@ -25,7 +25,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #pragma clang diagnostic pop
 // DDS
-#include "ChannelEventsImpl.h"
+#include "ChannelEventHandlersImpl.h"
 #include "ChannelMessageHandlersImpl.h"
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
@@ -178,7 +178,7 @@ namespace dds
 
         template <class T>
         class CBaseChannelImpl : public boost::noncopyable,
-                                 public CChannelEventsImpl<T>,
+                                 public CChannelEventHandlersImpl,
                                  public CChannelMessageHandlersImpl,
                                  public std::enable_shared_from_this<T>,
                                  public CStatImpl
@@ -194,9 +194,14 @@ namespace dds
             typedef std::vector<connectionPtr_t> connectionPtrVector_t;
             typedef std::vector<weakConnectionPtr_t> weakConnectionPtrVector_t;
 
+            // Both are needed because unqualified name lookup terminates at the first scope that has anything with the
+            // right name
+            DECLARE_CHANNEL_EVENTS_INTERFACE
+            DECLARE_CHANNEL_MESSAGES_INTERFACE
+
           protected:
             CBaseChannelImpl<T>(boost::asio::io_service& _service)
-                : CChannelEventsImpl<T>()
+                : CChannelEventHandlersImpl()
                 , CChannelMessageHandlersImpl()
                 , CStatImpl(_service)
                 , m_isHandshakeOK(false)
@@ -870,7 +875,7 @@ namespace dds
                 stop();
 
                 // give a chance to children to execute something
-                this->onEvent(EChannelEvents::OnRemoteEndDissconnected);
+                this->dispatchHandlers(EChannelEvents::OnRemoteEndDissconnected);
 
                 // Call external event handler
                 T* pThis = static_cast<T*>(this);

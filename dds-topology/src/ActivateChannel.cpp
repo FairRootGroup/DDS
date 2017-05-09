@@ -16,17 +16,18 @@ using namespace dds::protocol_api;
 CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
     : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI)
 {
-    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [](CActivateChannel* _channel) {
+    std::function<void()> funcOnRemoteEndDissconnected = []() {
         LOG(MiscCommon::log_stderr) << "Server has closed the connection.";
-    });
+    };
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
 
-    subscribeOnEvent(EChannelEvents::OnConnected,
-                     [this](CActivateChannel* _channel) { LOG(MiscCommon::log_stdout) << "Connection established."; });
+    std::function<void()> funcOnConnected = []() { LOG(MiscCommon::log_stdout) << "Connection established."; };
+    registerHandler<EChannelEvents::OnConnected>(funcOnConnected);
 
-    subscribeOnEvent(EChannelEvents::OnFailedToConnect,
-                     [this](CActivateChannel* _channel) { LOG(MiscCommon::log_stdout) << "Failed to connect."; });
+    std::function<void()> funcOnFailedToConnect = []() { LOG(MiscCommon::log_stdout) << "Failed to connect."; };
+    registerHandler<EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
 
-    subscribeOnEvent(EChannelEvents::OnHandshakeOK, [this](CActivateChannel* _channel) {
+    std::function<void()> funcOnHandshakeOK = [this]() {
         switch (m_options.m_topologyCmd)
         {
             case ETopologyCmdType::ACTIVATE:
@@ -50,7 +51,8 @@ CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
             default:
                 return;
         }
-    });
+    };
+    registerHandler<EChannelEvents::OnHandshakeOK>(funcOnHandshakeOK);
 }
 
 bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

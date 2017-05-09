@@ -88,17 +88,16 @@ void CAgentConnectionManager::start()
             };
         m_channel->registerHandler<cmdSHUTDOWN>(fSHUTDOWN);
 
-        m_channel->subscribeOnEvent(EChannelEvents::OnConnected, [this](CAgentChannel* _channel) {});
+        std::function<void()> funcOnRemoteEndDissconnected = [this]() { stopCondition(); };
+        m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
 
-        m_channel->subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected,
-                                    [this](CAgentChannel* _channel) { stopCondition(); });
-
-        m_channel->subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect, [this](CAgentChannel* _channel) {
+        std::function<void()> funcOnFailedToConnect = [this]() {
             m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
                 CDDSIntercomGuard::instance().m_errorSignal(intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
                 stopCondition();
             });
-        });
+        };
+        m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
 
         m_channel->connect(endpoint_iterator);
 

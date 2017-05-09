@@ -20,7 +20,7 @@ namespace dds
                 : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI)
                 , m_nCounter(0)
             {
-                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CInfoChannel* _channel) {
+                std::function<void()> funcHandshakeOK = [this]() {
                     // ask the server what we wnated to ask :)
                     if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
                         pushMsg<protocol_api::cmdGED_PID>();
@@ -34,15 +34,18 @@ namespace dds
                         cmd.m_sPropertyID = m_options.m_propertyID;
                         pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
                     }
-                });
+                };
+                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(funcHandshakeOK);
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnConnected, [this](CInfoChannel* _channel) {
+                std::function<void()> funcOnConnected = []() {
                     LOG(MiscCommon::info) << "Connected to the commander server";
-                });
+                };
+                registerHandler<protocol_api::EChannelEvents::OnConnected>(funcOnConnected);
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnFailedToConnect, [this](CInfoChannel* _channel) {
+                std::function<void()> funcOnFailedToConnect = []() {
                     LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-                });
+                };
+                registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

@@ -17,14 +17,14 @@ namespace dds
             CGenericChannel(boost::asio::io_service& _service)
                 : CClientChannelImpl<CGenericChannel>(_service, protocol_api::EChannelType::UI)
             {
-                subscribeOnEvent(
-                    protocol_api::EChannelEvents::OnRemoteEndDissconnected, [this](CGenericChannel* _channel) {
-                        LOG(MiscCommon::info)
-                            << "The DDS commander [" << this->socket().remote_endpoint().address().to_string()
-                            << "] has closed the connection.";
-                    });
+                std::function<void()> funcOnRemoteEndDissconnected = [this]() {
+                    LOG(MiscCommon::info)
+                        << "The DDS commander [" << this->socket().remote_endpoint().address().to_string()
+                        << "] has closed the connection.";
+                };
+                registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
 
-                subscribeOnEvent(protocol_api::EChannelEvents::OnHandshakeOK, [this](CGenericChannel* _channel) {
+                std::function<void()> funcOnHandshakeOK = [this]() {
                     switch (m_options.m_agentCmd)
                     {
                         case EAgentCmdType::GETLOG:
@@ -44,7 +44,8 @@ namespace dds
                             LOG(MiscCommon::log_stderr) << "Uknown command.";
                             stop();
                     }
-                });
+                };
+                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(funcOnHandshakeOK);
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

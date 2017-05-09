@@ -54,7 +54,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
     , m_connectionAttempts(1)
     , m_activateMutex()
 {
-    subscribeOnEvent(EChannelEvents::OnRemoteEndDissconnected, [this](CCommanderChannel* _channel) {
+    std::function<void()> funcOnRemoteEndDissconnected = [this]() {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
         {
             LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
@@ -68,9 +68,10 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
             LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
             this->sendYourself<cmdSHUTDOWN>();
         }
-    });
+    };
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(funcOnRemoteEndDissconnected);
 
-    subscribeOnEvent(EChannelEvents::OnFailedToConnect, [this](CCommanderChannel* _channel) {
+    std::function<void()> funcOnFailedToConnect = [this]() {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
         {
             LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt " << m_connectionAttempts
@@ -84,7 +85,8 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
             LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
             this->sendYourself<cmdSHUTDOWN>();
         }
-    });
+    };
+    registerHandler<EChannelEvents::OnFailedToConnect>(funcOnFailedToConnect);
 }
 
 bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)

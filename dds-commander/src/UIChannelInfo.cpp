@@ -91,14 +91,15 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
             if (tag == "init")
             {
                 // Subscribe on plug-in disconnect
-                pPlugin->subscribeOnEvent(protocol_api::EChannelEvents::OnRemoteEndDissconnected,
-                                          [this](CAgentChannel* _channel) {
-                                              LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
-                                              // the plug-in is done and went offline, let's close UI
-                                              // connection as well.
-                                              m_channelSubmitPlugin.reset();
-                                              shutdown();
-                                          });
+                std::function<void()> funcOnRemoteEndDissconnected = [this]() {
+                    LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
+                    // the plug-in is done and went offline, let's close UI
+                    // connection as well.
+                    m_channelSubmitPlugin.reset();
+                    shutdown();
+                };
+                pPlugin->registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>(
+                    funcOnRemoteEndDissconnected);
 
                 auto now = chrono::system_clock::now().time_since_epoch();
                 auto diff = now - m_PluginStartTime;

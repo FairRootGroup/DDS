@@ -43,7 +43,7 @@ set( SRC_HDRS
 	./src/BaseSMChannelImpl.h
 	./src/ClientChannelImpl.h
 	./src/ServerChannelImpl.h
-	./src/ChannelEventsImpl.h
+	./src/ChannelEventHandlersImpl.h
 	./src/ChannelMessageHandlersImpl.h
 	./src/CommandAttachmentImpl.h
 	./src/ConnectionManagerImpl.h
@@ -67,7 +67,7 @@ set( SRC_HDRS
 	./src/StatImpl.h
     ./src/CustomCmdCmd.h
     ./src/UpdateTopologyCmd.h
-		./src/BaseEventHandlersImpl.h
+    ./src/BaseEventHandlersImpl.h
 )
 
 include_directories(
