@@ -103,7 +103,7 @@ namespace dds
             {
                 _options->m_verbose = true;
             }
-            if (vm.count("disable-validation"))
+            if (vm.count("disable-validation") && _options->m_bDisiableValidation)
             {
                 if (!vm.count("activate") && !vm.count("update"))
                 {

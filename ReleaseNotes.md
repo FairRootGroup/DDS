@@ -1,7 +1,8 @@
 # DDS Release Notes
 
 ## v1.8 (NOT YET RELEASED)
-
+### dds-topology
+Fixed: dds-topology --validate works again. (GH-174)   
 
 ## v1.6 (2017-03-26)
 
