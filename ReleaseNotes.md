@@ -1,6 +1,12 @@
 # DDS Release Notes
 
 ## v1.8 (NOT YET RELEASED)
+### DDS common
+Fixed an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.    
+
+### dds-protocol 
+Fixed an issue when decimal type is passed as an argument to the callback function.    
+
 ### dds-topology
 Fixed: dds-topology --validate works again. (GH-174)   
 
