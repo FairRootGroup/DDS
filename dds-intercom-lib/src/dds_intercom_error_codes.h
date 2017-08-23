@@ -16,12 +16,13 @@ namespace dds
         /// Error codes for intercom API
         enum EErrorCode
         {
-            ConnectionFailed,       ///< Failed to connect either to DDS commander or to DDS agent.
-            TransportServiceFailed, ///< Error in the transport, for example, if DDS is not running.
-            UpdateKeyValueFailed,   ///< Key-value update error on the DDS commander side.
-            SendKeyValueFailed,     ///< Error sending key-value (if not connected to DDS commander or DDS agent).
-            SendCustomCmdFailed,    ///< Error sending custom command (if not connected to DDS commander or DDS agent).
-            KeyValueVersionMismatch ///< Key value update request failed because version is too old.
+            ConnectionFailed,        ///< Failed to connect either to DDS commander or to DDS agent.
+            TransportServiceFailed,  ///< Error in the transport, for example, if DDS is not running.
+            UpdateKeyValueFailed,    ///< Key-value update error on the DDS commander side.
+            SendKeyValueFailed,      ///< Error sending key-value (if not connected to DDS commander or DDS agent).
+            SendCustomCmdFailed,     ///< Error sending custom command (if not connected to DDS commander or DDS agent).
+            KeyValueVersionMismatch, ///< Key value update request failed because version is too old.
+            KeyValueNotFound         ///< Key value update failed due to the wrong key
         };
 
         typedef boost::signals2::signal<void(EErrorCode, const std::string&)> errorSignal_t;

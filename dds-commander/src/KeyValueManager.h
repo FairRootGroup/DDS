@@ -17,6 +17,13 @@ namespace dds
 {
     namespace commander_cmd
     {
+        enum class EKeyUpdateResult
+        {
+            Correct,
+            VersionMismatchError,
+            KeyNotFoundError
+        };
+
         ///
         /// TODO: Key-Value has to provide a possibility to properly react on the errors.
         /// If Key-Value was not saved by the Commander because of the version mismatch, we have to send back the
@@ -40,7 +47,8 @@ namespace dds
             SKeyValueRecord();
             ~SKeyValueRecord();
 
-            bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
+            EKeyUpdateResult updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd,
+                                            protocol_api::SUpdateKeyCmd& _serverCmd);
             void deleteKeyValue();
             std::string getKeyValueString() const;
 
@@ -73,7 +81,8 @@ namespace dds
 
             void addKeyValueRecord(uint64_t _taskID, SKeyValueRecord::ptr_t _keyValueRecord);
 
-            bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
+            EKeyUpdateResult updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd,
+                                            protocol_api::SUpdateKeyCmd& _serverCmd);
 
             std::string getKeyValueString() const;
 
@@ -112,7 +121,8 @@ namespace dds
             void updateWithTopology(const topology_api::CTopology& _topology,
                                     const topology_api::CTopology::HashSet_t& _removedTasks,
                                     const topology_api::CTopology::HashSet_t& _addedTasks);
-            bool updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd);
+            EKeyUpdateResult updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd,
+                                            protocol_api::SUpdateKeyCmd& _serverCmd);
             void deleteKeyValue(uint64_t _taskID);
 
             std::string getKeyValueString(const std::string _propertyID) const;

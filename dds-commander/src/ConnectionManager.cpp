@@ -918,15 +918,25 @@ void CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
 {
     // Update key-value from commander's key-value manager
     SUpdateKeyCmd serverCmd;
-    bool isUpdateOK = m_keyValueManager.updateKeyValue(*_attachment, serverCmd);
+    EKeyUpdateResult updateResult = m_keyValueManager.updateKeyValue(*_attachment, serverCmd);
 
     // Key-value update was not possible
-    if (!isUpdateOK)
+    if (updateResult != EKeyUpdateResult::Correct)
     {
         SUpdateKeyErrorCmd errorCmd;
         errorCmd.m_serverCmd = serverCmd;
         errorCmd.m_userCmd = *_attachment;
-        errorCmd.m_errorCode = EErrorCode::KeyValueVersionMismatch;
+        switch (updateResult)
+        {
+            case EKeyUpdateResult::VersionMismatchError:
+                errorCmd.m_errorCode = EErrorCode::KeyValueVersionMismatch;
+                break;
+            case EKeyUpdateResult::KeyNotFoundError:
+                errorCmd.m_errorCode = EErrorCode::KeyValueNotFound;
+                break;
+            default:
+                break;
+        }
 
         auto channelPtr = _channel.lock();
         channelPtr->pushMsg<cmdUPDATE_KEY_ERROR>(errorCmd);

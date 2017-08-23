@@ -229,24 +229,32 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
 void CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
 {
-    string propertyID(_attachment->m_serverCmd.getPropertyID());
-    bool isVersionOK = updateCacheIfNeeded(_attachment->m_serverCmd);
-
-    if (!isVersionOK)
+    if (_attachment->m_errorCode == intercom_api::EErrorCode::KeyValueNotFound)
     {
-        LOG(warning) << "Cache not updated. Attachment: " << *_attachment;
+        LOG(warning) << "Key-value not found on the DDS commander: " << _attachment->m_userCmd;
     }
-
-    LOG(warning) << "Key-value update error: propertyID: " << propertyID << "; ServerCmd: " << _attachment->m_serverCmd
-                 << "; UserCmd: " << _attachment->m_userCmd << "; errorCode: " << _attachment->m_errorCode;
-
-    // In case of error we force the key update with a current value stored in a cache
-    string value("");
+    else if (_attachment->m_errorCode == intercom_api::EErrorCode::KeyValueVersionMismatch)
     {
-        std::lock_guard<std::mutex> lock(m_putValueCacheMutex);
-        value = m_putValueCache[propertyID];
+        string propertyID(_attachment->m_serverCmd.getPropertyID());
+        bool isVersionOK = updateCacheIfNeeded(_attachment->m_serverCmd);
+
+        if (!isVersionOK)
+        {
+            LOG(warning) << "Cache not updated. Attachment: " << *_attachment;
+        }
+
+        LOG(warning) << "Key-value update error: propertyID: " << propertyID
+                     << "; ServerCmd: " << _attachment->m_serverCmd << "; UserCmd: " << _attachment->m_userCmd
+                     << "; errorCode: " << _attachment->m_errorCode;
+
+        // In case of error we force the key update with a current value stored in a cache
+        string value("");
+        {
+            std::lock_guard<std::mutex> lock(m_putValueCacheMutex);
+            value = m_putValueCache[propertyID];
+        }
+        putValue(propertyID, value);
     }
-    putValue(propertyID, value);
 }
 
 void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
