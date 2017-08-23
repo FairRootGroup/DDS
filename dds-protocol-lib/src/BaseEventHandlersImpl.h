@@ -10,7 +10,7 @@
 #define DDS_BEGIN_EVENT_HANDLERS(eventType)                                                           \
   public:                                                                                             \
     template <class... Args>                                                                          \
-    void dispatchHandlers(eventType _cmd, Args&&... args)                                             \
+    void dispatchHandlers(eventType _cmd, Args&... args)                                              \
     {                                                                                                 \
         CBaseEventHandlersImpl<eventType>::dispatchHandlersImpl<>(_cmd, std::forward<Args>(args)...); \
     }                                                                                                 \

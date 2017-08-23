@@ -18,7 +18,8 @@ namespace dds
             OnFailedToConnect,
             OnRemoteEndDissconnected,
             OnHandshakeOK,
-            OnHandshakeFailed
+            OnHandshakeFailed,
+            OnNewUserTask
         };
 
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
@@ -29,6 +30,7 @@ namespace dds
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnRemoteEndDissconnected, void())
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeOK, void())
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeFailed, void())
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnNewUserTask, void(pid_t))
             DDS_END_EVENT_HANDLERS
         };
     }

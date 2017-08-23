@@ -150,7 +150,7 @@ void CAgentConnectionManager::start()
         });
 
         // Call this callback when a user process is activated
-        m_agent->registerOnNewUserTaskCallback([this](pid_t _pid) { return this->onNewUserTask(_pid); });
+        m_agent->registerHandler<EChannelEvents::OnNewUserTask>([this](pid_t _pid) { this->onNewUserTask(_pid); });
 
         // Start listening for messages from shared memory
         m_SMChannel->start();

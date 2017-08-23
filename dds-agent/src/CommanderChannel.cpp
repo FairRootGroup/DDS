@@ -437,7 +437,7 @@ bool CCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_
     ss << "User task (pid:" << pidUsrTask << ") is activated.";
     LOG(info) << ss.str();
 
-    m_onNewUserTaskCallback(pidUsrTask);
+    dispatchHandlers<>(EChannelEvents::OnNewUserTask, pidUsrTask);
 
     // Send response back to server
     pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), info, cmdACTIVATE_AGENT));

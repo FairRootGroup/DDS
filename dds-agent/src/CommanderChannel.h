@@ -15,8 +15,6 @@ namespace dds
     {
         class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>
         {
-            typedef std::function<void(pid_t)> handlerOnNewUserTaks_t;
-
           private:
             CCommanderChannel(boost::asio::io_service& _service);
 
@@ -39,12 +37,6 @@ namespace dds
                 MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
                 MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
             END_MSG_MAP()
-
-            // gives the possibility to register a callback, which will be called when a user task is executed
-            void registerOnNewUserTaskCallback(handlerOnNewUserTaks_t _callback)
-            {
-                m_onNewUserTaskCallback = _callback;
-            }
 
           private:
             // Message Handlers
@@ -92,7 +84,6 @@ namespace dds
             std::string m_groupName;
             std::string m_collectionName;
             std::string m_taskName;
-            handlerOnNewUserTaks_t m_onNewUserTaskCallback;
             uint16_t m_connectionAttempts;
             std::mutex m_activateMutex;
         };
