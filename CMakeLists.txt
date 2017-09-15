@@ -367,7 +367,13 @@ set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
 if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
 	set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
 endif()
-set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>")
+
+# because of SIP on macOS we can't use (DY)LD_LIBRARY_PATH.
+# But we need to search also in custom location for libstdc++ in case if user installs a custom version of gcc/clang.
+# WORKAROUND: We therefore introduce DDS_LD_LIBRARY_PATH, which user can use to specify custom library path(s)
+set(ENV_LD_LIBRARY_PATH "$ENV{DDS_LD_LIBRARY_PATH}")
+
+set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::${ENV_LD_LIBRARY_PATH}")
 set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
 set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds-commander>)
 
