@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
         if (vm.count("help") || vm.empty())
         {
             cout << options;
-            return false;
+            return EXIT_SUCCESS;
         }
 
         CIntercomService service;
