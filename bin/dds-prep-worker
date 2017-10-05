@@ -77,6 +77,7 @@ eval USER_SCRIPT=$(dds-user-defaults --user-env-script)
 eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --wrkscript))/user_worker_env.sh"
 eval SERVER_INFO_FILE=$(dds-user-defaults --server-info-file)
 eval DDS_WRK_SCRIPT_IN=$DDS_LOCATION/etc/DDSWorker.sh.in
+eval DDS_SID_FILE=$(dds-user-defaults --session-id-file)
 
 # create a tmp working directory
 eval DDS_WRK_TMP_DIR="$WRK_DIR/tmp"
@@ -92,7 +93,8 @@ mkdir -p "$CACHE_DIR"
 # check that all needed components are available
 COMPONENTS_ETC=( "$DDS_CFG"
                  "$DDS_LOCATION/etc/version"
-                 "$SERVER_INFO_FILE" )
+                 "$SERVER_INFO_FILE"
+			     "$DDS_SID_FILE" )
 
 COMPONENTS=( "${COMPONENTS_ETC[@]}" )
 #=============================================================================

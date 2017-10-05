@@ -1,4 +1,4 @@
-// Copyright 2016 GSI, Inc. All rights reserved.
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
 //
 //
@@ -8,6 +8,7 @@
 #define PROJECT_NAME "@PROJECT_NAME@"
 #define PROJECT_VERSION_STRING "@DDS_VERSION@"
 #define USER_DEFAULTS_CFG_VERSION "@USER_DEFAULTS_CFG_VERSION@"
+#define DDS_PROTOCOL_VERSION @DDS_PROTOCOL_VERSION@
 
 #define INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 #define INSTALL_PREFIX_TESTS "@CMAKE_INSTALL_PREFIX@/tests"

@@ -7,6 +7,13 @@ echo "DDS from this location is used ${location}"
 source ${location}/DDS_env.sh
 
 
+#######
+# Since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the subshell environment.
+# We explicitly set DYLD_LIBRARY_PATH to the libraries directory.
+if [ "$SERVER_OS" == "Darwin" ]; then
+   export DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH
+fi
+
 eval DDS_OCTOPUS_LOCATION="$DDS_LOCATION/tests/dds-octopus"
 TOPO_1=$DDS_OCTOPUS_LOCATION/octopus_topo_1.xml
 TOPO_1_NUMBER_OF_AGENTS=10
@@ -76,6 +83,13 @@ while [ $? -ne 0 ]; do
 	dds-server status $> /dev/null
 done
 dds-server status
+
+#######
+# Since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the subshell environment.
+# We explicitly set DYLD_LIBRARY_PATH to the libraries directory.
+if [ "$SERVER_OS" == "Darwin" ]; then
+   export DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH
+fi
 
 echo "Submitting [$TOPO_1_NUMBER_OF_AGENTS] agents..."
 dds-submit -r localhost -n $TOPO_1_NUMBER_OF_AGENTS

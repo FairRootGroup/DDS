@@ -30,6 +30,7 @@
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
+#include "SessionIDFile.h"
 #include "StatImpl.h"
 
 namespace dds
@@ -216,6 +217,20 @@ namespace dds
                       std::make_shared<boost::asio::deadline_timer>(_service, boost::posix_time::milliseconds(1000)))
                 , m_isShuttingDown(false)
             {
+                // Get session ID from the local environment
+                std::string sidFile = dds::user_defaults_api::CUserDefaults::instance().getSIDFile();
+                if (sidFile.empty())
+                {
+                    LOG(MiscCommon::fatal) << "Can't find SID file on the local system";
+                }
+                else
+                {
+                    MiscCommon::CSessionIDFile sid(sidFile);
+                    m_sessionID = sid.getSID();
+                    if (m_sessionID.empty())
+                        LOG(MiscCommon::fatal) << "Avaliable SID is empty";
+                }
+                LOG(MiscCommon::debug) << "SID: " << m_sessionID;
             }
 
           public:
@@ -902,6 +917,7 @@ namespace dds
           protected:
             bool m_isHandshakeOK;
             EChannelType m_channelType;
+            std::string m_sessionID;
 
           private:
             boost::asio::io_service& m_io_service;

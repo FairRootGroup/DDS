@@ -60,12 +60,14 @@ target_link_libraries (
     dds-user-defaults
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
 )
 
 target_link_libraries (
     dds_user_defaults_lib
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
 )
 
 install(TARGETS dds-user-defaults DESTINATION bin)

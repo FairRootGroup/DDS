@@ -9,6 +9,11 @@ project( dds_protocol_lib )
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 #
+# configure files
+#
+configure_file( ${dds_protocol_lib_SOURCE_DIR}/src/version.h.in ${dds_protocol_lib_BINARY_DIR}/version.h @ONLY )
+
+#
 # Source files
 #
 set( SOURCE_FILES

@@ -62,6 +62,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
                           "The path must be evaluated before use");
     visible.add_options()("server-info-file",
                           "Show the full path of the DDS server info file. The path must be evaluated before use.");
+    visible.add_options()("session-id-file", "Show the full path of the session ID file of the local environment.");
 
     // Parsing command-line
     bpo::variables_map vm;
@@ -169,6 +170,11 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     if (vm.count("server-info-file"))
     {
         cout << userDefaults.getServerInfoFileLocation() << endl;
+        return false;
+    }
+    if (vm.count("session-id-file"))
+    {
+        cout << userDefaults.getSIDFile() << endl;
         return false;
     }
 

@@ -111,8 +111,9 @@ namespace MiscCommon
             // Default format for logger
             boost::log::formatter formatter =
                 // TODO: std::setw doesn't work for the first collumn of the log (TimeStamp). Investigate!
-                expressions::stream << std::left << expressions::format_date_time<boost::posix_time::ptime>(
-                                                        "TimeStamp", "%Y-%m-%d %H:%M:%S.%f")
+                expressions::stream << std::left
+                                    << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp",
+                                                                                               "%Y-%m-%d %H:%M:%S.%f")
                                     << "   " << std::setw(7) << expressions::attr<ELogSeverityLevel>("Severity")
                                     << std::setw(20) << expressions::attr<std::string>("Process") << " <"
                                     << expressions::attr<attributes::current_process_id::value_type>("ProcessID") << ":"

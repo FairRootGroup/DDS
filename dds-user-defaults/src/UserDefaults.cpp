@@ -4,6 +4,7 @@
 //
 #include "UserDefaults.h"
 // BOOST
+#include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -27,6 +28,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::user_defaults_api;
 using namespace MiscCommon;
+namespace fs = boost::filesystem;
 
 CUserDefaults::CUserDefaults()
 {
@@ -319,14 +321,14 @@ pid_t CUserDefaults::getScoutPid() const
     return nDDSScoutPid;
 }
 
-std::string CUserDefaults::getSMInputName() const
+string CUserDefaults::getSMInputName() const
 {
     string storageName(to_string(CUserDefaults::instance().getScoutPid()));
     storageName += "_DDSSMI";
     return storageName;
 }
 
-std::string CUserDefaults::getSMOutputName() const
+string CUserDefaults::getSMOutputName() const
 {
     string storageName(to_string(CUserDefaults::instance().getScoutPid()));
     storageName += "_DDSSMO";
@@ -356,4 +358,45 @@ string CUserDefaults::getPluginDir(const string& _path, const string& _pluginNam
     }
     ss << path << "dds-submit-" << _pluginName << "/";
     return (ss.str());
+}
+
+string CUserDefaults::getSIDName() const
+{
+    return "dds.sid";
+}
+
+/// Returns the full path to the main Session ID file
+/// The function doesn't check wheather the file exists or not
+string CUserDefaults::getMainSIDFileName() const
+{
+    string sWorkDir(m_options.m_server.m_workDir);
+    smart_path(&sWorkDir);
+
+    // Main SID file is the file located on the commander's host
+    fs::path pathMainSid(sWorkDir);
+    pathMainSid /= getSIDName();
+    return pathMainSid.string();
+}
+
+/// Returns Session ID full file path (return main SID if exists. If there is no main, it checks for a clone SID. If
+/// none of SID exist, the fucntions returns an empty string)
+string CUserDefaults::getSIDFile() const
+{
+    string sWorkDir(m_options.m_server.m_workDir);
+    smart_path(&sWorkDir);
+
+    // Main SID file is the file located on the commander's host
+    fs::path pathMainSid(sWorkDir);
+    pathMainSid /= getSIDName();
+    if (fs::is_regular_file(pathMainSid))
+        return pathMainSid.string();
+
+    // SID clone file is the copy of the main SID for agents and other external process.
+    fs::path pathCloneSid(getDDSPath());
+    pathCloneSid /= getSIDName();
+    if (fs::is_regular_file(pathCloneSid))
+        return pathCloneSid.string();
+
+    // could fined any SID file
+    return string();
 }

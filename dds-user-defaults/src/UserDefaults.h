@@ -50,6 +50,8 @@ namespace dds
             std::string getSMInputName() const;
             std::string getSMOutputName() const;
             std::string getPluginsRootDir() const;
+            std::string getMainSIDFileName() const;
+            std::string getSIDFile() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
             /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)
@@ -60,6 +62,7 @@ namespace dds
           private:
             std::string convertAnyToString(const boost::any& _any) const;
             std::string getUnifiedBoolValueForBoolKey(const std::string& _Key) const;
+            std::string getSIDName() const;
 
           private:
             boost::program_options::variables_map m_keys;

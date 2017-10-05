@@ -6,7 +6,10 @@
 #ifndef DDS_ClientChannelImpl_h
 #define DDS_ClientChannelImpl_h
 
+// DDS
 #include "BaseChannelImpl.h"
+#include "version.h"
+// STD
 #include <functional>
 
 namespace dds
@@ -48,6 +51,9 @@ namespace dds
 
                         // notify all subscribers about the event
                         this->dispatchHandlers(EChannelEvents::OnHandshakeFailed);
+
+                        // close connection
+                        this->stop();
                     });
             }
 
@@ -80,6 +86,8 @@ namespace dds
                             // Prepare a hand shake message
                             SVersionCmd cmd;
                             cmd.m_channelType = this->m_channelType;
+                            cmd.m_sSID = this->m_sessionID;
+                            cmd.m_version = DDS_PROTOCOL_VERSION;
                             this->template pushMsg<cmdHANDSHAKE>(cmd);
                         }
                         else

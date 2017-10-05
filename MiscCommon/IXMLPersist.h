@@ -125,12 +125,12 @@ namespace MiscCommon
  *
  */
 #define BEGIN_READ_XML_CFG(_T) BEGIN_READ_XML_NODE(_T, "config")
-/**
- *
- * @brief Closes the sequence of ::READ_NODE_VALUE.
- * @note see the example of BEGIN_READ_XML_CFG(_T)
- *
- */
+    /**
+     *
+     * @brief Closes the sequence of ::READ_NODE_VALUE.
+     * @note see the example of BEGIN_READ_XML_CFG(_T)
+     *
+     */
 
 #define END_READ_XML_CFG }
 /**

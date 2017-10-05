@@ -3,13 +3,19 @@
 ## v1.8 (NOT YET RELEASED)
 ### DDS common
 Fixed: an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.    
-Added: DDS cmake script learned DDS_LD_LIBRARY_PATH to help users who wants to build WN packages to workaround macos's SIP when a custom installations of gcc/clang is used. (GH-175)
+Added: DDS cmake script learned DDS_LD_LIBRARY_PATH to help users who wants to build WN packages to workaround macos's SIP when a custom installations of gcc/clang is used. (GH-175)   
+Added: Introduced Session ID. (GH-170)   
 
 ### dds-protocol 
 Fixed: an issue when decimal type is passed as an argument to the callback function.    
+Added: Handshake cheks now protocol version of the client.    
+Added: Handshake chekcs now session ID of the client to match server's one.  (GH-170) 
 
 ### dds-topology
 Fixed: dds-topology --validate works again. (GH-174)   
+
+### dds-user-defaults
+Added: dds-user-defaults command learned "--session-id-file" parameter, which shows the location of the session file on the local system.   
 
 ## v1.6 (2017-03-26)
 

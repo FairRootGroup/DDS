@@ -4,6 +4,7 @@
 project( DDS )
 
 set(USER_DEFAULTS_CFG_VERSION "0.2")
+set(DDS_PROTOCOL_VERSION "2")
 
 #
 # Check if cmake has the required version

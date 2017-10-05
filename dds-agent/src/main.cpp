@@ -10,6 +10,7 @@
 #include "INet.h"
 #include "Logger.h"
 #include "Options.h"
+#include "SessionIDFile.h"
 #include "version.h"
 
 using namespace std;
@@ -41,6 +42,15 @@ int main(int argc, char* argv[])
     {
         try
         {
+            CSessionIDFile sid(dds::user_defaults_api::CUserDefaults::instance().getSIDFile());
+            LOG(info) << "SESSION ID file: " << dds::user_defaults_api::CUserDefaults::instance().getSIDFile();
+            if (sid.getSID().empty())
+            {
+                LOG(fatal) << "Failed to create session ID. Stopping the session...";
+                return EXIT_FAILURE;
+            }
+            LOG(info) << "SESSION ID: " << sid.getSID();
+
             boost::asio::io_service io_service;
             shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options, io_service);
             agentptr->start();

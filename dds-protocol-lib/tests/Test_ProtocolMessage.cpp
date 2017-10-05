@@ -66,11 +66,12 @@ void TestCommand(const T& _srcCmd, uint16_t _srcCmdID, size_t _expectedCmdSize)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdHANDSHAKE)
 {
-    const unsigned int cmdSize = 4;
+    const unsigned int cmdSize = 14;
 
     SVersionCmd cmd;
     cmd.m_version = 444;
     cmd.m_channelType = 2;
+    cmd.m_sSID = "TEST SID";
 
     TestCommand(cmd, cmdHANDSHAKE, cmdSize);
 }

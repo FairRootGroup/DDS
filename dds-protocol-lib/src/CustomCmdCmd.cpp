@@ -14,8 +14,6 @@ namespace inet = MiscCommon::INet;
 
 SCustomCmdCmd::SCustomCmdCmd()
     : m_senderId(0)
-    , m_sCmd()
-    , m_sCondition()
 {
 }
 

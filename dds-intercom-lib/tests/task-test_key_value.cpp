@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
         if (vm.count("help") || vm.empty())
         {
             cout << options;
-            return false;
+            return 0;
         }
 
         testErrors = vm.count("test-errors");
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
         // It is safe to update global data without locks inside the callback.
         keyValue.subscribe([&keyCondition, &currentValue, &keyValueCache, &nInstances](
-            const string& _propertyID, const string& _key, const string& _value) {
+                               const string& _propertyID, const string& _key, const string& _value) {
             keyValueCache[_key] = _value;
 
             // Check that all values in the key-value cache have a correct value

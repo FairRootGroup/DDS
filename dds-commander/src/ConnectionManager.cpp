@@ -103,11 +103,15 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
             this->on_cmdTRANSPORT_TEST(_attachment, weakClient);
         });
 
-    _newClient->registerHandler<cmdSIMPLE_MSG>([this, weakClient](
-        SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) { this->on_cmdSIMPLE_MSG(_attachment, weakClient); });
+    _newClient->registerHandler<cmdSIMPLE_MSG>(
+        [this, weakClient](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG(_attachment, weakClient);
+        });
 
-    _newClient->registerHandler<cmdUPDATE_KEY>([this, weakClient](
-        SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) { this->on_cmdUPDATE_KEY(_attachment, weakClient); });
+    _newClient->registerHandler<cmdUPDATE_KEY>(
+        [this, weakClient](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY(_attachment, weakClient);
+        });
 
     _newClient->registerHandler<cmdUSER_TASK_DONE>(
         [this, weakClient](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
@@ -129,8 +133,10 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
             this->on_cmdUPDATE_TOPOLOGY(_attachment, weakClient);
         });
 
-    _newClient->registerHandler<cmdREPLY_ID>([this, weakClient](
-        SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment) { this->on_cmdREPLY_ID(_attachment, weakClient); });
+    _newClient->registerHandler<cmdREPLY_ID>(
+        [this, weakClient](SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment) {
+            this->on_cmdREPLY_ID(_attachment, weakClient);
+        });
 
     _newClient->registerHandler<cmdENABLE_STAT>(
         [this, weakClient](SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment) {
@@ -142,11 +148,15 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
             this->on_cmdDISABLE_STAT(_attachment, weakClient);
         });
 
-    _newClient->registerHandler<cmdGET_STAT>([this, weakClient](
-        SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment) { this->on_cmdGET_STAT(_attachment, weakClient); });
+    _newClient->registerHandler<cmdGET_STAT>(
+        [this, weakClient](SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment) {
+            this->on_cmdGET_STAT(_attachment, weakClient);
+        });
 
-    _newClient->registerHandler<cmdCUSTOM_CMD>([this, weakClient](
-        SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) { this->on_cmdCUSTOM_CMD(_attachment, weakClient); });
+    _newClient->registerHandler<cmdCUSTOM_CMD>(
+        [this, weakClient](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD(_attachment, weakClient);
+        });
 }
 
 //=============================================================================

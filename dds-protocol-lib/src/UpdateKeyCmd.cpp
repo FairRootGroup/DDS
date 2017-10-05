@@ -12,9 +12,7 @@ using namespace dds::protocol_api;
 namespace inet = MiscCommon::INet;
 
 SUpdateKeyCmd::SUpdateKeyCmd()
-    : m_sKey()
-    , m_sValue()
-    , m_version(0)
+    : m_version(0)
 {
 }
 

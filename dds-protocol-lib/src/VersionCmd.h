@@ -22,6 +22,7 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SVersionCmd& val) const;
 
+            std::string m_sSID; /// Session ID
             uint16_t m_version;
             uint16_t m_channelType;
         };
