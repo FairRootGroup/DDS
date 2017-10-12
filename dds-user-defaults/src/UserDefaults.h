@@ -49,6 +49,8 @@ namespace dds
             pid_t getScoutPid() const;
             std::string getSMInputName() const;
             std::string getSMOutputName() const;
+            std::string getSMAgentInputName() const;
+            std::string getSMAgentOutputName() const;
             std::string getPluginsRootDir() const;
             std::string getMainSIDFileName() const;
             std::string getSIDFile() const;

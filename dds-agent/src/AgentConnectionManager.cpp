@@ -22,6 +22,7 @@
 #include "DDSIntercomGuard.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
+#include "SMCommanderChannel.h"
 
 using namespace boost::asio;
 using namespace std;
@@ -72,9 +73,8 @@ void CAgentConnectionManager::start()
     try
     {
         // Shared memory channel for communication with user task
-        std::string inputName = CUserDefaults::instance().getSMInputName();
-        std::string outputName = CUserDefaults::instance().getSMOutputName();
-        m_SMChannel = CSMUIChannel::makeNew(inputName, outputName);
+        const CUserDefaults& userDefaults = CUserDefaults::instance();
+        m_SMChannel = CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName());
 
         // Subscribe for key updates from SM channel
         m_SMChannel->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
@@ -112,48 +112,54 @@ void CAgentConnectionManager::start()
         // Create new agent and push handshake message
         m_agent = CCommanderChannel::makeNew(m_service);
 
+        // Create shared memory agent channel
+        m_SMAgent =
+            CSMCommanderChannel::makeNew(userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName());
+
         // Subscribe to Shutdown command
-        m_agent->registerHandler<cmdSHUTDOWN>([this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-            this->on_cmdSHUTDOWN(_attachment, m_agent);
+        m_SMAgent->registerHandler<cmdSHUTDOWN>([this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+            this->on_cmdSHUTDOWN(_attachment, m_SMAgent);
         });
 
         // Subscribe for key updates
-        m_agent->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY(_attachment, m_agent);
+        m_SMAgent->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY(_attachment, m_SMAgent);
         });
 
         // Subscribe for key update errors
-        m_agent->registerHandler<cmdUPDATE_KEY_ERROR>(
+        m_SMAgent->registerHandler<cmdUPDATE_KEY_ERROR>(
             [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-                this->on_cmdUPDATE_KEY_ERROR(_attachment, m_agent);
+                this->on_cmdUPDATE_KEY_ERROR(_attachment, m_SMAgent);
             });
 
         // Subscribe for key delete events
-        m_agent->registerHandler<cmdDELETE_KEY>([this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-            this->on_cmdDELETE_KEY(_attachment, m_agent);
+        m_SMAgent->registerHandler<cmdDELETE_KEY>([this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+            this->on_cmdDELETE_KEY(_attachment, m_SMAgent);
         });
 
         // Subscribe for cmdSIMPLE_MSG
-        m_agent->registerHandler<cmdSIMPLE_MSG>([this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG(_attachment, m_agent);
+        m_SMAgent->registerHandler<cmdSIMPLE_MSG>([this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG(_attachment, m_SMAgent);
         });
 
         // Subscribe for cmdSTOP_USER_TASK
-        m_agent->registerHandler<cmdSTOP_USER_TASK>(
+        m_SMAgent->registerHandler<cmdSTOP_USER_TASK>(
             [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
-                this->on_cmdSTOP_USER_TASK(_attachment, m_agent);
+                this->on_cmdSTOP_USER_TASK(_attachment, m_SMAgent);
             });
 
         // Subscribe for cmdCUSTOM_CMD
-        m_agent->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD(_attachment, m_agent);
+        m_SMAgent->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD(_attachment, m_SMAgent);
         });
 
         // Call this callback when a user process is activated
-        m_agent->registerHandler<EChannelEvents::OnNewUserTask>([this](pid_t _pid) { this->onNewUserTask(_pid); });
+        m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>([this](pid_t _pid) { this->onNewUserTask(_pid); });
 
         // Start listening for messages from shared memory
         m_SMChannel->start();
+        // Start shared memory agent channel
+        m_SMAgent->start();
         // Connect to DDS commander
         m_agent->connect(endpoint_iterator);
 
@@ -197,6 +203,10 @@ void CAgentConnectionManager::stop()
         m_service.stop();
         if (m_agent)
             m_agent->stop();
+        if (m_SMAgent)
+            m_SMAgent->stop();
+        if (m_SMChannel)
+            m_SMChannel->stop();
     }
     catch (exception& e)
     {
@@ -256,13 +266,13 @@ void CAgentConnectionManager::terminateChildrenProcesses()
 }
 
 void CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                                             CCommanderChannel::weakConnectionPtr_t _channel)
+                                             CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     stop();
 }
 
 void CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                               CCommanderChannel::weakConnectionPtr_t _channel)
+                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
@@ -270,21 +280,21 @@ void CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_
 
 void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-    CCommanderChannel::weakConnectionPtr_t _channel)
+    CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
-                                               CCommanderChannel::weakConnectionPtr_t _channel)
+                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                               CCommanderChannel::weakConnectionPtr_t _channel)
+                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     if (_attachment->m_srcCommand == cmdUPDATE_KEY || _attachment->m_srcCommand == cmdCUSTOM_CMD)
     {
@@ -302,7 +312,7 @@ void CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
 }
 
 void CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
-                                               CCommanderChannel::weakConnectionPtr_t _channel)
+                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
@@ -313,14 +323,14 @@ void CAgentConnectionManager::on_cmdUPDATE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
     // Forwared a message to the commander
-    m_agent->pushMsg<cmdUPDATE_KEY>(*_attachment);
+    m_SMAgent->pushMsg<cmdUPDATE_KEY>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdCUSTOM_CMD_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
     // Forward a message to the commander
-    m_agent->pushMsg<cmdCUSTOM_CMD>(*_attachment);
+    m_SMAgent->pushMsg<cmdCUSTOM_CMD>(*_attachment);
 }
 
 void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
@@ -332,8 +342,8 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     }
     SUserTaskDoneCmd cmd;
     cmd.m_exitCode = _exitCode;
-    cmd.m_taskID = m_agent->getTaskID();
-    m_agent->pushMsg<cmdUSER_TASK_DONE>(cmd);
+    cmd.m_taskID = m_SMAgent->getTaskID();
+    m_SMAgent->pushMsg<cmdUSER_TASK_DONE>(cmd);
 
     m_SMChannel->reinit();
 }
@@ -362,7 +372,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
         [this, self, _pid]() -> bool {
             // Send commander server the watchdog heartbeat.
             // It indicates that the agent is executing a task and is not idle
-            m_agent->pushMsg<cmdWATCHDOG_HEARTBEAT>();
+            m_SMAgent->pushMsg<cmdWATCHDOG_HEARTBEAT>();
             CMonitoringThread::instance().updateIdle();
 
             try
@@ -412,7 +422,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 }
 
 void CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                                   CCommanderChannel::weakConnectionPtr_t _channel)
+                                                   CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // TODO: add error processing, in case if user tasks won't quite
     terminateChildrenProcesses();

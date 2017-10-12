@@ -25,8 +25,9 @@ namespace dds
         enum ECmdType
         {
 
-            cmdUNKNOWN = -1,
-            cmdSHUTDOWN = 1,
+            cmdUNKNOWN = 1,
+            cmdRAW_MSG = 2, // special case - raw message processing
+            cmdSHUTDOWN = 3,
             cmdHANDSHAKE,  // attachment: SVersionCmd
             cmdSUBMIT,     // attachment: SSubmitCmd
             cmdSIMPLE_MSG, // attachment: SSimpleMsgCmd
@@ -67,6 +68,7 @@ namespace dds
 
         static std::map<uint16_t, std::string> g_cmdToString{
             { cmdUNKNOWN, NAME_TO_STRING(cmdUNKNOWN) },
+            { cmdRAW_MSG, NAME_TO_STRING(cmdRAW_MSG) },
             { cmdSHUTDOWN, NAME_TO_STRING(cmdSHUTDOWN) },
             { cmdHANDSHAKE, NAME_TO_STRING(cmdHANDSHAKE) },
             { cmdSUBMIT, NAME_TO_STRING(cmdSUBMIT) },

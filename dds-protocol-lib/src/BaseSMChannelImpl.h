@@ -21,10 +21,13 @@
 #include <boost/asio.hpp>
 #pragma clang diagnostic pop
 // DDS
+#include "ChannelEventHandlersImpl.h"
 #include "ChannelMessageHandlersImpl.h"
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
 
+// Either raw message or command based processing can be used at a time
+// Command based message processing
 #define BEGIN_SM_MSG_MAP(theClass)                                                        \
   public:                                                                                 \
     friend protocol_api::CBaseSMChannelImpl<theClass>;                                    \
@@ -75,12 +78,47 @@
         }                                                                                                        \
         }
 
+// Raw message processing
+#define SM_RAW_MESSAGE_HANDLER(theClass, func)                                                                         \
+  public:                                                                                                              \
+    friend protocol_api::CBaseSMChannelImpl<theClass>;                                                                 \
+    void processMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg)                              \
+    {                                                                                                                  \
+        if (!m_started)                                                                                                \
+            return;                                                                                                    \
+                                                                                                                       \
+        using namespace dds;                                                                                           \
+        using namespace dds::protocol_api;                                                                             \
+        bool processed = true;                                                                                         \
+        try                                                                                                            \
+        {                                                                                                              \
+            processed = func(_currentMsg);                                                                             \
+            if (!processed)                                                                                            \
+            {                                                                                                          \
+                if (!handlerExists(ECmdType::cmdRAW_MSG))                                                              \
+                {                                                                                                      \
+                    LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
+                                           << _currentMsg->toString();                                                 \
+                }                                                                                                      \
+                else                                                                                                   \
+                {                                                                                                      \
+                    dispatchHandlers(ECmdType::cmdRAW_MSG, _currentMsg);                                               \
+                }                                                                                                      \
+            }                                                                                                          \
+        }                                                                                                              \
+        catch (std::exception & _e)                                                                                    \
+        {                                                                                                              \
+            LOG(MiscCommon::error) << "SMChannel processMessage: " << _e.what();                                       \
+        }                                                                                                              \
+    }
+
 namespace dds
 {
     namespace protocol_api
     {
         template <class T>
         class CBaseSMChannelImpl : public boost::noncopyable,
+                                   public CChannelEventHandlersImpl,
                                    public CChannelMessageHandlersImpl,
                                    public std::enable_shared_from_this<T>
         {
@@ -89,6 +127,12 @@ namespace dds
 
           public:
             typedef std::shared_ptr<T> connectionPtr_t;
+            typedef std::weak_ptr<T> weakConnectionPtr_t;
+
+            // Both are needed because unqualified name lookup terminates at the first scope that has anything with the
+            // right name
+            DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelEventHandlersImpl)
+            DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
             CBaseSMChannelImpl<T>(const std::string& _inputName, const std::string& _outputName)
@@ -230,8 +274,7 @@ namespace dds
                                       << " remove status: " << outputRemoved;
             }
 
-            template <ECmdType _cmd, class A>
-            void pushMsg(const A& _attachment)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd)
             {
                 if (!m_started)
                 {
@@ -241,13 +284,11 @@ namespace dds
 
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
-
                     std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
 
                     // add the current message to the queue
                     if (cmdUNKNOWN != _cmd)
-                        m_writeQueue.push_back(msg);
+                        m_writeQueue.push_back(_msg);
 
                     LOG(MiscCommon::debug) << "BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
                 }
@@ -268,6 +309,20 @@ namespace dds
                         LOG(MiscCommon::error) << "BaseSMChannelImpl can't write message: " << ex.what();
                     }
                 });
+            }
+
+            template <ECmdType _cmd, class A>
+            void pushMsg(const A& _attachment)
+            {
+                try
+                {
+                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                    pushMsg(msg, _cmd);
+                }
+                catch (std::exception& ex)
+                {
+                    LOG(MiscCommon::error) << "BaseSMChannelImpl can't push message: " << ex.what();
+                }
             }
 
             template <ECmdType _cmd>
@@ -309,16 +364,8 @@ namespace dds
                         m_currentMsg->resize(receivedSize);
                         if (m_currentMsg->decode_header())
                         {
-                            ECmdType currentCmd = static_cast<ECmdType>(m_currentMsg->header().m_cmd);
-                            if (currentCmd == cmdSHUTDOWN)
-                            {
-                                // Do not execute processBody which starts readMessage
-                            }
-                            else
-                            {
-                                // If the header is ok, process the body of the message
-                                processBody(receivedSize - CProtocolMessage::header_length);
-                            }
+                            // If the header is ok, process the body of the message
+                            processBody(receivedSize - CProtocolMessage::header_length);
                         }
                         else
                         {
@@ -355,20 +402,26 @@ namespace dds
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
 
-                    // Read next message
-                    m_currentMsg->clear();
+                    ECmdType currentCmd = static_cast<ECmdType>(m_currentMsg->header().m_cmd);
 
-                    auto self(this->shared_from_this());
-                    m_io_service.post([this, self] {
-                        try
-                        {
-                            readMessage();
-                        }
-                        catch (std::exception& ex)
-                        {
-                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                        }
-                    });
+                    // Read next message
+                    m_currentMsg = std::make_shared<CProtocolMessage>();
+
+                    // Do not start readMessage if cmdSHUTDOWN was sent
+                    if (currentCmd != cmdSHUTDOWN)
+                    {
+                        auto self(this->shared_from_this());
+                        m_io_service.post([this, self] {
+                            try
+                            {
+                                readMessage();
+                            }
+                            catch (std::exception& ex)
+                            {
+                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                            }
+                        });
+                    }
                 }
             }
 

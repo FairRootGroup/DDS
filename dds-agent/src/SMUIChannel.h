@@ -13,16 +13,10 @@ namespace dds
     class CSMUIChannel : public protocol_api::CBaseSMChannelImpl<CSMUIChannel>
     {
       protected:
-        CSMUIChannel(const std::string& _inputName, const std::string& _outputName)
-            : CBaseSMChannelImpl<CSMUIChannel>(_inputName, _outputName)
-        {
-        }
+        CSMUIChannel(const std::string& _inputName, const std::string& _outputName);
 
       public:
-        ~CSMUIChannel()
-        {
-            removeMessageQueue();
-        }
+        ~CSMUIChannel();
 
       public:
         BEGIN_SM_MSG_MAP(CSMUIChannel)

@@ -21,6 +21,8 @@ set( SOURCE_FILES
 	./src/CommanderChannel.cpp
 	./src/AgentConnectionManager.cpp
 	./src/SMUIChannel.cpp
+	./src/SMFWChannel.cpp
+	./src/SMCommanderChannel.cpp
 )
 
 #
@@ -31,6 +33,8 @@ set( HEADER_FILES
 	./src/CommanderChannel.h
 	./src/AgentConnectionManager.h
 	./src/SMUIChannel.h
+	./src/SMFWChannel.h
+	./src/SMCommanderChannel.h
 )
 
 include_directories(

@@ -6,10 +6,13 @@ Fixed: an issue that all the key-value update errors were processed as version m
 Added: DDS cmake script learned DDS_LD_LIBRARY_PATH to help users who wants to build WN packages to workaround macos's SIP when a custom installations of gcc/clang is used. (GH-175)   
 Added: Introduced Session ID. (GH-170)   
 
-### dds-protocol 
+### dds-protocol
 Fixed: an issue when decimal type is passed as an argument to the callback function.    
-Added: Handshake cheks now protocol version of the client.    
-Added: Handshake chekcs now session ID of the client to match server's one.  (GH-170) 
+Added: Handshake checks now protocol version of the client.    
+Added: Handshake checks now session ID of the client to match server's one.  (GH-170)
+Added: new API for pushing and processing of raw messages. Implemented for network and shared memory channels.
+Added: special command ECmdType::cmdRAW_MSG  for raw message event subscription.
+Modified: create new message in the channel instead of clearing the current message. This allows to forward the message without additional copying.    
 
 ### dds-topology
 Fixed: dds-topology --validate works again. (GH-174)   

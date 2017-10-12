@@ -11,6 +11,16 @@ using namespace dds;
 using namespace dds::protocol_api;
 using namespace std;
 
+CSMUIChannel::CSMUIChannel(const string& _inputName, const string& _outputName)
+: CBaseSMChannelImpl<CSMUIChannel>(_inputName, _outputName)
+{
+}
+
+CSMUIChannel::~CSMUIChannel()
+{
+    removeMessageQueue();
+}
+
 bool CSMUIChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
     LOG(debug) << "Update key message received: " << *_attachment;

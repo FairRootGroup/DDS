@@ -44,6 +44,8 @@ namespace dds
     }
 }
 
+// Either raw message or command based processing can be used at a time
+// Command based message processing
 #define BEGIN_MSG_MAP(theClass)                                                                                        \
   public:                                                                                                              \
     friend protocol_api::CBaseChannelImpl<theClass>;                                                                   \
@@ -130,6 +132,32 @@ namespace dds
             LOG(MiscCommon::error) << "Channel processMessage: " << _e.what();                                \
         }                                                                                                     \
         }
+
+// Raw message processing
+#define RAW_MESSAGE_HANDLER(theClass, func)                                                                    \
+    BEGIN_MSG_MAP(theClass)                                                                                    \
+        default:                                                                                               \
+            break;                                                                                             \
+    }                                                                                                          \
+    processed = func(_currentMsg);                                                                             \
+    if (!processed)                                                                                            \
+    {                                                                                                          \
+        if (!handlerExists(ECmdType::cmdRAW_MSG))                                                              \
+        {                                                                                                      \
+            LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
+                                   << _currentMsg->toString();                                                 \
+        }                                                                                                      \
+        else                                                                                                   \
+        {                                                                                                      \
+            dispatchHandlers(ECmdType::cmdRAW_MSG, _currentMsg);                                               \
+        }                                                                                                      \
+    }                                                                                                          \
+    }                                                                                                          \
+    catch (std::exception & _e)                                                                                \
+    {                                                                                                          \
+        LOG(MiscCommon::error) << "Channel processMessage: " << _e.what();                                     \
+    }                                                                                                          \
+    }
 
 #define REGISTER_DEFAULT_REMOTE_ID_STRING \
     std::string _remoteEndIDString()      \
@@ -299,14 +327,11 @@ namespace dds
                                    std::end(m_writeQueue));
             }
 
-            template <ECmdType _cmd, class A>
-            void accumulativePushMsg(const A& _attachment)
+            void accumulativePushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd)
             {
                 static const size_t maxAccumulativeWriteQueueSize = 10000;
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
-
                     bool copyMessages = false;
                     {
                         std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
@@ -314,7 +339,7 @@ namespace dds
                         m_deadlineTimer->cancel();
 
                         if (cmdUNKNOWN != _cmd)
-                            m_accumulativeWriteQueue.push_back(msg);
+                            m_accumulativeWriteQueue.push_back(_msg);
 
                         copyMessages = m_accumulativeWriteQueue.size() > maxAccumulativeWriteQueueSize;
                         if (copyMessages)
@@ -362,10 +387,24 @@ namespace dds
                         LOG(MiscCommon::debug) << "accumulativePushMsg: WriteQueue size = " << m_writeQueue.size()
                                                << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size()
                                                << " accumulativeWriteQueue size = " << m_accumulativeWriteQueue.size()
-                                               << " attachment = " << _attachment;
+                                               << " msg = " << _msg->toString();
                     }
                     if (copyMessages)
                         pushMsg<cmdUNKNOWN>();
+                }
+                catch (std::exception& ex)
+                {
+                    LOG(MiscCommon::error) << "BaseChannelImpl can't push accumulative message: " << ex.what();
+                }
+            }
+
+            template <ECmdType _cmd, class A>
+            void accumulativePushMsg(const A& _attachment)
+            {
+                try
+                {
+                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                    accumulativePushMsg(msg, _cmd);
                 }
                 catch (std::exception& ex)
                 {
@@ -380,20 +419,17 @@ namespace dds
                 accumulativePushMsg<_cmd>(cmd);
             }
 
-            template <ECmdType _cmd, class A>
-            void pushMsg(const A& _attachment)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd)
             {
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
-
                     std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
                     if (!m_isHandshakeOK)
                     {
                         if (isCmdAllowedWithoutHandshake(_cmd))
-                            m_writeQueue.push_back(msg);
+                            m_writeQueue.push_back(_msg);
                         else
-                            m_writeQueueBeforeHandShake.push_back(msg);
+                            m_writeQueueBeforeHandShake.push_back(_msg);
                     }
                     else
                     {
@@ -408,7 +444,7 @@ namespace dds
 
                         // add the current message to the queue
                         if (cmdUNKNOWN != _cmd)
-                            m_writeQueue.push_back(msg);
+                            m_writeQueue.push_back(_msg);
                     }
 
                     LOG(MiscCommon::debug) << "pushMsg: WriteQueue size = " << m_writeQueue.size()
@@ -431,6 +467,20 @@ namespace dds
                         LOG(MiscCommon::error) << "BaseChannelImpl can't write message: " << ex.what();
                     }
                 });
+            }
+
+            template <ECmdType _cmd, class A>
+            void pushMsg(const A& _attachment)
+            {
+                try
+                {
+                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                    pushMsg(msg, _cmd);
+                }
+                catch (std::exception& ex)
+                {
+                    LOG(MiscCommon::error) << "BaseChannelImpl can't push message: " << ex.what();
+                }
             }
 
             template <ECmdType _cmd>
@@ -753,7 +803,7 @@ namespace dds
                     this->logReadMessage(m_currentMsg);
 
                     // Read next message
-                    m_currentMsg->clear();
+                    m_currentMsg = std::make_shared<CProtocolMessage>();
                     readHeader();
                     return;
                 }
@@ -776,7 +826,7 @@ namespace dds
                             this->logReadMessage(m_currentMsg);
 
                             // Read next message
-                            m_currentMsg->clear();
+                            m_currentMsg = std::make_shared<CProtocolMessage>();
                             readHeader();
                         }
                         else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))

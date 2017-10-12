@@ -9,6 +9,7 @@
 // DDS
 #include "CommanderChannel.h"
 #include "Options.h"
+#include "SMCommanderChannel.h"
 #include "SMUIChannel.h"
 // BOOST
 #include <boost/asio.hpp>
@@ -36,21 +37,21 @@ namespace dds
             void onNewUserTask(pid_t _pid);
             void terminateChildrenProcesses();
             void on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
-                                CCommanderChannel::weakConnectionPtr_t _channel);
+                                CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
-                                  CCommanderChannel::weakConnectionPtr_t _channel);
+                                  CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdUPDATE_KEY_ERROR(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-                CCommanderChannel::weakConnectionPtr_t _channel);
+                CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment,
-                                  CCommanderChannel::weakConnectionPtr_t _channel);
+                                  CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
-                                  CCommanderChannel::weakConnectionPtr_t _channel);
+                                  CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdSTOP_USER_TASK(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment,
-                CCommanderChannel::weakConnectionPtr_t _channel);
+                CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
-                                  CCommanderChannel::weakConnectionPtr_t _channel);
+                                  CSMCommanderChannel::weakConnectionPtr_t _channel);
 
             // Messages from shared memory
             void on_cmdUPDATE_KEY_SM(
@@ -66,6 +67,7 @@ namespace dds
             SOptions_t m_options;
             CCommanderChannel::connectionPtr_t m_agent;
             CSMUIChannel::connectionPtr_t m_SMChannel;
+            CSMCommanderChannel::connectionPtr_t m_SMAgent;
             childrenPidContainer_t m_children;
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;

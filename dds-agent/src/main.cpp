@@ -11,6 +11,7 @@
 #include "Logger.h"
 #include "Options.h"
 #include "SessionIDFile.h"
+#include "UserDefaults.h"
 #include "version.h"
 
 using namespace std;
@@ -18,6 +19,17 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
+
+void clean()
+{
+    // Cleaning shared memory of agent's shared memory channel
+    std::string inputName = CUserDefaults::instance().getSMAgentInputName();
+    std::string outputName = CUserDefaults::instance().getSMAgentOutputName();
+    const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
+    const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
+    LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
+    LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+}
 
 int main(int argc, char* argv[])
 {
@@ -73,6 +85,7 @@ int main(int argc, char* argv[])
         try
         {
             dds::internal_api::CDDSIntercomGuard::clean();
+            clean();
         }
         catch (exception& e)
         {

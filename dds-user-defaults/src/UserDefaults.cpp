@@ -335,6 +335,20 @@ string CUserDefaults::getSMOutputName() const
     return storageName;
 }
 
+std::string CUserDefaults::getSMAgentInputName() const
+{
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    storageName += "_DDSSMAI";
+    return storageName;
+}
+
+std::string CUserDefaults::getSMAgentOutputName() const
+{
+    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    storageName += "_DDSSMAO";
+    return storageName;
+}
+
 string CUserDefaults::getPluginsRootDir() const
 {
     stringstream ss;
