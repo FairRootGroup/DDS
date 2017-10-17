@@ -17,6 +17,9 @@ Fixed: dds-topology --validate works again. (GH-174)
 ### dds-user-defaults
 Added: dds-user-defaults command learned "--session-id-file" parameter, which shows the location of the session file on the local system.   
 
+### dds-info
+Fixed: the "dds-info -n" command hangs if there are no agents online. (GH-177)    
+
 ## v1.6 (2017-03-26)
 
 ### DDS common

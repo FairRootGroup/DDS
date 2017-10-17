@@ -787,6 +787,23 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
             return (_v->getChannelType() == EChannelType::AGENT && _v->started());
         }));
 
+    // No active agents
+    if (channels.empty())
+    {
+        SAgentsInfoCmd cmd;
+        cmd.m_nActiveAgents = channels.size();
+        cmd.m_nIndex = 0;
+        cmd.m_sAgentInfo = "";
+
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
+        }
+        return;
+    }
+
+    // Enumerate all agents
     size_t i = 0;
     for (const auto& v : channels)
     {
