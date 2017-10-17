@@ -788,18 +788,11 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
         }));
 
     // No active agents
-    if (channels.empty())
+    if (channels.empty() && !_channel.expired())
     {
         SAgentsInfoCmd cmd;
-        cmd.m_nActiveAgents = channels.size();
-        cmd.m_nIndex = 0;
-        cmd.m_sAgentInfo = "";
-
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
-        }
+        auto p = _channel.lock();
+        p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
         return;
     }
 

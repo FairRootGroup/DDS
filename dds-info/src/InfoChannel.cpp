@@ -67,6 +67,8 @@ bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENT
         if (m_nCounter == _attachment->m_nActiveAgents)
             stop();
     }
+    else
+        stop();
 
     return true;
 }
