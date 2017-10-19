@@ -19,14 +19,10 @@ namespace dds
         ~CSMUIChannel();
 
       public:
-        BEGIN_SM_MSG_MAP(CSMUIChannel)
-            SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
-            SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
-        END_SM_MSG_MAP()
+        SM_RAW_MESSAGE_HANDLER(CSMUIChannel, on_rawMessage)
 
       private:
-        bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
-        bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
+        bool on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg);
     };
 }
 #endif

@@ -75,20 +75,14 @@ void CAgentConnectionManager::start()
         // Shared memory channel for communication with user task
         const CUserDefaults& userDefaults = CUserDefaults::instance();
         m_SMChannel = CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName());
-
-        // Subscribe for key updates from SM channel
-        m_SMChannel->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY_SM(_attachment);
-        });
-
-        // Subscribe for cmdCUSTOM_CMD from SM channel
-        m_SMChannel->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD_SM(_attachment);
-        });
+        // Forward messages from shared memory to agent
+        m_SMChannel->registerHandler<cmdRAW_MSG>(
+            [this](protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
+                m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
+            });
         //
 
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
-
         CMonitoringThread::instance().start(maxIdleTime, []() { LOG(info) << "Idle callback called"; });
 
         // Read server info file
@@ -122,6 +116,7 @@ void CAgentConnectionManager::start()
         });
 
         // Subscribe for key updates
+        // TODO: Forwarding of update key commands without decoding using raw mwssage API
         m_SMAgent->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
             this->on_cmdUPDATE_KEY(_attachment, m_SMAgent);
         });
@@ -316,21 +311,6 @@ void CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
-}
-
-// Messages from shared memory
-void CAgentConnectionManager::on_cmdUPDATE_KEY_SM(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
-{
-    // Forwared a message to the commander
-    m_SMAgent->pushMsg<cmdUPDATE_KEY>(*_attachment);
-}
-
-void CAgentConnectionManager::on_cmdCUSTOM_CMD_SM(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
-{
-    // Forward a message to the commander
-    m_SMAgent->pushMsg<cmdCUSTOM_CMD>(*_attachment);
 }
 
 void CAgentConnectionManager::taskExited(int _pid, int _exitCode)

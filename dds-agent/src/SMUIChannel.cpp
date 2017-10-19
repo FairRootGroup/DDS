@@ -21,16 +21,7 @@ CSMUIChannel::~CSMUIChannel()
     removeMessageQueue();
 }
 
-bool CSMUIChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+bool CSMUIChannel::on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg)
 {
-    LOG(debug) << "Update key message received: " << *_attachment;
-
-    return false;
-}
-
-bool CSMUIChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
-{
-    LOG(debug) << "Custom command message received: " << *_attachment;
-
     return false;
 }
