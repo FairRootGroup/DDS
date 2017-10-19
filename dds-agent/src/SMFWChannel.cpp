@@ -9,7 +9,6 @@
 using namespace dds;
 using namespace std;
 
-
 CSMFWChannel::CSMFWChannel(const string& _inputName, const string& _outputName)
     : CBaseSMChannelImpl<CSMFWChannel>(_inputName, _outputName)
 {

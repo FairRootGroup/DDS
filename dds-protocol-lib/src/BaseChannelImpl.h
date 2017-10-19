@@ -212,7 +212,6 @@ namespace dds
                                  public std::enable_shared_from_this<T>,
                                  public CStatImpl
         {
-            typedef std::function<void(T*)> handlerDisconnectEventFunction_t;
             typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
             typedef std::vector<boost::asio::mutable_buffer> protocolMessageBuffer_t;
             typedef std::shared_ptr<boost::asio::deadline_timer> deadlineTimerPtr_t;
@@ -724,11 +723,6 @@ namespace dds
                 }
             }
 
-            void registerDisconnectEventHandler(handlerDisconnectEventFunction_t _handler)
-            {
-                m_disconnectEventHandler = _handler;
-            }
-
             bool started()
             {
                 return m_started;
@@ -941,11 +935,6 @@ namespace dds
 
                 // give a chance to children to execute something
                 this->dispatchHandlers(EChannelEvents::OnRemoteEndDissconnected);
-
-                // Call external event handler
-                T* pThis = static_cast<T*>(this);
-                if (m_disconnectEventHandler)
-                    m_disconnectEventHandler(pThis);
             }
 
             bool isCmdAllowedWithoutHandshake(ECmdType _cmd)
@@ -960,9 +949,6 @@ namespace dds
             {
                 m_socket.close();
             }
-
-          private:
-            handlerDisconnectEventFunction_t m_disconnectEventHandler;
 
           protected:
             bool m_isHandshakeOK;

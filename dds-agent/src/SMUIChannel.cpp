@@ -12,7 +12,7 @@ using namespace dds::protocol_api;
 using namespace std;
 
 CSMUIChannel::CSMUIChannel(const string& _inputName, const string& _outputName)
-: CBaseSMChannelImpl<CSMUIChannel>(_inputName, _outputName)
+    : CBaseSMChannelImpl<CSMUIChannel>(_inputName, _outputName)
 {
 }
 

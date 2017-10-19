@@ -366,14 +366,14 @@ namespace dds
                 pThis->newClientCreated(newClient);
 
                 // Subscribe on dissconnect event
-                newClient->registerDisconnectEventHandler([this](T* _channel) -> void {
+                newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this, newClient]() -> void {
                     {
                         // collect statistics for disconnected channels
                         std::lock_guard<std::mutex> lock(m_statMutex);
-                        m_readStatDisconnectedChannels.addFromStat(_channel->getReadStat());
-                        m_writeStatDisconnectedChannels.addFromStat(_channel->getWriteStat());
+                        m_readStatDisconnectedChannels.addFromStat(newClient->getReadStat());
+                        m_writeStatDisconnectedChannels.addFromStat(newClient->getWriteStat());
                     }
-                    return this->removeClient(_channel);
+                    this->removeClient(newClient.get());
                 });
 
                 _acceptor->async_accept(
