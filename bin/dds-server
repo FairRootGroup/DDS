@@ -135,9 +135,9 @@ get_bins()
   FILE_ARCH=("amd64")
   # check that bins dir exists and contain all supported bins
   if [ -d "$WN_BIN_DIR" ]; then
-    for index in 0
+    for arch in "${FILE_ARCH[@]}"
     do
-      FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
+      FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-$arch.tar.gz"
       if [ ! -r "$WN_BIN_DIR/$FILE_NAME" ]; then
         NEED_DOWNLOAD="TRUE"
         echo "$FILE_NAME - MISSING"
@@ -188,9 +188,9 @@ get_bins()
   mkdir -p $WN_BIN_DIR || { echo "error: Can't create $WN_BIN_DIR. Check permissions."; exit 1; }
   cd $WN_BIN_DIR || { echo "error: Can't change to $WN_BIN_DIR. Check permissions."; exit 1; }
   # download all pre-compiled bins
-  for index in 0 1
+  for arch in "${FILE_ARCH[@]}"
   do
-    FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
+    FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-$arch.tar.gz"
     $CMD_URL ${DDS_URL}/$PKG_VERSION/$FILE_NAME
     if (( $? != 0 )); then
       echo "Error: Can't download pre-compiled binaries for WNs."
