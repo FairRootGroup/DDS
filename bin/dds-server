@@ -102,8 +102,10 @@ get_bins()
     OS=$(uname -s 2>&1)
     wn_host_arch=$(uname -m  2>&1)
     case "$wn_host_arch" in
-      i[3-9]86*|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686)
+	  i[3-9]86*|x86|x86pc|k5|k6|k6_2|k6_3|k6-2|k6-3|pentium*|athlon*|i586_i686|i586-i686)
       host_arch="x86"
+	  echo "Error: DDS dropped support of 32bit systems."
+	  exit 1
       ;;
       x86_64)
       host_arch="amd64"
@@ -129,10 +131,11 @@ get_bins()
 
   echo -e "Checking precompiled binaries:\n"
   # we hard-code a list of supported architectures
-  FILE_ARCH=("x86" "amd64")
+  # support of x86 is dropeed, we support on 64bit
+  FILE_ARCH=("amd64")
   # check that bins dir exists and contain all supported bins
   if [ -d "$WN_BIN_DIR" ]; then
-    for index in 0 1
+    for index in 0
     do
       FILE_NAME="dds-wrk-bin-$PKG_VERSION-Linux-${FILE_ARCH[index]}.tar.gz"
       if [ ! -r "$WN_BIN_DIR/$FILE_NAME" ]; then

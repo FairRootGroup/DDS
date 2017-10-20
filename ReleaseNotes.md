@@ -23,6 +23,9 @@ Added: dds-user-defaults command learned "--session-id-file" parameter, which sh
 ### dds-info
 Fixed: the "dds-info -n" command hangs if there are no agents online. (GH-177)    
 
+### dds-server
+Fixed: Download WN packages only for supported systems. We don't support 32bit WN packages anymore.    
+
 ## v1.6 (2017-03-26)
 
 ### DDS common
