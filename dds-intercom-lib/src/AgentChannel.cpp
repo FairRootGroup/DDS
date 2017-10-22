@@ -53,7 +53,8 @@ void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const str
     }
 }
 
-bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                     const protocol_api::SSenderInfo& _sender)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -72,14 +73,16 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
     return true;
 }
 
-bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
+bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+                                   const protocol_api::SSenderInfo& _sender)
 {
     LOG(info) << "api-guard connection channel exited.";
     stop();
     return false;
 }
 
-bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                     const protocol_api::SSenderInfo& _sender)
 {
     LOG(info) << "CAgentChannel::on_cmdCUSTOM_CMD: received custom command: " << *_attachment;
 

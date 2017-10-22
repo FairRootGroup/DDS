@@ -77,7 +77,8 @@ void CAgentConnectionManager::start()
         m_SMChannel = CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName());
         // Forward messages from shared memory to agent
         m_SMChannel->registerHandler<cmdRAW_MSG>(
-            [this](protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
+            [this](const protocol_api::SSenderInfo& _sender,
+                   protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
                 m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
             });
         //
@@ -111,42 +112,47 @@ void CAgentConnectionManager::start()
             CSMCommanderChannel::makeNew(userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName());
 
         // Subscribe to Shutdown command
-        m_SMAgent->registerHandler<cmdSHUTDOWN>([this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-            this->on_cmdSHUTDOWN(_attachment, m_SMAgent);
-        });
+        m_SMAgent->registerHandler<cmdSHUTDOWN>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+                this->on_cmdSHUTDOWN(_sender, _attachment, m_SMAgent);
+            });
 
         // Subscribe for key updates
         // TODO: Forwarding of update key commands without decoding using raw mwssage API
-        m_SMAgent->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY(_attachment, m_SMAgent);
-        });
+        m_SMAgent->registerHandler<cmdUPDATE_KEY>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+                this->on_cmdUPDATE_KEY(_sender, _attachment, m_SMAgent);
+            });
 
         // Subscribe for key update errors
         m_SMAgent->registerHandler<cmdUPDATE_KEY_ERROR>(
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-                this->on_cmdUPDATE_KEY_ERROR(_attachment, m_SMAgent);
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
+                this->on_cmdUPDATE_KEY_ERROR(_sender, _attachment, m_SMAgent);
             });
 
         // Subscribe for key delete events
-        m_SMAgent->registerHandler<cmdDELETE_KEY>([this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-            this->on_cmdDELETE_KEY(_attachment, m_SMAgent);
-        });
+        m_SMAgent->registerHandler<cmdDELETE_KEY>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+                this->on_cmdDELETE_KEY(_sender, _attachment, m_SMAgent);
+            });
 
         // Subscribe for cmdSIMPLE_MSG
-        m_SMAgent->registerHandler<cmdSIMPLE_MSG>([this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG(_attachment, m_SMAgent);
-        });
+        m_SMAgent->registerHandler<cmdSIMPLE_MSG>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+                this->on_cmdSIMPLE_MSG(_sender, _attachment, m_SMAgent);
+            });
 
         // Subscribe for cmdSTOP_USER_TASK
         m_SMAgent->registerHandler<cmdSTOP_USER_TASK>(
-            [this](SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
-                this->on_cmdSTOP_USER_TASK(_attachment, m_SMAgent);
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
+                this->on_cmdSTOP_USER_TASK(_sender, _attachment, m_SMAgent);
             });
 
         // Subscribe for cmdCUSTOM_CMD
-        m_SMAgent->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD(_attachment, m_SMAgent);
-        });
+        m_SMAgent->registerHandler<cmdCUSTOM_CMD>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+                this->on_cmdCUSTOM_CMD(_sender, _attachment, m_SMAgent);
+            });
 
         // Call this callback when a user process is activated
         m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>([this](pid_t _pid) { this->onNewUserTask(_pid); });
@@ -260,13 +266,15 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     }
 }
 
-void CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
+                                             SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     stop();
 }
 
-void CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
@@ -274,21 +282,24 @@ void CAgentConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_
 }
 
 void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+    const SSenderInfo& _sender,
+    SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
     CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
 }
 
-void CAgentConnectionManager::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdDELETE_KEY(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
 }
 
-void CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     if (_attachment->m_srcCommand == cmdUPDATE_KEY || _attachment->m_srcCommand == cmdCUSTOM_CMD)
@@ -306,7 +317,8 @@ void CAgentConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_
     }
 }
 
-void CAgentConnectionManager::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
@@ -401,7 +413,8 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
 }
 
-void CAgentConnectionManager::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
+                                                   SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
                                                    CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // TODO: add error processing, in case if user tasks won't quite

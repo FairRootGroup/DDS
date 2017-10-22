@@ -58,6 +58,8 @@ namespace dds
         CMonitoringThread::instance().updateIdle();                                                                    \
         bool processed = true;                                                                                         \
         ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                                      \
+        SSenderInfo sender;                                                                                            \
+        sender.m_ID = _currentMsg->header().m_ID;                                                                      \
                                                                                                                        \
         try                                                                                                            \
         {                                                                                                              \
@@ -82,21 +84,21 @@ namespace dds
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
                         SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
-                    dispatchHandlers<>(currentCmd, attachmentPtr);                                                     \
+                    dispatchHandlers<>(currentCmd, sender, attachmentPtr);                                             \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_OK:                                                                            \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t attachmentPtr =                               \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::decode(_currentMsg);                            \
-                    dispatchHandlers<>(currentCmd, attachmentPtr);                                                     \
+                    dispatchHandlers<>(currentCmd, sender, attachmentPtr);                                             \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdREPLY_HANDSHAKE_ERR:                                                                           \
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t attachmentPtr =                              \
                         SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::decode(_currentMsg);                           \
-                    dispatchHandlers<>(currentCmd, attachmentPtr);                                                     \
+                    dispatchHandlers<>(currentCmd, sender, attachmentPtr);                                             \
                     return;                                                                                            \
                 }
 
@@ -106,7 +108,7 @@ namespace dds
         typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                       \
         attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                          \
         LOG(MiscCommon::debug) << "Processing " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
-        processed = func(attachmentPtr);                                                                           \
+        processed = func(attachmentPtr, sender);                                                                   \
         if (!processed)                                                                                            \
         {                                                                                                          \
             if (!handlerExists(msg))                                                                               \
@@ -116,7 +118,7 @@ namespace dds
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatchHandlers<>(msg, attachmentPtr);                                                            \
+                dispatchHandlers<>(msg, sender, attachmentPtr);                                                    \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \
@@ -149,7 +151,7 @@ namespace dds
         }                                                                                                      \
         else                                                                                                   \
         {                                                                                                      \
-            dispatchHandlers(ECmdType::cmdRAW_MSG, _currentMsg);                                               \
+            dispatchHandlers(ECmdType::cmdRAW_MSG, sender, _currentMsg);                                       \
         }                                                                                                      \
     }                                                                                                          \
     }                                                                                                          \
@@ -934,7 +936,7 @@ namespace dds
                 stop();
 
                 // give a chance to children to execute something
-                this->dispatchHandlers(EChannelEvents::OnRemoteEndDissconnected);
+                this->dispatchHandlers(EChannelEvents::OnRemoteEndDissconnected, SSenderInfo());
             }
 
             bool isCmdAllowedWithoutHandshake(ECmdType _cmd)

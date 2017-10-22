@@ -12,7 +12,8 @@ using namespace dds::info_cmd;
 using namespace dds::protocol_api;
 using namespace std;
 
-bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                    const protocol_api::SSenderInfo& _sender)
 {
     if (_attachment->m_srcCommand == cmdGET_PROP_LIST || _attachment->m_srcCommand == cmdGET_PROP_VALUES)
     {
@@ -28,7 +29,8 @@ bool CInfoChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t
     return true;
 }
 
-bool CInfoChannel::on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment)
+bool CInfoChannel::on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _attachment,
+                                   const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "UI agent has recieved pid of the commander server: " << _attachment->m_sMsg;
     if (m_options.m_bNeedCommanderPid)
@@ -48,7 +50,8 @@ bool CInfoChannel::on_cmdREPLY_PID(SCommandAttachmentImpl<cmdREPLY_PID>::ptr_t _
     return true;
 }
 
-bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment)
+bool CInfoChannel::on_cmdREPLY_AGENTS_INFO(SCommandAttachmentImpl<cmdREPLY_AGENTS_INFO>::ptr_t _attachment,
+                                           const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "UI agent has recieved Agents Info from the commander server.";
     if (m_options.m_bNeedAgentsNumber)

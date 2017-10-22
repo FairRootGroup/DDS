@@ -12,7 +12,8 @@ using namespace dds::protocol_api;
 using namespace std;
 using namespace dds::internal_api;
 
-bool CSMAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+bool CSMAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                       const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Update key message received: " << *_attachment;
 
@@ -20,28 +21,32 @@ bool CSMAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::pt
 }
 
 bool CSMAgentChannel::on_cmdUPDATE_KEY_ERROR(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+    const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Update key error message received: " << *_attachment;
 
     return false;
 }
 
-bool CSMAgentChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)
+bool CSMAgentChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
+                                       const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Delete key message received: " << *_attachment;
 
     return false;
 }
 
-bool CSMAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+bool CSMAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                       const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Custom command message received: " << *_attachment;
 
     return false;
 }
 
-bool CSMAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CSMAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                       const protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Simple message received: " << *_attachment;
 

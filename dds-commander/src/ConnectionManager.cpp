@@ -80,82 +80,85 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     CAgentChannel::weakConnectionPtr_t weakClient(_newClient);
 
     // Subscribe on protocol messages
-    _newClient->registerHandler<cmdGET_LOG>([this, weakClient](SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment) {
-        this->on_cmdGET_LOG(_attachment, weakClient);
-    });
+    _newClient->registerHandler<cmdGET_LOG>(
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment) {
+            this->on_cmdGET_LOG(_sender, _attachment, weakClient);
+        });
 
     _newClient->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
-        [this, weakClient](SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
-            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender,
+                           SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
+            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdGET_AGENTS_INFO>(
-        [this, weakClient](SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment) {
-            this->on_cmdGET_AGENTS_INFO(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment) {
+            this->on_cmdGET_AGENTS_INFO(_sender, _attachment, weakClient);
         });
 
-    _newClient->registerHandler<cmdSUBMIT>([this, weakClient](SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment) {
-        this->on_cmdSUBMIT(_attachment, weakClient);
-    });
+    _newClient->registerHandler<cmdSUBMIT>(
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment) {
+            this->on_cmdSUBMIT(_sender, _attachment, weakClient);
+        });
 
     _newClient->registerHandler<cmdTRANSPORT_TEST>(
-        [this, weakClient](SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment) {
-            this->on_cmdTRANSPORT_TEST(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment) {
+            this->on_cmdTRANSPORT_TEST(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdSIMPLE_MSG>(
-        [this, weakClient](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdUPDATE_KEY>(
-        [this, weakClient](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdUSER_TASK_DONE>(
-        [this, weakClient](SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
-            this->on_cmdUSER_TASK_DONE(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
+            this->on_cmdUSER_TASK_DONE(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdGET_PROP_LIST>(
-        [this, weakClient](SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment) {
-            this->on_cmdGET_PROP_LIST(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment) {
+            this->on_cmdGET_PROP_LIST(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdGET_PROP_VALUES>(
-        [this, weakClient](SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment) {
-            this->on_cmdGET_PROP_VALUES(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment) {
+            this->on_cmdGET_PROP_VALUES(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdUPDATE_TOPOLOGY>(
-        [this, weakClient](SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_TOPOLOGY(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_TOPOLOGY(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdREPLY_ID>(
-        [this, weakClient](SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment) {
-            this->on_cmdREPLY_ID(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment) {
+            this->on_cmdREPLY_ID(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdENABLE_STAT>(
-        [this, weakClient](SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment) {
-            this->on_cmdENABLE_STAT(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment) {
+            this->on_cmdENABLE_STAT(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdDISABLE_STAT>(
-        [this, weakClient](SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment) {
-            this->on_cmdDISABLE_STAT(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment) {
+            this->on_cmdDISABLE_STAT(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdGET_STAT>(
-        [this, weakClient](SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment) {
-            this->on_cmdGET_STAT(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment) {
+            this->on_cmdGET_STAT(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdCUSTOM_CMD>(
-        [this, weakClient](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD(_attachment, weakClient);
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD(_sender, _attachment, weakClient);
         });
 }
 
@@ -250,7 +253,8 @@ void CConnectionManager::_deleteInfoFile() const
     unlink(sSrvCfg.c_str());
 }
 
-void CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
+void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
+                                       SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
                                        CAgentChannel::weakConnectionPtr_t _channel)
 {
     lock_guard<mutex> lock(m_getLog.m_mutexStart);
@@ -295,6 +299,7 @@ void CConnectionManager::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t
 }
 
 void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
+    const SSenderInfo& _sender,
     SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -317,7 +322,8 @@ void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     }
 }
 
-void CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
+void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
+                                      SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
                                       CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
@@ -451,6 +457,7 @@ void CConnectionManager::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _
 }
 
 void CConnectionManager::on_cmdUPDATE_TOPOLOGY(
+    const SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -779,7 +786,8 @@ void CConnectionManager::stopTasks(const CAgentChannel::weakConnectionPtrVector_
     }
 }
 
-void CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
+void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
     CAgentChannel::weakConnectionPtrVector_t channels(
@@ -835,7 +843,8 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGE
     }
 }
 
-void CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
+void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
+                                              SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     lock_guard<mutex> lock(m_transportTest.m_mutexStart);
@@ -879,7 +888,8 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPOR
     }
 }
 
-void CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
+                                          SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
     switch (_attachment->m_srcCommand)
@@ -933,7 +943,8 @@ void CConnectionManager::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>:
     }
 }
 
-void CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
+                                          SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
     // Update key-value from commander's key-value manager
@@ -1030,7 +1041,8 @@ void CConnectionManager::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>:
         SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::debug, cmdUPDATE_KEY));
 }
 
-void CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
+void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
+                                              SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     uint64_t taskID = _attachment->m_taskID;
@@ -1090,7 +1102,8 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TAS
     LOG(info) << "User task <" << taskID << "> with path " << task->getPath() << " done";
 }
 
-void CConnectionManager::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
+void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& _sender,
+                                             SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
     if (!_channel.expired())
@@ -1101,7 +1114,8 @@ void CConnectionManager::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_
     }
 }
 
-void CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
+void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
@@ -1125,7 +1139,8 @@ void CConnectionManager::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PRO
     }
 }
 
-void CConnectionManager::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment,
+void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
+                                        SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment,
                                         CAgentChannel::weakConnectionPtr_t _channel)
 {
     auto p = _channel.lock();
@@ -1173,6 +1188,7 @@ void CConnectionManager::enableDisableStatForChannels(bool _enable)
 }
 
 void CConnectionManager::on_cmdENABLE_STAT(
+    const SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -1191,6 +1207,7 @@ void CConnectionManager::on_cmdENABLE_STAT(
 }
 
 void CConnectionManager::on_cmdDISABLE_STAT(
+    const SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -1209,6 +1226,7 @@ void CConnectionManager::on_cmdDISABLE_STAT(
 }
 
 void CConnectionManager::on_cmdGET_STAT(
+    const SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
@@ -1248,6 +1266,7 @@ void CConnectionManager::on_cmdGET_STAT(
 }
 
 void CConnectionManager::on_cmdCUSTOM_CMD(
+    const SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {

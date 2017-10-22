@@ -40,6 +40,8 @@
         using namespace dds::protocol_api;                                                \
         bool processed = true;                                                            \
         ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);         \
+        SSenderInfo sender;                                                               \
+        sender.m_ID = _currentMsg->header().m_ID;                                         \
                                                                                           \
         try                                                                               \
         {                                                                                 \
@@ -51,7 +53,7 @@
     {                                                                                                              \
         typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                       \
         attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                          \
-        processed = func(attachmentPtr);                                                                           \
+        processed = func(attachmentPtr, sender);                                                                   \
         if (!processed)                                                                                            \
         {                                                                                                          \
             if (!handlerExists(msg))                                                                               \
@@ -61,7 +63,7 @@
             }                                                                                                      \
             else                                                                                                   \
             {                                                                                                      \
-                dispatchHandlers(msg, attachmentPtr);                                                              \
+                dispatchHandlers(msg, sender, attachmentPtr);                                                      \
             }                                                                                                      \
         }                                                                                                          \
         break;                                                                                                     \
@@ -90,9 +92,11 @@
         using namespace dds;                                                                                           \
         using namespace dds::protocol_api;                                                                             \
         bool processed = true;                                                                                         \
+        SSenderInfo sender;                                                                                            \
+        sender.m_ID = _currentMsg->header().m_ID;                                                                      \
         try                                                                                                            \
         {                                                                                                              \
-            processed = func(_currentMsg);                                                                             \
+            processed = func(_currentMsg, sender);                                                                     \
             if (!processed)                                                                                            \
             {                                                                                                          \
                 if (!handlerExists(ECmdType::cmdRAW_MSG))                                                              \
@@ -102,7 +106,7 @@
                 }                                                                                                      \
                 else                                                                                                   \
                 {                                                                                                      \
-                    dispatchHandlers(ECmdType::cmdRAW_MSG, _currentMsg);                                               \
+                    dispatchHandlers(ECmdType::cmdRAW_MSG, sender, _currentMsg);                                       \
                 }                                                                                                      \
             }                                                                                                          \
         }                                                                                                              \

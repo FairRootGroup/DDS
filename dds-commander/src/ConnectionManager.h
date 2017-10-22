@@ -37,45 +37,61 @@ namespace dds
 
           private:
             void on_cmdGET_AGENTS_INFO(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_AGENTS_INFO>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment,
+            void on_cmdGET_LOG(const protocol_api::SSenderInfo& _sender,
+                               protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment,
                                CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdBINARY_ATTACHMENT_RECEIVED(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdSUBMIT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment,
+            void on_cmdSUBMIT(const protocol_api::SSenderInfo& _sender,
+                              protocol_api::SCommandAttachmentImpl<protocol_api::cmdSUBMIT>::ptr_t _attachment,
                               CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdTRANSPORT_TEST(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
+            void on_cmdSIMPLE_MSG(const protocol_api::SSenderInfo& _sender,
+                                  protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
+            void on_cmdUPDATE_KEY(const protocol_api::SSenderInfo& _sender,
+                                  protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdUSER_TASK_DONE(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdGET_PROP_LIST(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_LIST>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdGET_PROP_VALUES(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdUPDATE_TOPOLOGY(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdREPLY_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
+            void on_cmdREPLY_ID(const protocol_api::SSenderInfo& _sender,
+                                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdENABLE_STAT(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdDISABLE_STAT(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
+            void on_cmdGET_STAT(const protocol_api::SSenderInfo& _sender,
+                                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
+            void on_cmdCUSTOM_CMD(const protocol_api::SSenderInfo& _sender,
+                                  protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
 
           private:

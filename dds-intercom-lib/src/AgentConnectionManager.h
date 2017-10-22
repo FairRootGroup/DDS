@@ -40,7 +40,8 @@ namespace dds
 
           private:
             void on_cmdSHUTDOWN(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
-                                CAgentChannel::weakConnectionPtr_t _channel);
+                                CAgentChannel::weakConnectionPtr_t _channel,
+                                const protocol_api::SSenderInfo& _sender);
             CAgentChannel::weakConnectionPtr_t getAgentChannel()
             {
                 return m_channel;

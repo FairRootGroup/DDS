@@ -7,18 +7,18 @@
 
 #include <boost/signals2/signal.hpp>
 
-#define DDS_BEGIN_EVENT_HANDLERS(eventType)                                                           \
-  public:                                                                                             \
-    template <class... Args>                                                                          \
-    void dispatchHandlers(eventType _cmd, Args&... args)                                              \
-    {                                                                                                 \
-        CBaseEventHandlersImpl<eventType>::dispatchHandlersImpl<>(_cmd, std::forward<Args>(args)...); \
-    }                                                                                                 \
-                                                                                                      \
-  public:                                                                                             \
-    bool handlerExists(eventType _cmd) const                                                          \
-    {                                                                                                 \
-        return CBaseEventHandlersImpl<eventType>::handlerExistsImpl(_cmd);                            \
+#define DDS_BEGIN_EVENT_HANDLERS(eventType)                                                                    \
+  public:                                                                                                      \
+    template <class... Args>                                                                                   \
+    void dispatchHandlers(eventType _cmd, const SSenderInfo& _sender, Args&... args)                           \
+    {                                                                                                          \
+        CBaseEventHandlersImpl<eventType>::dispatchHandlersImpl<>(_cmd, _sender, std::forward<Args>(args)...); \
+    }                                                                                                          \
+                                                                                                               \
+  public:                                                                                                      \
+    bool handlerExists(eventType _cmd) const                                                                   \
+    {                                                                                                          \
+        return CBaseEventHandlersImpl<eventType>::handlerExistsImpl(_cmd);                                     \
     }
 
 #define DDS_END_EVENT_HANDLERS
@@ -45,6 +45,16 @@ namespace dds
 {
     namespace protocol_api
     {
+        struct SSenderInfo
+        {
+            SSenderInfo()
+                : m_ID(0)
+            {
+            }
+
+            uint64_t m_ID;
+        };
+
         /// Helpers for event dispatching
         struct SHandlerHlpFunc
         {
@@ -89,15 +99,15 @@ namespace dds
 
           protected:
             template <class... Args>
-            void dispatchHandlersImpl(Event_t _cmd, Args&&... args)
+            void dispatchHandlersImpl(Event_t _cmd, const SSenderInfo& _sender, Args&&... args)
             {
-                typedef boost::signals2::signal<void(Args...)> signal_t;
+                typedef boost::signals2::signal<void(const SSenderInfo&, Args...)> signal_t;
                 auto it = m_signals.find(_cmd);
                 if (it != m_signals.end())
                 {
                     const SHandlerHlpFunc& f = *it->second;
                     const signal_t& signal = static_cast<const SHandlerHlpBaseFunc<signal_t>&>(f).m_signal;
-                    signal(std::forward<Args>(args)...);
+                    signal(_sender, std::forward<Args>(args)...);
                 }
             }
 

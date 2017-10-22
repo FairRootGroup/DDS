@@ -58,7 +58,8 @@ void CSubmitChannel::setNumber(const size_t _val)
     m_number = _val;
 }
 
-bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                      const protocol_api::SSenderInfo& _sender)
 {
     if (!_attachment->m_sMsg.empty())
         LOG((_attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error) ? log_stderr : log_stdout)
@@ -70,7 +71,8 @@ bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr
     return true;
 }
 
-bool CSubmitChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/)
+bool CSubmitChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/,
+                                    const protocol_api::SSenderInfo& _sender)
 {
     // Close communication channel
     stop();

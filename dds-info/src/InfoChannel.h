@@ -59,10 +59,13 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
-            bool on_cmdREPLY_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_PID>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
+                                  const protocol_api::SSenderInfo& _sender);
+            bool on_cmdREPLY_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_PID>::ptr_t _attachment,
+                                 const protocol_api::SSenderInfo& _sender);
             bool on_cmdREPLY_AGENTS_INFO(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_AGENTS_INFO>::ptr_t _attachment);
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_AGENTS_INFO>::ptr_t _attachment,
+                const protocol_api::SSenderInfo& _sender);
 
           private:
             SOptions m_options;

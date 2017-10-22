@@ -29,7 +29,8 @@ namespace dds
                 this->m_channelType = _channelType;
                 // Register handshake OK callback
                 this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(
-                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment) {
+                    [this](const SSenderInfo& _sender,
+                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment) {
                         LOG(MiscCommon::info) << "Successfull handshake";
 
                         this->m_isHandshakeOK = true;
@@ -38,19 +39,20 @@ namespace dds
                         this->template pushMsg<cmdUNKNOWN>();
 
                         // notify all subscribers about the event
-                        this->dispatchHandlers(EChannelEvents::OnHandshakeOK);
+                        this->dispatchHandlers(EChannelEvents::OnHandshakeOK, _sender);
                     });
 
                 // Register handshake ERROR callback
                 this->template registerHandler<cmdREPLY_HANDSHAKE_ERR>(
-                    [this](SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment) {
+                    [this](const SSenderInfo& _sender,
+                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment) {
                         LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
                         this->m_isHandshakeOK = false;
                         this->m_channelType = EChannelType::UNKNOWN;
 
                         // notify all subscribers about the event
-                        this->dispatchHandlers(EChannelEvents::OnHandshakeFailed);
+                        this->dispatchHandlers(EChannelEvents::OnHandshakeFailed, _sender);
 
                         // close connection
                         this->stop();
@@ -78,7 +80,7 @@ namespace dds
                         {
                             LOG(MiscCommon::debug) << "Client channel connected.";
                             // notify all subscribers about the event
-                            this->dispatchHandlers(EChannelEvents::OnConnected);
+                            this->dispatchHandlers(EChannelEvents::OnConnected, SSenderInfo());
 
                             // start the communication channel
                             this->start();
@@ -94,7 +96,7 @@ namespace dds
                         {
                             LOG(MiscCommon::error) << "Failed to connect to remote end.";
                             // notify all subscribers about the event
-                            this->dispatchHandlers(EChannelEvents::OnFailedToConnect);
+                            this->dispatchHandlers(EChannelEvents::OnFailedToConnect, SSenderInfo());
                         }
                     });
             }

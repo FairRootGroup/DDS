@@ -24,7 +24,7 @@ namespace dds
             {
                 // Register handshake callback
                 this->template registerHandler<cmdHANDSHAKE>(
-                    [this](SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment) {
+                    [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment) {
                         // Check that the client channel is actually supported
                         bool isSupportedChnl(false);
                         for (const auto& v : m_requiredChannelTypes)
@@ -70,7 +70,7 @@ namespace dds
                         this->template pushMsg<cmdREPLY_HANDSHAKE_OK>();
 
                         // notify all subscribers about the event
-                        this->dispatchHandlers(EChannelEvents::OnHandshakeOK);
+                        this->dispatchHandlers(EChannelEvents::OnHandshakeOK, _sender);
                     });
             }
 
@@ -86,7 +86,7 @@ namespace dds
                 this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(_reason, MiscCommon::fatal));
 
                 // notify all subscribers about the event
-                this->dispatchHandlers(EChannelEvents::OnHandshakeFailed);
+                this->dispatchHandlers(EChannelEvents::OnHandshakeFailed, SSenderInfo());
             }
 
           private:

@@ -17,16 +17,24 @@ namespace dds
     namespace protocol_api
     {
         // a very simple protocol
-        // |>>>>>>>>>>>>>>>>>>>>>>>>>>>> HEADER <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<|>>>>>>>>>>>>>>>> DATA
-        // <<<<<<<<<<<<<<<<<<|
-        // | HEADER CHECKSUM(2) uint16_t | CMD (2) uint16_t | LEN (4) uint32_t | DATA BLOCK (size of LEN) unsigned char
-        // |
+        // |>>>>>>>>> HEADER <<<<|>>>>>>>>>>>>>>>> DATA <<<<<<<<<<<<<<<<<<|
+        //
+        // HEADER:
+        // - HEADER CHECKSUM (2 bytes): uint16_t
+        // - CMD (2 bytes): uint16_t
+        // - LEN (4 bytes): uint32_t
+        // - SENDER ID (8 bytes): uint64_t
+        //
+        // DATA
+        // DATA BLOCK (size of LEN) unsigned char
+        //
         //----------------------------------------------------------------------
         struct SMessageHeader
         {
             SMessageHeader()
                 : m_cmd(0)
                 , m_len(0)
+                , m_ID(0)
             {
             }
 
@@ -49,7 +57,7 @@ namespace dds
             {
                 m_cmd = 0;
                 m_len = 0;
-            }
+            };
 
             // !!! IMPORTANT. The checksum member should be always on the top of the member's list !!!
             // we exclude it from checksum calculations.
@@ -57,6 +65,9 @@ namespace dds
             ////////////////
             uint16_t m_cmd;
             uint32_t m_len;
+            /// Messages TO Commander: this is a sender ID (ID of the client's channel)
+            /// Messages FROM Commander: this is ID of the recipient of the message
+            uint64_t m_ID;
         };
 
         //----------------------------------------------------------------------

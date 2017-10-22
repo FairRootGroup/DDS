@@ -10,7 +10,7 @@
 #include "ProtocolCommands.h"
 
 #define DDS_REGISTER_MESSAGE_HANDLER(eventID) \
-    DDS_REGISTER_EVENT_HANDLER(ECmdType, eventID, void(SCommandAttachmentImpl<eventID>::ptr_t))
+    DDS_REGISTER_EVENT_HANDLER(ECmdType, eventID, void(const SSenderInfo&, SCommandAttachmentImpl<eventID>::ptr_t))
 
 namespace dds
 {
@@ -20,7 +20,10 @@ namespace dds
         class CChannelMessageHandlersImpl : private CBaseEventHandlersImpl<ECmdType>
         {
             DDS_BEGIN_EVENT_HANDLERS(ECmdType)
-            DDS_REGISTER_EVENT_HANDLER(ECmdType, cmdRAW_MSG, void(protocol_api::CProtocolMessage::protocolMessagePtr_t))
+            DDS_REGISTER_EVENT_HANDLER(ECmdType,
+                                       cmdRAW_MSG,
+                                       void(const protocol_api::SSenderInfo&,
+                                            protocol_api::CProtocolMessage::protocolMessagePtr_t))
             DDS_REGISTER_MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_OK)
             DDS_REGISTER_MESSAGE_HANDLER(cmdREPLY_HANDSHAKE_ERR)
             DDS_REGISTER_MESSAGE_HANDLER(cmdSHUTDOWN)

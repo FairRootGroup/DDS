@@ -13,7 +13,8 @@ using namespace dds::test_cmd;
 using namespace dds::protocol_api;
 using namespace std;
 
-bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                    const protocol_api::SSenderInfo& _sender)
 {
     bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;
     if (m_options.m_verbose || isErrorMsg)
@@ -32,13 +33,15 @@ bool CTestChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t
     return true;
 }
 
-bool CTestChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
+bool CTestChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+                                  const protocol_api::SSenderInfo& _sender)
 {
     stop();
     return true;
 }
 
-bool CTestChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment)
+bool CTestChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment,
+                                  const protocol_api::SSenderInfo& _sender)
 {
     if (m_options.m_verbose)
         return true;

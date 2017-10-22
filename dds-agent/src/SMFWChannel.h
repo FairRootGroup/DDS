@@ -22,7 +22,8 @@ namespace dds
         SM_RAW_MESSAGE_HANDLER(CSMFWChannel, on_rawMessage)
 
       private:
-        bool on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg);
+        bool on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg,
+                           const protocol_api::SSenderInfo& _sender);
     };
 }
 #endif

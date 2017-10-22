@@ -12,7 +12,8 @@ using namespace dds::protocol_api;
 using namespace dds::stat_cmd;
 using namespace std;
 
-bool CStatChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CStatChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                    const protocol_api::SSenderInfo& _sender)
 {
     if (_attachment->m_srcCommand == cmdENABLE_STAT || _attachment->m_srcCommand == cmdDISABLE_STAT ||
         _attachment->m_srcCommand == cmdGET_STAT)

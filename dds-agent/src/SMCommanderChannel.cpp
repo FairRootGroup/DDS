@@ -48,7 +48,8 @@ CSMCommanderChannel::~CSMCommanderChannel()
     removeMessageQueue();
 }
 
-bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                           protocol_api::SSenderInfo& _sender)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -71,7 +72,8 @@ bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment,
+                                              protocol_api::SSenderInfo& _sender)
 {
     // pid
     pid_t pid = getpid();
@@ -107,7 +109,8 @@ bool CSMCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
+                                         protocol_api::SSenderInfo& _sender)
 {
     deleteAgentIDFile();
     LOG(info) << "The SM Agent [" << m_id << "] received cmdSHUTDOWN.";
@@ -116,7 +119,7 @@ bool CSMCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::pt
 }
 
 bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
-    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment)
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED";
 
@@ -145,7 +148,8 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _attachment,
+                                       protocol_api::SSenderInfo& _sender)
 {
     LOG(info) << "cmdGET_ID received from DDS Server";
 
@@ -169,7 +173,8 @@ bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t 
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment,
+                                       protocol_api::SSenderInfo& _sender)
 {
     LOG(info) << "cmdSET_ID attachment [" << *_attachment << "] from DDS Server";
 
@@ -180,7 +185,8 @@ bool CSMCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t 
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
+                                        protocol_api::SSenderInfo& _sender)
 {
     try
     {
@@ -291,7 +297,8 @@ void CSMCommanderChannel::deleteAgentIDFile() const
     unlink(sAgentIDFile.c_str());
 }
 
-bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment,
+                                                 protocol_api::SSenderInfo& _sender)
 {
     // Mutex is used to garantee that cmdASSIGN_USER_TASK and cmdACTIVATE_AGENT are not executed at the same time.
     // Note that mutex doesn't garantee that cmdASSIGN_USER_TASK is executed before cmdACTIVATE_AGENT this can be
@@ -316,7 +323,8 @@ bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIG
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
+                                               protocol_api::SSenderInfo& _sender)
 {
     // See comment in on_cmdASSIGN_USER_TASK for details.
     lock_guard<mutex> lock(m_activateMutex);
@@ -398,7 +406,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
     ss << "User task (pid:" << pidUsrTask << ") is activated.";
     LOG(info) << ss.str();
 
-    dispatchHandlers<>(EChannelEvents::OnNewUserTask, pidUsrTask);
+    dispatchHandlers<>(EChannelEvents::OnNewUserTask, _sender, pidUsrTask);
 
     // Send response back to server
     pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), info, cmdACTIVATE_AGENT));
@@ -406,7 +414,8 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+                                               protocol_api::SSenderInfo& _sender)
 {
     if (m_taskID == 0)
     {
@@ -420,27 +429,31 @@ bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_US
     return false;
 }
 
-bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                           protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Received a key update notifications: " << *_attachment;
     return false;
 }
 
 bool CSMCommanderChannel::on_cmdUPDATE_KEY_ERROR(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Received a key update error notifications: " << *_attachment;
     return false;
 }
 
-bool CSMCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment)
+bool CSMCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
+                                           protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Received a key delete notifications: " << *_attachment;
     return false;
 }
 
 bool CSMCommanderChannel::on_cmdCUSTOM_CMD(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
 {
     LOG(debug) << "Received custom command: " << *_attachment;
     return false;

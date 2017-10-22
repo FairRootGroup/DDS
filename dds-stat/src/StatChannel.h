@@ -54,7 +54,8 @@ namespace dds
 
           private:
             // Message Handlers
-            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
+            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
+                                  const protocol_api::SSenderInfo& _sender);
 
           private:
             SOptions m_options;

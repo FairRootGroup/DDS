@@ -80,9 +80,10 @@ void CAgentConnectionManager::start()
         m_channel = CAgentChannel::makeNew(m_service);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
-        m_channel->registerHandler<cmdSHUTDOWN>([this](SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-            this->on_cmdSHUTDOWN(_attachment, m_channel);
-        });
+        m_channel->registerHandler<cmdSHUTDOWN>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+                this->on_cmdSHUTDOWN(_attachment, m_channel, _sender);
+            });
 
         m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this]() { stopCondition(); });
 
@@ -140,7 +141,8 @@ void CAgentConnectionManager::stop()
 }
 
 void CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                                             CAgentChannel::weakConnectionPtr_t _channel)
+                                             CAgentChannel::weakConnectionPtr_t _channel,
+                                             const SSenderInfo& _sender)
 {
     stop();
 }

@@ -63,14 +63,19 @@ namespace dds
 
             // Messages from shared memory
             void on_cmdUPDATE_KEY_SM(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
             void on_cmdUPDATE_KEY_ERROR_SM(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment);
             void on_cmdDELETE_KEY_SM(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
             void on_cmdCUSTOM_CMD_SM(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
             void on_cmdSIMPLE_MSG_SM(
+                const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment);
 
             void sendCustomCmd(const std::string& _command, const std::string& _condition);

@@ -75,31 +75,35 @@ void CDDSIntercomGuard::start()
         m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName);
 
         // Subscribe for cmdUPDATE_KEY from SM channel
-        m_SMChannel->registerHandler<cmdUPDATE_KEY>([this](SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY_SM(_attachment);
-        });
+        m_SMChannel->registerHandler<cmdUPDATE_KEY>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+                this->on_cmdUPDATE_KEY_SM(_sender, _attachment);
+            });
 
         // Subscribe for cmdUPDATE_KEY_ERROR from SM channel
         m_SMChannel->registerHandler<cmdUPDATE_KEY_ERROR>(
-            [this](SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-                this->on_cmdUPDATE_KEY_ERROR_SM(_attachment);
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
+                this->on_cmdUPDATE_KEY_ERROR_SM(_sender, _attachment);
             });
 
         // Subscribe for cmdDELETE_KEY from SM channel
-        m_SMChannel->registerHandler<cmdDELETE_KEY>([this](SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-            this->on_cmdDELETE_KEY_SM(_attachment);
-        });
+        m_SMChannel->registerHandler<cmdDELETE_KEY>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+                this->on_cmdDELETE_KEY_SM(_sender, _attachment);
+            });
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
-        m_SMChannel->registerHandler<cmdCUSTOM_CMD>([this](SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD_SM(_attachment);
-        });
+        m_SMChannel->registerHandler<cmdCUSTOM_CMD>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+                this->on_cmdCUSTOM_CMD_SM(_sender, _attachment);
+            });
         //
 
         // Subscribe for cmdSIMPLE_MSG from SM channel
-        m_SMChannel->registerHandler<cmdSIMPLE_MSG>([this](SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG_SM(_attachment);
-        });
+        m_SMChannel->registerHandler<cmdSIMPLE_MSG>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+                this->on_cmdSIMPLE_MSG_SM(_sender, _attachment);
+            });
         //
 
         m_SMChannel->start();
@@ -209,6 +213,7 @@ bool CDDSIntercomGuard::updateCacheIfNeeded(const SUpdateKeyCmd& _cmd)
 
 // Messages from shared memory
 void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
+    const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
     string propertyID(_attachment->getPropertyID());
@@ -227,6 +232,7 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
 }
 
 void CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
+    const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment)
 {
     if (_attachment->m_errorCode == intercom_api::EErrorCode::KeyValueNotFound)
@@ -258,6 +264,7 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_ERROR_SM(
 }
 
 void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
+    const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment)
 {
     string propertyID = _attachment->getPropertyID();
@@ -270,12 +277,14 @@ void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
 }
 
 void CDDSIntercomGuard::on_cmdCUSTOM_CMD_SM(
+    const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
     m_customCmdSignal(_attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
 }
 
 void CDDSIntercomGuard::on_cmdSIMPLE_MSG_SM(
+    const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     switch (_attachment->m_srcCommand)

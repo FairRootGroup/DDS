@@ -50,7 +50,8 @@ CActivateChannel::CActivateChannel(boost::asio::io_service& _service)
     });
 }
 
-bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                        const protocol_api::SSenderInfo& _sender)
 {
     bool isErrorMsg = _attachment->m_msgSeverity == fatal || _attachment->m_msgSeverity == error;
     if (m_options.m_verbose || isErrorMsg)
@@ -69,14 +70,16 @@ bool CActivateChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::p
     return true;
 }
 
-bool CActivateChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/)
+bool CActivateChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/,
+                                      const protocol_api::SSenderInfo& _sender)
 {
     // Close communication channel
     stop();
     return true;
 }
 
-bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment)
+bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t _attachment,
+                                      const protocol_api::SSenderInfo& _sender)
 {
     if (m_options.m_verbose)
         return true;
