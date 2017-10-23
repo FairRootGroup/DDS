@@ -23,7 +23,7 @@ namespace dds
 
         class CAgentChannel : public protocol_api::CServerChannelImpl<CAgentChannel>
         {
-            CAgentChannel(boost::asio::io_service& _service);
+            CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0);
 
           public:
             BEGIN_MSG_MAP(CAgentChannel)

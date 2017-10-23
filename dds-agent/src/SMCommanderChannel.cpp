@@ -29,8 +29,10 @@ using namespace dds::protocol_api;
 using namespace std;
 namespace fs = boost::filesystem;
 
-CSMCommanderChannel::CSMCommanderChannel(const std::string& _inputName, const std::string& _outputName)
-    : CBaseSMChannelImpl<CSMCommanderChannel>(_inputName, _outputName)
+CSMCommanderChannel::CSMCommanderChannel(const std::string& _inputName,
+                                         const std::string& _outputName,
+                                         uint64_t _ProtocolHeaderID)
+    : CBaseSMChannelImpl<CSMCommanderChannel>(_inputName, _outputName, _ProtocolHeaderID)
     , m_id()
     , m_taskID(0)
     , m_taskIndex(0)

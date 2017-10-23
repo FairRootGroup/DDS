@@ -14,8 +14,8 @@ namespace dds
     {
         class CGenericChannel : public protocol_api::CClientChannelImpl<CGenericChannel>
         {
-            CGenericChannel(boost::asio::io_service& _service)
-                : CClientChannelImpl<CGenericChannel>(_service, protocol_api::EChannelType::UI)
+            CGenericChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0)
+                : CClientChannelImpl<CGenericChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
                 registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>([this]() {
                     LOG(MiscCommon::info)

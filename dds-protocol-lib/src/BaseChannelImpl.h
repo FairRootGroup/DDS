@@ -230,12 +230,13 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseChannelImpl<T>(boost::asio::io_service& _service)
+            CBaseChannelImpl<T>(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
                 : CChannelEventHandlersImpl()
                 , CChannelMessageHandlersImpl()
                 , CStatImpl(_service)
                 , m_isHandshakeOK(false)
                 , m_channelType(EChannelType::UNKNOWN)
+                , m_ProtocolHeaderID(_protocolHeaderID)
                 , m_io_service(_service)
                 , m_socket(_service)
                 , m_started(false)
@@ -269,9 +270,9 @@ namespace dds
                 stop();
             }
 
-            static connectionPtr_t makeNew(boost::asio::io_service& _service)
+            static connectionPtr_t makeNew(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
             {
-                connectionPtr_t newObject(new T(_service));
+                connectionPtr_t newObject(new T(_service, _protocolHeaderID));
                 return newObject;
             }
 
@@ -404,7 +405,8 @@ namespace dds
             {
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                    CProtocolMessage::protocolMessagePtr_t msg =
+                        SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
                     accumulativePushMsg(msg, _cmd);
                 }
                 catch (std::exception& ex)
@@ -475,7 +477,8 @@ namespace dds
             {
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                    CProtocolMessage::protocolMessagePtr_t msg =
+                        SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
                     pushMsg(msg, _cmd);
                 }
                 catch (std::exception& ex)
@@ -494,7 +497,8 @@ namespace dds
             template <ECmdType _cmd, class A>
             void sendYourself(const A& _attachment)
             {
-                CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                CProtocolMessage::protocolMessagePtr_t msg =
+                    SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
                 // process received message
                 T* pThis = static_cast<T*>(this);
                 pThis->processMessage(msg);
@@ -956,6 +960,7 @@ namespace dds
             bool m_isHandshakeOK;
             EChannelType m_channelType;
             std::string m_sessionID;
+            uint64_t m_ProtocolHeaderID;
 
           private:
             boost::asio::io_service& m_io_service;

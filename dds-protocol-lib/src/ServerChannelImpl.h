@@ -19,7 +19,7 @@ namespace dds
         {
           protected:
             CServerChannelImpl<T>(boost::asio::io_service& _service, const channelTypeVector_t _requiredChannelTypes)
-                : CBaseChannelImpl<T>(_service)
+                : CBaseChannelImpl<T>(_service, 0)
                 , m_requiredChannelTypes(_requiredChannelTypes)
             {
                 // Register handshake callback

@@ -16,13 +16,14 @@ using namespace user_defaults_api;
 
 const uint16_t g_MaxConnectionAttempts = 5;
 
-CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service)
-    : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT)
+CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t _ProtocolHeaderID)
+    : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT, _ProtocolHeaderID)
     , m_connectionAttempts(1)
 {
     // Create shared memory channel for message forwarding from the network channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMFWChannel = CSMFWChannel::makeNew(userDefaults.getSMAgentOutputName(), userDefaults.getSMAgentInputName());
+    m_SMFWChannel = CSMFWChannel::makeNew(
+        userDefaults.getSMAgentOutputName(), userDefaults.getSMAgentInputName(), _ProtocolHeaderID);
 
     m_SMFWChannel->registerHandler<cmdRAW_MSG>(
         [this](const protocol_api::SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {

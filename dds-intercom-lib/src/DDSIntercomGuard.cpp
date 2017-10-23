@@ -72,7 +72,7 @@ void CDDSIntercomGuard::start()
         // For the user task shared memory names are opposite: input shared memory name has output name and output
         // shared
         // memory name has input name.
-        m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName);
+        m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName, 0);
 
         // Subscribe for cmdUPDATE_KEY from SM channel
         m_SMChannel->registerHandler<cmdUPDATE_KEY>(

@@ -16,8 +16,8 @@ using namespace std;
 
 const uint16_t g_MaxConnectionAttempts = 12;
 
-CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
-    : CClientChannelImpl<CAgentChannel>(_service, EChannelType::UNKNOWN)
+CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+    : CClientChannelImpl<CAgentChannel>(_service, EChannelType::UNKNOWN, _protocolHeaderID)
     , m_syncHelper(nullptr)
     , m_connectionAttempts(1)
 {

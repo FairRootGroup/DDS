@@ -139,9 +139,12 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseSMChannelImpl<T>(const std::string& _inputName, const std::string& _outputName)
+            CBaseSMChannelImpl<T>(const std::string& _inputName,
+                                  const std::string& _outputName,
+                                  uint64_t _ProtocolHeaderID)
                 : CChannelMessageHandlersImpl()
                 , m_started(false)
+                , m_ProtocolHeaderID(_ProtocolHeaderID)
                 , m_workerThreads()
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
                 , m_inputMessageQueueName(_inputName)
@@ -160,9 +163,11 @@ namespace dds
                 stop();
             }
 
-            static connectionPtr_t makeNew(const std::string& _inputName, const std::string& _outputName)
+            static connectionPtr_t makeNew(const std::string& _inputName,
+                                           const std::string& _outputName,
+                                           uint64_t _ProtocolHeaderID)
             {
-                connectionPtr_t newObject(new T(_inputName, _outputName));
+                connectionPtr_t newObject(new T(_inputName, _outputName, _ProtocolHeaderID));
                 return newObject;
             }
 
@@ -320,7 +325,8 @@ namespace dds
             {
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(_attachment);
+                    CProtocolMessage::protocolMessagePtr_t msg =
+                        SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
                     pushMsg(msg, _cmd);
                 }
                 catch (std::exception& ex)
@@ -341,7 +347,8 @@ namespace dds
             {
                 // Send cmdSHUTDOWN with higher priority in order to stop read operation.
                 SEmptyCmd cmd;
-                CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd);
+                CProtocolMessage::protocolMessagePtr_t msg =
+                    SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_ProtocolHeaderID);
                 m_transportIn->send(msg->data(), msg->length(), 1);
             }
 
@@ -466,6 +473,7 @@ namespace dds
 
           protected:
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
+            uint64_t m_ProtocolHeaderID;
 
           private:
             messageQueuePtr_t m_transportIn;                      ///< Input message queue, i.e. we read from this queue

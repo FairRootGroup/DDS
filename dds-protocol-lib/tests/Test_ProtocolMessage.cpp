@@ -38,7 +38,7 @@ void TestCommand(const T& _srcCmd, uint16_t _srcCmdID, size_t _expectedCmdSize)
     MiscCommon::BYTEVector_t data;
     _srcCmd.convertToData(&data);
     CProtocolMessage srcMsg;
-    srcMsg.encode(_srcCmdID, data);
+    srcMsg.encode(_srcCmdID, data, 0);
 
     BOOST_CHECK(srcMsg.header().m_cmd == _srcCmdID);
 

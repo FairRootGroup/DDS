@@ -13,7 +13,7 @@ namespace dds
     class CSMCommanderChannel : public protocol_api::CBaseSMChannelImpl<CSMCommanderChannel>
     {
       protected:
-        CSMCommanderChannel(const std::string& _inputName, const std::string& _outputName);
+        CSMCommanderChannel(const std::string& _inputName, const std::string& _outputName, uint64_t _ProtocolHeaderID);
 
       public:
         ~CSMCommanderChannel();

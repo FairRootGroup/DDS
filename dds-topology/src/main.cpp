@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
         if (options.m_topologyCmd == ETopologyCmdType::UPDATE || options.m_topologyCmd == ETopologyCmdType::ACTIVATE ||
             options.m_topologyCmd == ETopologyCmdType::STOP)
         {
-            client = CActivateChannel::makeNew(io_service);
+            client = CActivateChannel::makeNew(io_service, 0);
             client->setOptions(options);
             client->connect(iterator);
         }

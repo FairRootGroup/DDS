@@ -95,12 +95,12 @@ namespace dds
           public:
             CProtocolMessage();
 
-            CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data);
+            CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data, uint64_t _ID);
 
           public:
-            void encode(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data)
+            void encode(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data, uint64_t _ID)
             {
-                _encode_message(_cmd, _data);
+                _encode_message(_cmd, _data, _ID);
             }
 
             void clear();
@@ -121,7 +121,7 @@ namespace dds
             }
 
           private:
-            void _encode_message(uint16_t _cmd, const dataContainer_t& _data);
+            void _encode_message(uint16_t _cmd, const dataContainer_t& _data, uint64_t _ID);
 
           private:
             dataContainer_t m_data; /// the whole data buffer, which includes the header and the msg body

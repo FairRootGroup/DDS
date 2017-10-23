@@ -14,8 +14,8 @@ namespace dds
     {
         class CTestChannel : public dds::protocol_api::CClientChannelImpl<CTestChannel>
         {
-            CTestChannel(boost::asio::io_service& _service)
-                : CClientChannelImpl<CTestChannel>(_service, protocol_api::EChannelType::UI)
+            CTestChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+                : CClientChannelImpl<CTestChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
                 registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>([this]() {
                     LOG(MiscCommon::info) << "The Agent [" << this->socket().remote_endpoint().address().to_string()

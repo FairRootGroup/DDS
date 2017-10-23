@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     for (size_t i = 0; i < nofTasks; ++i)
         for (size_t j = 0; j < nofAgentsPerTask; ++j)
         {
-            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service);
+            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service, 0);
             agent->setState(EAgentState::idle);
 
             stringstream ss;
@@ -103,7 +103,7 @@ void make_agent(boost::asio::io_service& _io_service,
                 const string& _hostName,
                 const string& _workerId)
 {
-    CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_service);
+    CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_service, 0);
     agent->setState(EAgentState::idle);
     SHostInfoCmd hostInfo;
     hostInfo.m_host = _hostName;

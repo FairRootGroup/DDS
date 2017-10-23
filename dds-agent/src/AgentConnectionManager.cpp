@@ -69,12 +69,17 @@ void CAgentConnectionManager::start()
     if (m_bStarted)
         return;
 
+    // Generate protocol sender ID
+    boost::hash<boost::uuids::uuid> uuid_hasher;
+    uint64_t protocolHeaderID = uuid_hasher(boost::uuids::uuid());
+
     m_bStarted = true;
     try
     {
         // Shared memory channel for communication with user task
         const CUserDefaults& userDefaults = CUserDefaults::instance();
-        m_SMChannel = CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName());
+        m_SMChannel =
+            CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName(), protocolHeaderID);
         // Forward messages from shared memory to agent
         m_SMChannel->registerHandler<cmdRAW_MSG>(
             [this](const protocol_api::SSenderInfo& _sender,
@@ -105,11 +110,11 @@ void CAgentConnectionManager::start()
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new agent and push handshake message
-        m_agent = CCommanderChannel::makeNew(m_service);
+        m_agent = CCommanderChannel::makeNew(m_service, protocolHeaderID);
 
         // Create shared memory agent channel
-        m_SMAgent =
-            CSMCommanderChannel::makeNew(userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName());
+        m_SMAgent = CSMCommanderChannel::makeNew(
+            userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), protocolHeaderID);
 
         // Subscribe to Shutdown command
         m_SMAgent->registerHandler<cmdSHUTDOWN>(

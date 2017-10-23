@@ -26,25 +26,25 @@
 #include "UserTaskDoneCmd.h"
 #include "VersionCmd.h"
 
-#define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                           \
-    template <>                                                                         \
-    struct SCommandAttachmentImpl<_cmd>                                                 \
-    {                                                                                   \
-        typedef std::shared_ptr<_class> ptr_t;                                          \
-                                                                                        \
-        static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)                \
-        {                                                                               \
-            ptr_t p = std::make_shared<_class>();                                       \
-            p->convertFromData(_msg->bodyToContainer());                                \
-            return p;                                                                   \
-        }                                                                               \
-                                                                                        \
-        static CProtocolMessage::protocolMessagePtr_t encode(const _class& _attachment) \
-        {                                                                               \
-            MiscCommon::BYTEVector_t data;                                              \
-            _attachment.convertToData(&data);                                           \
-            return std::make_shared<CProtocolMessage>(_cmd, data);                      \
-        }                                                                               \
+#define REGISTER_CMD_ATTACHMENT(_class, _cmd)                                                         \
+    template <>                                                                                       \
+    struct SCommandAttachmentImpl<_cmd>                                                               \
+    {                                                                                                 \
+        typedef std::shared_ptr<_class> ptr_t;                                                        \
+                                                                                                      \
+        static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)                              \
+        {                                                                                             \
+            ptr_t p = std::make_shared<_class>();                                                     \
+            p->convertFromData(_msg->bodyToContainer());                                              \
+            return p;                                                                                 \
+        }                                                                                             \
+                                                                                                      \
+        static CProtocolMessage::protocolMessagePtr_t encode(const _class& _attachment, uint64_t _ID) \
+        {                                                                                             \
+            MiscCommon::BYTEVector_t data;                                                            \
+            _attachment.convertToData(&data);                                                         \
+            return std::make_shared<CProtocolMessage>(_cmd, data, _ID);                               \
+        }                                                                                             \
     };
 
 namespace dds
@@ -69,10 +69,10 @@ namespace dds
                 return ptr_t();
             }
 
-            static CProtocolMessage::protocolMessagePtr_t encode(const SEmptyCmd& /*_attachment*/)
+            static CProtocolMessage::protocolMessagePtr_t encode(const SEmptyCmd& /*_attachment*/, uint64_t _ID)
             {
                 MiscCommon::BYTEVector_t data;
-                return std::make_shared<CProtocolMessage>(_cmd, data);
+                return std::make_shared<CProtocolMessage>(_cmd, data, _ID);
             }
         };
 

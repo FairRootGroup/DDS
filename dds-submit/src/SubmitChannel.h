@@ -14,7 +14,7 @@ namespace dds
     {
         class CSubmitChannel : public protocol_api::CClientChannelImpl<CSubmitChannel>
         {
-            CSubmitChannel(boost::asio::io_service& _service);
+            CSubmitChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0);
 
             REGISTER_DEFAULT_REMOTE_ID_STRING
 

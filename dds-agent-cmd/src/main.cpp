@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CGenericChannel::connectionPtr_t client = CGenericChannel::makeNew(io_service);
+        CGenericChannel::connectionPtr_t client = CGenericChannel::makeNew(io_service, 0);
         client->setOptions(options);
         client->connect(iterator);
 

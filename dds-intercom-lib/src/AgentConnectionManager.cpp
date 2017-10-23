@@ -77,7 +77,7 @@ void CAgentConnectionManager::start()
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new communication channel and push handshake message
-        m_channel = CAgentChannel::makeNew(m_service);
+        m_channel = CAgentChannel::makeNew(m_service, 0);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
         m_channel->registerHandler<cmdSHUTDOWN>(

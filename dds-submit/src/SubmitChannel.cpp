@@ -14,8 +14,8 @@ using namespace dds::submit_cmd;
 using namespace dds::protocol_api;
 using namespace std;
 
-CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service)
-    : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI)
+CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+    : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI, _protocolHeaderID)
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
         []() { LOG(MiscCommon::log_stderr) << "Server has closed the connection."; });

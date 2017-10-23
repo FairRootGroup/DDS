@@ -15,7 +15,7 @@ namespace dds
     {
         class CActivateChannel : public protocol_api::CClientChannelImpl<CActivateChannel>
         {
-            CActivateChannel(boost::asio::io_service& _service);
+            CActivateChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0);
 
             REGISTER_DEFAULT_REMOTE_ID_STRING
 

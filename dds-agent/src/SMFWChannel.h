@@ -13,7 +13,7 @@ namespace dds
     class CSMFWChannel : public protocol_api::CBaseSMChannelImpl<CSMFWChannel>
     {
       protected:
-        CSMFWChannel(const std::string& _inputName, const std::string& _outputName);
+        CSMFWChannel(const std::string& _inputName, const std::string& _outputName, uint64_t _ProtocolHeaderID);
 
       public:
         ~CSMFWChannel();

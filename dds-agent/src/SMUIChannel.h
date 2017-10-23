@@ -13,7 +13,7 @@ namespace dds
     class CSMUIChannel : public protocol_api::CBaseSMChannelImpl<CSMUIChannel>
     {
       protected:
-        CSMUIChannel(const std::string& _inputName, const std::string& _outputName);
+        CSMUIChannel(const std::string& _inputName, const std::string& _outputName, uint64_t _ProtocolHeaderID);
 
       public:
         ~CSMUIChannel();

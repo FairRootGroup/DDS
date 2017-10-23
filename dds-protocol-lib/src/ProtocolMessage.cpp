@@ -18,10 +18,10 @@ CProtocolMessage::CProtocolMessage()
 {
 }
 
-CProtocolMessage::CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data)
+CProtocolMessage::CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data, uint64_t _ID)
     : m_data(header_length)
 {
-    encode(_cmd, _data);
+    encode(_cmd, _data, _ID);
 }
 
 void CProtocolMessage::clear()
@@ -82,6 +82,7 @@ bool CProtocolMessage::decode_header()
     header.m_crc = normalizeRead(header.m_crc);
     header.m_cmd = normalizeRead(header.m_cmd);
     header.m_len = normalizeRead(header.m_len);
+    header.m_ID = normalizeRead(header.m_ID);
 
     if (!header.isValid())
     {
@@ -103,7 +104,7 @@ bool CProtocolMessage::decode_header()
     return true;
 }
 
-void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::dataContainer_t& _data)
+void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::dataContainer_t& _data, uint64_t _ID)
 {
     // local copy
     m_header.m_cmd = _cmd;
@@ -115,6 +116,8 @@ void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::da
     header.m_crc = normalizeWrite(m_header.m_crc);
     header.m_cmd = normalizeWrite(m_header.m_cmd);
     header.m_len = normalizeWrite(m_header.m_len);
+    header.m_ID = _ID;
+    header.m_ID = normalizeWrite(m_header.m_ID);
 
     BYTEVector_t ret_val(header_length);
     memcpy(&ret_val[0], reinterpret_cast<unsigned char*>(&header), header_length);

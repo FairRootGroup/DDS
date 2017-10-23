@@ -17,7 +17,7 @@ using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 
-CAgentChannel::CAgentChannel(boost::asio::io_service& _service)
+CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
     : CServerChannelImpl<CAgentChannel>(_service, { protocol_api::EChannelType::AGENT, protocol_api::EChannelType::UI })
     , m_id(0)
     , m_remoteHostInfo()

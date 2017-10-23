@@ -360,7 +360,7 @@ namespace dds
 
             void createClientAndStartAccept(std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor)
             {
-                typename T::connectionPtr_t newClient = T::makeNew(_acceptor->get_io_service());
+                typename T::connectionPtr_t newClient = T::makeNew(_acceptor->get_io_service(), 0);
 
                 A* pThis = static_cast<A*>(this);
                 pThis->newClientCreated(newClient);

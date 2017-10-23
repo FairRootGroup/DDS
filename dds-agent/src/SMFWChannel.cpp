@@ -9,8 +9,8 @@
 using namespace dds;
 using namespace std;
 
-CSMFWChannel::CSMFWChannel(const string& _inputName, const string& _outputName)
-    : CBaseSMChannelImpl<CSMFWChannel>(_inputName, _outputName)
+CSMFWChannel::CSMFWChannel(const string& _inputName, const string& _outputName, uint64_t _ProtocolHeaderID)
+    : CBaseSMChannelImpl<CSMFWChannel>(_inputName, _outputName, _ProtocolHeaderID)
 {
 }
 

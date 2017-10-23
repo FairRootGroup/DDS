@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service);
+        CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_service, 0);
 
         client->setCfgFile(options.m_sCfgFile);
         client->setRMSType(options.m_sRMS);
