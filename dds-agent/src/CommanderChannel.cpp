@@ -26,7 +26,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
         userDefaults.getSMAgentOutputName(), userDefaults.getSMAgentInputName(), _ProtocolHeaderID);
 
     m_SMFWChannel->registerHandler<cmdRAW_MSG>(
-        [this](const protocol_api::SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
+        [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
             LOG(debug) << "Raw message pushed to network channel: " << _currentMsg->toString();
             this->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
         });

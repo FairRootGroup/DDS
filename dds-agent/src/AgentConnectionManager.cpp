@@ -82,8 +82,7 @@ void CAgentConnectionManager::start()
             CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName(), protocolHeaderID);
         // Forward messages from shared memory to agent
         m_SMChannel->registerHandler<cmdRAW_MSG>(
-            [this](const protocol_api::SSenderInfo& _sender,
-                   protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
+            [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
                 m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
             });
         //
@@ -286,10 +285,9 @@ void CAgentConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
     m_SMChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
 }
 
-void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(
-    const SSenderInfo& _sender,
-    SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-    CSMCommanderChannel::weakConnectionPtr_t _channel)
+void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(const SSenderInfo& _sender,
+                                                     SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+                                                     CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
     m_SMChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
@@ -334,7 +332,7 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
 {
     // remove pid from the active children list
     {
-        std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+        lock_guard<mutex> lock(m_childrenContainerMutex);
         m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
     }
     SUserTaskDoneCmd cmd;
@@ -352,7 +350,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     try
     {
         // remove pid from the active children list
-        std::lock_guard<std::mutex> lock(m_childrenContainerMutex);
+        lock_guard<mutex> lock(m_childrenContainerMutex);
         m_children.push_back(_pid);
     }
     catch (exception& _e)

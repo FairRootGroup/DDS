@@ -273,7 +273,7 @@ const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const
     return m_schedule;
 }
 
-bool CSSHScheduler::hostPatternMatches(const std::string& _hostPattern, const std::string& _host)
+bool CSSHScheduler::hostPatternMatches(const string& _hostPattern, const string& _host)
 {
     if (_hostPattern.empty())
         return true;

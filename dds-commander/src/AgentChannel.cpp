@@ -18,7 +18,7 @@ using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 
 CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
-    : CServerChannelImpl<CAgentChannel>(_service, { protocol_api::EChannelType::AGENT, protocol_api::EChannelType::UI })
+    : CServerChannelImpl<CAgentChannel>(_service, { EChannelType::AGENT, EChannelType::UI })
     , m_id(0)
     , m_remoteHostInfo()
     , m_sCurrentTopoFile()
@@ -32,14 +32,14 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
     registerHandler<EChannelEvents::OnHandshakeOK>([this]() {
         switch (getChannelType())
         {
-            case protocol_api::EChannelType::AGENT:
+            case EChannelType::AGENT:
             {
                 m_state = EAgentState::idle;
-                pushMsg<protocol_api::cmdGET_ID>();
-                pushMsg<protocol_api::cmdGET_HOST_INFO>();
+                pushMsg<cmdGET_ID>();
+                pushMsg<cmdGET_HOST_INFO>();
             }
                 return;
-            case protocol_api::EChannelType::UI:
+            case EChannelType::UI:
             {
                 LOG(MiscCommon::info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
                                       << "] has successfully connected.";
@@ -87,7 +87,7 @@ void CAgentChannel::setRemoteHostInfo(const SHostInfoCmd& _hostInfo)
     m_remoteHostInfo = _hostInfo;
 }
 
-std::chrono::milliseconds CAgentChannel::getStartupTime() const
+chrono::milliseconds CAgentChannel::getStartupTime() const
 {
     return m_startUpTime;
 }
@@ -110,8 +110,7 @@ string CAgentChannel::_remoteEndIDString()
         return "UI client";
 }
 
-bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
-                                 const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     try
     {
@@ -128,7 +127,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 }
 
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment,
-                                          const protocol_api::SSenderInfo& _sender)
+                                          const SSenderInfo& _sender)
 {
     m_remoteHostInfo = *_attachment;
     LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << m_remoteHostInfo << "] received from: " << remoteEndIDString();
@@ -143,8 +142,7 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
     return true;
 }
 
-bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     pid_t pid = getpid();
     SSimpleMsgCmd cmd_attachment;
@@ -156,22 +154,20 @@ bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _att
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment,
-                                   const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     // Return false. This message will be processed by ConnectionManager.
     return false;
 }
 
-bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     // Return false. This message will be processed by ConnectionManager.
     return false;
 }
 
 bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
-    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, const protocol_api::SSenderInfo& _sender)
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -203,7 +199,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
 }
 
 bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                          const protocol_api::SSenderInfo& _sender)
+                                          const SSenderInfo& _sender)
 {
     // Return false.
     // Give the possibility to further process this message.
@@ -212,7 +208,7 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_I
 }
 
 bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
-                                         const protocol_api::SSenderInfo& _sender)
+                                         const SSenderInfo& _sender)
 {
     // Return false.
     // Give the possibility to further process this message.
@@ -221,7 +217,7 @@ bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TES
 }
 
 bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                     const protocol_api::SSenderInfo& _sender)
+                                     const SSenderInfo& _sender)
 {
     LOG(debug) << "on_cmdSIMPLE_MSG attachment [" << *_attachment << "] command from " << remoteEndIDString();
 
@@ -246,7 +242,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 }
 
 bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                     const protocol_api::SSenderInfo& _sender)
+                                     const SSenderInfo& _sender)
 {
     // Return false.
     // The command can only be processed by the higher level object
@@ -254,7 +250,7 @@ bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_
 }
 
 bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                         const protocol_api::SSenderInfo& _sender)
+                                         const SSenderInfo& _sender)
 {
     // Return false.
     // The command can only be processed by the higher level object
@@ -262,7 +258,7 @@ bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DON
 }
 
 bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment,
-                                             const protocol_api::SSenderInfo& _sender)
+                                             const SSenderInfo& _sender)
 {
     // The main reason for this message is to tell commander that agents are note idle (see. GH-54)
     LOG(debug) << "Received Watchdog heartbeat from agent " << m_id << " running task = " << m_taskID;
@@ -273,46 +269,42 @@ bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_
 }
 
 bool CAgentChannel::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                        const protocol_api::SSenderInfo& _sender)
+                                        const SSenderInfo& _sender)
 {
     return false;
 }
 
 bool CAgentChannel::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                          const protocol_api::SSenderInfo& _sender)
+                                          const SSenderInfo& _sender)
 {
     return false;
 }
 
 bool CAgentChannel::on_cmdUPDATE_TOPOLOGY(SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
-                                          const protocol_api::SSenderInfo& _sender)
+                                          const SSenderInfo& _sender)
 {
     return false;
 }
 
-bool CAgentChannel::on_cmdENABLE_STAT(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
-    const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdENABLE_STAT(SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment,
+                                      const SSenderInfo& _sender)
 {
     return false;
 }
 
-bool CAgentChannel::on_cmdDISABLE_STAT(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
-    const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdDISABLE_STAT(SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment,
+                                       const SSenderInfo& _sender)
 {
     return false;
 }
 
-bool CAgentChannel::on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
-                                   const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdGET_STAT(SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     return false;
 }
 
-bool CAgentChannel::on_cmdCUSTOM_CMD(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
-    const protocol_api::SSenderInfo& _sender)
+bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                     const SSenderInfo& _sender)
 {
     return false;
 }

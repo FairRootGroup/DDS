@@ -29,14 +29,14 @@ using namespace dds::protocol_api;
 using namespace std;
 namespace fs = boost::filesystem;
 
-CSMCommanderChannel::CSMCommanderChannel(const std::string& _inputName,
-                                         const std::string& _outputName,
+CSMCommanderChannel::CSMCommanderChannel(const string& _inputName,
+                                         const string& _outputName,
                                          uint64_t _ProtocolHeaderID)
     : CBaseSMChannelImpl<CSMCommanderChannel>(_inputName, _outputName, _ProtocolHeaderID)
     , m_id()
     , m_taskID(0)
     , m_taskIndex(0)
-    , m_collectionIndex(std::numeric_limits<uint32_t>::max())
+    , m_collectionIndex(numeric_limits<uint32_t>::max())
     , m_taskPath()
     , m_groupName()
     , m_collectionName()
@@ -51,7 +51,7 @@ CSMCommanderChannel::~CSMCommanderChannel()
 }
 
 bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                           protocol_api::SSenderInfo& _sender)
+                                           SSenderInfo& _sender)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -75,7 +75,7 @@ bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>
 }
 
 bool CSMCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment,
-                                              protocol_api::SSenderInfo& _sender)
+                                              SSenderInfo& _sender)
 {
     // pid
     pid_t pid = getpid();
@@ -111,8 +111,7 @@ bool CSMCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                                         protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, SSenderInfo& _sender)
 {
     deleteAgentIDFile();
     LOG(info) << "The SM Agent [" << m_id << "] received cmdSHUTDOWN.";
@@ -121,7 +120,7 @@ bool CSMCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::pt
 }
 
 bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
-    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, protocol_api::SSenderInfo& _sender)
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, SSenderInfo& _sender)
 {
     LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED";
 
@@ -150,8 +149,7 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _attachment,
-                                       protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _attachment, SSenderInfo& _sender)
 {
     LOG(info) << "cmdGET_ID received from DDS Server";
 
@@ -175,8 +173,7 @@ bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t 
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment,
-                                       protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment, SSenderInfo& _sender)
 {
     LOG(info) << "cmdSET_ID attachment [" << *_attachment << "] from DDS Server";
 
@@ -187,8 +184,7 @@ bool CSMCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t 
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
-                                        protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, SSenderInfo& _sender)
 {
     try
     {
@@ -197,10 +193,10 @@ bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_
         string hostname;
         get_hostname(&hostname);
 
-        std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        struct std::tm* ptm = std::localtime(&now);
+        time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+        struct tm* ptm = localtime(&now);
         char buffer[20];
-        std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
+        strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
 
         stringstream ss;
         // TODO: change the code below once on gcc5+
@@ -300,7 +296,7 @@ void CSMCommanderChannel::deleteAgentIDFile() const
 }
 
 bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment,
-                                                 protocol_api::SSenderInfo& _sender)
+                                                 SSenderInfo& _sender)
 {
     // Mutex is used to garantee that cmdASSIGN_USER_TASK and cmdACTIVATE_AGENT are not executed at the same time.
     // Note that mutex doesn't garantee that cmdASSIGN_USER_TASK is executed before cmdACTIVATE_AGENT this can be
@@ -319,14 +315,14 @@ bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIG
 
     // Replace all %taskIndex% and %collectionIndex% in executable path with their values.
     boost::algorithm::replace_all(m_sUsrExe, "%taskIndex%", to_string(m_taskIndex));
-    if (m_collectionIndex != std::numeric_limits<uint32_t>::max())
+    if (m_collectionIndex != numeric_limits<uint32_t>::max())
         boost::algorithm::replace_all(m_sUsrExe, "%collectionIndex%", to_string(m_collectionIndex));
 
     return true;
 }
 
 bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                               protocol_api::SSenderInfo& _sender)
+                                               SSenderInfo& _sender)
 {
     // See comment in on_cmdASSIGN_USER_TASK for details.
     lock_guard<mutex> lock(m_activateMutex);
@@ -357,7 +353,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
         if (::setenv("DDS_TASK_INDEX", to_string(m_taskIndex).c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_INDEX");
-        if (m_collectionIndex != std::numeric_limits<uint32_t>::max())
+        if (m_collectionIndex != numeric_limits<uint32_t>::max())
             if (::setenv("DDS_COLLECTION_INDEX", to_string(m_collectionIndex).c_str(), 1) == -1)
                 throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_INDEX");
         if (::setenv("DDS_TASK_PATH", m_taskPath.c_str(), 1) == -1)
@@ -383,10 +379,10 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
         // auto in_time_t = std::chrono::system_clock::to_time_t(now);
         // ssTaskOutput << std::put_time(std::localtime(&in_time_t), "_%F_%H-%M-%S");
 
-        std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        struct std::tm* ptm = std::localtime(&now);
+        time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+        struct tm* ptm = localtime(&now);
         char buffer[20];
-        std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
+        strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
         ssTaskOutput << "_" << buffer;
 
         // task id
@@ -417,7 +413,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
 }
 
 bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                               protocol_api::SSenderInfo& _sender)
+                                               SSenderInfo& _sender)
 {
     if (m_taskID == 0)
     {
@@ -432,30 +428,28 @@ bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_US
 }
 
 bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                           protocol_api::SSenderInfo& _sender)
+                                           SSenderInfo& _sender)
 {
     LOG(debug) << "Received a key update notifications: " << *_attachment;
     return false;
 }
 
-bool CSMCommanderChannel::on_cmdUPDATE_KEY_ERROR(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdUPDATE_KEY_ERROR(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
+                                                 SSenderInfo& _sender)
 {
     LOG(debug) << "Received a key update error notifications: " << *_attachment;
     return false;
 }
 
 bool CSMCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
-                                           protocol_api::SSenderInfo& _sender)
+                                           SSenderInfo& _sender)
 {
     LOG(debug) << "Received a key delete notifications: " << *_attachment;
     return false;
 }
 
-bool CSMCommanderChannel::on_cmdCUSTOM_CMD(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                           SSenderInfo& _sender)
 {
     LOG(debug) << "Received custom command: " << *_attachment;
     return false;

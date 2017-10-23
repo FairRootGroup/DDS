@@ -21,8 +21,7 @@ CSMUIChannel::~CSMUIChannel()
     removeMessageQueue();
 }
 
-bool CSMUIChannel::on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg,
-                                 const protocol_api::SSenderInfo& _sender)
+bool CSMUIChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg, const SSenderInfo& _sender)
 {
     return false;
 }

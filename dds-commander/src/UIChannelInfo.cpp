@@ -8,16 +8,17 @@
 using namespace std;
 using namespace dds;
 using namespace dds::commander_cmd;
+using namespace dds::protocol_api;
 
 CSubmitAgentsChannelInfo::CSubmitAgentsChannelInfo()
     : CUIChannelInfo<CSubmitAgentsChannelInfo>()
     , m_PluginStartTime(chrono::system_clock::duration::zero())
     , m_bInit(false)
 {
-    m_srcCommand = protocol_api::cmdSUBMIT;
+    m_srcCommand = cmdSUBMIT;
 }
 
-string CSubmitAgentsChannelInfo::getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+string CSubmitAgentsChannelInfo::getMessage(const SSimpleMsgCmd& _cmd,
                                             CAgentChannel::weakConnectionPtr_t _channel) const
 {
     stringstream ss;
@@ -26,7 +27,7 @@ string CSubmitAgentsChannelInfo::getMessage(const protocol_api::SSimpleMsgCmd& _
     return ss.str();
 }
 
-string CSubmitAgentsChannelInfo::getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+string CSubmitAgentsChannelInfo::getErrorMessage(const SSimpleMsgCmd& _cmd,
                                                  CAgentChannel::weakConnectionPtr_t _channel) const
 {
     stringstream ss;
@@ -44,7 +45,7 @@ string CSubmitAgentsChannelInfo::getAllReceivedMessage() const
     return ss.str();
 }
 
-bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::SCustomCmdCmd& _cmd,
+bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& _cmd,
                                                            CAgentChannel::weakConnectionPtr_t _channel)
 {
     LOG(MiscCommon::info) << "Processing RMS plug-in message: " << _cmd.m_sCmd;
@@ -91,7 +92,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
             if (tag == "init")
             {
                 // Subscribe on plug-in disconnect
-                pPlugin->registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>([this]() {
+                pPlugin->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this]() {
                     LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
                     // the plug-in is done and went offline, let's close UI
                     // connection as well.
@@ -105,16 +106,15 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
                 ssMsg << "RMS plug-in is online. Startup time: "
                       << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms.";
                 LOG(MiscCommon::info) << ssMsg.str();
-                pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
-                    protocol_api::SSimpleMsgCmd(ssMsg.str(), MiscCommon::info));
+                pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ssMsg.str(), MiscCommon::info));
 
                 intercom_api::SInit init;
                 init.fromPT(pt);
                 // Sending Submit request to the plug-in
-                protocol_api::SCustomCmdCmd cmd;
+                SCustomCmdCmd cmd;
                 cmd.m_sCmd = m_strInitialSubmitRequest;
                 cmd.m_sCondition = "";
-                pPlugin->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
+                pPlugin->template pushMsg<cmdCUSTOM_CMD>(cmd);
             }
             else if (tag == "message")
             {
@@ -122,14 +122,14 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
                 message.fromPT(pt);
                 stringstream ss;
                 ss << "Plug-in: " << message.m_msg;
-                pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(protocol_api::SSimpleMsgCmd(
-                    ss.str(),
-                    (message.m_msgSeverity == intercom_api::EMsgSeverity::info ? MiscCommon::info
-                                                                               : MiscCommon::error)));
+                pUI->template pushMsg<cmdSIMPLE_MSG>(
+                    SSimpleMsgCmd(ss.str(),
+                                  (message.m_msgSeverity == intercom_api::EMsgSeverity::info ? MiscCommon::info
+                                                                                             : MiscCommon::error)));
                 // Drop the connection if received an error message from plug-in
                 if (message.m_msgSeverity == intercom_api::EMsgSeverity::error)
                 {
-                    pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
+                    pUI->template pushMsg<cmdSHUTDOWN>();
                     m_channel.reset();
                 }
             }
@@ -145,7 +145,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const protocol_api::S
 
         auto pUI = m_channel.lock();
         if (pUI)
-            pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(protocol_api::SSimpleMsgCmd(msg, MiscCommon::error));
+            pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, MiscCommon::error));
 
         shutdown();
     }
@@ -199,8 +199,7 @@ void CSubmitAgentsChannelInfo::checkPluginFailedToStart()
         {
             auto pUI = m_channel.lock();
             if (pUI)
-                pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
-                    protocol_api::SSimpleMsgCmd("Plug-in failed to start.", MiscCommon::error));
+                pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Plug-in failed to start.", MiscCommon::error));
             shutdown();
         }
     }
@@ -213,8 +212,7 @@ void CSubmitAgentsChannelInfo::checkPluginFailedToStart()
                << "s)...";
             auto pUI = m_channel.lock();
             if (pUI)
-                pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
-                    protocol_api::SSimpleMsgCmd(ss.str(), MiscCommon::info));
+                pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info));
         }
     }
 }
@@ -228,7 +226,7 @@ void CSubmitAgentsChannelInfo::shutdown()
         {
             auto pUI = m_channel.lock();
             if (pUI)
-                pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
+                pUI->template pushMsg<cmdSHUTDOWN>();
             m_channel.reset();
         }
     }
@@ -242,7 +240,7 @@ void CSubmitAgentsChannelInfo::shutdown()
         {
             auto pPlugin = m_channel.lock();
             if (pPlugin)
-                pPlugin->template pushMsg<protocol_api::cmdSHUTDOWN>();
+                pPlugin->template pushMsg<cmdSHUTDOWN>();
             m_channelSubmitPlugin.reset();
         }
     }

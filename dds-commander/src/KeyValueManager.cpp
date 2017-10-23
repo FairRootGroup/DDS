@@ -28,7 +28,7 @@ SKeyValueRecord::~SKeyValueRecord()
 {
 }
 
-EKeyUpdateResult SKeyValueRecord::updateKeyValue(const SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd)
+EKeyUpdateResult SKeyValueRecord::updateKeyValue(const SUpdateKeyCmd& _cmd, SUpdateKeyCmd& _serverCmd)
 {
     lock_guard<mutex> lock(m_mutex);
 
@@ -51,7 +51,7 @@ void SKeyValueRecord::deleteKeyValue()
     m_deleted = true;
 }
 
-std::string SKeyValueRecord::getKeyValueString() const
+string SKeyValueRecord::getKeyValueString() const
 {
     lock_guard<mutex> lock(m_mutex);
 
@@ -77,7 +77,7 @@ void SPropertyRecord::addKeyValueRecord(uint64_t _taskID, SKeyValueRecord::ptr_t
     m_taskMap.insert(pair<uint64_t, SKeyValueRecord::ptr_t>(_taskID, _keyValueRecord));
 }
 
-EKeyUpdateResult SPropertyRecord::updateKeyValue(const protocol_api::SUpdateKeyCmd& _cmd, SUpdateKeyCmd& _serverCmd)
+EKeyUpdateResult SPropertyRecord::updateKeyValue(const SUpdateKeyCmd& _cmd, SUpdateKeyCmd& _serverCmd)
 {
     uint64_t taskID = _cmd.getTaskID();
 
@@ -90,7 +90,7 @@ EKeyUpdateResult SPropertyRecord::updateKeyValue(const protocol_api::SUpdateKeyC
     return it->second->updateKeyValue(_cmd, _serverCmd);
 }
 
-std::string SPropertyRecord::getKeyValueString() const
+string SPropertyRecord::getKeyValueString() const
 {
     stringstream ss;
     for (const auto& v : m_taskMap)
@@ -115,7 +115,7 @@ CKeyValueManager::~CKeyValueManager()
 {
 }
 
-std::string CKeyValueManager::getKeyValueString(const std::string _propertyID) const
+string CKeyValueManager::getKeyValueString(const string _propertyID) const
 {
     stringstream ss;
     if (_propertyID.empty())
@@ -140,7 +140,7 @@ std::string CKeyValueManager::getKeyValueString(const std::string _propertyID) c
     return ss.str();
 }
 
-std::string CKeyValueManager::getPropertyString() const
+string CKeyValueManager::getPropertyString() const
 {
     stringstream ss;
     for (const auto& v : m_propertyMap)
@@ -207,7 +207,7 @@ void CKeyValueManager::initWithTopologyImpl(const CTopology& _topology,
     }
 }
 
-EKeyUpdateResult CKeyValueManager::updateKeyValue(const SUpdateKeyCmd& _cmd, protocol_api::SUpdateKeyCmd& _serverCmd)
+EKeyUpdateResult CKeyValueManager::updateKeyValue(const SUpdateKeyCmd& _cmd, SUpdateKeyCmd& _serverCmd)
 {
     string propertyID = _cmd.getPropertyID();
 

@@ -23,8 +23,8 @@ using namespace dds::user_defaults_api;
 void clean()
 {
     // Cleaning shared memory of agent's shared memory channel
-    std::string inputName = CUserDefaults::instance().getSMAgentInputName();
-    std::string outputName = CUserDefaults::instance().getSMAgentOutputName();
+    string inputName = CUserDefaults::instance().getSMAgentInputName();
+    string outputName = CUserDefaults::instance().getSMAgentOutputName();
     const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
     const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
     LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;

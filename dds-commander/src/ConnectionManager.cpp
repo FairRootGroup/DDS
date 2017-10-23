@@ -456,10 +456,9 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
     }
 }
 
-void CConnectionManager::on_cmdUPDATE_TOPOLOGY(
-    const SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
+                                               SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
+                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     LOG(info) << "UI channel requested to update/activate/stop a topology. " << *_attachment;
 
@@ -1187,10 +1186,9 @@ void CConnectionManager::enableDisableStatForChannels(bool _enable)
     m_statEnabled = _enable;
 }
 
-void CConnectionManager::on_cmdENABLE_STAT(
-    const SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdENABLE_STAT(const SSenderInfo& _sender,
+                                           SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment,
+                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
     auto p = _channel.lock();
     try
@@ -1206,10 +1204,9 @@ void CConnectionManager::on_cmdENABLE_STAT(
     }
 }
 
-void CConnectionManager::on_cmdDISABLE_STAT(
-    const SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdDISABLE_STAT(const SSenderInfo& _sender,
+                                            SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment,
+                                            CAgentChannel::weakConnectionPtr_t _channel)
 {
     auto p = _channel.lock();
     try
@@ -1225,10 +1222,9 @@ void CConnectionManager::on_cmdDISABLE_STAT(
     }
 }
 
-void CConnectionManager::on_cmdGET_STAT(
-    const SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdGET_STAT(const SSenderInfo& _sender,
+                                        SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment,
+                                        CAgentChannel::weakConnectionPtr_t _channel)
 {
     auto p = _channel.lock();
     try
@@ -1265,10 +1261,9 @@ void CConnectionManager::on_cmdGET_STAT(
     }
 }
 
-void CConnectionManager::on_cmdCUSTOM_CMD(
-    const SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
+                                          SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                          CAgentChannel::weakConnectionPtr_t _channel)
 {
     auto p = _channel.lock();
     try
