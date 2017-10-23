@@ -367,7 +367,7 @@ namespace dds
 
                 // Subscribe on dissconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-                    [this, newClient]() -> void {
+                    [this, newClient](const SSenderInfo& _sender) -> void {
                         {
                             // collect statistics for disconnected channels
                             std::lock_guard<std::mutex> lock(m_statMutex);

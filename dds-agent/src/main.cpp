@@ -14,6 +14,9 @@
 #include "UserDefaults.h"
 #include "version.h"
 
+// BOOST
+#include <boost/interprocess/sync/named_mutex.hpp>
+
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
@@ -23,12 +26,18 @@ using namespace dds::user_defaults_api;
 void clean()
 {
     // Cleaning shared memory of agent's shared memory channel
-    string inputName = CUserDefaults::instance().getSMAgentInputName();
-    string outputName = CUserDefaults::instance().getSMAgentOutputName();
+    const CUserDefaults& userDefaults = CUserDefaults::instance();
+    const std::string inputName(userDefaults.getSMAgentInputName());
+    const std::string outputName(userDefaults.getSMAgentOutputName());
     const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
     const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
     LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
     LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+
+    // Clean named mutex
+    const string mutexName(userDefaults.getAgentNamedMutexName());
+    const bool mutexRemoved = boost::interprocess::named_mutex::remove(mutexName.c_str());
+    LOG(MiscCommon::info) << "Named mutex " << mutexName << " remove status: " << mutexRemoved;
 }
 
 int main(int argc, char* argv[])

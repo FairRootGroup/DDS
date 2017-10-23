@@ -25,12 +25,24 @@ namespace dds
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
         {
             DDS_BEGIN_EVENT_HANDLERS(EChannelEvents)
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnConnected, void())
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnFailedToConnect, void())
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnRemoteEndDissconnected, void())
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeOK, void())
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeFailed, void())
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnNewUserTask, void(pid_t))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnConnected,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnFailedToConnect,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnRemoteEndDissconnected,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnHandshakeOK,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnHandshakeFailed,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnNewUserTask,
+                                       void(const protocol_api::SSenderInfo&, pid_t))
             DDS_END_EVENT_HANDLERS
         };
     }

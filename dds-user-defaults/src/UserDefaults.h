@@ -54,6 +54,8 @@ namespace dds
             std::string getPluginsRootDir() const;
             std::string getMainSIDFileName() const;
             std::string getSIDFile() const;
+            std::string getSID() const;
+            std::string getAgentNamedMutexName() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
             /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)

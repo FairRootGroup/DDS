@@ -17,13 +17,14 @@ namespace dds
             CTestChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
                 : CClientChannelImpl<CTestChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
-                registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>([this]() {
-                    LOG(MiscCommon::info) << "The Agent [" << this->socket().remote_endpoint().address().to_string()
-                                          << "] has closed the connection.";
-                });
+                registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>(
+                    [this](const protocol_api::SSenderInfo& _sender) {
+                        LOG(MiscCommon::info) << "The Agent [" << this->socket().remote_endpoint().address().to_string()
+                                              << "] has closed the connection.";
+                    });
 
                 registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(
-                    [this]() { pushMsg<protocol_api::cmdTRANSPORT_TEST>(); });
+                    [this](const protocol_api::SSenderInfo& _sender) { pushMsg<protocol_api::cmdTRANSPORT_TEST>(); });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

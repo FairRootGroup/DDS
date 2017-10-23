@@ -120,6 +120,13 @@ namespace dds
 {
     namespace protocol_api
     {
+        enum class EMQOpenType
+        {
+            CreateOnly,
+            OpenOrCreate,
+            OpenOnly
+        };
+
         template <class T>
         class CBaseSMChannelImpl : public boost::noncopyable,
                                    public CChannelEventHandlersImpl,
@@ -141,7 +148,9 @@ namespace dds
           protected:
             CBaseSMChannelImpl<T>(const std::string& _inputName,
                                   const std::string& _outputName,
-                                  uint64_t _ProtocolHeaderID)
+                                  uint64_t _ProtocolHeaderID,
+                                  EMQOpenType _inputOpenType = EMQOpenType::OpenOrCreate,
+                                  EMQOpenType _outputOpenType = EMQOpenType::OpenOrCreate)
                 : CChannelMessageHandlersImpl()
                 , m_started(false)
                 , m_ProtocolHeaderID(_ProtocolHeaderID)
@@ -149,6 +158,8 @@ namespace dds
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
                 , m_inputMessageQueueName(_inputName)
                 , m_outputMessageQueueName(_outputName)
+                , m_inputMessageQueueOpenType(_inputOpenType)
+                , m_outputMessageQueueOpenType(_outputOpenType)
                 , m_writeQueue()
                 , m_mutexWriteBuffer()
                 , m_writeBufferQueue()
@@ -178,23 +189,10 @@ namespace dds
                 {
                     LOG(MiscCommon::info) << "Initializing message queue for shared memory channel";
 
-                    static const unsigned int maxNofMessages = 100;
-                    // Taking into account that maximum size of the string for the command is 2^16 plus some extra bytes
-                    // for key size (128 bytes) and other.
-                    static const unsigned int maxMessageSize = 65000;
-
                     m_transportIn.reset();
                     m_transportOut.reset();
-                    m_transportIn =
-                        std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create,
-                                                                             m_inputMessageQueueName.c_str(),
-                                                                             maxNofMessages,
-                                                                             maxMessageSize);
-                    m_transportOut =
-                        std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_or_create,
-                                                                             m_outputMessageQueueName.c_str(),
-                                                                             maxNofMessages,
-                                                                             maxMessageSize);
+                    m_transportIn = createMessageQueue(m_inputMessageQueueName.c_str(), m_inputMessageQueueOpenType);
+                    m_transportOut = createMessageQueue(m_outputMessageQueueName.c_str(), m_outputMessageQueueOpenType);
                 }
                 catch (boost::interprocess::interprocess_exception& _e)
                 {
@@ -203,6 +201,27 @@ namespace dds
                         << " and output name " << m_outputMessageQueueName << ": " << _e.what();
                     m_transportIn.reset();
                     m_transportOut.reset();
+                }
+            }
+
+            messageQueuePtr_t createMessageQueue(const std::string& _name, EMQOpenType _openType)
+            {
+                static const unsigned int maxNofMessages = 100;
+                // Taking into account that maximum size of the string for the command is 2^16 plus some extra bytes
+                // for key size (128 bytes) and other.
+                static const unsigned int maxMessageSize = 65000;
+
+                switch (_openType)
+                {
+                    case EMQOpenType::OpenOrCreate:
+                        return std::make_shared<boost::interprocess::message_queue>(
+                            boost::interprocess::open_or_create, _name.c_str(), maxNofMessages, maxMessageSize);
+                    case EMQOpenType::CreateOnly:
+                        return std::make_shared<boost::interprocess::message_queue>(
+                            boost::interprocess::create_only, _name.c_str(), maxNofMessages, maxMessageSize);
+                    case EMQOpenType::OpenOnly:
+                        return std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only,
+                                                                                    _name.c_str());
                 }
             }
 
@@ -226,7 +245,7 @@ namespace dds
                 start();
             }
 
-            void start()
+            void start(bool _block = false)
             {
                 if (m_transportIn == nullptr || m_transportOut == nullptr)
                 {
@@ -257,6 +276,11 @@ namespace dds
                 for (int x = 0; x < nConcurrentThreads; ++x)
                 {
                     m_workerThreads->create_thread(boost::bind(&boost::asio::io_service::run, &(m_io_service)));
+                }
+
+                if (_block)
+                {
+                    m_workerThreads->join_all();
                 }
             }
 
@@ -482,8 +506,10 @@ namespace dds
             std::shared_ptr<boost::thread_group> m_workerThreads; ///< Threads for IO service
             CProtocolMessage::protocolMessagePtr_t m_currentMsg;  ///> Current message that we read and process
 
-            std::string m_inputMessageQueueName;  ///< Input message queue name
-            std::string m_outputMessageQueueName; ///< Output message queue name
+            std::string m_inputMessageQueueName;      ///< Input message queue name
+            std::string m_outputMessageQueueName;     ///< Output message queue name
+            EMQOpenType m_inputMessageQueueOpenType;  ///< Open type for message queue
+            EMQOpenType m_outputMessageQueueOpenType; ///< Open type for message queue
 
             protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
 

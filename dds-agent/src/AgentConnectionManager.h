@@ -33,6 +33,9 @@ namespace dds
             void stop();
 
           private:
+            void createAndStartNetworkAgentChannel(uint64_t _protocolHeaderID);
+            void createAndStartSMIntercomChannel(uint64_t _protocolHeaderID);
+            void createAndStartSMAgentChannel(uint64_t _protocolHeaderID, bool _block);
             void doAwaitStop();
             void onNewUserTask(pid_t _pid);
             void terminateChildrenProcesses();
@@ -81,6 +84,7 @@ namespace dds
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;
             boost::thread_group m_workerThreads;
+            bool m_isLeaderBasedDeployment;
         };
     }
 }

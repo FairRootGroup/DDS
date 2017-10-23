@@ -33,7 +33,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
 
     m_SMFWChannel->start();
 
-    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this]() {
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
         {
             LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
@@ -49,7 +49,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
         }
     });
 
-    registerHandler<EChannelEvents::OnFailedToConnect>([this]() {
+    registerHandler<EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& _sender) {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
         {
             LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt " << m_connectionAttempts

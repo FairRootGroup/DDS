@@ -17,33 +17,35 @@ namespace dds
             CGenericChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0)
                 : CClientChannelImpl<CGenericChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
-                registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>([this]() {
-                    LOG(MiscCommon::info)
-                        << "The DDS commander [" << this->socket().remote_endpoint().address().to_string()
-                        << "] has closed the connection.";
-                });
+                registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>(
+                    [this](const protocol_api::SSenderInfo& _sender) {
+                        LOG(MiscCommon::info)
+                            << "The DDS commander [" << this->socket().remote_endpoint().address().to_string()
+                            << "] has closed the connection.";
+                    });
 
-                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>([this]() {
-                    switch (m_options.m_agentCmd)
-                    {
-                        case EAgentCmdType::GETLOG:
-                            LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
-                            pushMsg<protocol_api::cmdGET_LOG>();
-                            break;
-                        case EAgentCmdType::UPDATE_KEY:
+                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(
+                    [this](const protocol_api::SSenderInfo& _sender) {
+                        switch (m_options.m_agentCmd)
                         {
-                            LOG(MiscCommon::log_stdout) << "Sending key update command...";
-                            protocol_api::SUpdateKeyCmd cmd;
-                            cmd.m_sKey = m_options.m_sUpdKey_key;
-                            cmd.m_sValue = m_options.m_sUpdKey_value;
-                            pushMsg<protocol_api::cmdUPDATE_KEY>(cmd);
+                            case EAgentCmdType::GETLOG:
+                                LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
+                                pushMsg<protocol_api::cmdGET_LOG>();
+                                break;
+                            case EAgentCmdType::UPDATE_KEY:
+                            {
+                                LOG(MiscCommon::log_stdout) << "Sending key update command...";
+                                protocol_api::SUpdateKeyCmd cmd;
+                                cmd.m_sKey = m_options.m_sUpdKey_key;
+                                cmd.m_sValue = m_options.m_sUpdKey_value;
+                                pushMsg<protocol_api::cmdUPDATE_KEY>(cmd);
+                            }
+                            break;
+                            default:
+                                LOG(MiscCommon::log_stderr) << "Uknown command.";
+                                stop();
                         }
-                        break;
-                        default:
-                            LOG(MiscCommon::log_stderr) << "Uknown command.";
-                            stop();
-                    }
-                });
+                    });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

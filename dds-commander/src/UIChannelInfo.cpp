@@ -92,7 +92,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
             if (tag == "init")
             {
                 // Subscribe on plug-in disconnect
-                pPlugin->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this]() {
+                pPlugin->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
                     LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
                     // the plug-in is done and went offline, let's close UI
                     // connection as well.

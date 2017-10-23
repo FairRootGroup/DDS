@@ -20,27 +20,32 @@ namespace dds
                 : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
                 , m_nCounter(0)
             {
-                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>([this]() {
-                    // ask the server what we wnated to ask :)
-                    if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
-                        pushMsg<protocol_api::cmdGED_PID>();
-                    else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
-                        pushMsg<protocol_api::cmdGET_AGENTS_INFO>();
-                    else if (m_options.m_bNeedPropList)
-                        pushMsg<protocol_api::cmdGET_PROP_LIST>();
-                    else if (m_options.m_bNeedPropValues)
-                    {
-                        protocol_api::SGetPropValuesCmd cmd;
-                        cmd.m_sPropertyID = m_options.m_propertyID;
-                        pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
-                    }
-                });
+                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(
+                    [this](const protocol_api::SSenderInfo& _sender) {
+                        // ask the server what we wnated to ask :)
+                        if (m_options.m_bNeedCommanderPid || m_options.m_bNeedDDSStatus)
+                            pushMsg<protocol_api::cmdGED_PID>();
+                        else if (m_options.m_bNeedAgentsNumber || m_options.m_bNeedAgentsList)
+                            pushMsg<protocol_api::cmdGET_AGENTS_INFO>();
+                        else if (m_options.m_bNeedPropList)
+                            pushMsg<protocol_api::cmdGET_PROP_LIST>();
+                        else if (m_options.m_bNeedPropValues)
+                        {
+                            protocol_api::SGetPropValuesCmd cmd;
+                            cmd.m_sPropertyID = m_options.m_propertyID;
+                            pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
+                        }
+                    });
 
                 registerHandler<protocol_api::EChannelEvents::OnConnected>(
-                    []() { LOG(MiscCommon::info) << "Connected to the commander server"; });
+                    [](const protocol_api::SSenderInfo& _sender) {
+                        LOG(MiscCommon::info) << "Connected to the commander server";
+                    });
 
                 registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(
-                    []() { LOG(MiscCommon::log_stderr) << "Failed to connect to commander server."; });
+                    [](const protocol_api::SSenderInfo& _sender) {
+                        LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
+                    });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING

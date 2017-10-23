@@ -4,17 +4,10 @@
 //
 
 // BOOST
-#include <boost/property_tree/ptree.hpp>
-
-// silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#endif
+#include <boost/interprocess/sync/named_mutex.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic pop
-#endif
+#include <boost/property_tree/ptree.hpp>
 
 // DDS
 #include "AgentConnectionManager.h"
@@ -25,6 +18,7 @@
 #include "SMCommanderChannel.h"
 
 using namespace boost::asio;
+namespace bi = boost::interprocess;
 using namespace std;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
@@ -38,6 +32,7 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boo
     , m_signals(_io_service)
     , m_options(_options)
     , m_bStarted(false)
+    , m_isLeaderBasedDeployment(false)
 {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,
@@ -74,120 +69,76 @@ void CAgentConnectionManager::start()
     uint64_t protocolHeaderID = uuid_hasher(boost::uuids::uuid());
 
     m_bStarted = true;
+
+    typedef std::shared_ptr<bi::named_mutex> namedMutexPtr_t;
+    namedMutexPtr_t leaderMutex;
     try
     {
-        // Shared memory channel for communication with user task
-        const CUserDefaults& userDefaults = CUserDefaults::instance();
-        m_SMChannel =
-            CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName(), protocolHeaderID);
-        // Forward messages from shared memory to agent
-        m_SMChannel->registerHandler<cmdRAW_MSG>(
-            [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
-                m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
-            });
-        //
-
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
         CMonitoringThread::instance().start(maxIdleTime, []() { LOG(info) << "Idle callback called"; });
 
-        // Read server info file
-        const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocation());
-        LOG(info) << "Reading server info from: " << sSrvCfg;
-        if (sSrvCfg.empty())
-            throw runtime_error("Cannot find server info file.");
+        // TODO: FIXME: Don't forget to delete mutex in scout
+        // Open or create leader mutex
 
-        boost::property_tree::ptree pt;
-        boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
-        const string sHost(pt.get<string>("server.host"));
-        const string sPort(pt.get<string>("server.port"));
-
-        LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
-
-        // Resolve endpoint iterator from host and port
-        tcp::resolver resolver(m_service);
-        tcp::resolver::query query(sHost, sPort);
-        tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-
-        // Create new agent and push handshake message
-        m_agent = CCommanderChannel::makeNew(m_service, protocolHeaderID);
-
-        // Create shared memory agent channel
-        m_SMAgent = CSMCommanderChannel::makeNew(
-            userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), protocolHeaderID);
-
-        // Subscribe to Shutdown command
-        m_SMAgent->registerHandler<cmdSHUTDOWN>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-                this->on_cmdSHUTDOWN(_sender, _attachment, m_SMAgent);
-            });
-
-        // Subscribe for key updates
-        // TODO: Forwarding of update key commands without decoding using raw mwssage API
-        m_SMAgent->registerHandler<cmdUPDATE_KEY>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-                this->on_cmdUPDATE_KEY(_sender, _attachment, m_SMAgent);
-            });
-
-        // Subscribe for key update errors
-        m_SMAgent->registerHandler<cmdUPDATE_KEY_ERROR>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-                this->on_cmdUPDATE_KEY_ERROR(_sender, _attachment, m_SMAgent);
-            });
-
-        // Subscribe for key delete events
-        m_SMAgent->registerHandler<cmdDELETE_KEY>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-                this->on_cmdDELETE_KEY(_sender, _attachment, m_SMAgent);
-            });
-
-        // Subscribe for cmdSIMPLE_MSG
-        m_SMAgent->registerHandler<cmdSIMPLE_MSG>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-                this->on_cmdSIMPLE_MSG(_sender, _attachment, m_SMAgent);
-            });
-
-        // Subscribe for cmdSTOP_USER_TASK
-        m_SMAgent->registerHandler<cmdSTOP_USER_TASK>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
-                this->on_cmdSTOP_USER_TASK(_sender, _attachment, m_SMAgent);
-            });
-
-        // Subscribe for cmdCUSTOM_CMD
-        m_SMAgent->registerHandler<cmdCUSTOM_CMD>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-                this->on_cmdCUSTOM_CMD(_sender, _attachment, m_SMAgent);
-            });
-
-        // Call this callback when a user process is activated
-        m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>([this](pid_t _pid) { this->onNewUserTask(_pid); });
-
-        // Start listening for messages from shared memory
-        m_SMChannel->start();
-        // Start shared memory agent channel
-        m_SMAgent->start();
-        // Connect to DDS commander
-        m_agent->connect(endpoint_iterator);
-
-        const int nConcurrentThreads(2);
-        LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
-        for (int x = 0; x < nConcurrentThreads; ++x)
+        const CUserDefaults& userDefaults = CUserDefaults::instance();
+        string smName(userDefaults.getAgentNamedMutexName());
+        try
         {
-            m_workerThreads.create_thread([this]() {
-                try
-                {
-                    m_service.run();
-                }
-                catch (exception& ex)
-                {
-                    LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
-                }
-            });
+            leaderMutex = make_shared<bi::named_mutex>(bi::open_or_create, smName.c_str());
+        }
+        catch (bi::interprocess_exception& ex)
+        {
+            // m_isLeaderBasedDeployment = false;
+            // TODO: FIXME: Log the error and process further
+            // If we can't allocate mutex - fallback to the direct connection to the DDS commander
+
+            LOG(fatal) << "Can't start the DDS Agent: named mutex (" << smName
+                       << ") can't be created or opened: " << ex.what();
+            return;
         }
 
-        m_workerThreads.join_all();
+        //
+        //        bool locked = leaderMutex->try_lock();
+        //        if (locked)
+        //        {
+        //            // TODO: FIXME:
+        //            // - create shared memory
+        //            // - error processing if memory can't be created
+        //            // - create network channel
+        //
+        //            createAndStartSMIntercomChannel();
+        //            createAndStartSMAgentChannel(false);
+        //            // Start network channel. This is a blocking function call.
+        //            createAndStartNetworkAgentChannel();
+        //
+        //            leaderMutex->unlock();
+        //        }
+        //        else
+        //        {
+        //            // TODO: FIXME:
+        //            // - open shared memory
+        //            // - error processing if memory can't be opened
+        //
+        //            // TODO: FIXME:
+        //            // - block execution, channels are working in threads
+        //            // leaderMutex->lock();
+        //
+        //            createAndStartSMIntercomChannel();
+        //            // Blocking function call
+        //            createAndStartSMAgentChannel(true);
+        //        }
+
+        // Free mutex
+        // leaderMutex.reset();
+
+        createAndStartSMIntercomChannel(protocolHeaderID);
+        createAndStartSMAgentChannel(protocolHeaderID, false);
+        createAndStartNetworkAgentChannel(protocolHeaderID);
     }
     catch (exception& e)
     {
+        leaderMutex->unlock();
+        leaderMutex.reset();
         LOG(fatal) << e.what();
     }
 }
@@ -218,6 +169,124 @@ void CAgentConnectionManager::stop()
         LOG(fatal) << e.what();
     }
     LOG(info) << "Shutting down DDS transport - DONE";
+}
+
+void CAgentConnectionManager::createAndStartNetworkAgentChannel(uint64_t _protocolHeaderID)
+{
+    // Read server info file
+    const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocation());
+    LOG(info) << "Reading server info from: " << sSrvCfg;
+    if (sSrvCfg.empty())
+        throw runtime_error("Cannot find server info file.");
+
+    boost::property_tree::ptree pt;
+    boost::property_tree::ini_parser::read_ini(sSrvCfg, pt);
+    const string sHost(pt.get<string>("server.host"));
+    const string sPort(pt.get<string>("server.port"));
+
+    LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
+
+    // Resolve endpoint iterator from host and port
+    tcp::resolver resolver(m_service);
+    tcp::resolver::query query(sHost, sPort);
+    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+
+    // Create new agent and push handshake message
+    m_agent = CCommanderChannel::makeNew(m_service, _protocolHeaderID);
+
+    // Connect to DDS commander
+    m_agent->connect(endpoint_iterator);
+
+    const int nConcurrentThreads(2);
+    LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
+    for (int x = 0; x < nConcurrentThreads; ++x)
+    {
+        m_workerThreads.create_thread([this]() {
+            try
+            {
+                m_service.run();
+            }
+            catch (exception& ex)
+            {
+                LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
+            }
+        });
+    }
+
+    m_workerThreads.join_all();
+}
+
+void CAgentConnectionManager::createAndStartSMIntercomChannel(uint64_t _protocolHeaderID)
+{
+    // Shared memory channel for communication with user task
+    const CUserDefaults& userDefaults = CUserDefaults::instance();
+    m_SMChannel =
+        CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
+    // Forward messages from shared memory to agent
+    m_SMChannel->registerHandler<cmdRAW_MSG>(
+        [this](const SSenderInfo& _sender, protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
+            m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
+        });
+    // Start listening for messages from shared memory
+    m_SMChannel->start();
+}
+
+void CAgentConnectionManager::createAndStartSMAgentChannel(uint64_t _protocolHeaderID, bool _block)
+{
+    const CUserDefaults& userDefaults = CUserDefaults::instance();
+    // Create shared memory agent channel
+    m_SMAgent = CSMCommanderChannel::makeNew(
+        userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
+
+    // Subscribe to Shutdown command
+    m_SMAgent->registerHandler<cmdSHUTDOWN>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+            this->on_cmdSHUTDOWN(_sender, _attachment, m_SMAgent);
+        });
+
+    // Subscribe for key updates
+    // TODO: Forwarding of update key commands without decoding using raw mwssage API
+    m_SMAgent->registerHandler<cmdUPDATE_KEY>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY(_sender, _attachment, m_SMAgent);
+        });
+
+    // Subscribe for key update errors
+    m_SMAgent->registerHandler<cmdUPDATE_KEY_ERROR>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
+            this->on_cmdUPDATE_KEY_ERROR(_sender, _attachment, m_SMAgent);
+        });
+
+    // Subscribe for key delete events
+    m_SMAgent->registerHandler<cmdDELETE_KEY>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
+            this->on_cmdDELETE_KEY(_sender, _attachment, m_SMAgent);
+        });
+
+    // Subscribe for cmdSIMPLE_MSG
+    m_SMAgent->registerHandler<cmdSIMPLE_MSG>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG(_sender, _attachment, m_SMAgent);
+        });
+
+    // Subscribe for cmdSTOP_USER_TASK
+    m_SMAgent->registerHandler<cmdSTOP_USER_TASK>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
+            this->on_cmdSTOP_USER_TASK(_sender, _attachment, m_SMAgent);
+        });
+
+    // Subscribe for cmdCUSTOM_CMD
+    m_SMAgent->registerHandler<cmdCUSTOM_CMD>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            this->on_cmdCUSTOM_CMD(_sender, _attachment, m_SMAgent);
+        });
+
+    // Call this callback when a user process is activated
+    m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>(
+        [this](const SSenderInfo& _sender, pid_t _pid) { this->onNewUserTask(_pid); });
+
+    // Start shared memory agent channel
+    m_SMAgent->start(_block);
 }
 
 void CAgentConnectionManager::terminateChildrenProcesses()

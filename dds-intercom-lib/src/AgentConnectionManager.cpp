@@ -85,9 +85,10 @@ void CAgentConnectionManager::start()
                 this->on_cmdSHUTDOWN(_attachment, m_channel, _sender);
             });
 
-        m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this]() { stopCondition(); });
+        m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
+            [this](const SSenderInfo& _sender) { stopCondition(); });
 
-        m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([this]() {
+        m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& _sender) {
             m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
                 CDDSIntercomGuard::instance().m_errorSignal(intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
                 stopCondition();

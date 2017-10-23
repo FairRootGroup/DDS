@@ -27,9 +27,9 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
     , m_state(EAgentState::unknown)
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-        []() { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
+        [](const SSenderInfo& _sender) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
 
-    registerHandler<EChannelEvents::OnHandshakeOK>([this]() {
+    registerHandler<EChannelEvents::OnHandshakeOK>([this](const SSenderInfo& _sender) {
         switch (getChannelType())
         {
             case EChannelType::AGENT:

@@ -17,13 +17,15 @@ CActivateChannel::CActivateChannel(boost::asio::io_service& _service, uint64_t _
     : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI, _protocolHeaderID)
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-        []() { LOG(MiscCommon::log_stderr) << "Server has closed the connection."; });
+        [](const SSenderInfo& _sender) { LOG(MiscCommon::log_stderr) << "Server has closed the connection."; });
 
-    registerHandler<EChannelEvents::OnConnected>([]() { LOG(MiscCommon::log_stdout) << "Connection established."; });
+    registerHandler<EChannelEvents::OnConnected>(
+        [](const SSenderInfo& _sender) { LOG(MiscCommon::log_stdout) << "Connection established."; });
 
-    registerHandler<EChannelEvents::OnFailedToConnect>([]() { LOG(MiscCommon::log_stdout) << "Failed to connect."; });
+    registerHandler<EChannelEvents::OnFailedToConnect>(
+        [](const SSenderInfo& _sender) { LOG(MiscCommon::log_stdout) << "Failed to connect."; });
 
-    registerHandler<EChannelEvents::OnHandshakeOK>([this]() {
+    registerHandler<EChannelEvents::OnHandshakeOK>([this](const SSenderInfo& _sender) {
         switch (m_options.m_topologyCmd)
         {
             case ETopologyCmdType::ACTIVATE:

@@ -21,6 +21,7 @@
 
 // MiscCommon
 #include "FindCfgFile.h"
+#include "SessionIDFile.h"
 // DDS
 #include "version.h"
 
@@ -323,30 +324,33 @@ pid_t CUserDefaults::getScoutPid() const
 
 string CUserDefaults::getSMInputName() const
 {
-    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    string storageName(to_string(getScoutPid()));
     storageName += "_DDSSMI";
     return storageName;
 }
 
 string CUserDefaults::getSMOutputName() const
 {
-    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    string storageName(to_string(getScoutPid()));
     storageName += "_DDSSMO";
     return storageName;
 }
 
 std::string CUserDefaults::getSMAgentInputName() const
 {
-    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    string storageName(to_string(getScoutPid()));
     storageName += "_DDSSMAI";
     return storageName;
 }
 
 std::string CUserDefaults::getSMAgentOutputName() const
 {
-    string storageName(to_string(CUserDefaults::instance().getScoutPid()));
+    string storageName(to_string(getScoutPid()));
     storageName += "_DDSSMAO";
     return storageName;
+    //    string smName("DDSAGENTO-");
+    //    smName += getSID();
+    //    return smName;
 }
 
 string CUserDefaults::getPluginsRootDir() const
@@ -413,4 +417,31 @@ string CUserDefaults::getSIDFile() const
 
     // could fined any SID file
     return string();
+}
+
+string CUserDefaults::getSID() const
+{
+    // Get session ID from the local environment
+    string sessionID("");
+    std::string sidFile = getSIDFile();
+    if (sidFile.empty())
+    {
+        throw runtime_error("Can't find SID file on the local system");
+    }
+    else
+    {
+        MiscCommon::CSessionIDFile sid(sidFile);
+        sessionID = sid.getSID();
+        if (sessionID.empty())
+            throw runtime_error("Avaliable SID is empty");
+    }
+    return sessionID;
+}
+
+string CUserDefaults::getAgentNamedMutexName() const
+{
+    // TODO: FIXME: maximum length of the SM name
+    string smName("DDSAGENTMTX-");
+    smName += getSID();
+    return smName.substr(0, 24);
 }

@@ -18,26 +18,31 @@ namespace dds
             CStatChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0)
                 : CClientChannelImpl<CStatChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
-                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>([this]() {
-                    if (m_options.m_bEnable)
-                    {
-                        pushMsg<protocol_api::cmdENABLE_STAT>();
-                    }
-                    else if (m_options.m_bDisable)
-                    {
-                        pushMsg<protocol_api::cmdDISABLE_STAT>();
-                    }
-                    else if (m_options.m_bGet)
-                    {
-                        pushMsg<protocol_api::cmdGET_STAT>();
-                    }
-                });
+                registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(
+                    [this](const protocol_api::SSenderInfo& _sender) {
+                        if (m_options.m_bEnable)
+                        {
+                            pushMsg<protocol_api::cmdENABLE_STAT>();
+                        }
+                        else if (m_options.m_bDisable)
+                        {
+                            pushMsg<protocol_api::cmdDISABLE_STAT>();
+                        }
+                        else if (m_options.m_bGet)
+                        {
+                            pushMsg<protocol_api::cmdGET_STAT>();
+                        }
+                    });
 
                 registerHandler<protocol_api::EChannelEvents::OnConnected>(
-                    []() { LOG(MiscCommon::info) << "Connected to the commander server"; });
+                    [](const protocol_api::SSenderInfo& _sender) {
+                        LOG(MiscCommon::info) << "Connected to the commander server";
+                    });
 
                 registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(
-                    []() { LOG(MiscCommon::log_stderr) << "Failed to connect to commander server."; });
+                    [](const protocol_api::SSenderInfo& _sender) {
+                        LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
+                    });
             }
 
             REGISTER_DEFAULT_REMOTE_ID_STRING
