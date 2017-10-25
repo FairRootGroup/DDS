@@ -13,7 +13,8 @@ Added: Handshake checks now session ID of the client to match server's one.  (GH
 Added: new API for pushing and processing of raw messages. Implemented for network and shared memory channels.
 Added: special command ECmdType::cmdRAW_MSG  for raw message event subscription.
 Added: Implement ID in protocol headers. (GH-178)    
-Modified: create new message in the channel instead of clearing the current message. This allows to forward the message without additional copying.    
+Modified: create new message in the channel instead of clearing the current message. This allows to forward the message without additional copying.
+Added: Multiple outputs for shared memory channel. (GH-78)    
 
 ### dds-topology
 Fixed: dds-topology --validate works again. (GH-174)   

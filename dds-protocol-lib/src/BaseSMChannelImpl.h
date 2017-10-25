@@ -133,8 +133,30 @@ namespace dds
                                    public CChannelMessageHandlersImpl,
                                    public std::enable_shared_from_this<T>
         {
-            typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
+            struct SProtocolMessageInfo
+            {
+                SProtocolMessageInfo(uint64_t _protocolHeaderID, CProtocolMessage::protocolMessagePtr_t _msg)
+                    : m_protocolHeaderID(_protocolHeaderID)
+                    , m_msg(_msg)
+                {
+                }
+
+                uint64_t m_protocolHeaderID;
+                CProtocolMessage::protocolMessagePtr_t m_msg;
+            };
+
+            typedef std::deque<SProtocolMessageInfo> protocolMessagePtrQueue_t;
+
             typedef std::shared_ptr<boost::interprocess::message_queue> messageQueuePtr_t;
+
+            struct SMessageQueueInfo
+            {
+                std::string m_name;     ///< Message queue name
+                EMQOpenType m_openType; ///< Message queue open type
+                messageQueuePtr_t m_mq; ///< Message queue
+            };
+
+            typedef std::map<uint64_t, SMessageQueueInfo> messageQueueMap_t;
 
           public:
             typedef std::shared_ptr<T> connectionPtr_t;
@@ -148,22 +170,28 @@ namespace dds
           protected:
             CBaseSMChannelImpl<T>(const std::string& _inputName,
                                   const std::string& _outputName,
-                                  uint64_t _ProtocolHeaderID,
+                                  uint64_t _protocolHeaderID,
                                   EMQOpenType _inputOpenType = EMQOpenType::OpenOrCreate,
                                   EMQOpenType _outputOpenType = EMQOpenType::OpenOrCreate)
                 : CChannelMessageHandlersImpl()
                 , m_started(false)
-                , m_ProtocolHeaderID(_ProtocolHeaderID)
+                , m_protocolHeaderID(_protocolHeaderID)
                 , m_workerThreads()
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
-                , m_inputMessageQueueName(_inputName)
-                , m_outputMessageQueueName(_outputName)
-                , m_inputMessageQueueOpenType(_inputOpenType)
-                , m_outputMessageQueueOpenType(_outputOpenType)
                 , m_writeQueue()
                 , m_mutexWriteBuffer()
                 , m_writeBufferQueue()
+                , m_mutexTransportOut()
             {
+                // Input transport
+                m_transportIn.m_name = _inputName;
+                m_transportIn.m_openType = _inputOpenType;
+                // Output transport - default output transport initialized with protocol header ID
+                SMessageQueueInfo info;
+                info.m_name = _outputName;
+                info.m_openType = _outputOpenType;
+                m_transportOut.emplace(_protocolHeaderID, info);
+
                 createMessageQueue();
             }
 
@@ -185,22 +213,19 @@ namespace dds
           private:
             void createMessageQueue()
             {
-                try
-                {
-                    LOG(MiscCommon::info) << "Initializing message queue for shared memory channel";
+                LOG(MiscCommon::info) << "Initializing message queue for shared memory channel";
 
-                    m_transportIn.reset();
-                    m_transportOut.reset();
-                    m_transportIn = createMessageQueue(m_inputMessageQueueName.c_str(), m_inputMessageQueueOpenType);
-                    m_transportOut = createMessageQueue(m_outputMessageQueueName.c_str(), m_outputMessageQueueOpenType);
-                }
-                catch (boost::interprocess::interprocess_exception& _e)
+                m_transportIn.m_mq.reset();
+                m_transportIn.m_mq = createMessageQueue(m_transportIn.m_name.c_str(), m_transportIn.m_openType);
+
                 {
-                    LOG(MiscCommon::fatal)
-                        << "Can't initialize shared memory transport with input name " << m_inputMessageQueueName
-                        << " and output name " << m_outputMessageQueueName << ": " << _e.what();
-                    m_transportIn.reset();
-                    m_transportOut.reset();
+                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    for (auto& v : m_transportOut)
+                    {
+                        SMessageQueueInfo& info = v.second;
+                        info.m_mq.reset();
+                        info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
+                    }
                 }
             }
 
@@ -211,21 +236,52 @@ namespace dds
                 // for key size (128 bytes) and other.
                 static const unsigned int maxMessageSize = 65000;
 
-                switch (_openType)
+                try
                 {
-                    case EMQOpenType::OpenOrCreate:
-                        return std::make_shared<boost::interprocess::message_queue>(
-                            boost::interprocess::open_or_create, _name.c_str(), maxNofMessages, maxMessageSize);
-                    case EMQOpenType::CreateOnly:
-                        return std::make_shared<boost::interprocess::message_queue>(
-                            boost::interprocess::create_only, _name.c_str(), maxNofMessages, maxMessageSize);
-                    case EMQOpenType::OpenOnly:
-                        return std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only,
-                                                                                    _name.c_str());
+                    switch (_openType)
+                    {
+                        case EMQOpenType::OpenOrCreate:
+                            return std::make_shared<boost::interprocess::message_queue>(
+                                boost::interprocess::open_or_create, _name.c_str(), maxNofMessages, maxMessageSize);
+                        case EMQOpenType::CreateOnly:
+                            return std::make_shared<boost::interprocess::message_queue>(
+                                boost::interprocess::create_only, _name.c_str(), maxNofMessages, maxMessageSize);
+                        case EMQOpenType::OpenOnly:
+                            return std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only,
+                                                                                        _name.c_str());
+                    }
+                }
+                catch (boost::interprocess::interprocess_exception& _e)
+                {
+                    LOG(MiscCommon::error)
+                        << "Can't initialize shared memory transport with name " << _name << ": " << _e.what();
+                    return nullptr;
                 }
             }
 
           public:
+            void addOutput(uint64_t _protocolHeaderID,
+                           const std::string& _name,
+                           EMQOpenType _openType = EMQOpenType::OpenOnly)
+            {
+                SMessageQueueInfo info;
+                info.m_name = _name;
+                info.m_openType = _openType;
+                info.m_mq = createMessageQueue(_name, _openType);
+
+                if (info.m_mq != nullptr)
+                {
+                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    m_transportOut.emplace(_protocolHeaderID, info);
+                }
+                else
+                {
+                    LOG(MiscCommon::error)
+                        << "Can't add shared memory channel output with protocol header ID: " << _protocolHeaderID
+                        << " name: " << _name;
+                }
+            }
+
             void reinit()
             {
                 if (!m_started)
@@ -247,13 +303,29 @@ namespace dds
 
             void start(bool _block = false)
             {
-                if (m_transportIn == nullptr || m_transportOut == nullptr)
+                // Check that all message queues were succesfully created
+                bool queuesCreated = m_transportIn.m_mq != nullptr;
+                if (queuesCreated)
+                {
+                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+
+                    for (const auto& v : m_transportOut)
+                    {
+                        if (v.second.m_mq == nullptr)
+                        {
+                            queuesCreated = false;
+                            break;
+                        }
+                    }
+                }
+                if (!queuesCreated)
                 {
                     LOG(MiscCommon::error)
                         << "Can't start shared memory channel because there was a problem creating message queues";
                     m_started = false;
                     return;
                 }
+                //
 
                 m_started = true;
 
@@ -299,15 +371,20 @@ namespace dds
 
             void removeMessageQueue()
             {
-                const bool inputRemoved = boost::interprocess::message_queue::remove(m_inputMessageQueueName.c_str());
-                const bool outputRemoved = boost::interprocess::message_queue::remove(m_outputMessageQueueName.c_str());
-                LOG(MiscCommon::info) << "Message queue " << m_inputMessageQueueName
-                                      << " remove status: " << inputRemoved;
-                LOG(MiscCommon::info) << "Message queue " << m_outputMessageQueueName
-                                      << " remove status: " << outputRemoved;
+                const bool status = boost::interprocess::message_queue::remove(m_transportIn.m_name.c_str());
+                LOG(MiscCommon::info) << "Message queue " << m_transportIn.m_name << " remove status: " << status;
+                {
+                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    for (const auto& v : m_transportOut)
+                    {
+                        const SMessageQueueInfo& info = v.second;
+                        const bool status = boost::interprocess::message_queue::remove(info.m_name.c_str());
+                        LOG(MiscCommon::info) << "Message queue " << info.m_name << " remove status: " << status;
+                    }
+                }
             }
 
-            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID = 0)
             {
                 if (!m_started)
                 {
@@ -321,7 +398,7 @@ namespace dds
 
                     // add the current message to the queue
                     if (cmdUNKNOWN != _cmd)
-                        m_writeQueue.push_back(_msg);
+                        m_writeQueue.push_back(SProtocolMessageInfo(protocolHeaderID(_protocolHeaderID), _msg));
 
                     LOG(MiscCommon::debug) << "BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
                 }
@@ -345,13 +422,14 @@ namespace dds
             }
 
             template <ECmdType _cmd, class A>
-            void pushMsg(const A& _attachment)
+            void pushMsg(const A& _attachment, uint64_t _protocolHeaderID = 0)
             {
                 try
                 {
+                    uint64_t headerID = protocolHeaderID(_protocolHeaderID);
                     CProtocolMessage::protocolMessagePtr_t msg =
-                        SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
-                    pushMsg(msg, _cmd);
+                        SCommandAttachmentImpl<_cmd>::encode(_attachment, headerID);
+                    pushMsg(msg, _cmd, headerID);
                 }
                 catch (std::exception& ex)
                 {
@@ -360,20 +438,25 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void pushMsg()
+            void pushMsg(uint64_t _protocolHeaderID = 0)
             {
                 SEmptyCmd cmd;
-                pushMsg<_cmd>(cmd);
+                pushMsg<_cmd>(cmd, _protocolHeaderID);
             }
 
           private:
+            uint64_t protocolHeaderID(uint64_t _protocolHeaderID) const
+            {
+                return (_protocolHeaderID == 0) ? m_protocolHeaderID : _protocolHeaderID;
+            }
+
             void sendYourselfShutdown()
             {
                 // Send cmdSHUTDOWN with higher priority in order to stop read operation.
                 SEmptyCmd cmd;
                 CProtocolMessage::protocolMessagePtr_t msg =
-                    SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_ProtocolHeaderID);
-                m_transportIn->send(msg->data(), msg->length(), 1);
+                    SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
+                m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
             }
 
             void readMessage()
@@ -384,9 +467,9 @@ namespace dds
                     boost::interprocess::message_queue::size_type receivedSize;
 
                     // We need to allocate the memory of the size equal to the maximum size of the message
-                    m_currentMsg->resize(m_transportIn->get_max_msg_size());
-                    m_transportIn->receive(
-                        m_currentMsg->data(), m_transportIn->get_max_msg_size(), receivedSize, priority);
+                    m_currentMsg->resize(m_transportIn.m_mq->get_max_msg_size());
+                    m_transportIn.m_mq->receive(
+                        m_currentMsg->data(), m_transportIn.m_mq->get_max_msg_size(), receivedSize, priority);
 
                     if (receivedSize < CProtocolMessage::header_length)
                     {
@@ -476,9 +559,26 @@ namespace dds
 
                 try
                 {
-                    for (auto msg : m_writeBufferQueue)
+                    for (auto& msg : m_writeBufferQueue)
                     {
-                        m_transportOut->send(msg->data(), msg->length(), 0);
+                        messageQueuePtr_t mq = nullptr;
+                        bool exists = false;
+                        {
+                            std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                            auto it = m_transportOut.find(msg.m_protocolHeaderID);
+                            exists = (it != m_transportOut.end());
+                            mq = it->second.m_mq;
+                        }
+
+                        if (exists && mq != nullptr)
+                        {
+                            mq->send(msg.m_msg->data(), msg.m_msg->length(), 0);
+                        }
+                        else
+                        {
+                            LOG(MiscCommon::error) << "Can't find output transport with protocol header ID "
+                                                   << msg.m_protocolHeaderID << ". Write message failed.";
+                        }
                     }
                 }
                 catch (boost::interprocess::interprocess_exception& ex)
@@ -497,19 +597,15 @@ namespace dds
 
           protected:
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
-            uint64_t m_ProtocolHeaderID;
+            uint64_t m_protocolHeaderID;
 
           private:
-            messageQueuePtr_t m_transportIn;                      ///< Input message queue, i.e. we read from this queue
-            messageQueuePtr_t m_transportOut;                     ///< Output message queue, i.e. we write to this queue
+            SMessageQueueInfo m_transportIn;  ///< Input message queue, i.e. we read from this queue
+            messageQueueMap_t m_transportOut; ///< Map of output message queues, i.e. we write to this queues
+            std::mutex m_mutexTransportOut;
             boost::asio::io_service m_io_service;                 ///< IO service that is used as a thread pool
             std::shared_ptr<boost::thread_group> m_workerThreads; ///< Threads for IO service
             CProtocolMessage::protocolMessagePtr_t m_currentMsg;  ///> Current message that we read and process
-
-            std::string m_inputMessageQueueName;      ///< Input message queue name
-            std::string m_outputMessageQueueName;     ///< Output message queue name
-            EMQOpenType m_inputMessageQueueOpenType;  ///< Open type for message queue
-            EMQOpenType m_outputMessageQueueOpenType; ///< Open type for message queue
 
             protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
 
