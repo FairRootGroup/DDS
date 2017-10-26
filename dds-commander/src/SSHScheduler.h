@@ -7,6 +7,7 @@
 
 // DDS
 #include "AgentChannel.h"
+#include "ChannelInfo.h"
 #include "Task.h"
 #include "Topology.h"
 // STD
@@ -23,18 +24,17 @@ namespace dds
             {
                 SSchedule()
                     : m_taskID(0)
-                    , m_taskInfo()
-                    , m_channel()
                 {
                 }
 
                 uint64_t m_taskID;
                 topology_api::STaskInfo m_taskInfo;
-                CAgentChannel::weakConnectionPtr_t m_channel;
+                dds::protocol_api::SWeakChannelInfo<CAgentChannel> m_weakChannelInfo;
             };
 
             typedef std::vector<SSchedule> ScheduleVector_t;
             typedef std::map<size_t, std::vector<uint64_t>, std::greater<size_t>> CollectionMap_t;
+            typedef std::vector<dds::protocol_api::SWeakChannelInfo<CAgentChannel>> weakChannelInfoVector_t;
 
           private:
             // Map pair<host name, worker id> to vector of channel indeces.
@@ -44,11 +44,10 @@ namespace dds
             CSSHScheduler();
             ~CSSHScheduler();
 
-            void makeSchedule(const topology_api::CTopology& _topology,
-                              const CAgentChannel::weakConnectionPtrVector_t& _channels);
+            void makeSchedule(const topology_api::CTopology& _topology, const weakChannelInfoVector_t& _channels);
 
             void makeSchedule(const topology_api::CTopology& _topology,
-                              const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                              const weakChannelInfoVector_t& _channels,
                               const topology_api::CTopology::HashSet_t& _addedTasks,
                               const topology_api::CTopology::HashSet_t& _addedCollections);
 
@@ -60,19 +59,19 @@ namespace dds
 
           private:
             void makeScheduleImpl(const topology_api::CTopology& _topology,
-                                  const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                  const weakChannelInfoVector_t& _channels,
                                   const topology_api::CTopology::HashSet_t* _addedTasks,
                                   const topology_api::CTopology::HashSet_t* _addedCollections);
 
             void scheduleCollections(const topology_api::CTopology& _topology,
-                                     const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                     const weakChannelInfoVector_t& _channels,
                                      hostToChannelMap_t& _hostToChannelMap,
                                      std::set<uint64_t>& _scheduledTasks,
                                      const CollectionMap_t& _collectionMap,
                                      bool useRequirement);
 
             void scheduleTasks(const topology_api::CTopology& _topology,
-                               const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                               const weakChannelInfoVector_t& _channels,
                                hostToChannelMap_t& _hostToChannelMap,
                                std::set<uint64_t>& _scheduledTasks,
                                const std::set<uint64_t>& _tasksInCollections,

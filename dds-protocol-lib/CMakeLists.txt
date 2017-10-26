@@ -73,6 +73,7 @@ set( SRC_HDRS
     ./src/CustomCmdCmd.h
     ./src/UpdateTopologyCmd.h
     ./src/BaseEventHandlersImpl.h
+    ./src/ChannelInfo.h
 )
 
 include_directories(

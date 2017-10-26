@@ -11,6 +11,7 @@
 #include <boost/test/unit_test.hpp>
 // DDS
 #include "AgentChannel.h"
+#include "ConnectionManager.h"
 #include "HostInfoCmd.h"
 #include "SSHScheduler.h"
 #include "Topology.h"
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     CTopology topology;
     topology.init("topology_scheduler_test_1.xml");
 
-    CAgentChannel::connectionPtrVector_t agents;
+    CConnectionManager::channelInfo_t::container_t agents;
     size_t nofTasks = 3;
     size_t nofAgentsPerTask = 1000;
 
@@ -61,14 +62,15 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 
             agent->setRemoteHostInfo(hostInfo);
 
-            agents.push_back(agent);
+            // TODO: FIXME: change protocol header ID to non-zero value
+            agents.push_back(CConnectionManager::channelInfo_t(agent, 0));
         }
 
-    CAgentChannel::weakConnectionPtrVector_t weakAgents;
+    CConnectionManager::weakChannelInfo_t::container_t weakAgents;
     weakAgents.reserve(agents.size());
     for (auto& v : agents)
     {
-        weakAgents.push_back(v);
+        weakAgents.push_back(CConnectionManager::weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID));
     }
 
     CSSHScheduler scheduler;
@@ -87,7 +89,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     {
         SHostInfoCmd hostInfo;
         hostInfo.m_host = "nohost";
-        agent->setRemoteHostInfo(hostInfo);
+        agent.m_channel->setRemoteHostInfo(hostInfo);
     }
     auto execFailTime = STimeMeasure<std::chrono::microseconds>::execution([&scheduler, &topology, &weakAgents]() {
         BOOST_CHECK_THROW(scheduler.makeSchedule(topology, weakAgents), runtime_error);
@@ -99,7 +101,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 }
 
 void make_agent(boost::asio::io_service& _io_service,
-                CAgentChannel::connectionPtrVector_t& _agents,
+                CConnectionManager::channelInfo_t::container_t& _agents,
                 const string& _hostName,
                 const string& _workerId)
 {
@@ -109,7 +111,8 @@ void make_agent(boost::asio::io_service& _io_service,
     hostInfo.m_host = _hostName;
     hostInfo.m_workerId = _workerId;
     agent->setRemoteHostInfo(hostInfo);
-    _agents.push_back(agent);
+    // TODO: FIXME: change protocol header ID to non-zero value
+    _agents.push_back(CConnectionManager::channelInfo_t(agent, 0));
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
@@ -122,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
     CTopology topology;
     topology.init("topology_scheduler_test_2.xml");
 
-    CAgentChannel::connectionPtrVector_t agents;
+    CConnectionManager::channelInfo_t::container_t agents;
 
     size_t n = 3;
     agents.reserve(n * 9);
@@ -145,11 +148,11 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
         make_agent(io_service, agents, "noname_host", "noname_wn");
     }
 
-    CAgentChannel::weakConnectionPtrVector_t weakAgents;
+    CConnectionManager::weakChannelInfo_t::container_t weakAgents;
     weakAgents.reserve(agents.size());
     for (auto& v : agents)
     {
-        weakAgents.push_back(v);
+        weakAgents.push_back(CConnectionManager::weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID));
     }
 
     CSSHScheduler scheduler;
@@ -164,7 +167,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
 
     boost::asio::io_service io_service;
 
-    CAgentChannel::connectionPtrVector_t agents;
+    CConnectionManager::channelInfo_t::container_t agents;
 
     size_t n = 15;
     agents.reserve(n);
@@ -174,11 +177,11 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
         make_agent(io_service, agents, "host.com", "wn");
     }
 
-    CAgentChannel::weakConnectionPtrVector_t weakAgents;
+    CConnectionManager::weakChannelInfo_t::container_t weakAgents;
     weakAgents.reserve(agents.size());
     for (auto& v : agents)
     {
-        weakAgents.push_back(v);
+        weakAgents.push_back(CConnectionManager::weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID));
     }
 
     CTopology topo;

@@ -6,6 +6,7 @@
 #ifndef __DDS__ConnectionManagerImpl__
 #define __DDS__ConnectionManagerImpl__
 // DDS
+#include "ChannelInfo.h"
 #include "CommandAttachmentImpl.h"
 #include "MonitoringThread.h"
 #include "Options.h"
@@ -31,6 +32,11 @@ namespace dds
         template <class T, class A>
         class CConnectionManagerImpl
         {
+          public:
+            typedef SChannelInfo<T> channelInfo_t;
+            typedef SWeakChannelInfo<T> weakChannelInfo_t;
+            typedef std::function<bool(const channelInfo_t& _channelInfo, bool& /*_stop*/)> conditionFunction_t;
+
           public:
             CConnectionManagerImpl(size_t _minPort, size_t _maxPort, bool _useUITransport)
             {
@@ -166,17 +172,17 @@ namespace dds
                     pThis->_stop();
 
                     // Send shutdown signal to all client connections.
-                    typename T::weakConnectionPtrVector_t channels(getChannels());
+                    typename weakChannelInfo_t::container_t channels(getChannels());
 
                     for (const auto& v : channels)
                     {
-                        if (v.expired())
+                        if (v.m_channel.expired())
                             continue;
-                        auto ptr = v.lock();
+                        auto ptr = v.m_channel.lock();
                         ptr->template pushMsg<cmdSHUTDOWN>();
                     }
 
-                    auto condition = [](typename T::connectionPtr_t _v, bool& /*_stop*/) { return (_v->started()); };
+                    auto condition = [](const channelInfo_t& _v, bool& /*_stop*/) { return (_v.m_channel->started()); };
 
                     size_t counter = 0;
                     while (true)
@@ -203,9 +209,9 @@ namespace dds
 
                     for (const auto& v : channels)
                     {
-                        if (v.expired())
+                        if (v.m_channel.expired())
                             continue;
-                        auto ptr = v.lock();
+                        auto ptr = v.m_channel.lock();
                         ptr->stop();
                     }
 
@@ -223,19 +229,18 @@ namespace dds
             }
 
           protected:
-            typename T::weakConnectionPtrVector_t getChannels(
-                std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
+            typename weakChannelInfo_t::container_t getChannels(conditionFunction_t _condition = nullptr)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
 
-                typename T::weakConnectionPtrVector_t result;
+                typename weakChannelInfo_t::container_t result;
                 result.reserve(m_channels.size());
                 for (auto& v : m_channels)
                 {
                     bool stop = false;
                     if (_condition == nullptr || _condition(v, stop))
                     {
-                        result.push_back(v);
+                        result.push_back(weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID));
                         if (stop)
                             break;
                     }
@@ -244,19 +249,18 @@ namespace dds
             }
 
             template <ECmdType _cmd, class AttachmentType>
-            void broadcastMsg(const AttachmentType& _attachment,
-                              std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
+            void broadcastMsg(const AttachmentType& _attachment, conditionFunction_t _condition = nullptr)
             {
                 try
                 {
-                    typename T::weakConnectionPtrVector_t channels(getChannels(_condition));
+                    typename weakChannelInfo_t::container_t channels(getChannels(_condition));
 
                     for (const auto& v : channels)
                     {
-                        if (v.expired())
+                        if (v.m_channel.expired())
                             continue;
-                        auto ptr = v.lock();
-                        ptr->template pushMsg<_cmd>(_attachment);
+                        auto ptr = v.m_channel.lock();
+                        ptr->template pushMsg<_cmd>(_attachment, v.m_protocolHeaderID);
                     }
                 }
                 catch (std::bad_weak_ptr& e)
@@ -266,19 +270,18 @@ namespace dds
             }
 
             template <ECmdType _cmd, class AttachmentType>
-            void accumulativeBroadcastMsg(const AttachmentType& _attachment,
-                                          std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
+            void accumulativeBroadcastMsg(const AttachmentType& _attachment, conditionFunction_t _condition = nullptr)
             {
                 try
                 {
-                    typename T::weakConnectionPtrVector_t channels(getChannels(_condition));
+                    typename weakChannelInfo_t::container_t channels(getChannels(_condition));
 
                     for (const auto& v : channels)
                     {
-                        if (v.expired())
+                        if (v.m_channel.expired())
                             continue;
-                        auto ptr = v.lock();
-                        ptr->template accumulativePushMsg<_cmd>(_attachment);
+                        auto ptr = v.m_channel.lock();
+                        ptr->template accumulativePushMsg<_cmd>(_attachment, v.m_protocolHeaderID);
                     }
                 }
                 catch (std::bad_weak_ptr& e)
@@ -288,28 +291,27 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void broadcastSimpleMsg(std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
+            void broadcastSimpleMsg(conditionFunction_t _condition = nullptr)
             {
                 SEmptyCmd cmd;
                 broadcastMsg<_cmd>(cmd, _condition);
             }
 
-            void broadcastBinaryAttachmentCmd(
-                const MiscCommon::BYTEVector_t& _data,
-                const std::string& _fileName,
-                uint16_t _cmdSource,
-                std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
+            void broadcastBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
+                                              const std::string& _fileName,
+                                              uint16_t _cmdSource,
+                                              conditionFunction_t _condition = nullptr)
             {
                 try
                 {
-                    typename T::weakConnectionPtrVector_t channels(getChannels(_condition));
+                    typename weakChannelInfo_t::container_t channels(getChannels(_condition));
 
                     for (const auto& v : channels)
                     {
-                        if (v.expired())
+                        if (v.m_channel.expired())
                             continue;
-                        auto ptr = v.lock();
-                        ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource);
+                        auto ptr = v.m_channel.lock();
+                        ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource, v.m_protocolHeaderID);
                     }
                 }
                 catch (std::bad_weak_ptr& e)
@@ -318,7 +320,7 @@ namespace dds
                 }
             }
 
-            size_t countNofChannels(std::function<bool(typename T::connectionPtr_t, bool&)> _condition = nullptr)
+            size_t countNofChannels(conditionFunction_t _condition = nullptr)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -348,7 +350,7 @@ namespace dds
                     _client->start();
                     {
                         std::lock_guard<std::mutex> lock(m_mutex);
-                        m_channels.push_back(_client);
+                        m_channels.push_back(channelInfo_t(_client, _client->getProtocolHeaderID()));
                     }
                     createClientAndStartAccept(_acceptor);
                 }
@@ -409,9 +411,10 @@ namespace dds
                 LOG(MiscCommon::debug) << "Removing " /*<< _client->getTypeName()*/
                                        << " client from the list of active";
                 std::lock_guard<std::mutex> lock(m_mutex);
+                // TODO: FIXME: Delete all connections of the channel if the primary protocol header ID is deleted
                 m_channels.erase(remove_if(m_channels.begin(),
                                            m_channels.end(),
-                                           [&](typename T::connectionPtr_t& i) { return (i.get() == _client); }),
+                                           [&](const channelInfo_t& i) { return (i.m_channel.get() == _client); }),
                                  m_channels.end());
             }
 
@@ -430,7 +433,7 @@ namespace dds
             /// The signal_set is used to register for process termination notifications.
             std::shared_ptr<boost::asio::signal_set> m_signals;
             std::mutex m_mutex;
-            typename T::connectionPtrVector_t m_channels;
+            typename channelInfo_t::container_t m_channels;
 
             /// Used for the main comunication
             boost::asio::io_service m_io_service;

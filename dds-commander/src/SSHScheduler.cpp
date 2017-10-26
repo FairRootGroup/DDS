@@ -22,7 +22,7 @@ CSSHScheduler::~CSSHScheduler()
 {
 }
 
-void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel::weakConnectionPtrVector_t& _channels)
+void CSSHScheduler::makeSchedule(const CTopology& _topology, const weakChannelInfoVector_t& _channels)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
         [this, &_topology, &_channels]() { makeScheduleImpl(_topology, _channels, nullptr, nullptr); });
@@ -30,7 +30,7 @@ void CSSHScheduler::makeSchedule(const CTopology& _topology, const CAgentChannel
 }
 
 void CSSHScheduler::makeSchedule(const topology_api::CTopology& _topology,
-                                 const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                 const weakChannelInfoVector_t& _channels,
                                  const CTopology::HashSet_t& _addedTasks,
                                  const CTopology::HashSet_t& _addedCollections)
 {
@@ -42,7 +42,7 @@ void CSSHScheduler::makeSchedule(const topology_api::CTopology& _topology,
 }
 
 void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
-                                     const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                     const weakChannelInfoVector_t& _channels,
                                      const CTopology::HashSet_t* _addedTasks,
                                      const CTopology::HashSet_t* _addedCollections)
 {
@@ -55,9 +55,9 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
     {
         const auto& v = _channels[iChannel];
-        if (v.expired())
+        if (v.m_channel.expired())
             continue;
-        auto ptr = v.lock();
+        auto ptr = v.m_channel.lock();
 
         // Only idle DDS agents
         if (ptr->getState() != EAgentState::idle)
@@ -107,7 +107,7 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
 }
 
 void CSSHScheduler::scheduleTasks(const CTopology& _topology,
-                                  const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                  const weakChannelInfoVector_t& _channels,
                                   hostToChannelMap_t& _hostToChannelMap,
                                   set<uint64_t>& _scheduledTasks,
                                   const set<uint64_t>& _tasksInCollections,
@@ -166,7 +166,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
                     const auto& channel = _channels[channelIndex];
 
                     SSchedule schedule;
-                    schedule.m_channel = channel;
+                    schedule.m_weakChannelInfo = channel;
                     schedule.m_taskInfo = it->second;
                     schedule.m_taskID = id;
                     m_schedule.push_back(schedule);
@@ -193,7 +193,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
 }
 
 void CSSHScheduler::scheduleCollections(const CTopology& _topology,
-                                        const CAgentChannel::weakConnectionPtrVector_t& _channels,
+                                        const weakChannelInfoVector_t& _channels,
                                         hostToChannelMap_t& _hostToChannelMap,
                                         set<uint64_t>& _scheduledTasks,
                                         const CollectionMap_t& _collectionMap,
@@ -243,7 +243,7 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                         const auto& channel = _channels[channelIndex];
 
                         SSchedule schedule;
-                        schedule.m_channel = channel;
+                        schedule.m_weakChannelInfo = channel;
                         schedule.m_taskInfo = info;
                         schedule.m_taskID = hash;
                         m_schedule.push_back(schedule);
@@ -287,9 +287,9 @@ string CSSHScheduler::toString()
     ss << "Scheduled tasks: " << m_schedule.size() << endl;
     for (const auto& s : m_schedule)
     {
-        if (s.m_channel.expired())
+        if (s.m_weakChannelInfo.m_channel.expired())
             continue;
-        auto ptr = s.m_channel.lock();
+        auto ptr = s.m_weakChannelInfo.m_channel.lock();
 
         ss << "<" << s.m_taskID << ">"
            << " <" << s.m_taskInfo.m_task->getPath() << "> ---> " << ptr->getRemoteHostInfo().m_host << endl;

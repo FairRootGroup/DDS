@@ -4,6 +4,7 @@
 //
 
 #include "UIChannelInfo.h"
+#include "dds_intercom.h"
 
 using namespace std;
 using namespace dds;

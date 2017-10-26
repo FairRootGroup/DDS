@@ -416,7 +416,7 @@ namespace dds
                 accumulativePushMsg<_cmd>(cmd);
             }
 
-            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID = 0)
             {
                 try
                 {
@@ -467,7 +467,7 @@ namespace dds
             }
 
             template <ECmdType _cmd, class A>
-            void pushMsg(const A& _attachment, uint64_t _protocolHeaderID)
+            void pushMsg(const A& _attachment, uint64_t _protocolHeaderID = 0)
             {
                 try
                 {
@@ -482,7 +482,7 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void pushMsg(uint64_t _protocolHeaderID)
+            void pushMsg(uint64_t _protocolHeaderID = 0)
             {
                 SEmptyCmd cmd;
                 pushMsg<_cmd>(cmd, (_protocolHeaderID != 0 ? _protocolHeaderID : m_ProtocolHeaderID));
@@ -507,7 +507,8 @@ namespace dds
 
             void pushBinaryAttachmentCmd(const std::string& _srcFilePath,
                                          const std::string& _fileName,
-                                         uint16_t _cmdSource)
+                                         uint16_t _cmdSource,
+                                         uint64_t _protocolHeaderID)
             {
                 MiscCommon::BYTEVector_t data;
 
@@ -525,12 +526,13 @@ namespace dds
                 f.seekg(0, std::ios::beg);
                 data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-                pushBinaryAttachmentCmd(data, _fileName, _cmdSource);
+                pushBinaryAttachmentCmd(data, _fileName, _cmdSource, _protocolHeaderID);
             }
 
             void pushBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
                                          const std::string& _fileName,
-                                         uint16_t _cmdSource)
+                                         uint16_t _cmdSource,
+                                         uint64_t _protocolHeaderID)
             {
                 static const int maxCommandSize = 65536;
                 int nofParts = (_data.size() % maxCommandSize == 0) ? (_data.size() / maxCommandSize)
@@ -547,7 +549,7 @@ namespace dds
                 start_cmd.m_fileName = _fileName;
                 start_cmd.m_fileSize = _data.size();
                 start_cmd.m_fileCrc32 = fileCrc32.checksum();
-                pushMsg<cmdBINARY_ATTACHMENT_START>(start_cmd);
+                pushMsg<cmdBINARY_ATTACHMENT_START>(start_cmd, _protocolHeaderID);
 
                 for (size_t i = 0; i < nofParts; ++i)
                 {
@@ -569,7 +571,7 @@ namespace dds
 
                     cmd.m_crc32 = crc32.checksum();
 
-                    pushMsg<cmdBINARY_ATTACHMENT>(cmd);
+                    pushMsg<cmdBINARY_ATTACHMENT>(cmd, _protocolHeaderID);
                 }
             }
 
@@ -743,6 +745,11 @@ namespace dds
                 {
                     return std::string();
                 }
+            }
+
+            uint64_t getProtocolHeaderID() const
+            {
+                return m_ProtocolHeaderID;
             }
 
           private:

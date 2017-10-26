@@ -95,7 +95,7 @@ namespace dds
                                   CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
-            void activateTasks(const CSSHScheduler& _shceduler);
+            void activateTasks(const CSSHScheduler& _scheduler);
             void stopTasks(const CAgentChannel::weakConnectionPtrVector_t& _agents,
                            CAgentChannel::weakConnectionPtr_t _channel,
                            bool _shutdownOnComplete);
