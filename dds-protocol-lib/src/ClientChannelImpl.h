@@ -38,7 +38,7 @@ namespace dds
                         this->m_isHandshakeOK = true;
 
                         // The following commands starts message processing which might be queued before.
-                        this->template pushMsg<cmdUNKNOWN>();
+                        this->template pushMsg<cmdUNKNOWN>(_sender.m_ID);
 
                         // notify all subscribers about the event
                         this->dispatchHandlers(EChannelEvents::OnHandshakeOK, _sender);
@@ -92,7 +92,7 @@ namespace dds
                             cmd.m_channelType = this->m_channelType;
                             cmd.m_sSID = this->m_sessionID;
                             cmd.m_version = DDS_PROTOCOL_VERSION;
-                            this->template pushMsg<cmdHANDSHAKE>(cmd);
+                            this->template pushMsg<cmdHANDSHAKE>(cmd, this->m_ProtocolHeaderID);
                         }
                         else
                         {

@@ -337,7 +337,7 @@ void CDDSIntercomGuard::sendCustomCmd(const std::string& _command, const std::st
         cmd.m_sCmd = _command;
         cmd.m_sCondition = _condition;
 
-        m_agentConnectionMng->sendCustomCmd(cmd);
+        m_agentConnectionMng->sendCustomCmd(cmd, 0);
     }
     else
     {

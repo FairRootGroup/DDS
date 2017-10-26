@@ -35,8 +35,8 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
             case EChannelType::AGENT:
             {
                 m_state = EAgentState::idle;
-                pushMsg<cmdGET_ID>();
-                pushMsg<cmdGET_HOST_INFO>();
+                pushMsg<cmdGET_ID>(_sender.m_ID);
+                pushMsg<cmdGET_HOST_INFO>(_sender.m_ID);
             }
                 return;
             case EChannelType::UI:
@@ -118,7 +118,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
     }
     catch (exception& e)
     {
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), MiscCommon::fatal, cmdSUBMIT));
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), MiscCommon::fatal, cmdSUBMIT), _sender.m_ID);
         return true;
     }
 
@@ -149,7 +149,7 @@ bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _att
     stringstream ss;
     ss << pid;
     cmd_attachment.m_sMsg = ss.str();
-    pushMsg<cmdREPLY_PID>(cmd_attachment);
+    pushMsg<cmdREPLY_PID>(cmd_attachment, _sender.m_ID);
 
     return true;
 }

@@ -148,7 +148,7 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>
     stop();
 }
 
-void CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command)
+void CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _command, uint64_t _protocolHeaderID)
 {
     try
     {
@@ -156,7 +156,7 @@ void CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _
             throw runtime_error("Agent channel is offline");
 
         auto p = getAgentChannel().lock();
-        p->pushMsg<cmdCUSTOM_CMD>(_command);
+        p->pushMsg<cmdCUSTOM_CMD>(_command, _protocolHeaderID);
     }
     catch (const exception& _e)
     {

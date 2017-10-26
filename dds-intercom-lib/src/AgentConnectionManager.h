@@ -32,7 +32,7 @@ namespace dds
             {
                 return m_service.stopped();
             }
-            void sendCustomCmd(const protocol_api::SCustomCmdCmd& _command);
+            void sendCustomCmd(const protocol_api::SCustomCmdCmd& _command, uint64_t _protocolHeaderID);
 
           public:
             void waitCondition();

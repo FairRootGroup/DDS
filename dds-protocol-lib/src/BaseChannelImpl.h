@@ -416,7 +416,7 @@ namespace dds
                 accumulativePushMsg<_cmd>(cmd);
             }
 
-            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID)
             {
                 try
                 {
@@ -467,13 +467,13 @@ namespace dds
             }
 
             template <ECmdType _cmd, class A>
-            void pushMsg(const A& _attachment)
+            void pushMsg(const A& _attachment, uint64_t _protocolHeaderID)
             {
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg =
-                        SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
-                    pushMsg(msg, _cmd);
+                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(
+                        _attachment, (_protocolHeaderID != 0 ? _protocolHeaderID : m_ProtocolHeaderID));
+                    pushMsg(msg, _cmd, _protocolHeaderID);
                 }
                 catch (std::exception& ex)
                 {
@@ -482,10 +482,10 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void pushMsg()
+            void pushMsg(uint64_t _protocolHeaderID)
             {
                 SEmptyCmd cmd;
-                pushMsg<_cmd>(cmd);
+                pushMsg<_cmd>(cmd, (_protocolHeaderID != 0 ? _protocolHeaderID : m_ProtocolHeaderID));
             }
 
             template <ECmdType _cmd, class A>

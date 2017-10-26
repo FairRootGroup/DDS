@@ -263,7 +263,7 @@ void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
     {
         auto p = _channel.lock();
         p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Can not process the request. The getlog command is already in progress."));
+            SSimpleMsgCmd("Can not process the request. The getlog command is already in progress."), _sender.m_ID);
         return;
     }
     m_getLog.m_channel = _channel;
@@ -277,7 +277,7 @@ void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
     {
         stringstream ss;
         ss << "Could not create directory " << sLogStorageDir << " to save log files.";
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()), _sender.m_ID);
 
         m_getLog.m_channel.reset();
         return;
@@ -291,7 +291,7 @@ void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
 
     if (m_getLog.m_nofRequests == 0)
     {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no connected agents."));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no connected agents."), _sender.m_ID);
         return;
     }
 
@@ -338,8 +338,8 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
             stringstream ssErrMsg;
             ssErrMsg << "Unknown RMS plug-in requested \"" << _attachment->m_sRMSType << "\" (" << ssPluginExe.str()
                      << ")";
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ssErrMsg.str(), fatal, cmdSUBMIT));
-            p->pushMsg<cmdSHUTDOWN>();
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ssErrMsg.str(), fatal, cmdSUBMIT), _sender.m_ID);
+            p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
             return;
         }
 
@@ -387,7 +387,7 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
             f_script.close();
         }
         // pack worker package
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Creating new worker package...", info, cmdSUBMIT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Creating new worker package...", info, cmdSUBMIT), _sender.m_ID);
         _createWnPkg(!inlineShellScripCmds.empty());
 
         // remember the UI channel, which requested to submit the job
@@ -402,9 +402,9 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
 
         string sPluginInfoMsg("RMS plug-in: ");
         sPluginInfoMsg += ssPluginExe.str();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(sPluginInfoMsg, info, cmdSUBMIT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(sPluginInfoMsg, info, cmdSUBMIT), _sender.m_ID);
 
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT), _sender.m_ID);
         LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
 
         // Let the submit info channel now, that plug-in is about to start
@@ -421,7 +421,7 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
                 ostringstream ss;
                 ss << outPut;
                 LOG(info) << ss.str();
-                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
+                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()), _sender.m_ID);
             }
 
             stringstream ssMsg;
@@ -433,7 +433,7 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
             ostringstream ss;
             ss << outPut;
             LOG(info) << ss.str();
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()));
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()), _sender.m_ID);
         }
     }
     catch (bad_weak_ptr& e)
@@ -451,7 +451,7 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
         if (!_channel.expired())
         {
             auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), fatal, cmdSUBMIT));
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), fatal, cmdSUBMIT), _sender.m_ID);
         }
     }
 }
@@ -474,16 +474,21 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         switch (updateType)
         {
             case SUpdateTopologyCmd::EUpdateType::UPDATE:
-                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
-                    "Updating topology to " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+                p->pushMsg<cmdSIMPLE_MSG>(
+                    SSimpleMsgCmd(
+                        "Updating topology to " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY),
+                    _sender.m_ID);
                 break;
             case SUpdateTopologyCmd::EUpdateType::ACTIVATE:
-                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
-                    "Activating topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+                p->pushMsg<cmdSIMPLE_MSG>(
+                    SSimpleMsgCmd(
+                        "Activating topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY),
+                    _sender.m_ID);
                 break;
             case SUpdateTopologyCmd::EUpdateType::STOP:
                 p->pushMsg<cmdSIMPLE_MSG>(
-                    SSimpleMsgCmd("Stopping topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY));
+                    SSimpleMsgCmd("Stopping topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY),
+                    _sender.m_ID);
                 break;
             default:
                 break;
@@ -537,7 +542,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
            << m_topo.stringOfCollections(removedCollections) << "Added tasks :" << addedTasks.size() << "\n"
            << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
            << topo.stringOfCollections(addedCollections);
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), log_stdout, cmdUPDATE_TOPOLOGY));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
 
         m_topo = topo; // Assign new topology
         //
@@ -547,7 +552,8 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         if (removedTasks.size() > 0)
         {
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Stopping removed tasks...", log_stdout, cmdUPDATE_TOPOLOGY));
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Stopping removed tasks...", log_stdout, cmdUPDATE_TOPOLOGY),
+                                      _sender.m_ID);
 
             CAgentChannel::weakConnectionPtrVector_t agents;
             for (auto taskID : removedTasks)
@@ -576,7 +582,8 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 throw runtime_error(
                     "Can not process the request. Activation or update of the agents is already in progress.");
 
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Activating added tasks...", log_stdout, cmdUPDATE_TOPOLOGY));
+            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Activating added tasks...", log_stdout, cmdUPDATE_TOPOLOGY),
+                                      _sender.m_ID);
 
             // remember the UI channel, which requested to submit the job
             m_updateTopology.m_channel = _channel;
@@ -602,7 +609,8 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 throw runtime_error(ssMsg.str());
             }
             // initiate UI progress
-            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_updateTopology.m_nofRequests, 0));
+            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_updateTopology.m_nofRequests, 0),
+                                    _sender.m_ID);
 
             // Schedule the tasks
             CAgentChannel::weakConnectionPtrVector_t channels(getChannels(condition));
@@ -627,13 +635,13 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         bool sendShutdown = removedTasks.size() == 0 && addedTasks.size() == 0;
         if (sendShutdown)
         {
-            p->pushMsg<cmdSHUTDOWN>();
+            p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
         }
     }
     catch (exception& _e)
     {
         auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdUPDATE_TOPOLOGY));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdUPDATE_TOPOLOGY), _sender.m_ID);
 
         m_updateTopology.m_channel.reset();
         return;
@@ -799,7 +807,7 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
     {
         SAgentsInfoCmd cmd;
         auto p = _channel.lock();
-        p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
+        p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
         return;
     }
 
@@ -837,7 +845,7 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
         if (!_channel.expired())
         {
             auto p = _channel.lock();
-            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd);
+            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
         }
     }
 }
@@ -851,8 +859,10 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
     if (!m_transportTest.m_channel.expired())
     {
         auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
-            "Can not process the request. The test command is already in progress.", fatal, cmdTRANSPORT_TEST));
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd(
+                "Can not process the request. The test command is already in progress.", fatal, cmdTRANSPORT_TEST),
+            _sender.m_ID);
         return;
     }
     m_transportTest.m_channel = _channel;
@@ -883,7 +893,7 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
     if (m_transportTest.m_nofRequests == 0 && !m_transportTest.m_channel.expired())
     {
         auto p = m_transportTest.m_channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no active agents.", fatal, cmdTRANSPORT_TEST));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no active agents.", fatal, cmdTRANSPORT_TEST), _sender.m_ID);
     }
 }
 
@@ -969,7 +979,7 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
         }
 
         auto channelPtr = _channel.lock();
-        channelPtr->pushMsg<cmdUPDATE_KEY_ERROR>(errorCmd);
+        channelPtr->pushMsg<cmdUPDATE_KEY_ERROR>(errorCmd, _sender.m_ID);
 
         return;
     }
@@ -989,7 +999,7 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
         else
             ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
                << task->getId();
-        channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
+        channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID);
     }
 
     CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
@@ -1037,7 +1047,8 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
     }
 
     channelPtr->pushMsg<cmdSIMPLE_MSG>(
-        SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::debug, cmdUPDATE_KEY));
+        SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::debug, cmdUPDATE_KEY),
+        _sender.m_ID);
 }
 
 void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
@@ -1109,7 +1120,7 @@ void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& _sender,
     {
         auto ptr = _channel.lock();
         ptr->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd(m_keyValueManager.getPropertyString(), MiscCommon::info, cmdGET_PROP_LIST));
+            SSimpleMsgCmd(m_keyValueManager.getPropertyString(), MiscCommon::info, cmdGET_PROP_LIST), _sender.m_ID);
     }
 }
 
@@ -1122,8 +1133,10 @@ void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& _sender,
         if (!_channel.expired())
         {
             auto ptr = _channel.lock();
-            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(
-                m_keyValueManager.getKeyValueString(_attachment->m_sPropertyID), MiscCommon::info, cmdGET_PROP_VALUES));
+            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(m_keyValueManager.getKeyValueString(_attachment->m_sPropertyID),
+                                                      MiscCommon::info,
+                                                      cmdGET_PROP_VALUES),
+                                        _sender.m_ID);
         }
     }
     catch (exception& e)
@@ -1133,7 +1146,7 @@ void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& _sender,
             stringstream ss;
             ss << "Error getting values for property " << _attachment->m_sPropertyID << ": " << e.what();
             auto ptr = _channel.lock();
-            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdGET_PROP_VALUES));
+            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdGET_PROP_VALUES), _sender.m_ID);
         }
     }
 }
@@ -1153,7 +1166,7 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
             p->setId(agentId);
             SIDCmd msg_cmd;
             msg_cmd.m_id = p->getId();
-            p->pushMsg<cmdSET_ID>(msg_cmd);
+            p->pushMsg<cmdSET_ID>(msg_cmd, _sender.m_ID);
         }
         else
         {
@@ -1162,7 +1175,7 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
     }
     catch (exception& _e)
     {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdREPLY_ID));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdREPLY_ID), _sender.m_ID);
     }
 }
 
@@ -1196,11 +1209,12 @@ void CConnectionManager::on_cmdENABLE_STAT(const SSenderInfo& _sender,
         enableDisableStatForChannels(true);
 
         p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Statistics is enabled on DDS commander server", MiscCommon::info, cmdENABLE_STAT));
+            SSimpleMsgCmd("Statistics is enabled on DDS commander server", MiscCommon::info, cmdENABLE_STAT),
+            _sender.m_ID);
     }
     catch (exception& _e)
     {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdENABLE_STAT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdENABLE_STAT), _sender.m_ID);
     }
 }
 
@@ -1214,11 +1228,12 @@ void CConnectionManager::on_cmdDISABLE_STAT(const SSenderInfo& _sender,
         enableDisableStatForChannels(false);
 
         p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Statistics is disabled on DDS commander server", MiscCommon::info, cmdDISABLE_STAT));
+            SSimpleMsgCmd("Statistics is disabled on DDS commander server", MiscCommon::info, cmdDISABLE_STAT),
+            _sender.m_ID);
     }
     catch (exception& _e)
     {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdDISABLE_STAT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdDISABLE_STAT), _sender.m_ID);
     }
 }
 
@@ -1253,11 +1268,11 @@ void CConnectionManager::on_cmdGET_STAT(const SSenderInfo& _sender,
         stringstream ss;
         ss << "Number of active channels: " << channels.size() << endl << readStat.toString() << writeStat.toString();
 
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_STAT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_STAT), _sender.m_ID);
     }
     catch (exception& _e)
     {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdGET_STAT));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdGET_STAT), _sender.m_ID);
     }
 }
 
@@ -1353,11 +1368,11 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
         stringstream ss;
         ss << "Send custom command to " << channels.size() << " channels." << endl;
 
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD), _sender.m_ID);
     }
     catch (exception& _e)
     {
         LOG(error) << "on_cmdCUSTOM_CMD: " << _e.what();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdCUSTOM_CMD));
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdCUSTOM_CMD), _sender.m_ID);
     }
 }

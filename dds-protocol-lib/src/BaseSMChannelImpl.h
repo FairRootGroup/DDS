@@ -176,12 +176,7 @@ namespace dds
                 : CChannelMessageHandlersImpl()
                 , m_started(false)
                 , m_protocolHeaderID(_protocolHeaderID)
-                , m_workerThreads()
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
-                , m_writeQueue()
-                , m_mutexWriteBuffer()
-                , m_writeBufferQueue()
-                , m_mutexTransportOut()
             {
                 // Input transport
                 m_transportIn.m_name = _inputName;
