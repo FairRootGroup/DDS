@@ -345,12 +345,20 @@ std::string CUserDefaults::getSMAgentInputName() const
 
 std::string CUserDefaults::getSMAgentOutputName() const
 {
-    string storageName(to_string(getScoutPid()));
-    storageName += "_DDSSMAO";
-    return storageName;
-    //    string smName("DDSAGENTO-");
-    //    smName += getSID();
-    //    return smName;
+    // Shared memory for all messages addressed to commander
+    // TODO: FIXME: maximum length of the SM name
+    string smName("DDSAO-");
+    smName += getSID();
+    return smName.substr(0, 24);
+}
+
+std::string CUserDefaults::getSMAgentLeaderOutputName() const
+{
+    // Shared memory addressed to lobby leader
+    // TODO: FIXME: maximum length of the SM name
+    string smName("DDSALO-");
+    smName += getSID();
+    return smName.substr(0, 24);
 }
 
 string CUserDefaults::getPluginsRootDir() const

@@ -51,6 +51,7 @@ namespace dds
             std::string getSMOutputName() const;
             std::string getSMAgentInputName() const;
             std::string getSMAgentOutputName() const;
+            std::string getSMAgentLeaderOutputName() const;
             std::string getPluginsRootDir() const;
             std::string getMainSIDFileName() const;
             std::string getSIDFile() const;

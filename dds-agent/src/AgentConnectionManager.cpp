@@ -97,43 +97,44 @@ void CAgentConnectionManager::start()
             return;
         }
 
-        //
-        //        bool locked = leaderMutex->try_lock();
-        //        if (locked)
-        //        {
-        //            // TODO: FIXME:
-        //            // - create shared memory
-        //            // - error processing if memory can't be created
-        //            // - create network channel
-        //
-        //            createAndStartSMIntercomChannel();
-        //            createAndStartSMAgentChannel(false);
-        //            // Start network channel. This is a blocking function call.
-        //            createAndStartNetworkAgentChannel();
-        //
-        //            leaderMutex->unlock();
-        //        }
-        //        else
-        //        {
-        //            // TODO: FIXME:
-        //            // - open shared memory
-        //            // - error processing if memory can't be opened
-        //
-        //            // TODO: FIXME:
-        //            // - block execution, channels are working in threads
-        //            // leaderMutex->lock();
-        //
-        //            createAndStartSMIntercomChannel();
-        //            // Blocking function call
-        //            createAndStartSMAgentChannel(true);
-        //        }
+        bool locked = leaderMutex->try_lock();
+        // If locked then it's a lobby leader
+        if (locked)
+        {
+            // TODO: FIXME:
+            // - create shared memory
+            // - error processing if memory can't be created
+            // - create network channel
+
+            LOG(info) << "Lobby status: leader";
+
+            createAndStartSMIntercomChannel(protocolHeaderID);
+            createAndStartSMAgentChannel(protocolHeaderID, false);
+            createAndStartSMLeaderChannel(protocolHeaderID);
+            // Start network channel. This is a blocking function call.
+            createAndStartNetworkAgentChannel(protocolHeaderID);
+
+            leaderMutex->unlock();
+        }
+        else
+        {
+            // TODO: FIXME:
+            // - open shared memory
+            // - error processing if memory can't be opened
+
+            // TODO: FIXME:
+            // - block execution, channels are working in threads
+            // leaderMutex->lock();
+
+            LOG(info) << "Lobby status: member";
+
+            createAndStartSMIntercomChannel(protocolHeaderID);
+            // Blocking function call
+            createAndStartSMAgentChannel(protocolHeaderID, true);
+        }
 
         // Free mutex
-        // leaderMutex.reset();
-
-        createAndStartSMIntercomChannel(protocolHeaderID);
-        createAndStartSMAgentChannel(protocolHeaderID, false);
-        createAndStartNetworkAgentChannel(protocolHeaderID);
+        leaderMutex.reset();
     }
     catch (exception& e)
     {
@@ -216,6 +217,16 @@ void CAgentConnectionManager::createAndStartNetworkAgentChannel(uint64_t _protoc
     m_workerThreads.join_all();
 }
 
+void CAgentConnectionManager::createAndStartSMLeaderChannel(uint64_t _protocolHeaderID)
+{
+    // Shared memory channel for communication with user task
+    const CUserDefaults& userDefaults = CUserDefaults::instance();
+    m_SMLeader = CSMLeaderChannel::makeNew(
+        userDefaults.getSMAgentLeaderOutputName(), userDefaults.getSMAgentLeaderOutputName(), _protocolHeaderID);
+    // Start listening for messages from shared memory
+    m_SMLeader->start();
+}
+
 void CAgentConnectionManager::createAndStartSMIntercomChannel(uint64_t _protocolHeaderID)
 {
     // Shared memory channel for communication with user task
@@ -237,6 +248,7 @@ void CAgentConnectionManager::createAndStartSMAgentChannel(uint64_t _protocolHea
     // Create shared memory agent channel
     m_SMAgent = CSMCommanderChannel::makeNew(
         userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
+    m_SMAgent->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
 
     // Subscribe to Shutdown command
     m_SMAgent->registerHandler<cmdSHUTDOWN>(

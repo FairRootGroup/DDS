@@ -10,6 +10,7 @@
 #include "CommanderChannel.h"
 #include "Options.h"
 #include "SMCommanderChannel.h"
+#include "SMLeaderChannel.h"
 #include "SMUIChannel.h"
 // BOOST
 #include <boost/asio.hpp>
@@ -35,6 +36,7 @@ namespace dds
           private:
             void createAndStartNetworkAgentChannel(uint64_t _protocolHeaderID);
             void createAndStartSMIntercomChannel(uint64_t _protocolHeaderID);
+            void createAndStartSMLeaderChannel(uint64_t _protocolHeaderID);
             void createAndStartSMAgentChannel(uint64_t _protocolHeaderID, bool _block);
             void doAwaitStop();
             void onNewUserTask(pid_t _pid);
@@ -80,6 +82,7 @@ namespace dds
             CCommanderChannel::connectionPtr_t m_agent;
             CSMUIChannel::connectionPtr_t m_SMChannel;
             CSMCommanderChannel::connectionPtr_t m_SMAgent;
+            CSMLeaderChannel::connectionPtr_t m_SMLeader;
             childrenPidContainer_t m_children;
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;

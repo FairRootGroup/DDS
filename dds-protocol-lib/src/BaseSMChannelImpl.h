@@ -135,13 +135,13 @@ namespace dds
         {
             struct SProtocolMessageInfo
             {
-                SProtocolMessageInfo(uint64_t _protocolHeaderID, CProtocolMessage::protocolMessagePtr_t _msg)
-                    : m_protocolHeaderID(_protocolHeaderID)
+                SProtocolMessageInfo(uint64_t _outputID, CProtocolMessage::protocolMessagePtr_t _msg)
+                    : m_outputID(_outputID)
                     , m_msg(_msg)
                 {
                 }
 
-                uint64_t m_protocolHeaderID;
+                uint64_t m_outputID;
                 CProtocolMessage::protocolMessagePtr_t m_msg;
             };
 
@@ -255,10 +255,26 @@ namespace dds
             }
 
           public:
-            void addOutput(uint64_t _protocolHeaderID,
-                           const std::string& _name,
-                           EMQOpenType _openType = EMQOpenType::OpenOnly)
+            void addOutput(uint64_t _outputID, const std::string& _name, EMQOpenType _openType = EMQOpenType::OpenOnly)
             {
+                if (_outputID < 1)
+                {
+                    LOG(MiscCommon::error)
+                        << "Can't add output. Output ID must be greater than 0. Current value: " << _outputID;
+                    return;
+                }
+
+                {
+                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    auto it = m_transportOut.find(_outputID);
+                    if (it == m_transportOut.end())
+                    {
+                        LOG(MiscCommon::error)
+                            << "Can't add output. Output with ID " << _outputID << " already exists.";
+                        return;
+                    }
+                }
+
                 SMessageQueueInfo info;
                 info.m_name = _name;
                 info.m_openType = _openType;
@@ -267,13 +283,12 @@ namespace dds
                 if (info.m_mq != nullptr)
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    m_transportOut.emplace(_protocolHeaderID, info);
+                    m_transportOut.emplace(_outputID, info);
                 }
                 else
                 {
                     LOG(MiscCommon::error)
-                        << "Can't add shared memory channel output with protocol header ID: " << _protocolHeaderID
-                        << " name: " << _name;
+                        << "Can't add shared memory channel output with ID: " << _outputID << " name: " << _name;
                 }
             }
 
@@ -379,7 +394,7 @@ namespace dds
                 }
             }
 
-            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID = 0)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _outputID = 0)
             {
                 if (!m_started)
                 {
@@ -393,7 +408,7 @@ namespace dds
 
                     // add the current message to the queue
                     if (cmdUNKNOWN != _cmd)
-                        m_writeQueue.push_back(SProtocolMessageInfo(protocolHeaderID(_protocolHeaderID), _msg));
+                        m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
 
                     LOG(MiscCommon::debug) << "BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
                 }
@@ -417,14 +432,14 @@ namespace dds
             }
 
             template <ECmdType _cmd, class A>
-            void pushMsg(const A& _attachment, uint64_t _protocolHeaderID = 0)
+            void pushMsg(const A& _attachment, uint64_t _protocolHeaderID = 0, uint64_t _outputID = 0)
             {
                 try
                 {
                     uint64_t headerID = protocolHeaderID(_protocolHeaderID);
                     CProtocolMessage::protocolMessagePtr_t msg =
                         SCommandAttachmentImpl<_cmd>::encode(_attachment, headerID);
-                    pushMsg(msg, _cmd, headerID);
+                    pushMsg(msg, _cmd, _outputID);
                 }
                 catch (std::exception& ex)
                 {
@@ -433,10 +448,10 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void pushMsg(uint64_t _protocolHeaderID = 0)
+            void pushMsg(uint64_t _protocolHeaderID = 0, uint64_t _outputID = 0)
             {
                 SEmptyCmd cmd;
-                pushMsg<_cmd>(cmd, _protocolHeaderID);
+                pushMsg<_cmd>(cmd, _protocolHeaderID, _outputID);
             }
 
           private:
@@ -560,7 +575,7 @@ namespace dds
                         bool exists = false;
                         {
                             std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                            auto it = m_transportOut.find(msg.m_protocolHeaderID);
+                            auto it = m_transportOut.find(msg.m_outputID);
                             exists = (it != m_transportOut.end());
                             mq = it->second.m_mq;
                         }
@@ -571,8 +586,8 @@ namespace dds
                         }
                         else
                         {
-                            LOG(MiscCommon::error) << "Can't find output transport with protocol header ID "
-                                                   << msg.m_protocolHeaderID << ". Write message failed.";
+                            LOG(MiscCommon::error) << "Can't find output transport with output ID " << msg.m_outputID
+                                                   << ". Write message failed.";
                         }
                     }
                 }

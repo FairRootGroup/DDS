@@ -23,6 +23,7 @@ set( SOURCE_FILES
 	./src/SMUIChannel.cpp
 	./src/SMFWChannel.cpp
 	./src/SMCommanderChannel.cpp
+        ./src/SMLeaderChannel.cpp
 )
 
 #
@@ -35,6 +36,7 @@ set( HEADER_FILES
 	./src/SMUIChannel.h
 	./src/SMFWChannel.h
 	./src/SMCommanderChannel.h
+        ./src/SMLeaderChannel.h
 )
 
 include_directories(

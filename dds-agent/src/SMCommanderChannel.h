@@ -12,6 +12,12 @@ namespace dds
 {
     class CSMCommanderChannel : public protocol_api::CBaseSMChannelImpl<CSMCommanderChannel>
     {
+      public:
+        enum EOutputID
+        {
+            Leader = 0
+        };
+
       protected:
         CSMCommanderChannel(const std::string& _inputName, const std::string& _outputName, uint64_t _ProtocolHeaderID);
 
