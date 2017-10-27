@@ -11,7 +11,7 @@ namespace dds
 {
     namespace protocol_api
     {
-        // Channel events, which channels and users of channel objects can subscribe on.
+        /// Channel events, which channels and users of channel objects can subscribe on.
         enum class EChannelEvents
         {
             OnConnected,
@@ -19,7 +19,8 @@ namespace dds
             OnRemoteEndDissconnected,
             OnHandshakeOK,
             OnHandshakeFailed,
-            OnNewUserTask
+            OnNewUserTask,
+            OnSMStart ///< Shared memory channel start
         };
 
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
@@ -43,6 +44,9 @@ namespace dds
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnNewUserTask,
                                        void(const protocol_api::SSenderInfo&, pid_t))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnSMStart,
+                                       void(const protocol_api::SSenderInfo&))
             DDS_END_EVENT_HANDLERS
         };
     }

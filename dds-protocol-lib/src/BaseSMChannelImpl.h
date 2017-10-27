@@ -185,9 +185,13 @@ namespace dds
                 SMessageQueueInfo info;
                 info.m_name = _outputName;
                 info.m_openType = _outputOpenType;
-                m_transportOut.emplace(_protocolHeaderID, info);
+                m_transportOut.emplace(0, info);
 
                 createMessageQueue();
+
+                LOG(MiscCommon::info) << "SM: New channel: inputName=" << m_transportIn.m_name
+                                      << " outputName=" << m_transportOut[0].m_name
+                                      << " protocolHeaderID=" << m_protocolHeaderID;
             }
 
           public:
@@ -208,7 +212,7 @@ namespace dds
           private:
             void createMessageQueue()
             {
-                LOG(MiscCommon::info) << "Initializing message queue for shared memory channel";
+                LOG(MiscCommon::info) << "SM: Initializing message queue: " << m_transportIn.m_name;
 
                 m_transportIn.m_mq.reset();
                 m_transportIn.m_mq = createMessageQueue(m_transportIn.m_name.c_str(), m_transportIn.m_openType);
@@ -218,6 +222,7 @@ namespace dds
                     for (auto& v : m_transportOut)
                     {
                         SMessageQueueInfo& info = v.second;
+                        LOG(MiscCommon::info) << "SM: Initializing message queue: " << info.m_name;
                         info.m_mq.reset();
                         info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
                     }
@@ -255,23 +260,29 @@ namespace dds
             }
 
           public:
+            std::string getInputName() const
+            {
+                return m_transportIn.m_name;
+            }
+
             void addOutput(uint64_t _outputID, const std::string& _name, EMQOpenType _openType = EMQOpenType::OpenOnly)
             {
                 if (_outputID < 1)
                 {
-                    LOG(MiscCommon::error)
-                        << "Can't add output. Output ID must be greater than 0. Current value: " << _outputID;
-                    return;
+                    std::stringstream ss;
+                    ss << "Can't add output " << _name
+                       << ". Output ID must be greater than 0. Current value: " << _outputID;
+                    throw std::runtime_error(ss.str());
                 }
 
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
                     auto it = m_transportOut.find(_outputID);
-                    if (it == m_transportOut.end())
+                    if (it != m_transportOut.end())
                     {
-                        LOG(MiscCommon::error)
-                            << "Can't add output. Output with ID " << _outputID << " already exists.";
-                        return;
+                        std::stringstream ss;
+                        ss << "Can't add output " << _name << ". Output with ID " << _outputID << " already exists.";
+                        throw std::runtime_error(ss.str());
                     }
                 }
 
@@ -287,8 +298,9 @@ namespace dds
                 }
                 else
                 {
-                    LOG(MiscCommon::error)
-                        << "Can't add shared memory channel output with ID: " << _outputID << " name: " << _name;
+                    std::stringstream ss;
+                    ss << "Can't add shared memory channel output with ID: " << _outputID << " name: " << _name;
+                    throw std::runtime_error(ss.str());
                 }
             }
 
@@ -352,6 +364,10 @@ namespace dds
                         LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
                     }
                 });
+
+                SSenderInfo sender;
+                sender.m_ID = m_protocolHeaderID;
+                dispatchHandlers(EChannelEvents::OnSMStart, sender);
 
                 const int nConcurrentThreads(3);
                 m_workerThreads = std::make_shared<boost::thread_group>();

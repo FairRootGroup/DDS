@@ -63,7 +63,10 @@ namespace dds
             cmdENABLE_STAT,
             cmdDISABLE_STAT,
             cmdGET_STAT,
-            cmdCUSTOM_CMD // attachment: SCustomCmdCmd
+            cmdCUSTOM_CMD,        // attachment: SCustomCmdCmd
+            cmdLOBBY_MEMBER_INFO, // attachment: SSimpleMsgCmd
+            cmdLOBBY_MEMBER_INFO_OK,
+            cmdLOBBY_MEMBER_INFO_ERR // attachment: SSimpleMsgCmd
         };
 
         static std::map<uint16_t, std::string> g_cmdToString{
@@ -105,7 +108,10 @@ namespace dds
             { cmdENABLE_STAT, NAME_TO_STRING(cmdENABLE_STAT) },
             { cmdDISABLE_STAT, NAME_TO_STRING(cmdDISABLE_STAT) },
             { cmdGET_STAT, NAME_TO_STRING(cmdGET_STAT) },
-            { cmdCUSTOM_CMD, NAME_TO_STRING(cmdCUSTOM_CMD) }
+            { cmdCUSTOM_CMD, NAME_TO_STRING(cmdCUSTOM_CMD) },
+            { cmdLOBBY_MEMBER_INFO, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO) },
+            { cmdLOBBY_MEMBER_INFO_OK, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO_OK) },
+            { cmdLOBBY_MEMBER_INFO_ERR, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO_ERR) }
         };
     }
 }

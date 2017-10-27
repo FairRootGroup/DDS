@@ -43,11 +43,31 @@ CSMCommanderChannel::CSMCommanderChannel(const string& _inputName,
     , m_taskName()
     , m_activateMutex()
 {
+    registerHandler<EChannelEvents::OnSMStart>([this](const SSenderInfo& _sender) {
+        pushMsg<cmdLOBBY_MEMBER_INFO>(
+            SSimpleMsgCmd(getInputName(), info, cmdLOBBY_MEMBER_INFO), _sender.m_ID, EOutputID::Leader);
+    });
 }
 
 CSMCommanderChannel::~CSMCommanderChannel()
 {
     removeMessageQueue();
+}
+
+bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_OK(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_OK>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
+{
+    LOG(info) << "Received confirmation from lobby leader";
+    return true;
+}
+
+bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_ERR(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_ERR>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
+{
+    LOG(error) << "Received error from lobby leader: " << _attachment->m_sMsg;
+    return true;
 }
 
 bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,

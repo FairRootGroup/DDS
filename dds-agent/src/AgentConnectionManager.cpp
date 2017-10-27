@@ -66,7 +66,8 @@ void CAgentConnectionManager::start()
 
     // Generate protocol sender ID
     boost::hash<boost::uuids::uuid> uuid_hasher;
-    uint64_t protocolHeaderID = uuid_hasher(boost::uuids::uuid());
+    uint64_t protocolHeaderID = uuid_hasher(boost::uuids::random_generator()());
+    LOG(info) << "PROTOCOL HEADER ID: " << protocolHeaderID;
 
     m_bStarted = true;
 
@@ -109,8 +110,8 @@ void CAgentConnectionManager::start()
             LOG(info) << "Lobby status: leader";
 
             createAndStartSMIntercomChannel(protocolHeaderID);
-            createAndStartSMAgentChannel(protocolHeaderID, false);
             createAndStartSMLeaderChannel(protocolHeaderID);
+            createAndStartSMAgentChannel(protocolHeaderID, false);
             // Start network channel. This is a blocking function call.
             createAndStartNetworkAgentChannel(protocolHeaderID);
 
@@ -225,6 +226,8 @@ void CAgentConnectionManager::createAndStartSMLeaderChannel(uint64_t _protocolHe
         userDefaults.getSMAgentLeaderOutputName(), userDefaults.getSMAgentLeaderOutputName(), _protocolHeaderID);
     // Start listening for messages from shared memory
     m_SMLeader->start();
+
+    LOG(info) << "SM channel: Leader created";
 }
 
 void CAgentConnectionManager::createAndStartSMIntercomChannel(uint64_t _protocolHeaderID)
@@ -240,6 +243,8 @@ void CAgentConnectionManager::createAndStartSMIntercomChannel(uint64_t _protocol
         });
     // Start listening for messages from shared memory
     m_SMChannel->start();
+
+    LOG(info) << "SM channel: Intercom created";
 }
 
 void CAgentConnectionManager::createAndStartSMAgentChannel(uint64_t _protocolHeaderID, bool _block)
@@ -296,6 +301,8 @@ void CAgentConnectionManager::createAndStartSMAgentChannel(uint64_t _protocolHea
     // Call this callback when a user process is activated
     m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>(
         [this](const SSenderInfo& _sender, pid_t _pid) { this->onNewUserTask(_pid); });
+
+    LOG(info) << "SM channel: Agent is created";
 
     // Start shared memory agent channel
     m_SMAgent->start(_block);

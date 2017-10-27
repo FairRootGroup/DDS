@@ -22,7 +22,21 @@ CSMLeaderChannel::~CSMLeaderChannel()
     removeMessageQueue();
 }
 
-bool CSMLeaderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment, SSenderInfo& _sender)
+bool CSMLeaderChannel::on_cmdLOBBY_MEMBER_INFO(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
+                                               const SSenderInfo& _sender)
 {
+    const string& name = _attachment->m_sMsg;
+    LOG(info) << "New lobby member: ID=" << _sender.m_ID << ", SM=" << name;
+
+    try
+    {
+        this->addOutput(_sender.m_ID, name);
+        this->pushMsg<cmdLOBBY_MEMBER_INFO_OK>(_sender.m_ID, _sender.m_ID);
+    }
+    catch (exception& _e)
+    {
+        LOG(error) << "Failed to open MQ " << name << " of the new member " << _sender.m_ID << " error: " << _e.what();
+    }
+
     return true;
 }

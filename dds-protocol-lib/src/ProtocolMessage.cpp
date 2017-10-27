@@ -96,6 +96,7 @@ bool CProtocolMessage::decode_header()
     m_data.resize(length());
 
     // TODO: Check if the message is bigger than max_body_length
+    // TODO: Check CRC
 
     // Empty message?
     if (0 == header.m_len)
@@ -109,6 +110,7 @@ void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::da
     // local copy
     m_header.m_cmd = _cmd;
     m_header.m_len = _data.size();
+    m_header.m_ID = _ID;
     m_header.m_crc = m_header.getChecksum();
 
     // prepare data for transport
@@ -116,7 +118,6 @@ void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::da
     header.m_crc = normalizeWrite(m_header.m_crc);
     header.m_cmd = normalizeWrite(m_header.m_cmd);
     header.m_len = normalizeWrite(m_header.m_len);
-    header.m_ID = _ID;
     header.m_ID = normalizeWrite(m_header.m_ID);
 
     BYTEVector_t ret_val(header_length);

@@ -15,7 +15,7 @@ namespace dds
       public:
         enum EOutputID
         {
-            Leader = 0
+            Leader = 1
         };
 
       protected:
@@ -26,6 +26,8 @@ namespace dds
 
       public:
         BEGIN_SM_MSG_MAP(CSMCommanderChannel)
+            SM_MESSAGE_HANDLER(cmdLOBBY_MEMBER_INFO_OK, on_cmdLOBBY_MEMBER_INFO_OK)
+            SM_MESSAGE_HANDLER(cmdLOBBY_MEMBER_INFO_ERR, on_cmdLOBBY_MEMBER_INFO_ERR)
             SM_MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
             SM_MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
             SM_MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
@@ -44,6 +46,12 @@ namespace dds
 
       private:
         // Message Handlers
+        bool on_cmdLOBBY_MEMBER_INFO_OK(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_OK>::ptr_t _attachment,
+            protocol_api::SSenderInfo& _sender);
+        bool on_cmdLOBBY_MEMBER_INFO_ERR(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_ERR>::ptr_t _attachment,
+            protocol_api::SSenderInfo& _sender);
         bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                               protocol_api::SSenderInfo& _sender);
         bool on_cmdGET_HOST_INFO(

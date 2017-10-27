@@ -20,13 +20,14 @@ namespace dds
 
       public:
         BEGIN_SM_MSG_MAP(CSMLeaderChannel)
-            SM_MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+            SM_MESSAGE_HANDLER(protocol_api::cmdLOBBY_MEMBER_INFO, on_cmdLOBBY_MEMBER_INFO)
         END_SM_MSG_MAP()
 
       private:
         // Message Handlers
-        bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
-                              protocol_api::SSenderInfo& _sender);
+        bool on_cmdLOBBY_MEMBER_INFO(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
+            const protocol_api::SSenderInfo& _sender);
     };
 }
 #endif
