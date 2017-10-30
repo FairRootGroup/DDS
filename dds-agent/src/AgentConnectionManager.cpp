@@ -189,13 +189,15 @@ void CAgentConnectionManager::stop()
 
     try
     {
-        m_service.stop();
-        if (m_agent)
-            m_agent->stop();
         if (m_SMAgent)
             m_SMAgent->stop();
         if (m_SMChannel)
             m_SMChannel->stop();
+        if (m_SMLeader)
+            m_SMLeader->stop();
+        m_service.stop();
+        if (m_agent)
+            m_agent->stop();
     }
     catch (exception& e)
     {
@@ -388,6 +390,11 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
                                              SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
+    // Commander requested to shutdown.
+    // Shutting down all members of the lobby.
+    if (m_SMLeader != nullptr) {
+        m_SMLeader->syncSendShutdownAll();
+    }
     stop();
 }
 
