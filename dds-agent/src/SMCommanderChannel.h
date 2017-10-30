@@ -28,6 +28,8 @@ namespace dds
         BEGIN_SM_MSG_MAP(CSMCommanderChannel)
             SM_MESSAGE_HANDLER(cmdLOBBY_MEMBER_INFO_OK, on_cmdLOBBY_MEMBER_INFO_OK)
             SM_MESSAGE_HANDLER(cmdLOBBY_MEMBER_INFO_ERR, on_cmdLOBBY_MEMBER_INFO_ERR)
+            SM_MESSAGE_HANDLER(cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK, on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK)
+            SM_MESSAGE_HANDLER(cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR)
             SM_MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
             SM_MESSAGE_HANDLER(cmdGET_HOST_INFO, on_cmdGET_HOST_INFO)
             SM_MESSAGE_HANDLER(cmdSHUTDOWN, on_cmdSHUTDOWN)
@@ -51,6 +53,12 @@ namespace dds
             protocol_api::SSenderInfo& _sender);
         bool on_cmdLOBBY_MEMBER_INFO_ERR(
             protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_ERR>::ptr_t _attachment,
+            protocol_api::SSenderInfo& _sender);
+        bool on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK>::ptr_t _attachment,
+            protocol_api::SSenderInfo& _sender);
+        bool on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t _attachment,
             protocol_api::SSenderInfo& _sender);
         bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                               protocol_api::SSenderInfo& _sender);

@@ -20,7 +20,10 @@ namespace dds
             OnHandshakeOK,
             OnHandshakeFailed,
             OnNewUserTask,
-            OnSMStart ///< Shared memory channel start
+            OnSMStart, ///< Shared memory channel start
+            OnLobbyMemberHandshakeOK,
+            OnLobbyMemberHandshakeFailed,
+            OnLobbyMemberInfo
         };
 
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
@@ -47,6 +50,15 @@ namespace dds
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnSMStart,
                                        void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnLobbyMemberHandshakeOK,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnLobbyMemberHandshakeFailed,
+                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+                                       EChannelEvents::OnLobbyMemberInfo,
+                                       void(const protocol_api::SSenderInfo&, const std::string&))
             DDS_END_EVENT_HANDLERS
         };
     }

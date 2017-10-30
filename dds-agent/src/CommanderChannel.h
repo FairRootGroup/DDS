@@ -24,6 +24,8 @@ namespace dds
 
             RAW_MESSAGE_HANDLER(CCommanderChannel, on_rawMessage)
 
+            CSMFWChannel::weakConnectionPtr_t getSMFWChannel();
+
           private:
             bool on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg);
 

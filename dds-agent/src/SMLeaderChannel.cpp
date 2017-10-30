@@ -30,6 +30,7 @@ bool CSMLeaderChannel::on_cmdLOBBY_MEMBER_INFO(SCommandAttachmentImpl<cmdSIMPLE_
 
     try
     {
+        this->dispatchHandlers(EChannelEvents::OnLobbyMemberInfo, _sender, name);
         this->addOutput(_sender.m_ID, name);
         this->pushMsg<cmdLOBBY_MEMBER_INFO_OK>(_sender.m_ID, _sender.m_ID);
     }

@@ -69,6 +69,12 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
 bool CCommanderChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)
 {
     LOG(debug) << "Raw message pushed to shared memory channel: " << _currentMsg->toString();
-    m_SMFWChannel->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
+    uint64_t protocolHeaderID = _currentMsg->header().m_ID;
+    m_SMFWChannel->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd), protocolHeaderID);
     return true;
+}
+
+CSMFWChannel::weakConnectionPtr_t CCommanderChannel::getSMFWChannel()
+{
+    return m_SMFWChannel;
 }

@@ -367,6 +367,15 @@ namespace dds
                 A* pThis = static_cast<A*>(this);
                 pThis->newClientCreated(newClient);
 
+                // Subsribe on lobby member handshake
+                newClient->template registerHandler<EChannelEvents::OnLobbyMemberHandshakeOK>(
+                    [this, newClient](const SSenderInfo& _sender) -> void {
+                        {
+                            std::lock_guard<std::mutex> lock(m_mutex);
+                            m_channels.push_back(channelInfo_t(newClient, _sender.m_ID));
+                        }
+                    });
+
                 // Subscribe on dissconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
                     [this, newClient](const SSenderInfo& _sender) -> void {

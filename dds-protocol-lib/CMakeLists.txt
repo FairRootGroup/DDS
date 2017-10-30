@@ -74,6 +74,7 @@ set( SRC_HDRS
     ./src/UpdateTopologyCmd.h
     ./src/BaseEventHandlersImpl.h
     ./src/ChannelInfo.h
+    ./src/ProtocolDef.h
 )
 
 include_directories(

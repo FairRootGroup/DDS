@@ -6,6 +6,7 @@
 // DDS
 #include "SMCommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
+#include "ProtocolDef.h"
 #include "version.h"
 // MiscCommon
 #include "FindCfgFile.h"
@@ -59,6 +60,15 @@ bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_OK(
     protocol_api::SSenderInfo& _sender)
 {
     LOG(info) << "Received confirmation from lobby leader";
+    LOG(info) << "Sending handshake to commander with PHID: " << this->m_protocolHeaderID;
+
+    // Prepare a hand shake message
+    SVersionCmd cmd;
+    cmd.m_channelType = EChannelType::AGENT;
+    cmd.m_sSID = CUserDefaults::instance().getSID();
+    cmd.m_version = DDS_PROTOCOL_VERSION;
+    pushMsg<cmdLOBBY_MEMBER_HANDSHAKE>(cmd, this->m_protocolHeaderID);
+
     return true;
 }
 
@@ -68,6 +78,22 @@ bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_ERR(
 {
     LOG(error) << "Received error from lobby leader: " << _attachment->m_sMsg;
     return true;
+}
+
+bool CSMCommanderChannel::on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
+{
+    LOG(info) << "SM: Handshake successfull. PHID: " << this->m_protocolHeaderID;
+    return true;
+}
+
+bool CSMCommanderChannel::on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
+{
+    LOG(fatal) << "SM: Handshake failed. PHID: " << this->m_protocolHeaderID;
+    return false;
 }
 
 bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,

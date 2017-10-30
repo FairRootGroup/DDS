@@ -34,16 +34,21 @@ namespace dds
             void stop();
 
           private:
-            void createAndStartNetworkAgentChannel(uint64_t _protocolHeaderID);
-            void createAndStartSMIntercomChannel(uint64_t _protocolHeaderID);
-            void createAndStartSMLeaderChannel(uint64_t _protocolHeaderID);
-            void createAndStartSMAgentChannel(uint64_t _protocolHeaderID, bool _block);
+            void createNetworkAgentChannel(uint64_t _protocolHeaderID);
+            void createSMIntercomChannel(uint64_t _protocolHeaderID);
+            void createSMLeaderChannel(uint64_t _protocolHeaderID);
+            void createSMAgentChannel(uint64_t _protocolHeaderID);
             void doAwaitStop();
             void onNewUserTask(pid_t _pid);
             void terminateChildrenProcesses();
             void on_cmdSHUTDOWN(const protocol_api::SSenderInfo& _sender,
                                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
                                 CSMCommanderChannel::weakConnectionPtr_t _channel);
+            void on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
+                const protocol_api::SSenderInfo& _sender,
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t
+                    _attachment,
+                CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdUPDATE_KEY(const protocol_api::SSenderInfo& _sender,
                                   protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   CSMCommanderChannel::weakConnectionPtr_t _channel);

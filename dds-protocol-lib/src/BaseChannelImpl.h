@@ -30,6 +30,7 @@
 #include "CommandAttachmentImpl.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
+#include "ProtocolDef.h"
 #include "StatImpl.h"
 
 namespace dds
@@ -83,6 +84,13 @@ namespace dds
                 {                                                                                                      \
                     SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t attachmentPtr =                                        \
                         SCommandAttachmentImpl<cmdHANDSHAKE>::decode(_currentMsg);                                     \
+                    dispatchHandlers<>(currentCmd, sender, attachmentPtr);                                             \
+                    return;                                                                                            \
+                }                                                                                                      \
+                case cmdLOBBY_MEMBER_HANDSHAKE:                                                                        \
+                {                                                                                                      \
+                    SCommandAttachmentImpl<cmdLOBBY_MEMBER_HANDSHAKE>::ptr_t attachmentPtr =                           \
+                        SCommandAttachmentImpl<cmdLOBBY_MEMBER_HANDSHAKE>::decode(_currentMsg);                        \
                     dispatchHandlers<>(currentCmd, sender, attachmentPtr);                                             \
                     return;                                                                                            \
                 }                                                                                                      \
@@ -170,19 +178,6 @@ namespace dds
 {
     namespace protocol_api
     {
-        // Channel types
-        enum EChannelType
-        {
-            UNKNOWN = 0,
-            AGENT,
-            UI,
-            API_GUARD
-        };
-        typedef std::vector<EChannelType> channelTypeVector_t;
-        const std::array<std::string, 5> gChannelTypeName{
-            { "unknown", "agent", "ui", "key_value_guard", "custom_command_guard" }
-        };
-
         struct SBinaryAttachmentInfo
         {
             SBinaryAttachmentInfo()
