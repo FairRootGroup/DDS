@@ -308,7 +308,7 @@ void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     {
         case cmdGET_LOG:
         {
-            m_getLog.processMessage<SBinaryAttachmentReceivedCmd>(*_attachment, _channel);
+            m_getLog.processMessage<SBinaryAttachmentReceivedCmd>(_sender, *_attachment, _channel);
             return;
         }
 
@@ -316,7 +316,7 @@ void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
         {
             m_transportTest.m_totalReceived += _attachment->m_receivedFileSize;
             m_transportTest.m_totalTime += _attachment->m_downloadTime;
-            m_transportTest.processMessage<SBinaryAttachmentReceivedCmd>(*_attachment, _channel);
+            m_transportTest.processMessage<SBinaryAttachmentReceivedCmd>(_sender, *_attachment, _channel);
 
             return;
         }
@@ -500,8 +500,9 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         CConnectionManager::weakChannelInfo_t::container_t channels(
             getChannels([](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
                 _stop = (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                         _v.m_channel->getTaskID() > 0 && _v.m_channel->getState() == EAgentState::executing);
+                         info.m_taskID > 0 && info.m_state == EAgentState::executing);
                 return _stop;
             }));
         bool topologyActive = !channels.empty();
@@ -556,7 +557,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
             p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Stopping removed tasks...", log_stdout, cmdUPDATE_TOPOLOGY),
                                       _sender.m_ID);
 
-            CAgentChannel::weakConnectionPtrVector_t agents;
+            weakChannelInfo_t::container_t agents;
             for (auto taskID : removedTasks)
             {
                 auto agentChannel = m_taskIDToAgentChannelMap[taskID];
@@ -627,7 +628,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
             // Add new elements
             for (const auto& sch : schedule)
             {
-                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo.m_channel;
+                m_taskIDToAgentChannelMap[sch.m_taskID] = SWeakChannelInfo(sch.m_weakChannelInfo.m_channel, );
             }
 
             activateTasks(scheduler);
@@ -753,7 +754,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
     });
 }
 
-void CConnectionManager::stopTasks(const CAgentChannel::weakConnectionPtrVector_t& _agents,
+void CConnectionManager::stopTasks(const weakChannelInfo_t::container_t& _agents,
                                    CAgentChannel::weakConnectionPtr_t _channel,
                                    bool _shutdownOnComplete)
 {
@@ -785,14 +786,14 @@ void CConnectionManager::stopTasks(const CAgentChannel::weakConnectionPtrVector_
 
     for (const auto& v : _agents)
     {
-        if (v.expired())
+        if (v.m_channel.expired())
             continue;
-        auto ptr = v.lock();
+        auto ptr = v.m_channel.lock();
         // dequeue important (or expensive) messages
-        ptr->dequeueMsg<cmdUPDATE_KEY>();
-        ptr->dequeueMsg<cmdDELETE_KEY>();
+        ptr->dequeueMsg<cmdUPDATE_KEY>(v.m_protocolHeaderID);
+        ptr->dequeueMsg<cmdDELETE_KEY>(v.m_protocolHeaderID);
         // send stop message
-        ptr->template pushMsg<cmdSTOP_USER_TASK>();
+        ptr->template pushMsg<cmdSTOP_USER_TASK>(v.m_protocolHeaderID);
     }
 }
 
@@ -825,30 +826,37 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
             continue;
         auto ptr = v.m_channel.lock();
 
-        string sTaskName("no task is assigned");
-        if (ptr->getTaskID() > 0 && ptr->getState() == EAgentState::executing)
+        // Get PHID of all members of the lobby
+        LobbyProtocolHeaderIdContainer_t lobby = ptr->getLobbyPHID();
+        for (auto sender : lobby)
         {
-            TaskPtr_t task = m_topo.getTaskByHash(ptr->getTaskID());
-            stringstream ssTaskString;
-            ssTaskString << ptr->getTaskID() << " (" << task->getId() << ")";
-            sTaskName = ssTaskString.str();
-        }
+            SAgentInfo info = ptr->getAgentInfo(sender);
 
-        ss << " -------------->>> " << ptr->getId() << "\nHost Info: " << ptr->getRemoteHostInfo().m_username << "@"
-           << ptr->getRemoteHostInfo().m_host << ":" << ptr->getRemoteHostInfo().m_DDSPath
-           << "\nAgent pid: " << ptr->getRemoteHostInfo().m_agentPid
-           << "\nAgent startup time: " << chrono::duration<double>(ptr->getStartupTime()).count() << " s"
-           << "\nState: " << g_agentStates.at(ptr->getState()) << "\n"
-           << "\nTask ID: " << sTaskName << "\n";
+            string sTaskName("no task is assigned");
+            if (info.m_taskID > 0 && info.m_state == EAgentState::executing)
+            {
+                TaskPtr_t task = m_topo.getTaskByHash(info.m_taskID);
+                stringstream ssTaskString;
+                ssTaskString << info.m_taskID << " (" << info.m_id << ")";
+                sTaskName = ssTaskString.str();
+            }
 
-        cmd.m_nActiveAgents = channels.size();
-        cmd.m_nIndex = i++;
-        cmd.m_sAgentInfo = ss.str();
+            ss << " -------------->>> " << info.m_id << "\nHost Info: " << info.m_remoteHostInfo.m_username << "@"
+               << info.m_remoteHostInfo.m_host << ":" << info.m_remoteHostInfo.m_DDSPath
+               << "\nAgent pid: " << info.m_remoteHostInfo.m_agentPid
+               << "\nAgent startup time: " << chrono::duration<double>(info.m_startUpTime).count() << " s"
+               << "\nState: " << g_agentStates.at(info.m_state) << "\n"
+               << "\nTask ID: " << sTaskName << "\n";
 
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
+            cmd.m_nActiveAgents = channels.size();
+            cmd.m_nIndex = i++;
+            cmd.m_sAgentInfo = ss.str();
+
+            if (!_channel.expired())
+            {
+                auto p = _channel.lock();
+                p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
+            }
         }
     }
 }
@@ -911,11 +919,11 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
             switch (_attachment->m_msgSeverity)
             {
                 case info:
-                    m_updateTopology.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
                     break;
                 case error:
                 case fatal:
-                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
                     break;
             }
             return;
@@ -924,20 +932,22 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
             switch (_attachment->m_msgSeverity)
             {
                 case info:
-                    m_updateTopology.processMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
                     {
                         // Task was successfully stopped, set the idle state
                         if (!_channel.expired())
                         {
                             auto p = _channel.lock();
-                            p->setState(EAgentState::idle);
-                            p->setTaskID(0);
+                            SAgentInfo info = p->getAgentInfo(_sender);
+                            info.m_state = EAgentState::idle;
+                            info.m_taskID = 0;
+                            p->updateAgentInfo(_sender, info);
                         }
                     }
                     break;
                 case error:
                 case fatal:
-                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
                     break;
             }
             if (m_updateTopology.allReceived())
@@ -947,11 +957,11 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
             return;
 
         case cmdGET_LOG:
-            m_getLog.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+            m_getLog.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
             return;
 
         case cmdTRANSPORT_TEST:
-            m_transportTest.processErrorMessage<SSimpleMsgCmd>(*_attachment, _channel);
+            m_transportTest.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
             return;
     }
 }
@@ -991,9 +1001,9 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
     auto channelPtr = _channel.lock();
     string propertyID(_attachment->getPropertyID());
 
-    // Check if the property has a write access to property.
+    // Check if the task has a write access to property.
     // If not just send back an error.
-    auto task = m_topo.getTaskByHash(channelPtr->getTaskID());
+    auto task = m_topo.getTaskByHash(channelPtr->getTaskID(_sender));
     auto property = task->getProperty(propertyID);
     if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
     {

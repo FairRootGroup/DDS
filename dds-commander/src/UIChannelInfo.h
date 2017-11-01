@@ -61,7 +61,9 @@ namespace dds
 
           public:
             template <class A>
-            bool processMessage(const A& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
+            bool processMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                const A& _cmd,
+                                CAgentChannel::weakConnectionPtr_t _channel)
             {
                 try
                 {
@@ -70,7 +72,7 @@ namespace dds
                     ++m_nofReceived;
 
                     T* pThis = static_cast<T*>(this);
-                    std::string userMessage = pThis->getMessage(_cmd, _channel);
+                    std::string userMessage = pThis->getMessage(_sender, _cmd, _channel);
 
                     if (!m_channel.expired())
                     {
@@ -100,7 +102,9 @@ namespace dds
             }
 
             template <class A>
-            bool processErrorMessage(const A& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
+            bool processErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                     const A& _cmd,
+                                     CAgentChannel::weakConnectionPtr_t _channel)
             {
                 try
                 {
@@ -109,7 +113,7 @@ namespace dds
                     ++m_nofReceivedErrors;
 
                     T* pThis = static_cast<T*>(this);
-                    std::string userMessage = pThis->getErrorMessage(_cmd, _channel);
+                    std::string userMessage = pThis->getErrorMessage(_sender, _cmd, _channel);
 
                     if (!m_channel.expired())
                     {
@@ -191,22 +195,24 @@ namespace dds
                 m_srcCommand = protocol_api::cmdGET_LOG;
             }
 
-            std::string getMessage(const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
+            std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                   const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> "
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender) << "] -> "
                    << _cmd.m_requestedFileName;
                 return ss.str();
             }
 
-            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                        const protocol_api::SSimpleMsgCmd& _cmd,
                                         CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
+                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId(_sender) << "]: " << _cmd.m_sMsg;
                 return ss.str();
             }
 
@@ -230,24 +236,26 @@ namespace dds
                 m_srcCommand = protocol_api::cmdTRANSPORT_TEST;
             }
 
-            std::string getMessage(const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
+            std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                   const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
                 float downloadTime = 0.000001 * _cmd.m_downloadTime; // micros->s
                 float speed = (downloadTime != 0.) ? 0.001 * _cmd.m_receivedFileSize / downloadTime : 0;
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "]: " << _cmd.m_receivedFileSize
-                   << " bytes in " << downloadTime << " s (" << speed << " KB/s)";
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender)
+                   << "]: " << _cmd.m_receivedFileSize << " bytes in " << downloadTime << " s (" << speed << " KB/s)";
                 return ss.str();
             }
 
-            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                        const protocol_api::SSimpleMsgCmd& _cmd,
                                         CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
+                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId(_sender) << "]: " << _cmd.m_sMsg;
                 return ss.str();
             }
 
@@ -276,22 +284,24 @@ namespace dds
                 m_srcCommand = protocol_api::cmdACTIVATE_AGENT;
             }
 
-            std::string getMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+            std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                   const protocol_api::SSimpleMsgCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
                 std::string str = (m_srcCommand == protocol_api::cmdACTIVATE_AGENT) ? "Activated" : "Stopped";
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> " << str;
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender) << "] -> " << str;
                 return ss.str();
             }
 
-            std::string getErrorMessage(const protocol_api::SSimpleMsgCmd& _cmd,
+            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+                                        const protocol_api::SSimpleMsgCmd& _cmd,
                                         CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
+                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId(_sender) << "]: " << _cmd.m_sMsg;
                 return ss.str();
             }
 

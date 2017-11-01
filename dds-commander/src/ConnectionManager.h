@@ -96,7 +96,7 @@ namespace dds
 
           private:
             void activateTasks(const CSSHScheduler& _scheduler);
-            void stopTasks(const CAgentChannel::weakConnectionPtrVector_t& _agents,
+            void stopTasks(const weakChannelInfo_t::container_t& _agents,
                            CAgentChannel::weakConnectionPtr_t _channel,
                            bool _shutdownOnComplete);
             void enableDisableStatForChannels(bool _enable);
@@ -110,7 +110,7 @@ namespace dds
             topology_api::CTopology m_topo;
 
             // TODO: This is temporary storage only. Store this information as a part of scheduler.
-            typedef std::map<uint64_t, CAgentChannel::weakConnectionPtr_t> TaskIDToAgentChannelMap_t;
+            typedef std::map<uint64_t, weakChannelInfo_t> TaskIDToAgentChannelMap_t;
             TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
             std::mutex m_mapMutex;
 

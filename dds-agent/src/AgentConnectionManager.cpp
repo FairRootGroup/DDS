@@ -392,7 +392,8 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
 {
     // Commander requested to shutdown.
     // Shutting down all members of the lobby.
-    if (m_SMLeader != nullptr) {
+    if (m_SMLeader != nullptr)
+    {
         m_SMLeader->syncSendShutdownAll();
     }
     stop();

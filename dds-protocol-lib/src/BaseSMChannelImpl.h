@@ -469,16 +469,19 @@ namespace dds
                 SEmptyCmd cmd;
                 pushMsg<_cmd>(cmd, _protocolHeaderID, _outputID);
             }
-            
+
             void syncSendShutdownAll()
             {
                 // Send cmdSHUTDOWN to all connected outputs except yourself
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (auto it : m_transportOut) {
-                        if (it.first == 0 || it.first == m_protocolHeaderID) continue;
+                    for (auto it : m_transportOut)
+                    {
+                        if (it.first == 0 || it.first == m_protocolHeaderID)
+                            continue;
                         SEmptyCmd cmd;
-                        CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
+                        CProtocolMessage::protocolMessagePtr_t msg =
+                            SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
                         messageQueuePtr_t mq = it.second.m_mq;
                         mq->send(msg->data(), msg->length(), 1);
                     }

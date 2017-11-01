@@ -21,6 +21,29 @@ namespace dds
         };
         const std::array<std::string, 3> g_agentStates = { { "unknown", "idle", "executing" } };
 
+        struct SAgentInfo
+        {
+            SAgentInfo()
+                : m_lobbyLeader(false)
+                , m_id(0)
+                , m_taskID(0)
+                , m_state(EAgentState::unknown)
+            {
+            }
+
+            bool m_lobbyLeader;
+            // We use unique ID because we need to identify a new agent after shutdown of the system on the same host.
+            // We have to distinguish between new and old agent.
+            uint64_t m_id;
+            protocol_api::SHostInfoCmd m_remoteHostInfo;
+            uint64_t m_taskID;
+            std::chrono::milliseconds m_startUpTime;
+            EAgentState m_state;
+        };
+
+        typedef std::map<uint64_t, SAgentInfo> AgentInfoContainer_t;
+        typedef std::vector<uint64_t> LobbyProtocolHeaderIdContainer_t;
+
         class CAgentChannel : public protocol_api::CServerChannelImpl<CAgentChannel>
         {
             CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0);
@@ -58,20 +81,31 @@ namespace dds
             END_MSG_MAP()
 
           public:
-            uint64_t getId() const;
-            void setId(uint64_t _id);
+            uint64_t getId(const dds::protocol_api::SSenderInfo& _sender);
+            void setId(const dds::protocol_api::SSenderInfo& _sender, uint64_t _id);
 
-            const protocol_api::SHostInfoCmd& getRemoteHostInfo() const;
+            protocol_api::SHostInfoCmd getRemoteHostInfo(const dds::protocol_api::SSenderInfo& _sender);
             // This function only used in tests
-            void setRemoteHostInfo(const protocol_api::SHostInfoCmd& _hostInfo);
+            void setRemoteHostInfo(const dds::protocol_api::SSenderInfo& _sender,
+                                   const protocol_api::SHostInfoCmd& _hostInfo);
 
-            uint64_t getTaskID() const;
-            void setTaskID(uint64_t _taskID);
+            std::chrono::milliseconds getStartupTime(const dds::protocol_api::SSenderInfo& _sender);
 
-            std::chrono::milliseconds getStartupTime() const;
+            EAgentState getState(const dds::protocol_api::SSenderInfo& _sender);
+            void setState(const dds::protocol_api::SSenderInfo& _sender, EAgentState _state);
 
-            EAgentState getState() const;
-            void setState(EAgentState _state);
+            uint64_t getTaskID(const dds::protocol_api::SSenderInfo& _sender);
+            void setTaskID(const dds::protocol_api::SSenderInfo& _sender, uint64_t _taskID);
+
+            // AgentInfo operations
+            /// add new or update existing Agent info
+            void updateAgentInfo(const dds::protocol_api::SSenderInfo& _sender, const SAgentInfo& _info);
+            /// Get a copy of the agent info
+            // FIXME: This function makes a copy of the info struct. Find a solution to avoid copy operations. But the
+            // function and the info struct still must be thread safe.
+            SAgentInfo getAgentInfo(const dds::protocol_api::SSenderInfo& _sender);
+            SAgentInfo getAgentInfo(uint64_t _protocolHeaderID);
+            LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
 
           private:
             // Message Handlers
@@ -128,14 +162,9 @@ namespace dds
             std::string _remoteEndIDString();
 
           private:
-            // We use unique ID because we need to identify a new agent after shutdown of the system on the same host.
-            // We have to distinguish between new and old agent.
-            uint64_t m_id;
-            protocol_api::SHostInfoCmd m_remoteHostInfo;
             std::string m_sCurrentTopoFile;
-            uint64_t m_taskID;
-            std::chrono::milliseconds m_startUpTime;
-            EAgentState m_state;
+            AgentInfoContainer_t m_info;
+            std::mutex m_mtxInfo;
         };
     }
 }
