@@ -23,7 +23,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
     // Create shared memory channel for message forwarding from the network channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     m_SMFWChannel = CSMFWChannel::makeNew(
-        userDefaults.getSMAgentOutputName(), userDefaults.getSMAgentInputName(), _ProtocolHeaderID);
+        _service, userDefaults.getSMAgentOutputName(), userDefaults.getSMAgentInputName(), _ProtocolHeaderID);
 
     m_SMFWChannel->registerHandler<cmdRAW_MSG>(
         [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {

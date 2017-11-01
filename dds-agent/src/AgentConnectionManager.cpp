@@ -27,9 +27,8 @@ using namespace MiscCommon;
 namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
-CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service)
-    : m_service(_io_service)
-    , m_signals(_io_service)
+CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
+    : m_signals(m_io_service)
     , m_options(_options)
     , m_bStarted(false)
     , m_isLeaderBasedDeployment(false)
@@ -122,24 +121,7 @@ void CAgentConnectionManager::start()
             // Start shared memory agent channel
             m_SMAgent->start(false);
 
-            const int nConcurrentThreads(2);
-            LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads
-                                  << " concurrent threads.";
-            for (int x = 0; x < nConcurrentThreads; ++x)
-            {
-                m_workerThreads.create_thread([this]() {
-                    try
-                    {
-                        m_service.run();
-                    }
-                    catch (exception& ex)
-                    {
-                        LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
-                    }
-                });
-            }
-
-            m_workerThreads.join_all();
+            startService();
 
             leaderMutex->unlock();
         }
@@ -163,6 +145,8 @@ void CAgentConnectionManager::start()
             m_SMChannel->start();
             // Start shared memory agent channel
             m_SMAgent->start(true);
+
+            startService();
         }
 
         // Free mutex
@@ -195,15 +179,37 @@ void CAgentConnectionManager::stop()
             m_SMChannel->stop();
         if (m_SMLeader)
             m_SMLeader->stop();
-        m_service.stop();
         if (m_agent)
             m_agent->stop();
+        m_io_service.stop();
+        // m_workerThreads.join_all();
     }
     catch (exception& e)
     {
         LOG(fatal) << e.what();
     }
     LOG(info) << "Shutting down DDS transport - DONE";
+}
+
+void CAgentConnectionManager::startService()
+{
+    const int nConcurrentThreads(7);
+    LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
+    for (int x = 0; x < nConcurrentThreads; ++x)
+    {
+        m_workerThreads.create_thread([this]() {
+            try
+            {
+                m_io_service.run();
+            }
+            catch (exception& ex)
+            {
+                LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
+            }
+        });
+    }
+
+    m_workerThreads.join_all();
 }
 
 void CAgentConnectionManager::createNetworkAgentChannel(uint64_t _protocolHeaderID)
@@ -222,12 +228,12 @@ void CAgentConnectionManager::createNetworkAgentChannel(uint64_t _protocolHeader
     LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
     // Resolve endpoint iterator from host and port
-    tcp::resolver resolver(m_service);
+    tcp::resolver resolver(m_io_service);
     tcp::resolver::query query(sHost, sPort);
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
     // Create new agent and push handshake message
-    m_agent = CCommanderChannel::makeNew(m_service, _protocolHeaderID);
+    m_agent = CCommanderChannel::makeNew(m_io_service, _protocolHeaderID);
 
     // Connect to DDS commander
     m_agent->connect(endpoint_iterator);
@@ -237,8 +243,10 @@ void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
 {
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMLeader = CSMLeaderChannel::makeNew(
-        userDefaults.getSMAgentLeaderOutputName(), userDefaults.getSMAgentLeaderOutputName(), _protocolHeaderID);
+    m_SMLeader = CSMLeaderChannel::makeNew(m_io_service,
+                                           userDefaults.getSMAgentLeaderOutputName(),
+                                           userDefaults.getSMAgentLeaderOutputName(),
+                                           _protocolHeaderID);
     m_SMLeader->registerHandler<EChannelEvents::OnLobbyMemberInfo>(
         [this](const SSenderInfo& _sender, const string& _name) {
             try
@@ -260,8 +268,8 @@ void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID
 {
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMChannel =
-        CSMUIChannel::makeNew(userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
+    m_SMChannel = CSMUIChannel::makeNew(
+        m_io_service, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
     // Forward messages from shared memory to agent
     m_SMChannel->registerHandler<cmdRAW_MSG>(
         [this](const SSenderInfo& _sender, protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
@@ -276,7 +284,7 @@ void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     // Create shared memory agent channel
     m_SMAgent = CSMCommanderChannel::makeNew(
-        userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
+        m_io_service, userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
     m_SMAgent->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
 
     // Subscribe to Shutdown command

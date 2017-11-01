@@ -26,7 +26,7 @@ namespace dds
                 updateKeyAttachmentQueue_t;
 
           public:
-            CAgentConnectionManager(const SOptions_t& _options, boost::asio::io_service& _io_service);
+            CAgentConnectionManager(const SOptions_t& _options);
             virtual ~CAgentConnectionManager();
 
           public:
@@ -34,6 +34,7 @@ namespace dds
             void stop();
 
           private:
+            void startService();
             void createNetworkAgentChannel(uint64_t _protocolHeaderID);
             void createSMIntercomChannel(uint64_t _protocolHeaderID);
             void createSMLeaderChannel(uint64_t _protocolHeaderID);
@@ -81,17 +82,19 @@ namespace dds
             void taskExited(int _pid, int _exitCode);
 
           private:
-            boost::asio::io_service& m_service;
-            boost::asio::signal_set m_signals;
-            SOptions_t m_options;
+            boost::asio::io_service m_io_service;
+            boost::thread_group m_workerThreads;
+
             CCommanderChannel::connectionPtr_t m_agent;
             CSMUIChannel::connectionPtr_t m_SMChannel;
             CSMCommanderChannel::connectionPtr_t m_SMAgent;
             CSMLeaderChannel::connectionPtr_t m_SMLeader;
+
+            boost::asio::signal_set m_signals;
+            SOptions_t m_options;
             childrenPidContainer_t m_children;
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;
-            boost::thread_group m_workerThreads;
             bool m_isLeaderBasedDeployment;
         };
     }

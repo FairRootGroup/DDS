@@ -19,7 +19,12 @@ namespace dds
         };
 
       protected:
-        CSMCommanderChannel(const std::string& _inputName, const std::string& _outputName, uint64_t _ProtocolHeaderID);
+        CSMCommanderChannel(boost::asio::io_service& _service,
+                            const std::string& _inputName,
+                            const std::string& _outputName,
+                            uint64_t _protocolHeaderID,
+                            protocol_api::EMQOpenType _inputOpenType,
+                            protocol_api::EMQOpenType _outputOpenType);
 
       public:
         ~CSMCommanderChannel();

@@ -11,8 +11,14 @@ using namespace dds;
 using namespace dds::protocol_api;
 using namespace std;
 
-CSMUIChannel::CSMUIChannel(const string& _inputName, const string& _outputName, uint64_t _ProtocolHeaderID)
-    : CBaseSMChannelImpl<CSMUIChannel>(_inputName, _outputName, _ProtocolHeaderID)
+CSMUIChannel::CSMUIChannel(boost::asio::io_service& _service,
+                           const string& _inputName,
+                           const string& _outputName,
+                           uint64_t _protocolHeaderID,
+                           EMQOpenType _inputOpenType,
+                           EMQOpenType _outputOpenType)
+    : CBaseSMChannelImpl<CSMUIChannel>(
+          _service, _inputName, _outputName, _protocolHeaderID, _inputOpenType, _outputOpenType)
 {
 }
 

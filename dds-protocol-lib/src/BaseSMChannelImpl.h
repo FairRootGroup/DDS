@@ -168,14 +168,16 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseSMChannelImpl<T>(const std::string& _inputName,
+            CBaseSMChannelImpl<T>(boost::asio::io_service& _service,
+                                  const std::string& _inputName,
                                   const std::string& _outputName,
                                   uint64_t _protocolHeaderID,
-                                  EMQOpenType _inputOpenType = EMQOpenType::OpenOrCreate,
-                                  EMQOpenType _outputOpenType = EMQOpenType::OpenOrCreate)
+                                  EMQOpenType _inputOpenType,
+                                  EMQOpenType _outputOpenType)
                 : CChannelMessageHandlersImpl()
                 , m_started(false)
                 , m_protocolHeaderID(_protocolHeaderID)
+                , m_io_service(_service)
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
             {
                 // Input transport
@@ -201,11 +203,15 @@ namespace dds
                 stop();
             }
 
-            static connectionPtr_t makeNew(const std::string& _inputName,
+            static connectionPtr_t makeNew(boost::asio::io_service& _service,
+                                           const std::string& _inputName,
                                            const std::string& _outputName,
-                                           uint64_t _ProtocolHeaderID)
+                                           uint64_t _ProtocolHeaderID,
+                                           EMQOpenType _inputOpenType = EMQOpenType::OpenOrCreate,
+                                           EMQOpenType _outputOpenType = EMQOpenType::OpenOrCreate)
             {
-                connectionPtr_t newObject(new T(_inputName, _outputName, _ProtocolHeaderID));
+                connectionPtr_t newObject(
+                    new T(_service, _inputName, _outputName, _ProtocolHeaderID, _inputOpenType, _outputOpenType));
                 return newObject;
             }
 
@@ -351,8 +357,6 @@ namespace dds
 
                 m_started = true;
 
-                m_io_service.reset();
-
                 auto self(this->shared_from_this());
                 m_io_service.post([this, self] {
                     try
@@ -368,18 +372,6 @@ namespace dds
                 SSenderInfo sender;
                 sender.m_ID = m_protocolHeaderID;
                 dispatchHandlers(EChannelEvents::OnSMStart, sender);
-
-                const int nConcurrentThreads(3);
-                m_workerThreads = std::make_shared<boost::thread_group>();
-                for (int x = 0; x < nConcurrentThreads; ++x)
-                {
-                    m_workerThreads->create_thread(boost::bind(&boost::asio::io_service::run, &(m_io_service)));
-                }
-
-                if (_block)
-                {
-                    m_workerThreads->join_all();
-                }
             }
 
             void stop()
@@ -389,10 +381,6 @@ namespace dds
 
                 m_started = false;
                 sendYourselfShutdown();
-
-                m_io_service.stop();
-                m_workerThreads->join_all();
-                m_workerThreads.reset();
             }
 
             void removeMessageQueue()
@@ -644,15 +632,15 @@ namespace dds
             uint64_t m_protocolHeaderID;
 
           private:
+            boost::asio::io_service& m_io_service; ///< IO service that is used as a thread pool
+
             SMessageQueueInfo m_transportIn;  ///< Input message queue, i.e. we read from this queue
             messageQueueMap_t m_transportOut; ///< Map of output message queues, i.e. we write to this queues
-            std::mutex m_mutexTransportOut;
-            boost::asio::io_service m_io_service;                 ///< IO service that is used as a thread pool
-            std::shared_ptr<boost::thread_group> m_workerThreads; ///< Threads for IO service
-            CProtocolMessage::protocolMessagePtr_t m_currentMsg;  ///> Current message that we read and process
+            std::mutex m_mutexTransportOut;   ///< Mutex for transport output map
+
+            CProtocolMessage::protocolMessagePtr_t m_currentMsg; ///> Current message that we read and process
 
             protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
-
             std::mutex m_mutexWriteBuffer;
             protocolMessagePtrQueue_t m_writeBufferQueue;
         };

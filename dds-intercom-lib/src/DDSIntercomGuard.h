@@ -101,6 +101,9 @@ namespace dds
             customCmdReplySignal_t m_customCmdReplySignal;
 
           private:
+            boost::asio::io_service m_io_service;
+            boost::thread_group m_workerThreads;
+
             CAgentConnectionManager::ptr_t m_agentConnectionMng;
             std::mutex m_initAgentConnectionMutex;
 

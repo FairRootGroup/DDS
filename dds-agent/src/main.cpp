@@ -72,8 +72,7 @@ int main(int argc, char* argv[])
             }
             LOG(info) << "SESSION ID: " << sid.getSID();
 
-            boost::asio::io_service io_service;
-            shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options, io_service);
+            shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options);
             agentptr->start();
         }
         catch (exception& e)

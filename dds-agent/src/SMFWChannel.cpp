@@ -10,8 +10,14 @@ using namespace dds;
 using namespace std;
 using namespace dds::protocol_api;
 
-CSMFWChannel::CSMFWChannel(const string& _inputName, const string& _outputName, uint64_t _ProtocolHeaderID)
-    : CBaseSMChannelImpl<CSMFWChannel>(_inputName, _outputName, _ProtocolHeaderID)
+CSMFWChannel::CSMFWChannel(boost::asio::io_service& _service,
+                           const std::string& _inputName,
+                           const std::string& _outputName,
+                           uint64_t _protocolHeaderID,
+                           protocol_api::EMQOpenType _inputOpenType,
+                           protocol_api::EMQOpenType _outputOpenType)
+    : CBaseSMChannelImpl<CSMFWChannel>(
+          _service, _inputName, _outputName, _protocolHeaderID, _inputOpenType, _outputOpenType)
 {
 }
 

@@ -72,7 +72,7 @@ void CDDSIntercomGuard::start()
         // For the user task shared memory names are opposite: input shared memory name has output name and output
         // shared
         // memory name has input name.
-        m_SMChannel = CSMAgentChannel::makeNew(outputName, inputName, 0);
+        m_SMChannel = CSMAgentChannel::makeNew(m_io_service, outputName, inputName, 0);
 
         // Subscribe for cmdUPDATE_KEY from SM channel
         m_SMChannel->registerHandler<cmdUPDATE_KEY>(
@@ -121,10 +121,18 @@ void CDDSIntercomGuard::start()
                 LOG(info) << "CCDDSIntercomGuard: start init agent connection";
 
                 m_agentConnectionMng.reset();
-                m_agentConnectionMng = make_shared<CAgentConnectionManager>();
+                m_agentConnectionMng = make_shared<CAgentConnectionManager>(m_io_service);
                 m_agentConnectionMng->start();
             }
         }
+    }
+
+    // Don't block main thread, start transport service on a thread-pool
+    const int nConcurrentThreads(3);
+    LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
+    for (int x = 0; x < nConcurrentThreads; ++x)
+    {
+        m_workerThreads.create_thread(boost::bind(&boost::asio::io_service::run, &(m_io_service)));
     }
 
     m_started = true;
@@ -144,6 +152,9 @@ void CDDSIntercomGuard::stop()
     {
         m_SMChannel->stop();
     }
+
+    m_io_service.stop();
+    m_workerThreads.join_all();
 }
 
 connection_t CDDSIntercomGuard::connectError(intercom_api::errorSignal_t::slot_function_type _subscriber)

@@ -22,16 +22,16 @@ namespace dds
           public:
             typedef std::shared_ptr<CAgentConnectionManager> ptr_t;
 
-            CAgentConnectionManager();
+            CAgentConnectionManager(boost::asio::io_service& _service);
             virtual ~CAgentConnectionManager();
 
           public:
             void start();
             void stop();
-            bool stopped()
-            {
-                return m_service.stopped();
-            }
+            //            bool stopped()
+            //            {
+            //                return m_service.stopped();
+            //            }
             void sendCustomCmd(const protocol_api::SCustomCmdCmd& _command, uint64_t _protocolHeaderID);
 
           public:
@@ -48,13 +48,13 @@ namespace dds
             }
 
           private:
-            boost::asio::io_service m_service;
+            boost::asio::io_service& m_io_service;
+
             // Don't use m_channel directly, only via getAgentChannel
             // In case if channel is destoryed, there still could be user calling update key
             // TODO: need to find a way to hide m_channel from direct access
             CAgentChannel::connectionPtr_t m_channel;
             bool m_bStarted;
-            boost::thread_group m_workerThreads;
 
             /// Condition variable used to stop the current thread.
             /// Execution continues in three cases:

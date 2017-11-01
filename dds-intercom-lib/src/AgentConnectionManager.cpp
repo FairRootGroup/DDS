@@ -32,8 +32,9 @@ namespace sp = std::placeholders;
 namespace fs = boost::filesystem;
 using boost::asio::ip::tcp;
 
-CAgentConnectionManager::CAgentConnectionManager()
-    : m_bStarted(false)
+CAgentConnectionManager::CAgentConnectionManager(boost::asio::io_service& _service)
+    : m_io_service(_service)
+    , m_bStarted(false)
 {
 }
 
@@ -72,12 +73,12 @@ void CAgentConnectionManager::start()
         LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
         // Resolve endpoint iterator from host and port
-        tcp::resolver resolver(m_service);
+        tcp::resolver resolver(m_io_service);
         tcp::resolver::query query(sHost, sPort);
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new communication channel and push handshake message
-        m_channel = CAgentChannel::makeNew(m_service, 0);
+        m_channel = CAgentChannel::makeNew(m_io_service, 0);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
         m_channel->registerHandler<cmdSHUTDOWN>(
@@ -96,14 +97,6 @@ void CAgentConnectionManager::start()
         });
 
         m_channel->connect(endpoint_iterator);
-
-        // Don't block main thread, start transport service on a thread-pool
-        const int nConcurrentThreads(2);
-        LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
-        for (int x = 0; x < nConcurrentThreads; ++x)
-        {
-            m_workerThreads.create_thread(boost::bind(&boost::asio::io_service::run, &(m_service)));
-        }
     }
     catch (exception& e)
     {
@@ -126,8 +119,6 @@ void CAgentConnectionManager::stop()
 
     try
     {
-        m_service.stop();
-        m_workerThreads.join_all();
         if (!getAgentChannel().expired())
         {
             auto p = getAgentChannel().lock();

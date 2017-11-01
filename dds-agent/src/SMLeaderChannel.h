@@ -13,7 +13,12 @@ namespace dds
     class CSMLeaderChannel : public protocol_api::CBaseSMChannelImpl<CSMLeaderChannel>
     {
       protected:
-        CSMLeaderChannel(const std::string& _inputName, const std::string& _outputName, uint64_t _ProtocolHeaderID);
+        CSMLeaderChannel(boost::asio::io_service& _service,
+                         const std::string& _inputName,
+                         const std::string& _outputName,
+                         uint64_t _protocolHeaderID,
+                         protocol_api::EMQOpenType _inputOpenType,
+                         protocol_api::EMQOpenType _outputOpenType);
 
       public:
         ~CSMLeaderChannel();

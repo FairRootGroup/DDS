@@ -30,10 +30,14 @@ using namespace dds::protocol_api;
 using namespace std;
 namespace fs = boost::filesystem;
 
-CSMCommanderChannel::CSMCommanderChannel(const string& _inputName,
+CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_service& _service,
+                                         const string& _inputName,
                                          const string& _outputName,
-                                         uint64_t _ProtocolHeaderID)
-    : CBaseSMChannelImpl<CSMCommanderChannel>(_inputName, _outputName, _ProtocolHeaderID)
+                                         uint64_t _protocolHeaderID,
+                                         EMQOpenType _inputOpenType,
+                                         EMQOpenType _outputOpenType)
+    : CBaseSMChannelImpl<CSMCommanderChannel>(
+          _service, _inputName, _outputName, _protocolHeaderID, _inputOpenType, _outputOpenType)
     , m_id()
     , m_taskID(0)
     , m_taskIndex(0)
