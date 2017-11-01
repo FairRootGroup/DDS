@@ -100,6 +100,7 @@ namespace dds
             // AgentInfo operations
             /// add new or update existing Agent info
             void updateAgentInfo(const dds::protocol_api::SSenderInfo& _sender, const SAgentInfo& _info);
+            void updateAgentInfo(uint64_t _protocolHeaderID, const SAgentInfo& _info);
             /// Get a copy of the agent info
             // FIXME: This function makes a copy of the info struct. Find a solution to avoid copy operations. But the
             // function and the info struct still must be thread safe.

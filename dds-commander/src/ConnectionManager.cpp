@@ -592,8 +592,9 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
             m_updateTopology.zeroCounters();
 
             auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
                 return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                        _v.m_channel->getState() == EAgentState::idle);
+                        info.m_state == EAgentState::idle);
             };
 
             m_updateTopology.m_nofRequests = addedTasks.size();
@@ -628,7 +629,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
             // Add new elements
             for (const auto& sch : schedule)
             {
-                m_taskIDToAgentChannelMap[sch.m_taskID] = SWeakChannelInfo(sch.m_weakChannelInfo.m_channel, );
+                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
             }
 
             activateTasks(scheduler);
@@ -1090,15 +1091,17 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
             }
             else
             {
-                if (iter->second.expired())
+                if (iter->second.m_channel.expired())
                     continue;
-                auto ptr = iter->second.lock();
+                auto ptr = iter->second.m_channel.lock();
 
                 SDeleteKeyCmd cmd;
                 cmd.setKey(property->getId(), taskID);
-                if (ptr->getTaskID() != 0 && ptr->getTaskID() != taskID)
+
+                SAgentInfo info = ptr->getAgentInfo(iter->second.m_protocolHeaderID);
+                if (info.m_taskID != 0 && info.m_taskID != taskID)
                 {
-                    ptr->pushMsg<cmdDELETE_KEY>(cmd);
+                    ptr->pushMsg<cmdDELETE_KEY>(cmd, iter->second.m_protocolHeaderID);
                     LOG(debug) << "Property deleted from agent channel: <" << *_attachment << ">";
                 }
             }
@@ -1109,8 +1112,9 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     {
         auto channelPtr = _channel.lock();
         // remove task ID from the channel
-        channelPtr->setTaskID(0);
-        channelPtr->setState(EAgentState::idle);
+        SAgentInfo info = channelPtr->getAgentInfo(_sender);
+        info.m_taskID = 0;
+        info.m_state = EAgentState::idle;
     }
 
     // remove task ID from the map

@@ -71,8 +71,13 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
 
 void CAgentChannel::updateAgentInfo(const SSenderInfo& _sender, const SAgentInfo& _info)
 {
+    updateAgentInfo(_sender.m_ID, _info);
+}
+
+void CAgentChannel::updateAgentInfo(uint64_t _protocolHeaderID, const SAgentInfo& _info)
+{
     lock_guard<mutex> lock(m_mtxInfo);
-    m_info[_sender.m_ID] = _info;
+    m_info[_protocolHeaderID] = _info;
 }
 
 SAgentInfo CAgentChannel::getAgentInfo(uint64_t _protocolHeaderID)
@@ -100,8 +105,8 @@ uint64_t CAgentChannel::getId(const SSenderInfo& _sender)
 LobbyProtocolHeaderIdContainer_t CAgentChannel::getLobbyPHID() const
 {
     LobbyProtocolHeaderIdContainer_t ret;
-    for (auto it : m_info)
-        ret.push_back(it->first);
+    for (const auto& v : m_info)
+        ret.push_back(v.first);
 
     return ret;
 }
@@ -205,10 +210,10 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
     info.m_startUpTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
     info.m_startUpTime -= chrono::milliseconds(_attachment->m_submitTime);
     // everything is OK, we can work with this agent
-    LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-              << "] has successfully connected. Startup time: " << info.m_startUpTime.count() << " ms.";
+    LOG(MiscCommon::info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+                          << "] has successfully connected. Startup time: " << info.m_startUpTime.count() << " ms.";
 
-    updateAgentInfo(_sender.m_ID, info);
+    updateAgentInfo(_sender, info);
 
     return true;
 }

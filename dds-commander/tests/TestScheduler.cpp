@@ -48,22 +48,23 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 
     agents.reserve(nofTasks * nofAgentsPerTask);
 
+    uint64_t counter = 1;
     for (size_t i = 0; i < nofTasks; ++i)
         for (size_t j = 0; j < nofAgentsPerTask; ++j)
         {
-            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service, 0);
-            agent->setState(EAgentState::idle);
+            SAgentInfo info;
+            info.m_state = EAgentState::idle;
 
             stringstream ss;
             ss << "host" << (i + 1) << "_" << j % 100;
+            info.m_remoteHostInfo.m_host = ss.str();
 
-            SHostInfoCmd hostInfo;
-            hostInfo.m_host = ss.str();
+            SSenderInfo sender;
+            sender.m_ID = counter++;
+            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service, sender.m_ID);
+            agent->updateAgentInfo(sender, info);
 
-            agent->setRemoteHostInfo(hostInfo);
-
-            // TODO: FIXME: change protocol header ID to non-zero value
-            agents.push_back(CConnectionManager::channelInfo_t(agent, 0));
+            agents.push_back(CConnectionManager::channelInfo_t(agent, sender.m_ID));
         }
 
     CConnectionManager::weakChannelInfo_t::container_t weakAgents;
@@ -87,9 +88,9 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     // Change host info to non existing pattern
     for (auto agent : agents)
     {
-        SHostInfoCmd hostInfo;
-        hostInfo.m_host = "nohost";
-        agent.m_channel->setRemoteHostInfo(hostInfo);
+        SAgentInfo info = agent.m_channel->getAgentInfo(agent.m_protocolHeaderID);
+        info.m_remoteHostInfo.m_host = "nohost";
+        agent.m_channel->updateAgentInfo(agent.m_protocolHeaderID, info);
     }
     auto execFailTime = STimeMeasure<std::chrono::microseconds>::execution([&scheduler, &topology, &weakAgents]() {
         BOOST_CHECK_THROW(scheduler.makeSchedule(topology, weakAgents), runtime_error);
@@ -103,16 +104,19 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 void make_agent(boost::asio::io_service& _io_service,
                 CConnectionManager::channelInfo_t::container_t& _agents,
                 const string& _hostName,
-                const string& _workerId)
+                const string& _workerId,
+                uint64_t _protocolHeaderID)
 {
-    CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_service, 0);
-    agent->setState(EAgentState::idle);
+    CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_service, _protocolHeaderID);
+    SAgentInfo info;
+    info.m_state = EAgentState::idle;
     SHostInfoCmd hostInfo;
     hostInfo.m_host = _hostName;
     hostInfo.m_workerId = _workerId;
-    agent->setRemoteHostInfo(hostInfo);
-    // TODO: FIXME: change protocol header ID to non-zero value
-    _agents.push_back(CConnectionManager::channelInfo_t(agent, 0));
+    info.m_remoteHostInfo = hostInfo;
+
+    agent->updateAgentInfo(_protocolHeaderID, info);
+    _agents.push_back(CConnectionManager::channelInfo_t(agent, _protocolHeaderID));
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
@@ -127,25 +131,26 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 
     CConnectionManager::channelInfo_t::container_t agents;
 
+    uint64_t counter = 1;
     size_t n = 3;
     agents.reserve(n * 9);
     for (size_t i = 0; i < n; ++i)
     {
         string indexStr = to_string(i);
         // Requirement type "hostname"
-        make_agent(io_service, agents, "host1_" + indexStr, "wn1");
-        make_agent(io_service, agents, "host2_" + indexStr, "wn2");
-        make_agent(io_service, agents, "host3_" + indexStr, "wn3");
-        make_agent(io_service, agents, "host4_" + indexStr, "wn4");
-        make_agent(io_service, agents, "host4_" + indexStr, "wn4");
-        make_agent(io_service, agents, "host4_" + indexStr, "wn4");
+        make_agent(io_service, agents, "host1_" + indexStr, "wn1", counter++);
+        make_agent(io_service, agents, "host2_" + indexStr, "wn2", counter++);
+        make_agent(io_service, agents, "host3_" + indexStr, "wn3", counter++);
+        make_agent(io_service, agents, "host4_" + indexStr, "wn4", counter++);
+        make_agent(io_service, agents, "host4_" + indexStr, "wn4", counter++);
+        make_agent(io_service, agents, "host4_" + indexStr, "wn4", counter++);
 
         // Requirement type "wnname"
-        make_agent(io_service, agents, "host5_0", "wn5");
-        make_agent(io_service, agents, "host6_0", "wn6");
+        make_agent(io_service, agents, "host5_0", "wn5", counter++);
+        make_agent(io_service, agents, "host6_0", "wn6", counter++);
 
         // No Requirement
-        make_agent(io_service, agents, "noname_host", "noname_wn");
+        make_agent(io_service, agents, "noname_host", "noname_wn", counter++);
     }
 
     CConnectionManager::weakChannelInfo_t::container_t weakAgents;
@@ -174,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     for (size_t i = 0; i < n; ++i)
     {
         // string indexStr = to_string(i);
-        make_agent(io_service, agents, "host.com", "wn");
+        make_agent(io_service, agents, "host.com", "wn", i + 1);
     }
 
     CConnectionManager::weakChannelInfo_t::container_t weakAgents;
