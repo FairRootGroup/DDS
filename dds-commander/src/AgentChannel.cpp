@@ -24,14 +24,14 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
         [](const SSenderInfo& _sender) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
 
     registerHandler<EChannelEvents::OnHandshakeOK>([this](const SSenderInfo& _sender) {
-        SAgentInfo info;
+        SAgentInfo inf = this->getAgentInfo(_sender.m_ID);
         // any TCP connection channel's end is considerd as a lobby leader
-        info.m_lobbyLeader = true;
+        inf.m_lobbyLeader = true;
         switch (getChannelType())
         {
             case EChannelType::AGENT:
             {
-                info.m_state = EAgentState::idle;
+                inf.m_state = EAgentState::idle;
                 pushMsg<cmdGET_ID>(_sender.m_ID);
                 pushMsg<cmdGET_HOST_INFO>(_sender.m_ID);
             }
@@ -44,7 +44,7 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
                 // All UI channels get unique IDs, so that user tasks and agents can send
                 // back the
                 // information to a particular UI channel.
-                info.m_id = DDSChannelId::getChannelId();
+                inf.m_id = DDSChannelId::getChannelId();
             }
             break;
             default:
@@ -52,19 +52,22 @@ CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protoc
                 return;
         }
 
-        updateAgentInfo(_sender, info);
+        updateAgentInfo(_sender, inf);
     });
 
     // Subsribe on lobby member handshake
     registerHandler<EChannelEvents::OnLobbyMemberHandshakeOK>([this](const SSenderInfo& _sender) -> void {
         {
-            SAgentInfo info;
+            if (_sender.m_ID == this->m_protocolHeaderID)
+                return;
 
-            info.m_state = EAgentState::idle;
+            SAgentInfo inf = this->getAgentInfo(_sender.m_ID);
+
+            inf.m_state = EAgentState::idle;
             pushMsg<cmdGET_ID>(_sender.m_ID);
             pushMsg<cmdGET_HOST_INFO>(_sender.m_ID);
 
-            updateAgentInfo(_sender, info);
+            updateAgentInfo(_sender, inf);
         }
     });
 }
@@ -86,6 +89,8 @@ SAgentInfo CAgentChannel::getAgentInfo(uint64_t _protocolHeaderID)
     auto it = m_info.find(_protocolHeaderID);
     if (it != m_info.end())
         return it->second;
+
+    LOG(warning) << "Unknown agent info for PHID " << _protocolHeaderID;
 
     // return empty info the requested header ID is not in the list
     return SAgentInfo();
@@ -173,7 +178,7 @@ string CAgentChannel::_remoteEndIDString()
     // The remote end is shown only for the lobby leader
     if (getChannelType() == EChannelType::AGENT)
     {
-        SAgentInfo info = getAgentInfo(m_ProtocolHeaderID);
+        SAgentInfo info = getAgentInfo(m_protocolHeaderID);
         if (info.m_lobbyLeader)
             return to_string(info.m_id);
     }
@@ -200,20 +205,20 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment,
                                           const SSenderInfo& _sender)
 {
-    SAgentInfo info = getAgentInfo(_sender);
+    SAgentInfo inf = getAgentInfo(_sender);
 
-    info.m_remoteHostInfo = *_attachment;
-    LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << info.m_remoteHostInfo
+    inf.m_remoteHostInfo = *_attachment;
+    LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << inf.m_remoteHostInfo
                << "] received from: " << remoteEndIDString();
 
     // Calculating startup time of the agent
-    info.m_startUpTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
-    info.m_startUpTime -= chrono::milliseconds(_attachment->m_submitTime);
+    inf.m_startUpTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
+    inf.m_startUpTime -= chrono::milliseconds(_attachment->m_submitTime);
     // everything is OK, we can work with this agent
-    LOG(MiscCommon::info) << "The Agent [" << socket().remote_endpoint().address().to_string()
-                          << "] has successfully connected. Startup time: " << info.m_startUpTime.count() << " ms.";
+    LOG(info) << "The Agent [" << socket().remote_endpoint().address().to_string()
+              << "] has successfully connected. Startup time: " << inf.m_startUpTime.count() << " ms.";
 
-    updateAgentInfo(_sender, info);
+    updateAgentInfo(_sender, inf);
 
     return true;
 }

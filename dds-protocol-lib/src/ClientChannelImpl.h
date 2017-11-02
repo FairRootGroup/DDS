@@ -92,7 +92,7 @@ namespace dds
                             cmd.m_channelType = this->m_channelType;
                             cmd.m_sSID = this->m_sessionID;
                             cmd.m_version = DDS_PROTOCOL_VERSION;
-                            this->template pushMsg<cmdHANDSHAKE>(cmd, this->m_ProtocolHeaderID);
+                            this->template pushMsg<cmdHANDSHAKE>(cmd, this->m_protocolHeaderID);
                         }
                         else
                         {

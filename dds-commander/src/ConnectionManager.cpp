@@ -673,7 +673,9 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
         // Set task ID for agent
         // TODO: Do we have to assign taskID here?
         // TODO: Probably it has to be assigned when the task is successfully activated.
-        ptr->setTaskID(sch.m_taskID);
+        SAgentInfo inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
+        inf.m_taskID = sch.m_taskID;
+        ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
 
         if (sch.m_taskInfo.m_task->isExeReachable())
         {
@@ -744,14 +746,17 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
                                         sch.m_taskInfo.m_task->getExe());
             }
         }
-        ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd);
-        ptr->setState(EAgentState::executing);
+        ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd, sch.m_weakChannelInfo.m_protocolHeaderID);
+
+        inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
+        inf.m_state = EAgentState::executing;
+        ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
     }
 
     // Active agents.
     broadcastSimpleMsg<cmdACTIVATE_AGENT>([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                _v.m_channel->getTaskID() != 0);
+        SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && inf.m_taskID != 0);
     });
 }
 
@@ -791,8 +796,8 @@ void CConnectionManager::stopTasks(const weakChannelInfo_t::container_t& _agents
             continue;
         auto ptr = v.m_channel.lock();
         // dequeue important (or expensive) messages
-        ptr->dequeueMsg<cmdUPDATE_KEY>(v.m_protocolHeaderID);
-        ptr->dequeueMsg<cmdDELETE_KEY>(v.m_protocolHeaderID);
+        ptr->dequeueMsg<cmdUPDATE_KEY>();
+        ptr->dequeueMsg<cmdDELETE_KEY>();
         // send stop message
         ptr->template pushMsg<cmdSTOP_USER_TASK>(v.m_protocolHeaderID);
     }
@@ -827,37 +832,32 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
             continue;
         auto ptr = v.m_channel.lock();
 
-        // Get PHID of all members of the lobby
-        LobbyProtocolHeaderIdContainer_t lobby = ptr->getLobbyPHID();
-        for (auto sender : lobby)
+        SAgentInfo inf = ptr->getAgentInfo(v.m_protocolHeaderID);
+
+        string sTaskName("no task is assigned");
+        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
         {
-            SAgentInfo info = ptr->getAgentInfo(sender);
+            TaskPtr_t task = m_topo.getTaskByHash(inf.m_taskID);
+            stringstream ssTaskString;
+            ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
+            sTaskName = ssTaskString.str();
+        }
 
-            string sTaskName("no task is assigned");
-            if (info.m_taskID > 0 && info.m_state == EAgentState::executing)
-            {
-                TaskPtr_t task = m_topo.getTaskByHash(info.m_taskID);
-                stringstream ssTaskString;
-                ssTaskString << info.m_taskID << " (" << info.m_id << ")";
-                sTaskName = ssTaskString.str();
-            }
+        ss << " -------------->>> " << inf.m_id << "\nHost Info: " << inf.m_remoteHostInfo.m_username << "@"
+           << inf.m_remoteHostInfo.m_host << ":" << inf.m_remoteHostInfo.m_DDSPath
+           << "\nAgent pid: " << inf.m_remoteHostInfo.m_agentPid
+           << "\nAgent startup time: " << chrono::duration<double>(inf.m_startUpTime).count() << " s"
+           << "\nState: " << g_agentStates.at(inf.m_state) << "\n"
+           << "\nTask ID: " << sTaskName << "\n";
 
-            ss << " -------------->>> " << info.m_id << "\nHost Info: " << info.m_remoteHostInfo.m_username << "@"
-               << info.m_remoteHostInfo.m_host << ":" << info.m_remoteHostInfo.m_DDSPath
-               << "\nAgent pid: " << info.m_remoteHostInfo.m_agentPid
-               << "\nAgent startup time: " << chrono::duration<double>(info.m_startUpTime).count() << " s"
-               << "\nState: " << g_agentStates.at(info.m_state) << "\n"
-               << "\nTask ID: " << sTaskName << "\n";
+        cmd.m_nActiveAgents = channels.size();
+        cmd.m_nIndex = i++;
+        cmd.m_sAgentInfo = ss.str();
 
-            cmd.m_nActiveAgents = channels.size();
-            cmd.m_nIndex = i++;
-            cmd.m_sAgentInfo = ss.str();
-
-            if (!_channel.expired())
-            {
-                auto p = _channel.lock();
-                p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
-            }
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
         }
     }
 }
@@ -1002,6 +1002,8 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
     auto channelPtr = _channel.lock();
     string propertyID(_attachment->getPropertyID());
 
+    SAgentInfo channel_inf = channelPtr->getAgentInfo(_sender.m_ID);
+
     // Check if the task has a write access to property.
     // If not just send back an error.
     auto task = m_topo.getTaskByHash(channelPtr->getTaskID(_sender));
@@ -1031,7 +1033,7 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
         auto iter = m_taskIDToAgentChannelMap.find(it->first);
         iterExists = (iter != m_taskIDToAgentChannelMap.end());
         if (iterExists)
-            weakPtr = iter->second;
+            weakPtr = iter->second.m_channel;
         //}
 
         if (!iterExists)
@@ -1046,14 +1048,15 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
 
             if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
             {
-                if (ptr->getTaskID() != channelPtr->getTaskID())
+                SAgentInfo inf = ptr->getAgentInfo(iter->second.m_protocolHeaderID);
+                if (inf.m_taskID != channel_inf.m_taskID)
                 {
-                    auto task = m_topo.getTaskByHash(ptr->getTaskID());
+                    auto task = m_topo.getTaskByHash(inf.m_taskID);
                     auto property = task->getProperty(propertyID);
                     if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
                                                 property->getAccessType() == EPropertyAccessType::READWRITE))
                     {
-                        ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment);
+                        ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment, iter->second.m_protocolHeaderID);
                         LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
                     }
                 }
@@ -1178,18 +1181,20 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
     {
         LOG(debug) << "cmdREPLY_ID attachment [" << *_attachment << "] received from: " << p->remoteEndIDString();
 
+        SAgentInfo inf = p->getAgentInfo(_sender.m_ID);
         if (_attachment->m_id == 0)
         {
-            uint64_t agentId = DDSChannelId::getChannelId();
-            p->setId(agentId);
+            inf.m_id = DDSChannelId::getChannelId();
             SIDCmd msg_cmd;
-            msg_cmd.m_id = p->getId();
+            msg_cmd.m_id = inf.m_id;
+
             p->pushMsg<cmdSET_ID>(msg_cmd, _sender.m_ID);
         }
         else
         {
-            p->setId(_attachment->m_id);
+            inf.m_id = _attachment->m_id;
         }
+        p->updateAgentInfo(_sender.m_ID, inf);
     }
     catch (exception& _e)
     {
@@ -1293,8 +1298,9 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     auto p = _channel.lock();
     try
     {
+        SAgentInfo inf = p->getAgentInfo(_sender.m_ID);
         // Assign sender ID of this custom command
-        _attachment->m_senderId = p->getId();
+        _attachment->m_senderId = inf.m_id;
 
         CConnectionManager::weakChannelInfo_t::container_t channels;
 
@@ -1305,7 +1311,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             // If condition in the attachment is not of type uint64_t function throws an exception.
             uint64_t channelId = boost::lexical_cast<uint64_t>(_attachment->m_sCondition);
             channels = getChannels([channelId](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                _stop = (_v.m_channel->getId() == channelId);
+                SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+                _stop = (inf.m_id == channelId);
                 return _stop;
             });
         }
@@ -1342,22 +1349,25 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 taskFound = false;
             }
 
+            SAgentInfo thisInf = p->getAgentInfo(_sender.m_ID);
             channels = getChannels(
-                [this, taskFound, &_attachment, p](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+                [this, taskFound, &_attachment, &thisInf](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+                    SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+
                     // Only for Agents which are started already and executing task
                     if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
-                        _v.m_channel->getState() != EAgentState::executing)
+                        inf.m_state != EAgentState::executing)
                         return false;
 
                     // Do not send command to self
-                    if (_v.m_channel->getTaskID() == p->getTaskID())
+                    if (inf.m_taskID == thisInf.m_taskID)
                         return false;
 
                     // If condition is empty we broadcast command to all agents
                     if (_attachment->m_sCondition.empty())
                         return true;
 
-                    const STaskInfo& taskInfo = m_topo.getTaskInfoByHash(_v.m_channel->getTaskID());
+                    const STaskInfo& taskInfo = m_topo.getTaskInfoByHash(inf.m_taskID);
                     bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
                                               : taskInfo.m_task->getPath() == _attachment->m_sCondition;
 

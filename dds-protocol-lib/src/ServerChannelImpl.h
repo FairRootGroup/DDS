@@ -34,6 +34,7 @@ namespace dds
                         if (!processHandshake_sessionIDMatch(_attachment->m_sSID, true, _sender.m_ID))
                             return;
 
+                        this->m_protocolHeaderID = _sender.m_ID;
                         this->m_isHandshakeOK = true;
                         this->m_channelType = static_cast<EChannelType>(_attachment->m_channelType);
 

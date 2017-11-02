@@ -30,6 +30,12 @@ namespace dds
         };
 
         template <class T>
+        bool operator<(const SChannelInfo<T>& lhs, const SChannelInfo<T>& rhs)
+        {
+            return lhs.m_channel.get() < rhs.m_channel.get();
+        }
+
+        template <class T>
         struct SWeakChannelInfo
         {
             SWeakChannelInfo()

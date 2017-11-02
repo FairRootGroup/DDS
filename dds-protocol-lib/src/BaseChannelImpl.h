@@ -230,7 +230,7 @@ namespace dds
                 , CStatImpl(_service)
                 , m_isHandshakeOK(false)
                 , m_channelType(EChannelType::UNKNOWN)
-                , m_ProtocolHeaderID(_protocolHeaderID)
+                , m_protocolHeaderID(_protocolHeaderID)
                 , m_io_service(_service)
                 , m_socket(_service)
                 , m_started(false)
@@ -390,12 +390,12 @@ namespace dds
             }
 
             template <ECmdType _cmd, class A>
-            void accumulativePushMsg(const A& _attachment)
+            void accumulativePushMsg(const A& _attachment, uint64_t _protocolHeaderID = 0)
             {
                 try
                 {
                     CProtocolMessage::protocolMessagePtr_t msg =
-                        SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
+                        SCommandAttachmentImpl<_cmd>::encode(_attachment, adjustProtocolHeaderID(_protocolHeaderID));
                     accumulativePushMsg(msg, _cmd);
                 }
                 catch (std::exception& ex)
@@ -405,10 +405,10 @@ namespace dds
             }
 
             template <ECmdType _cmd>
-            void accumulativePushMsg()
+            void accumulativePushMsg(uint64_t _protocolHeaderID = 0)
             {
                 SEmptyCmd cmd;
-                accumulativePushMsg<_cmd>(cmd);
+                accumulativePushMsg<_cmd>(cmd, _protocolHeaderID);
             }
 
             void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID = 0)
@@ -466,8 +466,8 @@ namespace dds
             {
                 try
                 {
-                    CProtocolMessage::protocolMessagePtr_t msg = SCommandAttachmentImpl<_cmd>::encode(
-                        _attachment, (_protocolHeaderID != 0 ? _protocolHeaderID : m_ProtocolHeaderID));
+                    CProtocolMessage::protocolMessagePtr_t msg =
+                        SCommandAttachmentImpl<_cmd>::encode(_attachment, adjustProtocolHeaderID(_protocolHeaderID));
                     pushMsg(msg, _cmd, _protocolHeaderID);
                 }
                 catch (std::exception& ex)
@@ -480,14 +480,14 @@ namespace dds
             void pushMsg(uint64_t _protocolHeaderID = 0)
             {
                 SEmptyCmd cmd;
-                pushMsg<_cmd>(cmd, (_protocolHeaderID != 0 ? _protocolHeaderID : m_ProtocolHeaderID));
+                pushMsg<_cmd>(cmd, adjustProtocolHeaderID(_protocolHeaderID));
             }
 
             template <ECmdType _cmd, class A>
             void sendYourself(const A& _attachment)
             {
                 CProtocolMessage::protocolMessagePtr_t msg =
-                    SCommandAttachmentImpl<_cmd>::encode(_attachment, m_ProtocolHeaderID);
+                    SCommandAttachmentImpl<_cmd>::encode(_attachment, m_protocolHeaderID);
                 // process received message
                 T* pThis = static_cast<T*>(this);
                 pThis->processMessage(msg);
@@ -744,10 +744,15 @@ namespace dds
 
             uint64_t getProtocolHeaderID() const
             {
-                return m_ProtocolHeaderID;
+                return m_protocolHeaderID;
             }
 
           private:
+            uint64_t adjustProtocolHeaderID(uint64_t _protocolHeaderID) const
+            {
+                return _protocolHeaderID != 0 ? _protocolHeaderID : m_protocolHeaderID;
+            }
+
             void readHeader()
             {
                 auto self(this->shared_from_this());
@@ -956,7 +961,7 @@ namespace dds
             bool m_isHandshakeOK;
             EChannelType m_channelType;
             std::string m_sessionID;
-            uint64_t m_ProtocolHeaderID;
+            uint64_t m_protocolHeaderID;
 
           private:
             boost::asio::io_service& m_io_service;
