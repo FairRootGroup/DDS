@@ -115,11 +115,11 @@ void CAgentConnectionManager::start()
             createNetworkAgentChannel(protocolHeaderID);
 
             // Start listening for messages from shared memory
-            m_SMChannel->start();
+            m_SMIntercomChannel->start();
             // Start listening for messages from shared memory
             m_SMLeader->start();
             // Start shared memory agent channel
-            m_SMAgent->start(false);
+            m_SMAgent->start();
 
             startService();
 
@@ -142,9 +142,9 @@ void CAgentConnectionManager::start()
             createSMAgentChannel(protocolHeaderID);
 
             // Start listening for messages from shared memory
-            m_SMChannel->start();
+            m_SMIntercomChannel->start();
             // Start shared memory agent channel
-            m_SMAgent->start(true);
+            m_SMAgent->start();
 
             startService();
         }
@@ -175,14 +175,19 @@ void CAgentConnectionManager::stop()
     {
         if (m_SMAgent)
             m_SMAgent->stop();
-        if (m_SMChannel)
-            m_SMChannel->stop();
+        if (m_SMIntercomChannel)
+            m_SMIntercomChannel->stop();
         if (m_SMLeader)
             m_SMLeader->stop();
         if (m_agent)
+        {
+            // Stop forwarder's readMessage thread
+            auto pSCFW = m_agent->getSMFWChannel().lock();
+            if (pSCFW)
+                pSCFW->stop();
             m_agent->stop();
+        }
         m_io_service.stop();
-        // m_workerThreads.join_all();
     }
     catch (exception& e)
     {
@@ -268,10 +273,10 @@ void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID
 {
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMChannel = CSMUIChannel::makeNew(
+    m_SMIntercomChannel = CSMUIChannel::makeNew(
         m_io_service, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
     // Forward messages from shared memory to agent
-    m_SMChannel->registerHandler<cmdRAW_MSG>(
+    m_SMIntercomChannel->registerHandler<cmdRAW_MSG>(
         [this](const SSenderInfo& _sender, protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
             m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
         });
@@ -402,6 +407,7 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
     // Shutting down all members of the lobby.
     if (m_SMLeader != nullptr)
     {
+        LOG(info) << "Sending SHUTDOWN to all lobby members";
         m_SMLeader->syncSendShutdownAll();
     }
     stop();
@@ -420,7 +426,7 @@ void CAgentConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
-    m_SMChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
+    m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(const SSenderInfo& _sender,
@@ -428,7 +434,7 @@ void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(const SSenderInfo& _sender,
                                                      CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
-    m_SMChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
+    m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdDELETE_KEY(const SSenderInfo& _sender,
@@ -436,7 +442,7 @@ void CAgentConnectionManager::on_cmdDELETE_KEY(const SSenderInfo& _sender,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
-    m_SMChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
+    m_SMIntercomChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
@@ -450,7 +456,7 @@ void CAgentConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
             LOG(MiscCommon::error) << _attachment->m_sMsg;
         }
         // Forward message to user task
-        m_SMChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment);
+        m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment);
     }
     else
     {
@@ -463,7 +469,7 @@ void CAgentConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                                                CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Forward message to user task
-    m_SMChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
+    m_SMIntercomChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
 }
 
 void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
@@ -478,7 +484,7 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     cmd.m_taskID = m_SMAgent->getTaskID();
     m_SMAgent->pushMsg<cmdUSER_TASK_DONE>(cmd);
 
-    m_SMChannel->reinit();
+    m_SMIntercomChannel->reinit();
 }
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
@@ -562,5 +568,5 @@ void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
     terminateChildrenProcesses();
     auto p = _channel.lock();
     p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
-    m_SMChannel->reinit();
+    m_SMIntercomChannel->reinit();
 }

@@ -86,7 +86,7 @@ namespace dds
             boost::thread_group m_workerThreads;
 
             CCommanderChannel::connectionPtr_t m_agent;
-            CSMUIChannel::connectionPtr_t m_SMChannel;
+            CSMUIChannel::connectionPtr_t m_SMIntercomChannel;
             CSMCommanderChannel::connectionPtr_t m_SMAgent;
             CSMLeaderChannel::connectionPtr_t m_SMLeader;
 

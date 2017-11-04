@@ -199,7 +199,7 @@ namespace dds
           public:
             ~CBaseSMChannelImpl<T>()
             {
-                LOG(MiscCommon::info) << "Shared memory channel destructor is called";
+                LOG(MiscCommon::info) << "SM: channel destructor is called. MQ: " << m_transportIn.m_name;
                 stop();
             }
 
@@ -329,7 +329,7 @@ namespace dds
                 start();
             }
 
-            void start(bool _block = false)
+            void start()
             {
                 // Check that all message queues were succesfully created
                 bool queuesCreated = m_transportIn.m_mq != nullptr;
@@ -376,6 +376,7 @@ namespace dds
 
             void stop()
             {
+                LOG(MiscCommon::info) << "SM: channel STOP is called. MQ: " << m_transportIn.m_name;
                 if (!m_started)
                     return;
 
@@ -484,6 +485,7 @@ namespace dds
 
             void sendYourselfShutdown()
             {
+                LOG(MiscCommon::debug) << m_transportIn.m_name << ": Sends itself a SHUTDOWN msg";
                 // Send cmdSHUTDOWN with higher priority in order to stop read operation.
                 SEmptyCmd cmd;
                 CProtocolMessage::protocolMessagePtr_t msg =
@@ -505,8 +507,9 @@ namespace dds
 
                     if (receivedSize < CProtocolMessage::header_length)
                     {
-                        LOG(MiscCommon::debug) << "Received message: " << receivedSize << " bytes, expected at least"
-                                               << CProtocolMessage::header_length << " bytes";
+                        LOG(MiscCommon::debug)
+                            << m_transportIn.m_name << ": Received message: " << receivedSize
+                            << " bytes, expected at least" << CProtocolMessage::header_length << " bytes";
                     }
                     else
                     {
@@ -533,19 +536,20 @@ namespace dds
             {
                 if (_bodySize != m_currentMsg->body_length())
                 {
-                    LOG(MiscCommon::error)
-                        << "Received message BODY: " << _bodySize << " bytes, expected " << m_currentMsg->body_length();
+                    LOG(MiscCommon::error) << m_transportIn.m_name << ": Received message BODY: " << _bodySize
+                                           << " bytes, expected " << m_currentMsg->body_length();
                 }
                 else
                 {
                     if (m_currentMsg->body_length() == 0)
                     {
-                        LOG(MiscCommon::debug) << "Received message BODY no attachment: " << m_currentMsg->toString();
+                        LOG(MiscCommon::debug) << m_transportIn.m_name
+                                               << ": Received message BODY no attachment: " << m_currentMsg->toString();
                     }
                     else
                     {
-                        LOG(MiscCommon::debug)
-                            << "Received message BODY (" << _bodySize << " bytes): " << m_currentMsg->toString();
+                        LOG(MiscCommon::debug) << m_transportIn.m_name << ": Received message BODY (" << _bodySize
+                                               << " bytes): " << m_currentMsg->toString();
                     }
 
                     // process received message
@@ -571,6 +575,10 @@ namespace dds
                                 LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
                             }
                         });
+                    }
+                    else
+                    {
+                        LOG(MiscCommon::debug) << m_transportIn.m_name << ": Stopping readMessage thread...";
                     }
                 }
             }
