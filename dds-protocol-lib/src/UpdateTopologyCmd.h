@@ -28,7 +28,7 @@ namespace dds
             bool operator==(const SUpdateTopologyCmd& val) const;
 
             // when 0 - valiadate, any other value - don't validate
-            uint16_t m_nDisiableValidation;
+            uint16_t m_nDisableValidation;
             // topology file
             std::string m_sTopologyFile;
             // topology update type

@@ -37,14 +37,14 @@ namespace dds
             SOptions()
                 : m_topologyCmd(ETopologyCmdType::UNKNOWN)
                 , m_verbose(false)
-                , m_bDisiableValidation(false)
+                , m_bDisableValidation(false)
             {
             }
 
             ETopologyCmdType m_topologyCmd;
             std::string m_sTopoFile;
             bool m_verbose;
-            bool m_bDisiableValidation;
+            bool m_bDisableValidation;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -69,8 +69,8 @@ namespace dds
                                   bpo::value<std::string>(&_options->m_sTopoFile),
                                   "Define a topology to update currently active topology.");
             options.add_options()("disable-validation",
-                                  bpo::bool_switch(&_options->m_bDisiableValidation),
-                                  "Disiable topology valiadation.");
+                                  bpo::bool_switch(&_options->m_bDisableValidation),
+                                  "Disable topology valiadation.");
             options.add_options()("activate",
                                   bpo::value<std::string>(&_options->m_sTopoFile),
                                   "Request to activate agents, i.e. distribute and start user tasks.");
@@ -103,7 +103,7 @@ namespace dds
             {
                 _options->m_verbose = true;
             }
-            if (vm.count("disable-validation") && _options->m_bDisiableValidation)
+            if (_options->m_bDisableValidation)
             {
                 if (!vm.count("activate") && !vm.count("update"))
                 {
