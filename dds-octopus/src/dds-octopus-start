@@ -114,5 +114,6 @@ fi
 echo "START TEST"
 
 $DDS_OCTOPUS_LOCATION/dds-octopus -n 10
+RESULT=$?
 
-clean_up 0
+clean_up $RESULT
