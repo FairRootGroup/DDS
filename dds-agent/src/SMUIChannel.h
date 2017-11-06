@@ -24,11 +24,16 @@ namespace dds
         ~CSMUIChannel();
 
       public:
-        SM_RAW_MESSAGE_HANDLER(CSMUIChannel, on_rawMessage)
+        BEGIN_SM_MSG_MAP(CSMUIChannel)
+            SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+            SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
+        END_SM_MSG_MAP()
 
       private:
-        bool on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg,
-                           const protocol_api::SSenderInfo& _sender);
+        bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
+                              const protocol_api::SSenderInfo& _sender);
+        bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
+                              const protocol_api::SSenderInfo& _sender);
     };
 }
 #endif

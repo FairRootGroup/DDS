@@ -266,6 +266,11 @@ namespace dds
             }
 
           public:
+            uint64_t getProtocolHeaderID() const
+            {
+                return m_protocolHeaderID;
+            }
+
             std::string getInputName() const
             {
                 return m_transportIn.m_name;
@@ -441,7 +446,7 @@ namespace dds
             {
                 try
                 {
-                    uint64_t headerID = protocolHeaderID(_protocolHeaderID);
+                    uint64_t headerID = adjustProtocolHeaderID(_protocolHeaderID);
                     CProtocolMessage::protocolMessagePtr_t msg =
                         SCommandAttachmentImpl<_cmd>::encode(_attachment, headerID);
                     pushMsg(msg, _cmd, _outputID);
@@ -478,7 +483,7 @@ namespace dds
             }
 
           private:
-            uint64_t protocolHeaderID(uint64_t _protocolHeaderID) const
+            uint64_t adjustProtocolHeaderID(uint64_t _protocolHeaderID) const
             {
                 return (_protocolHeaderID == 0) ? m_protocolHeaderID : _protocolHeaderID;
             }

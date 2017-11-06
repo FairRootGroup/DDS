@@ -27,7 +27,14 @@ CSMUIChannel::~CSMUIChannel()
     removeMessageQueue();
 }
 
-bool CSMUIChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg, const SSenderInfo& _sender)
+bool CSMUIChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
+                                    const protocol_api::SSenderInfo& _sender)
+{
+    return false;
+}
+
+bool CSMUIChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
+                                    const protocol_api::SSenderInfo& _sender)
 {
     return false;
 }

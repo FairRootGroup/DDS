@@ -275,10 +275,19 @@ void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     m_SMIntercomChannel = CSMUIChannel::makeNew(
         m_io_service, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
-    // Forward messages from shared memory to agent
-    m_SMIntercomChannel->registerHandler<cmdRAW_MSG>(
-        [this](const SSenderInfo& _sender, protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg) {
-            m_SMAgent->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
+
+    // TODO: Forwarding of update key commands without decoding using raw message API
+    // Forward messages from shared memory to the agent.
+    // For the moment we have to replace PHID of the intercom message (which is always 0) with the real PHID of the
+    // agent.
+    m_SMIntercomChannel->registerHandler<cmdCUSTOM_CMD>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            m_SMAgent->pushMsg<cmdCUSTOM_CMD>(*_attachment, m_SMAgent->getProtocolHeaderID());
+        });
+
+    m_SMIntercomChannel->registerHandler<cmdUPDATE_KEY>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            m_SMAgent->pushMsg<cmdUPDATE_KEY>(*_attachment, m_SMAgent->getProtocolHeaderID());
         });
 
     LOG(info) << "SM channel: Intercom created";
@@ -305,24 +314,25 @@ void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
             this->on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(_sender, _attachment, m_SMAgent);
         });
 
-    // Subscribe for key updates
+    // Subscribe for key updates. Forward message to user task.
     // TODO: Forwarding of update key commands without decoding using raw mwssage API
     m_SMAgent->registerHandler<cmdUPDATE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY(_sender, _attachment, m_SMAgent);
+            m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
         });
 
     // Subscribe for key update errors
     m_SMAgent->registerHandler<cmdUPDATE_KEY_ERROR>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY_ERROR(_sender, _attachment, m_SMAgent);
+            m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
         });
 
     // Subscribe for key delete events
     m_SMAgent->registerHandler<cmdDELETE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-            this->on_cmdDELETE_KEY(_sender, _attachment, m_SMAgent);
+            m_SMIntercomChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
         });
+    //
 
     // Subscribe for cmdSIMPLE_MSG
     m_SMAgent->registerHandler<cmdSIMPLE_MSG>(
@@ -419,30 +429,6 @@ void CAgentConnectionManager::on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
     CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     stop();
-}
-
-void CAgentConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
-                                               SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
-{
-    // Forward message to user task
-    m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
-}
-
-void CAgentConnectionManager::on_cmdUPDATE_KEY_ERROR(const SSenderInfo& _sender,
-                                                     SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-                                                     CSMCommanderChannel::weakConnectionPtr_t _channel)
-{
-    // Forward message to user task
-    m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
-}
-
-void CAgentConnectionManager::on_cmdDELETE_KEY(const SSenderInfo& _sender,
-                                               SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
-                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
-{
-    // Forward message to user task
-    m_SMIntercomChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
 }
 
 void CAgentConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
