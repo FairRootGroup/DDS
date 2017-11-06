@@ -526,7 +526,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         // If topo file is empty than we stop the topology
         if (!_attachment->m_sTopologyFile.empty())
         {
-            topo.setXMLValidationDisabled(_attachment->m_nDisiableValidation);
+            topo.setXMLValidationDisabled(_attachment->m_nDisableValidation);
             topo.init(_attachment->m_sTopologyFile);
         }
 

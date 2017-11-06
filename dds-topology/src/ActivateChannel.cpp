@@ -35,7 +35,7 @@ CActivateChannel::CActivateChannel(boost::asio::io_service& _service, uint64_t _
                 LOG(MiscCommon::log_stdout) << "Requesting server to activate/update/stop a topology...";
                 SUpdateTopologyCmd cmd;
                 cmd.m_sTopologyFile = m_options.m_sTopoFile;
-                cmd.m_nDisiableValidation = m_options.m_bDisiableValidation;
+                cmd.m_nDisableValidation = m_options.m_bDisableValidation;
                 // Set the proper update type
                 if (m_options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
                     cmd.m_updateType = (uint8_t)SUpdateTopologyCmd::EUpdateType::ACTIVATE;
