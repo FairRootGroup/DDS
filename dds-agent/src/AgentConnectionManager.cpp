@@ -469,8 +469,6 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     cmd.m_exitCode = _exitCode;
     cmd.m_taskID = m_SMAgent->getTaskID();
     m_SMAgent->pushMsg<cmdUSER_TASK_DONE>(cmd);
-
-    m_SMIntercomChannel->reinit();
 }
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
@@ -554,5 +552,4 @@ void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
     terminateChildrenProcesses();
     auto p = _channel.lock();
     p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
-    m_SMIntercomChannel->reinit();
 }

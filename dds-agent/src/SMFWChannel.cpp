@@ -23,7 +23,7 @@ CSMFWChannel::CSMFWChannel(boost::asio::io_service& _service,
 
 CSMFWChannel::~CSMFWChannel()
 {
-    // removeMessageQueue();
+    removeMessageQueue();
 }
 
 bool CSMFWChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg, const SSenderInfo& _sender)

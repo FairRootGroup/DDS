@@ -175,6 +175,7 @@ namespace dds
                                   EMQOpenType _inputOpenType,
                                   EMQOpenType _outputOpenType)
                 : CChannelMessageHandlersImpl()
+                , m_isShuttingDown(false)
                 , m_started(false)
                 , m_protocolHeaderID(_protocolHeaderID)
                 , m_io_service(_service)
@@ -315,25 +316,6 @@ namespace dds
                 }
             }
 
-            void reinit()
-            {
-                if (!m_started)
-                    return;
-
-                LOG(MiscCommon::info) << "Reinitializing shared memory channel...";
-
-                stop();
-                removeMessageQueue();
-                createMessageQueue();
-                {
-                    // Clear message buffers
-                    std::lock_guard<std::mutex> lockWriteBuffer(m_mutexWriteBuffer);
-                    m_writeBufferQueue.clear();
-                    m_writeQueue.clear();
-                }
-                start();
-            }
-
             void start()
             {
                 // Check that all message queues were succesfully created
@@ -361,6 +343,7 @@ namespace dds
                 //
 
                 m_started = true;
+                m_isShuttingDown = false;
 
                 auto self(this->shared_from_this());
                 m_io_service.post([this, self] {
@@ -420,11 +403,13 @@ namespace dds
                     if (cmdUNKNOWN != _cmd)
                         m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
 
-                    LOG(MiscCommon::debug) << "BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
+                    LOG(MiscCommon::debug) << m_transportIn.m_name
+                                           << ": BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseSMChannelImpl can't push message: " << ex.what();
+                    LOG(MiscCommon::error)
+                        << m_transportIn.m_name << ":  BaseSMChannelImpl can't push message: " << ex.what();
                 }
 
                 // process standard async writing
@@ -477,6 +462,7 @@ namespace dds
                         CProtocolMessage::protocolMessagePtr_t msg =
                             SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
                         messageQueuePtr_t mq = it.second.m_mq;
+                        // TODO: FIXME: Revise the code, use timed_send
                         mq->send(msg->data(), msg->length(), 1);
                     }
                 }
@@ -495,7 +481,16 @@ namespace dds
                 SEmptyCmd cmd;
                 CProtocolMessage::protocolMessagePtr_t msg =
                     SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
-                m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
+               // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
+                boost::system_time const timeout = boost::get_system_time() + boost::posix_time::milliseconds(500);
+                while (!m_transportIn.m_mq->timed_send(msg->data(), msg->length(), 0, timeout))
+                {
+                    if (m_isShuttingDown)
+                    {
+                        LOG(MiscCommon::debug)<< m_transportIn.m_name << ": stopping send yourself shutdown while already shutting down";
+                        return;
+                    }
+                }
             }
 
             void readMessage()
@@ -583,6 +578,7 @@ namespace dds
                     }
                     else
                     {
+                        m_isShuttingDown = true;
                         LOG(MiscCommon::debug) << m_transportIn.m_name << ": Stopping readMessage thread...";
                     }
                 }
@@ -617,7 +613,17 @@ namespace dds
 
                         if (exists && mq != nullptr)
                         {
-                            mq->send(msg.m_msg->data(), msg.m_msg->length(), 0);
+                            boost::system_time const timeout =
+                                boost::get_system_time() + boost::posix_time::milliseconds(500);
+                            while (!mq->timed_send(msg.m_msg->data(), msg.m_msg->length(), 0, timeout))
+                            {
+                                if (m_isShuttingDown)
+                                {
+                                    LOG(MiscCommon::debug)
+                                        << m_transportIn.m_name << ": stopping write operation due to shutdown";
+                                    return;
+                                }
+                            }
                         }
                         else
                         {
@@ -641,6 +647,7 @@ namespace dds
             }
 
           protected:
+            std::atomic<bool> m_isShuttingDown;
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
             uint64_t m_protocolHeaderID;
 
