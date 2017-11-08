@@ -3,7 +3,7 @@
 	<var id="nInstances" value="10" />
 	
   	<decltask id="OctopusTask">
-		<exe reachable="false">$DDS_LOCATION/tests/dds-octopus/dds-octopus-task</exe>
+		<exe reachable="true">$DDS_LOCATION/tests/dds-octopus/dds-octopus-task</exe>
 	</decltask>
 	
 	<main id="main">
