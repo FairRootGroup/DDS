@@ -2,19 +2,19 @@
 
 ## v1.8 (NOT YET RELEASED)
 ### DDS common
-Fixed: an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.
-Added: Lobby based deployment. (GH-78)
-Added: Introduced Session ID. (GH-170)
+Fixed: an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.   
+Added: Lobby based deployment. (GH-78)   
+Added: Introduced Session ID. (GH-170)   
 Added: DDS cmake script learned DDS_LD_LIBRARY_PATH to help users who wants to build WN packages to workaround macos's SIP when a custom installations of gcc/clang is used. (GH-175)   
 
 ### dds-protocol
 Fixed: an issue when decimal type is passed as an argument to the callback function.    
 Added: Handshake checks now protocol version of the client.    
-Added: Handshake checks now session ID of the client to match server's one.  (GH-170)
-Added: new API for pushing and processing of raw messages. Implemented for network and shared memory channels.
-Added: special command ECmdType::cmdRAW_MSG  for raw message event subscription.
+Added: Handshake checks now session ID of the client to match server's one.  (GH-170)   
+Added: new API for pushing and processing of raw messages. Implemented for network and shared memory channels.   
+Added: special command ECmdType::cmdRAW_MSG  for raw message event subscription.   
 Added: Implement ID in protocol headers. (GH-178)    
-Modified: create new message in the channel instead of clearing the current message. This allows to forward the message without additional copying.
+Modified: create new message in the channel instead of clearing the current message. This allows to forward the message without additional copying.   
 Added: Multiple outputs for shared memory channel. (GH-78)    
 
 ### dds-topology
@@ -62,7 +62,7 @@ Modified: support versioning in key-value propagation. (GH-131)
 Fixed: Purge local key-value store of agents on task stop. (GH-130)   
 
 ### DDS protocol
-Added: shared memory message queue transport. New shared memory channel which is based on  boost::message_queue. Pushing and receiving of commands is done via shared memory. In some cases this can significantly improve communication speed. (GH-129, GH-130, GH-131)
+Added: shared memory message queue transport. New shared memory channel which is based on  boost::message_queue. Pushing and receiving of commands is done via shared memory. In some cases this can significantly improve communication speed. (GH-129, GH-130, GH-131)   
 
 ### SSH plug-in
 Modified: events from the submitter script are reflected on dds-submit output. (GH-139)   
@@ -74,9 +74,9 @@ Added: Initial release. (GH-113)
 Added: Initial release. (GH-148)   
 
 ### dds\_intercom\_lib
-Added: reconnect if connection fails. (GH-138)
-Added: possibility to subscribe to the error messages.
-Added: new shared memory transport is used in dds_intercom_lib for key-value propagation and custom commands. (GH-129, GH-130, GH-131)
+Added: reconnect if connection fails. (GH-138)   
+Added: possibility to subscribe to the error messages.   
+Added: new shared memory transport is used in dds_intercom_lib for key-value propagation and custom commands. (GH-129, GH-130, GH-131)   
 Modified: Shared memory transport allows to improve the user API. DDS guarantees that update key notification callback will be called on each update key or delete key command. Users are responsible to store the local cache for key-value if required. (GH-129, GH-130, GH-131)  
 
 ### dds-topology
@@ -87,7 +87,8 @@ Added: dds-topology --update. (GH-129)
 Added: Initial release. (GH-150)    
 
 ## v1.2 (2016-06-07)
-###DDS common
+
+### DDS common
 Fixed: cmake: Updated OSX RPATH settings.   
 Fixed: cmake: Fail with an explicit error when missing DDS worker package dependency. (GH-117)   
 Fixed: dds-intercom-lib: fails to parse JASON message with quotes. (GH-120)   
@@ -130,7 +131,7 @@ Added: customisable plugin location. --path option which specifies the root dire
 Modified: accept both -n and -c command line options.   
 
 ## v1.0 (2015-11-20)
-###DDS common
+### DDS common
 Fixed: git error when using out of source builds (GH-85)    
 Fixed: a class name lookup issues, which could result in unpredictable behaviour during run-time (agent and key-value-lib had classes with the same name and same header protection).    
 Fixed: check DDS_LOCATION before agent start. (GH-98)   
@@ -156,6 +157,7 @@ Fixed: Check that DDS_LOCATION is set. (GH-86)
 Modified: log pre-execution env to make sure environment is correct. (GH-67)   
 
 ## v0.10 (2015-07-16)
+
 ### DDS common
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
 Added: accumulated push message function. (GH-64)   
@@ -205,6 +207,7 @@ Added: User task can subscribe to error events, for example, error will be send 
 Modified: use string log severity values instead of numbers. (GH-49)    
 
 ## v0.8 (2015-02-17)
+
 ### DDS common
 Fixed: idle time calculation for dds-commander and dds-agent. (GH-32)   
 Fixed: a bug, which prevented log files to rotate.    
@@ -248,6 +251,7 @@ Added: Users are now able to stop (restart) execution of tasks by calling "dds-t
 Fixed: a bug, which caused a crash when topology activate is called before dds-submit. (GH-51)   
 
 ## v0.6 (2014-12-05)
+
 ### DDS common   
 Modified: Build WN packages without ICU support. (GH-14)   
 Added: key-value propagation support. (GH-12)   
@@ -266,12 +270,13 @@ Added: a possibility to use comments in the topology XML file. (GH-15)
 Renamed: dds-topology renamed to dds-topology-lib. dds-topology is executable now.   
 Added: task activation functionality is moved from dds-submit to dds-topology.(GH-16)   
 
-###dds-agent-cmd
+### dds-agent-cmd
 Added: new command for communication with agents.(GH-17)   
 Added: getlog functionality moved to dds-agent-cmd.(GH-17)   
 Added: dds-agent-cmd learned a new command - update-key. It forces an update of a given task's property in the topology. (GH-12)   
 
 ## v0.4 (2014-10-24)
+
 ### DDS common
 Added: DDS learned how to expand given user tasks commands with arguments given as a single string. (in the Topology->Task->exec parameter).   
 Added: if a user's task is defined in the topology as not reachable, then DDS will take care of delivering it to worker nodes. (GH-6)   
