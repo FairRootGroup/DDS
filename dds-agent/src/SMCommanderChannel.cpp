@@ -448,6 +448,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
         LOG(error) << _e.what();
         // Send response back to server
         pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdACTIVATE_AGENT));
+        return true;
     }
 
     stringstream ss;

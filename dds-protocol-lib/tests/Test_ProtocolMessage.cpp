@@ -379,48 +379,48 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdTEST_CMD)
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_INFO)
 {
     const unsigned int cmdSize = 11;
-    
+
     SSimpleMsgCmd cmd;
     cmd.m_sMsg = "lobby";
     cmd.m_srcCommand = cmdLOBBY_MEMBER_INFO;
     cmd.m_msgSeverity = info;
-    
+
     TestCommand(cmd, cmdLOBBY_MEMBER_INFO, cmdSize);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_INFO_ERR)
 {
     const unsigned int cmdSize = 11;
-    
+
     SSimpleMsgCmd cmd;
     cmd.m_sMsg = "error";
     cmd.m_srcCommand = cmdLOBBY_MEMBER_INFO_ERR;
     cmd.m_msgSeverity = error;
-    
+
     TestCommand(cmd, cmdLOBBY_MEMBER_INFO_ERR, cmdSize);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_HANDSHAKE)
 {
     const unsigned int cmdSize = 9;
-    
+
     SVersionCmd cmd;
     cmd.m_sSID = "SID";
     cmd.m_version = 1;
     cmd.m_channelType = 2;
-    
+
     TestCommand(cmd, cmdLOBBY_MEMBER_HANDSHAKE, cmdSize);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR)
 {
     const unsigned int cmdSize = 11;
-    
+
     SSimpleMsgCmd cmd;
     cmd.m_sMsg = "error";
     cmd.m_srcCommand = cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR;
     cmd.m_msgSeverity = error;
-    
+
     TestCommand(cmd, cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, cmdSize);
 }
 

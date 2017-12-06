@@ -481,13 +481,14 @@ namespace dds
                 SEmptyCmd cmd;
                 CProtocolMessage::protocolMessagePtr_t msg =
                     SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
-               // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
+                // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
                 boost::system_time const timeout = boost::get_system_time() + boost::posix_time::milliseconds(500);
                 while (!m_transportIn.m_mq->timed_send(msg->data(), msg->length(), 0, timeout))
                 {
                     if (m_isShuttingDown)
                     {
-                        LOG(MiscCommon::debug)<< m_transportIn.m_name << ": stopping send yourself shutdown while already shutting down";
+                        LOG(MiscCommon::debug)
+                            << m_transportIn.m_name << ": stopping send yourself shutdown while already shutting down";
                         return;
                     }
                 }

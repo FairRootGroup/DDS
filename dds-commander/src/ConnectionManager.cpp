@@ -924,6 +924,15 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
                     break;
                 case error:
                 case fatal:
+                    // In case of error set the idle state
+                    if (!_channel.expired())
+                    {
+                        auto p = _channel.lock();
+                        SAgentInfo info = p->getAgentInfo(_sender);
+                        info.m_state = EAgentState::idle;
+                        info.m_taskID = 0;
+                        p->updateAgentInfo(_sender, info);
+                    }
                     m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
                     break;
             }
