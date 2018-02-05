@@ -69,7 +69,7 @@ namespace dds
                 {                                                                                                      \
                     typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t attahcmentPtr_t;              \
                     attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::decode(_currentMsg); \
-                    processBinaryAttachmentCmd(attachmentPtr);                                                         \
+                    processBinaryAttachmentCmd(sender, attachmentPtr);                                                         \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdBINARY_ATTACHMENT_START:                                                                       \
@@ -77,7 +77,7 @@ namespace dds
                     typedef typename SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t attahcmentPtr_t;        \
                     attahcmentPtr_t attachmentPtr =                                                                    \
                         SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::decode(_currentMsg);                       \
-                    processBinaryAttachmentStartCmd(attachmentPtr);                                                    \
+                    processBinaryAttachmentStartCmd(sender, attachmentPtr);                                                    \
                     return;                                                                                            \
                 }                                                                                                      \
                 case cmdHANDSHAKE:                                                                                     \
@@ -484,20 +484,20 @@ namespace dds
             }
 
             template <ECmdType _cmd, class A>
-            void sendYourself(const A& _attachment)
+            void sendYourself(const A& _attachment, uint64_t _protocolHeaderID = 0)
             {
                 CProtocolMessage::protocolMessagePtr_t msg =
-                    SCommandAttachmentImpl<_cmd>::encode(_attachment, m_protocolHeaderID);
+                    SCommandAttachmentImpl<_cmd>::encode(_attachment, adjustProtocolHeaderID(_protocolHeaderID));
                 // process received message
                 T* pThis = static_cast<T*>(this);
                 pThis->processMessage(msg);
             }
 
             template <ECmdType _cmd>
-            void sendYourself()
+            void sendYourself(uint64_t _protocolHeaderID = 0)
             {
                 SEmptyCmd cmd;
-                sendYourself<_cmd>(cmd);
+                sendYourself<_cmd>(cmd, adjustProtocolHeaderID(_protocolHeaderID));
             }
 
             void pushBinaryAttachmentCmd(const std::string& _srcFilePath,
@@ -570,7 +570,7 @@ namespace dds
                 }
             }
 
-            void processBinaryAttachmentStartCmd(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t _attachment)
+            void processBinaryAttachmentStartCmd(const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t _attachment)
             {
                 boost::uuids::uuid fileId = _attachment->m_fileId;
 
@@ -595,7 +595,7 @@ namespace dds
                 }
             }
 
-            void processBinaryAttachmentCmd(SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
+            void processBinaryAttachmentCmd(const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT>::ptr_t _attachment)
             {
                 boost::uuids::uuid fileId = _attachment->m_fileId;
                 binaryAttachmentInfoPtr_t info;
@@ -633,7 +633,7 @@ namespace dds
                        << " instead of " << _attachment->m_crc32 << "offset=" << _attachment->m_offset
                        << " size=" << _attachment->m_size;
                     LOG(MiscCommon::error) << ss.str();
-                    sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand));
+                    sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand), _sender.m_ID);
                     return;
                 }
 
@@ -668,7 +668,7 @@ namespace dds
                                << "] has wrong CRC32 checksum: " << crc32.checksum() << " instead of "
                                << _attachment->m_crc32;
                             LOG(MiscCommon::error) << ss.str();
-                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand));
+                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand), _sender.m_ID);
                             return;
                         }
 
@@ -686,7 +686,7 @@ namespace dds
                             std::stringstream ss;
                             ss << "Could not open file: " << fileName;
                             LOG(MiscCommon::error) << ss.str();
-                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand));
+                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand), _sender.m_ID);
                             return;
                         }
 
@@ -707,7 +707,7 @@ namespace dds
                         reply_cmd.m_srcCommand = info->m_srcCommand;
                         reply_cmd.m_downloadTime = downloadTime.count();
                         reply_cmd.m_receivedFileSize = info->m_fileSize;
-                        sendYourself<cmdBINARY_ATTACHMENT_RECEIVED>(reply_cmd);
+                        sendYourself<cmdBINARY_ATTACHMENT_RECEIVED>(reply_cmd, _sender.m_ID);
                     }
                 }
 
