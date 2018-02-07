@@ -9,7 +9,6 @@
 #include "ProtocolDef.h"
 #include "version.h"
 // MiscCommon
-#include "FindCfgFile.h"
 #include "Process.h"
 // BOOST
 #include <boost/crc.hpp>
@@ -20,6 +19,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #pragma clang diagnostic pop
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/process.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -29,6 +29,7 @@ using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 using namespace std;
 namespace fs = boost::filesystem;
+namespace bp = boost::process;
 
 CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_service& _service,
                                          const string& _inputName,
@@ -238,8 +239,6 @@ bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_
 {
     try
     {
-        string logDir(CUserDefaults::getDDSPath());
-
         string hostname;
         get_hostname(&hostname);
 
@@ -252,50 +251,31 @@ bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_
         // TODO: change the code below once on gcc5+
         // We do not use put_time for the moment as gcc4.9 does not support it.
         // ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
-        ss << buffer << "_" << hostname << "_" << m_id;
+        ss << buffer << "_" << hostname << "_" << m_id << ".tar.gz";
 
-        string archiveName(ss.str());
+        fs::path fileName(ss.str());
+        fs::path logDir(CUserDefaults::getDDSPath());
+        fs::path filePath(logDir);
+        filePath /= fileName;
 
-        fs::path archiveDir(logDir + archiveName);
-        if (!fs::exists(archiveDir) && !fs::create_directory(archiveDir))
-        {
-            string msg("Could not create directory: " + archiveDir.string());
-            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, error, cmdGET_LOG));
-            return true;
-        }
+        // Find command paths in $PATH
+        fs::path bashPath = bp::search_path("bash");
+        fs::path tarPath = bp::search_path("tar");
+        fs::path findPath = bp::search_path("find");
 
-        vector<fs::path> logFiles;
-        BOOSTHelper::get_files_by_extension(logDir, ".log", logFiles);
-
-        for (const auto& v : logFiles)
-        {
-            fs::path dest(archiveDir.string() + "/" + v.filename().string());
-            if (fs::exists(dest) && !fs::is_directory(dest))
-                fs::remove(dest);
-            fs::copy(v, dest);
-        }
-
-        CFindCfgFile<string> cfg;
-        cfg.SetOrder("/usr/bin/tar")("/usr/local/bin/tar")("/opt/local/bin/tar")("/bin/tar");
-        string tarPath;
-        cfg.GetCfg(&tarPath);
-
-        string archiveDirName = logDir + archiveName;
-        string archiveFileName = archiveDirName + ".tar.gz";
         stringstream ssCmd;
-        ssCmd << tarPath << " czf " << archiveFileName << " -C" << logDir << " " << archiveName;
+        ssCmd << bashPath.string() << " -c \"" << findPath.string() << " \\\"" << logDir.string()
+              << "\\\" -name \\\"*.log\\\" | " << tarPath.string() << " -czf \\\"" << filePath.string()
+              << "\\\" -T -\"";
+
         string output;
         do_execv(ssCmd.str(), 60, &output);
 
-        string fileName(archiveName);
-        fileName += ".tar.gz";
-
-        // TODO: FIXME: implement pushBinaryttachmentCmd for shared memory channel
-        // cmdGET_LOG temporary unavailable
-        // pushBinaryAttachmentCmd(archiveFileName, fileName, cmdGET_LOG);
-
-        fs::remove(archiveFileName);
-        fs::remove_all(archiveDirName);
+        SMoveFileCmd filePathCmd;
+        filePathCmd.m_filePath = filePath.string();
+        filePathCmd.m_requestedFileName = fileName.string();
+        filePathCmd.m_srcCommand = cmdGET_LOG;
+        pushMsg<cmdMOVE_FILE>(filePathCmd);
     }
     catch (exception& e)
     {

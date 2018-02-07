@@ -424,4 +424,16 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR)
     TestCommand(cmd, cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, cmdSize);
 }
 
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdFILE_PATH)
+{
+    const unsigned int cmdSize = 27;
+
+    SMoveFileCmd cmd;
+    cmd.m_filePath = "/path/to/file";
+    cmd.m_srcCommand = cmdGET_LOG;
+    cmd.m_requestedFileName = "logs.zip";
+
+    TestCommand(cmd, cmdMOVE_FILE, cmdSize);
+}
+
 BOOST_AUTO_TEST_SUITE_END();

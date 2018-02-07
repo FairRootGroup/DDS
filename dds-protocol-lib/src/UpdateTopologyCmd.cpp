@@ -41,8 +41,9 @@ void SUpdateTopologyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 
 std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SUpdateTopologyCmd& val)
 {
-    return _stream << "topo file: " << val.m_sTopologyFile << "; validation: "
-    << (val.m_nDisableValidation ? "disabled" : "enabled") << "; update type: " << val.m_updateType;
+    return _stream << "topo file: " << val.m_sTopologyFile
+                   << "; validation: " << (val.m_nDisableValidation ? "disabled" : "enabled")
+                   << "; update type: " << val.m_updateType;
 }
 bool dds::protocol_api::operator!=(const SUpdateTopologyCmd& lhs, const SUpdateTopologyCmd& rhs)
 {

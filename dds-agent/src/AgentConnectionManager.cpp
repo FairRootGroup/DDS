@@ -31,7 +31,6 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
     : m_signals(m_io_service)
     , m_options(_options)
     , m_bStarted(false)
-    , m_isLeaderBasedDeployment(false)
 {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,
@@ -88,7 +87,6 @@ void CAgentConnectionManager::start()
         }
         catch (bi::interprocess_exception& ex)
         {
-            // m_isLeaderBasedDeployment = false;
             // TODO: FIXME: Log the error and process further
             // If we can't allocate mutex - fallback to the direct connection to the DDS commander
 

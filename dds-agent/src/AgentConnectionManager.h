@@ -77,7 +77,6 @@ namespace dds
             childrenPidContainer_t m_children;
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;
-            bool m_isLeaderBasedDeployment;
         };
     }
 }

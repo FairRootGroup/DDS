@@ -39,6 +39,7 @@ set( SOURCE_FILES
 	./src/StatImpl.cpp
     ./src/CustomCmdCmd.cpp
     ./src/UpdateTopologyCmd.cpp
+    ./src/MoveFileCmd.cpp
 )
 
 set( SRC_HDRS
@@ -75,6 +76,7 @@ set( SRC_HDRS
     ./src/BaseEventHandlersImpl.h
     ./src/ChannelInfo.h
     ./src/ProtocolDef.h
+    ./src/MoveFileCmd.h
 )
 
 include_directories(
