@@ -1,5 +1,10 @@
 # DDS Release Notes
 
+## v2.0(NOT YET RELEASED)
+
+### dds-protocol
+Fixed: transfer of binary attachments.
+
 ## v1.8 (2017-11-09)
 ### DDS common
 Fixed: an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.   
