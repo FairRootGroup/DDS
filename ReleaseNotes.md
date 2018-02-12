@@ -2,8 +2,11 @@
 
 ## v2.0(NOT YET RELEASED)
 
+### DDS common
+Modified: Bump minimum required Boost version to 1.64
+
 ### dds-protocol
-Fixed: transfer of binary attachments.
+Fixed: transfer of binary attachments.   
 
 ## v1.8 (2017-11-09)
 ### DDS common
