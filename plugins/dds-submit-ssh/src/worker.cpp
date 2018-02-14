@@ -15,7 +15,7 @@ using namespace dds;
 using namespace dds::ssh_cmd;
 using namespace MiscCommon;
 //=============================================================================
-const size_t g_cmdTimeout = 20; // in sec.
+const std::chrono::seconds g_cmdTimeout = std::chrono::seconds(20);
 //=============================================================================
 CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const string& _path)
     : m_rec(_rec)
@@ -94,7 +94,7 @@ bool CWorker::exec_command(const string& _cmd) const
     string outPut;
     try
     {
-        do_execv(_cmd, g_cmdTimeout, &outPut);
+        execute(_cmd, g_cmdTimeout, &outPut);
     }
     catch (exception& e)
     {

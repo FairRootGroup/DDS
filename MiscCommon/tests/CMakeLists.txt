@@ -19,6 +19,8 @@ add_executable(MiscCommon_test_Process Test_Process.cpp )
 target_link_libraries (
     MiscCommon_test_Process
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+	${Boost_SYSTEM_LIBRARY}
+	${Boost_FILESYSTEM_LIBRARY}
 )
 
 install(TARGETS MiscCommon_test_Process DESTINATION tests)

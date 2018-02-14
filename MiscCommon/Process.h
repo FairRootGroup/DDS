@@ -32,6 +32,15 @@
 #include "MiscUtils.h"
 #include "def.h"
 #include "stlx.h"
+// BOOST
+#include <boost/asio.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+#include <boost/process.hpp>
+#pragma clang diagnostic pop
+
+namespace bp = boost::process;
+namespace bio = boost::asio;
 
 namespace MiscCommon
 {
@@ -422,280 +431,119 @@ namespace MiscCommon
         return retVal;
     }
 
+    /**
+     *
+     *
+     */
     inline bool is_status_ok(int status)
     {
         return WIFEXITED(status) && WEXITSTATUS(status) == 0;
     }
 
-    inline pid_t do_execv_std2file(const std::string& _Command,
-                                   std::string _stdoutFileName,
-                                   std::string _stderrFileName)
+    /**
+     *
+     *
+     */
+    inline pid_t execute(const std::string& _Command,
+                         const std::string& _stdoutFileName,
+                         const std::string& _stderrFileName)
     {
-        //----- Expand the string for the program to run.
-        wordexp_t result;
-        switch (wordexp(_Command.c_str(), &result, 0))
+        try
         {
-            case 0: // Successful.
-                break;
-            case WRDE_NOSPACE:
-                // If the error was WRDE_NOSPACE, then perhaps part of the result was allocated.
-                wordfree(&result);
-            default: // Some other error.
-                return -1;
+            bp::child c(_Command, bp::std_out > _stdoutFileName, bp::std_err > _stderrFileName);
+            pid_t pid = c.id();
+            c.detach();
+            return pid;
         }
-        ////-----
-
-        // make sure exe has it's exe falg
-        struct stat info;
-        stat(result.we_wordv[0], &info);
-        if (!(info.st_mode & S_IXUSR))
+        catch (std::exception& _e)
         {
-            int ret = chmod(result.we_wordv[0], info.st_mode | S_IXUSR);
-            if (ret != 0)
-                throw system_error("Can't set executable flag on " + std::string(result.we_wordv[0]));
+            std::stringstream ss;
+            ss << "do_execv: " << _e.what();
+            throw std::runtime_error(ss.str());
         }
-
-        pid_t child_pid(0);
-        switch (child_pid = fork())
-        {
-            case -1:
-                // Unable to fork
-                throw std::runtime_error("do_execv: Unable to fork process");
-
-            case 0:
-                // child
-                int fd_out = open(_stdoutFileName.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-                if (fd_out < 0)
-                    throw MiscCommon::system_error("Can't open file for user's process stdout: " + _stdoutFileName);
-                int fd_err = open(_stderrFileName.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-                if (fd_err < 0)
-                    throw MiscCommon::system_error("Can't open file for user's process stderr: " + _stderrFileName);
-
-                dup2(fd_out, 1); // make stdout go to file
-                dup2(fd_err, 2); // make stderr go to file - you may choose to not do this
-                // or perhaps send stderr to another file
-
-                close(fd_out); // fd no longer needed - the dup'ed handles are sufficient
-                close(fd_err); // fd no longer needed - the dup'ed handles are sufficient
-
-                // child: execute the required command, on success does not return
-                execv(result.we_wordv[0], result.we_wordv);
-                // not usually reached
-                exit(1);
-        }
-
-        wordfree(&result);
-
-        return child_pid;
     }
 
     /// We do not want the parent process to wait for its child process and we do not want to create a zombie.
-    /// We use double fork to achieve this.
-    inline void do_execv(const std::string& _Command) throw(std::exception)
+    inline void execute(const std::string& _Command) throw(std::exception)
     {
-        //----- Expand the string for the program to run.
-        wordexp_t result;
-        switch (wordexp(_Command.c_str(), &result, 0))
+        try
         {
-            case 0: // Successful.
-                break;
-            case WRDE_NOSPACE:
-                // If the error was WRDE_NOSPACE, then perhaps part of the result was allocated.
-                wordfree(&result);
-            default: // Some other error.
-                return;
+            bp::spawn(_Command);
         }
-        ////-----
-
-        // make sure exe has it's exe falg
-        struct stat info;
-        stat(result.we_wordv[0], &info);
-        if (!(info.st_mode & S_IXUSR))
+        catch (std::exception& _e)
         {
-            int ret = chmod(result.we_wordv[0], info.st_mode | S_IXUSR);
-            if (ret != 0)
-                throw system_error("Can't set executable flag on " + std::string(result.we_wordv[0]));
-        }
-
-        pid_t pid1;
-        pid_t pid2;
-        int status;
-
-        if ((pid1 = fork()))
-        {
-            /* parent process A */
-            ::waitpid(pid1, &status, WUNTRACED);
-            wordfree(&result);
-        }
-        else if (!pid1)
-        {
-            /* child process B */
-            if ((pid2 = fork()))
-            {
-                exit(0);
-            }
-            else if (!pid2)
-            {
-                // child: execute the required command, on success does not return
-                execv(result.we_wordv[0], result.we_wordv);
-                // not usually reached
-                exit(1);
-            }
-            else
-            {
-                // Unable to fork
-                throw std::runtime_error("do_execv: Unable to fork process");
-            }
-        }
-        else
-        {
-            // Unable to fork
-            throw std::runtime_error("do_execv: Unable to fork process");
+            std::stringstream ss;
+            ss << "do_execv: " << _e.what();
+            throw std::runtime_error(ss.str());
         }
     }
 
     // TODO: Document me!
-    // If _Delay is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
+    // If _Timeout is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
     // return value is 0.
-    inline pid_t do_execv(const std::string& _Command,
-                          size_t _Delay,
-                          std::string* _output,
-                          std::string* _errout = nullptr,
-                          int* _exitCode = nullptr) throw(std::exception)
+    inline pid_t execute(const std::string& _Command,
+                         const std::chrono::seconds& _Timeout,
+                         std::string* _output = nullptr,
+                         std::string* _errout = nullptr,
+                         int* _exitCode = nullptr) throw(std::exception)
     {
-        pid_t child_pid;
-        int fdpipe_out[2];
-        int fdpipe_err[2];
-        if (_output)
+        try
         {
-            if (pipe(fdpipe_out))
-                throw MiscCommon::system_error("Can't create stdout pipe.");
-        }
-        if (_errout)
-        {
-            if (pipe(fdpipe_err))
-                throw MiscCommon::system_error("Can't create stderr pipe.");
-        }
+            bio::io_service ios;
+            std::future<std::string> out_data;
+            std::future<std::string> err_data;
 
-        //----- Expand the string for the program to run.
-        wordexp_t result;
-        switch (wordexp(_Command.c_str(), &result, 0))
-        {
-            case 0: // Successful.
-                break;
-            case WRDE_NOSPACE:
-                // If the error was WRDE_NOSPACE, then perhaps part of the result was allocated.
-                wordfree(&result);
-            default: // Some other error.
-                return -1;
-        }
-        ////-----
-
-        // make sure exe has it's exe falg
-        struct stat info;
-        stat(result.we_wordv[0], &info);
-        if (!(info.st_mode & S_IXUSR))
-        {
-            int ret = chmod(result.we_wordv[0], info.st_mode | S_IXUSR);
-            if (ret != 0)
-                throw system_error("Can't set executable flag on " + std::string(result.we_wordv[0]));
-        }
-        switch (child_pid = fork())
-        {
-            case -1:
-                if (_output)
-                {
-                    close(fdpipe_out[0]);
-                    close(fdpipe_out[1]);
-                }
-                if (_errout)
-                {
-                    close(fdpipe_err[0]);
-                    close(fdpipe_err[1]);
-                }
-                // Unable to fork
-                throw std::runtime_error("do_execv: Unable to fork process");
-
-            case 0:
-                if (_output)
-                {
-                    close(fdpipe_out[0]);
-                    dup2(fdpipe_out[1], STDOUT_FILENO);
-                    close(fdpipe_out[1]);
-                }
-                if (_errout)
-                {
-                    close(fdpipe_err[0]);
-                    dup2(fdpipe_err[1], STDERR_FILENO);
-                    close(fdpipe_err[1]);
-                }
-
-                // child: execute the required command, on success does not return
-                execv(result.we_wordv[0], result.we_wordv);
-                // not usually reached
-                exit(1);
-        }
-
-        wordfree(&result);
-
-        if (0 == _Delay)
-        {
-            return child_pid;
-        }
-
-        // parent
-        if (_output)
-        {
-            close(fdpipe_out[1]);
-            char buf;
-            std::stringstream ss;
-            while (read(fdpipe_out[0], &buf, 1) > 0)
-                ss << buf;
-
-            *_output = ss.str();
-        }
-        if (_errout)
-        {
-            close(fdpipe_err[1]);
-            char buf;
-            std::stringstream ss;
-            while (read(fdpipe_err[0], &buf, 1) > 0)
-                ss << buf;
-
-            *_errout = ss.str();
-        }
-
-        for (size_t i = 0; i < _Delay; ++i)
-        {
-            int stat;
-            if (child_pid == ::waitpid(child_pid, &stat, WNOHANG))
+            if (std::chrono::seconds(0) == _Timeout)
             {
-                // check if the caller wants the exit code of the process
-                if (_exitCode != nullptr)
-                {
-                    *_exitCode = WEXITSTATUS(stat);
-                }
-                if (!is_status_ok(stat))
-                {
-                    std::stringstream ss;
-                    ss << "do_execv: ";
-                    if (WIFSIGNALED(stat))
-                        ss << "Child ended because of an uncaught signal.";
-                    else if (WIFSTOPPED(stat))
-                        ss << "Child process has stopped.";
-
-                    ss << " (exit code: " << WEXITSTATUS(stat) << "). Process: \"" << _Command << "\"";
-                    throw std::runtime_error(ss.str());
-                }
-                return 0;
+                boost::process::child c(_Command);
+                return c.id();
             }
-            // TODO: Needs to be fixed! Implement time-function based timeout measurements instead
-            sleep(1);
+
+            bp::child c(_Command, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
+
+            // since we use async io to be able to read both stdout and stderr and have a timeout on process execution,
+            // we need to have a worker thread for asio service to prevent blocking of the main thread.
+            std::thread asioWorker{ [&ios]() {
+                try
+                {
+                    ios.run();
+                }
+                catch (std::exception& _e)
+                {
+                }
+            } };
+
+            bool bTerminated = false;
+            if (c.running() && !c.wait_for(_Timeout))
+            {
+                // Child didn't yet finish. Terminating it...
+                if (c.running())
+                    c.terminate();
+                // ios.stop();
+                bTerminated = true;
+            }
+            asioWorker.join();
+
+            if (bTerminated)
+                throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+
+            if (_output)
+                *_output = out_data.get();
+
+            if (_errout)
+                *_errout = err_data.get();
+
+            if (_exitCode)
+                *_exitCode = c.exit_code();
+
+            return c.id();
         }
-        throw std::runtime_error("do_execv: Timeout has been reached, command execution will be terminated.");
-        // kills the child
-        kill(child_pid, SIGKILL);
-        return 0;
+        catch (std::exception& _e)
+        {
+            std::stringstream ss;
+            ss << "do_execv: " << _e.what();
+            throw std::runtime_error(ss.str());
+        }
     }
 };
 

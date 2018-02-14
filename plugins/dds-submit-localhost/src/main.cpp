@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
             try
             {
                 string output;
-                pid_t exitCode = do_execv(cmd.str(), 30, &output);
+                pid_t exitCode = execute(cmd.str(), chrono::seconds(30), &output);
 
                 if (exitCode == 0)
                 {

@@ -269,7 +269,7 @@ bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_
               << "\\\" -T -\"";
 
         string output;
-        do_execv(ssCmd.str(), 60, &output);
+        execute(ssCmd.str(), chrono::seconds(60), &output);
 
         SMoveFileCmd filePathCmd;
         filePathCmd.m_filePath = filePath.string();
@@ -421,7 +421,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
         string sTaskStdOut(ssTaskOutput.str() + "_out.log");
         string sTaskStdErr(ssTaskOutput.str() + "_err.log");
 
-        pidUsrTask = do_execv_std2file(sUsrExe, sTaskStdOut, sTaskStdErr);
+        pidUsrTask = execute(sUsrExe, sTaskStdOut, sTaskStdErr);
     }
     catch (exception& _e)
     {

@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;
-                pid_t exitCode = do_execv(cmd.str(), 30, &output);
+                pid_t exitCode = execute(cmd.str(), chrono::seconds(30), &output);
 
                 // In case of error there can be a bash.out.log created, let's check it's content
                 fs::path pathBashlog(pathPluginDir);

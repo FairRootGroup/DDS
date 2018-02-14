@@ -4,6 +4,7 @@
 
 ### DDS common
 Modified: Bump minimum required Boost version to 1.64
+Modified: Code related to external processes execution has been ported to use boost::process library. (GH-190)
 
 ### dds-protocol
 Fixed: transfer of binary attachments.   

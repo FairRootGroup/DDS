@@ -197,7 +197,7 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript) const
         LOG(debug) << "Preparing WN package: " << ssCmd.str();
 
         // 10 sec time-out for this command
-        do_execv(ssCmd.str(), 10, &out, &err);
+        execute(ssCmd.str(), chrono::seconds(10), &out, &err);
     }
     catch (exception& e)
     {
@@ -413,7 +413,9 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
 
         try
         {
-            do_execv(ssCmd.str()); //, 0 /*don't wait for plug-in*/, &outPut, nullptr, &nPluginExitCode);
+            // don't wait for plug-in. Just execute it and expect it to connect.
+            // We will report to user if it won't connect.
+            execute(ssCmd.str());
         }
         catch (exception& e)
         {
