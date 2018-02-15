@@ -191,10 +191,10 @@ void CSubmitAgentsChannelInfo::checkPluginFailedToStart()
         return;
     }
 
-    // Give plug-in 2 minute to start
+    // Give plug-in 1 minutes to start
     auto now = chrono::system_clock::now().time_since_epoch();
     auto diff = now - m_PluginStartTime;
-    if (diff >= chrono::minutes(2))
+    if (diff >= chrono::minutes(1))
     {
         if (!m_channel.expired())
         {

@@ -65,15 +65,15 @@ int main(int argc, char* argv[])
         {
             CSessionIDFile sid(dds::user_defaults_api::CUserDefaults::instance().getSIDFile());
             LOG(info) << "SESSION ID file: " << dds::user_defaults_api::CUserDefaults::instance().getSIDFile();
-            if (sid.getSID().empty())
+            if (sid.getLockedSID().empty())
             {
                 LOG(fatal) << "Failed to create session ID. Stopping the session...";
                 return EXIT_FAILURE;
             }
-            LOG(info) << "SESSION ID: " << sid.getSID();
+            LOG(info) << "SESSION ID: " << sid.getLockedSID();
 
             // Export DDS session ID
-            if (::setenv("DDS_SESSION_ID", sid.getSID().c_str(), 1) == -1)
+            if (::setenv("DDS_SESSION_ID", sid.getLockedSID().c_str(), 1) == -1)
                 throw MiscCommon::system_error("Failed to set up $DDS_SESSION_ID");
 
             shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options);

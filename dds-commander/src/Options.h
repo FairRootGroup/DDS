@@ -27,10 +27,12 @@ namespace dds
             {
                 cmd_unknown,
                 cmd_start,
-                cmd_stop
+                cmd_stop,
+                cmd_prep_session
             };
             SOptions()
                 : m_Command(cmd_start)
+                , m_sid(boost::uuids::nil_uuid())
             {
             }
 
@@ -40,6 +42,8 @@ namespace dds
                     return cmd_start;
                 if ("stop" == _name)
                     return cmd_stop;
+                if ("prep-session" == _name)
+                    return cmd_prep_session;
 
                 return cmd_unknown;
             }
@@ -49,6 +53,7 @@ namespace dds
             bool m_needCommanderPid;
             std::string m_sRMS;
             std::string m_sCfgFile;
+            boost::uuids::uuid m_sid;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -73,12 +78,14 @@ namespace dds
                 "command",
                 bpo::value<std::string>(),
                 "The command is a name of a dds-commander command."
-                " Can be one of the following: start, and stop.\n"
+                " Can be one of the following: start, stop, and prep-session.\n"
                 "For user's convenience it is allowed to call dds-commander without \"--command\" option"
                 " by just specifying the command name directly, like:\ndds-commander start or dds-commander stop.\n\n"
                 "Commands:\n"
                 "   start: \tStart dds-commander daemon\n"
-                "   stop: \tStop dds-commander daemon\n");
+                "   stop: \tStop dds-commander daemon\n"
+                "   prep-session: \tPrepares a DDS session and returns new session ID\n");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
 
             //...positional
             bpo::positional_options_description pd;
@@ -114,6 +121,11 @@ namespace dds
             {
                 LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
                 return false;
+            }
+
+            if (vm.count("session"))
+            {
+                _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
             }
 
             _options->m_Command = SOptions::getCommandByName(vm["command"].as<std::string>());

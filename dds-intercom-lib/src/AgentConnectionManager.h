@@ -33,6 +33,10 @@ namespace dds
             //                return m_service.stopped();
             //            }
             void sendCustomCmd(const protocol_api::SCustomCmdCmd& _command, uint64_t _protocolHeaderID);
+            bool started() const
+            {
+                return m_bStarted;
+            }
 
           public:
             void waitCondition();

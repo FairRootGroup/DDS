@@ -6,6 +6,8 @@
 #define DDS_USERDEFAULTS_H_
 // BOOST
 #include <boost/program_options/variables_map.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 // DDS
 #include "Options.h"
 // STD
@@ -18,20 +20,20 @@ namespace dds
         class CUserDefaults
         {
           private:
-            CUserDefaults();
+            CUserDefaults(const boost::uuids::uuid& _sid);
             ~CUserDefaults();
 
           public:
             /// \brief Return singleton instance
-            static CUserDefaults& instance();
-            void reinit(const std::string& _cfgFileName, bool _get_default = false);
+            static CUserDefaults& instance(const boost::uuids::uuid& _sid = boost::uuids::nil_uuid());
+            void reinit(const boost::uuids::uuid& _sid, const std::string& _cfgFileName, bool _get_default = false);
 
           private:
             void init(bool _get_default = false);
             void init(const std::string& _cfgFileName, bool _get_default = false);
 
           public:
-            std::string getValueForKey(const std::string& _Key) const;
+            std::string getValueForKey(const std::string& _key) const;
             static void printDefaults(std::ostream& _stream);
             const SDDSUserDefaultsOptions_t getOptions() const;
             static std::string currentUDFile();
@@ -55,7 +57,10 @@ namespace dds
             std::string getPluginsRootDir() const;
             std::string getMainSIDFileName() const;
             std::string getSIDFile() const;
-            std::string getSID() const;
+            std::string getLockedSID() const;
+            std::string getCurrentSID() const;
+            std::string getDefaultSIDFile() const;
+            std::string getDefaultSID() const;
             std::string getAgentNamedMutexName() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
@@ -68,10 +73,13 @@ namespace dds
             std::string convertAnyToString(const boost::any& _any) const;
             std::string getUnifiedBoolValueForBoolKey(const std::string& _Key) const;
             std::string getSIDName() const;
+            void addSessionIDtoPath(std::string& _path) const;
+            void setSessionID(const boost::uuids::uuid& _sid);
 
           private:
             boost::program_options::variables_map m_keys;
             SDDSUserDefaultsOptions_t m_options;
+            std::string m_sessionID;
         };
     }
 }

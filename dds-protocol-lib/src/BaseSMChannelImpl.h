@@ -316,6 +316,11 @@ namespace dds
                 }
             }
 
+            bool started() const
+            {
+                return m_started;
+            }
+
             void start()
             {
                 // Check that all message queues were succesfully created

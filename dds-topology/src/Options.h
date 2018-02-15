@@ -38,6 +38,7 @@ namespace dds
                 : m_topologyCmd(ETopologyCmdType::UNKNOWN)
                 , m_verbose(false)
                 , m_bDisableValidation(false)
+                , m_sid(boost::uuids::nil_uuid())
             {
             }
 
@@ -45,6 +46,7 @@ namespace dds
             std::string m_sTopoFile;
             bool m_verbose;
             bool m_bDisableValidation;
+            boost::uuids::uuid m_sid;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -65,6 +67,7 @@ namespace dds
             bpo::options_description options("dds-agent-cmd options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
             options.add_options()("update,u",
                                   bpo::value<std::string>(&_options->m_sTopoFile),
                                   "Define a topology to update currently active topology.");
@@ -99,6 +102,8 @@ namespace dds
                 PrintVersion();
                 return false;
             }
+            if (vm.count("session"))
+                _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
             if (vm.count("verbose"))
             {
                 _options->m_verbose = true;

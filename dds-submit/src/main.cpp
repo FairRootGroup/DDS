@@ -15,6 +15,7 @@ using namespace std;
 using namespace MiscCommon;
 using namespace dds;
 using namespace dds::submit_cmd;
+using namespace dds::user_defaults_api;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -23,8 +24,8 @@ int main(int argc, char* argv[])
     SOptions_t options;
     try
     {
-        Logger::instance().init();                         // Initialize log
-        dds::user_defaults_api::CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        CUserDefaults::instance(); // Initialize user defaults
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;
@@ -33,6 +34,10 @@ int main(int argc, char* argv[])
 
         if (!ParseCmdLine(argc, argv, &options))
             return EXIT_SUCCESS;
+
+        // Reinit UserDefaults and Log with new session ID
+        CUserDefaults::instance().reinit(options.m_sid, CUserDefaults::instance().currentUDFile());
+        Logger::instance().reinit();
     }
     catch (exception& e)
     {

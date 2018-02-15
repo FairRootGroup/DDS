@@ -28,7 +28,8 @@ DDS command line utility to prepare a worker package - all elements of DDS which
 
 Usage: $(basename $0) [OPTION]
      -i 			Re-pack user_worker_env.sh (for internal use only).
-	 -s 			Submit time (optional). 
+	 -s arg			Submit time (optional).
+	 -a arg         DDS Session ID
      -h          	Show summary of options.
 
 Report bugs to http://dds.gsi.de
@@ -39,13 +40,16 @@ EOF
 #=============================================================================
 REPACK_WRK_PKG=""
 SUBMIT_TIME=""
-while getopts ":is:h" opt; do
+DDS_SESSION_ID=""
+while getopts ":is:a:h" opt; do
   case $opt in
   	i)
     	REPACK_WRK_PKG="YES"
     	;;
 	s) SUBMIT_TIME="$OPTARG"
 		;;
+	a) DDS_SESSION_ID="$OPTARG"
+	    ;; 
   	h) 
     usage
     exit 0
@@ -70,14 +74,14 @@ if [ -z "$DDS_CFG" ]; then
    exit 1
 fi
 
-eval WRK_DIR=$(dds-user-defaults --key server.work_dir)
-eval ARC_NAME=$(dds-user-defaults --wrkpkg)
-eval WRK_SCRIPT=$(dds-user-defaults --wrkscript)
-eval USER_SCRIPT=$(dds-user-defaults --user-env-script)
-eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --wrkscript))/user_worker_env.sh"
-eval SERVER_INFO_FILE=$(dds-user-defaults --server-info-file)
+eval WRK_DIR=$(dds-user-defaults --session $DDS_SESSION_ID --key server.work_dir)
+eval ARC_NAME=$(dds-user-defaults --session $DDS_SESSION_ID --wrkpkg)
+eval WRK_SCRIPT=$(dds-user-defaults --session $DDS_SESSION_ID --wrkscript)
+eval USER_SCRIPT=$(dds-user-defaults --session $DDS_SESSION_ID --user-env-script)
+eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --session $DDS_SESSION_ID --wrkscript))/user_worker_env.sh"
+eval SERVER_INFO_FILE=$(dds-user-defaults --session $DDS_SESSION_ID --server-info-file)
 eval DDS_WRK_SCRIPT_IN=$DDS_LOCATION/etc/DDSWorker.sh.in
-eval DDS_SID_FILE=$(dds-user-defaults --session-id-file)
+eval DDS_SID_FILE=$(dds-user-defaults --session $DDS_SESSION_ID --session-id-file)
 
 # create a tmp working directory
 eval DDS_WRK_TMP_DIR="$WRK_DIR/tmp"

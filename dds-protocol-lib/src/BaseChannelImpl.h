@@ -243,7 +243,7 @@ namespace dds
             {
                 try
                 {
-                    m_sessionID = dds::user_defaults_api::CUserDefaults::instance().getSID();
+                    m_sessionID = dds::user_defaults_api::CUserDefaults::instance().getLockedSID();
                     LOG(MiscCommon::debug) << "SID: " << m_sessionID;
                 }
                 catch (std::runtime_error& _error)

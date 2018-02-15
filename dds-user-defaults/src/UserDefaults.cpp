@@ -31,8 +31,10 @@ using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
-CUserDefaults::CUserDefaults()
+CUserDefaults::CUserDefaults(const boost::uuids::uuid& _sid)
 {
+    setSessionID(_sid);
+
     init();
 }
 
@@ -40,14 +42,16 @@ CUserDefaults::~CUserDefaults()
 {
 }
 
-CUserDefaults& CUserDefaults::instance()
+CUserDefaults& CUserDefaults::instance(const boost::uuids::uuid& _sid)
 {
-    static CUserDefaults instance;
+    static CUserDefaults instance(_sid);
     return instance;
 }
 
-void CUserDefaults::reinit(const string& _cfgFileName, bool _get_default)
+void CUserDefaults::reinit(const boost::uuids::uuid& _sid, const string& _cfgFileName, bool _get_default)
 {
+    setSessionID(_sid);
+
     init(_cfgFileName, _get_default);
 }
 
@@ -116,6 +120,14 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     }
 
     boost::program_options::notify(m_keys);
+
+    if (!_get_default)
+    {
+        // Update paths with sessions ID
+        addSessionIDtoPath(m_options.m_server.m_workDir);
+        addSessionIDtoPath(m_options.m_server.m_sandboxDir);
+        addSessionIDtoPath(m_options.m_server.m_logDir);
+    }
 }
 
 void CUserDefaults::init(bool _get_default)
@@ -125,9 +137,21 @@ void CUserDefaults::init(bool _get_default)
     init(sDDSCfgFileName, _get_default);
 }
 
+void CUserDefaults::setSessionID(const boost::uuids::uuid& _sid)
+{
+    if (!_sid.is_nil())
+        m_sessionID = boost::lexical_cast<std::string>(_sid);
+    else
+    {
+        string sid = getDefaultSID();
+        if (!sid.empty())
+            m_sessionID = sid;
+    }
+}
+
 void CUserDefaults::printDefaults(ostream& _stream)
 {
-    CUserDefaults ud;
+    CUserDefaults ud(boost::uuids::nil_uuid());
     ud.init(true);
 
     _stream << "[server]\n"
@@ -176,9 +200,15 @@ string CUserDefaults::convertAnyToString(const boost::any& _any) const
     return ss.str();
 }
 
-string CUserDefaults::getValueForKey(const string& _Key) const
+string CUserDefaults::getValueForKey(const string& _key) const
 {
-    return convertAnyToString(m_keys[_Key].value());
+    string ret = convertAnyToString(m_keys[_key].value());
+    if ((_key == "server.work_dir" || _key == "server.sandbox_dir" || _key == "server.log_dir") && !m_sessionID.empty())
+    {
+        addSessionIDtoPath(ret);
+    }
+
+    return ret;
 }
 
 /// Returns strings "yes" or "no". Returns an empty string (if key is not of type bool)
@@ -289,10 +319,15 @@ string CUserDefaults::getAgentIDFile()
 
 string CUserDefaults::getLogFile() const
 {
-    char* dds_log_location;
     // DDS_LOG_LOCATION is used only by DDS commander server
-    dds_log_location = getenv("DDS_LOG_LOCATION");
+    char* dds_log_location = getenv("DDS_LOG_LOCATION");
     string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
+
+    // For commander's side we have to add session ID if available
+    if (nullptr != dds_log_location && !m_sessionID.empty())
+    {
+        addSessionIDtoPath(sLogDir);
+    }
 
     if (sLogDir.empty())
         throw runtime_error("Can't init Log engine. Log location is not specified. Make sure DDS environment is "
@@ -348,7 +383,7 @@ std::string CUserDefaults::getSMAgentOutputName() const
     // Shared memory for all messages addressed to commander
     // TODO: FIXME: maximum length of the SM name
     string smName("DDSAO-");
-    smName += getSID();
+    smName += getLockedSID();
     return smName.substr(0, 24);
 }
 
@@ -357,7 +392,7 @@ std::string CUserDefaults::getSMAgentLeaderOutputName() const
     // Shared memory addressed to lobby leader
     // TODO: FIXME: maximum length of the SM name
     string smName("DDSALO-");
-    smName += getSID();
+    smName += getLockedSID();
     return smName.substr(0, 24);
 }
 
@@ -427,7 +462,7 @@ string CUserDefaults::getSIDFile() const
     return string();
 }
 
-string CUserDefaults::getSID() const
+string CUserDefaults::getLockedSID() const
 {
     // Get session ID from the local environment
     string sessionID("");
@@ -439,17 +474,55 @@ string CUserDefaults::getSID() const
     else
     {
         MiscCommon::CSessionIDFile sid(sidFile);
-        sessionID = sid.getSID();
+        sessionID = sid.getLockedSID();
         if (sessionID.empty())
             throw runtime_error("Avaliable SID is empty");
     }
     return sessionID;
 }
 
+string CUserDefaults::getCurrentSID() const
+{
+    return m_sessionID;
+}
+
 string CUserDefaults::getAgentNamedMutexName() const
 {
     // TODO: FIXME: maximum length of the SM name
     string smName("DDSAGENTMTX-");
-    smName += getSID();
+    smName += getLockedSID();
     return smName.substr(0, 24);
+}
+
+void CUserDefaults::addSessionIDtoPath(std::string& _path) const
+{
+    if (m_sessionID.empty())
+        return;
+
+    fs::path pRet(_path);
+    pRet /= "sessions";
+    pRet /= m_sessionID;
+    _path = pRet.string();
+}
+
+string CUserDefaults::getDefaultSIDFile() const
+{
+    string val("$HOME/.DDS/default.sid");
+    smart_path(&val);
+    return val;
+}
+
+string CUserDefaults::getDefaultSID() const
+{
+    std::string sidFile = getDefaultSIDFile();
+    if (sidFile.empty())
+        return string();
+
+    if (!boost::filesystem::is_regular_file(sidFile))
+        return string();
+    string sid;
+    ifstream f(sidFile);
+    f >> sid;
+
+    return sid;
 }

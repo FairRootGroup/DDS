@@ -49,7 +49,6 @@ eval LOCAL_DDS="$HOME/.DDS"
 
 # create local DDS directories
 create_dir "$LOCAL_DDS"
-create_dir "$LOCAL_DDS/etc"
 
 ## create a default configuration file if needed
 DDS_CFG=$(dds-user-defaults -p)

@@ -46,6 +46,7 @@ namespace dds
                 , m_sPath()
                 , m_number(0)
                 , m_bListPlugins(false)
+                , m_sid(boost::uuids::nil_uuid())
             {
             }
 
@@ -54,6 +55,7 @@ namespace dds
             std::string m_sPath;
             size_t m_number;
             bool m_bListPlugins;
+            boost::uuids::uuid m_sid;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -79,6 +81,7 @@ namespace dds
             bpo::options_description options("dds-submit options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
             options.add_options()(
                 "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all available RMS plug-ins");
             options.add_options()("rms,r",
@@ -130,6 +133,9 @@ namespace dds
                 PrintVersion();
                 return false;
             }
+
+            if (vm.count("session"))
+                _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
             // RMS plug-ins are always lower cased
             boost::to_lower(_options->m_sRMS);

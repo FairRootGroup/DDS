@@ -71,7 +71,7 @@ bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_OK(
     // Prepare a hand shake message
     SVersionCmd cmd;
     cmd.m_channelType = EChannelType::AGENT;
-    cmd.m_sSID = CUserDefaults::instance().getSID();
+    cmd.m_sSID = CUserDefaults::instance().getLockedSID();
     cmd.m_version = DDS_PROTOCOL_VERSION;
     pushMsg<cmdLOBBY_MEMBER_HANDSHAKE>(cmd, this->m_protocolHeaderID);
 

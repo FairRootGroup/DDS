@@ -32,6 +32,7 @@ namespace dds
                 , m_bNeedPropList(false)
                 , m_bNeedPropValues(false)
                 , m_propertyID()
+                , m_sid(boost::uuids::nil_uuid())
             {
             }
 
@@ -42,6 +43,7 @@ namespace dds
             bool m_bNeedPropList;
             bool m_bNeedPropValues;
             std::string m_propertyID;
+            boost::uuids::uuid m_sid;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -62,6 +64,7 @@ namespace dds
             bpo::options_description options("dds-info options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
             options.add_options()("commander-pid",
                                   bpo::bool_switch(&_options->m_bNeedCommanderPid),
                                   "Return the pid of the commander server");
@@ -109,6 +112,9 @@ namespace dds
                 LOG(MiscCommon::log_stdout) << "Option prop-id has to be used together with prop-values.";
                 return false;
             }
+
+            if (vm.count("session"))
+                _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
             return true;
         }

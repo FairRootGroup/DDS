@@ -38,6 +38,10 @@ int main(int argc, char* argv[])
 
         if (!ParseCmdLine(argc, argv, &options))
             return EXIT_SUCCESS;
+
+        // Reinit UserDefaults and Log with new session ID
+        CUserDefaults::instance().reinit(options.m_sid, CUserDefaults::instance().currentUDFile());
+        Logger::instance().reinit();
     }
     catch (exception& e)
     {

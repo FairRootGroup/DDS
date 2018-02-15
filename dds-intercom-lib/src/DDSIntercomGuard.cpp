@@ -107,10 +107,16 @@ void CDDSIntercomGuard::start()
         //
 
         m_SMChannel->start();
+        if (!m_SMChannel->started())
+        {
+            m_started = false;
+            LOG(info) << "CCDDSIntercomGuard: Failed to initialize";
+            return;
+        }
     }
     else
     {
-        LOG(info) << "CCDDSIntercomGuard: using asio for transport";
+        LOG(info) << "CCDDSIntercomGuard: using TCP for transport";
         {
             lock_guard<std::mutex> lock(m_initAgentConnectionMutex);
 
@@ -123,6 +129,12 @@ void CDDSIntercomGuard::start()
                 m_agentConnectionMng.reset();
                 m_agentConnectionMng = make_shared<CAgentConnectionManager>(m_io_service);
                 m_agentConnectionMng->start();
+                if (!m_agentConnectionMng->started())
+                {
+                    m_started = false;
+                    LOG(info) << "CCDDSIntercomGuard: Failed to initialize";
+                    return;
+                }
             }
         }
     }
@@ -428,7 +440,7 @@ void CDDSIntercomGuard::clean()
 
 void CDDSIntercomGuard::waitCondition()
 {
-    if (!m_agentConnectionMng)
+    if (!m_started || !m_agentConnectionMng)
     {
         LOG(error) << "CCDDSIntercomGuard::waitCondition: Agent connection channel is not running.";
         return;

@@ -186,6 +186,10 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript) const
         cmd += ssSubmitTime.str();
         if (_needInlineBashScript)
             cmd += " -i";
+        // Session ID
+        cmd += " -a ";
+        cmd += CUserDefaults::instance().getCurrentSID();
+
         string arg("source ");
         arg += cmd_env;
         arg += " ; ";
@@ -349,7 +353,7 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
         stringstream ssCmd;
         ssCmd << ssPluginExe.str();
         // TODO: Send ID to the plug-in
-        ssCmd << " --id "
+        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id "
               << "FAKE_ID_FOR_TESTS"
               << " --path \"" << pluginDir << "\"";
 

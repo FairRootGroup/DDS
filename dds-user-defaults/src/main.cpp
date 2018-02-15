@@ -7,7 +7,6 @@
 #include "version.h"
 // BOOST
 #include <boost/program_options/cmdline.hpp>
-//#include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // STD
@@ -46,6 +45,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("path,p", "Show DDS user defaults config file path");
     visible.add_options()("default,d", "Generate a default DDS configuration file");
     visible.add_options()("config,c", bpo::value<string>(), "DDS user defaults configuration file");
+    visible.add_options()("session,s", bpo::value<string>(), "DDS Session ID");
     visible.add_options()("key", bpo::value<string>(), "Get a value for the given key");
     visible.add_options()(
         "force,f",
@@ -63,6 +63,8 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("server-info-file",
                           "Show the full path of the DDS server info file. The path must be evaluated before use.");
     visible.add_options()("session-id-file", "Show the full path of the session ID file of the local environment.");
+    visible.add_options()("default-session-id", "Show the current default session ID.");
+    visible.add_options()("default-session-id-file", "Show the full path of the default session ID file.");
 
     // Parsing command-line
     bpo::variables_map vm;
@@ -93,6 +95,13 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     if (vm.count("config"))
         sCfgFileName = vm["config"].as<string>();
     smart_path(&sCfgFileName);
+
+    boost::uuids::uuid sid(boost::uuids::nil_uuid());
+    if (vm.count("session"))
+    {
+        string sSID = vm["session"].as<string>();
+        sid = boost::uuids::string_generator()(sSID);
+    }
 
     if (vm.count("default"))
     {
@@ -125,24 +134,11 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
         return false;
     }
 
-    //    // Check UD
-    //    CUserDefaults user_defaults;
-    //    try
-    //    {
-    //        user_defaults.init(sCfgFileName);
-    //    }
-    //    catch (std::exception& _e)
-    //    {
-    //        stringstream ss;
-    //        ss << "DDS user defaults \"" << sCfgFileName << "\" is illformed: " << _e.what();
-    //        throw runtime_error(ss.str());
-    //    }
-
     CUserDefaults& userDefaults = CUserDefaults::instance();
     if (sCfgFileName.empty())
         sCfgFileName = CUserDefaults::currentUDFile();
 
-    userDefaults.reinit(sCfgFileName);
+    userDefaults.reinit(sid, sCfgFileName);
 
     if (vm.count("wrkpkg"))
     {
@@ -175,6 +171,18 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     if (vm.count("session-id-file"))
     {
         cout << userDefaults.getSIDFile() << endl;
+        return false;
+    }
+
+    if (vm.count("default-session-id"))
+    {
+        cout << CUserDefaults::instance().getDefaultSID() << endl;
+        return false;
+    }
+
+    if (vm.count("default-session-id-file"))
+    {
+        cout << CUserDefaults::instance().getDefaultSIDFile() << endl;
         return false;
     }
 

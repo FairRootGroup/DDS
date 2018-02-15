@@ -100,6 +100,7 @@ void CAgentConnectionManager::start()
     }
     catch (exception& e)
     {
+        m_bStarted = false;
         string errorMsg("Error in the transport service: ");
         errorMsg += e.what();
 

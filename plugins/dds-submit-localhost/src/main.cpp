@@ -46,6 +46,7 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
 {
     // Generic options
     bpo::options_description options("Options");
+    options.add_options()("session", bpo::value<std::string>(), "DDS Session ID");
     options.add_options()("id", bpo::value<std::string>(), "DDS submission ID");
     options.add_options()("path", bpo::value<std::string>(), "Path to DDS plugins directory");
 
@@ -80,6 +81,14 @@ int main(int argc, char* argv[])
     {
         return 1;
     }
+
+    // Session ID
+    boost::uuids::uuid sid(boost::uuids::nil_uuid());
+    if (vm.count("session"))
+        sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
+
+    // Reinit UserDefaults and Log with new session ID
+    CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
 
     // Init communication with DDS commander server
     CRMSPluginProtocol proto(vm["id"].as<string>());

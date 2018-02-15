@@ -18,29 +18,53 @@ namespace MiscCommon
     class CSessionIDFile
     {
       public:
+        CSessionIDFile()
+            : m_bLocked(false)
+        {
+        }
         CSessionIDFile(const std::string& _sidFile)
             : m_pathSIDFile(_sidFile)
-            , m_bHasCreated(false)
+            , m_bLocked(false)
+            , m_sid(boost::uuids::nil_uuid())
         {
         }
         ~CSessionIDFile()
         {
-            if (m_bHasCreated)
-                remove();
+            if (m_bLocked)
+                unlock();
         }
 
-        void create()
+        boost::uuids::uuid generate()
         {
-            remove();
-            m_bHasCreated = true;
-
-            boost::uuids::uuid sid = boost::uuids::random_generator()();
-            std::ofstream f(m_pathSIDFile.string());
-            f << sid;
-            f.close();
+            m_sid = boost::uuids::random_generator()();
+            return m_sid;
         }
 
-        std::string getSID()
+        std::string string()
+        {
+            return boost::lexical_cast<std::string>(m_sid);
+        }
+
+        void lock(const boost::uuids::uuid& _sid, const std::string& _sidFile = "")
+        {
+            if (!_sidFile.empty())
+                m_pathSIDFile = _sidFile;
+
+            std::ofstream f(m_pathSIDFile.string());
+            f << _sid;
+            f.close();
+            m_bLocked = true;
+        }
+
+        void unlock()
+        {
+            if (boost::filesystem::is_regular_file(m_pathSIDFile))
+                boost::filesystem::remove(m_pathSIDFile);
+
+            m_bLocked = false;
+        }
+
+        std::string getLockedSID()
         {
             if (!boost::filesystem::is_regular_file(m_pathSIDFile))
                 return std::string();
@@ -52,15 +76,9 @@ namespace MiscCommon
         }
 
       private:
-        void remove()
-        {
-            if (boost::filesystem::is_regular_file(m_pathSIDFile))
-                boost::filesystem::remove(m_pathSIDFile);
-        }
-
-      private:
         boost::filesystem::path m_pathSIDFile;
-        bool m_bHasCreated;
+        bool m_bLocked;
+        boost::uuids::uuid m_sid;
     };
 }
 #endif /* defined(__DDS__SESSIONIDFILE__) */
