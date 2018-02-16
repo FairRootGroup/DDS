@@ -73,6 +73,9 @@ namespace MiscCommon
 
     class Logger
     {
+      private:
+        typedef boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>> fileSink_t;
+
       public:
         typedef boost::log::sources::severity_logger_mt<ELogSeverityLevel> logger_t;
 
@@ -102,14 +105,47 @@ namespace MiscCommon
             const dds::user_defaults_api::CUserDefaults& userDefaults =
                 dds::user_defaults_api::CUserDefaults::instance();
 
-            std::string sLogFile = userDefaults.getLogFile();
-
-            unsigned int rotationSize = userDefaults.getOptions().m_server.m_logRotationSize;
-            unsigned int severityLevel = userDefaults.getOptions().m_server.m_logSeverityLevel;
             unsigned int hasConsoleOutput = userDefaults.getOptions().m_server.m_logHasConsoleOutput;
 
+            m_fileSink = createFileSink();
+
+            // Logging to console
+            typedef boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> ostreamSink_t;
+            ostreamSink_t stdoutSink = add_console_log(std::cout, keywords::format = "%Process%: %Message%");
+            ostreamSink_t stdoutCleanSink = add_console_log(std::cout, keywords::format = "%Message%");
+            ostreamSink_t stderrSink = add_console_log(std::cerr, keywords::format = "%Process%: error: %Message%");
+
+            stdoutSink->set_filter(severity == log_stdout && hasConsoleOutput);
+            stdoutCleanSink->set_filter(severity == log_stdout_clean && hasConsoleOutput);
+            stderrSink->set_filter(severity == log_stderr && hasConsoleOutput);
+
+            add_common_attributes();
+            core::get()->add_global_attribute("Process", attributes::current_process_name());
+
+            LOG(info) << "Log engine is initialized with severety \""
+                      << userDefaults.getOptions().m_server.m_logSeverityLevel << "\"";
+        }
+
+        void reinit()
+        {
+            boost::log::core::get()->remove_sink(m_fileSink);
+            m_fileSink.reset();
+            m_fileSink = createFileSink();
+        }
+
+      private:
+        fileSink_t createFileSink() const
+        {
+            using namespace boost::log;
+
+            const dds::user_defaults_api::CUserDefaults& userDefaults =
+                dds::user_defaults_api::CUserDefaults::instance();
+            unsigned int severityLevel = userDefaults.getOptions().m_server.m_logSeverityLevel;
+            unsigned int rotationSize = userDefaults.getOptions().m_server.m_logRotationSize;
+            std::string sLogFile = userDefaults.getLogFile();
+
             // Default format for logger
-            boost::log::formatter formatter =
+            formatter formatter =
                 // TODO: std::setw doesn't work for the first collumn of the log (TimeStamp). Investigate!
                 expressions::stream << std::left
                                     << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp",
@@ -120,8 +156,7 @@ namespace MiscCommon
                                     << expressions::attr<attributes::current_thread_id::value_type>("ThreadID")
                                     << ">    " << expressions::smessage;
 
-            // Logging to file
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_file_backend>> fileSink =
+            fileSink_t fileSink =
                 add_file_log(keywords::file_name = sLogFile,
                              keywords::open_mode = (std::ios::out | std::ios::app),
                              keywords::rotation_size = rotationSize * 1024 * 1024,
@@ -137,27 +172,13 @@ namespace MiscCommon
             fileSink->set_formatter(formatter);
             fileSink->set_filter(severity >= severityLevel);
 
-            // Logging to console
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTSink =
-                add_console_log(std::cout, boost::log::keywords::format = "%Process%: %Message%");
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDOUTCleanSink =
-                add_console_log(std::cout, boost::log::keywords::format = "%Message%");
-            boost::shared_ptr<sinks::synchronous_sink<sinks::text_ostream_backend>> consoleSTDERRSink =
-                add_console_log(std::cerr, boost::log::keywords::format = "%Process%: error: %Message%");
-
-            consoleSTDOUTSink->set_filter(severity == log_stdout && hasConsoleOutput);
-            consoleSTDOUTCleanSink->set_filter(severity == log_stdout_clean && hasConsoleOutput);
-            consoleSTDERRSink->set_filter(severity == log_stderr && hasConsoleOutput);
-
-            add_common_attributes();
-            core::get()->add_global_attribute("Process", attributes::current_process_name());
-
-            LOG(info) << "Log engine is initialized with severety \""
-                      << userDefaults.getOptions().m_server.m_logSeverityLevel << "\"";
+            return fileSink;
         }
 
       private:
         logger_t fLogger; ///> Main logger object
+
+        fileSink_t m_fileSink; ///> File sink
     };
 };
 #endif
