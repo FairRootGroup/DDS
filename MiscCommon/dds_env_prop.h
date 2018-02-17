@@ -22,7 +22,8 @@ namespace dds
         collection_index, ///< associated with $DDS_COLLECTION_INDEX environemnt variable.
         collection_name,  ///< associated with $DDS_COLLECTION_NAME - ID of the parent collection.
         group_name,       ///< associated with $DDS_GROUP_NAME - ID of the parent group.
-        dds_location      ///< associated with $DDS_LOCATION  environemnt variable.
+        dds_location,     ///< associated with $DDS_LOCATION  environemnt variable.
+        dds_session_id    ///< associated with $DDS_SESSION_ID - session ID of the DDS.
     };
 
     /// \brief The function returns a value for a given environment property.
@@ -112,7 +113,7 @@ namespace dds
     /// \return a string value for a given environment property.
     template <EEnvProp T>
     inline typename std::enable_if<T == task_name || T == collection_name || T == group_name || T == dds_location ||
-                                       T == task_path,
+                                       T == task_path || T == dds_session_id,
                                    std::string>::type
         env_prop()
     {
@@ -133,6 +134,9 @@ namespace dds
                 break;
             case task_path:
                 envName = "DDS_TASK_PATH";
+                break;
+            case dds_session_id:
+                envName = "DDS_SESSION_ID";
                 break;
             default:
                 return 0;

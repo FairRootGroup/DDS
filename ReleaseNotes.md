@@ -5,9 +5,10 @@
 ### DDS common
 Modified: Bump minimum required Boost version to 1.64
 Modified: Code related to external processes execution has been ported to use boost::process library. (GH-190)
+Modified: Export $DDS_SESSION_ID for user's task which can be retrieved via dds::env_prop. (GH-187)   
 
 ### dds-protocol
-Fixed: transfer of binary attachments.   
+Fixed: efficient transfer of binary attachments for shared memory channels.
 
 ## v1.8 (2017-11-09)
 ### DDS common

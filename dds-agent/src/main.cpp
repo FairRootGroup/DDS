@@ -72,6 +72,10 @@ int main(int argc, char* argv[])
             }
             LOG(info) << "SESSION ID: " << sid.getSID();
 
+            // Export DDS session ID
+            if (::setenv("DDS_SESSION_ID", sid.getSID().c_str(), 1) == -1)
+                throw MiscCommon::system_error("Failed to set up $DDS_SESSION_ID");
+
             shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options);
             agentptr->start();
         }

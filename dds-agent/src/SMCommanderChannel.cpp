@@ -7,6 +7,7 @@
 #include "SMCommanderChannel.h"
 #include "BOOST_FILESYSTEM.h"
 #include "ProtocolDef.h"
+#include "dds_env_prop.h"
 #include "version.h"
 // MiscCommon
 #include "Process.h"
@@ -190,6 +191,8 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
             destFilePath /= _attachment->m_requestedFileName;
             boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
+            // Add exec permissions for the users' task
+            fs::permissions(destFilePath, fs::add_perms | fs::owner_exe);
             LOG(info) << "Received user executable to execute: " << destFilePath.generic_string();
         }
         default:
@@ -378,7 +381,8 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
                   << "DDS_TASK_ID:" << m_taskID << " DDS_TASK_INDEX:" << m_taskIndex
                   << " DDS_COLLECTION_INDEX:" << m_collectionIndex << " DDS_TASK_PATH:" << m_taskPath
                   << " DDS_GROUP_NAME:" << m_groupName << " DDS_COLLECTION_NAME:" << m_collectionName
-                  << " DDS_TASK_NAME:" << m_taskName;
+                  << " DDS_TASK_NAME:" << m_taskName
+                  << " DDS_SESSION_ID: " << dds::env_prop<dds::EEnvProp::dds_session_id>();
         if (::setenv("DDS_TASK_ID", to_string(m_taskID).c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
         if (::setenv("DDS_TASK_INDEX", to_string(m_taskIndex).c_str(), 1) == -1)
