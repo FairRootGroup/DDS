@@ -30,6 +30,7 @@
 #include "CustomIterator.h"
 #include "ErrorCode.h"
 #include "MiscUtils.h"
+#include "SysHelper.h"
 #include "def.h"
 #include "stlx.h"
 // BOOST
@@ -450,7 +451,9 @@ namespace MiscCommon
     {
         try
         {
-            bp::child c(_Command, bp::std_out > _stdoutFileName, bp::std_err > _stderrFileName);
+            std::string smartCmd(_Command);
+            MiscCommon::smart_path(&smartCmd);
+            bp::child c(smartCmd, bp::std_out > _stdoutFileName, bp::std_err > _stderrFileName);
             pid_t pid = c.id();
             c.detach();
             return pid;
@@ -458,7 +461,7 @@ namespace MiscCommon
         catch (std::exception& _e)
         {
             std::stringstream ss;
-            ss << "do_execv: " << _e.what();
+            ss << "execute: " << _e.what();
             throw std::runtime_error(ss.str());
         }
     }
@@ -468,12 +471,14 @@ namespace MiscCommon
     {
         try
         {
-            bp::spawn(_Command);
+            std::string smartCmd(_Command);
+            MiscCommon::smart_path(&smartCmd);
+            bp::spawn(smartCmd);
         }
         catch (std::exception& _e)
         {
             std::stringstream ss;
-            ss << "do_execv: " << _e.what();
+            ss << "execute: " << _e.what();
             throw std::runtime_error(ss.str());
         }
     }
@@ -493,13 +498,16 @@ namespace MiscCommon
             std::future<std::string> out_data;
             std::future<std::string> err_data;
 
+            std::string smartCmd(_Command);
+            MiscCommon::smart_path(&smartCmd);
+
             if (std::chrono::seconds(0) == _Timeout)
             {
-                boost::process::child c(_Command);
+                boost::process::child c(smartCmd);
                 return c.id();
             }
 
-            bp::child c(_Command, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
+            bp::child c(smartCmd, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
 
             // since we use async io to be able to read both stdout and stderr and have a timeout on process execution,
             // we need to have a worker thread for asio service to prevent blocking of the main thread.
@@ -536,12 +544,12 @@ namespace MiscCommon
             if (_exitCode)
                 *_exitCode = c.exit_code();
 
-            return c.id();
+            return 0;
         }
         catch (std::exception& _e)
         {
             std::stringstream ss;
-            ss << "do_execv: " << _e.what();
+            ss << "execute: " << _e.what();
             throw std::runtime_error(ss.str());
         }
     }
