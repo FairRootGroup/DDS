@@ -60,6 +60,7 @@ namespace dds
                 : m_sendCommandToAllAgents(false)
                 , m_agentCmd(EAgentCmdType::UNKNOWN)
                 , m_verbose(false)
+                , m_sid(boost::uuids::nil_uuid())
             {
             }
 
@@ -68,6 +69,7 @@ namespace dds
             std::string m_sUpdKey_key;
             std::string m_sUpdKey_value;
             bool m_verbose;
+            boost::uuids::uuid m_sid;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -88,6 +90,7 @@ namespace dds
             bpo::options_description options("dds-agent-cmd options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
             options.add_options()("verbose", "Verbose output");
             options.add_options()(
                 "command",
@@ -149,6 +152,10 @@ namespace dds
             if (vm.count("all"))
             {
                 _options->m_sendCommandToAllAgents = true;
+            }
+            if (vm.count("session"))
+            {
+                _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
             }
 
             return true;

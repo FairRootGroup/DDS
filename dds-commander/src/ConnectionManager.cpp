@@ -278,7 +278,7 @@ void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
     // Create directory to store logs
     const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
     fs::path dir(sLogStorageDir);
-    if (!fs::exists(dir) && !fs::create_directory(dir))
+    if (!fs::exists(dir) && !fs::create_directories(dir))
     {
         stringstream ss;
         ss << "Could not create directory " << sLogStorageDir << " to save log files.";

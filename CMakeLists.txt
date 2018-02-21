@@ -342,6 +342,7 @@ if( BUILD_TESTS )
     install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test_hosts.cfg DESTINATION tests)
     install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test.xml DESTINATION tests)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION tests)
+		install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_batch.sh DESTINATION tests)
 endif( BUILD_TESTS )
 
 
@@ -394,7 +395,7 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
 	FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake
 			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
-			  
+
 	if( BUILD_TESTS )
 		set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds_topology_lib-tests>)
 		#
@@ -412,7 +413,7 @@ endif()
 
 #
 # TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
-#			  
+#
 add_custom_target( wn_bin
 	# TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
 	# COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=\"$ENV{LD_LIBRARY_PATH}:${DDS_BOOST_LIB_DIR}\""
@@ -425,7 +426,7 @@ add_custom_target( wn_bin
 	COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
 	COMMENT "Generate WN binary package"
 	VERBATIM )
-	
+
 add_dependencies( wn_bin
 	dds-agent
 	dds_user_defaults_lib
