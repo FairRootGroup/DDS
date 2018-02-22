@@ -3,7 +3,7 @@
 #
 #
 # Usage:
-#      dds-server start|restart <session ID>|stop <session ID> |status <session ID>|getbins
+#      dds-server start [-s] | stop [session ID] | status [session ID] | getbins [session ID]
 #
 # Supported OS:
 #    Linux, Mac OS X (min 10.9)
@@ -15,7 +15,7 @@
 #
 #
 
-USAGE="Usage: $(basename "$0") {start [-s]|restart <session ID> [-s]|stop <session ID>|status <session ID>|getbins <session ID>}"
+USAGE="Usage: $(basename "$0") {start [-s] | stop [session ID] | status [session ID] | getbins [session ID]}"
 
 SERVER_OS=$(uname -s 2>&1)
 
@@ -302,24 +302,10 @@ start()
   # don't need to do anything
   if [ -n "$commander_pid" ]; then
     echo "DDS Commander is running already."
-    echo "If you observer problems with it, try to restart it."
+    echo "If you observer problems with it, try to stop this session and start a new one."
     return 0
   fi
-  # R E - S T A R T I N G the commander
-  if [ -n "$agent_pid" ]; then
-    restart $1
-    return 1
-  fi
-  # S T A R T I N G the server
-  _start $1
-}
-# ************************************************************************
-# ***** RESTART  *****
-# ************************************************************************
-restart()
-{
-  # S T O P I N G the server first
-  stop $1
+
   # S T A R T I N G the server
   _start $1
 }
@@ -406,11 +392,6 @@ case "$1" in
   start)
   get_bins $check_only_local_wn_bins
   start $WORK_DIR
-  RETVAL=$?
-  ;;
-  restart)
-  get_bins $check_only_local_wn_bins
-  restart $WORK_DIR
   RETVAL=$?
   ;;
   stop)
