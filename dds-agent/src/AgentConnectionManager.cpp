@@ -377,7 +377,7 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     LOG(info) << "Wait for child processes to exit...";
     for (auto const& pid : m_children)
     {
-        if (!IsProcessExist(pid))
+        if (!IsPropcessRunning(pid))
             continue;
 
         // wait 10 seconds each
@@ -385,7 +385,7 @@ void CAgentConnectionManager::terminateChildrenProcesses()
         {
             LOG(info) << "Waiting for pid = " << pid;
             int stat(0);
-            if (pid == ::waitpid(pid, &stat, WNOHANG))
+            if (pid == ::waitpid(pid, &stat, WNOHANG | WUNTRACED))
             {
                 LOG(info) << "pid = " << pid << " - done; exit status = " << WEXITSTATUS(stat);
                 break;
@@ -399,7 +399,7 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     // kills the child
     for (auto const& pid : m_children)
     {
-        if (!IsProcessExist(pid))
+        if (!IsPropcessRunning(pid))
             continue;
 
         LOG(info) << "Timeout has been reached, child process with pid = " << pid << " will be forced to exit...";
@@ -498,8 +498,38 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
             try
             {
-                if (!IsProcessExist(_pid))
+                // NOTE: We don't use boost::process because it returned an evaluated exit status, but we need a raw to
+                // be able to detect how exactly the child exited.
+                // boost::process  only checks that the child ended because of a call to ::exit() and does not check for
+                // exiting via signal (WIFSIGNALED()).
+
+                // We must call "wait" to check exist status of a child process, otherwise we will crate a
+                // zombie :)
+                int status;
+                pid_t ret = ::waitpid(_pid, &status, WNOHANG | WUNTRACED);
+                if (ret < 0)
                 {
+                    switch (errno)
+                    {
+                        case ECHILD:
+                            LOG(MiscCommon::error) << "Watchdog: The process or process group specified by pid "
+                                                      "does not exist or is not a child of the calling process.";
+                            break;
+                        case EFAULT:
+                            LOG(MiscCommon::error) << "Watchdog: stat_loc is not a writable address.";
+                            break;
+                        case EINTR:
+                            LOG(MiscCommon::error) << "Watchdog: The function was interrupted by a signal. The "
+                                                      "value of the location pointed to by stat_loc is undefined.";
+                            break;
+                        case EINVAL:
+                            LOG(MiscCommon::error) << "Watchdog: The options argument is not valid.";
+                            break;
+                        case ENOSYS:
+                            LOG(MiscCommon::error) << "Watchdog: pid specifies a process group (0 or less than "
+                                                      "-1), which is not currently supported.";
+                            break;
+                    }
                     LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
                     LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
 
@@ -507,11 +537,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
                     return false;
                 }
-
-                // We must call "wait" to check exist status of a child process, otherwise we will crate a
-                // zombie :)
-                int status;
-                if (_pid == ::waitpid(_pid, &status, WNOHANG))
+                else if (ret == _pid)
                 {
                     if (WIFEXITED(status))
                         LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "")
@@ -537,7 +563,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
             return true;
         },
-        chrono::seconds(10));
+        chrono::seconds(5));
 
     LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
 }

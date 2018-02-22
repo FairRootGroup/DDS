@@ -53,7 +53,7 @@ namespace MiscCommon
      * @note This function will not be able to check existence of a zombie process
      *
      */
-    inline bool IsProcessExist(pid_t _PID)
+    inline bool IsPropcessRunning(pid_t _PID)
     {
         return !(::kill(_PID, 0) == -1 && errno == ESRCH);
     }
@@ -72,7 +72,7 @@ namespace MiscCommon
             {
                 // Preventing to start a second "instance" if the pidfile references to the running process
                 const pid_t pid = GetPIDFromFile(m_FileName);
-                if (pid > 0 && IsProcessExist(pid))
+                if (pid > 0 && IsPropcessRunning(pid))
                 {
                     // We don't want to unlink this file
                     m_FileName.clear();
@@ -453,6 +453,12 @@ namespace MiscCommon
         {
             std::string smartCmd(_Command);
             MiscCommon::smart_path(&smartCmd);
+
+            // Restore default handler. If we fail to do so, we might fail to waitpid our children.
+            // After we started using boost::process we noticed that ::waitpid fails.
+            // boost:process either sets its own handler or there is a call for signal(SIGCHLD, SIG_IGN);
+            signal(SIGCHLD, SIG_DFL);
+            // Execute the process
             bp::child c(smartCmd, bp::std_out > _stdoutFileName, bp::std_err > _stderrFileName);
             pid_t pid = c.id();
             c.detach();
@@ -504,7 +510,9 @@ namespace MiscCommon
             if (std::chrono::seconds(0) == _Timeout)
             {
                 boost::process::child c(smartCmd);
-                return c.id();
+                pid_t pid = c.id();
+                c.detach();
+                return pid;
             }
 
             bp::child c(smartCmd, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
@@ -530,6 +538,9 @@ namespace MiscCommon
                 // ios.stop();
                 bTerminated = true;
             }
+            int status(0);
+            ::waitpid(c.id(), &status, 0); // clean it up
+
             asioWorker.join();
 
             if (bTerminated)
