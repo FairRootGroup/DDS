@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
     {
         // TODO: make wait for the process here to check for errors
         const pid_t pid_to_kill = CPIDFile::GetPIDFromFile(pidfile_name);
-        if (pid_to_kill > 0 && IsPropcessRunning(pid_to_kill))
+        if (pid_to_kill > 0 && IsProcessRunning(pid_to_kill))
         {
             LOG(log_stdout) << "self exiting (" << pid_to_kill << ")...";
             // TODO: Maybe we need more validations of the process before
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
             while (iter <= max_iter)
             {
                 // show "progress dots". Don't use Log, as it will create a new line after each dot.
-                if (!IsPropcessRunning(pid_to_kill))
+                if (!IsProcessRunning(pid_to_kill))
                 {
                     cout << "\n";
                     break;
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
-            if (IsPropcessRunning(pid_to_kill))
+            if (IsProcessRunning(pid_to_kill))
                 LOG(log_stderr) << "FAILED to close the process.";
         }
 

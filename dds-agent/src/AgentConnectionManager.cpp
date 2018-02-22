@@ -377,7 +377,7 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     LOG(info) << "Wait for child processes to exit...";
     for (auto const& pid : m_children)
     {
-        if (!IsPropcessRunning(pid))
+        if (!IsProcessRunning(pid))
             continue;
 
         // wait 10 seconds each
@@ -399,7 +399,7 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     // kills the child
     for (auto const& pid : m_children)
     {
-        if (!IsPropcessRunning(pid))
+        if (!IsProcessRunning(pid))
             continue;
 
         LOG(info) << "Timeout has been reached, child process with pid = " << pid << " will be forced to exit...";

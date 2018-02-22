@@ -53,7 +53,7 @@ namespace MiscCommon
      * @note This function will not be able to check existence of a zombie process
      *
      */
-    inline bool IsPropcessRunning(pid_t _PID)
+    inline bool IsProcessRunning(pid_t _PID)
     {
         return !(::kill(_PID, 0) == -1 && errno == ESRCH);
     }
@@ -72,7 +72,7 @@ namespace MiscCommon
             {
                 // Preventing to start a second "instance" if the pidfile references to the running process
                 const pid_t pid = GetPIDFromFile(m_FileName);
-                if (pid > 0 && IsPropcessRunning(pid))
+                if (pid > 0 && IsProcessRunning(pid))
                 {
                     // We don't want to unlink this file
                     m_FileName.clear();

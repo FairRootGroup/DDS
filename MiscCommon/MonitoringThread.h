@@ -166,7 +166,7 @@ namespace dds
         void killProcess()
         {
             pid_t pidToKill(::getpid());
-            if (pidToKill > 0 && MiscCommon::IsPropcessRunning(pidToKill))
+            if (pidToKill > 0 && MiscCommon::IsProcessRunning(pidToKill))
             {
                 LOG(MiscCommon::log_stdout) << " self exiting (" << pidToKill << ")...";
                 // TODO: Maybe we need more validations of the process before
@@ -178,7 +178,7 @@ namespace dds
                 const size_t max_iter = 30;
                 while (iter <= max_iter)
                 {
-                    if (!MiscCommon::IsPropcessRunning(pidToKill))
+                    if (!MiscCommon::IsProcessRunning(pidToKill))
                     {
                         LOG(MiscCommon::log_stdout) << std::endl;
                         break;
@@ -187,7 +187,7 @@ namespace dds
                     sleep(1); // sleeping for 1 second
                     ++iter;
                 }
-                if (MiscCommon::IsPropcessRunning(pidToKill))
+                if (MiscCommon::IsProcessRunning(pidToKill))
                     LOG(MiscCommon::error) << "FAILED to close the process.";
             }
         }
