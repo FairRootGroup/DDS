@@ -288,9 +288,8 @@ _start()
   echo "------------------------"
   
   # Set default Session ID
-  local default_sid_file=$(dds-user-defaults --default-session-id-file 2>/dev/null)
-  echo  $DDS_SESSION_ID > $default_sid_file
-
+  dds-session --set-default $DDS_SESSION_ID
+  
   return 0
 }
 # ************************************************************************

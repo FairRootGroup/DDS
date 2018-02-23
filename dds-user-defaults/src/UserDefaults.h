@@ -55,13 +55,17 @@ namespace dds
             std::string getSMAgentOutputName() const;
             std::string getSMAgentLeaderOutputName() const;
             std::string getPluginsRootDir() const;
-            std::string getMainSIDFileName() const;
+            std::string getMainSIDFile() const;
             std::string getSIDFile() const;
             std::string getLockedSID() const;
             std::string getCurrentSID() const;
             std::string getDefaultSIDFile() const;
             std::string getDefaultSID() const;
             std::string getAgentNamedMutexName() const;
+            std::string getSessionsRootDir() const;
+            std::string getSessionsHolderDirName() const;
+            std::string getCommanderPidFileName() const;
+            std::string getCommanderPidFile() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
             /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)

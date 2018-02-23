@@ -107,14 +107,8 @@ int main(int argc, char* argv[])
     CUserDefaults::instance().reinit(options.m_sid, CUserDefaults::instance().currentUDFile());
     Logger::instance().reinit();
 
-    // resolving user's home dir from (~/ or $HOME, if present)
-    string sWorkDir(CUserDefaults::instance().getOptions().m_server.m_workDir);
-    smart_path(&sWorkDir);
-    // We need to be sure that there is "/" always at the end of the path
-    smart_append<string>(&sWorkDir, '/');
     // pidfile name
-    string pidfile_name(sWorkDir);
-    pidfile_name += "dds-commander.pid";
+    const string pidfile_name(CUserDefaults::instance().getCommanderPidFile());
 
     // Checking for "stop" option
     if (SOptions_t::cmd_stop == options.m_Command)
@@ -164,7 +158,7 @@ int main(int argc, char* argv[])
         try
         {
             CPIDFile pidfile(pidfile_name, ::getpid());
-            CSessionIDFile sid(dds::user_defaults_api::CUserDefaults::instance().getMainSIDFileName());
+            CSessionIDFile sid(dds::user_defaults_api::CUserDefaults::instance().getMainSIDFile());
             sid.lock(options.m_sid);
             if (sid.getLockedSID().empty())
             {

@@ -428,7 +428,7 @@ string CUserDefaults::getSIDName() const
 
 /// Returns the full path to the main Session ID file
 /// The function doesn't check wheather the file exists or not
-string CUserDefaults::getMainSIDFileName() const
+string CUserDefaults::getMainSIDFile() const
 {
     string sWorkDir(m_options.m_server.m_workDir);
     smart_path(&sWorkDir);
@@ -500,15 +500,22 @@ void CUserDefaults::addSessionIDtoPath(std::string& _path) const
         return;
 
     fs::path pRet(_path);
-    pRet /= "sessions";
+    pRet /= getSessionsHolderDirName();
     pRet /= m_sessionID;
     _path = pRet.string();
 }
 
+string CUserDefaults::getSessionsRootDir() const
+{
+    string val("$HOME/.DDS/");
+    smart_path(&val);
+    return val;
+}
+
 string CUserDefaults::getDefaultSIDFile() const
 {
-    string val("$HOME/.DDS/default.sid");
-    smart_path(&val);
+    string val(getSessionsRootDir());
+    val += "default.sid";
     return val;
 }
 
@@ -525,4 +532,24 @@ string CUserDefaults::getDefaultSID() const
     f >> sid;
 
     return sid;
+}
+
+string CUserDefaults::getSessionsHolderDirName() const
+{
+    return ("sessions");
+}
+
+string CUserDefaults::getCommanderPidFileName() const
+{
+    return "dds-commander.pid";
+}
+
+string CUserDefaults::getCommanderPidFile() const
+{
+    string sWorkDir(CUserDefaults::instance().getOptions().m_server.m_workDir);
+    smart_path(&sWorkDir);
+    fs::path pathPidFile(sWorkDir);
+    pathPidFile /= CUserDefaults::instance().getCommanderPidFileName();
+
+    return pathPidFile.string();
 }

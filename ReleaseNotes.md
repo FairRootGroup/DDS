@@ -14,6 +14,9 @@ Modified: The "restart" is no longer supported.
 ### dds-protocol
 Fixed: efficient transfer of binary attachments for shared memory channels.   
 
+### dds-session
+Added: Initial version of the tool. (GH-191)   
+
 ## v1.8 (2017-11-09)
 ### DDS common
 Fixed: an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.   
