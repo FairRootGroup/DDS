@@ -8,35 +8,46 @@ topologyFile=${DDS_LOCATION}/tests/property_test.xml
 requiredNofAgents=10
 
 echo "Starting DDS server..."
-dds-server start -s
+startOutput=$(dds-server start -s)
+
+echo "${startOutput}"
+
+sessionID=$(echo -e "${startOutput}" | head -1 | awk '{split($0,a,":"); print a[2]}' |  tr -d '[:space:]')
+
+echo "SESSION ID: ${sessionID}"
 
 echo "Submiting agents..."
-dds-submit -r localhost -n 10
+dds-submit -r localhost -n 10 --session ${sessionID}
 
-sleep 5
-
-nofAgents=$(dds-info -n)
-while [  ${nofAgents} -lt ${requiredNofAgents} ]; do
-	nofAgents=$(dds-info -n)
+counter=0
+nofAgents=$(dds-info -n --session ${sessionID})
+while [ ${nofAgents} -lt ${requiredNofAgents} ]; do
+	nofAgents=$(dds-info -n --session ${sessionID})
+    counter=counter+1
+    if [ ${counter} -gt 20 ]; then
+      echo "Not enough agents"
+      exit 1
+    fi
+    sleep 1
 done
 
 echo "Activating topology..."
-dds-topology --activate ${topologyFile}
+dds-topology --disable-validation --session ${sessionID} --activate ${topologyFile}
 
-# DDS commander updates property list each 60 seconds
+# Give 60 seconds for tasks to finish
 echo "Waiting 60 seconds..."
 sleep 60
 
 echo "Getting logs..."
-dds-agent-cmd getlog -a
+dds-agent-cmd getlog -a --session ${sessionID}
 
-wrkDir=$(dds-user-defaults -V --key server.work_dir)
+wrkDir=$(dds-user-defaults --session ${sessionID} -V --key server.work_dir)
 logDir=$(eval echo "${wrkDir}/log/agents")
 echo "Search for logs in: ${logDir}"
 
 for file in $(find "${logDir}" -name "*.tar.gz"); do tar -xf ${file} -C "${logDir}" ; done
 
-nofGoodResults=$(grep -r --include "*.log" "Task successfully done" "${logDir}" | wc -l)
+nofGoodResults=$(grep -r --include "*.log" "User task exited with status 0" "${logDir}" | wc -l)
 
 if [ "${nofGoodResults}" -eq "${requiredNofAgents}" ]
 then
@@ -46,6 +57,6 @@ else
 fi
 
 echo "Stoping server..."
-dds-server stop
+dds-server stop ${sessionID}
 
 exit 0

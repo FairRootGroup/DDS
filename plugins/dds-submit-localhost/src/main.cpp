@@ -111,6 +111,7 @@ int main(int argc, char* argv[])
             bfs::path tempDirPath = bfs::temp_directory_path();
             bfs::path wrkDirPath(tempDirPath);
             string tmpDir = BOOSTHelper::get_temp_dir("dds");
+            wrkDirPath /= CUserDefaults::instance().getLockedSID();
             wrkDirPath /= tmpDir;
             wrkDirPath /= "wn";
 
