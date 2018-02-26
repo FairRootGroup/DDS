@@ -34,8 +34,8 @@ BOOST_AUTO_TEST_SUITE(test_dds_scheduler_performance)
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 {
-    Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
 
     boost::asio::io_service io_service;
 
@@ -121,8 +121,8 @@ void make_agent(boost::asio::io_service& _io_service,
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 {
-    Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
 
     boost::asio::io_service io_service;
 
@@ -167,8 +167,8 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
 {
-    Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
 
     boost::asio::io_service io_service;
 

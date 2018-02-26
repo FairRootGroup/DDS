@@ -28,8 +28,8 @@ BOOST_AUTO_TEST_SUITE(test_dds_key_value_manager)
 
 BOOST_AUTO_TEST_CASE(test_dds_key_value_manager_1)
 {
-    Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
 
     CTopology topology;
     topology.init("key_value_manager_test_1.xml");

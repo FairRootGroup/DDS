@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
 {
     try
     {
+       // CUserDefaults::instance(); // Initialize user defaults
         Logger::instance().init(); // Initialize log
-        // dds::CUserDefaults::instance(); // Initialize user defaults
 
         string optType;
         string optTaskIndex;

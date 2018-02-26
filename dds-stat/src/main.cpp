@@ -27,8 +27,8 @@ int main(int argc, char* argv[])
 
     try
     {
-        Logger::instance().init(); // Initialize log
         CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;

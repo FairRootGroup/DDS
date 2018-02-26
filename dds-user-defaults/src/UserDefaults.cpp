@@ -48,6 +48,11 @@ CUserDefaults& CUserDefaults::instance(const boost::uuids::uuid& _sid)
     return instance;
 }
 
+boost::uuids::uuid CUserDefaults::getInitialSID()
+{
+    return boost::uuids::string_generator()("11111111-1111-1111-1111-111111111111");
+}
+
 void CUserDefaults::reinit(const boost::uuids::uuid& _sid, const string& _cfgFileName, bool _get_default)
 {
     setSessionID(_sid);
@@ -139,6 +144,11 @@ void CUserDefaults::init(bool _get_default)
 
 void CUserDefaults::setSessionID(const boost::uuids::uuid& _sid)
 {
+    if (_sid == getInitialSID()) {
+        m_sessionID.clear();
+        return;
+    }
+    
     if (!_sid.is_nil())
         m_sessionID = boost::lexical_cast<std::string>(_sid);
     else

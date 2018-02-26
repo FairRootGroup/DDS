@@ -23,7 +23,7 @@ counter=0
 nofAgents=$(dds-info -n --session ${sessionID})
 while [ ${nofAgents} -lt ${requiredNofAgents} ]; do
 	nofAgents=$(dds-info -n --session ${sessionID})
-    counter=counter+1
+    let counter=counter+1
     if [ ${counter} -gt 20 ]; then
       echo "Not enough agents"
       exit 1

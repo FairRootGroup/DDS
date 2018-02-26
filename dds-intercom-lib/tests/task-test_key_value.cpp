@@ -27,8 +27,8 @@ int main(int argc, char* argv[])
 {
     chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
 
-    Logger::instance().init(); // Initialize log
     CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
 
     try
     {

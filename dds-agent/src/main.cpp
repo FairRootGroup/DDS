@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     SOptions_t options;
     try
     {
-        Logger::instance().init(); // Initialize log
         CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
 
         if (!ParseCmdLine(argc, argv, &options))
             return EXIT_SUCCESS;
