@@ -114,6 +114,66 @@ int main(int argc, char* argv[])
             f << options.m_sDefault;
             f.close();
         }
+        // ++++++++++++++++++
+        // Remove All STOPPED sessions
+        // ++++++++++++++++++
+        if (options.m_bRemoveAllStopped)
+        {
+            for (auto& dir : session_dirs)
+            {
+                const string sSID(dir.leaf().string());
+
+                if (IsSessionRunning(sSID))
+                    continue;
+
+                cout << "\n\nRemoving: " << sSID << endl;
+
+                string sWrkDir(CUserDefaults::instance().getValueForKey("server.work_dir"));
+                smart_path(&sWrkDir);
+                string sLogDir(CUserDefaults::instance().getValueForKey("server.log_dir"));
+                smart_path(&sLogDir);
+                string sSandboxDir(CUserDefaults::instance().getValueForKey("server.server.sandbox_dir"));
+                smart_path(&sSandboxDir);
+
+                if (!options.m_bForce)
+                {
+                    cout << "\nThere following session directories will be removed." << endl;
+                    if (!sWrkDir.empty())
+                        cout << "DDS Work dir: " << sWrkDir << "\n";
+                    if (!sLogDir.empty())
+                        cout << "DDS Log dir: " << sLogDir << "\n";
+                    if (!sSandboxDir.empty())
+                        cout << "DDS Sandbox dir: " << sSandboxDir << "\n";
+
+                    char answer(0);
+                    do
+                    {
+                        cout << "Are you sure you want to proceed? [y/n]" << endl;
+                        cin >> answer;
+                    } while (!cin.fail() && answer != 'y' && answer != 'n');
+
+                    if (answer == 'n')
+                        return EXIT_SUCCESS;
+                }
+
+                if (!sWrkDir.empty())
+                {
+                    cout << "\tDDS Work dir: " << sWrkDir << "\n"
+                         << "\tremoved files count: " << fs::remove_all(sWrkDir) << endl;
+                }
+                if (!sLogDir.empty())
+                {
+                    cout << "\tDDS Log dir: " << sLogDir << "\n"
+                         << "\tremoved files count: " << fs::remove_all(sLogDir) << endl;
+                }
+                if (!sSandboxDir.empty())
+                {
+                    cout << "\tDDS Sandbox dir: " << sSandboxDir << "\n"
+                         << "\tremoved files count: " << fs::remove_all(sSandboxDir) << endl;
+                }
+            }
+            return EXIT_SUCCESS;
+        }
     }
     catch (exception& e)
     {

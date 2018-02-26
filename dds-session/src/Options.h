@@ -42,10 +42,14 @@ namespace dds
         {
             SOptions()
                 : m_bListAll(false)
+                , m_bRemoveAllStopped(false)
+                , m_bForce(false)
             {
             }
 
             bool m_bListAll;
+            bool m_bRemoveAllStopped;
+            bool m_bForce;
             std::string m_sDefault;
         } SOptions_t;
         //=============================================================================
@@ -71,6 +75,12 @@ namespace dds
             options.add_options()("set-default",
                                   bpo::value<std::string>(&_options->m_sDefault),
                                   "Set a giving session id as a default DDS session");
+            options.add_options()(
+                "remove,r", bpo::bool_switch(&_options->m_bRemoveAllStopped), "Remove all STOPPED DDS sessions");
+            options.add_options()("force,f",
+                                  bpo::bool_switch(&_options->m_bForce),
+                                  "Force commands without prompting for a confirmation.\n"
+                                  "For example, can be used with the \"remove\" command.");
 
             // Parsing command-line
             bpo::variables_map vm;
