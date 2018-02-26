@@ -51,15 +51,10 @@ eval LOCAL_DDS="$HOME/.DDS"
 create_dir "$LOCAL_DDS"
 
 ## create a default configuration file if needed
-DDS_CFG=$(dds-user-defaults -p)
+DDS_CFG=$(dds-user-defaults --ignore-default-sid -p)
 if [ -z "$DDS_CFG" ]; then
-   dds-user-defaults -d -c "$LOCAL_DDS/DDS.cfg"
+   dds-user-defaults --ignore-default-sid -d -c "$LOCAL_DDS/DDS.cfg"
 fi
 
 ## set log directory for the server
-eval DDS_LOG_LOCATION=$(dds-user-defaults --key server.log_dir); export DDS_LOG_LOCATION
-#
-## create working dir for custom locations
-#eval WORK_DIR=$(pod-user-defaults -V --key server.work_dir)
-#create_dir "$WORK_DIR"
-
+eval DDS_LOG_LOCATION=$(dds-user-defaults --ignore-default-sid --key server.log_dir); export DDS_LOG_LOCATION

@@ -36,6 +36,7 @@ void printVersion()
 // Command line parser
 bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
 {
+    bool ignoreDefaultSID(false);
     // Generic options
     bpo::options_description visible("Options");
     // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce ureadable output
@@ -46,6 +47,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
     visible.add_options()("default,d", "Generate a default DDS configuration file");
     visible.add_options()("config,c", bpo::value<string>(), "DDS user defaults configuration file");
     visible.add_options()("session,s", bpo::value<string>(), "DDS Session ID");
+    visible.add_options()("ignore-default-sid", bpo::bool_switch(&ignoreDefaultSID), "Ignore default DDS Session ID");
     visible.add_options()("key", bpo::value<string>(), "Get a value for the given key");
     visible.add_options()(
         "force,f",
@@ -96,7 +98,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
         sCfgFileName = vm["config"].as<string>();
     smart_path(&sCfgFileName);
 
-    boost::uuids::uuid sid(boost::uuids::nil_uuid());
+    boost::uuids::uuid sid(ignoreDefaultSID ? CUserDefaults::getInitialSID() : boost::uuids::nil_uuid());
     if (vm.count("session"))
     {
         string sSID = vm["session"].as<string>();
