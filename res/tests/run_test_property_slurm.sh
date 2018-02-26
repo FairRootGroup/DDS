@@ -22,4 +22,4 @@ export HOME="/lustre/nyx/rz/andrey/"
 
 dds_install_dir="/lustre/nyx/rz/andrey/DDS"
 
-"${dds_install_dir}/tests/run_test_property_batch.sh" "${dds_install_dir}"
+"${dds_install_dir}/tests/run_test_property.sh" "${dds_install_dir}"

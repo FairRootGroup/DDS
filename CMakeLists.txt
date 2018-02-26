@@ -346,10 +346,9 @@ install(FILES ${DDS_SHARE_FILES} DESTINATION share)
 # tests runner
 if( BUILD_TESTS )
 	install(PROGRAMS run_test.sh DESTINATION tests)
-    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test_hosts.cfg DESTINATION tests)
     install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test.xml DESTINATION tests)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION tests)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_batch.sh DESTINATION tests)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_local.sh DESTINATION tests)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_slurm.sh DESTINATION tests)
 endif( BUILD_TESTS )
 
