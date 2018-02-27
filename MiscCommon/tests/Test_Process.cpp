@@ -72,18 +72,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv1)
     stringstream ssCmd;
     ssCmd << boost::process::search_path("ping").string() << " localhost";
     pid_t pid(0);
-    BOOST_CHECK_THROW(pid = execute(ssCmd.str(), std::chrono::seconds(5)), runtime_error);
-    boost::process::child c(pid);
-    bool failed = c.running();
-    if (c.running() && !c.wait_for(std::chrono::seconds(1)))
-    {
-        // Child didn't yet finish. Terminating it...
-        if (c.running())
-            c.terminate();
-    }
-    // the test process supposed to be terminated by the execute function
-    if (failed)
-        BOOST_FAIL("Test process wasn't terminated");
+    BOOST_CHECK_THROW(execute(ssCmd.str(), std::chrono::seconds(5)), runtime_error);
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv2)

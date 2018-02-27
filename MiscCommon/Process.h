@@ -530,17 +530,13 @@ namespace MiscCommon
             } };
 
             bool bTerminated = false;
-            if (c.running() && !c.wait_for(_Timeout))
+            if (!c.wait_for(_Timeout))
             {
                 // Child didn't yet finish. Terminating it...
-                if (c.running())
-                    c.terminate();
-                // ios.stop();
+                c.terminate();
+                ios.stop();
                 bTerminated = true;
             }
-            int status(0);
-            ::waitpid(c.id(), &status, 0); // clean it up
-
             asioWorker.join();
 
             if (bTerminated)
