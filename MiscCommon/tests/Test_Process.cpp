@@ -116,14 +116,11 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv3)
 
     pid_t pid(0);
     pid = execute(ssCmd.str(), stdoutFile, sterrorFile);
+
+    std::error_code ec;
     boost::process::child c(pid);
-    if (c.running() && !c.wait_for(std::chrono::seconds(5)))
-    {
-        // Child didn't yet finish. Terminating it...
-        if (c.running())
-            c.terminate();
-        BOOST_FAIL("Test process didn't finish.");
-    }
+    BOOST_CHECK(c.wait_for(std::chrono::seconds(5), ec));
+    BOOST_CHECK_MESSAGE(!ec, ec.message());
 
     // Workaround: there is always a '\n' at the end of the output after it's redirected by boost::process
     // In order to workit around we also add a '\n' to our test string.
@@ -131,15 +128,15 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv3)
 
     ifstream fStdout(stdoutFile);
     BOOST_CHECK(fStdout.is_open());
-    std::stringstream bufferOut;
-    bufferOut << fStdout.rdbuf();
-    BOOST_CHECK(sTestString == bufferOut.str());
+    ostringstream sOut;
+    copy(istreambuf_iterator<char>(fStdout), istreambuf_iterator<char>(), ostreambuf_iterator<char>(sOut));
+    BOOST_CHECK(sTestString == sOut.str());
 
     ifstream fStderr(sterrorFile);
     BOOST_CHECK(fStderr.is_open());
-    std::stringstream bufferErr;
-    bufferErr << fStderr.rdbuf();
-    BOOST_CHECK(sTestString == bufferErr.str());
+    ostringstream sErr;
+    copy(istreambuf_iterator<char>(fStderr), istreambuf_iterator<char>(), ostreambuf_iterator<char>(sErr));
+    BOOST_CHECK(sTestString == sErr.str());
 
     // clean file after test
     boost::filesystem::remove(stdoutFile);
