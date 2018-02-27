@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 {
     try
     {
-       // CUserDefaults::instance(); // Initialize user defaults
+        // CUserDefaults::instance(); // Initialize user defaults
         Logger::instance().init(); // Initialize log
 
         string optType;

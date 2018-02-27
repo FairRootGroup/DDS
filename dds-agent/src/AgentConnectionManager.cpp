@@ -563,7 +563,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 
             return true;
         },
-        chrono::seconds(5));
+        std::chrono::seconds(5));
 
     LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
 }

@@ -27,8 +27,8 @@ namespace dds
             /// \brief Return singleton instance
             static CUserDefaults& instance(const boost::uuids::uuid& _sid = CUserDefaults::getInitialSID());
             void reinit(const boost::uuids::uuid& _sid, const std::string& _cfgFileName, bool _get_default = false);
-            
-        public:
+
+          public:
             static boost::uuids::uuid getInitialSID();
 
           private:

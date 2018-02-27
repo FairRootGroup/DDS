@@ -162,7 +162,7 @@ void CAgentConnectionManager::sendCustomCmd(const protocol_api::SCustomCmdCmd& _
 void CAgentConnectionManager::waitCondition()
 {
     unique_lock<mutex> lock(m_waitMutex);
-    m_waitCondition.wait_until(lock, chrono::system_clock::now() + chrono::minutes(10));
+    m_waitCondition.wait_until(lock, std::chrono::system_clock::now() + std::chrono::minutes(10));
 }
 
 void CAgentConnectionManager::stopCondition()

@@ -144,11 +144,12 @@ void CUserDefaults::init(bool _get_default)
 
 void CUserDefaults::setSessionID(const boost::uuids::uuid& _sid)
 {
-    if (_sid == getInitialSID()) {
+    if (_sid == getInitialSID())
+    {
         m_sessionID.clear();
         return;
     }
-    
+
     if (!_sid.is_nil())
         m_sessionID = boost::lexical_cast<std::string>(_sid);
     else
