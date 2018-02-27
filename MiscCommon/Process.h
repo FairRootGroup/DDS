@@ -473,7 +473,7 @@ namespace MiscCommon
     }
 
     /// We do not want the parent process to wait for its child process and we do not want to create a zombie.
-    inline void execute(const std::string& _Command) throw(std::exception)
+    inline void execute(const std::string& _Command)
     {
         try
         {
@@ -496,7 +496,7 @@ namespace MiscCommon
                          const std::chrono::seconds& _Timeout,
                          std::string* _output = nullptr,
                          std::string* _errout = nullptr,
-                         int* _exitCode = nullptr) throw(std::exception)
+                         int* _exitCode = nullptr)
     {
         try
         {

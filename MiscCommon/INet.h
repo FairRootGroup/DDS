@@ -129,7 +129,7 @@ namespace MiscCommon
                 return ::shutdown(m_Socket, _How);
             }
             /// This function indicates that socket is ready to be read (for non-blocking sockets)
-            int is_read_ready(size_t m_SecTimeOut, size_t m_USecTimeOut = 0) throw(std::exception)
+            int is_read_ready(size_t m_SecTimeOut, size_t m_USecTimeOut = 0)
             {
                 if (!is_valid())
                     throw std::runtime_error("Socket is invalid");
@@ -183,7 +183,7 @@ namespace MiscCommon
          *
          */
         template <typename _T>
-        smart_socket& operator>>(smart_socket& _Socket, _T* _Buf) throw(std::exception);
+        smart_socket& operator>>(smart_socket& _Socket, _T* _Buf);
         /**
          *
          * @brief This is a stream operator which helps to \b receive data from the given socket.
@@ -191,7 +191,7 @@ namespace MiscCommon
          *
          */
         template <>
-        inline smart_socket& operator>>(smart_socket& _Socket, BYTEVector_t* _Buf) throw(std::exception)
+        inline smart_socket& operator>>(smart_socket& _Socket, BYTEVector_t* _Buf)
         {
             if (!_Buf)
                 throw std::runtime_error("The given buffer pointer is NULL.");
@@ -363,7 +363,7 @@ namespace MiscCommon
                 : m_Socket(AF_INET, SOCK_STREAM, 0)
             {
             }
-            void Bind(unsigned short _nPort, const std::string* _Addr = NULL) throw(std::exception)
+            void Bind(unsigned short _nPort, const std::string* _Addr = NULL)
             {
                 if (m_Socket < 0)
                     throw std::runtime_error(socket_error_string(m_Socket, "NULL socket has been given to Bind"));
@@ -380,13 +380,13 @@ namespace MiscCommon
                     throw std::runtime_error(socket_error_string(m_Socket, "Socket bind error..."));
             }
 
-            void Listen(int _Backlog) throw(std::exception)
+            void Listen(int _Backlog)
             {
                 if (::listen(m_Socket, _Backlog) < 0)
                     throw std::runtime_error(socket_error_string(m_Socket, "can't call listen on socket server"));
             }
 
-            Socket_t Accept() const throw(std::exception)
+            Socket_t Accept()
             {
                 return ::accept(m_Socket, NULL, NULL);
             }

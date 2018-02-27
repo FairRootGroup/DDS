@@ -34,7 +34,7 @@ void printVersion()
 }
 
 // Command line parser
-bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose) throw(exception)
+bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
 {
     bool ignoreDefaultSID(false);
     // Generic options

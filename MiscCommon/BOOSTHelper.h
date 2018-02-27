@@ -61,7 +61,7 @@ namespace MiscCommon
          */
         inline void conflicting_options(const boost::program_options::variables_map& _vm,
                                         const char* _opt1,
-                                        const char* _opt2) throw(std::exception)
+                                        const char* _opt2)
         {
             if (_vm.count(_opt1) && !_vm[_opt1].defaulted() && _vm.count(_opt2) && !_vm[_opt2].defaulted())
             {
@@ -84,7 +84,7 @@ namespace MiscCommon
          */
         inline void option_dependency(const boost::program_options::variables_map& _vm,
                                       const char* _for_what,
-                                      const char* _required_option) throw(std::exception)
+                                      const char* _required_option)
         {
             if (_vm.count(_for_what) && !_vm[_for_what].defaulted() &&
                 (!_vm.count(_required_option) || _vm[_required_option].defaulted()))

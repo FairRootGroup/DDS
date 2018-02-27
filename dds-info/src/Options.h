@@ -55,7 +55,7 @@ namespace dds
         }
         //=============================================================================
         // Command line parser
-        inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options) throw(std::exception)
+        inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options)
         {
             if (nullptr == _options)
                 throw std::runtime_error("Internal error: options' container is empty.");
