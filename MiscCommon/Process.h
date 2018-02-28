@@ -529,18 +529,18 @@ namespace MiscCommon
                 }
             } };
 
-            bool bTerminated = false;
             if (!c.wait_for(_Timeout))
             {
                 // Child didn't yet finish. Terminating it...
                 c.terminate();
-                ios.stop();
-                bTerminated = true;
-            }
-            asioWorker.join();
-
-            if (bTerminated)
+                // prevent leaving a zombie process
+                c.wait();
+                if(asioWorker.joinable())
+                    asioWorker.join();
                 throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+            }
+            if(asioWorker.joinable())
+                asioWorker.join();
 
             if (_output)
                 *_output = out_data.get();

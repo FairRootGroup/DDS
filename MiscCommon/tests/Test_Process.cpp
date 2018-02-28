@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_CProcStatus)
 }
 #endif
 //=============================================================================
-BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv0)
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_timeout)
 {
     // bash -c "echo test > test.test"
     const string sFile("/tmp/test.test");
@@ -44,8 +44,8 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv0)
 
     stringstream ssCmd;
     ssCmd << boost::process::search_path("bash").string()
-          << " -c \"echo test > /tmp/test.test; sleep 5; echo test2 > /tmp/test.test\"";
-    execute(ssCmd.str(), std::chrono::seconds(10));
+          << " -c \"echo test > /tmp/test.test; sleep 3; echo test2 > /tmp/test.test\"";
+    execute(ssCmd.str(), std::chrono::seconds(5));
 
     ifstream test_file(sFile);
     BOOST_CHECK(test_file.is_open());
@@ -67,34 +67,30 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv0)
     BOOST_CHECK(!output.empty());
 }
 //=============================================================================
-BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv1)
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_terminate_exception)
 {
     stringstream ssCmd;
     ssCmd << boost::process::search_path("ping").string() << " localhost";
-    pid_t pid(0);
-    BOOST_CHECK_THROW(execute(ssCmd.str(), std::chrono::seconds(5)), runtime_error);
+    BOOST_CHECK_THROW(execute(ssCmd.str(), std::chrono::seconds(3)), runtime_error);
 }
 //=============================================================================
-BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv2)
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_stdout_stderr)
 {
     // Check stderr
     stringstream ssCmd;
     ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f 1>&2\"";
-    pid_t pid(0);
     string output;
     string error;
-    pid = execute(ssCmd.str(), std::chrono::seconds(5), &output, &error);
+    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error);
     BOOST_CHECK(output.empty());
     BOOST_CHECK(!error.empty());
-    boost::process::child c(pid);
-    BOOST_CHECK(!c.running());
 }
 //=============================================================================
-BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv3)
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
 {
     stringstream ssCmd;
     string sTestString = "TEST1234 45";
-    ssCmd << boost::process::search_path("bash").string() << " -c \"echo " << sTestString << "; echo " << sTestString
+    ssCmd << boost::process::search_path("bash").string() << " -c \"echo -n " << sTestString << "; echo -n " << sTestString
           << " >&2\"";
     string stdoutFile("/tmp/stdout");
     string sterrorFile("/tmp/stderr");
@@ -110,10 +106,6 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_do_execv3)
     boost::process::child c(pid);
     BOOST_CHECK(c.wait_for(std::chrono::seconds(5), ec));
     BOOST_CHECK_MESSAGE(!ec, ec.message());
-
-    // Workaround: there is always a '\n' at the end of the output after it's redirected by boost::process
-    // In order to workit around we also add a '\n' to our test string.
-    sTestString += '\n';
 
     ifstream fStdout(stdoutFile);
     BOOST_CHECK(fStdout.is_open());
