@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
 {
     stringstream ssCmd;
     string sTestString = "TEST1234 45";
-    ssCmd << boost::process::search_path("bash").string() << " -c \"echo -n " << sTestString << "; echo -n " << sTestString
-          << " >&2\"";
+    ssCmd << boost::process::search_path("bash").string() << " -c \"echo -n " << sTestString << "; echo -n "
+          << sTestString << " >&2\"";
     string stdoutFile("/tmp/stdout");
     string sterrorFile("/tmp/stderr");
 

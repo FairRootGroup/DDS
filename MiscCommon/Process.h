@@ -517,6 +517,12 @@ namespace MiscCommon
 
             bp::child c(smartCmd, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
 
+            while (c.valid() && !c.running())
+                ;
+
+            if (!c.valid())
+                throw std::runtime_error("Can't execute the given process.");
+
             // since we use async io to be able to read both stdout and stderr and have a timeout on process execution,
             // we need to have a worker thread for asio service to prevent blocking of the main thread.
             std::thread asioWorker{ [&ios]() {
@@ -529,7 +535,11 @@ namespace MiscCommon
                 }
             } };
 
-            if (!c.wait_for(_Timeout))
+            // TODO: The process library has a bug in BOOST 1.64, which can cause wait_for not atually to wait in some
+            // cases. We therefore use our own implemention of wait. Replace it with official wait_for when DDS switvjed
+            // to BOOST 1.66 or higher.
+
+            /* if (!c.wait_for(_Timeout))
             {
                 // Child didn't yet finish. Terminating it...
                 c.terminate();
@@ -538,8 +548,32 @@ namespace MiscCommon
                 if(asioWorker.joinable())
                     asioWorker.join();
                 throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+            }*/
+            ///// TODO replace with BOOST 1.66+ ---- wait_for WORKAROUND >>>>>
+            pid_t _pid = c.id();
+            int status;
+
+            auto start = std::chrono::steady_clock::now();
+            while (true)
+            {
+                pid_t ret = ::waitpid(_pid, &status, WNOHANG | WUNTRACED);
+                if (ret < 0 || ret == _pid)
+                    break;
+
+                if ((std::chrono::steady_clock::now() - start) > _Timeout)
+                {
+                    // Child didn't yet finish. Terminating it...
+                    c.terminate();
+                    // prevent leaving a zombie process
+                    c.wait();
+                    if (asioWorker.joinable())
+                        asioWorker.join();
+                    throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+                }
             }
-            if(asioWorker.joinable())
+            ///// <<<<<<  wait_for WORKAROUND <<<<<<<
+
+            if (asioWorker.joinable())
                 asioWorker.join();
 
             if (_output)
