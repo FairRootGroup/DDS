@@ -101,6 +101,23 @@ namespace dds
             customCmdReplySignal_t m_customCmdReplySignal;
 
           private:
+            
+            template<class Signal_t, typename ...Args>
+            void execUserSignal(Signal_t& _signal, Args&&... args)
+            {
+                try {
+                    _signal(args...);
+                } catch (std::exception& _e) {
+                    std::string msg("Exception in user code: ");
+                    msg += _e.what();
+                    if (!std::is_same<Signal_t, intercom_api::errorSignal_t>::value) {
+                        execUserSignal(m_errorSignal, intercom_api::EErrorCode::UserCodeException, msg);
+                    }
+                    LOG(MiscCommon::error) << msg;
+                }
+            }
+            
+          private:
             boost::asio::io_service m_io_service;
             boost::thread_group m_workerThreads;
 

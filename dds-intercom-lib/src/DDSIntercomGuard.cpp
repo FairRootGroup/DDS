@@ -245,7 +245,7 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
     // Version is correct - call user's callback
     if (isVersionOK)
     {
-        m_keyValueUpdateSignal(propertyID, _attachment->m_sKey, _attachment->m_sValue);
+        execUserSignal(m_keyValueUpdateSignal, propertyID, _attachment->m_sKey, _attachment->m_sValue);
     }
     else
     {
@@ -296,14 +296,14 @@ void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
         m_updateKeyCache.erase(_attachment->m_sKey);
     }
 
-    m_keyValueDeleteSignal(propertyID, _attachment->m_sKey);
+    execUserSignal(m_keyValueDeleteSignal, propertyID, _attachment->m_sKey);
 }
 
 void CDDSIntercomGuard::on_cmdCUSTOM_CMD_SM(
     const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
-    m_customCmdSignal(_attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
+    execUserSignal(m_customCmdSignal, _attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
 }
 
 void CDDSIntercomGuard::on_cmdSIMPLE_MSG_SM(
@@ -314,14 +314,14 @@ void CDDSIntercomGuard::on_cmdSIMPLE_MSG_SM(
     {
         case cmdCUSTOM_CMD:
             LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
-            m_customCmdReplySignal(_attachment->m_sMsg);
+            execUserSignal(m_customCmdReplySignal, _attachment->m_sMsg);
             break;
 
         case cmdUPDATE_KEY:
             LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
             if (_attachment->m_msgSeverity == MiscCommon::error)
             {
-                m_errorSignal(intercom_api::EErrorCode::UpdateKeyValueFailed, _attachment->m_sMsg);
+                execUserSignal(m_errorSignal, intercom_api::EErrorCode::UpdateKeyValueFailed, _attachment->m_sMsg);
             }
             break;
 
@@ -340,7 +340,7 @@ void CDDSIntercomGuard::sendCustomCmd(const std::string& _command, const std::st
         ss << "CCDDSIntercomGuard: Failed to send custom command <" << _command
            << "> because service was not started. Call start() before sending custom commands.";
         LOG(error) << ss.str();
-        m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
+        execUserSignal(m_errorSignal, intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
         return;
     }
     if (!m_useSMTransport)
@@ -351,7 +351,7 @@ void CDDSIntercomGuard::sendCustomCmd(const std::string& _command, const std::st
             ss << "CCDDSIntercomGuard: Agent connection channel is not running. Failed to send custom command: "
                << _command;
             LOG(error) << ss.str();
-            m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
+            execUserSignal(m_errorSignal, intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
             return;
         }
 
@@ -370,7 +370,7 @@ void CDDSIntercomGuard::sendCustomCmd(const std::string& _command, const std::st
             ss << "CCDDSIntercomGuard: Shared memory channel is not running. Failed to send custom command: "
                << _command;
             LOG(error) << ss.str();
-            m_errorSignal(intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
+            execUserSignal(m_errorSignal, intercom_api::EErrorCode::SendCustomCmdFailed, ss.str());
             return;
         }
 
@@ -390,7 +390,7 @@ void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _va
         ss << "CCDDSIntercomGuard: Failed to put the key-value <" << _key << " --> " << _value
            << "> because service was not started. Call start() before putting key-value.";
         LOG(error) << ss.str();
-        m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
+        execUserSignal(m_errorSignal, intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
         return;
     }
     if (m_SMChannel == nullptr)
@@ -399,7 +399,7 @@ void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _va
         ss << "CCDDSIntercomGuard: Shared memory channel is not running. Failed to put the key-value <" << _key
            << " --> " << _value;
         LOG(error) << ss.str();
-        m_errorSignal(intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
+        execUserSignal(m_errorSignal, intercom_api::EErrorCode::SendKeyValueFailed, ss.str());
         return;
     }
 

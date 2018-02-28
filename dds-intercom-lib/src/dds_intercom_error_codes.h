@@ -22,7 +22,8 @@ namespace dds
             SendKeyValueFailed,      ///< Error sending key-value (if not connected to DDS commander or DDS agent).
             SendCustomCmdFailed,     ///< Error sending custom command (if not connected to DDS commander or DDS agent).
             KeyValueVersionMismatch, ///< Key value update request failed because version is too old.
-            KeyValueNotFound         ///< Key value update failed due to the wrong key
+            KeyValueNotFound,        ///< Key value update failed due to the wrong key
+            UserCodeException        ///< Exception in the user code
         };
 
         typedef boost::signals2::signal<void(EErrorCode, const std::string&)> errorSignal_t;
