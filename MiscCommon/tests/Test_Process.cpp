@@ -124,6 +124,11 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
     boost::filesystem::remove(sterrorFile);
 }
 //=============================================================================
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_bad_process)
+{
+    BOOST_CHECK_THROW(execute("1111111", std::chrono::seconds(3)), runtime_error);
+}
+//=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_getprocbyname)
 {
 #ifdef __APPLE__
