@@ -345,11 +345,13 @@ install(FILES ${DDS_ETC_FILES} DESTINATION etc)
 install(FILES ${DDS_SHARE_FILES} DESTINATION share)
 # tests runner
 if( BUILD_TESTS )
-	install(PROGRAMS run_test.sh DESTINATION tests)
+    install(PROGRAMS run_test.sh DESTINATION tests)
     install(FILES ${CMAKE_SOURCE_DIR}/res/tests/property_test.xml DESTINATION tests)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION tests)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_local.sh DESTINATION tests)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_slurm.sh DESTINATION tests)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/index_test.xml DESTINATION tests)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_index.sh DESTINATION tests)
 endif( BUILD_TESTS )
 
 

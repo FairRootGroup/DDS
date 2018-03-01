@@ -5,8 +5,10 @@
 ### DDS common
 Added: Introduced DDS Sessions. (GH-186)   
 Modified: Bump minimum required Boost version to 1.64.    
-Modified: Code related to external processes execution has been ported to use boost::process library. (GH-190)  
-Modified: Export $DDS_SESSION_ID for user's task which can be retrieved via dds::env_prop. (GH-187)   
+Modified: Code related to external processes execution has been ported to use boost::process library. (GH-190)    
+Modified: Export $DDS_SESSION_ID for user's task which can be retrieved via dds::env_prop. (GH-187)    
+Modified: Trap user code calls in try/catch. (GH-183)    
+Added: New test which throws exception in the user code.    
 
 ### dds-server
 Modified: The "restart" is no longer supported.    
