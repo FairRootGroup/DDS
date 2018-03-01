@@ -37,17 +37,57 @@ namespace dds
 {
     namespace submit_cmd
     {
+        struct SSessionsSorting
+        {
+            enum ETypes
+            {
+                sort_none,
+                sort_all,
+                sort_running
+            };
+            SSessionsSorting(const std::string& _val)
+                : m_value(_val)
+            {
+                if (_val == "all")
+                    m_typedValue = sort_all;
+                else if (_val == "run")
+                    m_typedValue = sort_running;
+                else
+                    m_typedValue = sort_none;
+            }
+            std::string m_value;
+            ETypes m_typedValue;
+        };
+
+        void validate(boost::any& _v, std::vector<std::string> const& _values, SSessionsSorting*, int)
+        {
+            // Make sure no previous assignment to 'v' was made.
+            bpo::validators::check_first_occurrence(_v);
+
+            // Extract the first string from 'values'. If there is more than
+            // one string, it's an error, and exception will be thrown.
+            const std::string& s = bpo::validators::get_single_string(_values);
+
+            if (s == "all" || s == "run")
+            {
+                _v = boost::any(SSessionsSorting(s));
+            }
+            else
+            {
+                throw bpo::validation_error(bpo::validation_error::invalid_option_value);
+            }
+        }
+
         /// \brief dds-commander's container of options
         typedef struct SOptions
         {
             SOptions()
-                : m_bListAll(false)
+                : m_ListSessions("")
                 , m_bRemoveAllStopped(false)
                 , m_bForce(false)
             {
             }
-
-            bool m_bListAll;
+            SSessionsSorting m_ListSessions;
             bool m_bRemoveAllStopped;
             bool m_bForce;
             std::string m_sDefault;
@@ -71,7 +111,12 @@ namespace dds
             bpo::options_description options("dds-submit options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
-            options.add_options()("list,l", bpo::bool_switch(&_options->m_bListAll), "List all DDS sessions");
+            options.add_options()("list,l",
+                                  bpo::value<SSessionsSorting>(&_options->m_ListSessions),
+                                  "List DDS sessions.\n\n"
+                                  "Values:\n"
+                                  " all: list all sessions\n"
+                                  " run: list only running sessions\n");
             options.add_options()("set-default",
                                   bpo::value<std::string>(&_options->m_sDefault),
                                   "Set a giving session id as a default DDS session");

@@ -10,6 +10,7 @@ Modified: Export $DDS_SESSION_ID for user's task which can be retrieved via dds:
 
 ### dds-server
 Modified: The "restart" is no longer supported.    
+Added: Introduced a "stop\_all" option to stop all currently running DDS sessions.    
 
 ### dds-protocol
 Fixed: efficient transfer of binary attachments for shared memory channels.   

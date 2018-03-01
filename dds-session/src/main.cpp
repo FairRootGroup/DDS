@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
         // ++++++++++++++++++
         // List All sessions
         // ++++++++++++++++++
-        if (options.m_bListAll)
+        if (options.m_ListSessions.m_typedValue != SSessionsSorting::sort_none)
         {
             for (auto& dir : session_dirs)
             {
@@ -87,8 +87,13 @@ int main(int argc, char* argv[])
                 struct tm* p = localtime(&tmLastUseTime);
                 strftime(sLastUseTime, 1000, "%FT%TZ", p);
 
-                cout << sSID << " \t [" << sLastUseTime << "] \t " << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED")
-                     << endl;
+                if (options.m_ListSessions.m_typedValue == SSessionsSorting::sort_all)
+                    cout << sSID << " \t [" << sLastUseTime << "] \t "
+                         << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED") << endl;
+                else if (options.m_ListSessions.m_typedValue == SSessionsSorting::sort_running &&
+                         IsSessionRunning(sSID))
+                    cout << sSID << " \t [" << sLastUseTime << "] \t "
+                         << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED") << endl;
             }
             return EXIT_SUCCESS;
         }

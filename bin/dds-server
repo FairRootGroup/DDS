@@ -3,7 +3,7 @@
 #
 #
 # Usage:
-#      dds-server start [-s] | stop [session ID] | status [session ID] | getbins [session ID]
+#      dds-server start [-s] | stop [session ID] | stop_all  | status [session ID] | getbins [session ID]
 #
 # Supported OS:
 #    Linux, Mac OS X (min 10.9)
@@ -15,7 +15,7 @@
 #
 #
 
-USAGE="Usage: $(basename "$0") {start [-s] | stop [session ID] | status [session ID] | getbins [session ID]}"
+USAGE="Usage: $(basename "$0") {start [-s] | stop [session ID] | stop_all | status [session ID] | getbins [session ID]}"
 
 SERVER_OS=$(uname -s 2>&1)
 
@@ -60,7 +60,10 @@ if [ "$1" != "start" ]; then
 	if [ -z $DDS_SESSION_ID ]; then
 		DDS_SESSION_ID=$(dds-user-defaults  --default-session-id)
 	fi
-	echo "Using DDS Session ID: $DDS_SESSION_ID"
+	# Don't print this message for the stop_all mode. It will confuse users.
+	if [ "$1" != "stop_all" ]; then
+		echo "Using DDS Session ID: $DDS_SESSION_ID"
+	fi
 	# Standard Session ID is 36 chars
 	sessionid_len=${#DDS_SESSION_ID}
 	if [ $sessionid_len != 36 ]; then
@@ -289,6 +292,12 @@ _start()
   
   # Set default Session ID
   dds-session --set-default $DDS_SESSION_ID
+  echo "Set default DDS session to $DDS_SESSION_ID"
+  echo "Currently running DDS sessions:"
+  dds-session -l run
+  echo ""
+  echo "Hint: You can use \"dds-session\" command to list and clean DDS sessions"
+  
   
   return 0
 }
@@ -351,6 +360,21 @@ stop()
   return 0
 }
 # ************************************************************************
+# ***** STOP ALL *****
+# ************************************************************************
+stop_all()
+{
+  sessions=($(dds-session -l run | awk '{print $1}'))
+  for i in "${sessions[@]}"
+  do
+	  echo "- Stopping $i"
+	  DDS_SESSION_ID=$i
+	  stop
+  done
+
+  return 0
+}
+# ************************************************************************
 # ***** STATUS *****
 # ************************************************************************
 status()
@@ -386,7 +410,7 @@ if [ "$2" == "-s" ] || [ "$3" == "-s" ]; then
 fi
 
 
-# star|stop|status|getbins
+# star|stop|stop_all|status|getbins
 case "$1" in
   start)
   get_bins $check_only_local_wn_bins
@@ -395,6 +419,10 @@ case "$1" in
   ;;
   stop)
   stop $WORK_DIR
+  RETVAL=$?
+  ;;
+  stop_all)
+  stop_all
   RETVAL=$?
   ;;
   status)
