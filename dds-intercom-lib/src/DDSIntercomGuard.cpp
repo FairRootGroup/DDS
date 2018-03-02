@@ -36,6 +36,7 @@ CDDSIntercomGuard::CDDSIntercomGuard()
 {
     try
     {
+        CUserDefaults::instance(); // Initialize user defaults
         Logger::instance().init(); // Initialize log
     }
     catch (const std::exception& _e)
@@ -54,7 +55,7 @@ CDDSIntercomGuard& CDDSIntercomGuard::instance()
     return instance;
 }
 
-void CDDSIntercomGuard::start()
+void CDDSIntercomGuard::start(const std::string& _sessionID)
 {
     // Choose transport type.
     // If we connect to agent, i.e. agent config file exists than we use shared memory transport.
@@ -117,6 +118,22 @@ void CDDSIntercomGuard::start()
     else
     {
         LOG(info) << "CCDDSIntercomGuard: using TCP for transport";
+    
+        // For plugins current SID is already set
+        bool defaultExists = _sessionID.empty() && !CUserDefaults::instance().getCurrentSID().empty();
+        if (!defaultExists) {
+            try {
+                // Try to convert sessionID string to boost::uuid
+                const boost::uuids::uuid& sid = boost::uuids::string_generator()(_sessionID);
+                // Reinit UserDefaults and Log with new session ID
+                CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
+                Logger::instance().reinit();
+            } catch (std::exception& _e) {
+                LOG(error) << "Invalid DDS session ID: " << _sessionID;
+                return;
+            }
+        }
+        
         {
             lock_guard<std::mutex> lock(m_initAgentConnectionMutex);
 

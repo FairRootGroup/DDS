@@ -24,14 +24,22 @@ int main(int argc, char* argv[])
 {
     try
     {
+        std::string sessionID("");
+        
         // Generic options
         bpo::options_description options("ui-custom-cmd options");
         options.add_options()("help,h", "Produce help message");
+        options.add_options()("session,s", bpo::value<std::string>(&sessionID), "DDS Session ID");
 
         // Parsing command-line
         bpo::variables_map vm;
         bpo::store(bpo::command_line_parser(argc, argv).options(options).run(), vm);
         bpo::notify(vm);
+        
+        if (!vm.count("session")) {
+            cout << "DDS session ID is not provided" << endl;
+            return EXIT_SUCCESS;
+        }
 
         atomic<size_t> counterCmdMessages(0);
         atomic<size_t> counterReplyMessages(0);
@@ -60,7 +68,7 @@ int main(int argc, char* argv[])
             counterReplyMessages++;
         });
 
-        service.start();
+        service.start(sessionID);
 
         while (true)
         {

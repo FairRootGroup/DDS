@@ -87,7 +87,7 @@ namespace dds
             void waitCondition();
             void stopCondition();
 
-            void start();
+            void start(const std::string& _sessionID);
             void stop();
 
             void initAgentConnection();

@@ -22,9 +22,9 @@ void CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subsc
     connection_t connection = CDDSIntercomGuard::instance().connectError(_subscriber);
 }
 
-void CIntercomService::start()
+void CIntercomService::start(const std::string& _sessionID)
 {
-    CDDSIntercomGuard::instance().start();
+    CDDSIntercomGuard::instance().start(_sessionID);
 }
 
 ////////////////////////////////////////////////////////////////////

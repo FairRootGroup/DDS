@@ -37,7 +37,7 @@ namespace dds
             /// \brief Subscribe on error messages from DDS intercom service
             void subscribeOnError(errorSignal_t::slot_function_type _subscriber);
             /// \brief Start DDS service, i.e. receiving and sending messages.
-            void start();
+            void start(const std::string& _sessionID = "");
         };
 
         ///////////////////////////////////
