@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     try
     {
         std::string sessionID("");
-        
+
         // Generic options
         bpo::options_description options("ui-custom-cmd options");
         options.add_options()("help,h", "Produce help message");
@@ -35,8 +35,9 @@ int main(int argc, char* argv[])
         bpo::variables_map vm;
         bpo::store(bpo::command_line_parser(argc, argv).options(options).run(), vm);
         bpo::notify(vm);
-        
-        if (!vm.count("session")) {
+
+        if (!vm.count("session"))
+        {
             cout << "DDS session ID is not provided" << endl;
             return EXIT_SUCCESS;
         }

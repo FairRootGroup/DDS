@@ -30,9 +30,9 @@ namespace dds
         };
 
         template <class T>
-        bool operator<(const SChannelInfo<T>& lhs, const SChannelInfo<T>& rhs)
+        bool operator==(const SChannelInfo<T>& lhs, const SChannelInfo<T>& rhs)
         {
-            return lhs.m_channel.get() < rhs.m_channel.get();
+            return lhs.m_channel.get() == rhs.m_channel.get();
         }
 
         template <class T>

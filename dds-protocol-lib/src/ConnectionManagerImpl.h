@@ -347,12 +347,11 @@ namespace dds
             {
                 if (!_ec)
                 {
-                    _client->start();
                     {
                         std::lock_guard<std::mutex> lock(m_mutex);
                         m_channels.push_back(channelInfo_t(_client, _client->getProtocolHeaderID()));
-                        std::sort(m_channels.begin(), m_channels.end());
                     }
+                    _client->start();
                     createClientAndStartAccept(_acceptor);
                 }
                 else
@@ -378,16 +377,21 @@ namespace dds
                             if (newClient->getProtocolHeaderID() != _sender.m_ID)
                             {
                                 m_channels.push_back(channelInfo_t(newClient, _sender.m_ID));
-                                std::sort(m_channels.begin(), m_channels.end());
                             }
                             else
                             {
                                 // Replace empty PHID for lobby leaders
                                 channelInfo_t inf(newClient, 0);
-                                auto it = std::lower_bound(m_channels.begin(), m_channels.end(), inf);
+                                auto it = std::find(m_channels.begin(), m_channels.end(), inf);
                                 if (it != m_channels.end() && it->m_protocolHeaderID == 0)
                                 {
                                     it->m_protocolHeaderID = _sender.m_ID;
+                                }
+                                else
+                                {
+                                    LOG(MiscCommon::error)
+                                        << "Handshake for unregistered lobby leader connection senderID="
+                                        << _sender.m_ID;
                                 }
                             }
                         }
