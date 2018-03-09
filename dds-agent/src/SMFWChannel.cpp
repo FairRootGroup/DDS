@@ -5,6 +5,7 @@
 
 // DDS
 #include "SMFWChannel.h"
+#include "UserDefaults.h"
 
 using namespace dds;
 using namespace std;
@@ -19,6 +20,8 @@ CSMFWChannel::CSMFWChannel(boost::asio::io_service& _service,
     : CBaseSMChannelImpl<CSMFWChannel>(
           _service, _inputName, _outputName, _protocolHeaderID, _inputOpenType, _outputOpenType)
 {
+    // Leader adds output for itself
+    this->addOutput(_protocolHeaderID, user_defaults_api::CUserDefaults::instance().getSMAgentInputName(), EMQOpenType::OpenOrCreate);
 }
 
 CSMFWChannel::~CSMFWChannel()

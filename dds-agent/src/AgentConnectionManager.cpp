@@ -106,6 +106,7 @@ void CAgentConnectionManager::start()
 
             LOG(info) << "Lobby status: leader";
 
+            // To communicate with tasks
             createSMIntercomChannel(protocolHeaderID);
             createSMLeaderChannel(protocolHeaderID);
             createSMAgentChannel(protocolHeaderID);
@@ -254,8 +255,11 @@ void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
         [this](const SSenderInfo& _sender, const string& _name) {
             try
             {
-                auto p = m_agent->getSMFWChannel().lock();
-                p->addOutput(_sender.m_ID, _name);
+                // Add output for lobby members, skipping output for itself
+                if (_sender.m_ID != m_SMLeader->getProtocolHeaderID()) {
+                   auto p = m_agent->getSMFWChannel().lock();
+                   p->addOutput(_sender.m_ID, _name);
+                }
             }
             catch (exception& _e)
             {

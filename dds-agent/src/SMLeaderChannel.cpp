@@ -6,6 +6,7 @@
 // DDS
 #include "SMLeaderChannel.h"
 #include "version.h"
+#include "UserDefaults.h"
 
 using namespace MiscCommon;
 using namespace dds;
@@ -21,6 +22,8 @@ CSMLeaderChannel::CSMLeaderChannel(boost::asio::io_service& _service,
     : CBaseSMChannelImpl<CSMLeaderChannel>(
           _service, _inputName, _outputName, _protocolHeaderID, _inputOpenType, _outputOpenType)
 {
+    // Leader adds output for itself
+    this->addOutput(_protocolHeaderID, user_defaults_api::CUserDefaults::instance().getSMAgentInputName(), EMQOpenType::OpenOrCreate);
 }
 
 CSMLeaderChannel::~CSMLeaderChannel()
@@ -37,7 +40,9 @@ bool CSMLeaderChannel::on_cmdLOBBY_MEMBER_INFO(SCommandAttachmentImpl<cmdSIMPLE_
     try
     {
         this->dispatchHandlers(EChannelEvents::OnLobbyMemberInfo, _sender, name);
-        this->addOutput(_sender.m_ID, name);
+        // Add output for lobby members, skipping output for itself
+        if (_sender.m_ID != this->getProtocolHeaderID())
+            this->addOutput(_sender.m_ID, name);
         this->pushMsg<cmdLOBBY_MEMBER_INFO_OK>(_sender.m_ID, _sender.m_ID);
     }
     catch (exception& _e)
