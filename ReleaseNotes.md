@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v2.0(NOT YET RELEASED)
+## v2.0 (2018-03-12)
 
 ### DDS common
 Added: Introduced DDS Sessions. (GH-186)   
