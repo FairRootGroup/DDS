@@ -46,7 +46,6 @@ namespace dds
             SM_MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
             SM_MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
             SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
-            SM_MESSAGE_HANDLER(cmdUPDATE_KEY_ERROR, on_cmdUPDATE_KEY_ERROR)
             SM_MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
             SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
         END_SM_MSG_MAP()
@@ -92,9 +91,6 @@ namespace dds
             protocol_api::SSenderInfo& _sender);
         bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                               protocol_api::SSenderInfo& _sender);
-        bool on_cmdUPDATE_KEY_ERROR(
-            protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-            protocol_api::SSenderInfo& _sender);
         bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment,
                               protocol_api::SSenderInfo& _sender);
         bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,

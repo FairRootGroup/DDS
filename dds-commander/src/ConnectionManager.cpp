@@ -542,8 +542,6 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         topology_api::CTopology::HashSet_t addedCollections;
         m_topo.getDifference(topo, removedTasks, removedCollections, addedTasks, addedCollections);
 
-        m_keyValueManager.updateWithTopology(topo, removedTasks, addedTasks);
-
         stringstream ss;
         ss << "\nRemoved tasks: " << removedTasks.size() << "\n"
            << m_topo.stringOfTasks(removedTasks) << "Removed collections:" << removedCollections.size() << "\n"
@@ -986,34 +984,6 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
                                           SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    // Update key-value from commander's key-value manager
-    SUpdateKeyCmd serverCmd;
-    EKeyUpdateResult updateResult = m_keyValueManager.updateKeyValue(*_attachment, serverCmd);
-
-    // Key-value update was not possible
-    if (updateResult != EKeyUpdateResult::Correct)
-    {
-        SUpdateKeyErrorCmd errorCmd;
-        errorCmd.m_serverCmd = serverCmd;
-        errorCmd.m_userCmd = *_attachment;
-        switch (updateResult)
-        {
-            case EKeyUpdateResult::VersionMismatchError:
-                errorCmd.m_errorCode = EErrorCode::KeyValueVersionMismatch;
-                break;
-            case EKeyUpdateResult::KeyNotFoundError:
-                errorCmd.m_errorCode = EErrorCode::KeyValueNotFound;
-                break;
-            default:
-                break;
-        }
-
-        auto channelPtr = _channel.lock();
-        channelPtr->pushMsg<cmdUPDATE_KEY_ERROR>(errorCmd, _sender.m_ID);
-
-        return;
-    }
-
     auto channelPtr = _channel.lock();
     string propertyID(_attachment->getPropertyID());
 
@@ -1089,8 +1059,6 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     uint64_t taskID = _attachment->m_taskID;
-    // Delete key-value from commander's key-value manager
-    m_keyValueManager.deleteKeyValue(taskID);
 
     auto task = m_topo.getTaskByHash(taskID);
 
@@ -1152,39 +1120,14 @@ void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& _sender,
                                              SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
-    if (!_channel.expired())
-    {
-        auto ptr = _channel.lock();
-        ptr->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd(m_keyValueManager.getPropertyString(), MiscCommon::info, cmdGET_PROP_LIST), _sender.m_ID);
-    }
+    // TODO: FIXME: This command desn't work without CKeyValueManager
 }
 
 void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& _sender,
                                                SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
 {
-    try
-    {
-        if (!_channel.expired())
-        {
-            auto ptr = _channel.lock();
-            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(m_keyValueManager.getKeyValueString(_attachment->m_sPropertyID),
-                                                      MiscCommon::info,
-                                                      cmdGET_PROP_VALUES),
-                                        _sender.m_ID);
-        }
-    }
-    catch (exception& e)
-    {
-        if (!_channel.expired())
-        {
-            stringstream ss;
-            ss << "Error getting values for property " << _attachment->m_sPropertyID << ": " << e.what();
-            auto ptr = _channel.lock();
-            ptr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdGET_PROP_VALUES), _sender.m_ID);
-        }
-    }
+    // TODO: FIXME: This command desn't work without CKeyValueManager
 }
 
 void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,

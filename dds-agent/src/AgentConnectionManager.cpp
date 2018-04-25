@@ -323,12 +323,6 @@ void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
             m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
         });
 
-    // Subscribe for key update errors
-    m_SMAgent->registerHandler<cmdUPDATE_KEY_ERROR>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment) {
-            m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY_ERROR>(*_attachment);
-        });
-
     // Subscribe for key delete events
     m_SMAgent->registerHandler<cmdDELETE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {

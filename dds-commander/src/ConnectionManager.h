@@ -7,7 +7,6 @@
 // DDS
 #include "AgentChannel.h"
 #include "ConnectionManagerImpl.h"
-#include "KeyValueManager.h"
 #include "Options.h"
 #include "SSHScheduler.h"
 #include "Topology.h"
@@ -113,8 +112,6 @@ namespace dds
             typedef std::map<uint64_t, weakChannelInfo_t> TaskIDToAgentChannelMap_t;
             TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
             std::mutex m_mapMutex;
-
-            CKeyValueManager m_keyValueManager;
 
             std::mutex m_stopTasksMutex;
             std::condition_variable m_stopTasksCondition;

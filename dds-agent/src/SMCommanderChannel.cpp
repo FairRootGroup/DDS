@@ -469,13 +469,6 @@ bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>
     return false;
 }
 
-bool CSMCommanderChannel::on_cmdUPDATE_KEY_ERROR(SCommandAttachmentImpl<cmdUPDATE_KEY_ERROR>::ptr_t _attachment,
-                                                 SSenderInfo& _sender)
-{
-    LOG(debug) << "Received a key update error notifications: " << *_attachment;
-    return false;
-}
-
 bool CSMCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
                                            SSenderInfo& _sender)
 {

@@ -38,9 +38,6 @@ namespace dds
 
         class CDDSIntercomGuard
         {
-            // key -> SUpdateKeyCmd::version_t command
-            typedef std::map<std::string, protocol_api::SUpdateKeyCmd::version_t> updateKeyCache_t;
-
             // key -> value
             typedef std::map<std::string, std::string> putValueCache_t;
 
@@ -59,15 +56,10 @@ namespace dds
             void disconnectCustomCmd();
             void disconnectKeyValue();
 
-            bool updateCacheIfNeeded(const protocol_api::SUpdateKeyCmd& _cmd);
-
             // Messages from shared memory
             void on_cmdUPDATE_KEY_SM(
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
-            void on_cmdUPDATE_KEY_ERROR_SM(
-                const protocol_api::SSenderInfo& _sender,
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY_ERROR>::ptr_t _attachment);
             void on_cmdDELETE_KEY_SM(
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
@@ -126,9 +118,6 @@ namespace dds
 
             CAgentConnectionManager::ptr_t m_agentConnectionMng;
             std::mutex m_initAgentConnectionMutex;
-
-            updateKeyCache_t m_updateKeyCache; ///< Local cache of Update Key command
-            std::mutex m_updateKeyCacheMutex;  ///< Mutex for local cache
 
             putValueCache_t m_putValueCache; ///< Local cache for putValue
             std::mutex m_putValueCacheMutex; ///< Mutex for local cache
