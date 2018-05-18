@@ -256,9 +256,10 @@ void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
             try
             {
                 // Add output for lobby members, skipping output for itself
-                if (_sender.m_ID != m_SMLeader->getProtocolHeaderID()) {
-                   auto p = m_agent->getSMFWChannel().lock();
-                   p->addOutput(_sender.m_ID, _name);
+                if (_sender.m_ID != m_SMLeader->getProtocolHeaderID())
+                {
+                    auto p = m_agent->getSMFWChannel().lock();
+                    p->addOutput(_sender.m_ID, _name);
                 }
             }
             catch (exception& _e)

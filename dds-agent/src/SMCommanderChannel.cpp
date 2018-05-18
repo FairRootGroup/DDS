@@ -195,6 +195,16 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             fs::permissions(destFilePath, fs::add_perms | fs::owner_exe);
             LOG(info) << "Received user executable to execute: " << destFilePath.generic_string();
         }
+        case cmdUPDATE_TOPOLOGY:
+        {
+            boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
+            destFilePath /= _attachment->m_requestedFileName;
+            boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
+            LOG(info) << "Received new topology file: " << destFilePath.generic_string();
+
+            // Send response back to server
+            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Topology updated", info, cmdUPDATE_TOPOLOGY));
+        }
         default:
             LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
             return true;
@@ -331,8 +341,8 @@ void CSMCommanderChannel::deleteAgentIDFile() const
 bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment,
                                                  SSenderInfo& _sender)
 {
-    // Mutex is used to garantee that cmdASSIGN_USER_TASK and cmdACTIVATE_AGENT are not executed at the same time.
-    // Note that mutex doesn't garantee that cmdASSIGN_USER_TASK is executed before cmdACTIVATE_AGENT this can be
+    // Mutex is used to garantee that cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK are not executed at the same time.
+    // Note that mutex doesn't garantee that cmdASSIGN_USER_TASK is executed before cmdACTIVATE_USER_TASK this can be
     // implemented later using condition_variable.
     lock_guard<mutex> lock(m_activateMutex);
 
@@ -354,8 +364,8 @@ bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIG
     return true;
 }
 
-bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVATE_AGENT>::ptr_t _attachment,
-                                               SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIVATE_USER_TASK>::ptr_t _attachment,
+                                                   SSenderInfo& _sender)
 {
     // See comment in on_cmdASSIGN_USER_TASK for details.
     lock_guard<mutex> lock(m_activateMutex);
@@ -367,7 +377,8 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
     {
         LOG(info) << "Received activation command. Ignoring the command, since no task is assigned.";
         // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No task is assigned. Activation is ignored.", info, cmdACTIVATE_AGENT));
+        pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("No task is assigned. Activation is ignored.", info, cmdACTIVATE_USER_TASK));
         return true;
     }
 
@@ -431,7 +442,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
     {
         LOG(error) << _e.what();
         // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdACTIVATE_AGENT));
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdACTIVATE_USER_TASK));
         return true;
     }
 
@@ -442,7 +453,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_AGENT(SCommandAttachmentImpl<cmdACTIVAT
     dispatchHandlers<>(EChannelEvents::OnNewUserTask, _sender, pidUsrTask);
 
     // Send response back to server
-    pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), info, cmdACTIVATE_AGENT));
+    pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), info, cmdACTIVATE_USER_TASK));
 
     return true;
 }
@@ -460,6 +471,18 @@ bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_US
 
     // Let the parent should terminate user tasks
     return false;
+}
+
+bool CSMCommanderChannel::on_cmdUPDATE_TOPOLOGY(
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
+    protocol_api::SSenderInfo& _sender)
+{
+    // FIXME: Activate updated topology
+    LOG(info) << "Received topology update: " << *_attachment;
+
+    // Send response back to server
+    pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Updated topology activated", info, cmdUPDATE_TOPOLOGY));
+    return true;
 }
 
 bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,

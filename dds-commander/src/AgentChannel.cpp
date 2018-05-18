@@ -304,10 +304,13 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
 
     switch (_attachment->m_srcCommand)
     {
-        case cmdACTIVATE_AGENT:
+        case cmdACTIVATE_USER_TASK:
             return false; // let others to process this message
 
         case cmdSTOP_USER_TASK:
+            return false; // let others to process this message
+
+        case cmdUPDATE_TOPOLOGY:
             return false; // let others to process this message
 
         case cmdGET_LOG:

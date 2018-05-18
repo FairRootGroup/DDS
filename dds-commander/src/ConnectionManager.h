@@ -113,8 +113,8 @@ namespace dds
             TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
             std::mutex m_mapMutex;
 
-            std::mutex m_stopTasksMutex;
-            std::condition_variable m_stopTasksCondition;
+            std::mutex m_updateTopoMutex;
+            std::condition_variable m_updateTopoCondition;
 
             // Statistic on/off flag
             bool m_statEnabled;

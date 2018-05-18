@@ -297,6 +297,30 @@ namespace dds
                 broadcastMsg<_cmd>(cmd, _condition);
             }
 
+            void broadcastBinaryAttachmentCmd(const std::string& _srcFilePath,
+                                              const std::string& _fileName,
+                                              uint16_t _cmdSource,
+                                              conditionFunction_t _condition = nullptr)
+            {
+                MiscCommon::BYTEVector_t data;
+
+                std::string srcFilePath(_srcFilePath);
+                // Resolve environment variables
+                MiscCommon::smart_path(&srcFilePath);
+
+                std::ifstream f(srcFilePath);
+                if (!f.is_open() || !f.good())
+                {
+                    throw std::runtime_error("Could not open the source file: " + srcFilePath);
+                }
+                f.seekg(0, std::ios::end);
+                data.reserve(f.tellg());
+                f.seekg(0, std::ios::beg);
+                data.assign((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+
+                broadcastBinaryAttachmentCmd(data, _fileName, _cmdSource, _condition);
+            }
+
             void broadcastBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
                                               const std::string& _fileName,
                                               uint16_t _cmdSource,

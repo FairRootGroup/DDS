@@ -43,8 +43,9 @@ namespace dds
             SM_MESSAGE_HANDLER(cmdSET_ID, on_cmdSET_ID)
             SM_MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
             SM_MESSAGE_HANDLER(cmdASSIGN_USER_TASK, on_cmdASSIGN_USER_TASK)
-            SM_MESSAGE_HANDLER(cmdACTIVATE_AGENT, on_cmdACTIVATE_AGENT)
+            SM_MESSAGE_HANDLER(cmdACTIVATE_USER_TASK, on_cmdACTIVATE_USER_TASK)
             SM_MESSAGE_HANDLER(cmdSTOP_USER_TASK, on_cmdSTOP_USER_TASK)
+            SM_MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
             SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
             SM_MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
             SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
@@ -83,11 +84,14 @@ namespace dds
         bool on_cmdASSIGN_USER_TASK(
             protocol_api::SCommandAttachmentImpl<protocol_api::cmdASSIGN_USER_TASK>::ptr_t _attachment,
             protocol_api::SSenderInfo& _sender);
-        bool on_cmdACTIVATE_AGENT(
-            protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_AGENT>::ptr_t _attachment,
+        bool on_cmdACTIVATE_USER_TASK(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdACTIVATE_USER_TASK>::ptr_t _attachment,
             protocol_api::SSenderInfo& _sender);
         bool on_cmdSTOP_USER_TASK(
             protocol_api::SCommandAttachmentImpl<protocol_api::cmdSTOP_USER_TASK>::ptr_t _attachment,
+            protocol_api::SSenderInfo& _sender);
+        bool on_cmdUPDATE_TOPOLOGY(
+            protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
             protocol_api::SSenderInfo& _sender);
         bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                               protocol_api::SSenderInfo& _sender);

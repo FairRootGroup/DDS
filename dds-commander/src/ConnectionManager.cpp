@@ -478,28 +478,22 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
 
         SUpdateTopologyCmd::EUpdateType updateType = (SUpdateTopologyCmd::EUpdateType)_attachment->m_updateType;
 
+        string msg;
         switch (updateType)
         {
             case SUpdateTopologyCmd::EUpdateType::UPDATE:
-                p->pushMsg<cmdSIMPLE_MSG>(
-                    SSimpleMsgCmd(
-                        "Updating topology to " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY),
-                    _sender.m_ID);
+                msg = "Updating topology to " + _attachment->m_sTopologyFile;
                 break;
             case SUpdateTopologyCmd::EUpdateType::ACTIVATE:
-                p->pushMsg<cmdSIMPLE_MSG>(
-                    SSimpleMsgCmd(
-                        "Activating topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY),
-                    _sender.m_ID);
+                msg = "Activating topology " + _attachment->m_sTopologyFile;
                 break;
             case SUpdateTopologyCmd::EUpdateType::STOP:
-                p->pushMsg<cmdSIMPLE_MSG>(
-                    SSimpleMsgCmd("Stopping topology " + _attachment->m_sTopologyFile, log_stdout, cmdUPDATE_TOPOLOGY),
-                    _sender.m_ID);
+                msg = "Stopping topology " + _attachment->m_sTopologyFile;
                 break;
             default:
                 break;
         }
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
 
         //
         // Check if topology is currently active, i.e. there are executing tasks
@@ -554,6 +548,71 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
 
         //
+        // Update topology on the agents
+        //
+        // TODO: FIXME: send the new topology to agents
+        // TODO: FIXMe: wait for confirmation from all agents that the new topology is set correctly
+        // TODO: FIXME: check if topology is empty than don't do anything, just send stop message.
+        //              agent should clean current topology on topology stop.
+
+        auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+        };
+
+        m_updateTopology.m_srcCommand = cmdUPDATE_TOPOLOGY;
+        m_updateTopology.m_shutdownOnComplete = false;
+        m_updateTopology.m_channel = _channel;
+        m_updateTopology.zeroCounters();
+        size_t nofAgents = countNofChannels(condition);
+        m_updateTopology.m_nofRequests = nofAgents;
+
+        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Updating agent topologies...", log_stdout, cmdUPDATE_TOPOLOGY),
+                                  _sender.m_ID);
+        
+        // initiate the progress on the UI
+        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdUPDATE_TOPOLOGY, 0, m_updateTopology.m_nofRequests, 0));
+
+        this->broadcastBinaryAttachmentCmd(_attachment->m_sTopologyFile, "topology.xml", cmdUPDATE_TOPOLOGY, condition);
+
+        //        // Stop UI if no tasks are running
+        //        if (m_updateTopology.m_nofRequests <= 0)
+        //        {
+        //            ELogSeverityLevel level = (_shutdownOnComplete) ? fatal : warning;
+        //            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", level,
+        //            cmdSTOP_USER_TASK)); m_updateTopology.m_channel.reset(); return;
+        //        }
+
+        // We have to wait until all topologies are updated on the agents
+        {
+            unique_lock<mutex> conditionLock(m_updateTopoMutex);
+            m_updateTopoCondition.wait(conditionLock);
+        }
+
+        // TODO: FIXME: send cmdUPDATE_TOPOLOGY to all agent to activate the new topology
+        // TODO: FIXME: wait untill all new topologies are activated on agents
+        m_updateTopology.m_srcCommand = cmdUPDATE_TOPOLOGY;
+        m_updateTopology.m_shutdownOnComplete = false;
+        m_updateTopology.m_channel = _channel;
+        m_updateTopology.zeroCounters();
+        m_updateTopology.m_nofRequests = nofAgents;
+
+        p->pushMsg<cmdSIMPLE_MSG>(
+            SSimpleMsgCmd("Activating updated agent topologies...", log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
+        
+        // initiate the progress on the UI
+        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdUPDATE_TOPOLOGY, 0, m_updateTopology.m_nofRequests, 0));
+
+        this->broadcastMsg<cmdUPDATE_TOPOLOGY>(*_attachment, condition);
+
+        // We have to wait until all topologies are updated on the agents
+        // unique_lock<mutex> conditionLock(m_updateAgentTopoMutex);
+        {
+            unique_lock<mutex> conditionLock(m_updateTopoMutex);
+            m_updateTopoCondition.wait(conditionLock);
+        }
+
+        //
         // Stop removed tasks
         //
         if (removedTasks.size() > 0)
@@ -571,8 +630,8 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
             stopTasks(agents, _channel, sendShutdown);
 
             // We have to wait until all removed tasks are done before activating new tasks
-            unique_lock<mutex> conditionLock(m_stopTasksMutex);
-            m_stopTasksCondition.wait(conditionLock);
+            unique_lock<mutex> conditionLock(m_updateTopoMutex);
+            m_updateTopoCondition.wait(conditionLock);
         }
         //
 
@@ -581,7 +640,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         if (addedTasks.size() > 0)
         {
-            m_updateTopology.m_srcCommand = cmdACTIVATE_AGENT;
+            m_updateTopology.m_srcCommand = cmdACTIVATE_USER_TASK;
             m_updateTopology.m_shutdownOnComplete = true;
 
             if (!m_updateTopology.m_channel.expired())
@@ -616,7 +675,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 throw runtime_error(ssMsg.str());
             }
             // initiate UI progress
-            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_AGENT, 0, m_updateTopology.m_nofRequests, 0),
+            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_USER_TASK, 0, m_updateTopology.m_nofRequests, 0),
                                     _sender.m_ID);
 
             // Schedule the tasks
@@ -758,7 +817,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
     }
 
     // Active agents.
-    broadcastSimpleMsg<cmdACTIVATE_AGENT>([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+    broadcastSimpleMsg<cmdACTIVATE_USER_TASK>([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
         SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
         return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && inf.m_taskID != 0);
     });
@@ -920,7 +979,7 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
 {
     switch (_attachment->m_srcCommand)
     {
-        case cmdACTIVATE_AGENT:
+        case cmdACTIVATE_USER_TASK:
             switch (_attachment->m_msgSeverity)
             {
                 case info:
@@ -966,7 +1025,24 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
             }
             if (m_updateTopology.allReceived())
             {
-                m_stopTasksCondition.notify_all();
+                m_updateTopoCondition.notify_all();
+            }
+            return;
+
+        case cmdUPDATE_TOPOLOGY:
+            switch (_attachment->m_msgSeverity)
+            {
+                case info:
+                    m_updateTopology.processMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
+                    break;
+                case error:
+                case fatal:
+                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
+                    break;
+            }
+            if (m_updateTopology.allReceived())
+            {
+                m_updateTopoCondition.notify_all();
             }
             return;
 

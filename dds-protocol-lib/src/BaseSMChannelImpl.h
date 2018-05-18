@@ -307,12 +307,16 @@ namespace dds
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
                     auto result = m_transportOut.emplace(_outputID, info);
-                    if (!result.second) {
+                    if (!result.second)
+                    {
                         std::stringstream ss;
                         ss << "Failed to add shared memory channel output with ID: " << _outputID << " name: " << _name;
                         throw std::runtime_error(ss.str());
-                    } else {
-                        LOG(MiscCommon::info) << "Added shared memory channel output with ID: " << _outputID << " name: " << _name;
+                    }
+                    else
+                    {
+                        LOG(MiscCommon::info)
+                            << "Added shared memory channel output with ID: " << _outputID << " name: " << _name;
                     }
                 }
                 else
@@ -640,8 +644,9 @@ namespace dds
                         }
                         else
                         {
-                            LOG(MiscCommon::error) << "Can't find output transport with output ID " << msg.m_outputID
-                            << ". Write message failed. Command: " << g_cmdToString[msg.m_msg->header().m_cmd];
+                            LOG(MiscCommon::error)
+                                << "Can't find output transport with output ID " << msg.m_outputID
+                                << ". Write message failed. Command: " << g_cmdToString[msg.m_msg->header().m_cmd];
                         }
                     }
                 }

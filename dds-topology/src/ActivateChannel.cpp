@@ -85,7 +85,7 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
 {
     if (m_options.m_verbose)
         return true;
-
+    
     int completed = _attachment->m_completed + _attachment->m_errors;
     if (completed < _attachment->m_total)
     {
@@ -100,7 +100,7 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
 
         switch (_attachment->m_srcCommand)
         {
-            case cmdACTIVATE_AGENT:
+            case cmdACTIVATE_USER_TASK:
                 cout << "Activated tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
                      << "\nTotal: " << _attachment->m_total
                      << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
@@ -109,6 +109,12 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
                 cout << "Stopped tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
                      << "\nTotal: " << _attachment->m_total
                      << "\nTime to Stop: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
+                break;
+            case cmdUPDATE_TOPOLOGY:
+                cout << "Updated agent topologies: " << _attachment->m_completed
+                     << "\nErrors: " << _attachment->m_errors << "\nTotal: " << _attachment->m_total
+                     << "\nTime to update agent topologies: " << std::chrono::duration<double>(timeToActivate).count()
+                     << " s" << endl;
                 break;
             default:;
         }

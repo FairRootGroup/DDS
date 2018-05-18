@@ -281,7 +281,7 @@ namespace dds
             CUpdateTopologyChannelInfo()
                 : CUIChannelInfo<CUpdateTopologyChannelInfo>()
             {
-                m_srcCommand = protocol_api::cmdACTIVATE_AGENT;
+                m_srcCommand = protocol_api::cmdACTIVATE_USER_TASK;
             }
 
             std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
@@ -290,7 +290,13 @@ namespace dds
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                std::string str = (m_srcCommand == protocol_api::cmdACTIVATE_AGENT) ? "Activated" : "Stopped";
+                std::string str;
+                if (m_srcCommand == protocol_api::cmdACTIVATE_USER_TASK)
+                    str = "Activated";
+                else if (m_srcCommand == protocol_api::cmdSTOP_USER_TASK)
+                    str = "Stopped";
+                else if (m_srcCommand == protocol_api::cmdUPDATE_TOPOLOGY)
+                    str = "Topology updated";
                 ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender) << "] -> " << str;
                 return ss.str();
             }
@@ -308,7 +314,13 @@ namespace dds
             std::string getAllReceivedMessage() const
             {
                 std::stringstream ss;
-                std::string str = (m_srcCommand == protocol_api::cmdACTIVATE_AGENT) ? "activations" : "stopped";
+                std::string str;
+                if (m_srcCommand == protocol_api::cmdACTIVATE_USER_TASK)
+                    str = "activated";
+                else if (m_srcCommand == protocol_api::cmdSTOP_USER_TASK)
+                    str = "stopped";
+                else if (m_srcCommand == protocol_api::cmdUPDATE_TOPOLOGY)
+                    str = "topology updates";
                 ss << "total: " << m_nofRequests << ", " << str << ": " << nofReceived()
                    << ", errors: " << m_nofReceivedErrors << "\n";
 
