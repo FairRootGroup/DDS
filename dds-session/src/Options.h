@@ -8,26 +8,10 @@
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
-#include <boost/property_tree/ptree.hpp>
-
-// silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#endif
-#include <boost/property_tree/ini_parser.hpp>
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic pop
-#endif
-
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 // DDS
 #include "BOOSTHelper.h"
 #include "MiscUtils.h"
-#include "ProtocolCommands.h"
 #include "Res.h"
-#include "SubmitCmd.h"
 #include "SysHelper.h"
 #include "version.h"
 
@@ -35,7 +19,7 @@ namespace bpo = boost::program_options;
 
 namespace dds
 {
-    namespace submit_cmd
+    namespace session_cmd
     {
         struct SSessionsSorting
         {
@@ -78,19 +62,49 @@ namespace dds
             }
         }
 
-        /// \brief dds-commander's container of options
+        /// \brief dds-session's container of options
         typedef struct SOptions
         {
+            enum ECommands
+            {
+                cmd_unknown,
+                cmd_start,
+                cmd_stop,
+                cmd_stop_all,
+                cmd_list,
+                cmd_set_default,
+                cmd_clean
+            };
+
             SOptions()
-                : m_ListSessions("")
-                , m_bRemoveAllStopped(false)
+                : m_Command(cmd_unknown)
+                , m_ListSessions("")
                 , m_bForce(false)
+                , m_bLocal(false)
             {
             }
+            static ECommands getCommandByName(const std::string& _name)
+            {
+                if ("start" == _name)
+                    return cmd_start;
+                if ("stop" == _name)
+                    return cmd_stop;
+                if ("stop-all" == _name)
+                    return cmd_stop_all;
+                if ("list" == _name)
+                    return cmd_list;
+                if ("set-default" == _name)
+                    return cmd_set_default;
+                if ("clean" == _name)
+                    return cmd_clean;
+
+                return cmd_unknown;
+            }
+            ECommands m_Command;
             SSessionsSorting m_ListSessions;
-            bool m_bRemoveAllStopped;
             bool m_bForce;
-            std::string m_sDefault;
+            std::string m_sSessionID;
+            bool m_bLocal;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -111,25 +125,44 @@ namespace dds
             bpo::options_description options("dds-submit options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
-            options.add_options()("list,l",
-                                  bpo::value<SSessionsSorting>(&_options->m_ListSessions),
-                                  "List DDS sessions.\n\n"
-                                  "Values:\n"
-                                  " all: list all sessions\n"
-                                  " run: list only running sessions\n");
-            options.add_options()("set-default",
-                                  bpo::value<std::string>(&_options->m_sDefault),
-                                  "Set a giving session id as a default DDS session");
             options.add_options()(
-                "remove,r", bpo::bool_switch(&_options->m_bRemoveAllStopped), "Remove all STOPPED DDS sessions");
+                "command",
+                bpo::value<std::string>(),
+                "The command is a name of a dds-sessions command."
+                " Can be one of the following: start, stop, stop-all, list, set-default, and remove.\n\n"
+                "For user's convenience it is allowed to call dds-session without \"--command\" option"
+                " by just specifying the command name directly, like:\ndds-session start or dds-session stop.\n\n"
+                "Commands:\n"
+                "   start        : \tStart a new DDS session\n"
+                "   stop         : \tStop a given DDS session\n"
+                "   stop-all     : \tStop All running DDS sessions\n"
+                "   list         : \tList DDS sessions.\n"
+                "     Values:\n"
+                "        all: list all sessions\n"
+                "        run: list only running sessions\n"
+                "   set-default  : \tSet a giving session id as a default DDS session\n"
+                "   clean        : \tRemove all STOPPED DDS sessions\n");
+
             options.add_options()("force,f",
                                   bpo::bool_switch(&_options->m_bForce),
                                   "Force commands without prompting for a confirmation.\n"
-                                  "For example, can be used with the \"remove\" command.");
+                                  "Can be used only with the \"remove\" command.");
+            options.add_options()("local",
+                                  bpo::bool_switch(&_options->m_bLocal),
+                                  "Use a worker package build for the local system only.\n"
+                                  "Can be used only with the \"start\" command.");
+            options.add_options()("session",
+                                  bpo::value<std::string>(&_options->m_sSessionID),
+                                  "Defines a DDS Session ID.\n"
+                                  "Can be used only with the \"stop\" and \"set-default\" commands.");
+
+            //...positional
+            bpo::positional_options_description pd;
+            pd.add("command", 1);
 
             // Parsing command-line
             bpo::variables_map vm;
-            bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
+            bpo::store(bpo::command_line_parser(_argc, _argv).options(options).positional(pd).run(), vm);
             bpo::notify(vm);
 
             // check for non-defaulted arguments
@@ -137,6 +170,24 @@ namespace dds
                 find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v) {
                     return (!_v.second.defaulted());
                 });
+
+            // Command
+            if (vm.count("command"))
+            {
+                if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
+                {
+                    LOG(MiscCommon::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n"
+                                                << options;
+                    return false;
+                }
+            }
+            else
+            {
+                LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
+                return false;
+            }
+
+            _options->m_Command = SOptions::getCommandByName(vm["command"].as<std::string>());
 
             if (vm.count("help") || vm.end() == found)
             {
@@ -149,8 +200,15 @@ namespace dds
                 return false;
             }
 
+            if ((SOptions_t::cmd_stop == _options->m_Command || SOptions_t::cmd_set_default == _options->m_Command) &&
+                _options->m_sSessionID.empty())
+            {
+                LOG(MiscCommon::log_stderr) << "Session ID argument is missing or empty";
+                return false;
+            }
+
             return true;
         }
-    } // namespace submit_cmd
+    } // namespace session_cmd
 } // namespace dds
 #endif

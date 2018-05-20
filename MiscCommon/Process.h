@@ -535,43 +535,16 @@ namespace MiscCommon
                 }
             } };
 
-            // TODO: The process library has a bug in BOOST 1.64, which can cause wait_for not atually to wait in some
-            // cases. We therefore use our own implemention of wait. Replace it with official wait_for when DDS switvjed
-            // to BOOST 1.66 or higher.
-
-            /* if (!c.wait_for(_Timeout))
+            if (!c.wait_for(_Timeout))
             {
                 // Child didn't yet finish. Terminating it...
                 c.terminate();
                 // prevent leaving a zombie process
                 c.wait();
-                if(asioWorker.joinable())
+                if (asioWorker.joinable())
                     asioWorker.join();
                 throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
-            }*/
-            ///// TODO replace with BOOST 1.66+ ---- wait_for WORKAROUND >>>>>
-            pid_t _pid = c.id();
-            int status;
-
-            auto start = std::chrono::steady_clock::now();
-            while (true)
-            {
-                pid_t ret = ::waitpid(_pid, &status, WNOHANG | WUNTRACED);
-                if (ret < 0 || ret == _pid)
-                    break;
-
-                if ((std::chrono::steady_clock::now() - start) > _Timeout)
-                {
-                    // Child didn't yet finish. Terminating it...
-                    c.terminate();
-                    // prevent leaving a zombie process
-                    c.wait();
-                    if (asioWorker.joinable())
-                        asioWorker.join();
-                    throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
-                }
             }
-            ///// <<<<<<  wait_for WORKAROUND <<<<<<<
 
             if (asioWorker.joinable())
                 asioWorker.join();

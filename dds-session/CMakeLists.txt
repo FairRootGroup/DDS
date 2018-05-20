@@ -18,6 +18,9 @@ configure_file( ${dds-session_SOURCE_DIR}/src/version.h.in ${dds-session_BINARY_
 #
 set( SOURCE_FILES
 	./src/main.cpp
+	./src/Start.cpp
+	./src/InfoChannel.cpp
+	./src/Stop.cpp
 )
 
 #
@@ -25,6 +28,9 @@ set( SOURCE_FILES
 #
 set( HEADER_FILES
 	./src/Options.h
+	./src/Start.h
+	./src/InfoChannel.h
+	./src/Stop.h
 )
 
 include_directories(

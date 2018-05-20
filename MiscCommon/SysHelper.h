@@ -20,6 +20,8 @@
 
 // STD
 #include <typeinfo>
+// BOOST
+#include <boost/asio.hpp>
 
 // HACK: On the SLC3 HOST_NAME_MAX is undefined
 #ifndef HOST_NAME_MAX
@@ -185,16 +187,7 @@ namespace MiscCommon
         if (!_RetVal)
             return;
 
-        // getting host name - which is without domain name
-        CHARVector_t Buf(HOST_NAME_MAX);
-        gethostname(&Buf[0], Buf.capacity());
-
-        // getting host name with FCDN
-        hostent* h = gethostbyname(std::string(&Buf[0]).c_str());
-        if (!h)
-            return;
-
-        *_RetVal = h->h_name;
+        *_RetVal = boost::asio::ip::host_name();
     }
 
     /**

@@ -7,6 +7,8 @@
 #include "ErrorCode.h"
 #include "Options.h"
 #include "Process.h"
+#include "Start.h"
+#include "Stop.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -14,7 +16,7 @@
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace dds::submit_cmd;
+using namespace dds::session_cmd;
 using namespace dds::user_defaults_api;
 namespace fs = boost::filesystem;
 
@@ -40,6 +42,65 @@ bool IsSessionRunning(const string& _sid)
     return bRunning;
 }
 
+void setDefaultSession(const StringVector_t& _sessions, const string& _sessionID)
+{
+    if (_sessionID.empty())
+        throw runtime_error("Default session ID can't be NULL or empty");
+
+    auto found = find(std::begin(_sessions), std::end(_sessions), _sessionID);
+    if (found == std::end(_sessions))
+    {
+        stringstream ss;
+        ss << "Failed to set default sessions ID. Bad ID: " << _sessionID;
+        throw runtime_error(ss.str());
+    }
+
+    ofstream f(CUserDefaults::instance().getDefaultSIDFile());
+    if (!f.is_open())
+        throw runtime_error("Failed to set default session.");
+
+    f << _sessionID;
+    f.close();
+}
+
+void rebuildSessions(vector<fs::path>& _session_dirs, StringVector_t& _sessions)
+{
+    _session_dirs.clear();
+    _sessions.clear();
+
+    fs::path pathSessions(CUserDefaults::instance().getSessionsRootDir());
+    pathSessions /= CUserDefaults::instance().getSessionsHolderDirName();
+
+    if (!fs::is_directory(pathSessions))
+        throw runtime_error("Sessions holder dir doesn't exists: " + pathSessions.string());
+
+    for (auto& dir : boost::make_iterator_range(fs::directory_iterator(pathSessions), {}))
+    {
+        _session_dirs.push_back(dir.path());
+        // Workaround: using .leaf().string(), instead of just .leaf(), vecasue we want to avoid double quotes
+        // in output.
+        _sessions.push_back(dir.path().leaf().string());
+    }
+}
+
+void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::ETypes _sortingType)
+{
+    for (auto& dir : _session_dirs)
+    {
+        string sSID = dir.leaf().string();
+        time_t tmLastUseTime = fs::last_write_time(dir);
+        char sLastUseTime[1000];
+        struct tm* p = localtime(&tmLastUseTime);
+        strftime(sLastUseTime, 1000, "%FT%TZ", p);
+
+        if (_sortingType == SSessionsSorting::sort_all)
+            LOG(log_stdout_clean) << sSID << " \t [" << sLastUseTime << "] \t "
+                                  << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED");
+        else if (_sortingType == SSessionsSorting::sort_running && IsSessionRunning(sSID))
+            LOG(log_stdout_clean) << sSID << " \t [" << sLastUseTime << "] \t "
+                                  << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED");
+    }
+}
 //=============================================================================
 int main(int argc, char* argv[])
 {
@@ -58,71 +119,79 @@ int main(int argc, char* argv[])
         if (!ParseCmdLine(argc, argv, &options))
             return EXIT_SUCCESS;
 
-        fs::path pathSessions(CUserDefaults::instance().getSessionsRootDir());
-        pathSessions /= CUserDefaults::instance().getSessionsHolderDirName();
-
-        vector<fs::path> session_dirs;
-        vector<std::string> sessions;
-        for (auto& dir : boost::make_iterator_range(fs::directory_iterator(pathSessions), {}))
+        // ++++++++++++++++++
+        // Start NEW session
+        // ++++++++++++++++++
+        if (SOptions_t::cmd_start == options.m_Command)
         {
-            session_dirs.push_back(dir.path());
-            // Workaround: using .leaf().string(), instead of just .leaf(), vecasue we want to avoid double quotes
-            // in output.
-            sessions.push_back(dir.path().leaf().string());
+            CStart start;
+            start.start(options.m_bLocal);
+
+            vector<fs::path> session_dirs;
+            StringVector_t sessions;
+            rebuildSessions(session_dirs, sessions);
+            setDefaultSession(sessions, start.getSessionID());
+            LOG(log_stdout_clean) << "Default DDS session is set to " << start.getSessionID();
+            LOG(log_stdout_clean) << "Currently running DDS sessions:";
+            listSessions(session_dirs, SSessionsSorting::sort_running);
+
+            return EXIT_SUCCESS;
         }
 
-        if (!is_directory(pathSessions))
+        // ++++++++++++++++++
+        // Stop session
+        // ++++++++++++++++++
+        if (SOptions_t::cmd_stop == options.m_Command)
+        {
+            CStop stop;
+            stop.stop(options.m_sSessionID);
+
             return EXIT_SUCCESS;
+        }
+
+        // ++++++++++++++++++
+        // Stop ALL session
+        // ++++++++++++++++++
+        if (SOptions_t::cmd_stop_all == options.m_Command)
+        {
+            vector<fs::path> session_dirs;
+            StringVector_t sessions;
+            rebuildSessions(session_dirs, sessions);
+            for (const auto& i : sessions)
+            {
+                if (!IsSessionRunning(i))
+                    continue;
+
+                CStop stop;
+                stop.stop(i);
+            }
+            return EXIT_SUCCESS;
+        }
+
+        vector<fs::path> session_dirs;
+        StringVector_t sessions;
+        rebuildSessions(session_dirs, sessions);
 
         // ++++++++++++++++++
         // List All sessions
         // ++++++++++++++++++
-        if (options.m_ListSessions.m_typedValue != SSessionsSorting::sort_none)
+        if (SOptions_t::cmd_list == options.m_Command &&
+            options.m_ListSessions.m_typedValue != SSessionsSorting::sort_none)
         {
-            for (auto& dir : session_dirs)
-            {
-                string sSID = dir.leaf().string();
-                time_t tmLastUseTime = fs::last_write_time(dir);
-                char sLastUseTime[1000];
-                struct tm* p = localtime(&tmLastUseTime);
-                strftime(sLastUseTime, 1000, "%FT%TZ", p);
-
-                if (options.m_ListSessions.m_typedValue == SSessionsSorting::sort_all)
-                    cout << sSID << " \t [" << sLastUseTime << "] \t "
-                         << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED") << endl;
-                else if (options.m_ListSessions.m_typedValue == SSessionsSorting::sort_running &&
-                         IsSessionRunning(sSID))
-                    cout << sSID << " \t [" << sLastUseTime << "] \t "
-                         << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED") << endl;
-            }
+            listSessions(session_dirs, options.m_ListSessions.m_typedValue);
             return EXIT_SUCCESS;
         }
         // ++++++++++++++++++
         // Set default
         // ++++++++++++++++++
-        if (!options.m_sDefault.empty())
+        if (SOptions_t::cmd_set_default == options.m_Command)
         {
-            auto found = find(std::begin(sessions), std::end(sessions), options.m_sDefault);
-            if (found == std::end(sessions))
-            {
-                cerr << "Bad Session ID: " << options.m_sDefault << endl;
-                return EXIT_FAILURE;
-            }
-
-            ofstream f(CUserDefaults::instance().getDefaultSIDFile());
-            if (!f.is_open())
-            {
-                cerr << "Failed to set default session." << endl;
-                return EXIT_FAILURE;
-            }
-
-            f << options.m_sDefault;
-            f.close();
+            setDefaultSession(sessions, options.m_sSessionID);
         }
         // ++++++++++++++++++
         // Remove All STOPPED sessions
         // ++++++++++++++++++
-        if (options.m_bRemoveAllStopped)
+        if (SOptions_t::cmd_clean == options.m_Command)
         {
             for (auto& dir : session_dirs)
             {
@@ -131,7 +200,7 @@ int main(int argc, char* argv[])
                 if (IsSessionRunning(sSID))
                     continue;
 
-                cout << "\n\nRemoving: " << sSID << endl;
+                LOG(log_stdout_clean) << "\n\nRemoving: " << sSID;
 
                 string sWrkDir(CUserDefaults::instance().getValueForKey("server.work_dir"));
                 smart_path(&sWrkDir);
@@ -142,13 +211,13 @@ int main(int argc, char* argv[])
 
                 if (!options.m_bForce)
                 {
-                    cout << "\nThere following session directories will be removed." << endl;
+                    LOG(log_stdout_clean) << "\nThere following session directories will be removed.";
                     if (!sWrkDir.empty())
-                        cout << "DDS Work dir: " << sWrkDir << "\n";
+                        LOG(log_stdout_clean) << "DDS Work dir: " << sWrkDir;
                     if (!sLogDir.empty())
-                        cout << "DDS Log dir: " << sLogDir << "\n";
+                        LOG(log_stdout_clean) << "DDS Log dir: " << sLogDir;
                     if (!sSandboxDir.empty())
-                        cout << "DDS Sandbox dir: " << sSandboxDir << "\n";
+                        LOG(log_stdout_clean) << "DDS Sandbox dir: " << sSandboxDir;
 
                     char answer(0);
                     do
@@ -163,18 +232,18 @@ int main(int argc, char* argv[])
 
                 if (!sWrkDir.empty())
                 {
-                    cout << "\tDDS Work dir: " << sWrkDir << "\n"
-                         << "\tremoved files count: " << fs::remove_all(sWrkDir) << endl;
+                    LOG(log_stdout_clean) << "\tDDS Work dir: " << sWrkDir << "\n"
+                                          << "\tremoved files count: " << fs::remove_all(sWrkDir);
                 }
                 if (!sLogDir.empty())
                 {
-                    cout << "\tDDS Log dir: " << sLogDir << "\n"
-                         << "\tremoved files count: " << fs::remove_all(sLogDir) << endl;
+                    LOG(log_stdout_clean) << "\tDDS Log dir: " << sLogDir << "\n"
+                                          << "\tremoved files count: " << fs::remove_all(sLogDir);
                 }
                 if (!sSandboxDir.empty())
                 {
-                    cout << "\tDDS Sandbox dir: " << sSandboxDir << "\n"
-                         << "\tremoved files count: " << fs::remove_all(sSandboxDir) << endl;
+                    LOG(log_stdout_clean) << "\tDDS Sandbox dir: " << sSandboxDir << "\n"
+                                          << "\tremoved files count: " << fs::remove_all(sSandboxDir);
                 }
             }
             return EXIT_SUCCESS;

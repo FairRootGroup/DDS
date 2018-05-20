@@ -564,3 +564,10 @@ string CUserDefaults::getCommanderPidFile() const
 
     return pathPidFile.string();
 }
+
+string CUserDefaults::getWnBinsDir() const
+{
+    stringstream ss;
+    ss << getDDSPath() << "bin/wn_bins";
+    return (ss.str());
+}

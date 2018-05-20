@@ -29,6 +29,7 @@ add_executable(MiscCommon_test_SysHelper Test_SysHelper.cpp )
 
 target_link_libraries (
     MiscCommon_test_SysHelper
+	${Boost_SYSTEM_LIBRARY}
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
 
@@ -38,6 +39,7 @@ add_executable(MiscCommon_test_FindCfgFile Test_FindCfgFile.cpp )
 
 target_link_libraries (
     MiscCommon_test_FindCfgFile
+	${Boost_SYSTEM_LIBRARY}
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
 

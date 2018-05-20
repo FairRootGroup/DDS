@@ -2,6 +2,18 @@
 
 ## v2.2 (NOT YET RELEASED)
 
+### DDS common 
+Modified: Bump minimum required Boost version to 1.67.    
+Modified: Bump minimum required cmake version to 3.11.1.    
+  
+
+### dds-session
+Added: Initial version of the tool. (GH-191)   
+Added: Learned new commands: "start", "stop", "stop-all", "clean", "list", and "set-default". (GH-192)    
+
+### dds-server
+The command is removed. Use dds-session instead. (GH-192)    
+
 ## v2.0 (2018-03-12)
 
 ### DDS common
@@ -20,7 +32,7 @@ Added: Introduced a "stop\_all" option to stop all currently running DDS session
 Fixed: efficient transfer of binary attachments for shared memory channels.   
 
 ### dds-session
-Added: Initial version of the tool. (GH-191)   
+Added: Initial version of the tool. (GH-191)    
 
 ## v1.8 (2017-11-09)
 ### DDS common
