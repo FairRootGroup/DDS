@@ -9,7 +9,7 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.1.3 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.9.4 FATAL_ERROR )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
@@ -194,7 +194,7 @@ if( BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
 endif( BUILD_TESTS)
 
-find_package(Boost 1.64 REQUIRED COMPONENTS  ${Boost_Components})
+find_package(Boost 1.67 REQUIRED COMPONENTS  ${Boost_Components})
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif(Boost_FOUND)
