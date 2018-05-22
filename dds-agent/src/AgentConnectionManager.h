@@ -78,7 +78,7 @@ namespace dds
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;
         };
-    }
-}
+    } // namespace agent_cmd
+} // namespace dds
 
 #endif /* defined(__DDS__AGENT__AgentConnectionManager__) */

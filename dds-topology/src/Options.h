@@ -160,6 +160,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace topology_cmd
+} // namespace dds
 #endif

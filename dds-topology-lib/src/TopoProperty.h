@@ -62,6 +62,6 @@ namespace dds
 
         typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;
         typedef std::vector<TopoPropertyPtr_t> TopoPropertyPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__TopoProperty__) */

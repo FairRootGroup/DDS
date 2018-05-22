@@ -44,7 +44,7 @@ namespace dds
             size_t m_number;
             bool m_bXMLValidationDisabled;
         };
-    }
-}
+    } // namespace submit_cmd
+} // namespace dds
 
 #endif

@@ -119,7 +119,7 @@ namespace dds
             { cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, NAME_TO_STRING(cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR) },
             { cmdMOVE_FILE, NAME_TO_STRING(cmdMOVE_FILE) }
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* PROTOCOLMESSAGES_H_ */

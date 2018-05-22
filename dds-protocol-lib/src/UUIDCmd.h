@@ -23,7 +23,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SIDCmd& _val);
         bool operator!=(const SIDCmd& lhs, const SIDCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__UUIDCmd__) */

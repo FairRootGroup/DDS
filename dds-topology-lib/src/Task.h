@@ -92,6 +92,6 @@ namespace dds
 
         typedef std::shared_ptr<CTask> TaskPtr_t;
         typedef std::vector<TaskPtr_t> TaskPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__Task__) */

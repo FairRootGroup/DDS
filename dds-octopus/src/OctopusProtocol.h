@@ -78,6 +78,6 @@ namespace dds
                 return "big_cmd";
             }
         };
-    }
-}
+    } // namespace dds_octopus
+} // namespace dds
 #endif

@@ -18,6 +18,6 @@ namespace MiscCommon
         crc.process_bytes(_str.data(), _str.size());
         return crc.checksum();
     }
-}
+} // namespace MiscCommon
 
 #endif /*CRC_H_*/

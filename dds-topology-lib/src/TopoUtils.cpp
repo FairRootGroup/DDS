@@ -171,5 +171,5 @@ namespace dds
                     throw runtime_error("Topology element not found.");
             }
         }
-    }
-}
+    } // namespace topology_api
+} // namespace dds

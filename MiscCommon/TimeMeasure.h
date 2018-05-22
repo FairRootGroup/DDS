@@ -34,6 +34,6 @@ namespace MiscCommon
         //            return duration.count();
         //        }
     };
-}
+} // namespace MiscCommon
 
 #endif /*TIMEMEASURE_H_*/

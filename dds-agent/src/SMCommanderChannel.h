@@ -123,5 +123,5 @@ namespace dds
         std::string m_taskName;
         std::mutex m_activateMutex;
     };
-}
+} // namespace dds
 #endif

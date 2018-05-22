@@ -24,6 +24,6 @@ namespace dds
             bool m_fastClean;
             std::string m_scriptName;
         };
-    }
-}
+    } // namespace ssh_cmd
+} // namespace dds
 #endif

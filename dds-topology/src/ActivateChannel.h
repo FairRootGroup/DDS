@@ -43,7 +43,7 @@ namespace dds
           private:
             SOptions m_options;
         };
-    }
-}
+    } // namespace topology_cmd
+} // namespace dds
 
 #endif

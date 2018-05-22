@@ -180,5 +180,5 @@ namespace MiscCommon
 
         fileSink_t m_fileSink; ///> File sink
     };
-};
+}; // namespace MiscCommon
 #endif

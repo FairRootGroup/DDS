@@ -66,7 +66,7 @@ namespace dds
 
         typedef std::shared_ptr<CTrigger> TriggerPtr_t;
         typedef std::vector<TriggerPtr_t> TriggerPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 
 #endif /* defined(__DDS__Trigger__) */

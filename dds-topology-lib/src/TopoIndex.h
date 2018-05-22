@@ -49,7 +49,7 @@ namespace dds
         };
 
         typedef std::vector<CTopoIndex> TopoIndexVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 
 #endif /* defined(__DDS__TopoIndex__) */

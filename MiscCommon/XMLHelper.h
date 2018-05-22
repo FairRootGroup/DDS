@@ -265,7 +265,7 @@ namespace MiscCommon
             MiscCommon::to_lower(str);
             *_data = !(str.empty() || ("false" == str));
         }
-    };
-};
+    }; // namespace XMLHelper
+};     // namespace MiscCommon
 
 #endif

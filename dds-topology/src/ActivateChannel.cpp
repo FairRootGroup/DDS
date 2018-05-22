@@ -85,7 +85,7 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
 {
     if (m_options.m_verbose)
         return true;
-    
+
     int completed = _attachment->m_completed + _attachment->m_errors;
     if (completed < _attachment->m_total)
     {

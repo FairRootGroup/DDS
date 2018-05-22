@@ -32,7 +32,7 @@ namespace dds
             uint16_t m_connectionAttempts;
             CSMFWChannel::connectionPtr_t m_SMFWChannel;
         };
-    }
-}
+    } // namespace agent_cmd
+} // namespace dds
 
 #endif /* defined(__DDS__AGENT__CCommanderChannel__) */

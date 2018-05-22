@@ -110,6 +110,6 @@ namespace MiscCommon
     {
         return !(lhs == rhs);
     }
-};
+}; // namespace MiscCommon
 
 #endif /*CUSTOMITERATOR_H_*/

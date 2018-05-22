@@ -45,6 +45,6 @@ namespace MiscCommon
     {
         findCommanderServerImpl(_host, _port, "ui");
     }
-};
+}; // namespace MiscCommon
 
 #endif

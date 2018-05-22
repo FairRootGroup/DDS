@@ -497,7 +497,7 @@ namespace dds
                 p->_convertToData(_data);
             }
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__BasicCmd__) */

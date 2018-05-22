@@ -68,7 +68,7 @@ namespace dds
             std::mutex m_waitMutex;
             std::condition_variable m_waitCondition;
         };
-    }
-}
+    } // namespace internal_api
+} // namespace dds
 
 #endif /* defined(__DDS__API__AgentConnectionManager__) */

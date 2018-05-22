@@ -280,7 +280,7 @@ namespace dds
             CIntercomService m_service; ///< Intercom service.
             CCustomCmd m_customCmd;     ///< Custom commands API which is used for communication with DDS commander.
         };
-    }
-}
+    } // namespace intercom_api
+} // namespace dds
 
 #endif /* DDS_INTERCOM_H_ */

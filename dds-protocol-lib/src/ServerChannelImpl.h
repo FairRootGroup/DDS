@@ -25,7 +25,6 @@ namespace dds
                 // Register handshake callback
                 this->template registerHandler<cmdHANDSHAKE>(
                     [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment) {
-
                         if (!processHandshake_channelTypeSupported(
                                 static_cast<EChannelType>(_attachment->m_channelType), true, _sender.m_ID))
                             return;
@@ -55,7 +54,6 @@ namespace dds
                 this->template registerHandler<cmdLOBBY_MEMBER_HANDSHAKE>(
                     [this](const SSenderInfo& _sender,
                            SCommandAttachmentImpl<cmdLOBBY_MEMBER_HANDSHAKE>::ptr_t _attachment) {
-
                         if (!processHandshake_channelTypeSupported(
                                 static_cast<EChannelType>(_attachment->m_channelType), false, _sender.m_ID))
                             return;
@@ -148,7 +146,7 @@ namespace dds
           private:
             channelTypeVector_t m_requiredChannelTypes;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif

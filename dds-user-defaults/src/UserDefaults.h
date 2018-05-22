@@ -88,7 +88,7 @@ namespace dds
             SDDSUserDefaultsOptions_t m_options;
             std::string m_sessionID;
         };
-    }
-}
+    } // namespace user_defaults_api
+} // namespace dds
 
 #endif /* DDS_USERDEFAULTS_H_ */

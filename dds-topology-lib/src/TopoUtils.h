@@ -39,6 +39,6 @@ namespace dds
         EActionType TagToActionType(const std::string& _name);
 
         std::string ActionTypeToTag(EActionType _type);
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__TopoUtils__) */

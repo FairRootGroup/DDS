@@ -46,6 +46,6 @@ namespace dds
 
         typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;
         typedef std::vector<TaskCollectionPtr_t> TaskCollectionPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__Topology__) */

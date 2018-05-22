@@ -97,7 +97,6 @@ int main(int argc, char* argv[])
     {
         // Subscribe on onSubmit command
         proto.onSubmit([&proto](const SSubmit& _submit) {
-
             // If number of requested instances is zero than we take it based on the number of logical cores in CPU
             unsigned int nInstances =
                 (_submit.m_nInstances == 0) ? thread::hardware_concurrency() : _submit.m_nInstances;
@@ -199,7 +198,6 @@ int main(int argc, char* argv[])
             }
 
             proto.stop();
-
         });
 
         // Let DDS know that we are online and start listening waiting for notifications

@@ -33,6 +33,6 @@ namespace dds
     };
     inline std::ostream& operator<<(std::ostream& _stream, const STestCmd& val);
     inline bool operator!=(const STestCmd& lhs, const STestCmd& rhs);
-}
+} // namespace dds
 
 #endif /* defined(__DDS__TestCmd__) */

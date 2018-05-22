@@ -35,5 +35,5 @@ namespace dds
         bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
                               const protocol_api::SSenderInfo& _sender);
     };
-}
+} // namespace dds
 #endif

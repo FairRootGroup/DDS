@@ -80,5 +80,5 @@ namespace MiscCommon
         bool m_bLocked;
         boost::uuids::uuid m_sid;
     };
-}
+} // namespace MiscCommon
 #endif /* defined(__DDS__SESSIONIDFILE__) */

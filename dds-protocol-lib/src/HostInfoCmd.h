@@ -31,7 +31,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SHostInfoCmd& val);
         bool operator!=(const SHostInfoCmd& lhs, const SHostInfoCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__HostInfoCmd__) */

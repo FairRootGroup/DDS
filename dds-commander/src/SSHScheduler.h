@@ -81,7 +81,7 @@ namespace dds
           private:
             ScheduleVector_t m_schedule;
         };
-    }
-}
+    } // namespace commander_cmd
+} // namespace dds
 
 #endif /* defined(__DDS__SSHScheduler__) */

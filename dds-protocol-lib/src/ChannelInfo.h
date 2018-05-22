@@ -53,6 +53,6 @@ namespace dds
 
             typedef std::vector<SWeakChannelInfo> container_t;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 #endif /* __DDS__ChannelInfo_h */

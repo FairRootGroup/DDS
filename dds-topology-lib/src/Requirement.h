@@ -58,7 +58,7 @@ namespace dds
 
         typedef std::shared_ptr<CRequirement> RequirementPtr_t;
         typedef std::vector<RequirementPtr_t> RequirementPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 
 #endif /* defined(__DDS__Requirement__) */

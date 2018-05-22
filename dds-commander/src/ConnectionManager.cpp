@@ -569,7 +569,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
 
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Updating agent topologies...", log_stdout, cmdUPDATE_TOPOLOGY),
                                   _sender.m_ID);
-        
+
         // initiate the progress on the UI
         p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdUPDATE_TOPOLOGY, 0, m_updateTopology.m_nofRequests, 0));
 
@@ -599,7 +599,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
 
         p->pushMsg<cmdSIMPLE_MSG>(
             SSimpleMsgCmd("Activating updated agent topologies...", log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
-        
+
         // initiate the progress on the UI
         p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdUPDATE_TOPOLOGY, 0, m_updateTopology.m_nofRequests, 0));
 

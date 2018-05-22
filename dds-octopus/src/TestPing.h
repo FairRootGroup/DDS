@@ -32,6 +32,6 @@ namespace dds
           private:
             size_t m_nConfirmedPings;
         };
-    }
-}
+    } // namespace dds_octopus
+} // namespace dds
 #endif

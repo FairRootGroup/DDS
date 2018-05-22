@@ -36,7 +36,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SUpdateTopologyCmd& val);
         bool operator!=(const SUpdateTopologyCmd& lhs, const SUpdateTopologyCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__UpdateTopologyCmd__) */

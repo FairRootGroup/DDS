@@ -19,6 +19,6 @@ namespace dds
         TopoPropertyPtr_t CreateTopoProperty(ETopoType _type);
 
         TopoBasePtr_t CreateTopoBase(ETopoType _type);
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__TopoFactory__) */

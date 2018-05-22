@@ -95,7 +95,7 @@ namespace MiscCommon
                 throw std::runtime_error(str);
             }
         }
-    };
-};
+    }; // namespace BOOSTHelper
+};     // namespace MiscCommon
 
 #endif /*BOOSTHELPER_H_*/

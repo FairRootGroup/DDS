@@ -151,6 +151,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace submit_cmd
+} // namespace dds
 #endif

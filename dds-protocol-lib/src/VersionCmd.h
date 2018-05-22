@@ -28,7 +28,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SVersionCmd& val);
         bool operator!=(const SVersionCmd& lhs, const SVersionCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__VersionCmd__) */

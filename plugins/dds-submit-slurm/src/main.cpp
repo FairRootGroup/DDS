@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 
         // Subscribe on onSubmit command
         proto.onSubmit([&proto, &vm](const SSubmit& _submit) {
-
             try
             {
                 // location of the plug-in files
@@ -243,7 +242,6 @@ int main(int argc, char* argv[])
             {
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::error, e.what());
             }
-
         });
 
         // Let DDS commander know that we are online and start listening for notifications.

@@ -94,6 +94,6 @@ namespace dds
 
         typedef std::shared_ptr<CTopoBase> TopoBasePtr_t;
         typedef std::vector<TopoBasePtr_t> TopoBasePtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__TopoBase__) */

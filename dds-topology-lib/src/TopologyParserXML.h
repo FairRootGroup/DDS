@@ -42,6 +42,6 @@ namespace dds
             /// \brief Print recursively property tree to std::cout.
             void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
         };
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__TopologyParserXML__) */

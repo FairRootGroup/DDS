@@ -202,6 +202,6 @@ namespace dds
 
         std::mutex m_mutex; // Mutex for updateIdle call
     };
-}
+} // namespace dds
 
 #endif /* defined(__DDS__MonitoringThread__) */

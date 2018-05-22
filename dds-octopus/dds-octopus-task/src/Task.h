@@ -36,6 +36,6 @@ namespace dds
             std::mutex m_waitMutex;
             std::condition_variable m_waitCondition;
         };
-    }
-}
+    } // namespace dds_octopus_task
+} // namespace dds
 #endif

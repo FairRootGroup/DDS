@@ -159,7 +159,7 @@ namespace dds
 
             boost::asio::io_service& m_io_service;
         };
-    }
-};
+    } // namespace protocol_api
+};    // namespace dds
 
 #endif /* defined(__DDS__StatImpl__) */

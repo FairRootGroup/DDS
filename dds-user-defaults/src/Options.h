@@ -39,7 +39,7 @@ namespace dds
         {
             SDDSServerOptions m_server;
         } SDDSUserDefaultsOptions_t;
-    }
-}
+    } // namespace user_defaults_api
+} // namespace dds
 
 #endif

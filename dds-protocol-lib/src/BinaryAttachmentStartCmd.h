@@ -34,7 +34,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SBinaryAttachmentStartCmd& _val);
         bool operator!=(const SBinaryAttachmentStartCmd& lhs, const SBinaryAttachmentStartCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__BinaryAttachmentStartCmd__) */

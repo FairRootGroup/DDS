@@ -26,7 +26,8 @@ namespace MiscCommon
      * @brief Log's severity's constants.
      *
      */
-    typedef enum ESeverity {
+    typedef enum ESeverity
+    {
         LOG_SEVERITY_INFO = 0x01,
         LOG_SEVERITY_WARNING = 0x02,
         LOG_SEVERITY_FAULT = 0x04,
@@ -162,5 +163,5 @@ namespace MiscCommon
       private:
         stream_type m_log_file;
     };
-};
+}; // namespace MiscCommon
 #endif

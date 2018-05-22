@@ -41,8 +41,8 @@ namespace dds
         class CClientChannelImpl; // needed for friend class
         template <class T>
         class CServerChannelImpl; // needed for friend class
-    }
-}
+    }                             // namespace protocol_api
+} // namespace dds
 
 // Either raw message or command based processing can be used at a time
 // Command based message processing
@@ -991,7 +991,7 @@ namespace dds
 
             bool m_isShuttingDown;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__BaseChannelImpl__) */

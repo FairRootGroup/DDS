@@ -61,7 +61,7 @@ namespace dds
                                        void(const protocol_api::SSenderInfo&, const std::string&))
             DDS_END_EVENT_HANDLERS
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif

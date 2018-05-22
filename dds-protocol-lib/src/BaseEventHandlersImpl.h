@@ -120,7 +120,7 @@ namespace dds
           private:
             signalsContainer_t m_signals;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif

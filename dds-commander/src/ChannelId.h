@@ -16,6 +16,6 @@ namespace dds
           public:
             static uint64_t getChannelId();
         };
-    }
-}
+    } // namespace commander_cmd
+} // namespace dds
 #endif

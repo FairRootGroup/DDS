@@ -26,7 +26,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SMoveFileCmd& _val);
         bool operator!=(const SMoveFileCmd& lhs, const SMoveFileCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__MoveFileCmd__) */

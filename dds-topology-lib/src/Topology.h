@@ -147,6 +147,6 @@ namespace dds
 
             bool m_bXMLValidationDisabled; ///< if true than XML will not be validated agains XSD
         };
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__Topology__) */

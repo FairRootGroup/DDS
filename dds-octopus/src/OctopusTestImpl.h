@@ -140,6 +140,6 @@ namespace dds
             ETestStatus m_status;
             SOptions_t m_options;
         };
-    }
-}
+    } // namespace dds_octopus
+} // namespace dds
 #endif

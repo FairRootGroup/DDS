@@ -162,6 +162,6 @@ namespace dds
             size_t m_successfulTasks;
             size_t m_tasksCount;
         };
-    }
-}
+    } // namespace ssh_cmd
+} // namespace dds
 #endif

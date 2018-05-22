@@ -105,6 +105,6 @@ namespace dds
             configRecords_t m_records;
             std::string m_bashEnvCmds;
         };
-    }
-}
+    } // namespace ncf
+} // namespace dds
 #endif

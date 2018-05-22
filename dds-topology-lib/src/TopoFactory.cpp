@@ -50,5 +50,5 @@ namespace dds
                     throw runtime_error("Topo base type does not exist.");
             }
         }
-    }
-}
+    } // namespace topology_api
+} // namespace dds

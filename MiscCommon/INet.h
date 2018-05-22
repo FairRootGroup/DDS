@@ -666,7 +666,7 @@ namespace MiscCommon
                 total += n;
             }
         }
-    };
-};
+    }; // namespace INet
+};     // namespace MiscCommon
 
 #endif

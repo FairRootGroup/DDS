@@ -119,6 +119,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace agent_cmd
+} // namespace dds
 #endif

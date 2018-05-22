@@ -90,6 +90,6 @@ namespace MiscCommon
                 return __x.second;
             }
         };
-    };
-};
+    }; // namespace stlx
+};     // namespace MiscCommon
 #endif /*STLX_H_*/

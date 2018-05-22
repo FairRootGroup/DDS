@@ -98,6 +98,6 @@ namespace MiscCommon
       private:
         container_type m_Paths;
     };
-};
+}; // namespace MiscCommon
 
 #endif /*FINDCFGFILE_H_*/

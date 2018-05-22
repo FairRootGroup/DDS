@@ -30,5 +30,5 @@ namespace dds
         bool on_rawMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg,
                            const protocol_api::SSenderInfo& _sender);
     };
-}
+} // namespace dds
 #endif

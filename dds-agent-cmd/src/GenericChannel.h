@@ -76,6 +76,6 @@ namespace dds
           private:
             SOptions m_options;
         };
-    }
-}
+    } // namespace agent_cmd_cmd
+} // namespace dds
 #endif /* defined(__DDS__GenericChannel__) */

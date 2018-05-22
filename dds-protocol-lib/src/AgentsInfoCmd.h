@@ -26,7 +26,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SAgentsInfoCmd& _val);
         bool operator!=(const SAgentsInfoCmd& _lhs, const SAgentsInfoCmd& _rhs);
-    }
-};
+    } // namespace protocol_api
+};    // namespace dds
 
 #endif /* defined(__DDS__AgentsInfoCmd__) */

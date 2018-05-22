@@ -147,6 +147,6 @@ namespace MiscCommon
  *
  */
 #define END_WRITE_XML_CFG }
-};
+}; // namespace MiscCommon
 
 #endif

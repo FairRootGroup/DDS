@@ -25,5 +25,5 @@ namespace MiscCommon
     const LPCSTR g_cszReportBugsAddr("Report bugs/comments to fairroot@gsi.de");
     const LPCSTR g_cszDDSServerIsNotFound_StartIt("Looks like we can't find any suitable DDS commander server to "
                                                   "connect. Use \"dds-server start\" to start one.");
-};
+}; // namespace MiscCommon
 #endif

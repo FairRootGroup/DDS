@@ -51,7 +51,7 @@ namespace dds
             DDS_REGISTER_MESSAGE_HANDLER(cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR)
             DDS_END_EVENT_HANDLERS
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif

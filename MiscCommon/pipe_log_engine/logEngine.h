@@ -46,7 +46,7 @@ namespace dds
             volatile sig_atomic_t m_stopLogEngine;
             onLogEvent_t m_callback;
         };
-    }
-}
+    } // namespace pipe_log_engine
+} // namespace dds
 //=============================================================================
 #endif

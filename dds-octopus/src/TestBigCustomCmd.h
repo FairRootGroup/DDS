@@ -33,6 +33,6 @@ namespace dds
             uint32_t m_cmdCrc32;
             size_t m_nConfirmedCRC;
         };
-    }
-}
+    } // namespace dds_octopus
+} // namespace dds
 #endif

@@ -682,7 +682,7 @@ namespace dds
             std::mutex m_mutexWriteBuffer;
             protocolMessagePtrQueue_t m_writeBufferQueue;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__BaseSMChannelImpl__) */

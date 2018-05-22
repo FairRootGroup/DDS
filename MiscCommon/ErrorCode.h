@@ -103,6 +103,6 @@ namespace MiscCommon
         std::string m_Msg;
         int m_errno;
     };
-};
+}; // namespace MiscCommon
 
 #endif

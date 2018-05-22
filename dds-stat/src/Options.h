@@ -115,6 +115,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace stat_cmd
+} // namespace dds
 #endif

@@ -63,6 +63,6 @@ namespace dds
 
         typedef std::shared_ptr<CTaskContainer> TaskContainerPtr_t;
         typedef std::vector<TaskContainerPtr_t> TaskContainerPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif /* defined(__DDS__TaskContainer__) */

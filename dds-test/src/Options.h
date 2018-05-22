@@ -79,6 +79,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace test_cmd
+} // namespace dds
 #endif

@@ -27,7 +27,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SSubmitCmd& val);
         bool operator!=(const SSubmitCmd& lhs, const SSubmitCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__SubmitCmd__) */

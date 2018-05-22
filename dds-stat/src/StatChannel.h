@@ -65,6 +65,6 @@ namespace dds
           private:
             SOptions m_options;
         };
-    }
-}
+    } // namespace stat_cmd
+} // namespace dds
 #endif

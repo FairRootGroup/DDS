@@ -120,6 +120,6 @@ namespace MiscCommon
 
             return is_valid;
         }
-    };
-};
+    }; // namespace BOOSTHelper
+};     // namespace MiscCommon
 #endif /*BOOST_FILESYSTEM_H_*/

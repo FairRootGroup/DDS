@@ -46,7 +46,7 @@ namespace dds
         };
 
         typedef std::shared_ptr<CTopoVars> TopoVarsPtr_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 
 #endif /* defined(__DDS__TopoVars__) */

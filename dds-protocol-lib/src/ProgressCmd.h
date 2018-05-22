@@ -33,7 +33,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SProgressCmd& val);
         bool operator!=(const SProgressCmd& lhs, const SProgressCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__ProgressCmd__) */

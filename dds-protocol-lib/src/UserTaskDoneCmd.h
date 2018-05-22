@@ -25,7 +25,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SUserTaskDoneCmd& val);
         bool operator!=(const SUserTaskDoneCmd& lhs, const SUserTaskDoneCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__UserTaskDoneCmd__) */

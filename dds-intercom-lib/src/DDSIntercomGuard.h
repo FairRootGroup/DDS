@@ -127,7 +127,7 @@ namespace dds
             bool m_useSMTransport;
             bool m_started;
         };
-    }
-}
+    } // namespace internal_api
+} // namespace dds
 
 #endif

@@ -247,5 +247,5 @@ namespace MiscCommon
         std::transform(_str.begin(), _str.end(), _str.begin(), ToLower());
         return _str;
     }
-};
+}; // namespace MiscCommon
 #endif

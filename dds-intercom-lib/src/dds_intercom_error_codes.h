@@ -27,7 +27,7 @@ namespace dds
         };
 
         typedef boost::signals2::signal<void(EErrorCode, const std::string&)> errorSignal_t;
-    }
-}
+    } // namespace intercom_api
+} // namespace dds
 
 #endif /* DDS_INTERCOM_ERROR_CODES_H_ */

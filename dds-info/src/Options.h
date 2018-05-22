@@ -118,6 +118,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace info_cmd
+} // namespace dds
 #endif

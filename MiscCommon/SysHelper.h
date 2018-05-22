@@ -394,5 +394,5 @@ namespace MiscCommon
 #endif
         return numCPU;
     }
-};
+};     // namespace MiscCommon
 #endif /*SYSHELPER_H_*/

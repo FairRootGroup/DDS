@@ -80,6 +80,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace custom_cmd
+} // namespace dds
 #endif

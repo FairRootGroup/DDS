@@ -32,7 +32,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SDeleteKeyCmd& val);
         bool operator!=(const SDeleteKeyCmd& lhs, const SDeleteKeyCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__DeleteKeyCmd__) */

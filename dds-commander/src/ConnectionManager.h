@@ -119,6 +119,6 @@ namespace dds
             // Statistic on/off flag
             bool m_statEnabled;
         };
-    }
-}
+    } // namespace commander_cmd
+} // namespace dds
 #endif /* defined(__DDS__ConnectionManager__) */

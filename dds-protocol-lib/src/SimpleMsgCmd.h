@@ -28,7 +28,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SSimpleMsgCmd& val);
         bool operator!=(const SSimpleMsgCmd& lhs, const SSimpleMsgCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__SimpleMsgCmd__) */

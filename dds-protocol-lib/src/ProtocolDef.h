@@ -23,6 +23,6 @@ namespace dds
         const std::array<std::string, 5> gChannelTypeName{
             { "unknown", "agent", "ui", "key_value_guard", "custom_command_guard" }
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 #endif /* __DDS__ProtocolDef__ */

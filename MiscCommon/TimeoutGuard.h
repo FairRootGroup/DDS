@@ -60,5 +60,5 @@ namespace MiscCommon
         size_t m_secTimeOut;
         MiscCommon::BOOSTHelper::Thread_PTR_t m_Thread;
     };
-};
+};     // namespace MiscCommon
 #endif /*TIMEOUTGUARD_H_*/

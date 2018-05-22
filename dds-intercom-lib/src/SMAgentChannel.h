@@ -44,6 +44,6 @@ namespace dds
             bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                                   const protocol_api::SSenderInfo& _sender);
         };
-    }
-}
+    } // namespace internal_api
+} // namespace dds
 #endif

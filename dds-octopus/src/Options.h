@@ -62,6 +62,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace dds_octopus
+} // namespace dds
 #endif

@@ -77,6 +77,6 @@ namespace dds
             std::mutex m_mutexCounter;
             size_t m_nCounter;
         };
-    }
-}
+    } // namespace info_cmd
+} // namespace dds
 #endif

@@ -53,6 +53,6 @@ namespace dds
             std::string m_path;
             mutable mutexPtr_t m_mutex;
         };
-    }
-}
+    } // namespace ssh_cmd
+} // namespace dds
 #endif

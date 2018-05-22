@@ -167,6 +167,6 @@ namespace dds
             AgentInfoContainer_t m_info;
             std::mutex m_mtxInfo;
         };
-    }
-}
+    } // namespace commander_cmd
+} // namespace dds
 #endif /* defined(__DDS__CAgentChannel__) */

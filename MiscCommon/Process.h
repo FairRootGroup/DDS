@@ -594,6 +594,6 @@ namespace MiscCommon
             throw std::runtime_error(ss.str());
         }
     }
-};
+}; // namespace MiscCommon
 
 #endif /*PROCESS_H_*/

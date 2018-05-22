@@ -54,6 +54,6 @@ namespace dds
 
         typedef std::shared_ptr<CTaskGroup> TaskGroupPtr_t;
         // typedef std::vector<CTaskGroupPtr_t> TaskGroupPtrVector_t;
-    }
-}
+    } // namespace topology_api
+} // namespace dds
 #endif

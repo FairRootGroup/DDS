@@ -25,7 +25,7 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SGetPropValuesCmd& val);
         bool operator!=(const SGetPropValuesCmd& lhs, const SGetPropValuesCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__GetPropValuesCmd__) */

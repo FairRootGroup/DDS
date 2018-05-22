@@ -106,7 +106,7 @@ namespace dds
           private:
             boost::asio::ip::tcp::resolver::iterator m_endpoint_iterator;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif

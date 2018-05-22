@@ -180,6 +180,6 @@ namespace MiscCommon
         _out << g_LogSeverityLevelString.at(idx);
         return _out;
     }
-};
+}; // namespace MiscCommon
 
 #endif

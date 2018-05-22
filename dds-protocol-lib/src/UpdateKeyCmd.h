@@ -32,6 +32,6 @@ namespace dds
         };
         std::ostream& operator<<(std::ostream& _stream, const SUpdateKeyCmd& val);
         bool operator!=(const SUpdateKeyCmd& lhs, const SUpdateKeyCmd& rhs);
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 #endif

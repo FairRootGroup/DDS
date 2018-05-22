@@ -504,6 +504,6 @@ namespace dds
             SWriteStat m_writeStatDisconnectedChannels;
             std::mutex m_statMutex;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 #endif /* defined(__DDS__ConnectionManagerImpl__) */

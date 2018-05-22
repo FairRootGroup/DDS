@@ -148,5 +148,5 @@ namespace MiscCommon
             return pT->GetModuleName();
         }
     };
-};
+}; // namespace MiscCommon
 #endif

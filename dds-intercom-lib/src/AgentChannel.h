@@ -51,7 +51,7 @@ namespace dds
 
             uint16_t m_connectionAttempts;
         };
-    }
-}
+    } // namespace internal_api
+} // namespace dds
 
 #endif /* defined(__DDS__API__CAgentChannel__) */

@@ -114,6 +114,6 @@ namespace MiscCommon
 #else
     typedef ci_string ci_tstring;
 #endif
-};
+}; // namespace MiscCommon
 
 #endif /*CISTRING_H_*/

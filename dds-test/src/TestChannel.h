@@ -53,6 +53,6 @@ namespace dds
           private:
             SOptions m_options;
         };
-    }
-}
+    } // namespace test_cmd
+} // namespace dds
 #endif /* defined(__DDS__TalkToAgent__) */

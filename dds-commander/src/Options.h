@@ -132,6 +132,6 @@ namespace dds
 
             return true;
         }
-    }
-}
+    } // namespace commander_cmd
+} // namespace dds
 #endif

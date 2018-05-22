@@ -101,6 +101,6 @@ namespace MiscCommon
     };
 
     typedef CHexView<BYTEVector_t> BYTEVectorHexView_t;
-};
+}; // namespace MiscCommon
 
 #endif /*HEXVIEW_H_*/

@@ -147,6 +147,6 @@ namespace dds
 
         return std::string(env);
     }
-};
+}; // namespace dds
 
 #endif /*DDSENVPROP_H_*/

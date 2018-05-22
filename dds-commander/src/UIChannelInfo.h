@@ -354,7 +354,7 @@ namespace dds
             std::chrono::system_clock::duration m_PluginStartTime;
             bool m_bInit;
         };
-    }
-}
+    } // namespace commander_cmd
+} // namespace dds
 
 #endif /* defined(__DDS__UIChannelInfo__) */

@@ -32,6 +32,6 @@ namespace MiscCommon
 
         return ss.str();
     }
-}
+} // namespace MiscCommon
 
 #endif /*TIMEMEASURE_H_*/

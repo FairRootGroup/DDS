@@ -127,7 +127,7 @@ namespace dds
             dataContainer_t m_data; /// the whole data buffer, which includes the header and the msg body
             SMessageHeader m_header;
         };
-    }
-}
+    } // namespace protocol_api
+} // namespace dds
 
 #endif /* defined(__DDS__ProtocolMessage__) */
