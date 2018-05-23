@@ -310,11 +310,14 @@ void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
             this->on_cmdSHUTDOWN(_sender, _attachment, m_SMAgent);
         });
 
-    // Subscribe to Shutdown command
-    m_SMAgent->registerHandler<cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>(
-        [this](const SSenderInfo& _sender,
-               SCommandAttachmentImpl<cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t _attachment) {
-            this->on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(_sender, _attachment, m_SMAgent);
+    // Subscribe to reply command
+    m_SMAgent->registerHandler<cmdREPLY>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment) {
+            if (_attachment->m_srcCommand == cmdLOBBY_MEMBER_HANDSHAKE &&
+                _attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::ERROR)
+            {
+                stop();
+            }
         });
 
     // Subscribe for key updates. Forward message to user task.
@@ -417,14 +420,6 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
         LOG(info) << "Sending SHUTDOWN to all lobby members";
         m_SMLeader->syncSendShutdownAll();
     }
-    stop();
-}
-
-void CAgentConnectionManager::on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
-    const protocol_api::SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t _attachment,
-    CSMCommanderChannel::weakConnectionPtr_t _channel)
-{
     stop();
 }
 
@@ -574,5 +569,5 @@ void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
     // TODO: add error processing, in case if user tasks won't quite
     terminateChildrenProcesses();
     auto p = _channel.lock();
-    p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Done", info, cmdSTOP_USER_TASK));
+    p->pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
 }

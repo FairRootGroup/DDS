@@ -53,9 +53,9 @@ namespace dds
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdSIMPLE_MSG(const protocol_api::SSenderInfo& _sender,
-                                  protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
-                                  CAgentChannel::weakConnectionPtr_t _channel);
+            void on_cmdREPLY(const protocol_api::SSenderInfo& _sender,
+                             protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY>::ptr_t _attachment,
+                             CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdUPDATE_KEY(const protocol_api::SSenderInfo& _sender,
                                   protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);

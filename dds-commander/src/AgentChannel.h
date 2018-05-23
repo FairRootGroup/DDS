@@ -62,7 +62,7 @@ namespace dds
                 MESSAGE_HANDLER(cmdREPLY_ID, on_cmdREPLY_ID)
                 MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
                 MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
-                MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                MESSAGE_HANDLER(cmdREPLY, on_cmdREPLY)
                 // - Topology commands
                 MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
                 // - Agents commands
@@ -130,8 +130,8 @@ namespace dds
             bool on_cmdTRANSPORT_TEST(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);
-            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
+            bool on_cmdREPLY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY>::ptr_t _attachment,
+                             const protocol_api::SSenderInfo& _sender);
             bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
                                   const protocol_api::SSenderInfo& _sender);
             bool on_cmdUSER_TASK_DONE(

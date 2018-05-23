@@ -61,45 +61,55 @@ CSMCommanderChannel::~CSMCommanderChannel()
     removeMessageQueue();
 }
 
-bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_OK(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_OK>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
+bool CSMCommanderChannel::on_cmdREPLY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY>::ptr_t _attachment,
+                                      protocol_api::SSenderInfo& _sender)
 {
-    LOG(info) << "Received confirmation from lobby leader";
-    LOG(info) << "Sending handshake to commander with PHID: " << this->m_protocolHeaderID;
+    switch (_attachment->m_srcCommand)
+    {
+        case cmdLOBBY_MEMBER_INFO:
+        {
+            if (_attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::OK)
+            {
+                LOG(info) << "Received confirmation from lobby leader";
+                LOG(info) << "Sending handshake to commander with PHID: " << this->m_protocolHeaderID;
 
-    // Prepare a hand shake message
-    SVersionCmd cmd;
-    cmd.m_channelType = EChannelType::AGENT;
-    cmd.m_sSID = CUserDefaults::instance().getLockedSID();
-    cmd.m_version = DDS_PROTOCOL_VERSION;
-    pushMsg<cmdLOBBY_MEMBER_HANDSHAKE>(cmd, this->m_protocolHeaderID);
+                // Prepare a hand shake message
+                SVersionCmd cmd;
+                cmd.m_channelType = EChannelType::AGENT;
+                cmd.m_sSID = CUserDefaults::instance().getLockedSID();
+                cmd.m_version = DDS_PROTOCOL_VERSION;
+                pushMsg<cmdLOBBY_MEMBER_HANDSHAKE>(cmd, this->m_protocolHeaderID);
+
+                return true;
+            }
+            else if (_attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::ERROR)
+            {
+                LOG(error) << "Received error from lobby leader: " << _attachment->m_sMsg;
+                return true;
+            }
+        }
+        break;
+
+        case cmdLOBBY_MEMBER_HANDSHAKE:
+        {
+            if (_attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::OK)
+            {
+                LOG(info) << "SM: Handshake successfull. PHID: " << this->m_protocolHeaderID;
+                return true;
+            }
+            else if (_attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::ERROR)
+            {
+                LOG(fatal) << "SM: Handshake failed. PHID: " << this->m_protocolHeaderID;
+                return false;
+            }
+        }
+        break;
+
+        default:
+            break;
+    }
 
     return true;
-}
-
-bool CSMCommanderChannel::on_cmdLOBBY_MEMBER_INFO_ERR(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdLOBBY_MEMBER_INFO_ERR>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
-{
-    LOG(error) << "Received error from lobby leader: " << _attachment->m_sMsg;
-    return true;
-}
-
-bool CSMCommanderChannel::on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
-{
-    LOG(info) << "SM: Handshake successfull. PHID: " << this->m_protocolHeaderID;
-    return true;
-}
-
-bool CSMCommanderChannel::on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
-{
-    LOG(fatal) << "SM: Handshake failed. PHID: " << this->m_protocolHeaderID;
-    return false;
 }
 
 bool CSMCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
@@ -203,7 +213,8 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
 
             // Send response back to server
-            pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Topology updated", info, cmdUPDATE_TOPOLOGY));
+            pushMsg<cmdREPLY>(
+                SReplyCmd("Topology updated", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
         }
         default:
             LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
@@ -293,7 +304,7 @@ bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_
     catch (exception& e)
     {
         LOG(error) << e.what();
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), error, cmdGET_LOG));
+        pushMsg<cmdREPLY>(SReplyCmd(e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdGET_LOG));
     }
 
     return true;
@@ -377,8 +388,10 @@ bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACT
     {
         LOG(info) << "Received activation command. Ignoring the command, since no task is assigned.";
         // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("No task is assigned. Activation is ignored.", info, cmdACTIVATE_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd("No task is assigned. Activation is ignored.",
+                                    (uint16_t)SReplyCmd::EStatusCode::OK,
+                                    0,
+                                    cmdACTIVATE_USER_TASK));
         return true;
     }
 
@@ -442,7 +455,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACT
     {
         LOG(error) << _e.what();
         // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), error, cmdACTIVATE_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdACTIVATE_USER_TASK));
         return true;
     }
 
@@ -453,7 +466,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACT
     dispatchHandlers<>(EChannelEvents::OnNewUserTask, _sender, pidUsrTask);
 
     // Send response back to server
-    pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), info, cmdACTIVATE_USER_TASK));
+    pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdACTIVATE_USER_TASK));
 
     return true;
 }
@@ -465,7 +478,8 @@ bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_US
     {
         // No running tasks, nothing to stop
         // Send response back to server
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No tasks is running. Nothing to stop.", info, cmdSTOP_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd(
+            "No tasks is running. Nothing to stop.", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
         return true;
     }
 
@@ -481,7 +495,8 @@ bool CSMCommanderChannel::on_cmdUPDATE_TOPOLOGY(
     LOG(info) << "Received topology update: " << *_attachment;
 
     // Send response back to server
-    pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Updated topology activated", info, cmdUPDATE_TOPOLOGY));
+    pushMsg<cmdREPLY>(
+        SReplyCmd("Updated topology activated", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
     return true;
 }
 

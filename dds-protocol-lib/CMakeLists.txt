@@ -39,6 +39,7 @@ set( SOURCE_FILES
     ./src/CustomCmdCmd.cpp
     ./src/UpdateTopologyCmd.cpp
     ./src/MoveFileCmd.cpp
+    ./src/ReplyCmd.cpp
 )
 
 set( SRC_HDRS
@@ -75,6 +76,7 @@ set( SRC_HDRS
     ./src/ChannelInfo.h
     ./src/ProtocolDef.h
     ./src/MoveFileCmd.h
+    ./src/ReplyCmd.h
 )
 
 include_directories(

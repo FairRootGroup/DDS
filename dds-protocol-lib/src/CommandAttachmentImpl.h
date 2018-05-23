@@ -18,6 +18,7 @@
 #include "ProgressCmd.h"
 #include "ProtocolCommands.h"
 #include "ProtocolMessage.h"
+#include "ReplyCmd.h"
 #include "SimpleMsgCmd.h"
 #include "SubmitCmd.h"
 #include "UUIDCmd.h"
@@ -97,10 +98,9 @@ namespace dds
         REGISTER_CMD_ATTACHMENT(SUpdateTopologyCmd, cmdUPDATE_TOPOLOGY)
         REGISTER_CMD_ATTACHMENT(SCustomCmdCmd, cmdCUSTOM_CMD)
         REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdLOBBY_MEMBER_INFO)
-        REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdLOBBY_MEMBER_INFO_ERR)
         REGISTER_CMD_ATTACHMENT(SVersionCmd, cmdLOBBY_MEMBER_HANDSHAKE)
-        REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR)
         REGISTER_CMD_ATTACHMENT(SMoveFileCmd, cmdMOVE_FILE)
+        REGISTER_CMD_ATTACHMENT(SReplyCmd, cmdREPLY)
     } // namespace protocol_api
 } // namespace dds
 

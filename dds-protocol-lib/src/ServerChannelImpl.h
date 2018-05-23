@@ -66,7 +66,9 @@ namespace dds
                         LOG(MiscCommon::info)
                             << "New lobby member [" << _sender.m_ID << "] has successfully connected.";
 
-                        this->template pushMsg<cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK>(_sender.m_ID);
+                        SReplyCmd cmd =
+                            SReplyCmd("", (uint16_t)SReplyCmd::EStatusCode::OK, 0, (uint16_t)cmdLOBBY_MEMBER_HANDSHAKE);
+                        this->template pushMsg<cmdREPLY>(cmd, _sender.m_ID);
 
                         // notify all subscribers about the event
                         this->dispatchHandlers(EChannelEvents::OnLobbyMemberHandshakeOK, _sender);
@@ -136,8 +138,9 @@ namespace dds
                 }
                 else
                 {
-                    this->template pushMsg<cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>(
-                        SSimpleMsgCmd(_reason, MiscCommon::fatal), _senderID);
+                    SReplyCmd cmd = SReplyCmd(
+                        _reason, (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, (uint16_t)cmdLOBBY_MEMBER_HANDSHAKE);
+                    this->template pushMsg<cmdREPLY>(cmd, _senderID);
                     // notify all subscribers about the event
                     this->dispatchHandlers(EChannelEvents::OnLobbyMemberHandshakeFailed, SSenderInfo());
                 }

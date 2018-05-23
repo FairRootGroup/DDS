@@ -45,7 +45,8 @@ bool CSMLeaderChannel::on_cmdLOBBY_MEMBER_INFO(SCommandAttachmentImpl<cmdSIMPLE_
         // Add output for lobby members, skipping output for itself
         if (_sender.m_ID != this->getProtocolHeaderID())
             this->addOutput(_sender.m_ID, name);
-        this->pushMsg<cmdLOBBY_MEMBER_INFO_OK>(_sender.m_ID, _sender.m_ID);
+        SReplyCmd cmd = SReplyCmd("", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdLOBBY_MEMBER_INFO);
+        this->pushMsg<cmdREPLY>(cmd, _sender.m_ID, _sender.m_ID);
     }
     catch (exception& _e)
     {

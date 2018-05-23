@@ -354,18 +354,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_INFO)
     TestCommand(cmd, cmdLOBBY_MEMBER_INFO, cmdSize);
 }
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_INFO_ERR)
-{
-    const unsigned int cmdSize = 11;
-
-    SSimpleMsgCmd cmd;
-    cmd.m_sMsg = "error";
-    cmd.m_srcCommand = cmdLOBBY_MEMBER_INFO_ERR;
-    cmd.m_msgSeverity = error;
-
-    TestCommand(cmd, cmdLOBBY_MEMBER_INFO_ERR, cmdSize);
-}
-
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_HANDSHAKE)
 {
     const unsigned int cmdSize = 9;
@@ -378,18 +366,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_HANDSHAKE)
     TestCommand(cmd, cmdLOBBY_MEMBER_HANDSHAKE, cmdSize);
 }
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR)
-{
-    const unsigned int cmdSize = 11;
-
-    SSimpleMsgCmd cmd;
-    cmd.m_sMsg = "error";
-    cmd.m_srcCommand = cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR;
-    cmd.m_msgSeverity = error;
-
-    TestCommand(cmd, cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, cmdSize);
-}
-
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdFILE_PATH)
 {
     const unsigned int cmdSize = 27;
@@ -400,6 +376,19 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdFILE_PATH)
     cmd.m_requestedFileName = "logs.zip";
 
     TestCommand(cmd, cmdMOVE_FILE, cmdSize);
+}
+
+BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY)
+{
+    const unsigned int cmdSize = 17;
+
+    SReplyCmd cmd;
+    cmd.m_sMsg = "status OK";
+    cmd.m_srcCommand = cmdHANDSHAKE;
+    cmd.m_returnCode = 12;
+    cmd.m_statusCode = (uint16_t)SReplyCmd::EStatusCode::OK;
+
+    TestCommand(cmd, cmdREPLY, cmdSize);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

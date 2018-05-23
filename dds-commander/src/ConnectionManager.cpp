@@ -107,9 +107,9 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
             this->on_cmdTRANSPORT_TEST(_sender, _attachment, weakClient);
         });
 
-    _newClient->registerHandler<cmdSIMPLE_MSG>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG(_sender, _attachment, weakClient);
+    _newClient->registerHandler<cmdREPLY>(
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment) {
+            this->on_cmdREPLY(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdUPDATE_KEY>(
@@ -973,21 +973,41 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
     }
 }
 
-void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
-                                          SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                          CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
+                                     SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment,
+                                     CAgentChannel::weakConnectionPtr_t _channel)
 {
     switch (_attachment->m_srcCommand)
     {
         case cmdACTIVATE_USER_TASK:
-            switch (_attachment->m_msgSeverity)
+        {
+            if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::OK)
             {
-                case info:
-                    m_updateTopology.processMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
-                    break;
-                case error:
-                case fatal:
-                    // In case of error set the idle state
+                m_updateTopology.processMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
+            else if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
+            {
+                // In case of error set the idle state
+                if (!_channel.expired())
+                {
+                    auto p = _channel.lock();
+                    SAgentInfo info = p->getAgentInfo(_sender);
+                    info.m_state = EAgentState::idle;
+                    info.m_taskID = 0;
+                    p->updateAgentInfo(_sender, info);
+                }
+                m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
+            return;
+        }
+
+        case cmdSTOP_USER_TASK:
+        {
+            if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::OK)
+            {
+                m_updateTopology.processMessage<SReplyCmd>(_sender, *_attachment, _channel);
+                {
+                    // Task was successfully stopped, set the idle state
                     if (!_channel.expired())
                     {
                         auto p = _channel.lock();
@@ -996,63 +1016,53 @@ void CConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
                         info.m_taskID = 0;
                         p->updateAgentInfo(_sender, info);
                     }
-                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
-                    break;
+                }
             }
-            return;
-
-        case cmdSTOP_USER_TASK:
-            switch (_attachment->m_msgSeverity)
+            else if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
             {
-                case info:
-                    m_updateTopology.processMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
-                    {
-                        // Task was successfully stopped, set the idle state
-                        if (!_channel.expired())
-                        {
-                            auto p = _channel.lock();
-                            SAgentInfo info = p->getAgentInfo(_sender);
-                            info.m_state = EAgentState::idle;
-                            info.m_taskID = 0;
-                            p->updateAgentInfo(_sender, info);
-                        }
-                    }
-                    break;
-                case error:
-                case fatal:
-                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
-                    break;
+                m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
             }
             if (m_updateTopology.allReceived())
             {
                 m_updateTopoCondition.notify_all();
             }
             return;
+        }
 
         case cmdUPDATE_TOPOLOGY:
-            switch (_attachment->m_msgSeverity)
+        {
+            if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::OK)
             {
-                case info:
-                    m_updateTopology.processMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
-                    break;
-                case error:
-                case fatal:
-                    m_updateTopology.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
-                    break;
+                m_updateTopology.processMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
+            else if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
+            {
+                m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
             }
             if (m_updateTopology.allReceived())
             {
                 m_updateTopoCondition.notify_all();
             }
             return;
+        }
 
         case cmdGET_LOG:
-            m_getLog.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
+        {
+            if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
+            {
+                m_getLog.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
             return;
+        }
 
         case cmdTRANSPORT_TEST:
-            m_transportTest.processErrorMessage<SSimpleMsgCmd>(_sender, *_attachment, _channel);
+        {
+            if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
+            {
+                m_transportTest.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
             return;
+        }
     }
 }
 
@@ -1338,8 +1348,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
 
         CConnectionManager::weakChannelInfo_t::container_t channels;
 
-        // First check id condition is a positive integer - channel ID - which means that custom command has to be sent
-        // to a particular channel.
+        // First check id condition is a positive integer - channel ID - which means that custom command has to be
+        // sent to a particular channel.
         try
         {
             // If condition in the attachment is not of type uint64_t function throws an exception.

@@ -62,14 +62,11 @@ namespace dds
             cmdENABLE_STAT,
             cmdDISABLE_STAT,
             cmdGET_STAT,
-            cmdCUSTOM_CMD,        // attachment: SCustomCmdCmd
-            cmdLOBBY_MEMBER_INFO, // attachment: SSimpleMsgCmd
-            cmdLOBBY_MEMBER_INFO_OK,
-            cmdLOBBY_MEMBER_INFO_ERR,  // attachment: SSimpleMsgCmd
+            cmdCUSTOM_CMD,             // attachment: SCustomCmdCmd
+            cmdLOBBY_MEMBER_INFO,      // attachment: SSimpleMsgCmd
             cmdLOBBY_MEMBER_HANDSHAKE, // attachment: SVersionCmd
-            cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK,
-            cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, // attachment: SSimpleMsgCmd
-            cmdMOVE_FILE                         // attachment: SMoveFileCmd
+            cmdMOVE_FILE,              // attachment: SMoveFileCmd
+            cmdREPLY                   // attachment: SReplyCmd
         };
 
         static std::map<uint16_t, std::string> g_cmdToString{
@@ -112,12 +109,9 @@ namespace dds
             { cmdGET_STAT, NAME_TO_STRING(cmdGET_STAT) },
             { cmdCUSTOM_CMD, NAME_TO_STRING(cmdCUSTOM_CMD) },
             { cmdLOBBY_MEMBER_INFO, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO) },
-            { cmdLOBBY_MEMBER_INFO_OK, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO_OK) },
-            { cmdLOBBY_MEMBER_INFO_ERR, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO_ERR) },
             { cmdLOBBY_MEMBER_HANDSHAKE, NAME_TO_STRING(cmdLOBBY_MEMBER_HANDSHAKE) },
-            { cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK, NAME_TO_STRING(cmdREPLY_LOBBY_MEMBER_HANDSHAKE_OK) },
-            { cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR, NAME_TO_STRING(cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR) },
-            { cmdMOVE_FILE, NAME_TO_STRING(cmdMOVE_FILE) }
+            { cmdMOVE_FILE, NAME_TO_STRING(cmdMOVE_FILE) },
+            { cmdREPLY, NAME_TO_STRING(cmdREPLY) }
         };
     } // namespace protocol_api
 } // namespace dds

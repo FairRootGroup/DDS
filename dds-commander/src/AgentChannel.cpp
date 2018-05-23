@@ -297,10 +297,9 @@ bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TES
     return false;
 }
 
-bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                     const SSenderInfo& _sender)
+bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, const SSenderInfo& _sender)
 {
-    LOG(debug) << "on_cmdSIMPLE_MSG attachment [" << *_attachment << "] command from " << remoteEndIDString();
+    LOG(debug) << "on_cmdREPLY attachment [" << *_attachment << "] command from " << remoteEndIDString();
 
     switch (_attachment->m_srcCommand)
     {
@@ -320,7 +319,7 @@ bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_
             return false;
 
         default:
-            LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << "remote: " << _attachment->m_sMsg;
+            LOG(warning) << "Received cmdREPLY doesn't have a handler: " << _attachment->m_sMsg;
             return true;
     }
 }

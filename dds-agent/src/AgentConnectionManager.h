@@ -45,11 +45,6 @@ namespace dds
             void on_cmdSHUTDOWN(const protocol_api::SSenderInfo& _sender,
                                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdSHUTDOWN>::ptr_t _attachment,
                                 CSMCommanderChannel::weakConnectionPtr_t _channel);
-            void on_cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR(
-                const protocol_api::SSenderInfo& _sender,
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_LOBBY_MEMBER_HANDSHAKE_ERR>::ptr_t
-                    _attachment,
-                CSMCommanderChannel::weakConnectionPtr_t _channel);
             void on_cmdSIMPLE_MSG(const protocol_api::SSenderInfo& _sender,
                                   protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
                                   CSMCommanderChannel::weakConnectionPtr_t _channel);
