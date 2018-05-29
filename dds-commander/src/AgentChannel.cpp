@@ -303,6 +303,9 @@ bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachm
 
     switch (_attachment->m_srcCommand)
     {
+        case cmdASSIGN_USER_TASK:
+            return false; // let others to process this message
+
         case cmdACTIVATE_USER_TASK:
             return false; // let others to process this message
 

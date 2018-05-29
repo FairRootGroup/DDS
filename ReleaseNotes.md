@@ -5,6 +5,10 @@
 ### DDS common 
 Modified: Bump minimum required Boost version to 1.67.    
 Modified: Bump minimum required cmake version to 3.11.1.    
+
+### dds-protocol
+Added: Confirmation for cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK. (GH-202)    
+Added: Generic reply command cmdREPLY. (GH-201)    
   
 
 ### dds-session

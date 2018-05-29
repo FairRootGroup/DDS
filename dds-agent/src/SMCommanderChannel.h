@@ -108,7 +108,6 @@ namespace dds
         std::string m_groupName;
         std::string m_collectionName;
         std::string m_taskName;
-        std::mutex m_activateMutex;
     };
 } // namespace dds
 #endif

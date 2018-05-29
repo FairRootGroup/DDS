@@ -463,6 +463,84 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
     }
 }
 
+template <protocol_api::ECmdType _cmd>
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index, weakChannelInfo_t _agent)
+{
+    auto p = _agent.m_channel.lock();
+    p->pushMsg<_cmd>(_agent.m_protocolHeaderID);
+}
+
+template <protocol_api::ECmdType _cmd>
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
+                                                             weakChannelInfo_t _agent,
+                                                             typename SCommandAttachmentImpl<_cmd>::ptr_t _attachment)
+{
+    auto p = _agent.m_channel.lock();
+    p->pushMsg<_cmd>(*_attachment, _agent.m_protocolHeaderID);
+}
+
+template <protocol_api::ECmdType _cmd>
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(
+    size_t index, weakChannelInfo_t _agent, const vector<typename SCommandAttachmentImpl<_cmd>::ptr_t>& _attachments)
+{
+    auto p = _agent.m_channel.lock();
+    p->pushMsg<_cmd>(*_attachments[index], _agent.m_protocolHeaderID);
+}
+
+template <protocol_api::ECmdType _cmd>
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
+                                                             weakChannelInfo_t _agent,
+                                                             const std::string& _filePath,
+                                                             const std::string& _filename)
+{
+    auto p = _agent.m_channel.lock();
+    p->pushBinaryAttachmentCmd(_filePath, _filename, _cmd, _agent.m_protocolHeaderID);
+}
+
+template <protocol_api::ECmdType _cmd>
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
+                                                             weakChannelInfo_t _agent,
+                                                             const std::vector<std::string>& _filePaths,
+                                                             const std::vector<std::string>& _filenames)
+{
+    auto p = _agent.m_channel.lock();
+    string filePath = _filePaths[index];
+    string filename = _filenames[index];
+    p->pushBinaryAttachmentCmd(filePath, filename, _cmd, _agent.m_protocolHeaderID);
+}
+
+template <protocol_api::ECmdType _cmd, class... Args>
+void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::container_t _agents,
+                                                        CAgentChannel::weakConnectionPtr_t _channel,
+                                                        const std::string& _msg,
+                                                        Args&&... args)
+{
+    auto p = _channel.lock();
+
+    m_updateTopology.m_srcCommand = _cmd;
+    m_updateTopology.m_channel = _channel;
+    m_updateTopology.zeroCounters();
+    m_updateTopology.m_nofRequests = _agents.size();
+
+    // Message to the UI
+    p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_msg, log_stdout, _cmd));
+
+    // Initiate the progress on the UI
+    p->pushMsg<cmdPROGRESS>(SProgressCmd(_cmd, 0, m_updateTopology.m_nofRequests, 0));
+
+    // Broadcast message or binary to agents
+    size_t index = 0;
+    for (auto& agent : _agents)
+    {
+        broadcastUpdateTopologyAndWait_impl<_cmd>(index, agent, args...);
+        index++;
+    }
+
+    // Wait until all replies are received
+    unique_lock<mutex> conditionLock(m_updateTopoMutex);
+    m_updateTopoCondition.wait(conditionLock);
+}
+
 void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                                                SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
                                                CAgentChannel::weakConnectionPtr_t _channel)
@@ -550,66 +628,19 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         // Update topology on the agents
         //
-        // TODO: FIXME: send the new topology to agents
-        // TODO: FIXMe: wait for confirmation from all agents that the new topology is set correctly
-        // TODO: FIXME: check if topology is empty than don't do anything, just send stop message.
-        //              agent should clean current topology on topology stop.
-
-        auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-            SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
-        };
-
-        m_updateTopology.m_srcCommand = cmdUPDATE_TOPOLOGY;
-        m_updateTopology.m_shutdownOnComplete = false;
-        m_updateTopology.m_channel = _channel;
-        m_updateTopology.zeroCounters();
-        size_t nofAgents = countNofChannels(condition);
-        m_updateTopology.m_nofRequests = nofAgents;
-
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Updating agent topologies...", log_stdout, cmdUPDATE_TOPOLOGY),
-                                  _sender.m_ID);
-
-        // initiate the progress on the UI
-        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdUPDATE_TOPOLOGY, 0, m_updateTopology.m_nofRequests, 0));
-
-        this->broadcastBinaryAttachmentCmd(_attachment->m_sTopologyFile, "topology.xml", cmdUPDATE_TOPOLOGY, condition);
-
-        //        // Stop UI if no tasks are running
-        //        if (m_updateTopology.m_nofRequests <= 0)
-        //        {
-        //            ELogSeverityLevel level = (_shutdownOnComplete) ? fatal : warning;
-        //            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", level,
-        //            cmdSTOP_USER_TASK)); m_updateTopology.m_channel.reset(); return;
-        //        }
-
-        // We have to wait until all topologies are updated on the agents
+        if (!_attachment->m_sTopologyFile.empty())
         {
-            unique_lock<mutex> conditionLock(m_updateTopoMutex);
-            m_updateTopoCondition.wait(conditionLock);
-        }
+            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+            };
+            CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
 
-        // TODO: FIXME: send cmdUPDATE_TOPOLOGY to all agent to activate the new topology
-        // TODO: FIXME: wait untill all new topologies are activated on agents
-        m_updateTopology.m_srcCommand = cmdUPDATE_TOPOLOGY;
-        m_updateTopology.m_shutdownOnComplete = false;
-        m_updateTopology.m_channel = _channel;
-        m_updateTopology.zeroCounters();
-        m_updateTopology.m_nofRequests = nofAgents;
+            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
+                allAgents, _channel, "Updating topology for agents...", _attachment->m_sTopologyFile, "topology.xml");
 
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Activating updated agent topologies...", log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
-
-        // initiate the progress on the UI
-        p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdUPDATE_TOPOLOGY, 0, m_updateTopology.m_nofRequests, 0));
-
-        this->broadcastMsg<cmdUPDATE_TOPOLOGY>(*_attachment, condition);
-
-        // We have to wait until all topologies are updated on the agents
-        // unique_lock<mutex> conditionLock(m_updateAgentTopoMutex);
-        {
-            unique_lock<mutex> conditionLock(m_updateTopoMutex);
-            m_updateTopoCondition.wait(conditionLock);
+            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
+                allAgents, _channel, "Activating topology for agents...", _attachment);
         }
 
         //
@@ -617,21 +648,25 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         if (removedTasks.size() > 0)
         {
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Stopping removed tasks...", log_stdout, cmdUPDATE_TOPOLOGY),
-                                      _sender.m_ID);
-
             weakChannelInfo_t::container_t agents;
             for (auto taskID : removedTasks)
             {
                 auto agentChannel = m_taskIDToAgentChannelMap[taskID];
                 agents.push_back(agentChannel);
             }
-            bool sendShutdown = addedTasks.size() == 0;
-            stopTasks(agents, _channel, sendShutdown);
 
-            // We have to wait until all removed tasks are done before activating new tasks
-            unique_lock<mutex> conditionLock(m_updateTopoMutex);
-            m_updateTopoCondition.wait(conditionLock);
+            for (const auto& v : agents)
+            {
+                if (v.m_channel.expired())
+                    continue;
+                auto ptr = v.m_channel.lock();
+                // TODO: FIXME: Do we need to deque messages in new decentralized concept?
+                // dequeue important (or expensive) messages
+                ptr->dequeueMsg<cmdUPDATE_KEY>();
+                ptr->dequeueMsg<cmdDELETE_KEY>();
+            }
+
+            broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
         }
         //
 
@@ -640,48 +675,27 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         if (addedTasks.size() > 0)
         {
-            m_updateTopology.m_srcCommand = cmdACTIVATE_USER_TASK;
-            m_updateTopology.m_shutdownOnComplete = true;
-
-            if (!m_updateTopology.m_channel.expired())
-                throw runtime_error(
-                    "Can not process the request. Activation or update of the agents is already in progress.");
-
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Activating added tasks...", log_stdout, cmdUPDATE_TOPOLOGY),
-                                      _sender.m_ID);
-
-            // remember the UI channel, which requested to submit the job
-            m_updateTopology.m_channel = _channel;
-            m_updateTopology.zeroCounters();
-
-            auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
                 SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
                 return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
                         info.m_state == EAgentState::idle);
             };
+            CConnectionManager::weakChannelInfo_t::container_t idleAgents(getChannels(idleCondition));
 
-            m_updateTopology.m_nofRequests = addedTasks.size();
-            size_t nofAgents = countNofChannels(condition);
-
-            LOG(info) << "Number of available agents: " << nofAgents;
-
+            size_t nofAgents = idleAgents.size();
             if (nofAgents == 0)
                 throw runtime_error("There are no connected agents.");
-            if (nofAgents < m_updateTopology.m_nofRequests)
+            if (nofAgents < addedTasks.size())
             {
                 stringstream ssMsg;
                 ssMsg << "The number of agents is not sufficient for this topology (required/available "
-                      << m_updateTopology.m_nofRequests << "/" << nofAgents << ").";
+                      << addedTasks.size() << "/" << nofAgents << ").";
                 throw runtime_error(ssMsg.str());
             }
-            // initiate UI progress
-            p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdACTIVATE_USER_TASK, 0, m_updateTopology.m_nofRequests, 0),
-                                    _sender.m_ID);
 
             // Schedule the tasks
-            CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(condition));
             CSSHScheduler scheduler;
-            scheduler.makeSchedule(m_topo, channels, addedTasks, addedCollections);
+            scheduler.makeSchedule(m_topo, idleAgents, addedTasks, addedCollections);
             const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
 
             // Erase removed tasks
@@ -695,14 +709,13 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
             }
 
-            activateTasks(scheduler);
+            activateTasks(scheduler, _channel);
         }
-        // Send cmdSHUTDOWN to UI if neccessary
-        bool sendShutdown = removedTasks.size() == 0 && addedTasks.size() == 0;
-        if (sendShutdown)
-        {
-            p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
-        }
+
+        // Send shutdown to UI channel at the end
+        p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
+        // p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Update topology finished successfully", fatal, cmdUPDATE_TOPOLOGY),
+        // _sender.m_ID);
     }
     catch (exception& _e)
     {
@@ -714,156 +727,127 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
     }
 }
 
-void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler)
+void CConnectionManager::parseExe(const string& _exeStr, string& _filePath, string& _filename, string& _cmdStr)
+{
+    // Expand the string for the program to extract exe name and command line arguments
+    wordexp_t result;
+    switch (wordexp(_exeStr.c_str(), &result, 0))
+    {
+        case 0:
+        {
+            _filePath = result.we_wordv[0];
+
+            boost::filesystem::path exeFilePath(_filePath);
+            _filename = exeFilePath.filename().generic_string();
+
+            string sExeFileNameWithArgs = _filename;
+            for (size_t i = 1; i < result.we_wordc; ++i)
+            {
+                sExeFileNameWithArgs += " ";
+                sExeFileNameWithArgs += result.we_wordv[i];
+            }
+
+            _cmdStr = "$DDS_LOCATION/";
+            _cmdStr += sExeFileNameWithArgs;
+
+            wordfree(&result);
+        }
+        break;
+        case WRDE_NOSPACE:
+            // If the error was WRDE_NOSPACE,
+            // then perhaps part of the result was allocated.
+            throw runtime_error("memory error occurred while processing the user's executable path: " + _exeStr);
+
+        case WRDE_BADCHAR:
+            throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " + _exeStr);
+            break;
+
+        case WRDE_BADVAL:
+            throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag told us to "
+                                "consider this an error in " +
+                                _exeStr);
+            break;
+
+        case WRDE_CMDSUB:
+            throw runtime_error(
+                "Command substitution occurred, and the WRDE_NOCMD flag told us to consider this an error in " +
+                _exeStr);
+            break;
+        case WRDE_SYNTAX:
+            throw runtime_error("Shell syntax error, such as unbalanced parentheses or unmatched quotes in " + _exeStr);
+            break;
+
+        default: // Some other error.
+            throw runtime_error("failed to process the user's executable path: " + _exeStr);
+    }
+}
+
+void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
 {
     const CSSHScheduler::ScheduleVector_t& schedule = _scheduler.getSchedule();
 
+    // Data of user task upload to agents
+    weakChannelInfo_t::container_t uploadAgents;
+    vector<string> uploadFilePaths;
+    vector<string> uploadFilenames;
+
+    // Data of user task assignment
+    weakChannelInfo_t::container_t assignmentAgents;
+    vector<typename SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t> assignmentAttachments;
+
+    // Collecting data for broadcasting
     for (const auto& sch : schedule)
     {
-        SAssignUserTaskCmd msg_cmd;
-        msg_cmd.m_taskID = sch.m_taskID;
-        msg_cmd.m_taskIndex = sch.m_taskInfo.m_taskIndex;
-        msg_cmd.m_collectionIndex = sch.m_taskInfo.m_collectionIndex;
-        msg_cmd.m_taskPath = sch.m_taskInfo.m_taskPath;
-        msg_cmd.m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
-        msg_cmd.m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
-        msg_cmd.m_taskName = sch.m_taskInfo.m_task->getId();
+        typename SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t cmd = make_shared<SAssignUserTaskCmd>();
+        cmd->m_taskID = sch.m_taskID;
+        cmd->m_taskIndex = sch.m_taskInfo.m_taskIndex;
+        cmd->m_collectionIndex = sch.m_taskInfo.m_collectionIndex;
+        cmd->m_taskPath = sch.m_taskInfo.m_taskPath;
+        cmd->m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
+        cmd->m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
+        cmd->m_taskName = sch.m_taskInfo.m_task->getId();
 
+        if (sch.m_taskInfo.m_task->isExeReachable())
+        {
+            cmd->m_sExeFile = sch.m_taskInfo.m_task->getExe();
+        }
+        else
+        {
+            string filePath;
+            string filename;
+            string cmdStr;
+            parseExe(sch.m_taskInfo.m_task->getExe(), filePath, filename, cmdStr);
+
+            cmd->m_sExeFile = cmdStr;
+
+            uploadFilePaths.push_back(filePath);
+            uploadFilenames.push_back(filename);
+            uploadAgents.push_back(sch.m_weakChannelInfo);
+        }
+        assignmentAgents.push_back(sch.m_weakChannelInfo);
+        assignmentAttachments.push_back(cmd);
+    }
+
+    broadcastUpdateTopologyAndWait<cmdASSIGN_USER_TASK>(
+        uploadAgents, _channel, "Uploading user tasks...", uploadFilePaths, uploadFilenames);
+
+    broadcastUpdateTopologyAndWait<cmdASSIGN_USER_TASK>(
+        assignmentAgents, _channel, "Assigning user tasks...", assignmentAttachments);
+
+    // Set executing state and task ID for agent channels
+    for (const auto& sch : schedule)
+    {
         if (sch.m_weakChannelInfo.m_channel.expired())
             continue;
         auto ptr = sch.m_weakChannelInfo.m_channel.lock();
 
-        // Set task ID for agent
-        // TODO: Do we have to assign taskID here?
-        // TODO: Probably it has to be assigned when the task is successfully activated.
         SAgentInfo inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
         inf.m_taskID = sch.m_taskID;
-        ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
-
-        if (sch.m_taskInfo.m_task->isExeReachable())
-        {
-            msg_cmd.m_sExeFile = sch.m_taskInfo.m_task->getExe();
-        }
-        else
-        {
-            // Executable is not reachable by the agent.
-            // Upload it and change its path to $DDS_LOCATION on the WN
-
-            // Expand the string for the program to extract exe name and command line arguments
-            wordexp_t result;
-            switch (wordexp(sch.m_taskInfo.m_task->getExe().c_str(), &result, 0))
-            {
-                case 0:
-                {
-                    string sExeFilePath = result.we_wordv[0];
-
-                    boost::filesystem::path exeFilePath(sExeFilePath);
-                    string sExeFileName = exeFilePath.filename().generic_string();
-
-                    string sExeFileNameWithArgs = sExeFileName;
-                    for (size_t i = 1; i < result.we_wordc; ++i)
-                    {
-                        sExeFileNameWithArgs += " ";
-                        sExeFileNameWithArgs += result.we_wordv[i];
-                    }
-
-                    msg_cmd.m_sExeFile = "$DDS_LOCATION/";
-                    msg_cmd.m_sExeFile += sExeFileNameWithArgs;
-
-                    wordfree(&result);
-
-                    //
-                    ptr->pushBinaryAttachmentCmd(
-                        sExeFilePath, sExeFileName, cmdASSIGN_USER_TASK, sch.m_weakChannelInfo.m_protocolHeaderID);
-                }
-                break;
-                case WRDE_NOSPACE:
-                    // If the error was WRDE_NOSPACE,
-                    // then perhaps part of the result was allocated.
-                    throw runtime_error("memory error occurred while processing the user's executable path: " +
-                                        sch.m_taskInfo.m_task->getExe());
-
-                case WRDE_BADCHAR:
-                    throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
-                                        sch.m_taskInfo.m_task->getExe());
-                    break;
-
-                case WRDE_BADVAL:
-                    throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag "
-                                        "told us to consider this an error in " +
-                                        sch.m_taskInfo.m_task->getExe());
-                    break;
-
-                case WRDE_CMDSUB:
-                    throw runtime_error("Command substitution occurred, and the WRDE_NOCMD flag told us to "
-                                        "consider this an error in " +
-                                        sch.m_taskInfo.m_task->getExe());
-                    break;
-                case WRDE_SYNTAX:
-                    throw runtime_error("Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
-                                        sch.m_taskInfo.m_task->getExe());
-                    break;
-
-                default: // Some other error.
-                    throw runtime_error("failed to process the user's executable path: " +
-                                        sch.m_taskInfo.m_task->getExe());
-            }
-        }
-        ptr->pushMsg<cmdASSIGN_USER_TASK>(msg_cmd, sch.m_weakChannelInfo.m_protocolHeaderID);
-
-        inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
         inf.m_state = EAgentState::executing;
         ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
     }
 
-    // Active agents.
-    broadcastSimpleMsg<cmdACTIVATE_USER_TASK>([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && inf.m_taskID != 0);
-    });
-}
-
-void CConnectionManager::stopTasks(const weakChannelInfo_t::container_t& _agents,
-                                   CAgentChannel::weakConnectionPtr_t _channel,
-                                   bool _shutdownOnComplete)
-{
-    m_updateTopology.m_srcCommand = cmdSTOP_USER_TASK;
-    m_updateTopology.m_shutdownOnComplete = _shutdownOnComplete;
-
-    if (!m_updateTopology.m_channel.expired())
-        throw runtime_error("Can not process the request. Stopping of tasks is already in progress.");
-
-    // remember the UI channel, which requested to submit the job
-    m_updateTopology.m_channel = _channel;
-    m_updateTopology.zeroCounters();
-
-    auto p = m_updateTopology.m_channel.lock();
-
-    m_updateTopology.m_nofRequests = _agents.size();
-
-    // Stop UI if no tasks are running
-    if (m_updateTopology.m_nofRequests <= 0)
-    {
-        ELogSeverityLevel level = (_shutdownOnComplete) ? fatal : warning;
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("No running tasks. Nothing to stop.", level, cmdSTOP_USER_TASK));
-        m_updateTopology.m_channel.reset();
-        return;
-    }
-
-    // initiate the progress on the UI
-    p->pushMsg<cmdPROGRESS>(SProgressCmd(cmdSTOP_USER_TASK, 0, m_updateTopology.m_nofRequests, 0));
-
-    for (const auto& v : _agents)
-    {
-        if (v.m_channel.expired())
-            continue;
-        auto ptr = v.m_channel.lock();
-        // dequeue important (or expensive) messages
-        ptr->dequeueMsg<cmdUPDATE_KEY>();
-        ptr->dequeueMsg<cmdDELETE_KEY>();
-        // send stop message
-        ptr->template pushMsg<cmdSTOP_USER_TASK>(v.m_protocolHeaderID);
-    }
+    broadcastUpdateTopologyAndWait<cmdACTIVATE_USER_TASK>(assignmentAgents, _channel, "Activating user tasks...");
 }
 
 void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
@@ -979,6 +963,23 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
 {
     switch (_attachment->m_srcCommand)
     {
+        case cmdASSIGN_USER_TASK:
+        {
+            if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::OK)
+            {
+                m_updateTopology.processMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
+            else if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
+            {
+                m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
+            if (m_updateTopology.allReceived())
+            {
+                m_updateTopoCondition.notify_all();
+            }
+            return;
+        }
+
         case cmdACTIVATE_USER_TASK:
         {
             if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::OK)
@@ -997,6 +998,10 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
                     p->updateAgentInfo(_sender, info);
                 }
                 m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
+            }
+            if (m_updateTopology.allReceived())
+            {
+                m_updateTopoCondition.notify_all();
             }
             return;
         }

@@ -48,7 +48,6 @@ CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_service& _service,
     , m_groupName()
     , m_collectionName()
     , m_taskName()
-    , m_activateMutex()
 {
     registerHandler<EChannelEvents::OnSMStart>([this](const SSenderInfo& _sender) {
         pushMsg<cmdLOBBY_MEMBER_INFO>(
@@ -204,6 +203,9 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             // Add exec permissions for the users' task
             fs::permissions(destFilePath, fs::add_perms | fs::owner_exe);
             LOG(info) << "Received user executable to execute: " << destFilePath.generic_string();
+
+            // Send response back to server
+            pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK));
         }
         case cmdUPDATE_TOPOLOGY:
         {
@@ -213,8 +215,7 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
 
             // Send response back to server
-            pushMsg<cmdREPLY>(
-                SReplyCmd("Topology updated", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
+            pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
         }
         default:
             LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
@@ -352,11 +353,6 @@ void CSMCommanderChannel::deleteAgentIDFile() const
 bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t _attachment,
                                                  SSenderInfo& _sender)
 {
-    // Mutex is used to garantee that cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK are not executed at the same time.
-    // Note that mutex doesn't garantee that cmdASSIGN_USER_TASK is executed before cmdACTIVATE_USER_TASK this can be
-    // implemented later using condition_variable.
-    lock_guard<mutex> lock(m_activateMutex);
-
     LOG(info) << "Received a user task assignment. " << *_attachment;
     m_sUsrExe = _attachment->m_sExeFile;
     m_taskID = _attachment->m_taskID;
@@ -372,15 +368,14 @@ bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIG
     if (m_collectionIndex != numeric_limits<uint32_t>::max())
         boost::algorithm::replace_all(m_sUsrExe, "%collectionIndex%", to_string(m_collectionIndex));
 
+    pushMsg<cmdREPLY>(SReplyCmd("User task assigned", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK));
+
     return true;
 }
 
 bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIVATE_USER_TASK>::ptr_t _attachment,
                                                    SSenderInfo& _sender)
 {
-    // See comment in on_cmdASSIGN_USER_TASK for details.
-    lock_guard<mutex> lock(m_activateMutex);
-
     string sUsrExe(m_sUsrExe);
     smart_path(&sUsrExe);
 

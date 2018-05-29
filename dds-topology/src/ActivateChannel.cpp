@@ -105,6 +105,12 @@ bool CActivateChannel::on_cmdPROGRESS(SCommandAttachmentImpl<cmdPROGRESS>::ptr_t
                      << "\nTotal: " << _attachment->m_total
                      << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
                 break;
+            case cmdASSIGN_USER_TASK:
+                cout << "Assigned/Uploaded tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
+                     << "\nTotal: " << _attachment->m_total
+                     << "\nTime to assign/upload: " << std::chrono::duration<double>(timeToActivate).count() << " s"
+                     << endl;
+                break;
             case cmdSTOP_USER_TASK:
                 cout << "Stopped tasks: " << _attachment->m_completed << "\nErrors: " << _attachment->m_errors
                      << "\nTotal: " << _attachment->m_total

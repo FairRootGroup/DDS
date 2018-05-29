@@ -94,10 +94,40 @@ namespace dds
                                   CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
-            void activateTasks(const CSSHScheduler& _scheduler);
-            void stopTasks(const weakChannelInfo_t::container_t& _agents,
-                           CAgentChannel::weakConnectionPtr_t _channel,
-                           bool _shutdownOnComplete);
+            void parseExe(const std::string& _exeStr,
+                          std::string& _filePath,
+                          std::string& _filename,
+                          std::string& _cmdStr);
+
+            template <protocol_api::ECmdType _cmd, class... Args>
+            void broadcastUpdateTopologyAndWait(weakChannelInfo_t::container_t agents,
+                                                CAgentChannel::weakConnectionPtr_t _channel,
+                                                const std::string& _msg,
+                                                Args&&... args);
+            template <protocol_api::ECmdType _cmd>
+            void broadcastUpdateTopologyAndWait_impl(size_t index, weakChannelInfo_t _agent);
+            template <protocol_api::ECmdType _cmd>
+            void broadcastUpdateTopologyAndWait_impl(
+                size_t index,
+                weakChannelInfo_t _agent,
+                typename protocol_api::SCommandAttachmentImpl<_cmd>::ptr_t _attachment);
+            template <protocol_api::ECmdType _cmd>
+            void broadcastUpdateTopologyAndWait_impl(size_t index,
+                                                     weakChannelInfo_t _agent,
+                                                     const std::string& _filePath,
+                                                     const std::string& _filename);
+            template <protocol_api::ECmdType _cmd>
+            void broadcastUpdateTopologyAndWait_impl(size_t index,
+                                                     weakChannelInfo_t _agent,
+                                                     const std::vector<std::string>& _filePaths,
+                                                     const std::vector<std::string>& _filenames);
+            template <protocol_api::ECmdType _cmd>
+            void broadcastUpdateTopologyAndWait_impl(
+                size_t index,
+                weakChannelInfo_t _agent,
+                const std::vector<typename protocol_api::SCommandAttachmentImpl<_cmd>::ptr_t>& _attachments);
+
+            void activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel);
             void enableDisableStatForChannels(bool _enable);
             void _createWnPkg(bool _needInlineBashScript) const;
 
