@@ -9,7 +9,7 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.9.4 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.11.1 FATAL_ERROR )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
