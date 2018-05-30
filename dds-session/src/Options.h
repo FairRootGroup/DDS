@@ -190,7 +190,7 @@ namespace dds
                         LOG(MiscCommon::log_stderr) << "Missing argument. The stop command requares a sessions ID\n\n";
                         return false;
                     }
-                    _options->m_sSessionID = SOptions::getCommandByName(commands[1]);
+                    _options->m_sSessionID = commands[1];
                 }
                 else if (SOptions::cmd_set_default == _options->m_Command)
                 {
@@ -200,7 +200,7 @@ namespace dds
                             << "Missing argument. The set-default command requares a sessions ID\n\n";
                         return false;
                     }
-                    _options->m_sSessionID = SOptions::getCommandByName(commands[1]);
+                    _options->m_sSessionID = commands[1];
                 }
                 else if (SOptions::cmd_list == _options->m_Command)
                 {
