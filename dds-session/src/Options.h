@@ -43,24 +43,24 @@ namespace dds
             ETypes m_typedValue;
         };
 
-        void validate(boost::any& _v, std::vector<std::string> const& _values, SSessionsSorting*, int)
-        {
-            // Make sure no previous assignment to 'v' was made.
-            bpo::validators::check_first_occurrence(_v);
+        /*  void validate(boost::any& _v, std::vector<std::string> const& _values, SSessionsSorting*, int)
+          {
+              // Make sure no previous assignment to 'v' was made.
+              bpo::validators::check_first_occurrence(_v);
 
-            // Extract the first string from 'values'. If there is more than
-            // one string, it's an error, and exception will be thrown.
-            const std::string& s = bpo::validators::get_single_string(_values);
+              // Extract the first string from 'values'. If there is more than
+              // one string, it's an error, and exception will be thrown.
+              const std::string& s = bpo::validators::get_single_string(_values);
 
-            if (s == "all" || s == "run")
-            {
-                _v = boost::any(SSessionsSorting(s));
-            }
-            else
-            {
-                throw bpo::validation_error(bpo::validation_error::invalid_option_value);
-            }
-        }
+              if (s == "all" || s == "run")
+              {
+                  _v = boost::any(SSessionsSorting(s));
+              }
+              else
+              {
+                  throw bpo::validation_error(bpo::validation_error::invalid_option_value);
+              }
+          }*/
 
         /// \brief dds-session's container of options
         typedef struct SOptions
@@ -127,7 +127,7 @@ namespace dds
             options.add_options()("version,v", "Version information");
             options.add_options()(
                 "command",
-                bpo::value<std::string>(),
+                bpo::value<std::vector<std::string>>(),
                 "The command is a name of a dds-sessions command."
                 " Can be one of the following: start, stop, stop-all, list, set-default, and remove.\n\n"
                 "For user's convenience it is allowed to call dds-session without \"--command\" option"
@@ -135,12 +135,16 @@ namespace dds
                 "Commands:\n"
                 "   start        : \tStart a new DDS session\n"
                 "   stop         : \tStop a given DDS session\n"
+                "     Argument:\n"
+                "        <session id>: a session ID to stop\n"
                 "   stop-all     : \tStop All running DDS sessions\n"
                 "   list         : \tList DDS sessions.\n"
-                "     Values:\n"
+                "     Arguments:\n"
                 "        all: list all sessions\n"
                 "        run: list only running sessions\n"
-                "   set-default  : \tSet a giving session id as a default DDS session\n"
+                "   set-default  : \tSet a giving ID as a default DDS session\n"
+                "     Argument:\n"
+                "        <session id>: a session ID to set as default\n"
                 "   clean        : \tRemove all STOPPED DDS sessions\n");
 
             options.add_options()("force,f",
@@ -151,14 +155,10 @@ namespace dds
                                   bpo::bool_switch(&_options->m_bLocal),
                                   "Use a worker package build for the local system only.\n"
                                   "Can be used only with the \"start\" command.");
-            options.add_options()("session",
-                                  bpo::value<std::string>(&_options->m_sSessionID),
-                                  "Defines a DDS Session ID.\n"
-                                  "Can be used only with the \"stop\" and \"set-default\" commands.");
 
             //...positional
             bpo::positional_options_description pd;
-            pd.add("command", 1);
+            pd.add("command", 2);
 
             // Parsing command-line
             bpo::variables_map vm;
@@ -174,11 +174,48 @@ namespace dds
             // Command
             if (vm.count("command"))
             {
-                if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
+                std::vector<std::string> commands = vm["command"].as<std::vector<std::string>>();
+                _options->m_Command = SOptions::getCommandByName(commands[0]);
+                if (SOptions::cmd_unknown == _options->m_Command)
                 {
                     LOG(MiscCommon::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n"
                                                 << options;
                     return false;
+                }
+
+                if (SOptions::cmd_stop == _options->m_Command)
+                {
+                    if (commands.size() < 2)
+                    {
+                        LOG(MiscCommon::log_stderr) << "Missing argument. The stop command requares a sessions ID\n\n";
+                        return false;
+                    }
+                    _options->m_sSessionID = SOptions::getCommandByName(commands[1]);
+                }
+                else if (SOptions::cmd_set_default == _options->m_Command)
+                {
+                    if (commands.size() < 2)
+                    {
+                        LOG(MiscCommon::log_stderr)
+                            << "Missing argument. The set-default command requares a sessions ID\n\n";
+                        return false;
+                    }
+                    _options->m_sSessionID = SOptions::getCommandByName(commands[1]);
+                }
+                else if (SOptions::cmd_list == _options->m_Command)
+                {
+                    if (commands.size() < 2)
+                    {
+                        LOG(MiscCommon::log_stderr) << "Missing argument. Specify type of sorting.\n\n";
+                        return false;
+                    }
+                    SSessionsSorting sortType(commands[1]);
+                    if (SSessionsSorting::sort_none == sortType.m_typedValue)
+                    {
+                        LOG(MiscCommon::log_stderr) << "Bad argument. Unknown type of sorting.\n\n";
+                        return false;
+                    }
+                    _options->m_ListSessions = sortType;
                 }
             }
             else
@@ -186,8 +223,6 @@ namespace dds
                 LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
                 return false;
             }
-
-            _options->m_Command = SOptions::getCommandByName(vm["command"].as<std::string>());
 
             if (vm.count("help") || vm.end() == found)
             {
