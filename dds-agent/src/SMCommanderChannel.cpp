@@ -28,6 +28,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
+using namespace dds::topology_api;
 using namespace std;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
@@ -48,6 +49,7 @@ CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_service& _service,
     , m_groupName()
     , m_collectionName()
     , m_taskName()
+    , m_topo()
 {
     registerHandler<EChannelEvents::OnSMStart>([this](const SSenderInfo& _sender) {
         pushMsg<cmdLOBBY_MEMBER_INFO>(
@@ -209,10 +211,20 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
         }
         case cmdUPDATE_TOPOLOGY:
         {
+            // Copy topology file
             boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
             destFilePath /= _attachment->m_requestedFileName;
             boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
+            
+            // Activating new topology
+            CTopology topo;
+            // Topology already validated on the commander, no need to validate it again
+            topo.setXMLValidationDisabled(true);
+            topo.init(destFilePath.string());
+            // Assign new topology
+            m_topo = topo;
+            LOG(info) << "Topology activated";
 
             // Send response back to server
             pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
@@ -480,19 +492,6 @@ bool CSMCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_US
 
     // Let the parent should terminate user tasks
     return false;
-}
-
-bool CSMCommanderChannel::on_cmdUPDATE_TOPOLOGY(
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
-    protocol_api::SSenderInfo& _sender)
-{
-    // FIXME: Activate updated topology
-    LOG(info) << "Received topology update: " << *_attachment;
-
-    // Send response back to server
-    pushMsg<cmdREPLY>(
-        SReplyCmd("Updated topology activated", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
-    return true;
 }
 
 bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,

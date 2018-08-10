@@ -638,9 +638,6 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
 
             broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
                 allAgents, _channel, "Updating topology for agents...", _attachment->m_sTopologyFile, "topology.xml");
-
-            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
-                allAgents, _channel, "Activating topology for agents...", _attachment);
         }
 
         //
@@ -714,8 +711,6 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
 
         // Send shutdown to UI channel at the end
         p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
-        // p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Update topology finished successfully", fatal, cmdUPDATE_TOPOLOGY),
-        // _sender.m_ID);
     }
     catch (exception& _e)
     {

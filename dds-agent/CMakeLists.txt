@@ -23,7 +23,7 @@ set( SOURCE_FILES
 	./src/SMUIChannel.cpp
 	./src/SMFWChannel.cpp
 	./src/SMCommanderChannel.cpp
-        ./src/SMLeaderChannel.cpp
+    ./src/SMLeaderChannel.cpp
 )
 
 #
@@ -64,6 +64,7 @@ endif (CMAKE_GENERATOR STREQUAL "Xcode")
 target_link_libraries (
 	dds-agent
 	dds_protocol_lib
+    dds_topology_lib
 	dds_user_defaults_lib
 	dds_intercom_lib
 	${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -78,6 +79,8 @@ target_link_libraries (
 target_include_directories(dds-commander
 	PRIVATE
 		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
+    PRIVATE
+        $<TARGET_PROPERTY:dds_topology_lib,INTERFACE_INCLUDE_DIRECTORIES>
 	PRIVATE
 		$<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
 )
