@@ -351,11 +351,6 @@ void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _va
     cmd.setKey(_key, env_prop<task_id>());
     cmd.m_sValue = _value;
 
-    {
-        std::lock_guard<std::mutex> lock(m_putValueCacheMutex);
-        m_putValueCache[_key] = _value;
-    }
-
     m_SMChannel->pushMsg<cmdUPDATE_KEY>(cmd);
 }
 

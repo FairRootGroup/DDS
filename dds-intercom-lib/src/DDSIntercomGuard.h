@@ -119,9 +119,6 @@ namespace dds
             CAgentConnectionManager::ptr_t m_agentConnectionMng;
             std::mutex m_initAgentConnectionMutex;
 
-            putValueCache_t m_putValueCache; ///< Local cache for putValue
-            std::mutex m_putValueCacheMutex; ///< Mutex for local cache
-
             CSMAgentChannel::connectionPtr_t m_SMChannel; ///< Shared memory channel for comunication with DDS agent
 
             bool m_useSMTransport;
