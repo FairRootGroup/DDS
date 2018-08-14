@@ -7,7 +7,6 @@
 #define __DDS__CSMCommanderChannel__
 // DDS
 #include "BaseSMChannelImpl.h"
-#include "Topology.h"
 
 namespace dds
 {
@@ -105,7 +104,6 @@ namespace dds
         std::string m_groupName;
         std::string m_collectionName;
         std::string m_taskName;
-        topology_api::CTopology m_topo;
     };
 } // namespace dds
 #endif

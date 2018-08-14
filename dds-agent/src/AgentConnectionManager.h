@@ -12,6 +12,7 @@
 #include "SMCommanderChannel.h"
 #include "SMLeaderChannel.h"
 #include "SMUIChannel.h"
+#include "Topology.h"
 // BOOST
 #include <boost/asio.hpp>
 
@@ -55,6 +56,9 @@ namespace dds
             void on_cmdCUSTOM_CMD(const protocol_api::SSenderInfo& _sender,
                                   protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
                                   CSMCommanderChannel::weakConnectionPtr_t _channel);
+            void on_cmdBINARY_ATTACHMENT_RECEIVED(const protocol_api::SSenderInfo& _sender,
+                                protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
+                                CSMCommanderChannel::weakConnectionPtr_t _channel);
 
             void taskExited(int _pid, int _exitCode);
 
@@ -72,6 +76,7 @@ namespace dds
             childrenPidContainer_t m_children;
             std::mutex m_childrenContainerMutex;
             bool m_bStarted;
+            topology_api::CTopology m_topo;
         };
     } // namespace agent_cmd
 } // namespace dds

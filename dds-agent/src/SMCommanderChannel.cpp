@@ -28,7 +28,6 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
-using namespace dds::topology_api;
 using namespace std;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
@@ -49,7 +48,6 @@ CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_service& _service,
     , m_groupName()
     , m_collectionName()
     , m_taskName()
-    , m_topo()
 {
     registerHandler<EChannelEvents::OnSMStart>([this](const SSenderInfo& _sender) {
         pushMsg<cmdLOBBY_MEMBER_INFO>(
@@ -217,17 +215,8 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
             
-            // Activating new topology
-            CTopology topo;
-            // Topology already validated on the commander, no need to validate it again
-            topo.setXMLValidationDisabled(true);
-            topo.init(destFilePath.string());
-            // Assign new topology
-            m_topo = topo;
-            LOG(info) << "Topology activated";
-
-            // Send response back to server
-            pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
+            // Connection manager will activate the topology
+            return false;
         }
         default:
             LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
