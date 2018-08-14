@@ -232,31 +232,19 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
 {
-    const string sKey = "test_Key";
-    const string sValue = "test_Value";
-    const unsigned int cmdSize = sKey.size() + sizeof(uint16_t) + sValue.size() + sizeof(uint16_t);
+    const string propertyID = "test_Property";
+    const string value = "test_Value";
+    const uint64_t senderTaskID = 1111111111;
+    const uint64_t receiverTaskID = 2222222222;
+    const unsigned int cmdSize = propertyID.size() + sizeof(uint16_t) + value.size() + sizeof(uint16_t) + sizeof(uint64_t) + sizeof(uint64_t);
 
     SUpdateKeyCmd cmd_src;
-    cmd_src.m_sKey = sKey;
-    cmd_src.m_sValue = sValue;
+    cmd_src.m_propertyID = propertyID;
+    cmd_src.m_value = value;
+    cmd_src.m_senderTaskID = senderTaskID;
+    cmd_src.m_receiverTaskID = receiverTaskID;
 
     TestCommand(cmd_src, cmdUPDATE_KEY, cmdSize);
-
-    SUpdateKeyCmd cmd;
-    cmd.setKey("property1", 123456789);
-    BOOST_CHECK(cmd.m_sKey == "property1.123456789");
-    BOOST_CHECK(cmd.getPropertyID() == "property1");
-    BOOST_CHECK(cmd.getTaskID() == 123456789);
-
-    SUpdateKeyCmd cmd1;
-    cmd1.m_sKey = "property1";
-    BOOST_CHECK(cmd1.getPropertyID() == "");
-    BOOST_CHECK(cmd1.getTaskID() == 0);
-
-    SUpdateKeyCmd cmd2;
-    cmd2.m_sKey = "property1.property1";
-    BOOST_CHECK(cmd2.getPropertyID() == "property1");
-    BOOST_CHECK(cmd2.getTaskID() == 0);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdDELETE_KEY)

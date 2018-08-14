@@ -1071,7 +1071,7 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
     auto channelPtr = _channel.lock();
-    string propertyID(_attachment->getPropertyID());
+    string propertyID(_attachment->m_propertyID);
 
     SAgentInfo channel_inf = channelPtr->getAgentInfo(_sender.m_ID);
 

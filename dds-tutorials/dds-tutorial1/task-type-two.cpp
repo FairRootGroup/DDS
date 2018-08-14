@@ -65,10 +65,10 @@ int main(int argc, char* argv[])
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
         // It is safe to update global data without locks inside the callback.
         keyValue.subscribe([&keyCondition, &nInstances, &keyValueCache](
-                               const string& _propertyID, const string& _key, const string& _value) {
-            cout << "Received key-value update: propertyID=" << _propertyID << " key=" << _key << " value=" << _value
-                 << std::endl;
-            keyValueCache[_key] = _value;
+                               const string& _propertyID, const string& _value, uint64_t _senderTaskID) {
+            cout << "Received key-value update: propertyID=" << _propertyID << " value=" << _value << " senderTaskID=" << _senderTaskID << std::endl;
+            string key = _propertyID + "." + to_string(_senderTaskID);
+            keyValueCache[key] = _value;
             if (keyValueCache.size() == nInstances)
             {
                 keyCondition.notify_all();

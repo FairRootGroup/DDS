@@ -61,9 +61,8 @@ int main(int argc, char* argv[])
         });
 
         // Subscribe on key update events
-        keyValue.subscribe([&keyCondition](const string& _propertyID, const string& _key, const string& _value) {
-            cout << "Received key-value update: propertyID=" << _propertyID << " key=" << _key << " value=" << _value
-                 << std::endl;
+        keyValue.subscribe([&keyCondition](const string& _propertyID, const string& _value, uint64_t _senderTaskID) {
+            cout << "Received key-value update: propertyID=" << _propertyID << " value=" << _value << " senderTaskId=" << _senderTaskID << std::endl;
             keyCondition.notify_all();
         });
 

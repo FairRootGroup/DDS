@@ -5,10 +5,13 @@
 ### DDS common 
 Modified: Bump minimum required Boost version to 1.67.    
 Modified: Bump minimum required cmake version to 3.11.1.    
+Removed: update key command from dds-agent-cmd.    
+Modified: dds-intercom key-value API changed to reflect recent changes in the protocol. (GH-196)    
 
 ### dds-protocol
 Added: Confirmation for cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK. (GH-202)    
 Added: Generic reply command cmdREPLY. (GH-201)    
+Modified: new fields in cmdUPDATE_KEY: propertyID, value, sender trask ID and receiver task ID. (GH-196)    
   
 
 ### dds-session

@@ -48,7 +48,7 @@ namespace dds
           public:
             /// \typedef Update key callback function
             typedef boost::signals2::signal<void(
-                const std::string& /*_propertyID*/, const std::string& /*_key*/, const std::string& /*_value*/)>
+                const std::string& /*_propertyID*/, const std::string& /*_value*/, uint64_t /*_senderTaskID*/)>
                 signal_t;
 
             /// \typedef Delete key callback function

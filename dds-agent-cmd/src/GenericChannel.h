@@ -32,15 +32,6 @@ namespace dds
                                 LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
                                 pushMsg<protocol_api::cmdGET_LOG>();
                                 break;
-                            case EAgentCmdType::UPDATE_KEY:
-                            {
-                                LOG(MiscCommon::log_stdout) << "Sending key update command...";
-                                protocol_api::SUpdateKeyCmd cmd;
-                                cmd.m_sKey = m_options.m_sUpdKey_key;
-                                cmd.m_sValue = m_options.m_sUpdKey_value;
-                                pushMsg<protocol_api::cmdUPDATE_KEY>(cmd);
-                            }
-                            break;
                             default:
                                 LOG(MiscCommon::log_stderr) << "Uknown command.";
                                 stop();

@@ -84,8 +84,9 @@ int main(int argc, char* argv[])
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
         // It is safe to update global data without locks inside the callback.
         keyValue.subscribe([&keyCondition, &currentValue, &keyValueCache, &nInstances](
-                               const string& _propertyID, const string& _key, const string& _value) {
-            keyValueCache[_key] = _value;
+                               const string& _propertyID, const string& _value, uint64_t _senderTaskID) {
+            string key = _propertyID + "." + to_string(_senderTaskID);
+            keyValueCache[key] = _value;
 
             // Check that all values in the key-value cache have a correct value
             size_t counter = 0;

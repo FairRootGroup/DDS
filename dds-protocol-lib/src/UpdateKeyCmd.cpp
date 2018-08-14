@@ -17,60 +17,30 @@ SUpdateKeyCmd::SUpdateKeyCmd()
 
 size_t SUpdateKeyCmd::size() const
 {
-    return dsize(m_sKey) + dsize(m_sValue);
+    return dsize(m_propertyID) + dsize(m_value) + dsize(m_senderTaskID) + dsize(m_receiverTaskID);
 }
 
 bool SUpdateKeyCmd::operator==(const SUpdateKeyCmd& val) const
 {
-    return (m_sKey == val.m_sKey && m_sValue == val.m_sValue);
+    return (m_propertyID == val.m_propertyID && m_value == val.m_value && m_senderTaskID == val.m_senderTaskID && m_receiverTaskID == val.m_receiverTaskID);
 }
 
 void SUpdateKeyCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    SAttachmentDataProvider(_data).get(m_sKey).get(m_sValue);
+    SAttachmentDataProvider(_data).get(m_propertyID).get(m_value).get(m_senderTaskID).get(m_receiverTaskID);
 }
 
 void SUpdateKeyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    SAttachmentDataProvider(_data).put(m_sKey).put(m_sValue);
+    SAttachmentDataProvider(_data).put(m_propertyID).put(m_value).put(m_senderTaskID).put(m_receiverTaskID);
 }
 
 std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SUpdateKeyCmd& val)
 {
-    return _stream << "key: " << val.m_sKey << " value: " << val.m_sValue;
+    return _stream << "propertyID=" << val.m_propertyID << "; value=" << val.m_value << "; senderTaskID=" << val.m_senderTaskID << "; receiverTaskID=" << val.m_receiverTaskID;
 }
 
 bool dds::protocol_api::operator!=(const SUpdateKeyCmd& lhs, const SUpdateKeyCmd& rhs)
 {
     return !(lhs == rhs);
-}
-
-void SUpdateKeyCmd::setKey(const string& _propID, uint64_t _taskID)
-{
-    stringstream ss;
-    ss << _propID << "." << _taskID;
-    m_sKey = ss.str();
-}
-
-string SUpdateKeyCmd::getPropertyID() const
-{
-    const size_t pos(m_sKey.find_last_of('.'));
-    return (pos == string::npos) ? "" : m_sKey.substr(0, pos);
-}
-
-uint64_t SUpdateKeyCmd::getTaskID() const
-{
-    const size_t pos(m_sKey.find_last_of('.'));
-    if (pos == string::npos)
-    {
-        return 0;
-    }
-    try
-    {
-        return std::stoull(m_sKey.substr(pos + 1));
-    }
-    catch (exception& _e)
-    {
-        return 0;
-    }
 }

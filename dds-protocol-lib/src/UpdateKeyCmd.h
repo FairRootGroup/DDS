@@ -19,16 +19,11 @@ namespace dds
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SUpdateKeyCmd& val) const;
-
-            /// Helper function to set a key string in a form "propetrtyID.47598590403".
-            void setKey(const std::string& _propID, uint64_t _taskID);
-            /// Helper function to extract property ID from key.
-            std::string getPropertyID() const;
-            /// Helper function to extract task ID from key.
-            uint64_t getTaskID() const;
-
-            std::string m_sKey;
-            std::string m_sValue;
+            
+            std::string m_propertyID;
+            std::string m_value;
+            uint64_t m_senderTaskID;
+            uint64_t m_receiverTaskID;
         };
         std::ostream& operator<<(std::ostream& _stream, const SUpdateKeyCmd& val);
         bool operator!=(const SUpdateKeyCmd& lhs, const SUpdateKeyCmd& rhs);
