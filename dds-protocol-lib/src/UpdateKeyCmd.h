@@ -19,7 +19,7 @@ namespace dds
             void _convertFromData(const MiscCommon::BYTEVector_t& _data);
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SUpdateKeyCmd& val) const;
-            
+
             std::string m_propertyID;
             std::string m_value;
             uint64_t m_senderTaskID;

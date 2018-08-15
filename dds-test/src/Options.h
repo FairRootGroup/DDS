@@ -25,11 +25,13 @@ namespace dds
             SOptions()
                 : m_transportTest(false)
                 , m_verbose(false)
+                , m_sid(boost::uuids::nil_uuid())
             {
             }
 
             bool m_transportTest;
             bool m_verbose;
+            boost::uuids::uuid m_sid;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -50,6 +52,7 @@ namespace dds
             bpo::options_description options("dds-getlog options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
             options.add_options()("transport,t", "Start transport test");
             options.add_options()("verbose", "Verbose output");
 
@@ -75,6 +78,10 @@ namespace dds
             if (vm.count("verbose"))
             {
                 _options->m_verbose = true;
+            }
+            if (vm.count("session"))
+            {
+                _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
             }
 
             return true;

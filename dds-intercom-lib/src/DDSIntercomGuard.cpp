@@ -231,7 +231,8 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
     const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    execUserSignal(m_keyValueUpdateSignal, _attachment->m_propertyID, _attachment->m_value, _attachment->m_senderTaskID);
+    execUserSignal(
+        m_keyValueUpdateSignal, _attachment->m_propertyID, _attachment->m_value, _attachment->m_senderTaskID);
 }
 
 void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(

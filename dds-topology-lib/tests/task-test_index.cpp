@@ -142,7 +142,8 @@ int main(int argc, char* argv[])
         keyValue.subscribe(
             [optType, &callbackCounter](const string& _propertyID, const string& _value, uint64_t _senderTaskID) {
                 callbackCounter++;
-                cout << "Received key-value update: propertyID=" << _propertyID << " value=" << _value << " senderTaskID=" << _senderTaskID << std::endl;
+                cout << "Received key-value update: propertyID=" << _propertyID << " value=" << _value
+                     << " senderTaskID=" << _senderTaskID << std::endl;
                 if (optType == 1 || optType == 2)
                 {
                     throw std::runtime_error("Exception in keyValue.subscribe");

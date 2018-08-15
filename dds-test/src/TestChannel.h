@@ -55,4 +55,4 @@ namespace dds
         };
     } // namespace test_cmd
 } // namespace dds
-#endif /* defined(__DDS__TalkToAgent__) */
+#endif /* defined(__DDS__TestChannel__) */

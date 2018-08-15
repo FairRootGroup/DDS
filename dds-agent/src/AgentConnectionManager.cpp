@@ -357,11 +357,11 @@ void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
     // Call this callback when a user process is activated
     m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>(
         [this](const SSenderInfo& _sender, pid_t _pid) { this->onNewUserTask(_pid); });
-    
+
     // Subscribe for cmdBINARY_ATTACHMENT_RECEIVED
     m_SMAgent->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
-              this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, m_SMAgent);
+            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, m_SMAgent);
         });
 
     LOG(info) << "SM channel: Agent is created";
@@ -580,14 +580,15 @@ void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
     p->pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
 }
 
-void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(const SSenderInfo& _sender,
-                                                   SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
-                                                   CSMCommanderChannel::weakConnectionPtr_t _channel)
+void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
+    const SSenderInfo& _sender,
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
+    CSMCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Topology file path
     boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
     destFilePath /= _attachment->m_requestedFileName;
-    
+
     // Activating new topology
     CTopology topo;
     // Topology already validated on the commander, no need to validate it again
@@ -596,7 +597,7 @@ void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(const SSenderInfo
     // Assign new topology
     m_topo = topo;
     LOG(info) << "Topology activated";
-    
+
     // Send response back to server
     auto p = _channel.lock();
     p->pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));

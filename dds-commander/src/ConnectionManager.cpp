@@ -272,6 +272,7 @@ void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
         return;
     }
     m_getLog.m_channel = _channel;
+    m_getLog.m_shutdownOnComplete = true;
     m_getLog.zeroCounters();
 
     auto p = m_getLog.m_channel.lock();
@@ -920,6 +921,7 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
         return;
     }
     m_transportTest.m_channel = _channel;
+    m_transportTest.m_shutdownOnComplete = true;
     m_transportTest.zeroCounters();
 
     auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {

@@ -214,7 +214,7 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             destFilePath /= _attachment->m_requestedFileName;
             boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
-            
+
             // Connection manager will activate the topology
             return false;
         }

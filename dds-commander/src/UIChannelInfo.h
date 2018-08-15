@@ -33,6 +33,7 @@ namespace dds
                 , m_nofReceivedErrors(0)
                 , m_mutexStart()
                 , m_mutexReceive()
+                , m_shutdownOnComplete(false)
                 , m_srcCommand(0)
                 , m_startTime(std::chrono::steady_clock::now())
             {
@@ -156,6 +157,10 @@ namespace dds
                             auto pUI = m_channel.lock();
                             pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
                                 protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::info));
+                            if (m_shutdownOnComplete)
+                            {
+                                pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
+                            }
                             m_channel.reset();
                         }
                     }
@@ -173,6 +178,7 @@ namespace dds
             CAgentChannel::weakConnectionPtr_t m_channel;
             std::mutex m_mutexStart;
             std::mutex m_mutexReceive;
+            bool m_shutdownOnComplete;
             uint16_t m_srcCommand;
 
           private:
