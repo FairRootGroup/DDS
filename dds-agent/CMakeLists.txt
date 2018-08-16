@@ -20,7 +20,7 @@ set( SOURCE_FILES
 	./src/main.cpp
 	./src/CommanderChannel.cpp
 	./src/AgentConnectionManager.cpp
-	./src/SMUIChannel.cpp
+	./src/SMIntercomChannel.cpp
 	./src/SMFWChannel.cpp
 	./src/SMCommanderChannel.cpp
     ./src/SMLeaderChannel.cpp
@@ -33,10 +33,10 @@ set( HEADER_FILES
 	./src/Options.h
 	./src/CommanderChannel.h
 	./src/AgentConnectionManager.h
-	./src/SMUIChannel.h
+	./src/SMIntercomChannel.h
 	./src/SMFWChannel.h
 	./src/SMCommanderChannel.h
-        ./src/SMLeaderChannel.h
+    ./src/SMLeaderChannel.h
 )
 
 include_directories(

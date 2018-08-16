@@ -111,16 +111,16 @@ void CAgentConnectionManager::start()
             // To communicate with tasks
             createSMIntercomChannel(protocolHeaderID);
             createSMLeaderChannel(protocolHeaderID);
-            createSMAgentChannel(protocolHeaderID);
+            createSMCommanderChannel(protocolHeaderID);
             // Start network channel. This is a blocking function call.
-            createNetworkAgentChannel(protocolHeaderID);
+            createCommanderChannel(protocolHeaderID);
 
             // Start listening for messages from shared memory
             m_SMIntercomChannel->start();
             // Start listening for messages from shared memory
-            m_SMLeader->start();
+            m_SMLeaderChannel->start();
             // Start shared memory agent channel
-            m_SMAgent->start();
+            m_SMCommanderChannel->start();
 
             startService();
 
@@ -140,12 +140,12 @@ void CAgentConnectionManager::start()
 
             createSMIntercomChannel(protocolHeaderID);
             // Blocking function call
-            createSMAgentChannel(protocolHeaderID);
+            createSMCommanderChannel(protocolHeaderID);
 
             // Start listening for messages from shared memory
             m_SMIntercomChannel->start();
             // Start shared memory agent channel
-            m_SMAgent->start();
+            m_SMCommanderChannel->start();
 
             startService();
         }
@@ -174,19 +174,19 @@ void CAgentConnectionManager::stop()
 
     try
     {
-        if (m_SMAgent)
-            m_SMAgent->stop();
+        if (m_SMCommanderChannel)
+            m_SMCommanderChannel->stop();
         if (m_SMIntercomChannel)
             m_SMIntercomChannel->stop();
-        if (m_SMLeader)
-            m_SMLeader->stop();
-        if (m_agent)
+        if (m_SMLeaderChannel)
+            m_SMLeaderChannel->stop();
+        if (m_commanderChannel)
         {
             // Stop forwarder's readMessage thread
-            auto pSCFW = m_agent->getSMFWChannel().lock();
+            auto pSCFW = m_commanderChannel->getSMFWChannel().lock();
             if (pSCFW)
                 pSCFW->stop();
-            m_agent->stop();
+            m_commanderChannel->stop();
         }
         m_io_service.stop();
     }
@@ -218,7 +218,7 @@ void CAgentConnectionManager::startService()
     m_workerThreads.join_all();
 }
 
-void CAgentConnectionManager::createNetworkAgentChannel(uint64_t _protocolHeaderID)
+void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
 {
     // Read server info file
     const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocation());
@@ -239,28 +239,28 @@ void CAgentConnectionManager::createNetworkAgentChannel(uint64_t _protocolHeader
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
     // Create new agent and push handshake message
-    m_agent = CCommanderChannel::makeNew(m_io_service, _protocolHeaderID);
+    m_commanderChannel = CCommanderChannel::makeNew(m_io_service, _protocolHeaderID);
 
     // Connect to DDS commander
-    m_agent->connect(endpoint_iterator);
+    m_commanderChannel->connect(endpoint_iterator);
 }
 
 void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
 {
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMLeader = CSMLeaderChannel::makeNew(m_io_service,
-                                           userDefaults.getSMAgentLeaderOutputName(),
-                                           userDefaults.getSMAgentLeaderOutputName(),
-                                           _protocolHeaderID);
-    m_SMLeader->registerHandler<EChannelEvents::OnLobbyMemberInfo>(
+    m_SMLeaderChannel = CSMLeaderChannel::makeNew(m_io_service,
+                                                  userDefaults.getSMAgentLeaderOutputName(),
+                                                  userDefaults.getSMAgentLeaderOutputName(),
+                                                  _protocolHeaderID);
+    m_SMLeaderChannel->registerHandler<EChannelEvents::OnLobbyMemberInfo>(
         [this](const SSenderInfo& _sender, const string& _name) {
             try
             {
                 // Add output for lobby members, skipping output for itself
-                if (_sender.m_ID != m_SMLeader->getProtocolHeaderID())
+                if (_sender.m_ID != m_SMLeaderChannel->getProtocolHeaderID())
                 {
-                    auto p = m_agent->getSMFWChannel().lock();
+                    auto p = m_commanderChannel->getSMFWChannel().lock();
                     p->addOutput(_sender.m_ID, _name);
                 }
             }
@@ -278,7 +278,7 @@ void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID
 {
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMIntercomChannel = CSMUIChannel::makeNew(
+    m_SMIntercomChannel = CSMIntercomChannel::makeNew(
         m_io_service, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
 
     // TODO: Forwarding of update key commands without decoding using raw message API
@@ -287,33 +287,33 @@ void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID
     // agent.
     m_SMIntercomChannel->registerHandler<cmdCUSTOM_CMD>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            m_SMAgent->pushMsg<cmdCUSTOM_CMD>(*_attachment, m_SMAgent->getProtocolHeaderID());
+            m_SMCommanderChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment, m_SMCommanderChannel->getProtocolHeaderID());
         });
 
     m_SMIntercomChannel->registerHandler<cmdUPDATE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            m_SMAgent->pushMsg<cmdUPDATE_KEY>(*_attachment, m_SMAgent->getProtocolHeaderID());
+            send_cmdUPDATE_KEY(_attachment);
         });
 
     LOG(info) << "SM channel: Intercom created";
 }
 
-void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
+void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderID)
 {
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     // Create shared memory agent channel
-    m_SMAgent = CSMCommanderChannel::makeNew(
+    m_SMCommanderChannel = CSMCommanderChannel::makeNew(
         m_io_service, userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
-    m_SMAgent->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
+    m_SMCommanderChannel->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
 
     // Subscribe to Shutdown command
-    m_SMAgent->registerHandler<cmdSHUTDOWN>(
+    m_SMCommanderChannel->registerHandler<cmdSHUTDOWN>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-            this->on_cmdSHUTDOWN(_sender, _attachment, m_SMAgent);
+            this->on_cmdSHUTDOWN(_sender, _attachment, m_SMCommanderChannel);
         });
 
     // Subscribe to reply command
-    m_SMAgent->registerHandler<cmdREPLY>(
+    m_SMCommanderChannel->registerHandler<cmdREPLY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment) {
             if (_attachment->m_srcCommand == cmdLOBBY_MEMBER_HANDSHAKE &&
                 _attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::ERROR)
@@ -324,44 +324,44 @@ void CAgentConnectionManager::createSMAgentChannel(uint64_t _protocolHeaderID)
 
     // Subscribe for key updates. Forward message to user task.
     // TODO: Forwarding of update key commands without decoding using raw mwssage API
-    m_SMAgent->registerHandler<cmdUPDATE_KEY>(
+    m_SMCommanderChannel->registerHandler<cmdUPDATE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
             m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
         });
 
     // Subscribe for key delete events
-    m_SMAgent->registerHandler<cmdDELETE_KEY>(
+    m_SMCommanderChannel->registerHandler<cmdDELETE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
             m_SMIntercomChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
         });
     //
 
     // Subscribe for cmdSIMPLE_MSG
-    m_SMAgent->registerHandler<cmdSIMPLE_MSG>(
+    m_SMCommanderChannel->registerHandler<cmdSIMPLE_MSG>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG(_sender, _attachment, m_SMAgent);
+            this->on_cmdSIMPLE_MSG(_sender, _attachment, m_SMCommanderChannel);
         });
 
     // Subscribe for cmdSTOP_USER_TASK
-    m_SMAgent->registerHandler<cmdSTOP_USER_TASK>(
+    m_SMCommanderChannel->registerHandler<cmdSTOP_USER_TASK>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
-            this->on_cmdSTOP_USER_TASK(_sender, _attachment, m_SMAgent);
+            this->on_cmdSTOP_USER_TASK(_sender, _attachment, m_SMCommanderChannel);
         });
 
     // Subscribe for cmdCUSTOM_CMD
-    m_SMAgent->registerHandler<cmdCUSTOM_CMD>(
+    m_SMCommanderChannel->registerHandler<cmdCUSTOM_CMD>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD(_sender, _attachment, m_SMAgent);
+            this->on_cmdCUSTOM_CMD(_sender, _attachment, m_SMCommanderChannel);
         });
 
     // Call this callback when a user process is activated
-    m_SMAgent->registerHandler<EChannelEvents::OnNewUserTask>(
+    m_SMCommanderChannel->registerHandler<EChannelEvents::OnNewUserTask>(
         [this](const SSenderInfo& _sender, pid_t _pid) { this->onNewUserTask(_pid); });
 
     // Subscribe for cmdBINARY_ATTACHMENT_RECEIVED
-    m_SMAgent->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
+    m_SMCommanderChannel->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
-            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, m_SMAgent);
+            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, m_SMCommanderChannel);
         });
 
     LOG(info) << "SM channel: Agent is created";
@@ -423,10 +423,10 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
 {
     // Commander requested to shutdown.
     // Shutting down all members of the lobby.
-    if (m_SMLeader != nullptr)
+    if (m_SMLeaderChannel != nullptr)
     {
         LOG(info) << "Sending SHUTDOWN to all lobby members";
-        m_SMLeader->syncSendShutdownAll();
+        m_SMLeaderChannel->syncSendShutdownAll();
     }
     stop();
 }
@@ -467,8 +467,8 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     }
     SUserTaskDoneCmd cmd;
     cmd.m_exitCode = _exitCode;
-    cmd.m_taskID = m_SMAgent->getTaskID();
-    m_SMAgent->pushMsg<cmdUSER_TASK_DONE>(cmd);
+    cmd.m_taskID = m_SMCommanderChannel->getTaskID();
+    m_SMCommanderChannel->pushMsg<cmdUSER_TASK_DONE>(cmd);
 }
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
@@ -495,7 +495,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
         [this, self, _pid]() -> bool {
             // Send commander server the watchdog heartbeat.
             // It indicates that the agent is executing a task and is not idle
-            m_SMAgent->pushMsg<cmdWATCHDOG_HEARTBEAT>();
+            m_SMCommanderChannel->pushMsg<cmdWATCHDOG_HEARTBEAT>();
             CMonitoringThread::instance().updateIdle();
 
             try
@@ -601,4 +601,55 @@ void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     // Send response back to server
     auto p = _channel.lock();
     p->pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
+}
+
+void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+{
+    string propertyID(_attachment->m_propertyID);
+    uint64_t taskID(m_SMCommanderChannel->getTaskID());
+
+    // Check if the task has a write access to property.
+    // If not just send back an error.
+    auto task = m_topo.getTaskByHash(taskID);
+    auto property = task->getProperty(propertyID);
+    if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
+    {
+        stringstream ss;
+        if (property == nullptr)
+            ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task " << task->getId();
+        else
+            ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
+               << task->getId();
+        m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
+        return;
+    }
+
+    CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
+
+    for (auto it = taskIt.first; it != taskIt.second; ++it)
+    {
+        uint64_t receiverTaskID(it->first);
+
+        // Dont't send message to itself
+        if (taskID == receiverTaskID)
+            continue;
+
+        auto task = m_topo.getTaskByHash(receiverTaskID);
+        auto property = task->getProperty(propertyID);
+        if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
+                                    property->getAccessType() == EPropertyAccessType::READWRITE))
+        {
+            SUpdateKeyCmd cmd;
+            cmd.m_propertyID = propertyID;
+            cmd.m_value = _attachment->m_value;
+            cmd.m_receiverTaskID = receiverTaskID;
+            cmd.m_senderTaskID = taskID;
+            m_SMCommanderChannel->pushMsg<cmdUPDATE_KEY>(cmd, m_SMCommanderChannel->getProtocolHeaderID());
+
+            LOG(debug) << "Property update from agent channel: <" << cmd << ">";
+        }
+    }
+
+    m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(
+        SSimpleMsgCmd("Key update messages have been sent to commander.", MiscCommon::debug, cmdUPDATE_KEY));
 }

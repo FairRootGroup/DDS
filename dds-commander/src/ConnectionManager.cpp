@@ -1072,74 +1072,22 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
                                           SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    auto channelPtr = _channel.lock();
-    string propertyID(_attachment->m_propertyID);
-
-    SAgentInfo channel_inf = channelPtr->getAgentInfo(_sender.m_ID);
-
-    // Check if the task has a write access to property.
-    // If not just send back an error.
-    auto task = m_topo.getTaskByHash(channelPtr->getTaskID(_sender));
-    auto property = task->getProperty(propertyID);
-    if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
+    // Commander forwards cmdUPDATE_KEY to the proper channel
+    auto channel = m_taskIDToAgentChannelMap.find(_attachment->m_receiverTaskID);
+    if (channel != m_taskIDToAgentChannelMap.end())
     {
-        stringstream ss;
-        if (property == nullptr)
-            ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task " << task->getId();
-        else
-            ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
-               << task->getId();
-        channelPtr->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID);
-    }
-
-    CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
-
-    for (auto it = taskIt.first; it != taskIt.second; ++it)
-    {
-        // We have to lock with m_mapMutex here. The map can be changed in on_cmdUSER_TASK_DONE.
-        // TODO: For the moment lock is removed because it introduces the bottle neck.
-        // TODO: In on_cmdUSER_TASK_DONE function we do not remove anything from m_taskIDToAgentChannelMap map.
-        bool iterExists = false;
-        CAgentChannel::weakConnectionPtr_t weakPtr;
-        //{
-        //    lock_guard<mutex> lock(m_mapMutex);
-        auto iter = m_taskIDToAgentChannelMap.find(it->first);
-        iterExists = (iter != m_taskIDToAgentChannelMap.end());
-        if (iterExists)
-            weakPtr = iter->second.m_channel;
-        //}
-
-        if (!iterExists)
+        CAgentChannel::weakConnectionPtr_t weakPtr = channel->second.m_channel;
+        if (!weakPtr.expired())
         {
-            LOG(debug) << "on_cmdUPDATE_KEY task <" << it->first << "> not found in map. Property will not be updated.";
-        }
-        else
-        {
-            if (weakPtr.expired())
-                continue;
             auto ptr = weakPtr.lock();
-
-            if (ptr->getChannelType() == EChannelType::AGENT && ptr->started())
-            {
-                SAgentInfo inf = ptr->getAgentInfo(iter->second.m_protocolHeaderID);
-                if (inf.m_taskID != channel_inf.m_taskID)
-                {
-                    auto task = m_topo.getTaskByHash(inf.m_taskID);
-                    auto property = task->getProperty(propertyID);
-                    if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
-                                                property->getAccessType() == EPropertyAccessType::READWRITE))
-                    {
-                        ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment, iter->second.m_protocolHeaderID);
-                        LOG(debug) << "Property update from agent channel: <" << *_attachment << ">";
-                    }
-                }
-            }
+            ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment, channel->second.m_protocolHeaderID);
         }
     }
-
-    channelPtr->pushMsg<cmdSIMPLE_MSG>(
-        SSimpleMsgCmd("All related agents have been advised about the key update.", MiscCommon::debug, cmdUPDATE_KEY),
-        _sender.m_ID);
+    else
+    {
+        LOG(debug) << "on_cmdUPDATE_KEY task <" << channel->first
+                   << "> not found in map. Property will not be updated.";
+    }
 }
 
 void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,

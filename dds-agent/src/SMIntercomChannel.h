@@ -10,21 +10,21 @@
 
 namespace dds
 {
-    class CSMUIChannel : public protocol_api::CBaseSMChannelImpl<CSMUIChannel>
+    class CSMIntercomChannel : public protocol_api::CBaseSMChannelImpl<CSMIntercomChannel>
     {
       protected:
-        CSMUIChannel(boost::asio::io_service& _service,
-                     const std::string& _inputName,
-                     const std::string& _outputName,
-                     uint64_t _protocolHeaderID,
-                     protocol_api::EMQOpenType _inputOpenType,
-                     protocol_api::EMQOpenType _outputOpenType);
+        CSMIntercomChannel(boost::asio::io_service& _service,
+                           const std::string& _inputName,
+                           const std::string& _outputName,
+                           uint64_t _protocolHeaderID,
+                           protocol_api::EMQOpenType _inputOpenType,
+                           protocol_api::EMQOpenType _outputOpenType);
 
       public:
-        ~CSMUIChannel();
+        ~CSMIntercomChannel();
 
       public:
-        BEGIN_SM_MSG_MAP(CSMUIChannel)
+        BEGIN_SM_MSG_MAP(CSMIntercomChannel)
             SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
             SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
         END_SM_MSG_MAP()

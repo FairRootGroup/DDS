@@ -10,8 +10,8 @@
 #include "CommanderChannel.h"
 #include "Options.h"
 #include "SMCommanderChannel.h"
+#include "SMIntercomChannel.h"
 #include "SMLeaderChannel.h"
-#include "SMUIChannel.h"
 #include "Topology.h"
 // BOOST
 #include <boost/asio.hpp>
@@ -36,10 +36,10 @@ namespace dds
 
           private:
             void startService();
-            void createNetworkAgentChannel(uint64_t _protocolHeaderID);
+            void createCommanderChannel(uint64_t _protocolHeaderID);
             void createSMIntercomChannel(uint64_t _protocolHeaderID);
             void createSMLeaderChannel(uint64_t _protocolHeaderID);
-            void createSMAgentChannel(uint64_t _protocolHeaderID);
+            void createSMCommanderChannel(uint64_t _protocolHeaderID);
             void doAwaitStop();
             void onNewUserTask(pid_t _pid);
             void terminateChildrenProcesses();
@@ -63,14 +63,17 @@ namespace dds
 
             void taskExited(int _pid, int _exitCode);
 
+            void send_cmdUPDATE_KEY(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
+
           private:
             boost::asio::io_service m_io_service;
             boost::thread_group m_workerThreads;
 
-            CCommanderChannel::connectionPtr_t m_agent;
-            CSMUIChannel::connectionPtr_t m_SMIntercomChannel;
-            CSMCommanderChannel::connectionPtr_t m_SMAgent;
-            CSMLeaderChannel::connectionPtr_t m_SMLeader;
+            CCommanderChannel::connectionPtr_t m_commanderChannel;
+            CSMIntercomChannel::connectionPtr_t m_SMIntercomChannel;
+            CSMCommanderChannel::connectionPtr_t m_SMCommanderChannel;
+            CSMLeaderChannel::connectionPtr_t m_SMLeaderChannel;
 
             boost::asio::signal_set m_signals;
             SOptions_t m_options;
