@@ -24,7 +24,7 @@ EOF
 
 clean_up()
 {
-	dds-server stop
+	dds-session stop
 	
 	exit $1
 }
@@ -54,14 +54,14 @@ clean_up()
 #fi
 
 echo "Starting DDS commander server..."
-dds-server start -s
+dds-session start --local
 if (( $? != 0 )) ; then
 	echo "Failed to start DDS commander server. Exit code: $?"
 	clean_up 1
 fi
 
 echo "waiting for commander server to start..."
-dds-server status $> /dev/null
+dds-info --status $> /dev/null
 COUNT=0
 # max 10 sec.
 MAX_COUNT=100
@@ -72,9 +72,9 @@ while [ $? -ne 0 ]; do
 	fi
 	sleep 0.1
 	COUNT=$(expr $COUNT + 1)
-	dds-server status $> /dev/null
+	dds-info --status $> /dev/null
 done
-dds-server status
+dds-info --status
 
 echo "Submitting [$TOPO_1_NUMBER_OF_AGENTS] agents..."
 dds-submit -r localhost -n $TOPO_1_NUMBER_OF_AGENTS

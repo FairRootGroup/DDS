@@ -159,7 +159,6 @@ SET(DDS_MISC_FILES
 # "bin" files
 #
 SET(DDS_BIN_FILES
-	${CMAKE_SOURCE_DIR}/bin/dds-server
 	${CMAKE_SOURCE_DIR}/bin/dds-prep-worker
 )
 

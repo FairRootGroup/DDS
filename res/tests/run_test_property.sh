@@ -8,7 +8,7 @@ topologyFile=${DDS_LOCATION}/tests/property_test.xml
 requiredNofAgents=10
 
 echo "Starting DDS server..."
-startOutput=$(dds-server start -s)
+startOutput=$(dds-session start --local)
 
 echo "${startOutput}"
 
@@ -57,6 +57,6 @@ else
 fi
 
 echo "Stoping server..."
-dds-server stop ${sessionID}
+dds-session stop ${sessionID}
 
 exit 0

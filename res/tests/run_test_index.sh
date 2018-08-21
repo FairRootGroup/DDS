@@ -10,7 +10,7 @@ tmpResultFile=${DDS_LOCATION}/tests/index_test_result_tmp.txt
 requiredNofAgents=6
 
 echo "Starting DDS server..."
-startOutput=$(dds-server start -s)
+startOutput=$(dds-session start --local)
 
 echo "${startOutput}"
 
@@ -59,6 +59,6 @@ echo "Test failed: number of good results is ${nofGoodResults}, required number 
 fi
 
 echo "Stoping server..."
-dds-server stop ${sessionID}
+dds-session stop ${sessionID}
 
 exit 0

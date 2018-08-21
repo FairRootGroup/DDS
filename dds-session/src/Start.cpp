@@ -283,5 +283,5 @@ void CStart::printHint()
 {
     cout << "\nHint: You might also want to use a package for the local system only. Build the DDS's \"wn_bin\" "
             "target: \"> make wn_bin\"\n"
-         << "And use \"dds-session --start --locals\" to start DDS" << endl;
+         << "And use \"dds-session --start --local\" to start DDS" << endl;
 }
