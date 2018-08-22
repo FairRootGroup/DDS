@@ -256,6 +256,11 @@ namespace dds
                         case EMQOpenType::OpenOnly:
                             return std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only,
                                                                                         _name.c_str());
+                        default:
+                            LOG(MiscCommon::error)
+                                << "Can't initialize shared memory transport with name " << _name << ": "
+                                << "Unknown EMQOpenType given: " << static_cast<int>(_openType);
+                            return nullptr;
                     }
                 }
                 catch (boost::interprocess::interprocess_exception& _e)
