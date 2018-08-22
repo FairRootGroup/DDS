@@ -85,10 +85,21 @@ void rebuildSessions(vector<fs::path>& _session_dirs, StringVector_t& _sessions)
 
 void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::ETypes _sortingType)
 {
+    // Sort dirs by time
+    typedef std::multimap<std::time_t, fs::path> Dirs_t;
+    Dirs_t sortedDirs;
     for (auto& dir : _session_dirs)
     {
-        string sSID = dir.leaf().string();
-        time_t tmLastUseTime = fs::last_write_time(dir);
+        if (fs::exists(dir) && fs::is_directory(dir))
+        {
+            sortedDirs.insert(Dirs_t::value_type(fs::last_write_time(dir), dir));
+        }
+    }
+
+    for (auto& dir : sortedDirs)
+    {
+        string sSID = dir.second.leaf().string();
+        time_t tmLastUseTime = fs::last_write_time(dir.second);
         char sLastUseTime[1000];
         struct tm* p = localtime(&tmLastUseTime);
         strftime(sLastUseTime, 1000, "%FT%TZ", p);
