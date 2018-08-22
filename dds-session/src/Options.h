@@ -178,8 +178,7 @@ namespace dds
                 _options->m_Command = SOptions::getCommandByName(commands[0]);
                 if (SOptions::cmd_unknown == _options->m_Command)
                 {
-                    LOG(MiscCommon::log_stderr) << "unknown command: " << commands[0] << "\n\n"
-                                                << options;
+                    LOG(MiscCommon::log_stderr) << "unknown command: " << commands[0] << "\n\n" << options;
                     return false;
                 }
 

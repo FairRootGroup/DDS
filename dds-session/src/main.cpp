@@ -93,11 +93,13 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
         struct tm* p = localtime(&tmLastUseTime);
         strftime(sLastUseTime, 1000, "%FT%TZ", p);
 
+        const string sid = CUserDefaults::instance().getDefaultSID();
+
         if (_sortingType == SSessionsSorting::sort_all)
-            LOG(log_stdout_clean) << sSID << " \t [" << sLastUseTime << "] \t "
+            LOG(log_stdout_clean) << (sSID == sid ? " * " : "   ") << sSID << " \t [" << sLastUseTime << "] \t "
                                   << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED");
         else if (_sortingType == SSessionsSorting::sort_running && IsSessionRunning(sSID))
-            LOG(log_stdout_clean) << sSID << " \t [" << sLastUseTime << "] \t "
+            LOG(log_stdout_clean) << (sSID == sid ? " * " : "   ") << sSID << " \t [" << sLastUseTime << "] \t "
                                   << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED");
     }
 }
