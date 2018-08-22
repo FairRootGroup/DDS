@@ -156,8 +156,29 @@ int main(int argc, char* argv[])
         // ++++++++++++++++++
         if (SOptions_t::cmd_stop == options.m_Command)
         {
+            string sid = options.m_sSessionID;
+            if (sid.empty())
+            {
+                sid = CUserDefaults::instance().getDefaultSID();
+                char answer(0);
+                do
+                {
+                    cout << "Stopping the default session: " << sid << endl;
+                    cout << "Are you sure you want to proceed? [y/n]" << endl;
+                    cin >> answer;
+                } while (!cin.fail() && answer != 'y' && answer != 'n');
+
+                if (answer == 'y')
+                {
+                    CStop stop;
+                    stop.stop(sid);
+                }
+
+                return EXIT_SUCCESS;
+            }
+
             CStop stop;
-            stop.stop(options.m_sSessionID);
+            stop.stop(sid);
 
             return EXIT_SUCCESS;
         }

@@ -184,12 +184,8 @@ namespace dds
 
                 if (SOptions::cmd_stop == _options->m_Command)
                 {
-                    if (commands.size() < 2)
-                    {
-                        LOG(MiscCommon::log_stderr) << "Missing argument. The stop command requares a sessions ID\n\n";
-                        return false;
-                    }
-                    _options->m_sSessionID = commands[1];
+                    if (commands.size() > 1)
+                        _options->m_sSessionID = commands[1];
                 }
                 else if (SOptions::cmd_set_default == _options->m_Command)
                 {
@@ -234,8 +230,7 @@ namespace dds
                 return false;
             }
 
-            if ((SOptions_t::cmd_stop == _options->m_Command || SOptions_t::cmd_set_default == _options->m_Command) &&
-                _options->m_sSessionID.empty())
+            if (SOptions_t::cmd_set_default == _options->m_Command && _options->m_sSessionID.empty())
             {
                 LOG(MiscCommon::log_stderr) << "Session ID argument is missing or empty";
                 return false;
