@@ -16,13 +16,10 @@ namespace dds
         {
             UNKNOWN = 0,
             AGENT,
-            UI,
-            API_GUARD
+            UI
         };
         typedef std::vector<EChannelType> channelTypeVector_t;
-        const std::array<std::string, 5> gChannelTypeName{
-            { "unknown", "agent", "ui", "key_value_guard", "custom_command_guard" }
-        };
+        const std::array<std::string, 3> gChannelTypeName{ { "unknown", "agent", "ui" } };
     } // namespace protocol_api
 } // namespace dds
 #endif /* __DDS__ProtocolDef__ */
