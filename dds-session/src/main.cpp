@@ -161,14 +161,17 @@ int main(int argc, char* argv[])
             {
                 sid = CUserDefaults::instance().getDefaultSID();
                 char answer(0);
-                do
+                if (!options.m_bForce)
                 {
-                    cout << "Stopping the default session: " << sid << endl;
-                    cout << "Are you sure you want to proceed? [y/n]" << endl;
-                    cin >> answer;
-                } while (!cin.fail() && answer != 'y' && answer != 'n');
+                    do
+                    {
+                        cout << "Stopping the default session: " << sid << endl;
+                        cout << "Are you sure you want to proceed? [y/n]" << endl;
+                        cin >> answer;
+                    } while (!cin.fail() && answer != 'y' && answer != 'n');
+                }
 
-                if (answer == 'y')
+                if (options.m_bForce || answer == 'y')
                 {
                     CStop stop;
                     stop.stop(sid);
