@@ -97,6 +97,12 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
             this->on_cmdGET_AGENTS_INFO(_sender, _attachment, weakClient);
         });
 
+    _newClient->registerHandler<cmdGET_IDLE_AGENTS_COUNT>(
+        [this, weakClient](const SSenderInfo& _sender,
+                           SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment) {
+            this->on_cmdGET_IDLE_AGENTS_COUNT(_sender, _attachment, weakClient);
+        });
+
     _newClient->registerHandler<cmdSUBMIT>(
         [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment) {
             this->on_cmdSUBMIT(_sender, _attachment, weakClient);
@@ -903,6 +909,30 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
             p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
         }
     }
+}
+
+void CConnectionManager::on_cmdGET_IDLE_AGENTS_COUNT(
+    const SSenderInfo& _sender,
+    SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
+    CAgentChannel::weakConnectionPtr_t _channel)
+{
+    CConnectionManager::weakChannelInfo_t::container_t channels(
+        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                    info.m_taskID == 0 && info.m_state == EAgentState::idle);
+        }));
+
+    SSimpleMsgCmd cmd;
+    // No active agents
+    if (channels.empty() && !_channel.expired())
+        cmd.m_sMsg = "0";
+    else
+        cmd.m_sMsg = to_string(channels.size());
+
+    auto p = _channel.lock();
+    p->pushMsg<cmdREPLY_IDLE_AGENTS_COUNT>(cmd, _sender.m_ID);
+    return;
 }
 
 void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,

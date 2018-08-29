@@ -33,6 +33,7 @@ namespace dds
                 , m_bNeedPropValues(false)
                 , m_propertyID()
                 , m_sid(boost::uuids::nil_uuid())
+                , m_nIdleAgentsCount(0)
             {
             }
 
@@ -44,6 +45,7 @@ namespace dds
             bool m_bNeedPropValues;
             std::string m_propertyID;
             boost::uuids::uuid m_sid;
+            int m_nIdleAgentsCount;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -85,6 +87,10 @@ namespace dds
             options.add_options()("prop-id",
                                   bpo::value<std::string>(&_options->m_propertyID),
                                   "Specify property IDs that have to be returned.");
+            options.add_options()(
+                "wait-for-idle-agents",
+                bpo::value<int>(&_options->m_nIdleAgentsCount),
+                "The command will block infinitely until a required number of idle agents are online.");
 
             // Parsing command-line
             bpo::variables_map vm;
@@ -115,6 +121,12 @@ namespace dds
 
             if (vm.count("session"))
                 _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
+
+            if (vm.count("wait-for-idle-agents") && _options->m_nIdleAgentsCount <= 0)
+            {
+                LOG(MiscCommon::log_stderr) << "A number of agents to wait must be higher than 0.";
+                return false;
+            }
 
             return true;
         }

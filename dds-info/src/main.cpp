@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
     }
     catch (exception& e)
     {
-        if (options.m_bNeedDDSStatus)
+        if (options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0)
         {
             LOG(log_stdout_clean) << "DDS commander server is not running.";
         }

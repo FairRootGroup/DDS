@@ -16,7 +16,7 @@
 // In the future we might want to support backward compatibility. In this case protocol version, command will be
 // organized in separate structures and enums.
 //
-const uint16_t g_protocolCommandsVersion = 3;
+const uint16_t g_protocolCommandsVersion = 4;
 
 namespace dds
 {
@@ -66,7 +66,9 @@ namespace dds
             cmdLOBBY_MEMBER_INFO,      // attachment: SSimpleMsgCmd
             cmdLOBBY_MEMBER_HANDSHAKE, // attachment: SVersionCmd
             cmdMOVE_FILE,              // attachment: SMoveFileCmd
-            cmdREPLY                   // attachment: SReplyCmd
+            cmdREPLY,                  // attachment: SReplyCmd
+            cmdGET_IDLE_AGENTS_COUNT,
+            cmdREPLY_IDLE_AGENTS_COUNT // attachment: SSimpleMsgCmd
         };
 
         static std::map<uint16_t, std::string> g_cmdToString{
@@ -111,7 +113,9 @@ namespace dds
             { cmdLOBBY_MEMBER_INFO, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO) },
             { cmdLOBBY_MEMBER_HANDSHAKE, NAME_TO_STRING(cmdLOBBY_MEMBER_HANDSHAKE) },
             { cmdMOVE_FILE, NAME_TO_STRING(cmdMOVE_FILE) },
-            { cmdREPLY, NAME_TO_STRING(cmdREPLY) }
+            { cmdREPLY, NAME_TO_STRING(cmdREPLY) },
+            { cmdGET_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdGET_IDLE_AGENT_COUNT) },
+            { cmdREPLY_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdREPLY_IDLE_AGENT_COUNT) }
         };
     } // namespace protocol_api
 } // namespace dds

@@ -39,6 +39,10 @@ namespace dds
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_AGENTS_INFO>::ptr_t _attachment,
                 CAgentChannel::weakConnectionPtr_t _channel);
+            void on_cmdGET_IDLE_AGENTS_COUNT(
+                const protocol_api::SSenderInfo& _sender,
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
+                CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdGET_LOG(const protocol_api::SSenderInfo& _sender,
                                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment,
                                CAgentChannel::weakConnectionPtr_t _channel);

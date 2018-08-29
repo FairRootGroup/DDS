@@ -59,6 +59,8 @@ namespace dds
                 MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
                 // - get Agents Info command
                 MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
+                MESSAGE_HANDLER(cmdGET_IDLE_AGENTS_COUNT, on_cmdGET_IDLE_AGENTS_COUNT)
+                //
                 MESSAGE_HANDLER(cmdREPLY_ID, on_cmdREPLY_ID)
                 MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
                 MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
@@ -126,6 +128,9 @@ namespace dds
                 const protocol_api::SSenderInfo& _sender);
             bool on_cmdGET_AGENTS_INFO(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_AGENTS_INFO>::ptr_t _attachment,
+                const protocol_api::SSenderInfo& _sender);
+            bool on_cmdGET_IDLE_AGENTS_COUNT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);
             bool on_cmdTRANSPORT_TEST(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,

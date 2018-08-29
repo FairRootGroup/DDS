@@ -101,6 +101,7 @@ namespace dds
         REGISTER_CMD_ATTACHMENT(SVersionCmd, cmdLOBBY_MEMBER_HANDSHAKE)
         REGISTER_CMD_ATTACHMENT(SMoveFileCmd, cmdMOVE_FILE)
         REGISTER_CMD_ATTACHMENT(SReplyCmd, cmdREPLY)
+        REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdREPLY_IDLE_AGENTS_COUNT)
     } // namespace protocol_api
 } // namespace dds
 

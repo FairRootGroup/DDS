@@ -288,6 +288,15 @@ bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_I
     return false;
 }
 
+bool CAgentChannel::on_cmdGET_IDLE_AGENTS_COUNT(SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
+                                                const SSenderInfo& _sender)
+{
+    // Return false.
+    // Give the possibility to further process this message.
+    // For example, send information to UI.
+    return false;
+}
+
 bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
                                          const SSenderInfo& _sender)
 {

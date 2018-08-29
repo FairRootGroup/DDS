@@ -19,7 +19,10 @@ Added: Initial version of the tool. (GH-191)
 Added: Learned new commands: "start", "stop", "stop-all", "clean", "list", and "set-default". (GH-192)    
 
 ### dds-server
-The command is removed. Use dds-session instead. (GH-192)    
+Modified: The command is removed. Use dds-session instead. (GH-192)    
+
+### dds-info
+Added: The command learned "--wait-for-idle-agents" parameter, which blocks the command infinitely until a required number of idle agents are online. (GH-205)   
 
 ## v2.0 (2018-03-12)
 
