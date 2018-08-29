@@ -3,11 +3,6 @@
 #
 project( dds-tutorial1 )
 
-
-include_directories(
-	${Boost_INCLUDE_DIRS}
-)
-
 ##################################################################
 # task-type-one
 ##################################################################
@@ -27,6 +22,8 @@ target_link_libraries (
 target_include_directories(task-type-one
     PRIVATE
         $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+    PUBLIC
+        ${Boost_INCLUDE_DIRS}
 )
 
 install(TARGETS task-type-one DESTINATION tutorials/tutorial1)
@@ -50,6 +47,8 @@ target_link_libraries (
 target_include_directories(task-type-two
     PRIVATE
         $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+    PUBLIC
+        ${Boost_INCLUDE_DIRS}
 )
 
 install(TARGETS task-type-two DESTINATION tutorials/tutorial1)
