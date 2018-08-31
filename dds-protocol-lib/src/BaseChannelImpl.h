@@ -131,6 +131,24 @@ namespace dds
         break;                                                                                                     \
     }
 
+#define MESSAGE_HANDLER_DISPATCH(msg)                                                                               \
+    case msg:                                                                                                       \
+    {                                                                                                               \
+        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                        \
+        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                           \
+        LOG(MiscCommon::debug) << "Dispatching " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
+        if (!handlerExists(msg))                                                                                    \
+        {                                                                                                           \
+            LOG(MiscCommon::error) << "The received message can't be dispatched, it has no registered handler: "    \
+                                   << _currentMsg->toString();                                                      \
+        }                                                                                                           \
+        else                                                                                                        \
+        {                                                                                                           \
+            dispatchHandlers<>(msg, sender, attachmentPtr);                                                         \
+        }                                                                                                           \
+        break;                                                                                                      \
+    }
+
 #define END_MSG_MAP()                                                                                         \
     default:                                                                                                  \
         LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString(); \

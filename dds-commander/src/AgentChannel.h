@@ -53,33 +53,33 @@ namespace dds
                 MESSAGE_HANDLER(cmdREPLY_HOST_INFO, on_cmdREPLY_HOST_INFO)
                 //====> replay on the "submit" command request
                 MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
-                MESSAGE_HANDLER(cmdUSER_TASK_DONE, on_cmdUSER_TASK_DONE)
+                MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
                 //====> replay on the "info" command request
                 // - get pid of the commander server
                 MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
                 // - get Agents Info command
-                MESSAGE_HANDLER(cmdGET_AGENTS_INFO, on_cmdGET_AGENTS_INFO)
-                MESSAGE_HANDLER(cmdGET_IDLE_AGENTS_COUNT, on_cmdGET_IDLE_AGENTS_COUNT)
+                MESSAGE_HANDLER_DISPATCH(cmdGET_AGENTS_INFO)
+                MESSAGE_HANDLER_DISPATCH(cmdGET_IDLE_AGENTS_COUNT)
                 //
-                MESSAGE_HANDLER(cmdREPLY_ID, on_cmdREPLY_ID)
+                MESSAGE_HANDLER_DISPATCH(cmdREPLY_ID)
                 MESSAGE_HANDLER(cmdBINARY_ATTACHMENT_RECEIVED, on_cmdBINARY_ATTACHMENT_RECEIVED)
-                MESSAGE_HANDLER(cmdTRANSPORT_TEST, on_cmdTRANSPORT_TEST)
+                MESSAGE_HANDLER_DISPATCH(cmdTRANSPORT_TEST)
                 MESSAGE_HANDLER(cmdREPLY, on_cmdREPLY)
                 // - Topology commands
-                MESSAGE_HANDLER(cmdUPDATE_TOPOLOGY, on_cmdUPDATE_TOPOLOGY)
+                MESSAGE_HANDLER_DISPATCH(cmdUPDATE_TOPOLOGY)
                 // - Agents commands
-                MESSAGE_HANDLER(cmdGET_LOG, on_cmdGET_LOG)
-                MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
+                MESSAGE_HANDLER_DISPATCH(cmdGET_LOG)
+                MESSAGE_HANDLER_DISPATCH(cmdUPDATE_KEY)
                 // Watchdog
                 MESSAGE_HANDLER(cmdWATCHDOG_HEARTBEAT, on_cmdWATCHDOG_HEARTBEAT)
-                MESSAGE_HANDLER(cmdGET_PROP_LIST, on_cmdGET_PROP_LIST)
-                MESSAGE_HANDLER(cmdGET_PROP_VALUES, on_cmdGET_PROP_VALUES)
+                MESSAGE_HANDLER_DISPATCH(cmdGET_PROP_LIST)
+                MESSAGE_HANDLER_DISPATCH(cmdGET_PROP_VALUES)
                 // Statistics commands
-                MESSAGE_HANDLER(cmdENABLE_STAT, on_cmdENABLE_STAT)
-                MESSAGE_HANDLER(cmdDISABLE_STAT, on_cmdDISABLE_STAT)
-                MESSAGE_HANDLER(cmdGET_STAT, on_cmdGET_STAT)
+                MESSAGE_HANDLER_DISPATCH(cmdENABLE_STAT)
+                MESSAGE_HANDLER_DISPATCH(cmdDISABLE_STAT)
+                MESSAGE_HANDLER_DISPATCH(cmdGET_STAT)
                 // custom command
-                MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
+                MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
             END_MSG_MAP()
 
           public:
@@ -119,51 +119,14 @@ namespace dds
                 const protocol_api::SSenderInfo& _sender);
             bool on_cmdGED_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGED_PID>::ptr_t _attachment,
                                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdREPLY_ID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
-                                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGET_LOG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_LOG>::ptr_t _attachment,
-                               const protocol_api::SSenderInfo& _sender);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGET_AGENTS_INFO(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGET_IDLE_AGENTS_COUNT(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdTRANSPORT_TEST(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdTRANSPORT_TEST>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
             bool on_cmdREPLY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY>::ptr_t _attachment,
                              const protocol_api::SSenderInfo& _sender);
-            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
-            bool on_cmdUSER_TASK_DONE(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
             bool on_cmdWATCHDOG_HEARTBEAT(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGET_PROP_LIST(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_LIST>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGET_PROP_VALUES(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_PROP_VALUES>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdUPDATE_TOPOLOGY(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdENABLE_STAT(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdDISABLE_STAT(
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
-                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGET_STAT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
-                                const protocol_api::SSenderInfo& _sender);
-            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
 
             std::string _remoteEndIDString();
 

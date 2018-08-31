@@ -235,18 +235,6 @@ bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _att
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY_ID(SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment, const SSenderInfo& _sender)
-{
-    // Return false. This message will be processed by ConnectionManager.
-    return false;
-}
-
-bool CAgentChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, const SSenderInfo& _sender)
-{
-    // Return false. This message will be processed by ConnectionManager.
-    return false;
-}
-
 bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, const SSenderInfo& _sender)
 {
@@ -279,33 +267,6 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     return true;
 }
 
-bool CAgentChannel::on_cmdGET_AGENTS_INFO(SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                          const SSenderInfo& _sender)
-{
-    // Return false.
-    // Give the possibility to further process this message.
-    // For example, send information to UI.
-    return false;
-}
-
-bool CAgentChannel::on_cmdGET_IDLE_AGENTS_COUNT(SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
-                                                const SSenderInfo& _sender)
-{
-    // Return false.
-    // Give the possibility to further process this message.
-    // For example, send information to UI.
-    return false;
-}
-
-bool CAgentChannel::on_cmdTRANSPORT_TEST(SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
-                                         const SSenderInfo& _sender)
-{
-    // Return false.
-    // Give the possibility to further process this message.
-    // For example, send information to UI.
-    return false;
-}
-
 bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, const SSenderInfo& _sender)
 {
     LOG(debug) << "on_cmdREPLY attachment [" << *_attachment << "] command from " << remoteEndIDString();
@@ -336,22 +297,6 @@ bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachm
     }
 }
 
-bool CAgentChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                     const SSenderInfo& _sender)
-{
-    // Return false.
-    // The command can only be processed by the higher level object
-    return false;
-}
-
-bool CAgentChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                         const SSenderInfo& _sender)
-{
-    // Return false.
-    // The command can only be processed by the higher level object
-    return false;
-}
-
 bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment,
                                              const SSenderInfo& _sender)
 {
@@ -362,45 +307,4 @@ bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_
     // TODO: So far we do nothing with this info.
     // In the future we might want to send more information about tasks being executed (pid, CPU info, memory)
     return true;
-}
-
-bool CAgentChannel::on_cmdGET_PROP_LIST(SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                        const SSenderInfo& _sender)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdGET_PROP_VALUES(SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                          const SSenderInfo& _sender)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdUPDATE_TOPOLOGY(SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
-                                          const SSenderInfo& _sender)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdENABLE_STAT(SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment,
-                                      const SSenderInfo& _sender)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdDISABLE_STAT(SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment,
-                                       const SSenderInfo& _sender)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdGET_STAT(SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment, const SSenderInfo& _sender)
-{
-    return false;
-}
-
-bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
-                                     const SSenderInfo& _sender)
-{
-    return false;
 }
