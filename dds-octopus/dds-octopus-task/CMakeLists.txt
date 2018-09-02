@@ -1,60 +1,36 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds-octopus-task )
+project(dds-octopus-task)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
-#
-# configure files
-# 
-configure_file( ${dds-octopus-task_SOURCE_DIR}/src/version.h.in ${dds-octopus-task_BINARY_DIR}/version.h @ONLY )
-
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
-	./src/Task.cpp
-	./../src/OctopusProtocol.cpp
+set(SOURCE_FILES
+	src/main.cpp
+	src/Task.cpp
+	${dds-octopus_SOURCE_DIR}/src/OctopusProtocol.cpp
 )
 
-#
-# Header files
-#
-set( HEADER_FILES
-	./src/Task.h
-	./../src/OctopusProtocol.h
+set(HEADER_FILES
+	src/Task.h
+	${dds-octopus_SOURCE_DIR}/src/OctopusProtocol.h
 )
 
-include_directories(
-	${dds-octopus-task_BINARY_DIR}
-	${dds-octopus-task_SOURCE_DIR}/../src/
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} 
-)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-#
-# dds-octopus executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-octopus-task ${SOURCE_FILES} ${HEADER_FILES})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-octopus-task ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds-octopus-task
+target_link_libraries(${PROJECT_NAME}
+  MiscCommon
 	dds_intercom_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::boost
+  Boost::program_options
 )
 
-target_include_directories(dds-octopus-task
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${dds-octopus_SOURCE_DIR}/src>
 )
 
-install(TARGETS dds-octopus-task DESTINATION tests/dds-octopus)
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION tests/dds-octopus
+)

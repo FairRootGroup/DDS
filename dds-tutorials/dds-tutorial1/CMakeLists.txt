@@ -1,58 +1,51 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-tutorial1 )
+project(dds-tutorial1)
 
 ##################################################################
 # task-type-one
 ##################################################################
 
-set( TUTSRV_SOURCE_FILES
-	./task-type-one.cpp
-)
+set(task task-type-one)
 
-add_executable(task-type-one ${TUTSRV_SOURCE_FILES})
+add_executable(${task} task-type-one.cpp)
 
-target_link_libraries (
-	task-type-one
+target_link_libraries(${task}
+  PUBLIC
 	dds_intercom_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::boost
+	Boost::program_options
 )
 
-target_include_directories(task-type-one
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
-    PUBLIC
-        ${Boost_INCLUDE_DIRS}
+install(TARGETS ${task}
+  RUNTIME DESTINATION tutorials/tutorial1
 )
-
-install(TARGETS task-type-one DESTINATION tutorials/tutorial1)
 
 ##################################################################
-# tutorial1-client
+# task-type-two
 ##################################################################
 
-set( TUTCLN_SOURCE_FILES
-	./task-type-two.cpp
-)
+set(task task-type-two)
 
-add_executable(task-type-two ${TUTCLN_SOURCE_FILES})
+add_executable(${task} task-type-two.cpp)
 
-target_link_libraries (
-	task-type-two
+target_link_libraries(${task}
+  PUBLIC
 	dds_intercom_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::boost
+	Boost::program_options
 )
 
-target_include_directories(task-type-two
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
-    PUBLIC
-        ${Boost_INCLUDE_DIRS}
+install(TARGETS ${task}
+  RUNTIME DESTINATION tutorials/tutorial1
 )
 
-install(TARGETS task-type-two DESTINATION tutorials/tutorial1)
+##################################################################
 
+install(FILES 
+  tutorial1_topo.xml
+  tutorial1_hosts.cfg
 
-install(FILES ${dds-tutorial1_SOURCE_DIR}/tutorial1_topo.xml DESTINATION tutorials/tutorial1)
-install(FILES ${dds-tutorial1_SOURCE_DIR}/tutorial1_hosts.cfg DESTINATION tutorials/tutorial1)
+  DESTINATION tutorials/tutorial1
+)

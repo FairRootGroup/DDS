@@ -1,66 +1,36 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-daemonize)
-
+project(dds-daemonize)
 
 set(USER_DEFAULTS_CFG_VERSION "0.1")
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY )
 
-#
-# configure files
-# 
-configure_file( ${dds-daemonize_SOURCE_DIR}/src/version.h.in ${dds-daemonize_BINARY_DIR}/version.h @ONLY )
+add_executable(${PROJECT_NAME} src/main.cpp)
 
-#
-# Source files
-#
-set( SOURCE_FILES
-    ./src/main.cpp
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+	Boost::program_options
+  Boost::system
+  Boost::filesystem
 )
 
-#
-# Header files
-#
-set( HEADER_FILES
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 
-include_directories(
-	${dds-daemonize_BINARY_DIR}
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS}
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
 )
 
-#
-# dds-daemonize executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-daemonize ${SOURCE_FILES} ${HEADER_FILES})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-daemonize ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-
-target_link_libraries (
-	dds-daemonize
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_SYSTEM_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-)
-
-install(TARGETS dds-daemonize DESTINATION bin)
-
-#
-# Unit tests
-#
-if (BUILD_TESTS)
-    message (STATUS "Build dds-daemonize unit tests - YES")
-    add_subdirectory ( ${dds-daemonize_SOURCE_DIR}/tests ) 
-else (BUILD_TESTS)
-    message (STATUS "Build dds-daemonize unit tests - NO")
-endif (BUILD_TESTS)
+if(BUILD_TESTS)
+  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+  add_subdirectory(tests) 
+else()
+  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+endif()
 

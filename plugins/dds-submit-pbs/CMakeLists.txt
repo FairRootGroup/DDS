@@ -1,61 +1,41 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds-submit-pbs )
+project(dds-submit-pbs)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY)
 
-#
-# configure files
-# 
-configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
+add_executable(${PROJECT_NAME} src/main.cpp)
 
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
-)
-set( SRC_HDRS
-)
-
-
-include_directories(
-	${PROJECT_BINARY_DIR}/src
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} )
-
-#
-# dds-pbs executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit-pbs ${SOURCE_FILES} ${SRC_HDRS})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit-pbs ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds-submit-pbs
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_user_defaults_lib
 	dds_intercom_lib
 	pipe_log_engine
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_LOG_LIBRARY}
-	${Boost_LOG_SETUP_LIBRARY}
-	${Boost_THREAD_LIBRARY}
+  Boost::boost
+  Boost::program_options
+  Boost::log
+  Boost::log_setup
+  Boost::thread
 )
 
-target_include_directories(dds-submit-pbs
-	PRIVATE
-		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
-	PRIVATE
-		$<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR/src}>
 )
 
-install(TARGETS dds-submit-pbs DESTINATION plugins/dds-submit-pbs)
-install(PROGRAMS ${dds-submit-pbs_SOURCE_DIR}/src/dds-submit-pbs-worker DESTINATION plugins/dds-submit-pbs)
-install(PROGRAMS ${dds-submit-pbs_SOURCE_DIR}/src/job.pbs.in DESTINATION plugins/dds-submit-pbs)
+install(TARGETS ${PROJECT_NAME} DESTINATION plugins/${PROJECT_NAME})
+install(PROGRAMS
+  src/dds-submit-pbs-worker
+  src/job.pbs.in
 
+  DESTINATION plugins/${PROJECT_NAME}
+)
+
+#if(BUILD_TESTS)
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+#  add_subdirectory(tests) 
+#else()
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+#endif()

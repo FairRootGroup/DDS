@@ -1,58 +1,51 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-tutorial2 )
-
-
-include_directories(
-	${Boost_INCLUDE_DIRS}
-)
+project(dds-tutorial2)
 
 ##################################################################
 # task-custom-cmd
 ##################################################################
 
-set( TUTSRV_SOURCE_FILES
-	./task-custom-cmd.cpp
+set(task task-custom-cmd)
+
+add_executable(${task} task-custom-cmd.cpp)
+
+target_link_libraries(${task}
+  PUBLIC
+	dds_intercom_lib
+  Boost::boost
+	Boost::program_options
 )
 
-add_executable(task-custom-cmd ${TUTSRV_SOURCE_FILES})
-
-target_link_libraries (
-	task-custom-cmd
-    dds_intercom_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+install(TARGETS ${task}
+  RUNTIME DESTINATION tutorials/tutorial2
 )
-
-target_include_directories(task-custom-cmd
-   PRIVATE
-     $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
-)
-
-install(TARGETS task-custom-cmd DESTINATION tutorials/tutorial2)
 
 ##################################################################
 # ui-custom-cmd
 ##################################################################
 
-set( TUTSRV_SOURCE_FILES
-	./ui-custom-cmd.cpp
+set(task ui-custom-cmd)
+
+add_executable(${task} ui-custom-cmd.cpp)
+
+target_link_libraries(${task}
+  PUBLIC
+	dds_intercom_lib
+  Boost::boost
+	Boost::program_options
 )
 
-add_executable(ui-custom-cmd ${TUTSRV_SOURCE_FILES})
-
-target_link_libraries (
-	ui-custom-cmd
-    dds_intercom_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+install(TARGETS ${task}
+  RUNTIME DESTINATION tutorials/tutorial2
 )
 
-target_include_directories(ui-custom-cmd
-   PRIVATE
-     $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+##################################################################
+
+install(FILES 
+  tutorial2_topo.xml
+  tutorial2_hosts.cfg
+
+  DESTINATION tutorials/tutorial2
 )
-
-install(TARGETS ui-custom-cmd DESTINATION tutorials/tutorial2)
-
-install(FILES ${dds-tutorial2_SOURCE_DIR}/tutorial2_topo.xml DESTINATION tutorials/tutorial2)
-install(FILES ${dds-tutorial2_SOURCE_DIR}/tutorial2_hosts.cfg DESTINATION tutorials/tutorial2)

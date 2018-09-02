@@ -1,67 +1,96 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( MiscCommon-tests )
+project(MiscCommon-tests)
 
-include_directories(${MiscCommon_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
-#=============================================================================
-add_executable(MiscCommon_test_MiscUtils Test_MiscUtils.cpp )
-
-target_link_libraries (
-    MiscCommon_test_MiscUtils
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-)
-
-install(TARGETS MiscCommon_test_MiscUtils DESTINATION tests)
-#=============================================================================
-add_executable(MiscCommon_test_Process Test_Process.cpp )
-
-target_link_libraries (
-    MiscCommon_test_Process
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-	${Boost_SYSTEM_LIBRARY}
-	${Boost_FILESYSTEM_LIBRARY}
-)
-
-install(TARGETS MiscCommon_test_Process DESTINATION tests)
-#=============================================================================
-add_executable(MiscCommon_test_SysHelper Test_SysHelper.cpp )
-
-target_link_libraries (
-    MiscCommon_test_SysHelper
-	${Boost_SYSTEM_LIBRARY}
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-)
-
-install(TARGETS MiscCommon_test_SysHelper DESTINATION tests)
-#=============================================================================
-add_executable(MiscCommon_test_FindCfgFile Test_FindCfgFile.cpp )
-
-target_link_libraries (
-    MiscCommon_test_FindCfgFile
-	${Boost_SYSTEM_LIBRARY}
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-)
-
-install(TARGETS MiscCommon_test_FindCfgFile DESTINATION tests)
-#=============================================================================
-add_executable(MiscCommon_test_Logger Test_Logger.cpp )
-
-target_link_libraries (
-    MiscCommon_test_Logger
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-)
-
-install(TARGETS MiscCommon_test_Logger DESTINATION tests)
+set(prefix MiscCommon_test)
 
 #=============================================================================
-add_executable(MiscCommon_test_wordexp Test_wordexp.cpp )
 
-target_link_libraries (
-    MiscCommon_test_wordexp
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-	${Boost_SYSTEM_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
+set(test ${prefix}_MiscUtils)
+add_executable(${test} Test_MiscUtils.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
 )
 
-install(TARGETS MiscCommon_test_wordexp DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION tests)
+
+#=============================================================================
+
+set(test ${prefix}_Process)
+add_executable(${test} Test_Process.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
+  Boost::system
+  Boost::filesystem
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION tests)
+
+#=============================================================================
+
+set(test ${prefix}_SysHelper)
+add_executable(${test} Test_SysHelper.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
+  Boost::system
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION tests)
+
+#=============================================================================
+
+set(test ${prefix}_FindCfgFile)
+add_executable(${test} Test_FindCfgFile.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
+  Boost::system
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION tests)
+
+#=============================================================================
+
+set(test ${prefix}_Logger)
+add_executable(${test} Test_Logger.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION tests)
+
+#=============================================================================
+
+set(test ${prefix}_wordexp)
+add_executable(${test} Test_wordexp.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
+  Boost::system
+  Boost::filesystem
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION tests)

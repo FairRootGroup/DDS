@@ -1,87 +1,63 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds_intercom_lib )
+project(dds_intercom_lib)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
-#
-# configure files
-#
-configure_file( ${dds_intercom_lib_SOURCE_DIR}/src/version.h.in ${dds_intercom_lib_BINARY_DIR}/version.h @ONLY )
-
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/dds_intercom.cpp
-	./src/dds_rms_plugin_protocol.cpp
-	./src/DDSIntercomGuard.cpp
-	./src/SMAgentChannel.cpp
-    ./src/AgentChannel.cpp
-    ./src/AgentConnectionManager.cpp
+set(SOURCE_FILES
+	src/dds_intercom.cpp
+	src/dds_rms_plugin_protocol.cpp
+	src/DDSIntercomGuard.cpp
+	src/SMAgentChannel.cpp
+  src/AgentChannel.cpp
+  src/AgentConnectionManager.cpp
 )
 
-set( SRC_HDRS_INT
-	./src/DDSIntercomGuard.h
-	./src/SMAgentChannel.h
-    ./src/AgentChannel.h
-    ./src/AgentConnectionManager.h
+set(SRC_HDRS_INT
+	src/DDSIntercomGuard.h
+	src/SMAgentChannel.h
+  src/AgentChannel.h
+  src/AgentConnectionManager.h
 )
 
-set( SRC_HDRS
-	./src/dds_intercom.h
-	./src/dds_intercom_error_codes.h
+set(SRC_HDRS
+	src/dds_intercom.h
+	src/dds_intercom_error_codes.h
 )
 
-include_directories(
-	${dds_intercom_lib_BINARY_DIR}
-	${PROJECT_SOURCE_DIR}
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS}
-)
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${SRC_HDRS_INT} ${SRC_HDRS})
 
-#
-# lib
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_library(dds_intercom_lib SHARED ${SOURCE_FILES} ${SRC_HDRS_INT} ${SRC_HDRS})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-	add_library(dds_intercom_lib SHARED ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds_intercom_lib
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_user_defaults_lib
 	dds_protocol_lib
-	${Boost_SYSTEM_LIBRARY}
-	${Boost_FILESYSTEM_LIBRARY}
-	${Boost_LOG_LIBRARY}
-	${Boost_LOG_SETUP_LIBRARY}
-	${Boost_THREAD_LIBRARY}
-	${Boost_SIGNALS_LIBRARY}
+  Boost::boost
+  Boost::system
+  Boost::filesystem
+  Boost::log
+  Boost::log_setup
+  Boost::thread
+  Boost::signals
 )
 
-target_include_directories(dds_intercom_lib
-	PRIVATE
-		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )
 
-# API headers
-target_include_directories(dds_intercom_lib INTERFACE ${dds_intercom_lib_SOURCE_DIR}/src)
-
-install(TARGETS dds_intercom_lib DESTINATION lib)
+install(TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+)
 install(FILES ${SRC_HDRS} DESTINATION include)
 
-#
-# Unit tests
-#
-if (BUILD_TESTS)
-    message (STATUS "Build dds_intercom_lib tests - YES")
-    add_subdirectory ( ${dds_intercom_lib_SOURCE_DIR}/tests )
-else (BUILD_TESTS)
-    message (STATUS "Build dds_intercom_lib tests - NO")
-endif (BUILD_TESTS)
+if(BUILD_TESTS)
+  message(STATUS "Build ${PROJECT_NAME} tests - YES")
+  add_subdirectory(tests)
+else()
+  message(STATUS "Build ${PROJECT_NAME} tests - NO")
+endif()

@@ -1,68 +1,43 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds-octopus )
+project(dds-octopus)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
-#
-# configure files
-# 
-configure_file( ${dds-octopus_SOURCE_DIR}/src/version.h.in ${dds-octopus_BINARY_DIR}/version.h @ONLY )
-
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
-	./src/OctopusTestImpl.cpp
-	./src/OctopusProtocol.cpp
-	./src/TestPing.cpp
-	./src/TestBigCustomCmd.cpp
+set(SOURCE_FILES
+	src/main.cpp
+	src/OctopusTestImpl.cpp
+	src/OctopusProtocol.cpp
+	src/TestPing.cpp
+	src/TestBigCustomCmd.cpp
 )
 
-#
-# Header files
-#
 set( HEADER_FILES
-	./src/Options.h
-	./src/OctopusTestImpl.h
-	./src/OctopusProtocol.h
-	./src/TestPing.h
-	./src/TestBigCustomCmd.h
+	src/Options.h
+	src/OctopusTestImpl.h
+	src/OctopusProtocol.h
+	src/TestPing.h
+	src/TestBigCustomCmd.h
 )
 
-include_directories(
-	${dds-octopus_BINARY_DIR}
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} 
-)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-#
-# dds-octopus executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-octopus ${SOURCE_FILES} ${HEADER_FILES})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-octopus ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds-octopus
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_intercom_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::boost
+  Boost::program_options
 )
 
-target_include_directories(dds-octopus
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 
-install(TARGETS dds-octopus DESTINATION tests/dds-octopus)
-install(PROGRAMS ${dds-octopus_SOURCE_DIR}/src/dds-octopus-start DESTINATION tests/dds-octopus)
-install(FILES ${dds-octopus_SOURCE_DIR}/src/octopus_topo_1.xml DESTINATION tests/dds-octopus)
+install(TARGETS  ${PROJECT_NAME}        DESTINATION tests/${PROJECT_NAME})
+install(PROGRAMS src/dds-octopus-start  DESTINATION tests/${PROJECT_NAME})
+install(FILES    src/octopus_topo_1.xml DESTINATION tests/${PROJECT_NAME})
 
-add_subdirectory( dds-octopus-task )
+add_subdirectory(dds-octopus-task)

@@ -1,79 +1,47 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-submit )
+project(dds-submit)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
-#
-# configure files
-# 
-configure_file( ${dds-submit_SOURCE_DIR}/src/version.h.in ${dds-submit_BINARY_DIR}/version.h @ONLY )
-
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
-	./src/SubmitChannel.cpp
+set(SOURCE_FILES
+	src/main.cpp
+	src/SubmitChannel.cpp
 )
 
-#
-# Header files
-#
-set( HEADER_FILES
-	./src/Options.h
-	./src/SubmitChannel.h
+set(HEADER_FILES
+	src/Options.h
+	src/SubmitChannel.h
 )
 
-include_directories(
-	${dds-submit_BINARY_DIR}
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} 
-)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-#
-# dds-commander executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit ${SOURCE_FILES} ${HEADER_FILES})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-#message(STATUS "LOG_LIBRARY=${Boost_LOG_LIBRARY}")
-#message(STATUS "FILESYSTEM_LIBRARY=${Boost_FILESYSTEM_LIBRARY}")
-
-target_link_libraries (
-	dds-submit
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_user_defaults_lib
 	dds_protocol_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_SYSTEM_LIBRARY}
-	${Boost_LOG_LIBRARY}
-	${Boost_LOG_SETUP_LIBRARY}
-	${Boost_THREAD_LIBRARY}
-	${Boost_FILESYSTEM_LIBRARY}
+  Boost::boost
+  Boost::program_options
+  Boost::system
+  Boost::log
+  Boost::log_setup
+  Boost::thread
 )
 
-target_include_directories(dds-submit
-	PRIVATE
-		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
-	PRIVATE
-		$<TARGET_PROPERTY:dds_protocol_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 
-install(TARGETS dds-submit DESTINATION bin)
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
+)
 
-#
-# Unit tests
-#
-#if (BUILD_TESTS)
-#    message (STATUS "Build dds-submit unit tests - YES")
-#    add_subdirectory ( ${dds-submit_SOURCE_DIR}/tests ) 
-#else (BUILD_TESTS)
-#    message (STATUS "Build dds-submmit unit tests - NO")
-#endif (BUILD_TESTS)
+#if(BUILD_TESTS)
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+#  add_subdirectory(tests) 
+#else()
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+#endif()
