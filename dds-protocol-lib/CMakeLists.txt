@@ -87,6 +87,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 install(TARGETS ${PROJECT_NAME}
+  EXPORT DDSTargets
   LIBRARY DESTINATION lib
 )
 

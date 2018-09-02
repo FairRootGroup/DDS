@@ -43,10 +43,10 @@ set_target_properties(dds_user_defaults_lib PROPERTIES
 )
 
 target_include_directories(dds_user_defaults_lib
-  INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(dds_user_defaults_lib
@@ -59,6 +59,7 @@ target_link_libraries(dds_user_defaults_lib
 )
 
 install(TARGETS ${PROJECT_NAME} dds_user_defaults_lib
+  EXPORT DDSTargets
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
 )

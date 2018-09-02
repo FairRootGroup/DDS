@@ -12,6 +12,7 @@ target_include_directories(${PROJECT_NAME}
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
 )
 
+install(TARGETS ${PROJECT_NAME} EXPORT DDSTargets)
 #if(DOXYGEN_FOUND)
 #   configure_file( ${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY )
 #   add_custom_target(MiscCommon-api-docs ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
