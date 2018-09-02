@@ -1,17 +1,25 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-submit-ssh-tests )
+project(dds-submit-ssh-tests)
 
-include_directories(${dds-submit-ssh_SOURCE_DIR}/src)
 #=============================================================================
-add_executable(dds-submit-ssh_test_threadpool test_threadpool.cpp )
 
-target_link_libraries (
-    dds-submit-ssh_test_threadpool
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
+set(test dds-submit-ssh_test_threadpool)
+
+add_executable(${test} test_threadpool.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::system
+  Boost::thread
 )
 
-install(TARGETS dds-submit-ssh_test_threadpool DESTINATION tests)
+target_include_directories(${test}
+  PUBLIC
+  $<BUILD_INTERFACE:${dds-submit-ssh_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${dds-submit-ssh_BINARY_DIR}/src>
+)
 
+install(TARGETS ${test} DESTINATION tests)

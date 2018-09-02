@@ -1,54 +1,32 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds_ncf )
+project(dds_ncf)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
-
-#
-# Source files
-#
-set( SOURCE_FILES
-     ./src/ncf.cpp
+add_library(${PROJECT_NAME} SHARED
+  src/ncf.cpp
+  src/ncf.h
 )
 
-set( SRC_HDRS
-     ./src/ncf.h
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::program_options
 )
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}
-    ${MiscCommon_LOCATION}
-    ${Boost_INCLUDE_DIRS}
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )
 
-#
-# lib
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds_ncf SHARED ${SOURCE_FILES} ${SRC_HDRS})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds_ncf SHARED ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
+if(BUILD_TESTS)
+  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+  add_subdirectory(tests) 
+else()
+  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+endif()
 
-target_link_libraries (
-    dds_ncf
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+install(TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
 )
-
-
-#
-# Unit tests
-#
-if (BUILD_TESTS)
-    message (STATUS "Build dds_ncf unit tests - YES")
-    add_subdirectory ( ${dds_ncf_SOURCE_DIR}/tests ) 
-else (BUILD_TESTS)
-    message (STATUS "Build dds_ncf unit tests - NO")
-endif (BUILD_TESTS)
-
-install(TARGETS dds_ncf DESTINATION lib)
-

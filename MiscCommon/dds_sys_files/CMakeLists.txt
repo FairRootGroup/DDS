@@ -1,43 +1,24 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds_sys_files )
+project(dds_sys_files)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
-
-#
-# Source files
-#
-set( SOURCE_FILES
-     DDSSysFiles.cpp
+add_library(${PROJECT_NAME} SHARED
+  DDSSysFiles.cpp
+  DDSSysFiles.h
 )
 
-set( SRC_HDRS
-     DDSSysFiles.h
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
+  Boost::program_options
 )
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}
-    ${MiscCommon_LOCATION}
-    ${Boost_INCLUDE_DIRS}
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
 )
 
-#
-# lib
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds_sys_files SHARED ${SOURCE_FILES} ${SRC_HDRS})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_library(dds_sys_files SHARED ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-    dds_sys_files
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+install(TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
 )
-
-install(TARGETS dds_sys_files DESTINATION lib)
-

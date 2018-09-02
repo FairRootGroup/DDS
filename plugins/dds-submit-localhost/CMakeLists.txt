@@ -1,69 +1,37 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds-submit-localhost )
+project(dds-submit-localhost)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY)
 
-#
-# configure files
-#
-configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
+add_executable(${PROJECT_NAME} src/main.cpp)
 
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
-)
-set( SRC_HDRS
-)
-
-
-include_directories(
-	${PROJECT_BINARY_DIR}/src
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS} )
-
-#
-# dds-ssh executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit-localhost ${SOURCE_FILES} ${SRC_HDRS})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit-localhost ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds-submit-localhost
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_user_defaults_lib
 	dds_intercom_lib
 	dds_sys_files
 	dds_ncf
 	pipe_log_engine
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_LOG_LIBRARY}
-	${Boost_LOG_SETUP_LIBRARY}
-	${Boost_THREAD_LIBRARY}
+  Boost::boost
+  Boost::program_options
+  Boost::log
+  Boost::log_setup
+  Boost::thread
 )
 
-target_include_directories(dds-submit-localhost
-	PRIVATE
-		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR/src}>
 )
 
-install(TARGETS dds-submit-localhost DESTINATION plugins/dds-submit-localhost)
-#
-# Unit tests
-#
-#if (BUILD_TESTS)
-#    message (STATUS "Build dds-submit-localhost unit tests - YES")
-#    add_subdirectory ( ${dds-submit-localhost_SOURCE_DIR}/tests )
-#else (BUILD_TESTS)
-#    message (STATUS "Build dds-submit-localhost unit tests - NO")
-#endif (BUILD_TESTS)
+install(TARGETS ${PROJECT_NAME} DESTINATION plugins/${PROJECT_NAME})
+
+#if(BUILD_TESTS)
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+#  add_subdirectory(tests) 
+#else()
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+#endif()

@@ -1,76 +1,49 @@
 # Copyright 2016 GSI, Inc. All rights reserved.
 #
 #
-project( dds-submit-ssh )
+project(dds-submit-ssh)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY)
 
-#
-# configure files
-# 
-configure_file( ${PROJECT_SOURCE_DIR}/src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY )
-
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
-	./src/worker.cpp
-)
-set( SRC_HDRS
-	./src/local_types.h
-	./src/threadPool.h
-	./src/worker.h
+set(SOURCE_FILES
+	src/main.cpp
+	src/worker.cpp
 )
 
+set(SRC_HDRS
+	src/local_types.h
+	src/threadPool.h
+	src/worker.h
+)
 
-include_directories(
-	${PROJECT_BINARY_DIR}/src
-	${MiscCommon_LOCATION}
-	${MiscCommon_LOCATION}/pipe_log_engine
-	${Boost_INCLUDE_DIRS} )
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SRC_HDRS})
 
-#
-# dds-ssh executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit-ssh ${SOURCE_FILES} ${SRC_HDRS})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-submit-ssh ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds-submit-ssh
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_user_defaults_lib
-    dds_intercom_lib
+  dds_intercom_lib
 	dds_sys_files
 	dds_ncf
 	pipe_log_engine
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_LOG_LIBRARY}
-	${Boost_LOG_SETUP_LIBRARY}
-	${Boost_THREAD_LIBRARY}
+  Boost::boost
+  Boost::program_options
+  Boost::log
+  Boost::log_setup
+  Boost::thread
 )
 
-target_include_directories(dds-submit-ssh
-	PRIVATE
-		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR/src}>
 )
 
-install(TARGETS dds-submit-ssh DESTINATION plugins/dds-submit-ssh)
-install(PROGRAMS ${dds-submit-ssh_SOURCE_DIR}/src/dds-submit-ssh-worker DESTINATION plugins/dds-submit-ssh)
-#
-# Unit tests
-#
-if (BUILD_TESTS)
-    message (STATUS "Build dds-submit-ssh unit tests - YES")
-    add_subdirectory ( ${dds-submit-ssh_SOURCE_DIR}/tests ) 
-else (BUILD_TESTS)
-    message (STATUS "Build dds-submit-ssh unit tests - NO")
-endif (BUILD_TESTS)
+install(TARGETS ${PROJECT_NAME}            DESTINATION plugins/${PROJECT_NAME})
+install(PROGRAMS src/dds-submit-ssh-worker DESTINATION plugins/${PROJECT_NAME})
 
+if(BUILD_TESTS)
+  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+  add_subdirectory(tests) 
+else()
+  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+endif()

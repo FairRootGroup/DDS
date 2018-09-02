@@ -1,60 +1,48 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds_intercom_lib-tests )
-
-
-include_directories(
-	${Boost_INCLUDE_DIRS}
-)
+project(dds_intercom_lib-tests)
 
 ##################################################################
 # Unit Test
 ##################################################################
 
-set( CLNT_SOURCE_FILES
-	./Test.cpp
-)
+set(test ${PROJECT_NAME})
 
-add_executable(dds_intercom_lib-tests ${CLNT_SOURCE_FILES})
+add_executable(${test} Test.cpp)
 
-target_link_libraries (
-	dds_intercom_lib-tests
+target_link_libraries(${test}
+  PUBLIC
 	dds_intercom_lib
-	${Boost_SYSTEM_LIBRARY}
-	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::boost
+  Boost::system
+  Boost::unit_test_framework
+  Boost::program_options
 )
 
-target_include_directories(dds_intercom_lib-tests
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
-)
-
-install(TARGETS dds_intercom_lib-tests DESTINATION tests)
+install(TARGETS ${test} DESTINATION tests)
 
 ##################################################################
 # task-test_key_value
 ##################################################################
 
-set( KV_APP_SOURCE_FILES
-	./task-test_key_value.cpp
-)
+set(test task-test_key_value)
 
-add_executable(task-test_key_value ${KV_APP_SOURCE_FILES})
+add_executable(${test} task-test_key_value.cpp)
 
-target_link_libraries (
-	task-test_key_value
+target_link_libraries(${test}
+  PUBLIC
 	dds_intercom_lib
+  Boost::boost
 )
 
-target_include_directories(task-test_key_value
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+install(TARGETS ${test} DESTINATION tests)
+
+##################################################################
+
+install(FILES
+  topo_test_key-value-1.xml
+  topo_test_key-value-2.xml
+
+  DESTINATION tests
 )
-
-install(TARGETS task-test_key_value DESTINATION tests)
-
-
-install(FILES ${dds_intercom_lib-tests_SOURCE_DIR}/topo_test_key-value-1.xml DESTINATION tests)
-install(FILES ${dds_intercom_lib-tests_SOURCE_DIR}/topo_test_key-value-2.xml DESTINATION tests)

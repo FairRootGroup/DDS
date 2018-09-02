@@ -1,73 +1,45 @@
 # Copyright 2014 GSI, Inc. All rights reserved.
 #
 #
-project( dds-custom-cmd )
+project(dds-custom-cmd)
 
-#
-# Where to lookup modules
-#
-set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
-#
-# configure files
-#
-configure_file( ${dds-custom-cmd_SOURCE_DIR}/src/version.h.in ${dds-custom-cmd_BINARY_DIR}/version.h @ONLY )
-
-#
-# Source files
-#
-set( SOURCE_FILES
-	./src/main.cpp
+set(SOURCE_FILES
+	src/main.cpp
 )
 
-#
-# Header files
-#
-set( HEADER_FILES
-	./src/Options.h
+set(HEADER_FILES
+	src/Options.h
 )
 
-include_directories(
-	${dds-custom-cmd_BINARY_DIR}
-	${MiscCommon_LOCATION}
-	${Boost_INCLUDE_DIRS}
-)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-#
-# dds-custom-cmd executable
-#
-if (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-custom-cmd ${SOURCE_FILES} ${HEADER_FILES})
-else (CMAKE_GENERATOR STREQUAL "Xcode")
-    add_executable(dds-custom-cmd ${SOURCE_FILES})
-endif (CMAKE_GENERATOR STREQUAL "Xcode")
-
-target_link_libraries (
-	dds-custom-cmd
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC
+  MiscCommon
 	dds_intercom_lib
-    dds_user_defaults_lib
-	${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${Boost_SYSTEM_LIBRARY}
-	${Boost_LOG_LIBRARY}
-	${Boost_LOG_SETUP_LIBRARY}
-	${Boost_THREAD_LIBRARY}
+  dds_user_defaults_lib
+  Boost::boost
+  Boost::program_options
+  Boost::system
+  Boost::log
+  Boost::log_setup
+  Boost::thread
 )
 
-target_include_directories(dds-custom-cmd
-    PRIVATE
-		$<TARGET_PROPERTY:dds_user_defaults_lib,INTERFACE_INCLUDE_DIRECTORIES>
-    PRIVATE
-        $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 
-install(TARGETS dds-custom-cmd DESTINATION bin)
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
+)
 
-#
-# Unit tests
-#
-#if (BUILD_TESTS)
-#    message (STATUS "Build dds-custom-cmd unit tests - YES")
-#    add_subdirectory ( ${dds-custom-cmd_SOURCE_DIR}/tests )
-#else (BUILD_TESTS)
-#    message (STATUS "Build dds-custom-cmd unit tests - NO")
-#endif (BUILD_TESTS)
+#if(BUILD_TESTS)
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
+#  add_subdirectory(tests)
+#else()
+#  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
+#endif()
