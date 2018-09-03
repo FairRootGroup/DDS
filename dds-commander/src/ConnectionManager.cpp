@@ -809,23 +809,23 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
         cmd->m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
         cmd->m_taskName = sch.m_taskInfo.m_task->getId();
 
+        string filePath;
+        string filename;
+        string cmdStr;
+        parseExe(sch.m_taskInfo.m_task->getExe(), filePath, filename, cmdStr);
+
         if (sch.m_taskInfo.m_task->isExeReachable())
         {
             cmd->m_sExeFile = sch.m_taskInfo.m_task->getExe();
         }
         else
         {
-            string filePath;
-            string filename;
-            string cmdStr;
-            parseExe(sch.m_taskInfo.m_task->getExe(), filePath, filename, cmdStr);
-
             cmd->m_sExeFile = cmdStr;
-
-            uploadFilePaths.push_back(filePath);
-            uploadFilenames.push_back(filename);
-            uploadAgents.push_back(sch.m_weakChannelInfo);
         }
+        
+        uploadFilePaths.push_back(filePath);
+        uploadFilenames.push_back(filename);
+        uploadAgents.push_back(sch.m_weakChannelInfo);
         assignmentAgents.push_back(sch.m_weakChannelInfo);
         assignmentAttachments.push_back(cmd);
     }
