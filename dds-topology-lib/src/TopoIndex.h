@@ -24,7 +24,7 @@ namespace dds
             CTopoIndex(const std::string& _path);
 
             /// \ breif Destructor
-            ~CTopoIndex();
+            virtual ~CTopoIndex();
 
             /// Accessors
             std::string getPath() const;

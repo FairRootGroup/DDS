@@ -108,6 +108,8 @@ int main(int argc, char* argv[])
         try
         {
             boost::uuids::uuid sessionID = boost::uuids::string_generator()(envSessionID);
+            if (sessionID.version() == boost::uuids::uuid::version_unknown)
+                throw std::logic_error("");
         }
         catch (std::exception& _e)
         {
@@ -115,7 +117,7 @@ int main(int argc, char* argv[])
             cerr << "USER TASK Error: DDS Session ID is wrong; envSessionID=" << envSessionID << endl;
         }
 
-        bool taskIDOK(true);
+        bool taskIDOK(envTaskID > 0);
 
         bool envTestPassed = indexOK && namesOK && taskPathOK && locationOK && sessionIDOK && taskIDOK;
 

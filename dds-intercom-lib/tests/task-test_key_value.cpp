@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
         string currentValue("0");
 
         // Subscribe on error events
-        service.subscribeOnError([&keyCondition](EErrorCode _errorCode, const string& _msg) {
+        service.subscribeOnError([/*&keyCondition*/](EErrorCode _errorCode, const string& _msg) {
             LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
         });
 

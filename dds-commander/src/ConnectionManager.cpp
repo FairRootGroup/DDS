@@ -822,7 +822,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
         {
             cmd->m_sExeFile = cmdStr;
         }
-        
+
         uploadFilePaths.push_back(filePath);
         uploadFilenames.push_back(filename);
         uploadAgents.push_back(sch.m_weakChannelInfo);
