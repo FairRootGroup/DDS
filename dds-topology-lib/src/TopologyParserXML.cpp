@@ -6,6 +6,7 @@
 // DDS
 #include "TopologyParserXML.h"
 #include "FindCfgFile.h"
+#include "Process.h"
 #include "Task.h"
 #include "TaskCollection.h"
 #include "TaskGroup.h"
@@ -18,6 +19,7 @@
 #include <unistd.h>
 // BOOST
 #include <boost/filesystem.hpp>
+#include <boost/process.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -40,8 +42,11 @@
 using namespace boost::property_tree;
 using namespace std;
 using namespace dds;
+using namespace MiscCommon;
 using namespace dds::user_defaults_api;
 using namespace topology_api;
+namespace fs = boost::filesystem;
+namespace bp = boost::process;
 
 CTopologyParserXML::CTopologyParserXML()
 {
@@ -51,44 +56,36 @@ CTopologyParserXML::~CTopologyParserXML()
 {
 }
 
-bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidationDisabled)
+bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidationDisabled, std::string* _output)
 {
     if (_xmlValidationDisabled)
         return true;
 
-    pid_t pid = fork();
+    string topoXSDPath = CUserDefaults::getTopologyXSDFilePath();
 
-    switch (pid)
+    // Find command paths in $PATH
+    fs::path xmllintPath = bp::search_path("xmllint");
+    // If we can't find xmllint throw exception with the proper error message
+    if (xmllintPath.empty())
+        throw runtime_error("Can't find xmllint. Use --disable-validation option in order to disable XML validation.");
+
+    stringstream ssCmd;
+    ssCmd << xmllintPath.string() << " --noout --schema "
+          << "\"" << topoXSDPath << "\""
+          << " \"" << _fileName << "\"";
+
+    string output;
+    string errout;
+    int exitCode;
+    execute(ssCmd.str(), std::chrono::seconds(60), &output, &errout, &exitCode);
+
+    if (_output != nullptr)
     {
-        case -1:
-            // Unable to fork
-            throw runtime_error("Unable to run XML validator.");
-        case 0:
-        {
-            // FIXME: XSD file is hardcoded now -> take it from resource manager
-            string topoXSDPath = CUserDefaults::getDDSPath() + "share/topology.xsd";
-            MiscCommon::CFindCfgFile<string> cfg;
-            cfg.SetOrder("/usr/bin/xmllint")("/usr/local/bin/xmllint")("/opt/local/bin/xmllint")("/bin/xmllint");
-            string xmllintPath;
-            cfg.GetCfg(&xmllintPath);
-
-            // If we can't find xmllint throw exception with the proper error message
-            if (xmllintPath.empty())
-                throw runtime_error(
-                    "Can't find xmllint. Use --disable-validation option in order to disable XML validation.");
-
-            execl(xmllintPath.c_str(), "xmllint", "--noout", "--schema", topoXSDPath.c_str(), _fileName.c_str(), NULL);
-
-            // We shoud never come to this point of execution
-            exit(1);
-        }
+        *_output = (output.empty()) ? "" : output;
+        *_output += (errout.empty()) ? "" : (string("\n") + errout);
     }
 
-    int status = -1;
-    while (wait(&status) != pid)
-        ;
-
-    return (status == 0);
+    return (exitCode == 0);
 }
 
 void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bool _xmlValidationDisabled)
@@ -139,8 +136,9 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
         }
 
         // Validate temporary XML file against XSD schema
-        if (!isValid(tmpFileName, _xmlValidationDisabled))
-            throw runtime_error("XML file is not valid.");
+        string output;
+        if (!isValid(tmpFileName, _xmlValidationDisabled, &output))
+            throw runtime_error(string("XML file is not valid. Error details: ") + output);
 
         ptree pt;
         read_xml(tmpFileName, pt);

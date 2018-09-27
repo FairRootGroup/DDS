@@ -36,7 +36,9 @@ namespace dds
 
             /// \brief Validate provided XML file against XSD using xmllint.
             /// \throw runtime_error
-            bool isValid(const std::string& _fileName, bool _xmlValidationDisabled = false);
+            bool isValid(const std::string& _fileName,
+                         bool _xmlValidationDisabled = false,
+                         std::string* _output = nullptr);
 
           private:
             /// \brief Print recursively property tree to std::cout.

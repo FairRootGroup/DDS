@@ -571,3 +571,8 @@ string CUserDefaults::getWnBinsDir() const
     ss << getDDSPath() << "bin/wn_bins";
     return (ss.str());
 }
+
+string CUserDefaults::getTopologyXSDFilePath()
+{
+    return getDDSPath() + "share/topology.xsd";
+}
