@@ -71,6 +71,7 @@ namespace dds
             std::string getCommanderPidFile() const;
             std::string getWnBinsDir() const;
             static std::string getTopologyXSDFilePath();
+            bool isAgentInstance() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
             /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)

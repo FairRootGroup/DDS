@@ -576,3 +576,8 @@ string CUserDefaults::getTopologyXSDFilePath()
 {
     return getDDSPath() + "share/topology.xsd";
 }
+
+bool CUserDefaults::isAgentInstance() const
+{
+    return fs::exists(getServerInfoFileLocation());
+}
