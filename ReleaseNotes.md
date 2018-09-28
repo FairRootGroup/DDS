@@ -3,10 +3,11 @@
 ## v2.2 (NOT YET RELEASED)
 
 ### DDS common 
+Removed: update key command from dds-agent-cmd.    
 Modified: Bump minimum required Boost version to 1.67.    
 Modified: Bump minimum required cmake version to 3.11.1.    
-Removed: update key command from dds-agent-cmd.    
-Modified: dds-intercom key-value API changed to reflect recent changes in the protocol. (GH-196)    
+Modified: dds-intercom key-value API changed to reflect recent changes in the protocol. (GH-196)   
+Added: Get rid of explicit include path mgmt and install CMake package.     
 
 ### dds-protocol
 Added: Confirmation for cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK. (GH-202)    
