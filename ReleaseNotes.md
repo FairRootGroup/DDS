@@ -25,6 +25,9 @@ Modified: The command is removed. Use dds-session instead. (GH-192)
 ### dds-info
 Added: The command learned "--wait-for-idle-agents" parameter, which blocks the command infinitely until a required number of idle agents are online. (GH-205)   
 
+### dds-topology
+Modified: Show proper error output from xmllint if topology XML file can't be validated.   
+
 ## v2.0 (2018-03-12)
 
 ### DDS common

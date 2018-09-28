@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 // BOOST
+#include <boost/filesystem.hpp>
 #include <boost/noncopyable.hpp>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -32,6 +33,8 @@
 #include "MonitoringThread.h"
 #include "ProtocolDef.h"
 #include "StatImpl.h"
+
+namespace fs = boost::filesystem;
 
 namespace dds
 {
@@ -694,9 +697,9 @@ namespace dds
                             return;
                         }
 
-                        const std::string dir(user_defaults_api::CUserDefaults::getDDSPath());
-                        const std::string fileName(dir + to_string(fileId));
-                        std::ofstream f(fileName.c_str());
+                        fs::path dir(user_defaults_api::CUserDefaults::instance().getWrkDir());
+                        const std::string filePath(dir.append(to_string(fileId)).string());
+                        std::ofstream f(filePath.c_str());
                         if (!f.is_open() || !f.good())
                         {
                             {
@@ -706,7 +709,7 @@ namespace dds
                                 m_binaryAttachmentMap.erase(iter_info);
                             }
                             std::stringstream ss;
-                            ss << "Could not open file: " << fileName;
+                            ss << "Could not open file: " << filePath;
                             LOG(MiscCommon::error) << ss.str();
                             sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand),
                                                         _sender.m_ID);
@@ -725,7 +728,7 @@ namespace dds
 
                         // Send message to yourself
                         SBinaryAttachmentReceivedCmd reply_cmd;
-                        reply_cmd.m_receivedFilePath = fileName;
+                        reply_cmd.m_receivedFilePath = filePath;
                         reply_cmd.m_requestedFileName = info->m_fileName;
                         reply_cmd.m_srcCommand = info->m_srcCommand;
                         reply_cmd.m_downloadTime = downloadTime.count();

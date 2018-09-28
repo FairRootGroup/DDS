@@ -125,27 +125,28 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
         }
 
         boost::uuids::uuid uuid = boost::uuids::random_generator()();
+        fs::path filePath(_fileName);
         stringstream ssTmpFileName;
-        ssTmpFileName << _fileName << "_" << uuid << ".xml";
-        string tmpFileName = ssTmpFileName.str();
+        ssTmpFileName << filePath.filename().string() << "_" << uuid << ".xml";
+        string tmpFilePath = fs::path(CUserDefaults::instance().getWrkDir()).append(ssTmpFileName.str()).string();
 
         {
-            ofstream tmpFile(tmpFileName);
+            ofstream tmpFile(tmpFilePath);
             tmpFile << strPT;
             tmpFile.close();
         }
 
         // Validate temporary XML file against XSD schema
         string output;
-        if (!isValid(tmpFileName, _xmlValidationDisabled, &output))
+        if (!isValid(tmpFilePath, _xmlValidationDisabled, &output))
             throw runtime_error(string("XML file is not valid. Error details: ") + output);
 
         ptree pt;
-        read_xml(tmpFileName, pt);
+        read_xml(tmpFilePath, pt);
         _main->initFromPropertyTree("main", pt);
 
         // Delete temporary file
-        boost::filesystem::remove(tmpFileName);
+        boost::filesystem::remove(tmpFilePath);
     }
     catch (xml_parser_error& error)
     {
