@@ -60,8 +60,7 @@ void CDDSIntercomGuard::start(const std::string& _sessionID)
     // Choose transport type.
     // If we connect to agent, i.e. agent config file exists than we use shared memory transport.
     // If we connect to commander, i.e. commander config file exists we use asio transport.
-    const string sAgentIDFile(CUserDefaults::instance().getAgentIDFile());
-    m_useSMTransport = fs::exists(sAgentIDFile);
+    m_useSMTransport = CUserDefaults::instance().isAgentInstance();
 
     if (m_useSMTransport)
     {
