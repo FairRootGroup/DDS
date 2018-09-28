@@ -172,8 +172,8 @@ int main(int argc, char* argv[])
                 fs::path pathSLURMScript(pathPluginDir);
                 pathSLURMScript /= "dds-submit-slurm-worker";
                 stringstream cmd;
-                cmd << "$DDS_LOCATION/bin/dds-daemonize " << pathPluginDir.string()
-                    << " /bin/bash -c \"unset DDS_LOG_LOCATION; " << pathSLURMScript.string() << "\"";
+                cmd << "$DDS_LOCATION/bin/dds-daemonize " << pathPluginDir.string() << " /bin/bash -c \""
+                    << pathSLURMScript.string() << "\"";
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;

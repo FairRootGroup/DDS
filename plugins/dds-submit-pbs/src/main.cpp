@@ -171,8 +171,8 @@ int main(int argc, char* argv[])
                 fs::path pathPBSScript(pathPluginDir);
                 pathPBSScript /= "dds-submit-pbs-worker";
                 stringstream cmd;
-                cmd << "$DDS_LOCATION/bin/dds-daemonize " << pathPluginDir.string()
-                    << " /bin/bash -c \"unset DDS_LOG_LOCATION; " << pathPBSScript.string() << "\"";
+                cmd << "$DDS_LOCATION/bin/dds-daemonize " << pathPluginDir.string() << " /bin/bash -c \""
+                    << pathPBSScript.string() << "\"";
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;

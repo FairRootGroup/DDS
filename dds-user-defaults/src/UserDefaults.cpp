@@ -231,7 +231,11 @@ string CUserDefaults::getValueForKey(const string& _key) const
 /// Returns DDS working directory. For agents it is always $DDS_LOCATION
 std::string CUserDefaults::getWrkDir() const
 {
-    return getValueForKey("server.work_dir");
+    string sWrkDir(getValueForKey("server.work_dir"));
+    smart_path(&sWrkDir);
+    smart_append(&sWrkDir, '/');
+
+    return sWrkDir;
 }
 
 /// Returns strings "yes" or "no". Returns an empty string (if key is not of type bool)
@@ -343,15 +347,7 @@ string CUserDefaults::getAgentIDFile()
 
 string CUserDefaults::getLogFile() const
 {
-    // DDS_LOG_LOCATION is used only by DDS commander server
-    char* dds_log_location = getenv("DDS_LOG_LOCATION");
-    string sLogDir((nullptr == dds_log_location) ? getDDSPath() : dds_log_location);
-
-    // For commander's side we have to add session ID if available
-    if (nullptr != dds_log_location && !m_sessionID.empty())
-    {
-        addSessionIDtoPath(sLogDir);
-    }
+    string sLogDir(isAgentInstance() ? getDDSPath() : getValueForKey("server.log_dir"));
 
     if (sLogDir.empty())
         throw runtime_error("Can't init Log engine. Log location is not specified. Make sure DDS environment is "
@@ -592,5 +588,7 @@ string CUserDefaults::getTopologyXSDFilePath()
 
 bool CUserDefaults::isAgentInstance() const
 {
-    return fs::exists(getAgentIDFile());
+    fs::path pathFile(getDDSPath());
+    pathFile /= getServerInfoFileName();
+    return fs::exists(pathFile);
 }

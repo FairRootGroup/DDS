@@ -55,6 +55,3 @@ DDS_CFG=$(dds-user-defaults --ignore-default-sid -p)
 if [ -z "$DDS_CFG" ]; then
    dds-user-defaults --ignore-default-sid -d -c "$LOCAL_DDS/DDS.cfg"
 fi
-
-## set log directory for the server
-eval DDS_LOG_LOCATION=$(dds-user-defaults --ignore-default-sid --key server.log_dir); export DDS_LOG_LOCATION

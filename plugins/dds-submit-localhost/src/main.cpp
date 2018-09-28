@@ -137,8 +137,8 @@ int main(int argc, char* argv[])
             bfs::copy_file(wrkScriptPath, dstWrkScriptPath, bfs::copy_option::overwrite_if_exists);
 
             stringstream cmd;
-            cmd << "$DDS_LOCATION/bin/dds-daemonize " << wrkDirPath.string()
-                << " /bin/bash -c \"unset DDS_LOG_LOCATION; " << dstWrkScriptPath.string() << " " << nInstances << "\"";
+            cmd << "$DDS_LOCATION/bin/dds-daemonize " << wrkDirPath.string() << " /bin/bash -c \""
+                << dstWrkScriptPath.string() << " " << nInstances << "\"";
 
             try
             {
