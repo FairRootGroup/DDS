@@ -41,6 +41,7 @@ namespace dds
             const SDDSUserDefaultsOptions_t getOptions() const;
             static std::string currentUDFile();
             static std::string getDDSPath();
+            std::string getWrkDir() const;
             std::string getServerInfoFileLocationSrv() const;
             std::string getServerInfoFileName() const;
             std::string getServerInfoFileLocation() const;

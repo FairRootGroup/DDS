@@ -214,12 +214,24 @@ string CUserDefaults::convertAnyToString(const boost::any& _any) const
 string CUserDefaults::getValueForKey(const string& _key) const
 {
     string ret = convertAnyToString(m_keys[_key].value());
+    // Working dir of agents is always their home (DDS_LOCATION)
+    if (_key == "server.work_dir" && isAgentInstance())
+    {
+        return getDDSPath();
+    }
+
     if ((_key == "server.work_dir" || _key == "server.sandbox_dir" || _key == "server.log_dir") && !m_sessionID.empty())
     {
         addSessionIDtoPath(ret);
     }
 
     return ret;
+}
+
+/// Returns DDS working directory. For agents it is always $DDS_LOCATION
+std::string CUserDefaults::getWrkDir() const
+{
+    return getValueForKey("server.work_dir");
 }
 
 /// Returns strings "yes" or "no". Returns an empty string (if key is not of type bool)
@@ -324,8 +336,9 @@ string CUserDefaults::getUserEnvScript() const
 
 string CUserDefaults::getAgentIDFile()
 {
-    const string sFileName("dds-agent.client.id");
-    return (getDDSPath() + sFileName);
+    fs::path pathFile(getDDSPath());
+    pathFile /= "dds-agent.client.id";
+    return (pathFile.string());
 }
 
 string CUserDefaults::getLogFile() const
@@ -579,5 +592,5 @@ string CUserDefaults::getTopologyXSDFilePath()
 
 bool CUserDefaults::isAgentInstance() const
 {
-    return fs::exists(getServerInfoFileLocation());
+    return fs::exists(getAgentIDFile());
 }
