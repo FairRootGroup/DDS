@@ -383,7 +383,7 @@ endif()
 # WORKAROUND: We therefore introduce DDS_LD_LIBRARY_PATH, which user can use to specify custom library path(s)
 set(ENV_LD_LIBRARY_PATH "$ENV{DDS_LD_LIBRARY_PATH}")
 
-set(PREREQ_DIRS "${DDS_BOOST_LIB_DIR}::$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::${ENV_LD_LIBRARY_PATH}")
+set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::${DDS_BOOST_LIB_DIR}::${ENV_LD_LIBRARY_PATH}")
 set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
 set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds-commander>)
 
@@ -423,8 +423,6 @@ endif()
 # TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
 #
 add_custom_target( wn_bin
-	# TODO: can be used only with cmake 3.2 (see. GH-136). Uncomment when on cmake 3.2+
-	# COMMAND ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=\"$ENV{LD_LIBRARY_PATH}:${DDS_BOOST_LIB_DIR}\""
 	COMMAND -mkdir -p ${WN_PKG_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
