@@ -49,7 +49,8 @@ namespace dds
             std::string getWrkPkgPath() const;
             std::string getWrkScriptPath() const;
             std::string getUserEnvScript() const;
-            static std::string getAgentIDFile();
+            static std::string getAgentIDFilePath();
+            static std::string getAgentIDFileName();
             std::string getLogFile() const;
             std::string getAgentLogStorageDir() const;
             pid_t getScoutPid() const;

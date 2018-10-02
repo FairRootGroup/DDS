@@ -67,6 +67,76 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
     return true;
 }
 
+bool checkAgentStatus(const bfs::path _wrkDirPath,
+                      const string& _fileName,
+                      int _numInstances,
+                      CRMSPluginProtocol& _proto,
+                      const string& _successMsg)
+{
+    int failedInstance(-1);
+    // Give agents 30 seconds to start
+    for (int time = 0; time < 60; ++time)
+    {
+        failedInstance = -1;
+        // Check whether all agent have started successfully
+        for (int i = 0; i < _numInstances; ++i)
+        {
+            bfs::path filePath((i == 0) ? _wrkDirPath.string() : _wrkDirPath.string() + "_" + to_string(i));
+            filePath /= _fileName;
+
+            if (!bfs::exists(filePath))
+            {
+                // One of the files does not exist
+                failedInstance = i;
+                break;
+            }
+        }
+
+        if (failedInstance == -1)
+        {
+            _proto.sendMessage(EMsgSeverity::info, _successMsg);
+            break;
+        }
+        else
+        {
+            this_thread::sleep_for(chrono::milliseconds(200));
+        }
+    }
+    if (failedInstance != -1)
+    {
+        stringstream ss;
+        ss << "Failed to deploy agents: some agents failed to start\n";
+        ss << "Attaching scout's log of the first instance:\n";
+        bfs::path logPath((failedInstance == 0) ? _wrkDirPath.string()
+                                                : _wrkDirPath.string() + "_" + to_string(failedInstance));
+
+        for (auto& p : bfs::recursive_directory_iterator(logPath))
+        {
+            if (p.path().extension() == ".log")
+            {
+                ss << "------------------------------------------\n";
+                ss << "Log file: " << p.path().string() << "\n";
+                ss << "----------\n";
+                std::ifstream file(p.path().string());
+                if (file)
+                {
+                    ss << file.rdbuf();
+                    file.close();
+                }
+                else
+                {
+                    ss << "Failed to open log file: " << p.path().string();
+                }
+                ss << "\n------------------------------------------\n";
+            }
+        }
+
+        _proto.sendMessage(EMsgSeverity::error, ss.str());
+        return false;
+    }
+    return true;
+}
+
 int main(int argc, char* argv[])
 {
     CUserDefaults::instance(); // Initialize user defaults
@@ -136,58 +206,34 @@ int main(int argc, char* argv[])
             dstWrkScriptPath /= wrkScriptPath.filename();
             bfs::copy_file(wrkScriptPath, dstWrkScriptPath, bfs::copy_option::overwrite_if_exists);
 
+            bfs::path bashPath = bp::search_path("bash");
+            bfs::path logPath(wrkDirPath);
+            logPath /= "scout.log";
             stringstream cmd;
-            cmd << "$DDS_LOCATION/bin/dds-daemonize " << wrkDirPath.string() << " /bin/bash -c \""
-                << dstWrkScriptPath.string() << " " << nInstances << "\"";
+
+            cmd << bashPath.string() << " -c \"" << dstWrkScriptPath.string() << " " << nInstances << " &> " << logPath
+                << "\"";
 
             try
             {
-                string output;
-                pid_t exitCode = execute(cmd.str(), chrono::seconds(30), &output);
+                execute(cmd.str());
 
-                if (exitCode == 0)
+                proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
+
+                proto.sendMessage(EMsgSeverity::info, "Checking status of agents...");
+
+                bool statusLock = checkAgentStatus(
+                    wrkDirPath, "DDSWorker.lock", nInstances, proto, "All agents have been started successfully");
+
+                if (statusLock)
                 {
-                    proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
+                    proto.sendMessage(EMsgSeverity::info, "Validating...");
 
-                    proto.sendMessage(EMsgSeverity::info, "Checking status of agents...");
-
-                    bool started(true);
-                    // Give agents 30 seconds to start
-                    for (int time = 0; time < 60; time++)
-                    {
-                        started = true;
-                        // Check whether all agent have started successfully
-                        for (int i = 0; i < nInstances; i++)
-                        {
-                            bfs::path lockFilePath((i == 0) ? wrkDirPath.string()
-                                                            : wrkDirPath.string() + "_" + to_string(i));
-                            lockFilePath /= "DDSWorker.lock";
-                            if (!bfs::exists(lockFilePath))
-                            {
-                                // One of the lock files does not exist
-                                started = false;
-                                break;
-                            }
-                        }
-
-                        if (started)
-                        {
-                            proto.sendMessage(EMsgSeverity::info, "All agents have been started successfully");
-                            break;
-                        }
-                        else
-                        {
-                            this_thread::sleep_for(chrono::milliseconds(500));
-                        }
-                    }
-                    if (!started)
-                    {
-                        proto.sendMessage(EMsgSeverity::error, "Failed to deploy agents: some agents failed to start");
-                    }
-                }
-                else
-                {
-                    proto.sendMessage(EMsgSeverity::error, "Failed to deploy agents: can't start worker script");
+                    checkAgentStatus(wrkDirPath,
+                                     CUserDefaults::getAgentIDFileName(),
+                                     nInstances,
+                                     proto,
+                                     "All agents have been validated successfully");
                 }
             }
             catch (exception& e)

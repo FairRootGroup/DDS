@@ -338,11 +338,16 @@ string CUserDefaults::getUserEnvScript() const
     return val;
 }
 
-string CUserDefaults::getAgentIDFile()
+string CUserDefaults::getAgentIDFilePath()
 {
     fs::path pathFile(getDDSPath());
-    pathFile /= "dds-agent.client.id";
+    pathFile /= CUserDefaults::getAgentIDFileName();
     return (pathFile.string());
+}
+
+string CUserDefaults::getAgentIDFileName()
+{
+    return "dds-agent.client.id";
 }
 
 string CUserDefaults::getLogFile() const

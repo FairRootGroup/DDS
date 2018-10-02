@@ -9,6 +9,7 @@ Modified: Bump minimum required cmake version to 3.11.1.
 Modified: dds-intercom key-value API changed to reflect recent changes in the protocol. (GH-196)   
 Modified: Improve log dir detection algorithm for commander and agents. The new algorithm doesn' rely on DDS_LOG_LOCATION anymore.    
 Added: Get rid of explicit include path mgmt and install CMake package.     
+Added: Improved error reporting for localhost plug-in. In case of failure logs are sent to the user.    
 
 ### dds-protocol
 Added: Confirmation for cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK. (GH-202)    

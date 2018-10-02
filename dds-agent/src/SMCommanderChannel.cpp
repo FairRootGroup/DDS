@@ -233,7 +233,7 @@ bool CSMCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t 
     // If file exist return id from file.
     // If file does not exist than return uuid_nil.
 
-    const string sAgentIDFile(CUserDefaults::instance().getAgentIDFile());
+    const string sAgentIDFile(CUserDefaults::instance().getAgentIDFilePath());
     if (file_exists(sAgentIDFile))
     {
         readAgentIDFile();
@@ -314,7 +314,7 @@ bool CSMCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_
 
 void CSMCommanderChannel::readAgentIDFile()
 {
-    const string sAgentIDFile(CUserDefaults::getAgentIDFile());
+    const string sAgentIDFile(CUserDefaults::getAgentIDFilePath());
     LOG(info) << "Reading an agent ID file: " << sAgentIDFile;
     ifstream f(sAgentIDFile.c_str());
     if (!f.is_open() || !f.good())
@@ -328,7 +328,7 @@ void CSMCommanderChannel::readAgentIDFile()
 
 void CSMCommanderChannel::createAgentIDFile() const
 {
-    const string sAgentIDFile(CUserDefaults::getAgentIDFile());
+    const string sAgentIDFile(CUserDefaults::getAgentIDFilePath());
     LOG(info) << "Creating an agent ID file: " << sAgentIDFile;
     ofstream f(sAgentIDFile.c_str());
     if (!f.is_open() || !f.good())
@@ -343,7 +343,7 @@ void CSMCommanderChannel::createAgentIDFile() const
 
 void CSMCommanderChannel::deleteAgentIDFile() const
 {
-    const string sAgentIDFile(CUserDefaults::getAgentIDFile());
+    const string sAgentIDFile(CUserDefaults::getAgentIDFilePath());
     if (sAgentIDFile.empty())
         return;
 
