@@ -16,6 +16,8 @@ using namespace std;
 
 CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
     : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI, _protocolHeaderID)
+    , m_number(0)
+    , m_bXMLValidationDisabled(false)
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
         [](const SSenderInfo& _sender) { LOG(MiscCommon::log_stderr) << "Server has closed the connection."; });

@@ -7,7 +7,6 @@
 #include "AgentConnectionManager.h"
 #include "DDSIntercomGuard.h"
 #include "ErrorCode.h"
-#include "INet.h"
 #include "Logger.h"
 #include "Options.h"
 #include "SessionIDFile.h"

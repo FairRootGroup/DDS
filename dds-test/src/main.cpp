@@ -4,7 +4,6 @@
 //
 // DDS
 #include "DDSHelper.h"
-#include "INet.h"
 #include "Options.h"
 #include "Process.h"
 #include "SysHelper.h"

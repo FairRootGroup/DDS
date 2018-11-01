@@ -3,13 +3,10 @@
 //
 //
 #include "TestCmd.h"
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 STestCmd::STestCmd()
     : m_uint16(0)

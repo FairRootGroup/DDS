@@ -206,6 +206,7 @@ bool CSMCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
 
             // Send response back to server
             pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK));
+            return true;
         }
         case cmdUPDATE_TOPOLOGY:
         {

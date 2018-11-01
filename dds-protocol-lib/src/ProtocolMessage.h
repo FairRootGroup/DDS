@@ -32,7 +32,8 @@ namespace dds
         struct SMessageHeader
         {
             SMessageHeader()
-                : m_cmd(0)
+                : m_crc(0)
+                , m_cmd(0)
                 , m_len(0)
                 , m_ID(0)
             {

@@ -4,13 +4,11 @@
 //
 
 #include "GetPropValuesCmd.h"
-#include "INet.h"
 #include <stdexcept>
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SGetPropValuesCmd::SGetPropValuesCmd()
     : m_sPropertyID()

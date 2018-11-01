@@ -88,11 +88,13 @@ namespace MiscCommon
             static size_t nRaw = 0;
             if (_nCount <= m_nElementsInRaw)
                 nRaw = 0;
+            std::ios_base::fmtflags flags(_ostream.flags());
             _ostream << "0x" << std::right << std::setw(8) << std::setfill('0') << std::hex << std::uppercase
                      << (nRaw * m_nElementsInRaw) << " | " << std::left << std::setw(m_nElementsInRaw * 3)
                      << std::setfill(' ') << _ssHex.str() << " | " << std::left << std::setw(m_nElementsInRaw)
                      << _ssTxt.str() << '\n';
             ++nRaw;
+            _ostream.flags(flags);
         }
 
       private:

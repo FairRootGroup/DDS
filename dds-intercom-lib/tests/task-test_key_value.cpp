@@ -25,13 +25,13 @@ const size_t g_maxValue = 1000;
 
 int main(int argc, char* argv[])
 {
-    chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
-
-    CUserDefaults::instance(); // Initialize user defaults
-    Logger::instance().init(); // Initialize log
-
     try
     {
+        chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
+
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
         size_t type(0);
@@ -158,16 +158,16 @@ int main(int argc, char* argv[])
         this_thread::sleep_for(chrono::seconds(10));
 
         LOG(info) << "Task successfully done";
+
+        chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
+        LOG(info) << "Calculation time: " << duration << " seconds";
     }
     catch (exception& _e)
     {
         LOG(fatal) << "USER TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
-
-    chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
-    LOG(info) << "Calculation time: " << duration << " seconds";
 
     return EXIT_SUCCESS;
 }

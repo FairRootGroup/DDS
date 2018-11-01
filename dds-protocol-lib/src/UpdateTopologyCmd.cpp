@@ -3,13 +3,10 @@
 //
 //
 #include "UpdateTopologyCmd.h"
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SUpdateTopologyCmd::SUpdateTopologyCmd()
     : m_nDisableValidation(0)

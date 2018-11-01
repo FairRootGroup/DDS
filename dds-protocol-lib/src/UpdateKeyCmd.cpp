@@ -3,15 +3,14 @@
 //
 //
 #include "UpdateKeyCmd.h"
-#include "INet.h"
-#include <stdexcept>
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SUpdateKeyCmd::SUpdateKeyCmd()
+    : m_senderTaskID(0)
+    , m_receiverTaskID(0)
 {
 }
 

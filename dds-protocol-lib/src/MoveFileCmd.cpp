@@ -3,13 +3,10 @@
 //
 //
 #include "MoveFileCmd.h"
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SMoveFileCmd::SMoveFileCmd()
     : m_filePath()

@@ -3,13 +3,10 @@
 //
 //
 #include "HostInfoCmd.h"
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SHostInfoCmd::SHostInfoCmd()
     : m_agentPid(0)

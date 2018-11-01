@@ -23,6 +23,7 @@ using namespace boost;
 
 CTopology::CTopology()
     : m_main(nullptr)
+    , m_currentTaskCollectionCrc(0)
     , m_bXMLValidationDisabled(false)
 {
 }

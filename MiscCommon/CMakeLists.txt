@@ -25,9 +25,6 @@ add_subdirectory(pipe_log_engine)
 #message(STATUS "Build the SSHTunnel lib - YES")
 #add_subdirectory( ${MiscCommon_SOURCE_DIR}/SSHTunnel )
 
-message(STATUS "Build the dds_sys_files lib - YES")
-add_subdirectory(dds_sys_files)
-
 message(STATUS "Build the dds_ncf lib - YES")
 add_subdirectory(dds_ncf)
 

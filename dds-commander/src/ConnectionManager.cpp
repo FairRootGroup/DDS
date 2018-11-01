@@ -1115,7 +1115,7 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
     }
     else
     {
-        LOG(debug) << "on_cmdUPDATE_KEY task <" << channel->first
+        LOG(debug) << "on_cmdUPDATE_KEY task <" << _attachment->m_receiverTaskID
                    << "> not found in map. Property will not be updated.";
     }
 }

@@ -5,7 +5,6 @@
 // DDS
 #include "ConnectionManager.h"
 #include "ErrorCode.h"
-#include "INet.h"
 #include "SessionIDFile.h"
 #include "SysHelper.h"
 // BOOST
@@ -86,15 +85,32 @@ int main(int argc, char* argv[])
     // Checking for "prep-session" option
     if (SOptions_t::cmd_prep_session == options.m_Command)
     {
-        // generate new session id
-        CSessionIDFile sid;
-        boost::uuids::uuid sessionid = sid.generate();
-        LOG(info) << "GENERATED SESSION ID: " << sid.string();
-        int ret(EXIT_SUCCESS);
-        if ((ret = createDirectories(sessionid)) == EXIT_SUCCESS)
-            cout << sid.string();
-
-        return ret;
+        try
+        {
+            // generate new session id
+            CSessionIDFile sid;
+            boost::uuids::uuid sessionid = sid.generate();
+            LOG(info) << "GENERATED SESSION ID: " << sid.string();
+            int ret(EXIT_SUCCESS);
+            if ((ret = createDirectories(sessionid)) == EXIT_SUCCESS)
+                cout << sid.string();
+            return ret;
+        }
+        catch (boost::uuids::entropy_error& _e)
+        {
+            LOG(fatal) << "boost::uuids::uuid: error getting entropy from the operating system: " << _e.what();
+            return EXIT_FAILURE;
+        }
+        catch (exception& e)
+        {
+            LOG(fatal) << e.what();
+            return EXIT_FAILURE;
+        }
+        catch (...)
+        {
+            LOG(fatal) << "Unexpected Exception occurred.";
+            return EXIT_FAILURE;
+        }
     }
 
     if (options.m_sid.is_nil())

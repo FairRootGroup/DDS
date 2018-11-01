@@ -4,13 +4,10 @@
 //
 #include "CustomCmdCmd.h"
 #include <stdexcept>
-// MiscCommon
-#include "INet.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SCustomCmdCmd::SCustomCmdCmd()
     : m_senderId(0)

@@ -6,7 +6,6 @@
 #include "BOOSTHelper.h"
 #include "DDSHelper.h"
 #include "ErrorCode.h"
-#include "INet.h"
 #include "InfoChannel.h"
 #include "Process.h"
 #include "SysHelper.h"

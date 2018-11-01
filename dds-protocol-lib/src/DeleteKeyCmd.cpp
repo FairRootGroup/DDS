@@ -3,13 +3,11 @@
 //
 //
 #include "DeleteKeyCmd.h"
-#include "INet.h"
 #include <stdexcept>
 
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
-namespace inet = MiscCommon::INet;
 
 SDeleteKeyCmd::SDeleteKeyCmd()
     : m_sKey()

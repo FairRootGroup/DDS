@@ -12,7 +12,6 @@ target_link_libraries(${PROJECT_NAME}
   MiscCommon
 	dds_user_defaults_lib
 	dds_intercom_lib
-	dds_sys_files
 	dds_ncf
 	pipe_log_engine
   Boost::boost

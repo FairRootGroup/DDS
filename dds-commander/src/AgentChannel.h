@@ -27,6 +27,7 @@ namespace dds
                 : m_lobbyLeader(false)
                 , m_id(0)
                 , m_taskID(0)
+                , m_startUpTime(0)
                 , m_state(EAgentState::unknown)
             {
             }

@@ -51,7 +51,7 @@ namespace dds
             static const std::chrono::seconds INTERVAL_STEP(1);
             static const std::chrono::seconds WAITING_TIME(20);
 
-            m_startIdleTime = std::chrono::steady_clock::now();
+            updateIdle();
 
             std::thread t([this, &_idleCallback, _idleTime]() {
                 try

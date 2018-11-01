@@ -10,7 +10,6 @@
 #include <boost/program_options/parsers.hpp>
 // DDS
 #include "BOOSTHelper.h"
-#include "MiscUtils.h"
 #include "Res.h"
 #include "SysHelper.h"
 #include "version.h"

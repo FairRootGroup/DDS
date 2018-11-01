@@ -50,7 +50,6 @@ namespace dds
 
             ECommands m_Command;
             std::string m_sTopoFile;
-            bool m_needCommanderPid;
             std::string m_sRMS;
             std::string m_sCfgFile;
             boost::uuids::uuid m_sid;
