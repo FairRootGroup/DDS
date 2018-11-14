@@ -23,18 +23,16 @@ using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
-void CStart::start(bool _onlyLocalSys)
+void CStart::start(bool _Mixed)
 {
     auto start = chrono::high_resolution_clock::now();
 
     getNewSessionID();
-    if (!checkPrecompiledWNBins(_onlyLocalSys))
+    if (!checkPrecompiledWNBins(_Mixed))
     {
-        if (_onlyLocalSys)
-        {
+        if (!_Mixed)
             printHint();
-            throw runtime_error("Precompiled bins check failed.");
-        }
+        throw runtime_error("Precompiled bins check failed.");
     }
     spawnDDSCommander();
 
@@ -71,7 +69,7 @@ void CStart::getNewSessionID()
     fs::create_directories(pathWrkSandboxDir);
 }
 
-bool CStart::checkPrecompiledWNBins(bool _onlyLocalSys)
+bool CStart::checkPrecompiledWNBins(bool _Mixed)
 {
     // wn bin name:
     // <pakage>-<version>-<OS>-<ARCH>.tar.gz
@@ -93,7 +91,7 @@ bool CStart::checkPrecompiledWNBins(bool _onlyLocalSys)
 
     // WN bins path
     fs::path pathWnBins(CUserDefaults::instance().getWnBinsDir());
-    if (_onlyLocalSys)
+    if (!_Mixed)
     {
         LOG(log_stdout_clean) << "Checking precompiled binaries for the local system only:";
         stringstream ssName;
@@ -281,7 +279,10 @@ void CStart::checkCommanderStatus()
 
 void CStart::printHint()
 {
-    cout << "\nHint: You might also want to use a package for the local system only. Build the DDS's \"wn_bin\" "
-            "target: \"> make wn_bin\"\n"
-         << "And use \"dds-session --start --local\" to start DDS" << endl;
+    cout << "\nHint: DDS failed to find the worker package for the local system.\n"
+         << "      You probably didn't create it.\n"
+         << "      Use the wn_bin target before installing DDS: \"> make wn_bin\"\n"
+         << "\n      You can also run DDS in a mixed mode with workers on Linux and on OS X in the same time.\n"
+         << "      In this case DDS will take packages from the DDS binary repository or you can build them yourself.\n"
+         << "      Use \"dds-session start --mixed\" to start DDS in a mixed mode." << endl;
 }

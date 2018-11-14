@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
         if (SOptions_t::cmd_start == options.m_Command)
         {
             CStart start;
-            start.start(options.m_bLocal);
+            start.start(options.m_bMixed);
 
             vector<fs::path> session_dirs;
             StringVector_t sessions;

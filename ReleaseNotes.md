@@ -19,6 +19,8 @@ Modified: new fields in cmdUPDATE_KEY: propertyID, value, sender trask ID and re
 ### dds-session
 Added: Initial version of the tool. (GH-191)   
 Added: Learned new commands: "start", "stop", "stop-all", "clean", "list", and "set-default". (GH-192)    
+Modified: Local mode is now a default start mode for DDS. The --local argument is removed.    
+Modified: A mixed mode is introduced (--mixed) to run DDS on Linux and OS X in the same time.    
 
 ### dds-server
 Modified: The command is removed. Use dds-session instead. (GH-192)    

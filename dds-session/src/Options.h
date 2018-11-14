@@ -79,7 +79,7 @@ namespace dds
                 : m_Command(cmd_unknown)
                 , m_ListSessions("")
                 , m_bForce(false)
-                , m_bLocal(false)
+                , m_bMixed(false)
             {
             }
             static ECommands getCommandByName(const std::string& _name)
@@ -103,7 +103,7 @@ namespace dds
             SSessionsSorting m_ListSessions;
             bool m_bForce;
             std::string m_sSessionID;
-            bool m_bLocal;
+            bool m_bMixed;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -150,9 +150,9 @@ namespace dds
                                   bpo::bool_switch(&_options->m_bForce),
                                   "Force commands without prompting for a confirmation.\n"
                                   "Can be used only with the \"remove\" command.");
-            options.add_options()("local",
-                                  bpo::bool_switch(&_options->m_bLocal),
-                                  "Use a worker package build for the local system only.\n"
+            options.add_options()("mixed",
+                                  bpo::bool_switch(&_options->m_bMixed),
+                                  "Use worker package for a mixed environment - workes on Linux and on OS X.\n"
                                   "Can be used only with the \"start\" command.");
 
             //...positional
