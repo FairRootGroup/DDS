@@ -31,7 +31,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
     m_SMFWChannel->registerHandler<cmdRAW_MSG>(
         [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
             ECmdType cmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
-            // cmdFILE_PATH is an exception. We have to forward it as a binary attachment.
+            // cmdMOVE_FILE is an exception. We have to forward it as a binary attachment.
             if (cmd == cmdMOVE_FILE)
             {
                 LOG(debug) << "cmdMOVE_FILE pushed to network channel: " << _currentMsg->toString();
@@ -53,10 +53,47 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
                                << "; error: " << _e.what();
                 }
             }
+            else if (cmd == cmdUPDATE_KEY)
+            {
+                SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t attachmentPtr =
+                    SCommandAttachmentImpl<cmdUPDATE_KEY>::decode(_currentMsg);
+
+                bool localPush(true);
+                uint64_t channelID(0);
+                {
+                    std::lock_guard<std::mutex> lock(m_taskIDToChannelIDMapMutex);
+                    auto it = m_taskIDToChannelIDMap.find(attachmentPtr->m_receiverTaskID);
+                    localPush = (it != m_taskIDToChannelIDMap.end());
+                    channelID = it->second;
+                }
+
+                if (localPush)
+                {
+                    LOG(debug) << "Push update key via shared memory: " << _currentMsg->toString();
+                    m_SMFWChannel->pushMsg(_currentMsg, cmd, channelID);
+                }
+                else
+                {
+                    LOG(debug) << "Push update key via network channel: " << _currentMsg->toString();
+                    this->pushMsg(_currentMsg, cmd);
+                }
+            }
             else
             {
+                // Remove task ID from map if it exited
+                if (cmd == cmdUSER_TASK_DONE)
+                {
+                    SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t attachmentPtr =
+                        SCommandAttachmentImpl<cmdUSER_TASK_DONE>::decode(_currentMsg);
+
+                    std::lock_guard<std::mutex> lock(m_taskIDToChannelIDMapMutex);
+                    auto it = m_taskIDToChannelIDMap.find(attachmentPtr->m_taskID);
+                    if (it != m_taskIDToChannelIDMap.end())
+                        m_taskIDToChannelIDMap.erase(it);
+                }
+
                 LOG(debug) << "Raw message pushed to network channel: " << _currentMsg->toString();
-                this->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd));
+                this->pushMsg(_currentMsg, cmd);
             }
         });
 
@@ -97,9 +134,21 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
 
 bool CCommanderChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _currentMsg)
 {
-    LOG(debug) << "Raw message pushed to shared memory channel: " << _currentMsg->toString();
+    ECmdType cmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
     uint64_t protocolHeaderID = _currentMsg->header().m_ID;
-    m_SMFWChannel->pushMsg(_currentMsg, static_cast<ECmdType>(_currentMsg->header().m_cmd), protocolHeaderID);
+
+    // Collect all task assignments for a local cache of taskID -> channelID
+    if (cmd == cmdASSIGN_USER_TASK)
+    {
+        SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t attachmentPtr =
+            SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::decode(_currentMsg);
+
+        std::lock_guard<std::mutex> lock(m_taskIDToChannelIDMapMutex);
+        m_taskIDToChannelIDMap[attachmentPtr->m_taskID] = protocolHeaderID;
+    }
+
+    LOG(debug) << "Raw message pushed to shared memory channel: " << _currentMsg->toString();
+    m_SMFWChannel->pushMsg(_currentMsg, cmd, protocolHeaderID);
     return true;
 }
 

@@ -31,6 +31,8 @@ namespace dds
 
             uint16_t m_connectionAttempts;
             CSMFWChannel::connectionPtr_t m_SMFWChannel;
+            std::map<uint64_t, uint64_t> m_taskIDToChannelIDMap;
+            std::mutex m_taskIDToChannelIDMapMutex;
         };
     } // namespace agent_cmd
 } // namespace dds
