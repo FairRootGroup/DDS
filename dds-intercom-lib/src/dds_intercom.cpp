@@ -22,6 +22,12 @@ void CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subsc
     connection_t connection = CDDSIntercomGuard::instance().connectError(_subscriber);
 }
 
+void CIntercomService::subscribeOnTaskDone(taskDoneSignal_t::slot_function_type _subscriber)
+{
+    connection_t connection = CDDSIntercomGuard::instance().connectKeyValueDelete(_subscriber);
+    LOG(info) << "User process is waiting for property keys deletes.";
+}
+
 void CIntercomService::start(const std::string& _sessionID)
 {
     CDDSIntercomGuard::instance().start(_sessionID);
@@ -50,12 +56,6 @@ void CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
 {
     connection_t connection = CDDSIntercomGuard::instance().connectKeyValue(_subscriber);
     LOG(info) << "User process is waiting for property keys updates.";
-}
-
-void CKeyValue::subscribeOnDelete(deleteSignal_t::slot_function_type _subscriber)
-{
-    connection_t connection = CDDSIntercomGuard::instance().connectKeyValueDelete(_subscriber);
-    LOG(info) << "User process is waiting for property keys deletes.";
 }
 
 void CKeyValue::unsubscribe()

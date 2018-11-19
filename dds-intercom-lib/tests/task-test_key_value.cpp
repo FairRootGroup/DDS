@@ -76,16 +76,29 @@ int main(int argc, char* argv[])
         CKeyValue keyValue(service);
         mutex keyMutex;
         condition_variable keyCondition;
+        // on task done condition
+        condition_variable onTaskDoneCondition;
 
         map<string, string> keyValueCache;
         size_t numWaits = 0;
         size_t numUpdateKeyValueCalls = 0;
         size_t currentIteration = (type == 0) ? 1 : 0;
+        size_t numTaskDone = 0;
 
         // Subscribe on error events
         service.subscribeOnError([/*&keyCondition*/](EErrorCode _errorCode, const string& _msg) {
             LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
         });
+
+        // Subscribe on task done notifications
+        service.subscribeOnTaskDone(
+            [&numTaskDone, nInstances, &onTaskDoneCondition](uint64_t _taskID, uint32_t _exitCode) {
+                ++numTaskDone;
+                LOG(info) << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode;
+                // TODO: In order to properly account finished tasks, use taskID to get task's name
+                if (numTaskDone >= nInstances)
+                    onTaskDoneCondition.notify_all();
+            });
 
         // Subscribe on key update events
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
@@ -111,11 +124,6 @@ int main(int argc, char* argv[])
                 currentIteration += 2;
                 keyCondition.notify_all();
             }
-        });
-
-        // Subscribe on delete key notifications
-        keyValue.subscribeOnDelete([](const string& _propertyID, const string& _key) {
-            LOG(info) << "Delete key notification received for key " << _key;
         });
 
         // Start listening to events we have subscribed on
@@ -183,7 +191,18 @@ int main(int argc, char* argv[])
             }
         }
 
-        this_thread::sleep_for(chrono::seconds(10));
+        if ((nMaxValue % 2 == 0 && type == 0) || (nMaxValue % 2 == 1 && type == 1))
+        {
+            unique_lock<mutex> lock(keyMutex);
+            bool waitStatus = onTaskDoneCondition.wait_for(
+                lock, chrono::seconds(timeout), [&numTaskDone, &nInstances] { return numTaskDone >= nInstances; });
+            if (waitStatus == false)
+            {
+                LOG(error) << "Task failed: Timed out on waiting Task Done.";
+                LOG(error) << "Finished tasks: " << numTaskDone << " expected: " << nInstances;
+                return EXIT_FAILURE;
+            }
+        }
 
         LOG(info) << "Task successfully done";
 

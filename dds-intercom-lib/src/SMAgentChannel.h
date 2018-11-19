@@ -20,29 +20,16 @@ namespace dds
                             const std::string& _outputName,
                             uint64_t _ProtocolHeaderID,
                             protocol_api::EMQOpenType _inputOpenType,
-                            protocol_api::EMQOpenType _outputOpenType)
-                : CBaseSMChannelImpl<CSMAgentChannel>(
-                      _service, _inputName, _outputName, _ProtocolHeaderID, _inputOpenType, _outputOpenType)
-            {
-            }
+                            protocol_api::EMQOpenType _outputOpenType);
 
           public:
             BEGIN_SM_MSG_MAP(CSMAgentChannel)
-                SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
-                SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
-                SM_MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
-                SM_MESSAGE_HANDLER(cmdSIMPLE_MSG, on_cmdSIMPLE_MSG)
+                SM_MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
+                SM_MESSAGE_HANDLER_DISPATCH(cmdUPDATE_KEY)
+                SM_MESSAGE_HANDLER_DISPATCH(cmdDELETE_KEY)
+                SM_MESSAGE_HANDLER_DISPATCH(cmdSIMPLE_MSG)
+                SM_MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
             END_SM_MSG_MAP()
-
-          private:
-            bool on_cmdCUSTOM_CMD(protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
-            bool on_cmdUPDATE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
-            bool on_cmdDELETE_KEY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
-            bool on_cmdSIMPLE_MSG(protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
-                                  const protocol_api::SSenderInfo& _sender);
         };
     } // namespace internal_api
 } // namespace dds

@@ -141,6 +141,15 @@ int main(int argc, char* argv[])
             }
         });
 
+        service.subscribeOnTaskDone([optType, &callbackCounter](uint64_t _taskID, uint32_t _exitCode) {
+            callbackCounter++;
+            cout << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode;
+            if (optType == 1 || optType == 2)
+            {
+                throw std::runtime_error("Exception in keyValue.subscribeOnDelete");
+            }
+        });
+
         keyValue.subscribe(
             [optType, &callbackCounter](const string& _propertyID, const string& _value, uint64_t _senderTaskID) {
                 callbackCounter++;
@@ -151,15 +160,6 @@ int main(int argc, char* argv[])
                     throw std::runtime_error("Exception in keyValue.subscribe");
                 }
             });
-
-        keyValue.subscribeOnDelete([optType, &callbackCounter](const string& _propertyID, const string& _key) {
-            callbackCounter++;
-            cout << "Delete key notification received for key " << _key;
-            if (optType == 1 || optType == 2)
-            {
-                throw std::runtime_error("Exception in keyValue.subscribeOnDelete");
-            }
-        });
 
         customCmd.subscribe(
             [optType, &callbackCounter](const string& _command, const string& _condition, uint64_t _senderId) {

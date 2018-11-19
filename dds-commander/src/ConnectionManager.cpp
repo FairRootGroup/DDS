@@ -1124,6 +1124,13 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
                                               SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
+    // Send a broad cast message to all agents
+    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+    };
+    broadcastMsg<cmdUSER_TASK_DONE>(*_attachment, condition);
+
+    // Delete corresponding keys
     uint64_t taskID = _attachment->m_taskID;
 
     auto task = m_topo.getTaskByHash(taskID);

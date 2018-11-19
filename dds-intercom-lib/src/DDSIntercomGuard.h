@@ -23,9 +23,8 @@ namespace dds
         typedef boost::signals2::signal<void(
             const std::string& /*_propertyID*/, const std::string& /*_value*/, uint64_t /*_senderTaskID*/)>
             keyValueSignal_t;
-        /// \typedef Delete key callback function
-        typedef boost::signals2::signal<void(const std::string& /*_propertyID*/, const std::string& /*_key*/)>
-            keyValueDeleteSignal_t;
+        /// \typedef Task Done callback function
+        typedef boost::signals2::signal<void(uint64_t /*_taskID*/, uint32_t /*_exitCode*/)> keyValueTaskDoneSignal_t;
 
         // Custom command typeы
         /// \typedef Custom command callback function
@@ -52,7 +51,7 @@ namespace dds
             connection_t connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber);
             connection_t connectCustomCmdReply(customCmdReplySignal_t::slot_function_type _subscriber);
             connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
-            connection_t connectKeyValueDelete(keyValueDeleteSignal_t::slot_function_type _subscriber);
+            connection_t connectKeyValueDelete(keyValueTaskDoneSignal_t::slot_function_type _subscriber);
             void disconnectCustomCmd();
             void disconnectKeyValue();
 
@@ -60,9 +59,9 @@ namespace dds
             void on_cmdUPDATE_KEY_SM(
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
-            void on_cmdDELETE_KEY_SM(
+            void on_cmdUSER_TASK_DONE_SM(
                 const protocol_api::SSenderInfo& _sender,
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment);
             void on_cmdCUSTOM_CMD_SM(
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);
@@ -88,7 +87,7 @@ namespace dds
             // Signals for subscriptions
             intercom_api::errorSignal_t m_errorSignal;
             keyValueSignal_t m_keyValueUpdateSignal;
-            keyValueDeleteSignal_t m_keyValueDeleteSignal;
+            keyValueTaskDoneSignal_t m_keyValueTaskDoneSignal;
             customCmdSignal_t m_customCmdSignal;
             customCmdReplySignal_t m_customCmdReplySignal;
 

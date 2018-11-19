@@ -68,8 +68,8 @@ namespace dds
           public:
             COctopusTestImpl(const SOptions_t& _options)
                 : m_customCmd(m_intercomService)
-                , m_options(_options)
                 , m_status(TS_OK)
+                , m_options(_options)
             {
             }
             ~COctopusTestImpl()

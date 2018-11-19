@@ -334,7 +334,12 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
             m_SMIntercomChannel->pushMsg<cmdDELETE_KEY>(*_attachment);
         });
-    //
+
+    // Subscribe for User Task Done events
+    m_SMCommanderChannel->registerHandler<cmdUSER_TASK_DONE>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
+            m_SMIntercomChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment);
+        });
 
     // Subscribe for cmdSIMPLE_MSG
     m_SMCommanderChannel->registerHandler<cmdSIMPLE_MSG>(

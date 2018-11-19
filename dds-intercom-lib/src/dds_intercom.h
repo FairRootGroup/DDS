@@ -32,10 +32,16 @@ namespace dds
         class CIntercomService
         {
           public:
+            /// \typedef Task done callback function
+            typedef boost::signals2::signal<void(uint64_t /*_taskID*/, uint32_t /*_exitCode*/)> taskDoneSignal_t;
+
+          public:
             ~CIntercomService();
 
             /// \brief Subscribe on error messages from DDS intercom service
             void subscribeOnError(errorSignal_t::slot_function_type _subscriber);
+            /// \brief Subscribe on Task Done events
+            void subscribeOnTaskDone(taskDoneSignal_t::slot_function_type _subscriber);
             /// \brief Start DDS service, i.e. receiving and sending messages.
             void start(const std::string& _sessionID = "");
         };
@@ -51,10 +57,6 @@ namespace dds
                 const std::string& /*_propertyID*/, const std::string& /*_value*/, uint64_t /*_senderTaskID*/)>
                 signal_t;
 
-            /// \typedef Delete key callback function
-            typedef boost::signals2::signal<void(const std::string& /*_propertyID*/, const std::string& /*_key*/)>
-                deleteSignal_t;
-
           public:
             CKeyValue(CIntercomService& _service);
             ~CKeyValue();
@@ -62,7 +64,6 @@ namespace dds
           public:
             void putValue(const std::string& _key, const std::string& _value);
             void subscribe(signal_t::slot_function_type _subscriber);
-            void subscribeOnDelete(deleteSignal_t::slot_function_type _subscriber);
             void unsubscribe();
 
           public:

@@ -45,6 +45,7 @@ namespace dds
             SM_MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
             SM_MESSAGE_HANDLER(cmdDELETE_KEY, on_cmdDELETE_KEY)
             SM_MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
+            SM_MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
         END_SM_MSG_MAP()
 
       private:

@@ -69,6 +69,25 @@
         break;                                                                                                     \
     }
 
+#define SM_MESSAGE_HANDLER_DISPATCH(msg)                                                                         \
+    case msg:                                                                                                    \
+    {                                                                                                            \
+        processed = false;                                                                                       \
+        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                     \
+        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                        \
+        LOG(MiscCommon::debug) << "Dispatching " << g_cmdToString[msg];                                          \
+        if (!handlerExists(msg))                                                                                 \
+        {                                                                                                        \
+            LOG(MiscCommon::error) << "The received message can't be dispatched, it has no registered handler: " \
+                                   << _currentMsg->toString();                                                   \
+        }                                                                                                        \
+        else                                                                                                     \
+        {                                                                                                        \
+            dispatchHandlers<>(msg, sender, attachmentPtr);                                                      \
+        }                                                                                                        \
+        break;                                                                                                   \
+    }
+
 #define END_SM_MSG_MAP()                                                                                         \
     default:                                                                                                     \
         LOG(MiscCommon::error) << "The received SM message doesn't have a handler: " << _currentMsg->toString(); \

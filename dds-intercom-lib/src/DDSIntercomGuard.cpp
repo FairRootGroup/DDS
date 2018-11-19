@@ -80,10 +80,10 @@ void CDDSIntercomGuard::start(const std::string& _sessionID)
                 this->on_cmdUPDATE_KEY_SM(_sender, _attachment);
             });
 
-        // Subscribe for cmdDELETE_KEY from SM channel
-        m_SMChannel->registerHandler<cmdDELETE_KEY>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-                this->on_cmdDELETE_KEY_SM(_sender, _attachment);
+        // Subscribe for cmdUSER_TASK_DONE from SM channel
+        m_SMChannel->registerHandler<cmdUSER_TASK_DONE>(
+            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
+                this->on_cmdUSER_TASK_DONE_SM(_sender, _attachment);
             });
 
         // Subscribe for cmdCUSTOM_CMD from SM channel
@@ -203,9 +203,9 @@ connection_t CDDSIntercomGuard::connectKeyValue(keyValueSignal_t::slot_function_
     return m_keyValueUpdateSignal.connect(_subscriber);
 }
 
-connection_t CDDSIntercomGuard::connectKeyValueDelete(keyValueDeleteSignal_t::slot_function_type _subscriber)
+connection_t CDDSIntercomGuard::connectKeyValueDelete(keyValueTaskDoneSignal_t::slot_function_type _subscriber)
 {
-    return m_keyValueDeleteSignal.connect(_subscriber);
+    return m_keyValueTaskDoneSignal.connect(_subscriber);
 }
 
 void CDDSIntercomGuard::disconnectCustomCmd()
@@ -234,11 +234,11 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
         m_keyValueUpdateSignal, _attachment->m_propertyID, _attachment->m_value, _attachment->m_senderTaskID);
 }
 
-void CDDSIntercomGuard::on_cmdDELETE_KEY_SM(
+void CDDSIntercomGuard::on_cmdUSER_TASK_DONE_SM(
     const protocol_api::SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment)
+    protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment)
 {
-    execUserSignal(m_keyValueDeleteSignal, _attachment->getPropertyID(), _attachment->m_sKey);
+    execUserSignal(m_keyValueTaskDoneSignal, _attachment->m_taskID, _attachment->m_exitCode);
 }
 
 void CDDSIntercomGuard::on_cmdCUSTOM_CMD_SM(

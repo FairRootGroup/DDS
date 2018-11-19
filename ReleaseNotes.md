@@ -12,6 +12,10 @@ Added: Get rid of explicit include path mgmt and install CMake package.
 Added: Improved error reporting for localhost plug-in. In case of failure logs are sent to the user.    
 Added: decentrilized key-value propagation. Lobby leader acts as a mini-commander which creates update key messages and forwards them either locally via shared memory if the receiver is in the same lobby or  to the commnader via network if the receiver is in a different lobby.  (GH-196)    
 
+### dds\_intercom\_lib
+Removed: notification on key delete CKeyValue::subscribeOnDelete.   
+Added: notification on Task Done CIntercomService::subscribeOnTaskDone.   
+
 ### dds-protocol
 Added: Confirmation for cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK. (GH-202)    
 Added: Generic reply command cmdREPLY. (GH-201)    
