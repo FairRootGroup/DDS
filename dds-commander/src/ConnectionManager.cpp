@@ -916,23 +916,24 @@ void CConnectionManager::on_cmdGET_IDLE_AGENTS_COUNT(
     SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
     CAgentChannel::weakConnectionPtr_t _channel)
 {
-    CConnectionManager::weakChannelInfo_t::container_t channels(
-        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-            SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                    info.m_taskID == 0 && info.m_state == EAgentState::idle);
-        }));
+    size_t count = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                info.m_taskID == 0 && info.m_state == EAgentState::idle);
+    });
 
     SSimpleMsgCmd cmd;
     // No active agents
-    if (channels.empty() && !_channel.expired())
+    if (count == 0)
         cmd.m_sMsg = "0";
     else
-        cmd.m_sMsg = to_string(channels.size());
+        cmd.m_sMsg = to_string(count);
 
-    auto p = _channel.lock();
-    p->pushMsg<cmdREPLY_IDLE_AGENTS_COUNT>(cmd, _sender.m_ID);
-    return;
+    if (!_channel.expired())
+    {
+        auto p = _channel.lock();
+        p->pushMsg<cmdREPLY_IDLE_AGENTS_COUNT>(cmd, _sender.m_ID);
+    }
 }
 
 void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
@@ -1170,10 +1171,11 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     if (!_channel.expired())
     {
         auto channelPtr = _channel.lock();
-        // remove task ID from the channel
+        // zero task ID from the channel
         SAgentInfo info = channelPtr->getAgentInfo(_sender);
         info.m_taskID = 0;
         info.m_state = EAgentState::idle;
+        channelPtr->updateAgentInfo(_sender, info);
     }
 
     // remove task ID from the map

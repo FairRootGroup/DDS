@@ -22,7 +22,7 @@ dds-info --wait-for-idle-agents ${requiredNofAgents}
 echo "Activating topology..."
 dds-topology --disable-validation --activate ${topologyFile}
 
-sleep 40
+dds-info --wait-for-idle-agents ${requiredNofAgents}
 
 echo "Getting logs..."
 dds-agent-cmd getlog -a

@@ -5,7 +5,7 @@
 ### DDS common 
 Removed: update key command from dds-agent-cmd.    
 Modified: Bump minimum required Boost version to 1.67.    
-Modified: Bump minimum required cmake version to 3.11.1.    
+Modified: Bump minimum required cmake version to 3.11.0.    
 Modified: dds-intercom key-value API changed to reflect recent changes in the protocol. (GH-196)   
 Modified: Improve log dir detection algorithm for commander and agents. The new algorithm doesn' rely on DDS_LOG_LOCATION anymore.    
 Added: Get rid of explicit include path mgmt and install CMake package.     
