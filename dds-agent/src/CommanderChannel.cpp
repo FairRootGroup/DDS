@@ -15,6 +15,7 @@ using namespace dds::protocol_api;
 using namespace dds::agent_cmd;
 using namespace std;
 using namespace user_defaults_api;
+using namespace topology_api;
 namespace fs = boost::filesystem;
 
 const uint16_t g_MaxConnectionAttempts = 5;
@@ -58,24 +59,54 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
                 SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t attachmentPtr =
                     SCommandAttachmentImpl<cmdUPDATE_KEY>::decode(_currentMsg);
 
-                bool localPush(true);
-                uint64_t channelID(0);
-                {
-                    std::lock_guard<std::mutex> lock(m_taskIDToChannelIDMapMutex);
-                    auto it = m_taskIDToChannelIDMap.find(attachmentPtr->m_receiverTaskID);
-                    localPush = (it != m_taskIDToChannelIDMap.end());
-                    channelID = it->second;
-                }
+                string propertyID(attachmentPtr->m_propertyID);
+                uint64_t taskID(attachmentPtr->m_senderTaskID);
+                CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
 
-                if (localPush)
+                for (auto it = taskIt.first; it != taskIt.second; ++it)
                 {
-                    LOG(debug) << "Push update key via shared memory: " << _currentMsg->toString();
-                    m_SMFWChannel->pushMsg(_currentMsg, cmd, channelID);
-                }
-                else
-                {
-                    LOG(debug) << "Push update key via network channel: " << _currentMsg->toString();
-                    this->pushMsg(_currentMsg, cmd);
+                    uint64_t receiverTaskID(it->first);
+
+                    // Dont't send message to itself
+                    if (taskID == receiverTaskID)
+                        continue;
+
+                    auto task = m_topo.getTaskByHash(receiverTaskID);
+                    auto property = task->getProperty(propertyID);
+                    if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
+                                                property->getAccessType() == EPropertyAccessType::READWRITE))
+                    {
+                        SUpdateKeyCmd cmd;
+                        cmd.m_propertyID = propertyID;
+                        cmd.m_value = attachmentPtr->m_value;
+                        cmd.m_receiverTaskID = receiverTaskID;
+                        cmd.m_senderTaskID = taskID;
+
+                        bool localPush(true);
+                        uint64_t channelID(0);
+                        {
+                            std::lock_guard<std::mutex> lock(m_taskIDToChannelIDMapMutex);
+                            auto it = m_taskIDToChannelIDMap.find(receiverTaskID);
+                            localPush = (it != m_taskIDToChannelIDMap.end());
+                            channelID = it->second;
+                        }
+
+                        if (localPush)
+                        {
+                            LOG(debug) << "Push update key via shared memory: cmd=<" << cmd
+                                       << ">; protocolHeaderID=" << _currentMsg->header().m_ID
+                                       << "; channelID=" << channelID;
+                            m_SMFWChannel->pushMsg<cmdUPDATE_KEY>(cmd, _currentMsg->header().m_ID, channelID);
+                        }
+                        else
+                        {
+                            LOG(debug) << "Push update key via network channel: <" << cmd
+                                       << ">; protocolHeaderID=" << _currentMsg->header().m_ID;
+                            this->pushMsg<cmdUPDATE_KEY>(cmd, _currentMsg->header().m_ID);
+                        }
+
+                        LOG(debug) << "Property update from agent channel: <" << cmd << ">";
+                    }
                 }
             }
             else
@@ -137,14 +168,33 @@ bool CCommanderChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _cu
     ECmdType cmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
     uint64_t protocolHeaderID = _currentMsg->header().m_ID;
 
-    // Collect all task assignments for a local cache of taskID -> channelID
     if (cmd == cmdASSIGN_USER_TASK)
     {
+        // Collect all task assignments for a local cache of taskID -> channelID
+
         SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t attachmentPtr =
             SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::decode(_currentMsg);
 
         std::lock_guard<std::mutex> lock(m_taskIDToChannelIDMapMutex);
         m_taskIDToChannelIDMap[attachmentPtr->m_taskID] = protocolHeaderID;
+    }
+    else if (cmd == cmdBINARY_ATTACHMENT_RECEIVED && protocolHeaderID == getProtocolHeaderID())
+    {
+        // Load the topology
+
+        SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t attachmentPtr =
+            SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::decode(_currentMsg);
+
+        if (attachmentPtr->m_srcCommand == cmdUPDATE_TOPOLOGY)
+        {
+            topology_api::CTopology topo;
+            // Topology already validated on the commander, no need to validate it again
+            topo.setXMLValidationDisabled(true);
+            topo.init(attachmentPtr->m_receivedFilePath);
+            // Assign new topology
+            m_topo = topo;
+            LOG(info) << "Topology for lobby leader activated";
+        }
     }
 
     LOG(debug) << "Raw message pushed to shared memory channel: " << _currentMsg->toString();

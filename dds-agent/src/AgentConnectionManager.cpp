@@ -624,32 +624,12 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
         return;
     }
 
-    CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID);
-
-    for (auto it = taskIt.first; it != taskIt.second; ++it)
-    {
-        uint64_t receiverTaskID(it->first);
-
-        // Dont't send message to itself
-        if (taskID == receiverTaskID)
-            continue;
-
-        auto task = m_topo.getTaskByHash(receiverTaskID);
-        auto property = task->getProperty(propertyID);
-        if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
-                                    property->getAccessType() == EPropertyAccessType::READWRITE))
-        {
-            SUpdateKeyCmd cmd;
-            cmd.m_propertyID = propertyID;
-            cmd.m_value = _attachment->m_value;
-            cmd.m_receiverTaskID = receiverTaskID;
-            cmd.m_senderTaskID = taskID;
-            m_SMCommanderChannel->pushMsg<cmdUPDATE_KEY>(cmd, m_SMCommanderChannel->getProtocolHeaderID());
-
-            LOG(debug) << "Property update from agent channel: <" << cmd << ">";
-        }
-    }
+    SUpdateKeyCmd cmd;
+    cmd.m_propertyID = propertyID;
+    cmd.m_value = _attachment->m_value;
+    cmd.m_senderTaskID = taskID;
+    m_SMCommanderChannel->pushMsg<cmdUPDATE_KEY>(cmd, m_SMCommanderChannel->getProtocolHeaderID());
 
     m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(
-        SSimpleMsgCmd("Key update messages have been sent to commander.", MiscCommon::debug, cmdUPDATE_KEY));
+        SSimpleMsgCmd("Key update messages have been sent to lobby leader.", MiscCommon::debug, cmdUPDATE_KEY));
 }

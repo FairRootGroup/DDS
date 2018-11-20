@@ -22,6 +22,7 @@ namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
 const size_t g_maxValue = 1000;
+const size_t g_timeout = 10; // in seconds
 
 int main(int argc, char* argv[])
 {
@@ -35,6 +36,7 @@ int main(int argc, char* argv[])
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
         size_t type(0);
+        size_t timeout(g_timeout);
         bool testErrors(true);
 
         // Generic options
@@ -47,6 +49,9 @@ int main(int argc, char* argv[])
         options.add_options()("type,t", bpo::value<size_t>(&type)->default_value(0), "Type of task. Must be 0 or 1.");
         options.add_options()("test-errors",
                               "Indicates that taks will also put incorrect data and test the error messages.");
+        options.add_options()("timeout",
+                              bpo::value<size_t>(&timeout)->default_value(g_timeout),
+                              "A max timeout for a task to get all properties.");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -73,7 +78,9 @@ int main(int argc, char* argv[])
         condition_variable keyCondition;
 
         map<string, string> keyValueCache;
-        string currentValue("0");
+        size_t numWaits = 0;
+        size_t numUpdateKeyValueCalls = 0;
+        size_t currentIteration = (type == 0) ? 1 : 0;
 
         // Subscribe on error events
         service.subscribeOnError([/*&keyCondition*/](EErrorCode _errorCode, const string& _msg) {
@@ -83,13 +90,16 @@ int main(int argc, char* argv[])
         // Subscribe on key update events
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
         // It is safe to update global data without locks inside the callback.
-        keyValue.subscribe([&keyCondition, &currentValue, &keyValueCache, &nInstances](
+        keyValue.subscribe([&keyCondition, &currentIteration, &keyValueCache, &nInstances, &numUpdateKeyValueCalls](
                                const string& _propertyID, const string& _value, uint64_t _senderTaskID) {
+            numUpdateKeyValueCalls++;
+
             string key = _propertyID + "." + to_string(_senderTaskID);
             keyValueCache[key] = _value;
 
             // Check that all values in the key-value cache have a correct value
             size_t counter = 0;
+            string currentValue = to_string(currentIteration);
             for (const auto& v : keyValueCache)
             {
                 if (v.second == currentValue)
@@ -98,6 +108,7 @@ int main(int argc, char* argv[])
 
             if (counter == nInstances * 5)
             {
+                currentIteration += 2;
                 keyCondition.notify_all();
             }
         });
@@ -112,9 +123,7 @@ int main(int argc, char* argv[])
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {
-            LOG(info) << "Start iteration " << i;
-
-            currentValue = to_string(i);
+            LOG(info) << "Start iteration " << i << ". Current value: " << currentIteration;
 
             // For tasks with type 0 we start with writing the properties.
             if ((i % 2 == 0 && type == 0) || (i % 2 == 1 && type == 1))
@@ -145,16 +154,35 @@ int main(int argc, char* argv[])
             // For tasks with type 1 we start with subscribtion to properties.
             else if ((i % 2 == 0 && type == 1) || (i % 2 == 1 && type == 0))
             {
-                LOG(info) << "Iteration " << i << " subscribe on property updates.";
+                LOG(info) << "Iteration " << i << " subscribe on property updates. Current value: " << currentIteration;
 
                 unique_lock<mutex> lock(keyMutex);
-                keyCondition.wait(lock);
+                bool waitStatus = keyCondition.wait_for(
+                    lock, chrono::seconds(timeout), [&currentIteration, &i] { return currentIteration > i; });
 
-                LOG(info) << "Iteration " << i << " got all properties.";
+                // Timeout waiting for property updates
+                if (waitStatus == false)
+                {
+                    LOG(error) << "Iteration " << i << " timed out waiting for property updates.";
+                    LOG(error) << "Number of key-value update calls: " << numUpdateKeyValueCalls
+                               << "; currentIteration: " << currentIteration << "; numWaits: " << numWaits;
+
+                    stringstream ss;
+                    ss << "Key-value cache, number of elements: " << keyValueCache.size() << ". Elements:\n";
+                    for (const auto& v : keyValueCache)
+                    {
+                        ss << v.first << " --> " << v.second << "\n";
+                    }
+                    LOG(error) << ss.str();
+
+                    LOG(fatal) << "Task failed: timeout wait for property updates.";
+                    return EXIT_FAILURE;
+                }
+
+                LOG(info) << "Iteration " << i << " got all properties. Current value: " << currentIteration;
             }
         }
 
-        // size_t sleepTime = (type == 0) ? 0 : 10;
         this_thread::sleep_for(chrono::seconds(10));
 
         LOG(info) << "Task successfully done";
