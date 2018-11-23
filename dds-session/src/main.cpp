@@ -31,7 +31,7 @@ bool IsSessionRunning(const string& _sid)
     if (!fs::is_regular_file(pathPidFile))
         return bRunning;
 
-    pid_t pid(-1);
+    pid_t pid(0);
     ifstream f(pathPidFile.string());
     if (!f.is_open())
         return bRunning;

@@ -55,6 +55,10 @@ namespace MiscCommon
      */
     inline bool IsProcessRunning(pid_t _PID)
     {
+        // unlike ::kill we don't except negative or 0 pid.
+        if (_PID <= 0)
+            return false;
+
         return !(::kill(_PID, 0) == -1 && errno == ESRCH);
     }
     /**

@@ -31,17 +31,17 @@ void CStop::stop(const std::string& _sessionID)
     ifstream fPid(CUserDefaults::instance().getCommanderPidFile());
     if (!fPid.is_open())
     {
-        LOG(log_stdout_clean) << "Can't finder commander with session: " << _sessionID;
+        LOG(log_stdout_clean) << "Can't find commander with session: " << _sessionID;
         return;
     }
 
-    pid_t pidCommander;
+    pid_t pidCommander(0);
     fPid >> pidCommander;
     fPid.close();
 
     if (!MiscCommon::IsProcessRunning(pidCommander))
     {
-        LOG(log_stdout_clean) << "Can't finde commander with pid: " << pidCommander;
+        LOG(log_stdout_clean) << "Can't find commander with pid: " << pidCommander;
         return;
     }
 
