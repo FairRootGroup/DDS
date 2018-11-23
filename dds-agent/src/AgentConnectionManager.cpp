@@ -613,18 +613,32 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
     string propertyID(_attachment->m_propertyID);
     uint64_t taskID(m_SMCommanderChannel->getTaskID());
 
-    // Check if the task has a write access to property.
-    // If not just send back an error.
     auto task = m_topo.getTaskByHash(taskID);
     auto property = task->getProperty(propertyID);
-    if (property == nullptr || (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ)))
+    // Property doesn't exists for task
+    if (property == nullptr)
     {
         stringstream ss;
-        if (property == nullptr)
-            ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task " << task->getId();
-        else
-            ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task "
-               << task->getId();
+        ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task <" << task->getId() << ">";
+        m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
+        return;
+    }
+    // Cant' propagate property with read access type
+    if (property->getAccessType() == EPropertyAccessType::READ)
+    {
+        stringstream ss;
+        ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task <"
+           << task->getId() << ">";
+        m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
+        return;
+    }
+    // Can't send property with a collection scope if a task is outside a collection
+    if ((property->getScopeType() == EPropertyScopeType::COLLECTION) &&
+        (task->getParent()->getType() != ETopoType::COLLECTION))
+    {
+        stringstream ss;
+        ss << "Can't propagate property <" << property->getId() << "> which has a COLLECTION scope type but task <"
+           << task->getId() << "> is not in any collection";
         m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
         return;
     }

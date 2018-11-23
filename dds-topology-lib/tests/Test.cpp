@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     // Task iterators for property
     output_test_stream output5("topology_test_1_iterators_5.txt", true);
-    check_topology_iterator_task(topology.getTaskInfoIteratorForPropertyId("property4"), output5);
+    check_topology_iterator_task(topology.getTaskInfoIteratorForPropertyId("property4", 0), output5);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)

@@ -35,6 +35,8 @@ Added: The command learned "--wait-for-idle-agents" parameter, which blocks the 
 
 ### dds-topology
 Modified: Show proper error output from xmllint if topology XML file can't be validated.   
+Added: Property scope. Properties having COLLECTION scope are propagated only to tasks in the same collection as a task sending a property. Properties with GLOBAL scope are sent to all dependent tasks.
+
 
 ## v2.0 (2018-03-12)
 

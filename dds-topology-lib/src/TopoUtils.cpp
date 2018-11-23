@@ -107,6 +107,16 @@ namespace dds
                 throw runtime_error("Property access type with name " + _name + " does not exist.");
         }
 
+        EPropertyScopeType TagToPropertyScopeType(const std::string& _name)
+        {
+            if (_name == "collection")
+                return EPropertyScopeType::COLLECTION;
+            if (_name == "global")
+                return EPropertyScopeType::GLOBAL;
+            else
+                throw runtime_error("Property scope type with name " + _name + " does not exist.");
+        }
+
         ERequirementType TagToRequirementType(const string& _name)
         {
             if (_name == "wnname")

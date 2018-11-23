@@ -26,6 +26,12 @@ namespace dds
             READWRITE
         };
 
+        enum class EPropertyScopeType
+        {
+            GLOBAL,
+            COLLECTION
+        };
+
         /// \class TopoProperty
         /// \brief Data class to hold topology property.
         class CTopoProperty : public CTopoBase
@@ -41,10 +47,11 @@ namespace dds
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
             const std::string& getValue() const;
-            EPropertyAccessType getAccessType() const;
-
             void setValue(const std::string& _value);
+            EPropertyAccessType getAccessType() const;
             void setAccessType(EPropertyAccessType _accessType);
+            EPropertyScopeType getScopeType() const;
+            void setScopeType(EPropertyScopeType _scopeType);
 
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
@@ -58,6 +65,7 @@ namespace dds
           private:
             std::string m_value;              ///< Property value
             EPropertyAccessType m_accessType; ///< Property access type
+            EPropertyScopeType m_scopeType;   ///< Property scope type
         };
 
         typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;

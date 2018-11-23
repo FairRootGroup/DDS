@@ -31,12 +31,14 @@ namespace dds
                 , m_taskIndex(0)
                 , m_collectionIndex(std::numeric_limits<uint32_t>::max())
                 , m_taskPath()
+                , m_taskCollectionHash(0)
             {
             }
             TaskPtr_t m_task;
             size_t m_taskIndex;
             size_t m_collectionIndex;
             std::string m_taskPath;
+            uint64_t m_taskCollectionHash;
         };
 
         class CTopology
@@ -44,6 +46,7 @@ namespace dds
           public:
             /// Note that hash is of type uint_64.
             /// Hash is calculated using CRC64 algorithm.
+            typedef std::set<uint64_t> HashSet_t;
             typedef std::map<uint64_t, STaskInfo> HashToTaskInfoMap_t;
             typedef std::function<bool(std::pair<uint64_t, const STaskInfo&>)> TaskInfoCondition_t;
             typedef boost::filter_iterator<TaskInfoCondition_t, HashToTaskInfoMap_t::const_iterator> TaskInfoIterator_t;
@@ -58,9 +61,7 @@ namespace dds
             typedef std::map<std::string, TaskPtr_t> HashPathToTaskMap_t;
             typedef std::map<std::string, TaskCollectionPtr_t> HashPathToTaskCollectionMap_t;
             typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
-            typedef std::map<uint64_t, std::vector<uint64_t>> CollectionHashToTaskHashesMap_t;
-
-            typedef std::set<uint64_t> HashSet_t;
+            typedef std::map<uint64_t, HashSet_t> CollectionHashToTaskHashesMap_t;
 
             /// \brief Constructor.
             CTopology();
@@ -92,7 +93,7 @@ namespace dds
             TaskPtr_t getTaskByHash(uint64_t _hash) const;
             const STaskInfo& getTaskInfoByHash(uint64_t _hash) const;
             TaskCollectionPtr_t getTaskCollectionByHash(uint64_t _hash) const;
-            const std::vector<uint64_t>& getTaskHashesByTaskCollectionHash(uint64_t _hash) const;
+            const HashSet_t& getTaskHashesByTaskCollectionHash(HashSet_t::value_type _hash) const;
             TaskPtr_t getTaskByHashPath(const std::string& _hashPath) const;
 
             /// Accessors to internal data structures. Used for unit tests.
@@ -106,7 +107,8 @@ namespace dds
             TaskInfoIteratorPair_t getTaskInfoIterator(TaskInfoCondition_t _condition = nullptr) const;
             TaskCollectionIteratorPair_t getTaskCollectionIterator(
                 TaskCollectionCondition_t _condition = nullptr) const;
-            TaskInfoIteratorPair_t getTaskInfoIteratorForPropertyId(const std::string& _propertyId) const;
+            TaskInfoIteratorPair_t getTaskInfoIteratorForPropertyId(const std::string& _propertyId,
+                                                                    uint64_t _taskHash) const;
 
             std::string stringOfTasks(const HashSet_t& _ids) const;
             std::string stringOfCollections(const HashSet_t& _ids) const;

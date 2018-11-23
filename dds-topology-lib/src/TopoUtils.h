@@ -28,6 +28,8 @@ namespace dds
 
         EPropertyAccessType TagToPropertyAccessType(const std::string& _name);
 
+        EPropertyScopeType TagToPropertyScopeType(const std::string& _name);
+
         ERequirementType TagToRequirementType(const std::string& _name);
 
         std::string RequirementTypeToTag(ERequirementType _type);

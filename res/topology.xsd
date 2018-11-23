@@ -36,6 +36,13 @@
   </xs:restriction>
 </xs:simpleType>
 
+<xs:simpleType name="scopeType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="global"/>
+    <xs:enumeration value="collection"/>
+  </xs:restriction>
+</xs:simpleType>
+
 <xs:complexType name="varType">
 	<xs:attribute name="id" type="stringIdType" use="required"/>
 	<xs:attribute name="value" type="xs:string" use="required"/>
@@ -58,6 +65,7 @@
 
 <xs:complexType name="propertyType">
   <xs:attribute name="id" type="stringIdType" use="required"/>
+  <xs:attribute name="scope" type="scopeType" default="global"/>
 </xs:complexType>
 
 

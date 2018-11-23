@@ -18,6 +18,7 @@ CTopoProperty::CTopoProperty()
     : CTopoBase()
     , m_value()
     , m_accessType(EPropertyAccessType::READWRITE)
+    , m_scopeType(EPropertyScopeType::GLOBAL)
 {
     setType(ETopoType::TOPO_PROPERTY);
 }
@@ -46,12 +47,23 @@ void CTopoProperty::setAccessType(EPropertyAccessType _accessType)
     m_accessType = _accessType;
 }
 
+EPropertyScopeType CTopoProperty::getScopeType() const
+{
+    return m_scopeType;
+}
+
+void CTopoProperty::setScopeType(EPropertyScopeType _scopeType)
+{
+    m_scopeType = _scopeType;
+}
+
 void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
 {
     try
     {
         const ptree& propertyPT = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
         setId(propertyPT.get<string>("<xmlattr>.id"));
+        setScopeType(TagToPropertyScopeType(propertyPT.get<string>("<xmlattr>.scope")));
         // setAccessType(TagToPropertyAccessType(propertyPT.get<string>("<xmlattr>.access")));
     }
     catch (exception& error) // ptree_error, runtime_error

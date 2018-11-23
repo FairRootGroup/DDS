@@ -24,6 +24,17 @@ using namespace MiscCommon;
 const size_t g_maxValue = 1000;
 const size_t g_timeout = 10; // in seconds
 
+string map_to_string(const map<std::string, string>& _map)
+{
+    stringstream ss;
+    ss << "Map with number of elements: " << _map.size() << ". Elements:\n";
+    for (const auto& v : _map)
+    {
+        ss << v.first << " --> " << v.second << "\n";
+    }
+    return ss.str();
+}
+
 int main(int argc, char* argv[])
 {
     try
@@ -175,16 +186,17 @@ int main(int argc, char* argv[])
                     LOG(error) << "Number of key-value update calls: " << numUpdateKeyValueCalls
                                << "; currentIteration: " << currentIteration << "; numWaits: " << numWaits;
 
-                    stringstream ss;
-                    ss << "Key-value cache, number of elements: " << keyValueCache.size() << ". Elements:\n";
-                    for (const auto& v : keyValueCache)
-                    {
-                        ss << v.first << " --> " << v.second << "\n";
-                    }
-                    LOG(error) << ss.str();
+                    LOG(error) << "Key value cache.\n" << map_to_string(keyValueCache);
 
-                    LOG(fatal) << "Task failed: timeout wait for property updates.";
-                    return EXIT_FAILURE;
+                    if (currentIteration == nMaxValue - 1)
+                    {
+                        LOG(warning) << "Some properties of the LAST iteration are missing.";
+                    }
+                    else
+                    {
+                        LOG(fatal) << "Task failed: timeout wait for property updates.";
+                        return EXIT_FAILURE;
+                    }
                 }
 
                 LOG(info) << "Iteration " << i << " got all properties. Current value: " << currentIteration;
@@ -204,6 +216,7 @@ int main(int argc, char* argv[])
             }
         }
 
+        LOG(info) << "Key value cache.\n" << map_to_string(keyValueCache);
         LOG(info) << "Task successfully done";
 
         chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();

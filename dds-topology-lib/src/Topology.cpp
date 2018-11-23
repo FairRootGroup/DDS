@@ -42,7 +42,7 @@ void CTopology::init(const std::string& _fileName, bool _initForTest)
     /// FIXME Use parser based on the file extension.
 
     CTopologyParserXML parser;
-    m_main = make_shared<CTaskGroup>();
+    m_main = std::make_shared<CTaskGroup>();
     parser.parse(_fileName, m_main, m_bXMLValidationDisabled);
 
     m_topoIndexToTopoElementMap.clear();
@@ -165,7 +165,7 @@ TaskCollectionPtr_t CTopology::getTaskCollectionByHash(uint64_t _hash) const
     return it->second;
 }
 
-const std::vector<uint64_t>& CTopology::getTaskHashesByTaskCollectionHash(uint64_t _hash) const
+const CTopology::HashSet_t& CTopology::getTaskHashesByTaskCollectionHash(HashSet_t::value_type _hash) const
 {
     auto it = m_collectionHashToTaskHashesMap.find(_hash);
     if (it == m_collectionHashToTaskHashesMap.end())
@@ -206,18 +206,47 @@ CTopology::TaskCollectionIteratorPair_t CTopology::getTaskCollectionIterator(Tas
     return make_pair(begin_iterator, end_iterator);
 }
 
-CTopology::TaskInfoIteratorPair_t CTopology::getTaskInfoIteratorForPropertyId(const std::string& _propertyId) const
+CTopology::TaskInfoIteratorPair_t CTopology::getTaskInfoIteratorForPropertyId(const std::string& _propertyId,
+                                                                              uint64_t _taskHash) const
 {
-    return getTaskInfoIterator([&_propertyId](const CTopology::TaskInfoIterator_t::value_type& value) -> bool {
-        TaskPtr_t task = value.second.m_task;
-        const TopoPropertyPtrVector_t& properties = task->getProperties();
-        for (const auto& v : properties)
+    auto taskIt = m_hashToTaskInfoMap.find(_taskHash);
+    if (taskIt == m_hashToTaskInfoMap.end())
+        throw runtime_error("Can't find task with ID" + to_string(_taskHash));
+
+    const STaskInfo& taskInfo = taskIt->second;
+    TopoPropertyPtr_t property = taskInfo.m_task->getProperty(_propertyId);
+    if (property == nullptr)
+        throw runtime_error("Property <" + _propertyId + "> for task " + to_string(_taskHash) + " doesn't exist");
+
+    switch (property->getScopeType())
+    {
+        case EPropertyScopeType::GLOBAL:
+            return getTaskInfoIterator([&_propertyId](const CTopology::TaskInfoIterator_t::value_type& value) -> bool {
+                TaskPtr_t task = value.second.m_task;
+                TopoPropertyPtr_t property = task->getProperty(_propertyId);
+                return property != nullptr;
+            });
+
+        case EPropertyScopeType::COLLECTION:
         {
-            if (v->getId() == _propertyId)
-                return true;
+            uint64_t collectionHash = taskInfo.m_taskCollectionHash;
+            if (collectionHash == 0)
+                throw runtime_error("Property <" + _propertyId + "> is set for COLLECTION scope only but task " +
+                                    to_string(_taskHash) + " doesn't belong to any collection");
+
+            const HashSet_t& taskHashes = getTaskHashesByTaskCollectionHash(collectionHash);
+
+            return getTaskInfoIterator(
+                [&_propertyId, &taskHashes](const CTopology::TaskInfoIterator_t::value_type& value) -> bool {
+                    TaskPtr_t task = value.second.m_task;
+                    uint64_t taskHash = value.first;
+                    if (taskHashes.find(taskHash) == taskHashes.end())
+                        return false;
+                    TopoPropertyPtr_t property = task->getProperty(_propertyId);
+                    return property != nullptr;
+                });
         }
-        return false;
-    });
+    }
 }
 
 void CTopology::FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element)
@@ -278,10 +307,12 @@ void CTopology::FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool 
         info.m_taskIndex = index;
         info.m_collectionIndex = collectionCounter;
         info.m_taskPath = hashPath;
+        info.m_taskCollectionHash =
+            (task->getParent()->getType() == ETopoType::COLLECTION) ? m_currentTaskCollectionCrc : 0;
         m_hashToTaskInfoMap[crc] = info;
 
         if (task->getParent()->getType() == ETopoType::COLLECTION)
-            m_collectionHashToTaskHashesMap[m_currentTaskCollectionCrc].push_back(crc);
+            m_collectionHashToTaskHashesMap[m_currentTaskCollectionCrc].insert(crc);
 
         return;
     }

@@ -81,7 +81,7 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
         if (_addedCollections != nullptr && _addedCollections->find(it->first) == _addedCollections->end())
             continue;
 
-        const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(it->first);
+        const CTopology::HashSet_t& taskHashes = _topology.getTaskHashesByTaskCollectionHash(it->first);
         tasksInCollections.insert(taskHashes.begin(), taskHashes.end());
         collectionMap[it->second->getNofTasks()].push_back(it->first);
     }
@@ -235,7 +235,7 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                           (requirement->getRequirementType() == ERequirementType::HostName) ? v.first.first
                                                                                             : v.first.second))))
                 {
-                    const vector<uint64_t>& taskHashes = _topology.getTaskHashesByTaskCollectionHash(id);
+                    const CTopology::HashSet_t& taskHashes = _topology.getTaskHashesByTaskCollectionHash(id);
                     for (auto hash : taskHashes)
                     {
                         const STaskInfo& info = _topology.getTaskInfoByHash(hash);

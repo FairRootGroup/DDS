@@ -1139,7 +1139,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     const TopoPropertyPtrVector_t& properties = task->getProperties();
     for (const auto& property : properties)
     {
-        CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(property->getId());
+        CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(property->getId(), taskID);
 
         for (auto it = taskIt.first; it != taskIt.second; ++it)
         {
