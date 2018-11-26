@@ -25,12 +25,15 @@
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+// MiscCommon
+#include "TimeMeasure.h"
 
 using namespace std;
 using namespace boost::property_tree;
 using boost::test_tools::output_test_stream;
 using namespace dds;
 using namespace dds::topology_api;
+using namespace MiscCommon;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
@@ -41,6 +44,17 @@ void check_topology_map_task(const T& _map, output_test_stream& _output)
     {
         _output << v.first << " " << v.second.m_task->getPath() << "\n";
         // std::cout << v.first << " " << v.second.m_task->getPath() << "\n";
+    }
+    BOOST_CHECK(_output.match_pattern());
+}
+
+template <class T>
+void check_topology_map_collection(const T& _map, output_test_stream& _output)
+{
+    for (const auto& v : _map)
+    {
+        _output << v.first << " " << v.second.m_collection->getPath() << "\n";
+        // std::cout << v.first << " " << v.second->getPath() << "\n";
     }
     BOOST_CHECK(_output.match_pattern());
 }
@@ -74,7 +88,7 @@ void check_topology_maps(const string& _topoName)
     check_topology_map_task(topology.getHashToTaskInfoMap(), output2);
 
     output_test_stream output3(_topoName + "_maps_3.txt", true);
-    check_topology_map(topology.getHashToTaskCollectionMap(), output3);
+    check_topology_map_collection(topology.getHashToTaskCollectionInfoMap(), output3);
 
     output_test_stream output4(_topoName + "_maps_4.txt", true);
     check_topology_map(topology.getHashPathToTaskMap(), output4);
@@ -105,7 +119,7 @@ void check_topology_iterator_collection(const T& _iterator, output_test_stream& 
 {
     for (auto it = _iterator.first; it != _iterator.second; it++)
     {
-        _output << it->first << " " << it->second->getPath() << "\n";
+        _output << it->first << " " << it->second.m_collection->getPath() << "\n";
         // std::cout << it->first << " " << it->second->getPath() << "\n";
     }
     BOOST_CHECK(_output.match_pattern());
@@ -118,8 +132,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     // Task iterators
     output_test_stream output1("topology_test_1_iterators_1.txt", true);
-    CTopology::TaskInfoIteratorPair_t taskIt1 =
-        topology.getTaskInfoIterator([](const CTopology::TaskInfoIterator_t::value_type& value) -> bool {
+    TaskInfoIteratorPair_t taskIt1 =
+        topology.getTaskInfoIterator([](const TaskInfoIterator_t::value_type& value) -> bool {
             TaskPtr_t task = value.second.m_task;
             return (task->getId() == "task1");
         });
@@ -130,15 +144,15 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     // Task collection iterators
     output_test_stream output3("topology_test_1_iterators_3.txt", true);
-    CTopology::TaskCollectionIteratorPair_t tcIt1 =
-        topology.getTaskCollectionIterator([](CTopology::TaskCollectionIterator_t::value_type value) -> bool {
-            TaskCollectionPtr_t tc = value.second;
+    TaskCollectionInfoIteratorPair_t tcIt1 =
+        topology.getTaskCollectionInfoIterator([](TaskCollectionInfoIterator_t::value_type value) -> bool {
+            TaskCollectionPtr_t tc = value.second.m_collection;
             return (tc->getId() == "collection1");
         });
     check_topology_iterator_collection(tcIt1, output3);
 
     output_test_stream output4("topology_test_1_iterators_4.txt", true);
-    check_topology_iterator_collection(topology.getTaskCollectionIterator(), output4);
+    check_topology_iterator_collection(topology.getTaskCollectionInfoIterator(), output4);
 
     // Task iterators for property
     output_test_stream output5("topology_test_1_iterators_5.txt", true);
@@ -204,13 +218,13 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(element1->getNofTasks() == 1);
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
     TaskPtr_t casted1 = dynamic_pointer_cast<CTask>(element1);
-    BOOST_CHECK(casted1->getNofProperties() == 3);
-    BOOST_CHECK(casted1->getProperty(0)->getId() == "property1");
-    BOOST_CHECK(casted1->getProperty(1)->getId() == "property4");
-    BOOST_CHECK(casted1->getProperty(2)->getId() == "property1");
-    BOOST_CHECK(casted1->getProperty(0)->getAccessType() == EPropertyAccessType::READ);
-    BOOST_CHECK(casted1->getProperty(1)->getAccessType() == EPropertyAccessType::WRITE);
-    BOOST_CHECK(casted1->getProperty(2)->getAccessType() == EPropertyAccessType::READWRITE);
+    BOOST_CHECK(casted1->getNofProperties() == 2);
+    //    BOOST_CHECK(casted1->getProperty(0)->getId() == "property1");
+    //    BOOST_CHECK(casted1->getProperty(1)->getId() == "property4");
+    //    BOOST_CHECK(casted1->getProperty(2)->getId() == "property1");
+    //    BOOST_CHECK(casted1->getProperty(0)->getAccessType() == EPropertyAccessType::READ);
+    //    BOOST_CHECK(casted1->getProperty(1)->getAccessType() == EPropertyAccessType::WRITE);
+    //    BOOST_CHECK(casted1->getProperty(2)->getAccessType() == EPropertyAccessType::READWRITE);
     BOOST_CHECK(casted1->getExe() == "app1 -l -n");
     BOOST_CHECK(casted1->getEnv() == "env1");
     BOOST_CHECK(casted1->isExeReachable() == true);
@@ -290,7 +304,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
     BOOST_CHECK(casted6->getNofTasks() == 1);
     BOOST_CHECK(casted6->getTotalNofTasks() == 1);
-    BOOST_CHECK(casted6->getNofProperties() == 3);
+    BOOST_CHECK(casted6->getNofProperties() == 2);
     BOOST_CHECK(casted6->getExe() == "app1 -l -n");
     BOOST_CHECK(casted6->getEnv() == "env1");
     BOOST_CHECK(casted6->isExeReachable() == true);
@@ -581,8 +595,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
     output1 << "----- Removed collections -----\n";
     for (auto& v : removedCollections)
     {
-        TaskCollectionPtr_t collection = topo.getTaskCollectionByHash(v);
-        output1 << v << " " << collection->getPath() << "\n";
+        STaskCollectionInfo collectionInfo = topo.getTaskCollectionInfoByHash(v);
+        output1 << v << " " << collectionInfo.m_collection->getPath() << "\n";
     }
 
     output1 << "----- Added tasks -----\n";
@@ -595,11 +609,49 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
     output1 << "----- Added collections -----\n";
     for (auto& v : addedCollections)
     {
-        TaskCollectionPtr_t collection = newTopo.getTaskCollectionByHash(v);
-        output1 << v << " " << collection->getPath() << "\n";
+        STaskCollectionInfo collection = newTopo.getTaskCollectionInfoByHash(v);
+        output1 << v << " " << collection.m_collection->getPath() << "\n";
     }
 
     BOOST_CHECK(output1.match_pattern());
+}
+
+long long test_property(const CTopology& _topology)
+{
+    auto execTime = STimeMeasure<>::execution([&_topology]() {
+        for (size_t i = 0; i < 1000; i++)
+        {
+            const HashToTaskInfoMap_t& taskMap = _topology.getHashToTaskInfoMap();
+
+            for (const auto& v : taskMap)
+            {
+                uint64_t taskID = v.first;
+                const STaskInfo& taskInfo = v.second;
+
+                const TopoPropertyPtrMap_t& properties = taskInfo.m_task->getProperties();
+                for (const auto& property : properties)
+                {
+                    _topology.getTaskInfoIteratorForPropertyId(property.first, taskID);
+                }
+            }
+        }
+    });
+    return execTime;
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_property_performance)
+{
+    CTopology topology1;
+    topology1.init("topology_test_property_1.xml");
+    long long time1 = test_property(topology1);
+    std::cout << "test_dds_topology_property_performance execution time1: " << time1 << " msec\n";
+
+    CTopology topology2;
+    topology2.init("topology_test_property_2.xml");
+    long long time2 = test_property(topology2);
+    std::cout << "test_dds_topology_property_performance execution time2: " << time2 << " msec\n";
+
+    std::cout << "test_dds_topology_property_performance delta: " << time2 - time1 << " msec\n";
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -8,6 +8,7 @@
 
 // DDS
 #include "Requirement.h"
+#include "Task.h"
 #include "TaskContainer.h"
 
 namespace dds
@@ -46,6 +47,25 @@ namespace dds
 
         typedef std::shared_ptr<CTaskCollection> TaskCollectionPtr_t;
         typedef std::vector<TaskCollectionPtr_t> TaskCollectionPtrVector_t;
+
+        struct STaskCollectionInfo
+        {
+            STaskCollectionInfo()
+                : m_collection(nullptr)
+                , m_collectionIndex(0)
+                , m_collectionPath()
+            {
+            }
+            TaskCollectionPtr_t m_collection;
+            size_t m_collectionIndex;
+            std::string m_collectionPath;
+            HashToTaskInfoMap_t m_hashToTaskInfoMap; ///< Map of task ID to CTaskInfo
+        };
+        typedef std::map<uint64_t, STaskCollectionInfo> HashToTaskCollectionInfoMap_t;
+        typedef std::function<bool(std::pair<uint64_t, const STaskCollectionInfo&>)> TaskCollectionInfoCondition_t;
+        typedef boost::filter_iterator<TaskCollectionInfoCondition_t, HashToTaskCollectionInfoMap_t::const_iterator>
+            TaskCollectionInfoIterator_t;
+        typedef std::pair<TaskCollectionInfoIterator_t, TaskCollectionInfoIterator_t> TaskCollectionInfoIteratorPair_t;
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__Topology__) */

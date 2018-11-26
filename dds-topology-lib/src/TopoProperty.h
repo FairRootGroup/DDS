@@ -9,9 +9,9 @@
 // DDS
 #include "TopoBase.h"
 // STD
+#include <map>
 #include <sstream>
 #include <string>
-#include <vector>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
@@ -69,7 +69,8 @@ namespace dds
         };
 
         typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;
-        typedef std::vector<TopoPropertyPtr_t> TopoPropertyPtrVector_t;
+        // Property ID --> Ptr
+        typedef std::map<std::string, TopoPropertyPtr_t> TopoPropertyPtrMap_t;
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__TopoProperty__) */

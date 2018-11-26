@@ -1136,10 +1136,10 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
 
     auto task = m_topo.getTaskByHash(taskID);
 
-    const TopoPropertyPtrVector_t& properties = task->getProperties();
+    const TopoPropertyPtrMap_t& properties = task->getProperties();
     for (const auto& property : properties)
     {
-        CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(property->getId(), taskID);
+        TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(property.first, taskID);
 
         for (auto it = taskIt.first; it != taskIt.second; ++it)
         {
@@ -1156,7 +1156,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
                 auto ptr = iter->second.m_channel.lock();
 
                 SDeleteKeyCmd cmd;
-                cmd.setKey(property->getId(), taskID);
+                cmd.setKey(property.first, taskID);
 
                 SAgentInfo info = ptr->getAgentInfo(iter->second.m_protocolHeaderID);
                 if (info.m_taskID != 0 && info.m_taskID != taskID)

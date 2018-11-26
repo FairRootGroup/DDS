@@ -17,51 +17,21 @@
 #include <ostream>
 #include <set>
 #include <string>
-// BOOST
-#include <boost/iterator/filter_iterator.hpp>
 
 namespace dds
 {
     namespace topology_api
     {
-        struct STaskInfo
-        {
-            STaskInfo()
-                : m_task(nullptr)
-                , m_taskIndex(0)
-                , m_collectionIndex(std::numeric_limits<uint32_t>::max())
-                , m_taskPath()
-                , m_taskCollectionHash(0)
-            {
-            }
-            TaskPtr_t m_task;
-            size_t m_taskIndex;
-            size_t m_collectionIndex;
-            std::string m_taskPath;
-            uint64_t m_taskCollectionHash;
-        };
-
         class CTopology
         {
           public:
             /// Note that hash is of type uint_64.
             /// Hash is calculated using CRC64 algorithm.
             typedef std::set<uint64_t> HashSet_t;
-            typedef std::map<uint64_t, STaskInfo> HashToTaskInfoMap_t;
-            typedef std::function<bool(std::pair<uint64_t, const STaskInfo&>)> TaskInfoCondition_t;
-            typedef boost::filter_iterator<TaskInfoCondition_t, HashToTaskInfoMap_t::const_iterator> TaskInfoIterator_t;
-            typedef std::pair<TaskInfoIterator_t, TaskInfoIterator_t> TaskInfoIteratorPair_t;
-
-            typedef std::map<uint64_t, TaskCollectionPtr_t> HashToTaskCollectionMap_t;
-            typedef std::function<bool(std::pair<uint64_t, TaskCollectionPtr_t>)> TaskCollectionCondition_t;
-            typedef boost::filter_iterator<TaskCollectionCondition_t, HashToTaskCollectionMap_t::const_iterator>
-                TaskCollectionIterator_t;
-            typedef std::pair<TaskCollectionIterator_t, TaskCollectionIterator_t> TaskCollectionIteratorPair_t;
 
             typedef std::map<std::string, TaskPtr_t> HashPathToTaskMap_t;
             typedef std::map<std::string, TaskCollectionPtr_t> HashPathToTaskCollectionMap_t;
             typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
-            typedef std::map<uint64_t, HashSet_t> CollectionHashToTaskHashesMap_t;
 
             /// \brief Constructor.
             CTopology();
@@ -92,21 +62,22 @@ namespace dds
             TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
             TaskPtr_t getTaskByHash(uint64_t _hash) const;
             const STaskInfo& getTaskInfoByHash(uint64_t _hash) const;
-            TaskCollectionPtr_t getTaskCollectionByHash(uint64_t _hash) const;
-            const HashSet_t& getTaskHashesByTaskCollectionHash(HashSet_t::value_type _hash) const;
+            const STaskCollectionInfo& getTaskCollectionInfoByHash(uint64_t _hash) const;
             TaskPtr_t getTaskByHashPath(const std::string& _hashPath) const;
 
             /// Accessors to internal data structures. Used for unit tests.
             const TopoIndexToTopoElementMap_t& getTopoIndexToTopoElementMap() const;
             const HashToTaskInfoMap_t& getHashToTaskInfoMap() const;
-            const HashToTaskCollectionMap_t& getHashToTaskCollectionMap() const;
+            const HashToTaskCollectionInfoMap_t& getHashToTaskCollectionInfoMap() const;
             const HashPathToTaskMap_t& getHashPathToTaskMap() const;
             const HashPathToTaskCollectionMap_t& getHashPathToTaskCollectionMap() const;
 
             /// Iterators
+            TaskInfoIteratorPair_t getTaskInfoIterator(const HashToTaskInfoMap_t& _map,
+                                                       TaskInfoCondition_t _condition) const;
             TaskInfoIteratorPair_t getTaskInfoIterator(TaskInfoCondition_t _condition = nullptr) const;
-            TaskCollectionIteratorPair_t getTaskCollectionIterator(
-                TaskCollectionCondition_t _condition = nullptr) const;
+            TaskCollectionInfoIteratorPair_t getTaskCollectionInfoIterator(
+                TaskCollectionInfoCondition_t _condition = nullptr) const;
             TaskInfoIteratorPair_t getTaskInfoIteratorForPropertyId(const std::string& _propertyId,
                                                                     uint64_t _taskHash) const;
 
@@ -133,13 +104,11 @@ namespace dds
 
             TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
 
-            HashToTaskCollectionMap_t m_hashToTaskCollectionMap;
             HashToTaskInfoMap_t m_hashToTaskInfoMap;
+            HashToTaskCollectionInfoMap_t m_hashToTaskCollectionInfoMap;
             std::map<std::string, size_t> m_counterMap;
             std::string m_currentTaskCollectionHashPath;
             uint64_t m_currentTaskCollectionCrc;
-
-            CollectionHashToTaskHashesMap_t m_collectionHashToTaskHashesMap;
 
             // FIXME: Hash path maps has to be removed due to performance reasons.
             // In any case we do not need them.

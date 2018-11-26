@@ -4,8 +4,11 @@
 //
 #include "SSHScheduler.h"
 #include "TimeMeasure.h"
-#include <boost/regex.hpp>
 #include <set>
+// BOOST
+#include "boost/range/adaptor/map.hpp"
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/regex.hpp>
 
 using namespace dds;
 using namespace dds::commander_cmd;
@@ -74,16 +77,16 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     // Collect all tasks that belong to collections
     set<uint64_t> tasksInCollections;
     CollectionMap_t collectionMap;
-    CTopology::TaskCollectionIteratorPair_t collections = _topology.getTaskCollectionIterator();
+    TaskCollectionInfoIteratorPair_t collections = _topology.getTaskCollectionInfoIterator();
     for (auto it = collections.first; it != collections.second; it++)
     {
         // Only collections that were added has to be scheduled
         if (_addedCollections != nullptr && _addedCollections->find(it->first) == _addedCollections->end())
             continue;
 
-        const CTopology::HashSet_t& taskHashes = _topology.getTaskHashesByTaskCollectionHash(it->first);
-        tasksInCollections.insert(taskHashes.begin(), taskHashes.end());
-        collectionMap[it->second->getNofTasks()].push_back(it->first);
+        const auto& taskMap = it->second.m_hashToTaskInfoMap;
+        boost::copy(taskMap | boost::adaptors::map_keys, std::inserter(tasksInCollections, tasksInCollections.end()));
+        collectionMap[it->second.m_hashToTaskInfoMap.size()].push_back(it->first);
     }
 
     set<uint64_t> scheduledTasks;
@@ -115,7 +118,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
                                   bool useRequirement,
                                   const CTopology::HashSet_t* _addedTasks)
 {
-    CTopology::TaskInfoIteratorPair_t tasks = _topology.getTaskInfoIterator();
+    TaskInfoIteratorPair_t tasks = _topology.getTaskInfoIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
     {
         uint64_t id = it->first;
@@ -204,22 +207,24 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
     {
         for (auto id : it_col.second)
         {
-            TaskCollectionPtr_t collection = _topology.getTaskCollectionByHash(id);
+            const STaskCollectionInfo& collectionInfo = _topology.getTaskCollectionInfoByHash(id);
 
             // First path only for collections with requirements;
             // Second path for collections without requirements.
 
             // SSH scheduler doesn't support multiple requirements
-            if (collection->getNofRequirements() > 1)
+            if (collectionInfo.m_collection->getNofRequirements() > 1)
             {
                 stringstream ss;
-                ss << "Unable to schedule collection <" << id << "> with path " << collection->getPath()
+                ss << "Unable to schedule collection <" << id << "> with path "
+                   << collectionInfo.m_collection->getPath()
                    << ": SSH scheduler doesn't support multiple requirements.";
                 throw runtime_error(ss.str());
             }
 
-            RequirementPtr_t requirement =
-                (collection->getNofRequirements() == 1) ? collection->getRequirements()[0] : nullptr;
+            RequirementPtr_t requirement = (collectionInfo.m_collection->getNofRequirements() == 1)
+                                               ? collectionInfo.m_collection->getRequirements()[0]
+                                               : nullptr;
             if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
                 continue;
 
@@ -227,7 +232,7 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
 
             for (auto& v : _hostToChannelMap)
             {
-                if (v.second.size() >= collection->getNofTasks() &&
+                if (v.second.size() >= collectionInfo.m_collection->getNofTasks() &&
                     (!useRequirement ||
                      (useRequirement &&
                       CSSHScheduler::hostPatternMatches(
@@ -235,10 +240,11 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                           (requirement->getRequirementType() == ERequirementType::HostName) ? v.first.first
                                                                                             : v.first.second))))
                 {
-                    const CTopology::HashSet_t& taskHashes = _topology.getTaskHashesByTaskCollectionHash(id);
-                    for (auto hash : taskHashes)
+                    const STaskCollectionInfo& collectionInfo = _topology.getTaskCollectionInfoByHash(id);
+
+                    for (auto taskIt : collectionInfo.m_hashToTaskInfoMap)
                     {
-                        const STaskInfo& info = _topology.getTaskInfoByHash(hash);
+                        const STaskInfo& info = taskIt.second;
 
                         size_t channelIndex = v.second.back();
                         const auto& channel = _channels[channelIndex];
@@ -246,12 +252,12 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                         SSchedule schedule;
                         schedule.m_weakChannelInfo = channel;
                         schedule.m_taskInfo = info;
-                        schedule.m_taskID = hash;
+                        schedule.m_taskID = taskIt.first;
                         m_schedule.push_back(schedule);
 
                         v.second.pop_back();
 
-                        _scheduledTasks.insert(hash);
+                        _scheduledTasks.insert(taskIt.first);
                     }
                     collectionAssigned = true;
                     break;
@@ -262,7 +268,8 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
             {
                 LOG(debug) << toString();
                 stringstream ss;
-                ss << "Unable to schedule collection <" << id << "> with path " << collection->getPath();
+                ss << "Unable to schedule collection <" << id << "> with path "
+                   << collectionInfo.m_collection->getPath();
                 throw runtime_error(ss.str());
             }
         }

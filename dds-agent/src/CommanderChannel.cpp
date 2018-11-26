@@ -61,7 +61,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
 
                 string propertyID(attachmentPtr->m_propertyID);
                 uint64_t taskID(attachmentPtr->m_senderTaskID);
-                CTopology::TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID, taskID);
+                TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID, taskID);
 
                 for (auto it = taskIt.first; it != taskIt.second; ++it)
                 {

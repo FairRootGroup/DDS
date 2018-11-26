@@ -14,6 +14,8 @@
 // STD
 #include <memory>
 #include <string>
+// BOOST
+#include <boost/iterator/filter_iterator.hpp>
 
 namespace dds
 {
@@ -36,8 +38,7 @@ namespace dds
             size_t getNofProperties() const;
             size_t getNofRequirements() const;
             size_t getNofTriggers() const;
-            TopoPropertyPtr_t getProperty(size_t _i) const;
-            const TopoPropertyPtrVector_t& getProperties() const;
+            const TopoPropertyPtrMap_t& getProperties() const;
             const RequirementPtrVector_t& getRequirements() const;
             const TriggerPtrVector_t& getTriggers() const;
             /// Get property by ID. If property not fount than return nullptr.
@@ -48,7 +49,7 @@ namespace dds
             void setEnv(const std::string& _env);
             void setExeReachable(bool _exeReachable);
             void setEnvReachable(bool _envReachable);
-            void setProperties(const TopoPropertyPtrVector_t& _properties);
+            void setProperties(const TopoPropertyPtrMap_t& _properties);
             void addProperty(TopoPropertyPtr_t _property);
             void setRequirements(const RequirementPtrVector_t& _requirements);
             void addRequirement(RequirementPtr_t _requirement);
@@ -85,13 +86,35 @@ namespace dds
             std::string m_env;                     ///< Path to environmtnt file
             bool m_exeReachable;                   ///< If executable is available on the WN
             bool m_envReachable;                   ///< If environment script is available on the WN
-            TopoPropertyPtrVector_t m_properties;  ///< Properties
+            TopoPropertyPtrMap_t m_properties;     ///< Properties
             RequirementPtrVector_t m_requirements; ///< Array of requirements
             TriggerPtrVector_t m_triggers;         ///< Array of triggers
         };
 
         typedef std::shared_ptr<CTask> TaskPtr_t;
         typedef std::vector<TaskPtr_t> TaskPtrVector_t;
+
+        struct STaskInfo
+        {
+            STaskInfo()
+                : m_task(nullptr)
+                , m_taskIndex(0)
+                , m_collectionIndex(std::numeric_limits<uint32_t>::max())
+                , m_taskPath()
+                , m_taskCollectionHash(0)
+            {
+            }
+            TaskPtr_t m_task;
+            size_t m_taskIndex;
+            size_t m_collectionIndex;
+            std::string m_taskPath;
+            uint64_t m_taskCollectionHash;
+        };
+
+        typedef std::map<uint64_t, STaskInfo> HashToTaskInfoMap_t;
+        typedef std::function<bool(std::pair<uint64_t, const STaskInfo&>)> TaskInfoCondition_t;
+        typedef boost::filter_iterator<TaskInfoCondition_t, HashToTaskInfoMap_t::const_iterator> TaskInfoIterator_t;
+        typedef std::pair<TaskInfoIterator_t, TaskInfoIterator_t> TaskInfoIteratorPair_t;
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__Task__) */

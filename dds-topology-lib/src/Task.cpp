@@ -54,14 +54,14 @@ void CTask::setEnvReachable(bool _envReachable)
     m_envReachable = _envReachable;
 }
 
-void CTask::setProperties(const TopoPropertyPtrVector_t& _properties)
+void CTask::setProperties(const TopoPropertyPtrMap_t& _properties)
 {
     m_properties = _properties;
 }
 
 void CTask::addProperty(TopoPropertyPtr_t _property)
 {
-    m_properties.push_back(_property);
+    m_properties.insert(make_pair(_property->getId(), _property));
 }
 
 void CTask::setRequirements(const RequirementPtrVector_t& _requirements)
@@ -134,24 +134,15 @@ size_t CTask::getTotalCounter() const
     return getTotalCounterDefault();
 }
 
-TopoPropertyPtr_t CTask::getProperty(size_t _i) const
-{
-    if (_i >= getNofProperties())
-        throw out_of_range("Out of range exception");
-    return m_properties[_i];
-}
-
 TopoPropertyPtr_t CTask::getProperty(const std::string& _id) const
 {
-    for (const auto& v : m_properties)
-    {
-        if (v->getId() == _id)
-            return v;
-    }
-    return nullptr;
+    auto it = m_properties.find(_id);
+    if (it == m_properties.end())
+        return nullptr;
+    return it->second;
 }
 
-const TopoPropertyPtrVector_t& CTask::getProperties() const
+const TopoPropertyPtrMap_t& CTask::getProperties() const
 {
     return m_properties;
 }
@@ -243,7 +234,7 @@ string CTask::toString() const
     ss << "Task: m_id=" << getId() << " m_exe=" << m_exe << " m_env=" << m_env << " m_properties:\n";
     for (const auto& property : m_properties)
     {
-        ss << " - " << property->toString() << endl;
+        ss << " - " << property.second->toString() << endl;
     }
     return ss.str();
 }

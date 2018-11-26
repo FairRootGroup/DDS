@@ -77,6 +77,8 @@ install(FILES
   topology_test_7_maps_4.txt
   topology_test_7_maps_5.txt
   topology_test_diff.txt
+  topology_test_property_1.xml
+  topology_test_property_2.xml
 
   DESTINATION tests
 )
