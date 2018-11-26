@@ -492,6 +492,11 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TagToPropertyAccessType("write") == EPropertyAccessType::WRITE);
     BOOST_CHECK(TagToPropertyAccessType("readwrite") == EPropertyAccessType::READWRITE);
     BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
+    
+    // TagToPropertyScopeType
+    BOOST_CHECK(TagToPropertyScopeType("global") == EPropertyScopeType::GLOBAL);
+    BOOST_CHECK(TagToPropertyScopeType("collection") == EPropertyScopeType::COLLECTION);
+    BOOST_CHECK_THROW(TagToPropertyScopeType("globalglobal"), runtime_error);
 
     // TagToRequirementType
     BOOST_CHECK(TagToRequirementType("wnname") == ERequirementType::WnName);
