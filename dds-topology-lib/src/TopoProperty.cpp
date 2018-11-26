@@ -63,7 +63,12 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
     {
         const ptree& propertyPT = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
         setId(propertyPT.get<string>("<xmlattr>.id"));
-        setScopeType(TagToPropertyScopeType(propertyPT.get<string>("<xmlattr>.scope")));
+
+        boost::optional<const ptree&> childScope = propertyPT.get_child_optional("<xmlattr>.scope");
+        if (childScope)
+        {
+            setScopeType(TagToPropertyScopeType(propertyPT.get<string>("<xmlattr>.scope")));
+        }
         // setAccessType(TagToPropertyAccessType(propertyPT.get<string>("<xmlattr>.access")));
     }
     catch (exception& error) // ptree_error, runtime_error
