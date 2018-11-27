@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v2.2 (NOT YET RELEASED)
+## v2.2 (2018-11-27)
 
 ### DDS common 
 Removed: update key command from dds-agent-cmd.    
