@@ -12,14 +12,10 @@
 #include <memory>
 #include <mutex>
 // BOOST
+#include <boost/asio.hpp>
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/thread.hpp>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#include <boost/asio.hpp>
-#pragma clang diagnostic pop
 // DDS
 #include "ChannelEventHandlersImpl.h"
 #include "ChannelMessageHandlersImpl.h"

@@ -11,13 +11,9 @@
 #include <map>
 #include <memory>
 // BOOST
+#include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/noncopyable.hpp>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#include <boost/asio.hpp>
-#pragma clang diagnostic pop
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-register"

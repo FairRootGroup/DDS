@@ -5,13 +5,13 @@
 #ifndef __DDS__StatImpl__
 #define __DDS__StatImpl__
 
+// STD
 #include <atomic>
 #include <deque>
 #include <map>
 #include <mutex>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+// BOOST
+#include <boost/asio.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/count.hpp>
 #include <boost/accumulators/statistics/max.hpp>
@@ -19,9 +19,7 @@
 #include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/sum.hpp>
-#include <boost/asio.hpp>
-#pragma clang diagnostic pop
-
+// DDS
 #include "ProtocolMessage.h"
 
 namespace dds
