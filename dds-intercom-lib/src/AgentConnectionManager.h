@@ -6,9 +6,7 @@
 #define __DDS__API__AgentConnectionManager__
 // DDS
 #include "AgentChannel.h"
-// BOOST
-#include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
+// STD
 #include <condition_variable>
 
 namespace dds

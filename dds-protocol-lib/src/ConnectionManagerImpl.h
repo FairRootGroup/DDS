@@ -15,10 +15,6 @@
 // STD
 #include <mutex>
 // BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#include <boost/asio.hpp>
-#pragma clang diagnostic pop
 #include <boost/thread/thread.hpp>
 // MiscCommon
 #include "INet.h"

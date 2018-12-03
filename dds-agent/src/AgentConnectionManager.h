@@ -13,8 +13,6 @@
 #include "SMIntercomChannel.h"
 #include "SMLeaderChannel.h"
 #include "Topology.h"
-// BOOST
-#include <boost/asio.hpp>
 
 namespace dds
 {
