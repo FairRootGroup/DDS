@@ -12,6 +12,7 @@
 #include "ncf.h"
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/regex.hpp>
 
 // silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
 #if BOOST_VERSION < 105900
@@ -1371,6 +1372,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 return;
             }
 
+            std::shared_ptr<boost::regex> pathRegex;
+
             // Check if we can find task for it's full hash path.
             bool taskFound = true;
             try
@@ -1380,34 +1383,36 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             catch (runtime_error& _e)
             {
                 taskFound = false;
+                // Create regex only for broadcast
+                pathRegex = make_shared<boost::regex>(_attachment->m_sCondition);
             }
 
             SAgentInfo thisInf = p->getAgentInfo(_sender.m_ID);
-            channels = getChannels(
-                [this, taskFound, &_attachment, &thisInf](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                    SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+            channels = getChannels([this, taskFound, &_attachment, &thisInf, pathRegex](
+                                       const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+                SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
 
-                    // Only for Agents which are started already and executing task
-                    if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
-                        inf.m_state != EAgentState::executing)
-                        return false;
+                // Only for Agents which are started already and executing task
+                if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
+                    inf.m_state != EAgentState::executing)
+                    return false;
 
-                    // Do not send command to self
-                    if (inf.m_taskID == thisInf.m_taskID)
-                        return false;
+                // Do not send command to self
+                if (inf.m_taskID == thisInf.m_taskID)
+                    return false;
 
-                    // If condition is empty we broadcast command to all agents
-                    if (_attachment->m_sCondition.empty())
-                        return true;
+                // If condition is empty we broadcast command to all agents
+                if (_attachment->m_sCondition.empty())
+                    return true;
 
-                    const STaskInfo& taskInfo = m_topo.getTaskInfoByHash(inf.m_taskID);
-                    bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
-                                              : taskInfo.m_task->getPath() == _attachment->m_sCondition;
+                const STaskInfo& taskInfo = m_topo.getTaskInfoByHash(inf.m_taskID);
+                bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
+                                          : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
 
-                    _stop = (taskFound && result);
+                _stop = (taskFound && result);
 
-                    return result;
-                });
+                return result;
+            });
         }
 
         for (const auto& v : channels)

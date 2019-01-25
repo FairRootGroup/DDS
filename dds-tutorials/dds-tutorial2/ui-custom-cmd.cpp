@@ -73,8 +73,11 @@ int main(int argc, char* argv[])
 
         while (true)
         {
-            customCmd.send("please-reply-ui", "");
-
+            customCmd.send("please-reply-ui", "main/GroupCustomCmd/TaskCustomCmd");
+            this_thread::sleep_for(chrono::seconds(1));
+            customCmd.send("please-reply-ui-regex", ".+Task.+");
+            this_thread::sleep_for(chrono::seconds(1));
+            customCmd.send("please-reply-ui-empty", "");
             this_thread::sleep_for(chrono::seconds(1));
         }
     }

@@ -46,16 +46,8 @@ int main(int argc, char* argv[])
         customCmd.subscribe([&customCmd](const string& _command, const string& _condition, uint64_t _senderId) {
             cout << "Received custom command: " << _command << " condition: " << _condition
                  << " senderId: " << _senderId << endl;
-            if (_command == "please-reply")
-            {
-                string senderIdStr = to_string(_senderId);
-                customCmd.send("reply-to-" + senderIdStr, senderIdStr);
-            }
-            else if (_command == "please-reply-ui")
-            {
-                string senderIdStr = to_string(_senderId);
-                customCmd.send("reply-to-ui-" + senderIdStr, senderIdStr);
-            }
+            string senderIdStr = to_string(_senderId);
+            customCmd.send(_command + "_" + senderIdStr, senderIdStr);
         });
 
         // Subscribe on reply from DDS commander server

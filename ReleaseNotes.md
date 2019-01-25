@@ -2,6 +2,9 @@
 
 ## v2.4 (NOT YET RELEASED)
 
+### dds\_intercom\_lib
+Added: make custom command's condition regex aware. (GH-211)    
+
 
 
 ## v2.2 (2018-11-27)

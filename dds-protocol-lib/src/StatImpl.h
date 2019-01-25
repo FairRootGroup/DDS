@@ -11,7 +11,6 @@
 #include <map>
 #include <mutex>
 // BOOST
-#include <boost/asio.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/count.hpp>
 #include <boost/accumulators/statistics/max.hpp>
@@ -19,6 +18,7 @@
 #include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/sum.hpp>
+#include <boost/asio.hpp>
 // DDS
 #include "ProtocolMessage.h"
 
