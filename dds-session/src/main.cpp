@@ -96,6 +96,8 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
         }
     }
 
+    const string sid = CUserDefaults::instance().getDefaultSID();
+
     for (auto& dir : sortedDirs)
     {
         string sSID = dir.second.leaf().string();
@@ -103,8 +105,6 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
         char sLastUseTime[1000];
         struct tm* p = localtime(&tmLastUseTime);
         strftime(sLastUseTime, 1000, "%FT%TZ", p);
-
-        const string sid = CUserDefaults::instance().getDefaultSID();
 
         if (_sortingType == SSessionsSorting::sort_all)
             LOG(log_stdout_clean) << (sSID == sid ? " * " : "   ") << sSID << " \t [" << sLastUseTime << "] \t "
