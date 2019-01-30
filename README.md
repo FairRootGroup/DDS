@@ -18,7 +18,7 @@ DDS:
 
 ~~~~~~~
 ./bootstrap.sh --prefix=[INSTALL DIR] --without-icu
-./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=tagged threading=multi,single link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
+./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=system threading=multi link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
 
 ~~~~~~~
 
