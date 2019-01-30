@@ -39,7 +39,6 @@ target_link_libraries(${PROJECT_NAME}
   Boost::log
   Boost::log_setup
   Boost::thread
-  Boost::signals
 )
 
 target_include_directories(${PROJECT_NAME}

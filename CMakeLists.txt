@@ -188,7 +188,7 @@ SET(DDS_SHARE_FILES
 #
 # Search for BOOST
 #
-set(Boost_Components log log_setup thread program_options filesystem system regex signals)
+set(Boost_Components log log_setup thread program_options filesystem system regex)
 if( BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
 endif( BUILD_TESTS)
