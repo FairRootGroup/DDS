@@ -157,12 +157,8 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
 
         for (auto& v : _hostToChannelMap)
         {
-            if (!useRequirement ||
-                (useRequirement &&
-                 CSSHScheduler::hostPatternMatches(requirement->getValue(),
-                                                   (requirement->getRequirementType() == ERequirementType::HostName)
-                                                       ? v.first.first
-                                                       : v.first.second)))
+            const bool requirementOk = checkRequirement(requirement, useRequirement, v.first.first, v.first.second);
+            if (requirementOk)
             {
                 if (!v.second.empty())
                 {
@@ -232,13 +228,8 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
 
             for (auto& v : _hostToChannelMap)
             {
-                if (v.second.size() >= collectionInfo.m_collection->getNofTasks() &&
-                    (!useRequirement ||
-                     (useRequirement &&
-                      CSSHScheduler::hostPatternMatches(
-                          requirement->getValue(),
-                          (requirement->getRequirementType() == ERequirementType::HostName) ? v.first.first
-                                                                                            : v.first.second))))
+                const bool requirementOk = checkRequirement(requirement, useRequirement, v.first.first, v.first.second);
+                if ((v.second.size() >= collectionInfo.m_collection->getNofTasks()) && requirementOk)
                 {
                     const STaskCollectionInfo& collectionInfo = _topology.getTaskCollectionInfoByHash(id);
 
@@ -274,6 +265,24 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
             }
         }
     }
+}
+
+bool CSSHScheduler::checkRequirement(RequirementPtr_t _requirement,
+                                     bool _useRequirement,
+                                     const string& _hostName,
+                                     const string& _wnName) const
+{
+    if (_useRequirement && (_requirement->getRequirementType() == ERequirementType::WnName) && _wnName.empty())
+    {
+        LOG(warning) << "Requirement of type WnName is not supported for this RMS plug-in. Requirement: "
+                     << _requirement->toString();
+        return true;
+    }
+    return !_useRequirement ||
+           (_useRequirement &&
+            CSSHScheduler::hostPatternMatches(
+                _requirement->getValue(),
+                (_requirement->getRequirementType() == ERequirementType::HostName) ? _hostName : _wnName));
 }
 
 const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const

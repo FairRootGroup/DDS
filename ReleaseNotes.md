@@ -4,6 +4,7 @@
 
 ### DDS common
 Fixed: don't copy reachable task to agent's directory. (GH-215)    
+Fixed: WnName requirement is only used for SSH plug-in. For other plug-ins the requirement is skiped with a warning message in the log. (GH-217)    
 
 ### dds\_intercom\_lib
 Added: make custom command's condition regex aware. (GH-211)    

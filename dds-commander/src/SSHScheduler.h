@@ -78,6 +78,11 @@ namespace dds
                                bool useRequirement,
                                const topology_api::CTopology::HashSet_t* _addedTasks);
 
+            bool checkRequirement(topology_api::RequirementPtr_t _requirement,
+                                  bool _useRequirement,
+                                  const std::string& _hostName,
+                                  const std::string& _wnName) const;
+
           private:
             ScheduleVector_t m_schedule;
         };
