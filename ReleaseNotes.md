@@ -2,6 +2,9 @@
 
 ## v2.4 (NOT YET RELEASED)
 
+### DDS common
+Fixed: don't copy reachable task to agent's directory. (GH-215)    
+
 ### dds\_intercom\_lib
 Added: make custom command's condition regex aware. (GH-211)    
 

@@ -822,17 +822,22 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
         else
         {
             cmd->m_sExeFile = cmdStr;
+
+            // Upload file only if it's not reachable
+            uploadFilePaths.push_back(filePath);
+            uploadFilenames.push_back(filename);
+            uploadAgents.push_back(sch.m_weakChannelInfo);
         }
 
-        uploadFilePaths.push_back(filePath);
-        uploadFilenames.push_back(filename);
-        uploadAgents.push_back(sch.m_weakChannelInfo);
         assignmentAgents.push_back(sch.m_weakChannelInfo);
         assignmentAttachments.push_back(cmd);
     }
 
-    broadcastUpdateTopologyAndWait<cmdASSIGN_USER_TASK>(
-        uploadAgents, _channel, "Uploading user tasks...", uploadFilePaths, uploadFilenames);
+    if (uploadAgents.size() > 0)
+    {
+        broadcastUpdateTopologyAndWait<cmdASSIGN_USER_TASK>(
+            uploadAgents, _channel, "Uploading user tasks...", uploadFilePaths, uploadFilenames);
+    }
 
     broadcastUpdateTopologyAndWait<cmdASSIGN_USER_TASK>(
         assignmentAgents, _channel, "Assigning user tasks...", assignmentAttachments);
