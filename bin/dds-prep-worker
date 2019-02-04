@@ -30,6 +30,7 @@ Usage: $(basename $0) [OPTION]
      -i 			Re-pack user_worker_env.sh (for internal use only).
 	 -s arg			Submit time (optional).
 	 -a arg         DDS Session ID
+	 -l             Create a lightweight package, without WN binaries
      -h          	Show summary of options.
 
 Report bugs to http://dds.gsi.de
@@ -41,15 +42,18 @@ EOF
 REPACK_WRK_PKG=""
 SUBMIT_TIME=""
 DDS_SESSION_ID=""
-while getopts ":is:a:h" opt; do
+LIGHTWEIGHT_PKG=""
+while getopts ":is:a:lh" opt; do
   case $opt in
   	i)
-    	REPACK_WRK_PKG="YES"
+       REPACK_WRK_PKG="YES"
     	;;
 	s) SUBMIT_TIME="$OPTARG"
 		;;
 	a) DDS_SESSION_ID="$OPTARG"
-	    ;; 
+	    ;;
+	l) LIGHTWEIGHT_PKG="YES"
+		;;
   	h) 
     usage
     exit 0
@@ -150,11 +154,15 @@ elif [ -r "$USER_SCRIPT" ]; then # add user's script if present
 fi
 
 # add all pre-compiled bins
-echo "selecting pre-compiled bins to be added to worker package..."
-for i in ${WN_BINS[@]} 
-do
-   COMPONENTS=( "${COMPONENTS[@]}" "$i" )
-done
+if [ -z "$LIGHTWEIGHT_PKG" ]; then
+	echo "selecting pre-compiled bins to be added to worker package..."
+	for i in ${WN_BINS[@]} 
+	do
+   		COMPONENTS=( "${COMPONENTS[@]}" "$i" )
+	done
+else
+	echo "Creating a lighweight WN package..."
+fi
 
 
 # check that all components are exists

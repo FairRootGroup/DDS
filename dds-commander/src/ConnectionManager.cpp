@@ -171,7 +171,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 }
 
 //=============================================================================
-void CConnectionManager::_createWnPkg(bool _needInlineBashScript) const
+void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightweightPkg) const
 {
     // re-create the worker package if needed
     string out;
@@ -192,10 +192,13 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript) const
         smart_path(&cmd);
         cmd += ssSubmitTime.str();
         if (_needInlineBashScript)
-            cmd += " -i";
+            cmd += " -i ";
         // Session ID
         cmd += " -a ";
         cmd += CUserDefaults::instance().getCurrentSID();
+
+        if (_lightweightPkg)
+            cmd += " -l ";
 
         string arg("source ");
         arg += cmd_env;
@@ -356,15 +359,6 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
             return;
         }
 
-        // Submitting the job
-        string outPut;
-        stringstream ssCmd;
-        ssCmd << ssPluginExe.str();
-        // TODO: Send ID to the plug-in
-        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id "
-              << "FAKE_ID_FOR_TESTS"
-              << " --path \"" << pluginDir << "\"";
-
         // Create a new submit communication info channel
         lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
         if (!m_SubmitAgents.m_channel.expired())
@@ -401,7 +395,8 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
         }
         // pack worker package
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Creating new worker package...", info, cmdSUBMIT), _sender.m_ID);
-        _createWnPkg(!inlineShellScripCmds.empty());
+        // Use a lightweightpackage when possible
+        _createWnPkg(!inlineShellScripCmds.empty(), (_attachment->m_sRMSType == "localhost"));
 
         // remember the UI channel, which requested to submit the job
         m_SubmitAgents.m_channel = _channel;
@@ -417,6 +412,14 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
         sPluginInfoMsg += ssPluginExe.str();
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(sPluginInfoMsg, info, cmdSUBMIT), _sender.m_ID);
 
+        // Submitting the job
+        stringstream ssCmd;
+        ssCmd << ssPluginExe.str();
+        // TODO: Send ID to the plug-in
+        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id "
+              << "FAKE_ID_FOR_TESTS"
+              << " --path \"" << pluginDir << "\"";
+
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT), _sender.m_ID);
         LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
 
@@ -431,24 +434,9 @@ void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
         }
         catch (exception& e)
         {
-            if (!outPut.empty())
-            {
-                ostringstream ss;
-                ss << outPut;
-                LOG(info) << ss.str();
-                p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()), _sender.m_ID);
-            }
-
             stringstream ssMsg;
             ssMsg << "Failed to deploy agents: " << e.what();
             throw runtime_error(ssMsg.str());
-        }
-        if (!outPut.empty())
-        {
-            ostringstream ss;
-            ss << outPut;
-            LOG(info) << ss.str();
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()), _sender.m_ID);
         }
     }
     catch (bad_weak_ptr& e)

@@ -133,7 +133,7 @@ namespace dds
 
             void activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel);
             void enableDisableStatForChannels(bool _enable);
-            void _createWnPkg(bool _needInlineBashScript) const;
+            void _createWnPkg(bool _needInlineBashScript, bool _lightweightPkg) const;
 
           private:
             CGetLogChannelInfo m_getLog;

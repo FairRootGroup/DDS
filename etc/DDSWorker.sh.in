@@ -215,8 +215,22 @@ logMsg "Current working directory: $WD"
 logMsg "Untar payload..."
 untar_payload
 
+# Define DDS commander location location
+# It's used by plug-ins working on the same machine as commander
+# Define $DDS_COMMANDER_BIN_LOCATION only for parent WN scripts. Shildren re-use the parents DDS_COMMANDER_BIN_LOCATION
+if [ -z $DDS_COMMANDER_BIN_LOCATION ]; then 
+	export DDS_COMMANDER_BIN_LOCATION=$DDS_LOCATION/bin
+	export DDS_COMMANDER_LIBS_LOCATION=$DDS_LOCATION/lib
+fi
+
+echo "DEBUG=$DDS_LOCATION"
+
 # Exporting DDS location
 export DDS_LOCATION=$WD
+
+# default WN locations
+DDS_BINARIES_LOCATION=$DDS_LOCATION/
+DDS_LIBS_LOCATION=$DDS_LOCATION/
 
 # getting the version of DDS
 PKG_VERSION=$(cat $WD/version)
@@ -232,30 +246,44 @@ fi
 # host's CPU/instruction set
 check_arch
 
+# A WN package without binaries 
+LIGHTWEIGHT_PKG=""
+
 # use pre-compiled binaries from the worker package
 # ***** prepare pre-compiled wn binaries *****
 WN_BIN_ARC="$WD/$BASE_NAME-$PKG_VERSION-$OS-$host_arch.tar.gz"
 if [ ! -f "$WN_BIN_ARC" ]; then
-   logMsg "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
-   clean_up 1
+	# Checking for a lightweight package
+	echo "DDS_COMMANDER_BIN_LOCATION=$DDS_COMMANDER_BIN_LOCATION"
+	if [ -x  $DDS_COMMANDER_BIN_LOCATION/dds-agent ]; then
+		DDS_BINARIES_LOCATION=$DDS_COMMANDER_BIN_LOCATION
+		DDS_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION
+		LIGHTWEIGHT_PKG="YES"
+	else
+   	   logMsg "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
+   	   clean_up 1
+   	fi
 fi
-# un-tar without creating a sub-directory
-tar --strip-components=1 -xzf $WN_BIN_ARC || clean_up 1
 
-export PATH=$WD:$PATH
+# un-tar without creating a sub-directory
+if [ -z "$LIGHTWEIGHT_PKG" ]; then
+	tar --strip-components=1 -xzf $WN_BIN_ARC || clean_up 1
+fi
+
+export PATH=$DDS_BINARIES_LOCATION:$PATH
 if [ "$OS" == "Linux" ]; then
-   export LD_LIBRARY_PATH=$WD:$LD_LIBRARY_PATH
+   export LD_LIBRARY_PATH=$DDS_LIBS_LOCATION:$LD_LIBRARY_PATH
 fi
 if [ "$OS" == "Darwin" ]; then
-   export DYLD_LIBRARY_PATH=$WD:$DYLD_LIBRARY_PATH
+   export DYLD_LIBRARY_PATH=$DDS_LIBS_LOCATION:$DYLD_LIBRARY_PATH
 fi
 
 # Transmitting an executable through the InputSandbox does not preserve execute permissions
-chmod +x $WD/dds-agent
-chmod +x $WD/dds-user-defaults
+chmod +x $DDS_BINARIES_LOCATION/dds-agent
+chmod +x $DDS_BINARIES_LOCATION/dds-user-defaults
 
-user_defaults="$WD/dds-user-defaults"
-dds_agent="$WD/dds-agent"
+user_defaults="$DDS_BINARIES_LOCATION/dds-user-defaults"
+dds_agent="$DDS_BINARIES_LOCATION/dds-agent"
 
 # check binary
 $dds_agent --version
