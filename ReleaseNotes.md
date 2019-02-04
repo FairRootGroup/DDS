@@ -11,7 +11,7 @@ Added: make custom command's condition regex aware. (GH-211)
 
 ### dds-submit
 Modified: Introduced a lightweight worker package for the localhost plug-in. It doesn't contain libs and binaties. Deployment speed is x3 faster. Instead of ~15MB/agent disk space, DDS uses ~50 KB/agent now. (GH-210).    
-
+Added: The command reports now the time it took to submit the job.    
 
 ## v2.2 (2018-11-27)
 

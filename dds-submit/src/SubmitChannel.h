@@ -7,6 +7,8 @@
 #define __DDS__SubmitChannel__
 // DDS
 #include "ClientChannelImpl.h"
+// STD
+#include <chrono>
 
 namespace dds
 {
@@ -43,6 +45,7 @@ namespace dds
             std::string m_sPath;
             size_t m_number;
             bool m_bXMLValidationDisabled;
+            std::chrono::high_resolution_clock::time_point m_Start;
         };
     } // namespace submit_cmd
 } // namespace dds

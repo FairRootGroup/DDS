@@ -19,6 +19,8 @@ CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service, uint64_t _prot
     , m_number(0)
     , m_bXMLValidationDisabled(false)
 {
+    m_Start = chrono::high_resolution_clock::now();
+    
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
         [](const SSenderInfo& _sender) { LOG(MiscCommon::log_stderr) << "Server has closed the connection."; });
 
@@ -77,6 +79,10 @@ bool CSubmitChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr
 bool CSubmitChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/,
                                     const protocol_api::SSenderInfo& _sender)
 {
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double, std::milli> elapsed = end - m_Start;
+    LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
+    
     // Close communication channel
     stop();
     return true;
