@@ -98,11 +98,6 @@ namespace dds
                                   CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
-            void parseExe(const std::string& _exeStr,
-                          std::string& _filePath,
-                          std::string& _filename,
-                          std::string& _cmdStr);
-
             template <protocol_api::ECmdType _cmd, class... Args>
             void broadcastUpdateTopologyAndWait(weakChannelInfo_t::container_t agents,
                                                 CAgentChannel::weakConnectionPtr_t _channel,

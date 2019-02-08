@@ -114,4 +114,41 @@ BOOST_AUTO_TEST_CASE(Test_MiscCommon_trim)
     }
 }
 //=============================================================================
+void testParseExe(const string& _exeStr,
+                  const string& _exePrefix,
+                  const string& _resultFilePath,
+                  const string& _resultFilename,
+                  const string& _resultCmdStr)
+{
+    string filePath, filename, cmdStr;
+
+    parseExe(_exeStr, _exePrefix, filePath, filename, cmdStr);
+
+    BOOST_CHECK(filePath == _resultFilePath);
+    BOOST_CHECK(filename == _resultFilename);
+    BOOST_CHECK(cmdStr == _resultCmdStr);
+}
+
+BOOST_AUTO_TEST_CASE(Test_MiscCommon_parseExe)
+{
+    testParseExe("/my_location/test_exe --arg1 arg1 --arg2 arg2 --arg3",
+                 "${DDS_LOCATION}/",
+                 "/my_location/test_exe",
+                 "test_exe",
+                 "${DDS_LOCATION}/test_exe --arg1 arg1 --arg2 arg2 --arg3");
+
+    const string bashPath = boost::process::search_path("bash").string();
+    testParseExe(
+        "bash --arg1 arg1 --arg2 arg2 --arg3", "", bashPath, "bash", bashPath + " --arg1 arg1 --arg2 arg2 --arg3");
+
+    testParseExe("bash --arg1 arg1 --arg2 arg2 --arg3",
+                 "${DDS_LOCATION}/",
+                 bashPath,
+                 "bash",
+                 "${DDS_LOCATION}/bash --arg1 arg1 --arg2 arg2 --arg3");
+
+    BOOST_CHECK_THROW(testParseExe("my_location/test_exe --arg1 arg1", "", "", "", ""), std::runtime_error);
+}
+//=============================================================================
+
 BOOST_AUTO_TEST_SUITE_END();

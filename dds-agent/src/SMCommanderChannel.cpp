@@ -370,6 +370,22 @@ bool CSMCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIG
     if (m_collectionIndex != numeric_limits<uint32_t>::max())
         boost::algorithm::replace_all(m_sUsrExe, "%collectionIndex%", to_string(m_collectionIndex));
 
+    try
+    {
+        string filePath;
+        string filename;
+        string cmdStr;
+        smart_path(&m_sUsrExe);
+        parseExe(m_sUsrExe, "", filePath, filename, cmdStr);
+        m_sUsrExe = cmdStr;
+    }
+    catch (exception& _e)
+    {
+        LOG(error) << _e.what();
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
+        return true;
+    }
+
     pushMsg<cmdREPLY>(SReplyCmd("User task assigned", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK));
 
     return true;
@@ -379,7 +395,6 @@ bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACT
                                                    SSenderInfo& _sender)
 {
     string sUsrExe(m_sUsrExe);
-    smart_path(&sUsrExe);
 
     if (sUsrExe.empty())
     {

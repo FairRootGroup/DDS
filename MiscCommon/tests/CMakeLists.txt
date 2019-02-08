@@ -15,6 +15,8 @@ target_link_libraries(${test}
   MiscCommon
   Boost::boost
   Boost::unit_test_framework
+  Boost::system
+  Boost::filesystem
 )
 
 install(TARGETS ${test} RUNTIME DESTINATION tests)

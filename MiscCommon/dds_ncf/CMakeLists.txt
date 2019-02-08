@@ -13,6 +13,7 @@ target_link_libraries(${PROJECT_NAME}
   MiscCommon
   Boost::boost
   Boost::program_options
+  Boost::filesystem
 )
 
 target_include_directories(${PROJECT_NAME}

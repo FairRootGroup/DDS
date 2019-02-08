@@ -5,9 +5,13 @@
 #ifndef MISCUTILS_H
 #define MISCUTILS_H
 
+#include "wordexp.h"
 // STD
 #include <algorithm>
 #include <iostream>
+// BOOST
+#include <boost/filesystem.hpp>
+#include <boost/process.hpp>
 
 /**
  *
@@ -246,6 +250,80 @@ namespace MiscCommon
     {
         std::transform(_str.begin(), _str.end(), _str.begin(), ToLower());
         return _str;
+    }
+
+    inline void parseExe(const std::string& _exeStr,
+                         const std::string& _exePrefix,
+                         std::string& _filePath,
+                         std::string& _filename,
+                         std::string& _cmdStr)
+    {
+        // Expand the string for the program to extract exe name and command line arguments
+        wordexp_t result;
+        switch (wordexp(_exeStr.c_str(), &result, 0))
+        {
+            case 0:
+            {
+                _filePath = result.we_wordv[0];
+
+                boost::filesystem::path exeFilePath(_filePath);
+
+                if (!exeFilePath.is_absolute() && exeFilePath.has_parent_path())
+                    throw std::runtime_error(
+                        "Relative paths are not supported: " + _filePath +
+                        ". Use either absolute path or executable name which will be searched in PATH.");
+
+                _filename = exeFilePath.filename().generic_string();
+
+                // If no absolute path is given, search executable in PATH
+                if (!exeFilePath.is_absolute())
+                {
+                    boost::filesystem::path exePath = boost::process::search_path(_filename);
+                    _filePath = exePath.generic_string();
+                }
+
+                _cmdStr = (_exePrefix.empty()) ? _filePath : (_exePrefix + _filename);
+                for (size_t i = 1; i < result.we_wordc; ++i)
+                {
+                    _cmdStr += " ";
+                    _cmdStr += result.we_wordv[i];
+                }
+
+                wordfree(&result);
+            }
+            break;
+            case WRDE_NOSPACE:
+                // If the error was WRDE_NOSPACE,
+                // then perhaps part of the result was allocated.
+                throw std::runtime_error("memory error occurred while processing the user's executable path: " +
+                                         _exeStr);
+                break;
+
+            case WRDE_BADCHAR:
+                throw std::runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " +
+                                         _exeStr);
+                break;
+
+            case WRDE_BADVAL:
+                throw std::runtime_error(
+                    "An undefined shell variable was referenced, and the WRDE_UNDEF flag told us to "
+                    "consider this an error in " +
+                    _exeStr);
+                break;
+
+            case WRDE_CMDSUB:
+                throw std::runtime_error(
+                    "Command substitution occurred, and the WRDE_NOCMD flag told us to consider this an error in " +
+                    _exeStr);
+                break;
+            case WRDE_SYNTAX:
+                throw std::runtime_error("Shell syntax error, such as unbalanced parentheses or unmatched quotes in " +
+                                         _exeStr);
+                break;
+
+            default: // Some other error.
+                throw std::runtime_error("failed to process the user's executable path: " + _exeStr);
+        }
     }
 }; // namespace MiscCommon
 #endif

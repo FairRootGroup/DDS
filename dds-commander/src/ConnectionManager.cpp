@@ -7,6 +7,7 @@
 #include "ConnectionManager.h"
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
+#include "MiscUtils.h"
 #include "Topology.h"
 #include "dds_intercom.h"
 #include "ncf.h"
@@ -718,61 +719,6 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
     }
 }
 
-void CConnectionManager::parseExe(const string& _exeStr, string& _filePath, string& _filename, string& _cmdStr)
-{
-    // Expand the string for the program to extract exe name and command line arguments
-    wordexp_t result;
-    switch (wordexp(_exeStr.c_str(), &result, 0))
-    {
-        case 0:
-        {
-            _filePath = result.we_wordv[0];
-
-            boost::filesystem::path exeFilePath(_filePath);
-            _filename = exeFilePath.filename().generic_string();
-
-            string sExeFileNameWithArgs = _filename;
-            for (size_t i = 1; i < result.we_wordc; ++i)
-            {
-                sExeFileNameWithArgs += " ";
-                sExeFileNameWithArgs += result.we_wordv[i];
-            }
-
-            _cmdStr = "$DDS_LOCATION/";
-            _cmdStr += sExeFileNameWithArgs;
-
-            wordfree(&result);
-        }
-        break;
-        case WRDE_NOSPACE:
-            // If the error was WRDE_NOSPACE,
-            // then perhaps part of the result was allocated.
-            throw runtime_error("memory error occurred while processing the user's executable path: " + _exeStr);
-
-        case WRDE_BADCHAR:
-            throw runtime_error("Illegal occurrence of newline or one of |, &, ;, <, >, (, ), {, } in " + _exeStr);
-            break;
-
-        case WRDE_BADVAL:
-            throw runtime_error("An undefined shell variable was referenced, and the WRDE_UNDEF flag told us to "
-                                "consider this an error in " +
-                                _exeStr);
-            break;
-
-        case WRDE_CMDSUB:
-            throw runtime_error(
-                "Command substitution occurred, and the WRDE_NOCMD flag told us to consider this an error in " +
-                _exeStr);
-            break;
-        case WRDE_SYNTAX:
-            throw runtime_error("Shell syntax error, such as unbalanced parentheses or unmatched quotes in " + _exeStr);
-            break;
-
-        default: // Some other error.
-            throw runtime_error("failed to process the user's executable path: " + _exeStr);
-    }
-}
-
 void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
 {
     const CSSHScheduler::ScheduleVector_t& schedule = _scheduler.getSchedule();
@@ -798,17 +744,17 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
         cmd->m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
         cmd->m_taskName = sch.m_taskInfo.m_task->getId();
 
-        string filePath;
-        string filename;
-        string cmdStr;
-        parseExe(sch.m_taskInfo.m_task->getExe(), filePath, filename, cmdStr);
-
         if (sch.m_taskInfo.m_task->isExeReachable())
         {
             cmd->m_sExeFile = sch.m_taskInfo.m_task->getExe();
         }
         else
         {
+            string filePath;
+            string filename;
+            string cmdStr;
+            parseExe(sch.m_taskInfo.m_task->getExe(), "$DDS_LOCATION/", filePath, filename, cmdStr);
+
             cmd->m_sExeFile = cmdStr;
 
             // Upload file only if it's not reachable
