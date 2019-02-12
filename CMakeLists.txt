@@ -18,7 +18,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 # take the version string from git and write it to a version file
 # or take it from the version file if git is unavailable (a package distribution)
 # Keep the version file in the source directory to satisfy the source package.
-set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}/etc/version )
+set( DDS_VERSION_FILE ${CMAKE_CURRENT_BINARY_DIR}/version )
 if( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
 	# The command produce a verion like "X.Y.Z.gHASH"
@@ -399,10 +399,10 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# We therefore use two-step procedure to configure a file.
 	#
 	# 1. Deal with @...@ configurable items:
-	configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured @ONLY)
+	configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured @ONLY)
 	# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
-	FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake
-			  INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
+	FILE(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake
+			  INPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
 
 	if( BUILD_TESTS )
 		set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds_topology_lib-tests>)
@@ -412,10 +412,10 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 		# We therefore use two-step procedure to configure a file.
 		#
 		# 1. Deal with @...@ configurable items:
-		configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured @ONLY)
+		configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured @ONLY)
 		# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
-		FILE(GENERATE OUTPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake
-			  	INPUT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured CONDITION 1)
+		FILE(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake
+			  	INPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured CONDITION 1)
 	endif( BUILD_TESTS )
 endif()
 
@@ -457,9 +457,9 @@ if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# WORKAROUND: create destination "lib" directory.
 	# INSTALL SCRIPT is called before any other lib is installed, therefore we need to create a dest. dir.
 	INSTALL(DIRECTORY DESTINATION lib)
-	INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
+	INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
 	if( BUILD_TESTS )
-		INSTALL(SCRIPT ${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake)
+		INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake)
 	endif( BUILD_TESTS )
 endif()
 
