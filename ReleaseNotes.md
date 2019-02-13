@@ -5,8 +5,9 @@
 ### DDS common
 Fixed: don't copy reachable task to agent's directory. (GH-215)    
 Fixed: WnName requirement is only used for SSH plug-in. For other plug-ins the requirement is skiped with a warning message in the log. (GH-217)    
+Fixed: build system writes temporary files only in build directory. (GH-182)   
 Added: support relative task executables. (GH-216)    
-Fixed: build system writes temporary files only in build directory. (GH-182)
+Added: All DDS commands now learned about the DDS_SESSION_ID environment variable. If defined, it will be used instead of a default one. (GH-213)    
 
 ### dds\_intercom\_lib
 Added: make custom command's condition regex aware. (GH-211)    

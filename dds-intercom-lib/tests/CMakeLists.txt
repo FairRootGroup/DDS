@@ -13,7 +13,7 @@ add_executable(${test} Test.cpp)
 
 target_link_libraries(${test}
   PUBLIC
-	dds_intercom_lib
+  dds_intercom_lib
   Boost::boost
   Boost::system
   Boost::unit_test_framework
@@ -32,7 +32,7 @@ add_executable(${test} task-test_key_value.cpp)
 
 target_link_libraries(${test}
   PUBLIC
-	dds_intercom_lib
+  dds_intercom_lib
   Boost::boost
 )
 

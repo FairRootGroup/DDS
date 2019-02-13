@@ -546,6 +546,17 @@ string CUserDefaults::getDefaultSIDFile() const
 
 string CUserDefaults::getDefaultSID() const
 {
+    // Check whether users have defined DDS_SESSION_ID environment variable
+    // If defined, use it instead of a default one
+    char* pchDDSSessionID;
+    pchDDSSessionID = getenv("DDS_SESSION_ID");
+    if (pchDDSSessionID != NULL && strlen(pchDDSSessionID) > 0)
+    {
+        string sDDSSessionID(pchDDSSessionID);
+        return sDDSSessionID;
+    }
+
+    // Get the default SID
     std::string sidFile = getDefaultSIDFile();
     if (sidFile.empty())
         return string();

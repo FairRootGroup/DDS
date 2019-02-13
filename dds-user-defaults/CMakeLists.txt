@@ -66,7 +66,7 @@ install(TARGETS ${PROJECT_NAME} dds_user_defaults_lib
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
-  # add_subdirectory(tests) 
+  add_subdirectory(tests) 
 else()
   message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 endif()
