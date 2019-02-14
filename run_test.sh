@@ -85,6 +85,10 @@ echo "Intercom lib UNIT-TESTs"
 echo "----------------------"
 exec_test "dds_intercom_lib-tests" "--catch_system_errors=no"
 
+echo "----------------------"
+echo "dds-user-defaults UNIT-TESTs"
+echo "----------------------"
+exec_test "dds-user-defaults-tests"
 
 popd
 
