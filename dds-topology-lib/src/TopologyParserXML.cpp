@@ -124,11 +124,12 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
             boost::algorithm::replace_all(strPT, varName, v.second);
         }
 
+        fs::path tempDirPath = fs::temp_directory_path();
         boost::uuids::uuid uuid = boost::uuids::random_generator()();
         fs::path filePath(_fileName);
         stringstream ssTmpFileName;
         ssTmpFileName << filePath.filename().string() << "_" << uuid << ".xml";
-        string tmpFilePath = fs::path(CUserDefaults::instance().getWrkDir()).append(ssTmpFileName.str()).string();
+        string tmpFilePath = tempDirPath.append(ssTmpFileName.str()).string();
 
         {
             ofstream tmpFile(tmpFilePath);
