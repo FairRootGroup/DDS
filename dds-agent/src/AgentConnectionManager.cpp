@@ -31,6 +31,7 @@ using boost::asio::ip::tcp;
 CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
     : m_signals(m_io_service)
     , m_options(_options)
+    , m_taskPid(0)
     , m_bStarted(false)
     , m_topo()
 {
@@ -377,32 +378,65 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     // terminate user process, if any
     // TODO: Maybe it needs to be moved to the monitoring thread. Can be activated them by a
     // signal variable.
-    if (m_children.empty())
     {
-        LOG(info) << "There are no children processes to terminate. We are good to go...";
-        return;
+        lock_guard<mutex> lock(m_taskPidMutex);
+        if (m_taskPid == 0)
+        {
+            LOG(info) << "There is no task to terminate. We are good to go...";
+            return;
+        }
     }
 
-    for (auto const& pid : m_children)
+    LOG(info) << "Getting a list of child processes of the task with pid = " << m_taskPid;
+    std::vector<std::string> vecChildren;
+    try
     {
-        LOG(info) << "Sending graceful terminate signal to child process with pid = " << pid;
-        kill(pid, SIGTERM);
+        // a pgrep command is used to find out the list of child processes of the task
+        stringstream ssCmd;
+        ssCmd << boost::process::search_path("pgrep").string() << " -P " << m_taskPid;
+        string output;
+        execute(ssCmd.str(), std::chrono::seconds(10), &output);
+        boost::split(vecChildren, output, boost::is_any_of(" \n"), boost::token_compress_on);
+        vecChildren.erase(
+            remove_if(vecChildren.begin(), vecChildren.end(), [](const string& _val) { return _val.empty(); }),
+            vecChildren.end());
+    }
+    catch (...)
+    {
+    }
+    string sChildren;
+    for (const auto i : vecChildren)
+    {
+        if (!sChildren.empty())
+            sChildren += ", ";
+        sChildren += i;
+    }
+    LOG(info) << "Process " << m_taskPid << " has " << vecChildren.size() << " child process(es)"
+              << (sChildren.empty() ? "." : " " + sChildren);
+
+    LOG(info) << "Sending graceful terminate signal to a parent process " << m_taskPid;
+    {
+        lock_guard<mutex> lock(m_taskPidMutex);
+        if (m_taskPid > 0)
+            kill(m_taskPid, SIGTERM);
+    }
+    for (const auto i : vecChildren)
+    {
+        LOG(info) << "Sending graceful terminate signal to a child process " << i;
+        kill(stol(i), SIGTERM);
     }
 
-    LOG(info) << "Wait for child processes to exit...";
-    for (auto const& pid : m_children)
+    LOG(info) << "Wait for task to exit...";
+    if (IsProcessRunning(m_taskPid))
     {
-        if (!IsProcessRunning(pid))
-            continue;
-
         // wait 10 seconds each
         for (size_t i = 0; i < 10; ++i)
         {
-            LOG(info) << "Waiting for pid = " << pid;
+            LOG(info) << "Waiting for pid = " << m_taskPid;
             int stat(0);
-            if (pid == ::waitpid(pid, &stat, WNOHANG | WUNTRACED))
+            if (m_taskPid == ::waitpid(m_taskPid, &stat, WNOHANG | WUNTRACED))
             {
-                LOG(info) << "pid = " << pid << " - done; exit status = " << WEXITSTATUS(stat);
+                LOG(info) << "pid = " << m_taskPid << " - done; exit status = " << WEXITSTATUS(stat);
                 break;
             }
             // TODO: Needs to be fixed! Implement time-function based timeout measurements
@@ -411,14 +445,25 @@ void CAgentConnectionManager::terminateChildrenProcesses()
         }
     }
 
-    // kills the child
-    for (auto const& pid : m_children)
+    // kill all child process of tasks if there are any
+    // We do it before terminating tasks to give parenrt task processes a change to read state of children - otherwise
+    // we will get zombies if user tasks don't manage their children properly
+    for (auto const& pid : vecChildren)
     {
-        if (!IsProcessRunning(pid))
+        if (!IsProcessRunning(stol(pid)))
             continue;
 
-        LOG(info) << "Timeout has been reached, child process with pid = " << pid << " will be forced to exit...";
-        kill(pid, SIGKILL);
+        LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
+        kill(stol(pid), SIGKILL);
+    }
+
+    // Force kill of the tasks
+    if (IsProcessRunning(m_taskPid))
+    {
+        LOG(info) << "Timeout has been reached, child process with pid = " << m_taskPid << " will be forced to exit...";
+        lock_guard<mutex> lock(m_taskPidMutex);
+        if (m_taskPid > 0)
+            kill(m_taskPid, SIGKILL);
     }
 }
 
@@ -467,8 +512,8 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
 {
     // remove pid from the active children list
     {
-        lock_guard<mutex> lock(m_childrenContainerMutex);
-        m_children.erase(remove(m_children.begin(), m_children.end(), _pid), m_children.end());
+        lock_guard<mutex> lock(m_taskPidMutex);
+        m_taskPid = 0;
     }
     SUserTaskDoneCmd cmd;
     cmd.m_exitCode = _exitCode;
@@ -483,8 +528,8 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
     try
     {
         // remove pid from the active children list
-        lock_guard<mutex> lock(m_childrenContainerMutex);
-        m_children.push_back(_pid);
+        lock_guard<mutex> lock(m_taskPidMutex);
+        m_taskPid = _pid;
     }
     catch (exception& _e)
     {

@@ -16,6 +16,9 @@ Added: make custom command's condition regex aware. (GH-211)
 Modified: Introduced a lightweight worker package for the localhost plug-in. It doesn't contain libs and binaties. Deployment speed is x3 faster. Instead of ~15MB/agent disk space, DDS uses ~50 KB/agent now. (GH-210).    
 Added: The command reports now the time it took to submit the job.    
 
+### dds-agent
+Modified: The watchdog now terminates/kills not only user tasks (parent processes), but also their children if they spawn any. (GH-212).    
+
 ## v2.2 (2018-11-27)
 
 ### DDS common 

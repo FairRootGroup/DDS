@@ -20,7 +20,6 @@ namespace dds
     {
         class CAgentConnectionManager : public std::enable_shared_from_this<CAgentConnectionManager>
         {
-            typedef std::vector<pid_t> childrenPidContainer_t;
             typedef std::vector<protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t>
                 updateKeyAttachmentQueue_t;
 
@@ -75,8 +74,8 @@ namespace dds
 
             boost::asio::signal_set m_signals;
             SOptions_t m_options;
-            childrenPidContainer_t m_children;
-            std::mutex m_childrenContainerMutex;
+            pid_t m_taskPid;
+            std::mutex m_taskPidMutex;
             bool m_bStarted;
             topology_api::CTopology m_topo;
         };
