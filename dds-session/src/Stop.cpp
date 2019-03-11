@@ -66,8 +66,15 @@ void CStop::stop(const std::string& _sessionID)
     if (MiscCommon::IsProcessRunning(pidCommander))
     {
         LOG(log_stdout_clean) << "Commander is still running. I have no choice but to kill it...";
-        boost::process::child c(pidCommander);
-        // Semnding a kill signal
-        c.terminate();
+        // Manually killing the process
+        if (MiscCommon::IsProcessRunning(pidCommander))
+        {
+            if (::kill(pidCommander, SIGKILL))
+            {
+                string err;
+                errno2str(&err);
+                LOG(MiscCommon::error) << "Failed to kill commander: " << err;
+            }
+        }
     }
 }

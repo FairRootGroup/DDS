@@ -512,6 +512,9 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
                                                         const std::string& _msg,
                                                         Args&&... args)
 {
+    if (_agents.size() == 0)
+        return;
+
     auto p = _channel.lock();
 
     m_updateTopology.m_srcCommand = _cmd;
@@ -613,8 +616,8 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
 
         stringstream ss;
         ss << "\nRemoved tasks: " << removedTasks.size() << "\n"
-           << m_topo.stringOfTasks(removedTasks) << "Removed collections:" << removedCollections.size() << "\n"
-           << m_topo.stringOfCollections(removedCollections) << "Added tasks :" << addedTasks.size() << "\n"
+           << m_topo.stringOfTasks(removedTasks) << "Removed collections: " << removedCollections.size() << "\n"
+           << m_topo.stringOfCollections(removedCollections) << "Added tasks: " << addedTasks.size() << "\n"
            << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
            << topo.stringOfCollections(addedCollections);
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
@@ -632,6 +635,9 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
             };
             CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
+
+            if (allAgents.size() == 0)
+                throw runtime_error("There are no active agents.");
 
             broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
                 allAgents, _channel, "Updating topology for agents...", _attachment->m_sTopologyFile, "topology.xml");
@@ -674,11 +680,12 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
                         info.m_state == EAgentState::idle);
             };
+
             CConnectionManager::weakChannelInfo_t::container_t idleAgents(getChannels(idleCondition));
 
             size_t nofAgents = idleAgents.size();
             if (nofAgents == 0)
-                throw runtime_error("There are no connected agents.");
+                throw runtime_error("There are no idle agents.");
             if (nofAgents < addedTasks.size())
             {
                 stringstream ssMsg;

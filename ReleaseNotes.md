@@ -17,7 +17,10 @@ Modified: Introduced a lightweight worker package for the localhost plug-in. It 
 Added: The command reports now the time it took to submit the job.    
 
 ### dds-agent
-Modified: The watchdog now terminates/kills not only user tasks (parent processes), but also their children if they spawn any. (GH-212).    
+Modified: The watchdog now terminates/kills not only user tasks (parent processes), but also their children if they spawn any. (GH-212)    
+
+### dds-topology
+Fixed: dds-topology --activate hangs if there are no active agents. (GH-218)   
 
 ## v2.2 (2018-11-27)
 
