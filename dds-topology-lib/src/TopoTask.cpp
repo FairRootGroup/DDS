@@ -3,8 +3,8 @@
 //
 //
 
-#include "Task.h"
-#include "TaskGroup.h"
+#include "TopoTask.h"
+#include "TopoGroup.h"
 #include "TopoUtils.h"
 // STD
 #include <iostream>
@@ -19,7 +19,7 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTask::CTask()
+CTopoTask::CTopoTask()
     : CTopoElement()
     , m_exe()
     , m_env()
@@ -27,114 +27,114 @@ CTask::CTask()
     , m_envReachable(true)
     , m_properties()
 {
-    setType(ETopoType::TASK);
+    setType(CTopoBase::EType::TASK);
 }
 
-CTask::~CTask()
+CTopoTask::~CTopoTask()
 {
 }
 
-void CTask::setExe(const string& _exe)
+void CTopoTask::setExe(const string& _exe)
 {
     m_exe = _exe;
 }
 
-void CTask::setEnv(const string& _env)
+void CTopoTask::setEnv(const string& _env)
 {
     m_env = _env;
 }
 
-void CTask::setExeReachable(bool _exeReachable)
+void CTopoTask::setExeReachable(bool _exeReachable)
 {
     m_exeReachable = _exeReachable;
 }
 
-void CTask::setEnvReachable(bool _envReachable)
+void CTopoTask::setEnvReachable(bool _envReachable)
 {
     m_envReachable = _envReachable;
 }
 
-void CTask::setProperties(const TopoPropertyPtrMap_t& _properties)
+void CTopoTask::setProperties(const CTopoProperty::PtrMap_t& _properties)
 {
     m_properties = _properties;
 }
 
-void CTask::addProperty(TopoPropertyPtr_t _property)
+void CTopoTask::addProperty(CTopoProperty::Ptr_t _property)
 {
     m_properties.insert(make_pair(_property->getId(), _property));
 }
 
-void CTask::setRequirements(const RequirementPtrVector_t& _requirements)
+void CTopoTask::setRequirements(const CTopoRequirement::PtrVector_t& _requirements)
 {
     m_requirements = _requirements;
 }
 
-void CTask::addRequirement(RequirementPtr_t _requirement)
+void CTopoTask::addRequirement(CTopoRequirement::Ptr_t _requirement)
 {
     m_requirements.push_back(_requirement);
 }
 
-void CTask::setTriggers(const TriggerPtrVector_t& _triggers)
+void CTopoTask::setTriggers(const CTopoTrigger::PtrVector_t& _triggers)
 {
     m_triggers = _triggers;
 }
 
-void CTask::addTrigger(TriggerPtr_t _trigger)
+void CTopoTask::addTrigger(CTopoTrigger::Ptr_t _trigger)
 {
     m_triggers.push_back(_trigger);
 }
 
-size_t CTask::getNofTasks() const
+size_t CTopoTask::getNofTasks() const
 {
     return 1;
 }
 
-size_t CTask::getTotalNofTasks() const
+size_t CTopoTask::getTotalNofTasks() const
 {
     return 1;
 }
 
-const string& CTask::getExe() const
+const string& CTopoTask::getExe() const
 {
     return m_exe;
 }
 
-const string& CTask::getEnv() const
+const string& CTopoTask::getEnv() const
 {
     return m_env;
 }
 
-bool CTask::isExeReachable() const
+bool CTopoTask::isExeReachable() const
 {
     return m_exeReachable;
 }
 
-bool CTask::isEnvReachable() const
+bool CTopoTask::isEnvReachable() const
 {
     return m_envReachable;
 }
 
-size_t CTask::getNofProperties() const
+size_t CTopoTask::getNofProperties() const
 {
     return m_properties.size();
 }
 
-size_t CTask::getNofRequirements() const
+size_t CTopoTask::getNofRequirements() const
 {
     return m_requirements.size();
 }
 
-size_t CTask::getNofTriggers() const
+size_t CTopoTask::getNofTriggers() const
 {
     return m_triggers.size();
 }
 
-size_t CTask::getTotalCounter() const
+size_t CTopoTask::getTotalCounter() const
 {
     return getTotalCounterDefault();
 }
 
-TopoPropertyPtr_t CTask::getProperty(const std::string& _id) const
+CTopoProperty::Ptr_t CTopoTask::getProperty(const std::string& _id) const
 {
     auto it = m_properties.find(_id);
     if (it == m_properties.end())
@@ -142,42 +142,42 @@ TopoPropertyPtr_t CTask::getProperty(const std::string& _id) const
     return it->second;
 }
 
-const TopoPropertyPtrMap_t& CTask::getProperties() const
+const CTopoProperty::PtrMap_t& CTopoTask::getProperties() const
 {
     return m_properties;
 }
 
-const RequirementPtrVector_t& CTask::getRequirements() const
+const CTopoRequirement::PtrVector_t& CTopoTask::getRequirements() const
 {
     return m_requirements;
 }
 
-const TriggerPtrVector_t& CTask::getTriggers() const
+const CTopoTrigger::PtrVector_t& CTopoTask::getTriggers() const
 {
     return m_triggers;
 }
 
-std::string CTask::getParentCollectionId() const
+std::string CTopoTask::getParentCollectionId() const
 {
-    return (getParent() == nullptr || getParent()->getType() == ETopoType::GROUP) ? "" : getParent()->getId();
+    return (getParent() == nullptr || getParent()->getType() == CTopoBase::EType::GROUP) ? "" : getParent()->getId();
 }
 
-std::string CTask::getParentGroupId() const
+std::string CTopoTask::getParentGroupId() const
 {
     if (getParent() == nullptr)
         return "";
-    else if (getParent()->getType() == ETopoType::GROUP)
+    else if (getParent()->getType() == CTopoBase::EType::GROUP)
         return getParent()->getId();
     else if (getParent()->getParent() != nullptr)
         return getParent()->getParent()->getId();
     return "";
 }
 
-void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& taskPT = CTopoElement::findElement(ETopoType::TASK, _name, _pt.get_child("topology"));
+        const ptree& taskPT = CTopoElement::findElement(CTopoBase::EType::TASK, _name, _pt.get_child("topology"));
 
         setId(taskPT.get<string>("<xmlattr>.id"));
         setExe(taskPT.get<string>("exe"));
@@ -190,7 +190,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             for (const auto& requirement : requirementsPT.get())
             {
-                RequirementPtr_t newRequirement = make_shared<CRequirement>();
+                CTopoRequirement::Ptr_t newRequirement = make_shared<CTopoRequirement>();
                 newRequirement->setParent(this);
                 newRequirement->initFromPropertyTree(requirement.second.data(), _pt);
                 addRequirement(newRequirement);
@@ -202,7 +202,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             for (const auto& property : propertiesPT.get())
             {
-                TopoPropertyPtr_t newProperty = make_shared<CTopoProperty>();
+                CTopoProperty::Ptr_t newProperty = make_shared<CTopoProperty>();
                 newProperty->setParent(this);
                 newProperty->initFromPropertyTree(property.second.data(), _pt);
                 newProperty->setAccessType(TagToPropertyAccessType(property.second.get<string>("<xmlattr>.access")));
@@ -215,7 +215,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             for (const auto& trigger : triggersPT.get())
             {
-                TriggerPtr_t newTrigger = make_shared<CTrigger>();
+                CTopoTrigger::Ptr_t newTrigger = make_shared<CTopoTrigger>();
                 newTrigger->setParent(this);
                 newTrigger->initFromPropertyTree(trigger.second.data(), _pt);
                 addTrigger(newTrigger);
@@ -228,7 +228,7 @@ void CTask::initFromPropertyTree(const string& _name, const ptree& _pt)
     }
 }
 
-string CTask::toString() const
+string CTopoTask::toString() const
 {
     stringstream ss;
     ss << "Task: m_id=" << getId() << " m_exe=" << m_exe << " m_env=" << m_env << " m_properties:\n";
@@ -239,7 +239,7 @@ string CTask::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const CTask& _task)
+ostream& operator<<(ostream& _strm, const CTopoTask& _task)
 {
     _strm << _task.toString();
     return _strm;

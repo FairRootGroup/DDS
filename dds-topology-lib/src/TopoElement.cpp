@@ -5,7 +5,7 @@
 
 // DDS
 #include "TopoElement.h"
-#include "TaskGroup.h"
+#include "TopoGroup.h"
 
 using namespace std;
 using namespace dds;
@@ -15,7 +15,7 @@ CTopoElement::CTopoElement()
     : CTopoBase()
     , m_path()
 {
-    setType(ETopoType::TOPO_ELEMENT);
+    setType(CTopoBase::EType::TOPO_ELEMENT);
 }
 
 CTopoElement::~CTopoElement()
@@ -24,9 +24,9 @@ CTopoElement::~CTopoElement()
 
 size_t CTopoElement::getTotalCounterDefault() const
 {
-    if (getParent() != nullptr && getParent()->getType() == ETopoType::GROUP)
+    if (getParent() != nullptr && getParent()->getType() == CTopoBase::EType::GROUP)
     {
-        return static_cast<CTaskGroup*>(getParent())->getN();
+        return static_cast<CTopoGroup*>(getParent())->getN();
     }
     return 1;
 }

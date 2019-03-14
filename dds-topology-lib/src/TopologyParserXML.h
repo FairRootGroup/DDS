@@ -7,10 +7,8 @@
 #define __DDS__TopologyParserXML__
 
 // DDS
-#include "TaskGroup.h"
-#include "TopoVars.h"
+#include "TopoGroup.h"
 // STD
-#include <map>
 #include <string>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
@@ -32,7 +30,7 @@ namespace dds
             /// \param[in] _fileName Name of file with topology.
             /// \param[out] _main Main task group or nullptr in case of error.
             /// \param[in] _xmlValidationDisabled If tru than XML will not be validated against XSD.
-            void parse(const std::string& _fileName, TaskGroupPtr_t _main, bool _xmlValidationDisabled = false);
+            void parse(const std::string& _fileName, CTopoGroup::Ptr_t _main, bool _xmlValidationDisabled = false);
 
             /// \brief Validate provided XML file against XSD using xmllint.
             /// \throw runtime_error

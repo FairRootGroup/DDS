@@ -7,9 +7,9 @@
 #include "TopologyParserXML.h"
 #include "FindCfgFile.h"
 #include "Process.h"
-#include "Task.h"
-#include "TaskCollection.h"
-#include "TaskGroup.h"
+#include "TopoCollection.h"
+#include "TopoGroup.h"
+#include "TopoTask.h"
 #include "TopoVars.h"
 #include "UserDefaults.h"
 // STL
@@ -88,7 +88,7 @@ bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidati
     return (exitCode == 0);
 }
 
-void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bool _xmlValidationDisabled)
+void CTopologyParserXML::parse(const string& _fileName, CTopoGroup::Ptr_t _main, bool _xmlValidationDisabled)
 {
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");
@@ -109,7 +109,7 @@ void CTopologyParserXML::parse(const string& _fileName, TaskGroupPtr_t _main, bo
         ptree varPT;
         read_xml(_fileName, varPT, xml_parser::no_comments);
 
-        TopoVarsPtr_t vars = make_shared<CTopoVars>();
+        CTopoVars::Ptr_t vars = make_shared<CTopoVars>();
         vars->initFromPropertyTree("", varPT);
 
         // We have to replace all occurencies of topology variables in input XML file.

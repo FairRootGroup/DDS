@@ -4,7 +4,7 @@
 //
 
 // DDS
-#include "Trigger.h"
+#include "TopoTrigger.h"
 #include "TopoUtils.h"
 // STD
 #include <boost/regex.hpp>
@@ -15,53 +15,53 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTrigger::CTrigger()
+CTopoTrigger::CTopoTrigger()
     : CTopoBase()
     , m_action()
     , m_condition(EConditionType::None)
 {
-    setType(ETopoType::TRIGGER);
+    setType(CTopoBase::EType::TRIGGER);
 }
 
-CTrigger::~CTrigger()
+CTopoTrigger::~CTopoTrigger()
 {
 }
 
-EConditionType CTrigger::getCondition() const
+CTopoTrigger::EConditionType CTopoTrigger::getCondition() const
 {
     return m_condition;
 }
 
-EActionType CTrigger::getAction() const
+CTopoTrigger::EActionType CTopoTrigger::getAction() const
 {
     return m_action;
 }
 
-const std::string& CTrigger::getArgument() const
+const std::string& CTopoTrigger::getArgument() const
 {
     return m_argument;
 }
 
-void CTrigger::setAction(EActionType _action)
+void CTopoTrigger::setAction(CTopoTrigger::EActionType _action)
 {
     m_action = _action;
 }
 
-void CTrigger::setCondition(EConditionType _condition)
+void CTopoTrigger::setCondition(CTopoTrigger::EConditionType _condition)
 {
     m_condition = _condition;
 }
 
-void CTrigger::setArgument(const std::string& _argument)
+void CTopoTrigger::setArgument(const std::string& _argument)
 {
     m_argument = _argument;
 }
 
-void CTrigger::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void CTopoTrigger::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
 {
     try
     {
-        const ptree& triggerPT = CTopoBase::findElement(ETopoType::TRIGGER, _name, _pt.get_child("topology"));
+        const ptree& triggerPT = CTopoBase::findElement(CTopoBase::EType::TRIGGER, _name, _pt.get_child("topology"));
         setId(triggerPT.get<string>("<xmlattr>.id"));
         setAction(TagToActionType(triggerPT.get<std::string>("<xmlattr>.action", "")));
         setCondition(TagToConditionType(triggerPT.get<std::string>("<xmlattr>.condition", "")));
@@ -73,7 +73,7 @@ void CTrigger::initFromPropertyTree(const std::string& _name, const boost::prope
     }
 }
 
-string CTrigger::toString() const
+string CTopoTrigger::toString() const
 {
     stringstream ss;
     ss << "DDSTrigger: id=" << getId() << " action=" << ActionTypeToTag(getAction())
@@ -81,7 +81,7 @@ string CTrigger::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const CTrigger& _requirement)
+ostream& operator<<(ostream& _strm, const CTopoTrigger& _requirement)
 {
     _strm << _requirement.toString();
     return _strm;

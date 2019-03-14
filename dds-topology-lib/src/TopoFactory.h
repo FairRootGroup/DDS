@@ -14,11 +14,11 @@ namespace dds
 {
     namespace topology_api
     {
-        TopoElementPtr_t CreateTopoElement(ETopoType _type);
+        CTopoElement::Ptr_t CreateTopoElement(CTopoBase::EType _type);
 
-        TopoPropertyPtr_t CreateTopoProperty(ETopoType _type);
+        CTopoProperty::Ptr_t CreateTopoProperty(CTopoBase::EType _type);
 
-        TopoBasePtr_t CreateTopoBase(ETopoType _type);
+        CTopoBase::Ptr_t CreateTopoBase(CTopoBase::EType _type);
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__TopoFactory__) */

@@ -6,8 +6,6 @@
 #ifndef __DDS__TopoBase__
 #define __DDS__TopoBase__
 
-// DDS
-#include "TopoIndex.h"
 // STD
 #include <sstream>
 #include <string>
@@ -19,21 +17,25 @@ namespace dds
 {
     namespace topology_api
     {
-        enum class ETopoType
-        {
-            TOPO_BASE,
-            TOPO_PROPERTY,
-            TOPO_ELEMENT,
-            TASK,
-            COLLECTION,
-            GROUP,
-            REQUIREMENT,
-            TOPO_VARS,
-            TRIGGER
-        };
-
         class CTopoBase
         {
+          public:
+            enum class EType
+            {
+                TOPO_BASE,
+                TOPO_PROPERTY,
+                TOPO_ELEMENT,
+                TASK,
+                COLLECTION,
+                GROUP,
+                REQUIREMENT,
+                TOPO_VARS,
+                TRIGGER
+            };
+
+            typedef std::shared_ptr<CTopoBase> Ptr_t;
+            typedef std::vector<CTopoBase::Ptr_t> PtrVector_t;
+
           public:
             /// Modifiers
             void setId(const std::string& _id);
@@ -41,14 +43,11 @@ namespace dds
 
             /// Accessors
             std::string getId() const;
-            ETopoType getType() const;
+            CTopoBase::EType getType() const;
             CTopoBase* getParent() const;
 
             /// \brief Return full path to topo element or property.
             std::string getPath() const;
-
-            /// \brief Return index of topo element or property.
-            CTopoIndex getIndex() const;
 
             /// \brief Initialize object with data from property tree.
             /// \param[in] _name Name of the object as in input file.
@@ -62,7 +61,7 @@ namespace dds
             /// \return Property tree with root node pointing to found element.
             /// \throw logic_error if element was not found.
             /// \note This function does not catch exceptions from property tree.
-            static const boost::property_tree::ptree& findElement(ETopoType _type,
+            static const boost::property_tree::ptree& findElement(CTopoBase::EType _type,
                                                                   const std::string& _name,
                                                                   const boost::property_tree::ptree& _pt);
 
@@ -82,18 +81,13 @@ namespace dds
             /// \brief Destructor.
             virtual ~CTopoBase();
 
-            void setType(ETopoType _type);
+            void setType(CTopoBase::EType _type);
 
           private:
-            std::string m_id;    ///< Identificator of topology element
-            ETopoType m_type;    ///< Type of the topology element
-            CTopoBase* m_parent; ///< Pointer to parent element
-
-            // FIXME: Probably we have to add an ID which will uniquely identifies the object.
+            std::string m_id;        ///< Identificator of topology element
+            CTopoBase::EType m_type; ///< Type of the topology element
+            CTopoBase* m_parent;     ///< Pointer to parent element
         };
-
-        typedef std::shared_ptr<CTopoBase> TopoBasePtr_t;
-        typedef std::vector<TopoBasePtr_t> TopoBasePtrVector_t;
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__TopoBase__) */

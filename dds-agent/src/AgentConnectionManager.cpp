@@ -658,7 +658,7 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
     string propertyID(_attachment->m_propertyID);
     uint64_t taskID(m_SMCommanderChannel->getTaskID());
 
-    auto task = m_topo.getTaskByHash(taskID);
+    auto task = m_topo.getRuntimeTaskByHash(taskID).m_task;
     auto property = task->getProperty(propertyID);
     // Property doesn't exists for task
     if (property == nullptr)
@@ -669,7 +669,7 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
         return;
     }
     // Cant' propagate property with read access type
-    if (property->getAccessType() == EPropertyAccessType::READ)
+    if (property->getAccessType() == CTopoProperty::EAccessType::READ)
     {
         stringstream ss;
         ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task <"
@@ -678,8 +678,8 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
         return;
     }
     // Can't send property with a collection scope if a task is outside a collection
-    if ((property->getScopeType() == EPropertyScopeType::COLLECTION) &&
-        (task->getParent()->getType() != ETopoType::COLLECTION))
+    if ((property->getScopeType() == CTopoProperty::EScopeType::COLLECTION) &&
+        (task->getParent()->getType() != CTopoBase::EType::COLLECTION))
     {
         stringstream ss;
         ss << "Can't propagate property <" << property->getId() << "> which has a COLLECTION scope type but task <"

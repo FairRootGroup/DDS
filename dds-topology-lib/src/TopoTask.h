@@ -3,14 +3,14 @@
 //
 //
 
-#ifndef __DDS__Task__
-#define __DDS__Task__
+#ifndef __DDS__TopoTask__
+#define __DDS__TopoTask__
 
 // DDS
-#include "Requirement.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
-#include "Trigger.h"
+#include "TopoRequirement.h"
+#include "TopoTrigger.h"
 // STD
 #include <memory>
 #include <string>
@@ -21,14 +21,18 @@ namespace dds
 {
     namespace topology_api
     {
-        class CTask : public CTopoElement
+        class CTopoTask : public CTopoElement
         {
           public:
+            typedef std::shared_ptr<CTopoTask> Ptr_t;
+            typedef std::vector<CTopoTask::Ptr_t> PtrVector_t;
+
+          public:
             /// \brief Constructor.
-            CTask();
+            CTopoTask();
 
             /// \brief Destructor.
-            virtual ~CTask();
+            virtual ~CTopoTask();
 
             /// Accessors
             const std::string& getExe() const;
@@ -38,23 +42,23 @@ namespace dds
             size_t getNofProperties() const;
             size_t getNofRequirements() const;
             size_t getNofTriggers() const;
-            const TopoPropertyPtrMap_t& getProperties() const;
-            const RequirementPtrVector_t& getRequirements() const;
-            const TriggerPtrVector_t& getTriggers() const;
+            const CTopoProperty::PtrMap_t& getProperties() const;
+            const CTopoRequirement::PtrVector_t& getRequirements() const;
+            const CTopoTrigger::PtrVector_t& getTriggers() const;
             /// Get property by ID. If property not fount than return nullptr.
-            TopoPropertyPtr_t getProperty(const std::string& _id) const;
+            CTopoProperty::Ptr_t getProperty(const std::string& _id) const;
 
             /// Modifiers
             void setExe(const std::string& _exe);
             void setEnv(const std::string& _env);
             void setExeReachable(bool _exeReachable);
             void setEnvReachable(bool _envReachable);
-            void setProperties(const TopoPropertyPtrMap_t& _properties);
-            void addProperty(TopoPropertyPtr_t _property);
-            void setRequirements(const RequirementPtrVector_t& _requirements);
-            void addRequirement(RequirementPtr_t _requirement);
-            void setTriggers(const TriggerPtrVector_t& _triggers);
-            void addTrigger(TriggerPtr_t _trigger);
+            void setProperties(const CTopoProperty::PtrMap_t& _properties);
+            void addProperty(CTopoProperty::Ptr_t _property);
+            void setRequirements(const CTopoRequirement::PtrVector_t& _requirements);
+            void addRequirement(CTopoRequirement::Ptr_t _requirement);
+            void setTriggers(const CTopoTrigger::PtrVector_t& _triggers);
+            void addTrigger(CTopoTrigger::Ptr_t _trigger);
 
             // Parent collection and group ID
             std::string getParentCollectionId() const;
@@ -79,24 +83,28 @@ namespace dds
             /// \brief Operator << for convenient output to ostream.
             /// \return Insertion stream in order to be able to call a succession of
             /// insertion operations.
-            friend std::ostream& operator<<(std::ostream& _strm, const CTask& _task);
+            friend std::ostream& operator<<(std::ostream& _strm, const CTopoTask& _task);
 
           private:
-            std::string m_exe;                     ///< Path to executable
-            std::string m_env;                     ///< Path to environmtnt file
-            bool m_exeReachable;                   ///< If executable is available on the WN
-            bool m_envReachable;                   ///< If environment script is available on the WN
-            TopoPropertyPtrMap_t m_properties;     ///< Properties
-            RequirementPtrVector_t m_requirements; ///< Array of requirements
-            TriggerPtrVector_t m_triggers;         ///< Array of triggers
+            std::string m_exe;                            ///< Path to executable
+            std::string m_env;                            ///< Path to environmtnt file
+            bool m_exeReachable;                          ///< If executable is available on the WN
+            bool m_envReachable;                          ///< If environment script is available on the WN
+            CTopoProperty::PtrMap_t m_properties;         ///< Properties
+            CTopoRequirement::PtrVector_t m_requirements; ///< Array of requirements
+            CTopoTrigger::PtrVector_t m_triggers;         ///< Array of triggers
         };
 
-        typedef std::shared_ptr<CTask> TaskPtr_t;
-        typedef std::vector<TaskPtr_t> TaskPtrVector_t;
-
-        struct STaskInfo
+        struct STopoRuntimeTask
         {
-            STaskInfo()
+            typedef std::map<uint64_t, STopoRuntimeTask> Map_t;
+            typedef std::function<bool(std::pair<uint64_t, const STopoRuntimeTask&>)> Condition_t;
+            typedef boost::filter_iterator<STopoRuntimeTask::Condition_t, STopoRuntimeTask::Map_t::const_iterator>
+                FilterIterator_t;
+            typedef std::pair<STopoRuntimeTask::FilterIterator_t, STopoRuntimeTask::FilterIterator_t>
+                FilterIteratorPair_t;
+
+            STopoRuntimeTask()
                 : m_task(nullptr)
                 , m_taskIndex(0)
                 , m_collectionIndex(std::numeric_limits<uint32_t>::max())
@@ -104,17 +112,12 @@ namespace dds
                 , m_taskCollectionHash(0)
             {
             }
-            TaskPtr_t m_task;
+            CTopoTask::Ptr_t m_task;
             size_t m_taskIndex;
             size_t m_collectionIndex;
             std::string m_taskPath;
             uint64_t m_taskCollectionHash;
         };
-
-        typedef std::map<uint64_t, STaskInfo> HashToTaskInfoMap_t;
-        typedef std::function<bool(std::pair<uint64_t, const STaskInfo&>)> TaskInfoCondition_t;
-        typedef boost::filter_iterator<TaskInfoCondition_t, HashToTaskInfoMap_t::const_iterator> TaskInfoIterator_t;
-        typedef std::pair<TaskInfoIterator_t, TaskInfoIterator_t> TaskInfoIteratorPair_t;
     } // namespace topology_api
 } // namespace dds
-#endif /* defined(__DDS__Task__) */
+#endif /* defined(__DDS__TopoTask__) */

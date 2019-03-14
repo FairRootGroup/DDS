@@ -833,7 +833,6 @@ void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
         string sTaskName("no task is assigned");
         if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
         {
-            TaskPtr_t task = m_topo.getTaskByHash(inf.m_taskID);
             stringstream ssTaskString;
             ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
             sTaskName = ssTaskString.str();
@@ -1081,12 +1080,13 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     // Delete corresponding keys
     uint64_t taskID = _attachment->m_taskID;
 
-    auto task = m_topo.getTaskByHash(taskID);
+    auto task = m_topo.getRuntimeTaskByHash(taskID).m_task;
 
-    const TopoPropertyPtrMap_t& properties = task->getProperties();
+    const CTopoProperty::PtrMap_t& properties = task->getProperties();
     for (const auto& property : properties)
     {
-        TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(property.first, taskID);
+        STopoRuntimeTask::FilterIteratorPair_t taskIt =
+            m_topo.getRuntimeTaskIteratorForPropertyId(property.first, taskID);
 
         for (auto it = taskIt.first; it != taskIt.second; ++it)
         {
@@ -1324,7 +1324,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             bool taskFound = true;
             try
             {
-                TaskPtr_t task = m_topo.getTaskByHashPath(_attachment->m_sCondition);
+                const STopoRuntimeTask& runtimeTask = m_topo.getRuntimeTaskByHashPath(_attachment->m_sCondition);
             }
             catch (runtime_error& _e)
             {
@@ -1351,7 +1351,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 if (_attachment->m_sCondition.empty())
                     return true;
 
-                const STaskInfo& taskInfo = m_topo.getTaskInfoByHash(inf.m_taskID);
+                const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskByHash(inf.m_taskID);
                 bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
                                           : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
 

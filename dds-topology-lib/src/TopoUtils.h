@@ -7,10 +7,10 @@
 #define __DDS__TopoUtils__
 
 // DDS
-#include "Requirement.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
-#include "Trigger.h"
+#include "TopoRequirement.h"
+#include "TopoTrigger.h"
 // STD
 #include <string>
 
@@ -18,29 +18,29 @@ namespace dds
 {
     namespace topology_api
     {
-        std::string TopoTypeToUseTag(ETopoType _type);
+        std::string TopoTypeToUseTag(CTopoBase::EType _type);
 
-        ETopoType UseTagToTopoType(const std::string& _name);
+        CTopoBase::EType UseTagToTopoType(const std::string& _name);
 
-        std::string TopoTypeToDeclTag(ETopoType _type);
+        std::string TopoTypeToDeclTag(CTopoBase::EType _type);
 
-        ETopoType DeclTagToTopoType(const std::string& _name);
+        CTopoBase::EType DeclTagToTopoType(const std::string& _name);
 
-        EPropertyAccessType TagToPropertyAccessType(const std::string& _name);
+        CTopoProperty::EAccessType TagToPropertyAccessType(const std::string& _name);
 
-        EPropertyScopeType TagToPropertyScopeType(const std::string& _name);
+        CTopoProperty::EScopeType TagToPropertyScopeType(const std::string& _name);
 
-        ERequirementType TagToRequirementType(const std::string& _name);
+        CTopoRequirement::EType TagToRequirementType(const std::string& _name);
 
-        std::string RequirementTypeToTag(ERequirementType _type);
+        std::string RequirementTypeToTag(CTopoRequirement::EType _type);
 
-        EConditionType TagToConditionType(const std::string& _name);
+        CTopoTrigger::EConditionType TagToConditionType(const std::string& _name);
 
-        std::string ConditionTypeToTag(EConditionType _type);
+        std::string ConditionTypeToTag(CTopoTrigger::EConditionType _type);
 
-        EActionType TagToActionType(const std::string& _name);
+        CTopoTrigger::EActionType TagToActionType(const std::string& _name);
 
-        std::string ActionTypeToTag(EActionType _type);
+        std::string ActionTypeToTag(CTopoTrigger::EActionType _type);
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__TopoUtils__) */

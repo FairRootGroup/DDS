@@ -16,7 +16,7 @@ using namespace topology_api;
 
 CTopoBase::CTopoBase()
     : m_id("")
-    , m_type(ETopoType::TOPO_BASE)
+    , m_type(CTopoBase::EType::TOPO_BASE)
     , m_parent(nullptr)
 {
 }
@@ -25,7 +25,7 @@ CTopoBase::~CTopoBase()
 {
 }
 
-void CTopoBase::setType(ETopoType _type)
+void CTopoBase::setType(CTopoBase::EType _type)
 {
     m_type = _type;
 }
@@ -45,7 +45,7 @@ string CTopoBase::getId() const
     return m_id;
 }
 
-ETopoType CTopoBase::getType() const
+CTopoBase::EType CTopoBase::getType() const
 {
     return m_type;
 }
@@ -67,12 +67,7 @@ string CTopoBase::getPath() const
     }
 }
 
-CTopoIndex CTopoBase::getIndex() const
-{
-    return CTopoIndex(getPath());
-}
-
-const ptree& CTopoBase::findElement(ETopoType _type, const string& _name, const ptree& _pt)
+const ptree& CTopoBase::findElement(CTopoBase::EType _type, const string& _name, const ptree& _pt)
 {
     const ptree* result = nullptr;
     for (const auto& v : _pt)

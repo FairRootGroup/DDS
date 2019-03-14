@@ -19,7 +19,7 @@ CTopoVars::CTopoVars()
     : CTopoBase()
     , m_map()
 {
-    setType(ETopoType::TOPO_VARS);
+    setType(CTopoBase::EType::TOPO_VARS);
 }
 
 CTopoVars::~CTopoVars()
@@ -40,7 +40,7 @@ void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::prop
         for (const auto& v : pt)
         {
             const auto& elementPT = v.second;
-            if (v.first == TopoTypeToDeclTag(ETopoType::TOPO_VARS))
+            if (v.first == TopoTypeToDeclTag(CTopoBase::EType::TOPO_VARS))
             {
                 m_map[elementPT.get<string>("<xmlattr>.id")] = elementPT.get<string>("<xmlattr>.value");
             }

@@ -4,7 +4,7 @@
 //
 
 // DDS
-#include "TaskGroup.h"
+#include "TopoGroup.h"
 #include "TopoFactory.h"
 #include "TopoUtils.h"
 // STD
@@ -15,23 +15,23 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTaskGroup::CTaskGroup()
-    : CTaskContainer()
+CTopoGroup::CTopoGroup()
+    : CTopoContainer()
     , m_n(1)
 {
-    setType(ETopoType::GROUP);
+    setType(CTopoBase::EType::GROUP);
 }
 
-CTaskGroup::~CTaskGroup()
+CTopoGroup::~CTopoGroup()
 {
 }
 
-size_t CTaskGroup::getNofTasks() const
+size_t CTopoGroup::getNofTasks() const
 {
     return getNofTasksDefault();
 }
 
-size_t CTaskGroup::getTotalNofTasks() const
+size_t CTopoGroup::getTotalNofTasks() const
 {
     const auto& elements = getElements();
     size_t counter = 0;
@@ -42,12 +42,13 @@ size_t CTaskGroup::getTotalNofTasks() const
     return counter;
 }
 
-void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTopoGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
         const ptree& mainPT = _pt.get_child("topology.main");
-        const ptree& groupPT = (_name == "main") ? mainPT : CTopoElement::findElement(ETopoType::GROUP, _name, mainPT);
+        const ptree& groupPT =
+            (_name == "main") ? mainPT : CTopoElement::findElement(CTopoBase::EType::GROUP, _name, mainPT);
 
         setId(groupPT.get<string>("<xmlattr>.id"));
         setN(groupPT.get<size_t>("<xmlattr>.n", 1));
@@ -56,7 +57,7 @@ void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             if (element.first == "<xmlattr>")
                 continue;
-            TopoElementPtr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
+            CTopoElement::Ptr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
             newElement->setParent(this);
             boost::optional<const ptree&> child = element.second.get_child_optional("<xmlattr>");
             string name = (child) ? child.get().get<string>("id") : element.second.data();
@@ -70,59 +71,36 @@ void CTaskGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
     }
 }
 
-size_t CTaskGroup::getN() const
+size_t CTopoGroup::getN() const
 {
     return m_n;
 }
 
-void CTaskGroup::setN(size_t _n)
+void CTopoGroup::setN(size_t _n)
 {
     m_n = _n;
 }
 
-TopoElementPtrVector_t CTaskGroup::getElementsByType(ETopoType _type) const
+CTopoElement::PtrVector_t CTopoGroup::getElementsByType(CTopoBase::EType _type) const
 {
     const auto& elements = getElements();
-    TopoElementPtrVector_t result;
+    CTopoElement::PtrVector_t result;
     for (const auto& v : elements)
     {
         if (v->getType() == _type)
         {
             result.push_back(v);
         }
-        else if (v->getType() == ETopoType::GROUP)
+        else if (v->getType() == CTopoBase::EType::GROUP)
         {
-            TopoElementPtrVector_t groupElements = dynamic_pointer_cast<CTaskGroup>(v)->getElementsByType(_type);
+            CTopoElement::PtrVector_t groupElements = dynamic_pointer_cast<CTopoGroup>(v)->getElementsByType(_type);
             result.insert(result.end(), groupElements.begin(), groupElements.end());
         }
     }
     return result;
 }
 
-TopoIndexVector_t CTaskGroup::getTopoIndicesByType(ETopoType _type) const
-{
-    TopoIndexVector_t result;
-    const auto& elements = getElements();
-    for (const auto& v : elements)
-    {
-        if (v->getType() == _type)
-        {
-            result.push_back(v->getIndex());
-        }
-        else if (v->getType() == ETopoType::GROUP)
-        {
-            TopoElementPtrVector_t groupElements = dynamic_pointer_cast<CTaskGroup>(v)->getElementsByType(_type);
-            for (const auto& v : groupElements)
-            {
-                result.push_back(v->getIndex());
-            }
-        }
-    }
-
-    return result;
-}
-
-string CTaskGroup::toString() const
+string CTopoGroup::toString() const
 {
     stringstream ss;
     ss << "TaskGroup: m_id=" << getId() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
@@ -134,7 +112,7 @@ string CTaskGroup::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const CTaskGroup& _taskContainer)
+ostream& operator<<(ostream& _strm, const CTopoGroup& _taskContainer)
 {
     _strm << _taskContainer.toString();
     return _strm;

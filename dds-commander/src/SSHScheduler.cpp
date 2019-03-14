@@ -77,16 +77,16 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     // Collect all tasks that belong to collections
     set<uint64_t> tasksInCollections;
     CollectionMap_t collectionMap;
-    TaskCollectionInfoIteratorPair_t collections = _topology.getTaskCollectionInfoIterator();
+    STopoRuntimeCollection::FilterIteratorPair_t collections = _topology.getRuntimeCollectionIterator();
     for (auto it = collections.first; it != collections.second; it++)
     {
         // Only collections that were added has to be scheduled
         if (_addedCollections != nullptr && _addedCollections->find(it->first) == _addedCollections->end())
             continue;
 
-        const auto& taskMap = it->second.m_hashToTaskInfoMap;
+        const auto& taskMap = it->second.m_hashToRuntimeTaskMap;
         boost::copy(taskMap | boost::adaptors::map_keys, std::inserter(tasksInCollections, tasksInCollections.end()));
-        collectionMap[it->second.m_hashToTaskInfoMap.size()].push_back(it->first);
+        collectionMap[it->second.m_hashToRuntimeTaskMap.size()].push_back(it->first);
     }
 
     set<uint64_t> scheduledTasks;
@@ -118,7 +118,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
                                   bool useRequirement,
                                   const CTopology::HashSet_t* _addedTasks)
 {
-    TaskInfoIteratorPair_t tasks = _topology.getTaskInfoIterator();
+    STopoRuntimeTask::FilterIteratorPair_t tasks = _topology.getRuntimeTaskIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
     {
         uint64_t id = it->first;
@@ -135,7 +135,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
         if (_scheduledTasks.find(id) != _scheduledTasks.end())
             continue;
 
-        TaskPtr_t task = it->second.m_task;
+        CTopoTask::Ptr_t task = it->second.m_task;
 
         // First path only for tasks with requirements;
         // Second path for tasks without requirements.
@@ -149,7 +149,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
             throw runtime_error(ss.str());
         }
 
-        RequirementPtr_t requirement = (task->getNofRequirements() == 1) ? task->getRequirements()[0] : nullptr;
+        CTopoRequirement::Ptr_t requirement = (task->getNofRequirements() == 1) ? task->getRequirements()[0] : nullptr;
         if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
             continue;
 
@@ -203,7 +203,7 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
     {
         for (auto id : it_col.second)
         {
-            const STaskCollectionInfo& collectionInfo = _topology.getTaskCollectionInfoByHash(id);
+            const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionByHash(id);
 
             // First path only for collections with requirements;
             // Second path for collections without requirements.
@@ -218,9 +218,9 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                 throw runtime_error(ss.str());
             }
 
-            RequirementPtr_t requirement = (collectionInfo.m_collection->getNofRequirements() == 1)
-                                               ? collectionInfo.m_collection->getRequirements()[0]
-                                               : nullptr;
+            CTopoRequirement::Ptr_t requirement = (collectionInfo.m_collection->getNofRequirements() == 1)
+                                                      ? collectionInfo.m_collection->getRequirements()[0]
+                                                      : nullptr;
             if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
                 continue;
 
@@ -231,11 +231,11 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                 const bool requirementOk = checkRequirement(requirement, useRequirement, v.first.first, v.first.second);
                 if ((v.second.size() >= collectionInfo.m_collection->getNofTasks()) && requirementOk)
                 {
-                    const STaskCollectionInfo& collectionInfo = _topology.getTaskCollectionInfoByHash(id);
+                    const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionByHash(id);
 
-                    for (auto taskIt : collectionInfo.m_hashToTaskInfoMap)
+                    for (auto taskIt : collectionInfo.m_hashToRuntimeTaskMap)
                     {
-                        const STaskInfo& info = taskIt.second;
+                        const STopoRuntimeTask& info = taskIt.second;
 
                         size_t channelIndex = v.second.back();
                         const auto& channel = _channels[channelIndex];
@@ -267,12 +267,12 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
     }
 }
 
-bool CSSHScheduler::checkRequirement(RequirementPtr_t _requirement,
+bool CSSHScheduler::checkRequirement(CTopoRequirement::Ptr_t _requirement,
                                      bool _useRequirement,
                                      const string& _hostName,
                                      const string& _wnName) const
 {
-    if (_useRequirement && (_requirement->getRequirementType() == ERequirementType::WnName) && _wnName.empty())
+    if (_useRequirement && (_requirement->getRequirementType() == CTopoRequirement::EType::WnName) && _wnName.empty())
     {
         LOG(warning) << "Requirement of type WnName is not supported for this RMS plug-in. Requirement: "
                      << _requirement->toString();
@@ -282,7 +282,7 @@ bool CSSHScheduler::checkRequirement(RequirementPtr_t _requirement,
            (_useRequirement &&
             CSSHScheduler::hostPatternMatches(
                 _requirement->getValue(),
-                (_requirement->getRequirementType() == ERequirementType::HostName) ? _hostName : _wnName));
+                (_requirement->getRequirementType() == CTopoRequirement::EType::HostName) ? _hostName : _wnName));
 }
 
 const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const

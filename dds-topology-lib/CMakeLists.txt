@@ -11,16 +11,15 @@ set(SOURCE_FILES
 	src/TopoUtils.cpp
 	src/TopoFactory.cpp
 	src/Topology.cpp
-	src/Task.cpp
-	src/TaskCollection.cpp
-	src/TaskGroup.cpp
+	src/TopoTask.cpp
+	src/TopoCollection.cpp
+	src/TopoGroup.cpp
 	src/TopoElement.cpp
-	src/TaskContainer.cpp
+	src/TopoContainer.cpp
 	src/TopologyParserXML.cpp
-	src/TopoIndex.cpp
-  src/Requirement.cpp
-  src/TopoVars.cpp
-	src/Trigger.cpp
+    src/TopoRequirement.cpp
+    src/TopoVars.cpp
+	src/TopoTrigger.cpp
 )
 
 set(HEADER_FILES
@@ -29,16 +28,15 @@ set(HEADER_FILES
 	src/TopoUtils.h
 	src/TopoFactory.h
 	src/Topology.h
-	src/Task.h
-	src/TaskCollection.h
-	src/TaskGroup.h
+	src/TopoTask.h
+	src/TopoCollection.h
+	src/TopoGroup.h
 	src/TopoElement.h
-	src/TaskContainer.h
+	src/TopoContainer.h
 	src/TopologyParserXML.h
-	src/TopoIndex.h
-  src/Requirement.h
-  src/TopoVars.h
-	src/Trigger.h
+    src/TopoRequirement.h
+    src/TopoVars.h
+	src/TopoTrigger.h
 )
 
 # add_executable(dds_topology_lib ${SOURCE_FILES} ${HEADER_FILES})

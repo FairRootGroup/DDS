@@ -4,7 +4,7 @@
 //
 
 // DDS
-#include "Requirement.h"
+#include "TopoRequirement.h"
 #include "TopoUtils.h"
 // STD
 #include <boost/regex.hpp>
@@ -15,43 +15,44 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CRequirement::CRequirement()
+CTopoRequirement::CTopoRequirement()
     : CTopoBase()
     , m_value()
-    , m_requirementType(ERequirementType::HostName)
+    , m_requirementType(CTopoRequirement::EType::HostName)
 {
-    setType(ETopoType::REQUIREMENT);
+    setType(CTopoBase::EType::REQUIREMENT);
 }
 
-CRequirement::~CRequirement()
+CTopoRequirement::~CTopoRequirement()
 {
 }
 
-const std::string& CRequirement::getValue() const
+const std::string& CTopoRequirement::getValue() const
 {
     return m_value;
 }
 
-ERequirementType CRequirement::getRequirementType() const
+CTopoRequirement::EType CTopoRequirement::getRequirementType() const
 {
     return m_requirementType;
 }
 
-void CRequirement::setValue(const std::string& _value)
+void CTopoRequirement::setValue(const std::string& _value)
 {
     m_value = _value;
 }
 
-void CRequirement::setRequirementType(ERequirementType _requirementType)
+void CTopoRequirement::setRequirementType(CTopoRequirement::EType _requirementType)
 {
     m_requirementType = _requirementType;
 }
 
-void CRequirement::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void CTopoRequirement::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
 {
     try
     {
-        const ptree& requirementPT = CTopoBase::findElement(ETopoType::REQUIREMENT, _name, _pt.get_child("topology"));
+        const ptree& requirementPT =
+            CTopoBase::findElement(CTopoBase::EType::REQUIREMENT, _name, _pt.get_child("topology"));
         setId(requirementPT.get<string>("<xmlattr>.id"));
         setValue(requirementPT.get<std::string>("<xmlattr>.value", ""));
         setRequirementType(TagToRequirementType(requirementPT.get<std::string>("<xmlattr>.type", "")));
@@ -62,7 +63,7 @@ void CRequirement::initFromPropertyTree(const std::string& _name, const boost::p
     }
 }
 
-string CRequirement::toString() const
+string CTopoRequirement::toString() const
 {
     stringstream ss;
     ss << "DDSRequirement: id=" << getId() << " type=" << RequirementTypeToTag(getRequirementType())
@@ -70,7 +71,7 @@ string CRequirement::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const CRequirement& _requirement)
+ostream& operator<<(ostream& _strm, const CTopoRequirement& _requirement)
 {
     _strm << _requirement.toString();
     return _strm;

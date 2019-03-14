@@ -66,16 +66,10 @@ install(FILES
   topology_test_1_iterators_3.txt
   topology_test_1_iterators_4.txt
   topology_test_1_iterators_5.txt
-  topology_test_1_maps_1.txt
   topology_test_1_maps_2.txt
   topology_test_1_maps_3.txt
-  topology_test_1_maps_4.txt
-  topology_test_1_maps_5.txt
-  topology_test_7_maps_1.txt
   topology_test_7_maps_2.txt
   topology_test_7_maps_3.txt
-  topology_test_7_maps_4.txt
-  topology_test_7_maps_5.txt
   topology_test_diff.txt
   topology_test_property_1.xml
   topology_test_property_2.xml

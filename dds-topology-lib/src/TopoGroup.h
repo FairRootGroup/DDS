@@ -3,24 +3,27 @@
 //
 //
 
-#ifndef DDS_TaskGroup_h
-#define DDS_TaskGroup_h
+#ifndef DDS_TopoGroup_h
+#define DDS_TopoGroup_h
 // DDS
-#include "TaskContainer.h"
-#include "TopoIndex.h"
+#include "TopoContainer.h"
 
 namespace dds
 {
     namespace topology_api
     {
-        class CTaskGroup : public CTaskContainer
+        class CTopoGroup : public CTopoContainer
         {
           public:
+            typedef std::shared_ptr<CTopoGroup> Ptr_t;
+            typedef std::vector<CTopoGroup::Ptr_t> PtrVector_t;
+
+          public:
             /// \brief Constructor.
-            CTaskGroup();
+            CTopoGroup();
 
             /// \brief Destructor.
-            virtual ~CTaskGroup();
+            virtual ~CTopoGroup();
 
             /// \brief Inherited from TopoElement.
             virtual size_t getNofTasks() const;
@@ -35,9 +38,7 @@ namespace dds
 
             void setN(size_t _n);
 
-            TopoElementPtrVector_t getElementsByType(ETopoType _type) const;
-
-            TopoIndexVector_t getTopoIndicesByType(ETopoType _type) const;
+            CTopoElement::PtrVector_t getElementsByType(CTopoBase::EType _type) const;
 
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
@@ -46,14 +47,11 @@ namespace dds
             /// \brief Operator << for convenient output to ostream.
             /// \return Insertion stream in order to be able to call a succession of
             /// insertion operations.
-            friend std::ostream& operator<<(std::ostream& _strm, const CTaskGroup& _taskContainer);
+            friend std::ostream& operator<<(std::ostream& _strm, const CTopoGroup& _taskContainer);
 
           private:
             size_t m_n; ///< Number of times this group has to be executed
         };
-
-        typedef std::shared_ptr<CTaskGroup> TaskGroupPtr_t;
-        // typedef std::vector<CTaskGroupPtr_t> TaskGroupPtrVector_t;
     } // namespace topology_api
 } // namespace dds
 #endif

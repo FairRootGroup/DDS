@@ -4,10 +4,10 @@
 //
 
 // DDS
-#include "TaskContainer.h"
-#include "Task.h"
-#include "TaskCollection.h"
-#include "TaskGroup.h"
+#include "TopoContainer.h"
+#include "TopoCollection.h"
+#include "TopoGroup.h"
+#include "TopoTask.h"
 // STD
 #include <memory>
 #include <sstream>
@@ -20,44 +20,44 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTaskContainer::CTaskContainer()
+CTopoContainer::CTopoContainer()
     : CTopoElement()
     , m_elements()
 {
 }
 
-CTaskContainer::~CTaskContainer()
+CTopoContainer::~CTopoContainer()
 {
 }
 
-size_t CTaskContainer::getNofElements() const
+size_t CTopoContainer::getNofElements() const
 {
     return m_elements.size();
 }
 
-TopoElementPtr_t CTaskContainer::getElement(size_t _i) const
+CTopoElement::Ptr_t CTopoContainer::getElement(size_t _i) const
 {
     if (_i >= getNofElements())
         throw std::out_of_range("Out of range exception");
     return m_elements[_i];
 }
 
-const TopoElementPtrVector_t& CTaskContainer::getElements() const
+const CTopoElement::PtrVector_t& CTopoContainer::getElements() const
 {
     return m_elements;
 }
 
-void CTaskContainer::setElements(const TopoElementPtrVector_t& _elements)
+void CTopoContainer::setElements(const CTopoElement::PtrVector_t& _elements)
 {
     m_elements = _elements;
 }
 
-void CTaskContainer::addElement(TopoElementPtr_t _element)
+void CTopoContainer::addElement(CTopoElement::Ptr_t _element)
 {
     m_elements.push_back(_element);
 }
 
-size_t CTaskContainer::getNofTasksDefault() const
+size_t CTopoContainer::getNofTasksDefault() const
 {
     const auto& elements = getElements();
     size_t counter = 0;
@@ -68,7 +68,7 @@ size_t CTaskContainer::getNofTasksDefault() const
     return counter;
 }
 
-string CTaskContainer::toString() const
+string CTopoContainer::toString() const
 {
     stringstream ss;
     ss << "TaskContainer: m_id=" << getId() << " nofElements=" << getNofElements() << " elements:\n";
@@ -79,7 +79,7 @@ string CTaskContainer::toString() const
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const CTaskContainer& _taskContainer)
+ostream& operator<<(ostream& _strm, const CTopoContainer& _taskContainer)
 {
     _strm << _taskContainer.toString();
     return _strm;

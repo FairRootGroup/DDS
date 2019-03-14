@@ -17,10 +17,10 @@ using namespace topology_api;
 CTopoProperty::CTopoProperty()
     : CTopoBase()
     , m_value()
-    , m_accessType(EPropertyAccessType::READWRITE)
-    , m_scopeType(EPropertyScopeType::GLOBAL)
+    , m_accessType(CTopoProperty::EAccessType::READWRITE)
+    , m_scopeType(CTopoProperty::EScopeType::GLOBAL)
 {
-    setType(ETopoType::TOPO_PROPERTY);
+    setType(CTopoBase::EType::TOPO_PROPERTY);
 }
 
 CTopoProperty::~CTopoProperty()
@@ -32,7 +32,7 @@ const std::string& CTopoProperty::getValue() const
     return m_value;
 }
 
-EPropertyAccessType CTopoProperty::getAccessType() const
+CTopoProperty::EAccessType CTopoProperty::getAccessType() const
 {
     return m_accessType;
 }
@@ -42,17 +42,17 @@ void CTopoProperty::setValue(const std::string& _value)
     m_value = _value;
 }
 
-void CTopoProperty::setAccessType(EPropertyAccessType _accessType)
+void CTopoProperty::setAccessType(CTopoProperty::EAccessType _accessType)
 {
     m_accessType = _accessType;
 }
 
-EPropertyScopeType CTopoProperty::getScopeType() const
+CTopoProperty::EScopeType CTopoProperty::getScopeType() const
 {
     return m_scopeType;
 }
 
-void CTopoProperty::setScopeType(EPropertyScopeType _scopeType)
+void CTopoProperty::setScopeType(CTopoProperty::EScopeType _scopeType)
 {
     m_scopeType = _scopeType;
 }
@@ -61,7 +61,8 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
 {
     try
     {
-        const ptree& propertyPT = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
+        const ptree& propertyPT =
+            CTopoBase::findElement(CTopoBase::EType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
         setId(propertyPT.get<string>("<xmlattr>.id"));
 
         boost::optional<const ptree&> childScope = propertyPT.get_child_optional("<xmlattr>.scope");

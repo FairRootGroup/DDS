@@ -19,6 +19,9 @@ namespace dds
         class CTopoVars : public CTopoBase
         {
           public:
+            typedef std::shared_ptr<CTopoVars> Ptr_t;
+
+          public:
             typedef std::map<std::string, std::string> varMap_t;
 
             /// \brief Constructor.
@@ -44,8 +47,6 @@ namespace dds
           private:
             varMap_t m_map; ///< Key-Value storage of variables
         };
-
-        typedef std::shared_ptr<CTopoVars> TopoVarsPtr_t;
     } // namespace topology_api
 } // namespace dds
 

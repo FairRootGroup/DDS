@@ -19,23 +19,28 @@ namespace dds
 {
     namespace topology_api
     {
-        enum class EPropertyAccessType
-        {
-            READ,
-            WRITE,
-            READWRITE
-        };
-
-        enum class EPropertyScopeType
-        {
-            GLOBAL,
-            COLLECTION
-        };
-
         /// \class TopoProperty
         /// \brief Data class to hold topology property.
         class CTopoProperty : public CTopoBase
         {
+          public:
+            enum class EAccessType
+            {
+                READ,
+                WRITE,
+                READWRITE
+            };
+
+            enum class EScopeType
+            {
+                GLOBAL,
+                COLLECTION
+            };
+
+            typedef std::shared_ptr<CTopoProperty> Ptr_t;
+            // Property ID --> Ptr
+            typedef std::map<std::string, CTopoProperty::Ptr_t> PtrMap_t;
+
           public:
             /// \brief Constructor.
             CTopoProperty();
@@ -48,10 +53,10 @@ namespace dds
 
             const std::string& getValue() const;
             void setValue(const std::string& _value);
-            EPropertyAccessType getAccessType() const;
-            void setAccessType(EPropertyAccessType _accessType);
-            EPropertyScopeType getScopeType() const;
-            void setScopeType(EPropertyScopeType _scopeType);
+            CTopoProperty::EAccessType getAccessType() const;
+            void setAccessType(CTopoProperty::EAccessType _accessType);
+            CTopoProperty::EScopeType getScopeType() const;
+            void setScopeType(CTopoProperty::EScopeType _scopeType);
 
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
@@ -63,14 +68,10 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoProperty& _property);
 
           private:
-            std::string m_value;              ///< Property value
-            EPropertyAccessType m_accessType; ///< Property access type
-            EPropertyScopeType m_scopeType;   ///< Property scope type
+            std::string m_value;                     ///< Property value
+            CTopoProperty::EAccessType m_accessType; ///< Property access type
+            CTopoProperty::EScopeType m_scopeType;   ///< Property scope type
         };
-
-        typedef std::shared_ptr<CTopoProperty> TopoPropertyPtr_t;
-        // Property ID --> Ptr
-        typedef std::map<std::string, TopoPropertyPtr_t> TopoPropertyPtrMap_t;
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__TopoProperty__) */

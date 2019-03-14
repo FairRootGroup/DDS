@@ -18,6 +18,10 @@ namespace dds
         class CTopoElement : public CTopoBase
         {
           public:
+            typedef std::shared_ptr<CTopoElement> Ptr_t;
+            typedef std::vector<CTopoElement::Ptr_t> PtrVector_t;
+
+          public:
             /// \brief Return number of all tasks including daughter elements.
             virtual size_t getNofTasks() const = 0;
 
@@ -38,9 +42,6 @@ namespace dds
           private:
             std::string m_path; // Full path to element, including element name
         };
-
-        typedef std::shared_ptr<CTopoElement> TopoElementPtr_t;
-        typedef std::vector<TopoElementPtr_t> TopoElementPtrVector_t;
     } // namespace topology_api
 } // namespace dds
 #endif /* defined(__DDS__TopoElement__) */

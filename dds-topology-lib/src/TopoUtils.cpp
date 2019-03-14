@@ -13,169 +13,169 @@ namespace dds
 {
     namespace topology_api
     {
-        string TopoTypeToUseTag(ETopoType _type)
+        string TopoTypeToUseTag(CTopoBase::EType _type)
         {
             switch (_type)
             {
-                case ETopoType::TASK:
+                case CTopoBase::EType::TASK:
                     return "task";
-                case ETopoType::COLLECTION:
+                case CTopoBase::EType::COLLECTION:
                     return "collection";
-                case ETopoType::GROUP:
+                case CTopoBase::EType::GROUP:
                     return "group";
-                case ETopoType::TOPO_PROPERTY:
+                case CTopoBase::EType::TOPO_PROPERTY:
                     return "property";
-                case ETopoType::REQUIREMENT:
+                case CTopoBase::EType::REQUIREMENT:
                     return "requirement";
-                case ETopoType::TRIGGER:
+                case CTopoBase::EType::TRIGGER:
                     return "trigger";
                 default:
                     throw runtime_error("Topology element not found.");
             }
         }
 
-        ETopoType UseTagToTopoType(const string& _name)
+        CTopoBase::EType UseTagToTopoType(const string& _name)
         {
             if (_name == "task")
-                return ETopoType::TASK;
+                return CTopoBase::EType::TASK;
             else if (_name == "collection")
-                return ETopoType::COLLECTION;
+                return CTopoBase::EType::COLLECTION;
             else if (_name == "group")
-                return ETopoType::GROUP;
+                return CTopoBase::EType::GROUP;
             else if (_name == "property")
-                return ETopoType::TOPO_PROPERTY;
+                return CTopoBase::EType::TOPO_PROPERTY;
             else if (_name == "requirement")
-                return ETopoType::REQUIREMENT;
+                return CTopoBase::EType::REQUIREMENT;
             else if (_name == "trigger")
-                return ETopoType::TRIGGER;
+                return CTopoBase::EType::TRIGGER;
             else
                 throw runtime_error("Topology element with name " + _name + " does not exist.");
         }
 
-        string TopoTypeToDeclTag(ETopoType _type)
+        string TopoTypeToDeclTag(CTopoBase::EType _type)
         {
             switch (_type)
             {
-                case ETopoType::TASK:
+                case CTopoBase::EType::TASK:
                     return "decltask";
-                case ETopoType::COLLECTION:
+                case CTopoBase::EType::COLLECTION:
                     return "declcollection";
-                case ETopoType::GROUP:
+                case CTopoBase::EType::GROUP:
                     return "group";
-                case ETopoType::TOPO_PROPERTY:
+                case CTopoBase::EType::TOPO_PROPERTY:
                     return "property";
-                case ETopoType::REQUIREMENT:
+                case CTopoBase::EType::REQUIREMENT:
                     return "declrequirement";
-                case ETopoType::TOPO_VARS:
+                case CTopoBase::EType::TOPO_VARS:
                     return "var";
-                case ETopoType::TRIGGER:
+                case CTopoBase::EType::TRIGGER:
                     return "decltrigger";
                 default:
                     throw runtime_error("Topology element not found.");
             }
         }
 
-        ETopoType DeclTagToTopoType(const string& _name)
+        CTopoBase::EType DeclTagToTopoType(const string& _name)
         {
             if (_name == "decltask")
-                return ETopoType::TASK;
+                return CTopoBase::EType::TASK;
             else if (_name == "declcollection")
-                return ETopoType::COLLECTION;
+                return CTopoBase::EType::COLLECTION;
             else if (_name == "group")
-                return ETopoType::GROUP;
+                return CTopoBase::EType::GROUP;
             else if (_name == "property")
-                return ETopoType::TOPO_PROPERTY;
+                return CTopoBase::EType::TOPO_PROPERTY;
             else if (_name == "declrequirement")
-                return ETopoType::REQUIREMENT;
+                return CTopoBase::EType::REQUIREMENT;
             else if (_name == "var")
-                return ETopoType::TOPO_VARS;
+                return CTopoBase::EType::TOPO_VARS;
             else if (_name == "decltrigger")
-                return ETopoType::TRIGGER;
+                return CTopoBase::EType::TRIGGER;
             else
                 throw runtime_error("Topology element with name " + _name + " does not exist.");
         }
 
-        EPropertyAccessType TagToPropertyAccessType(const string& _name)
+        CTopoProperty::EAccessType TagToPropertyAccessType(const string& _name)
         {
             if (_name == "read")
-                return EPropertyAccessType::READ;
+                return CTopoProperty::EAccessType::READ;
             if (_name == "write")
-                return EPropertyAccessType::WRITE;
+                return CTopoProperty::EAccessType::WRITE;
             if (_name == "readwrite")
-                return EPropertyAccessType::READWRITE;
+                return CTopoProperty::EAccessType::READWRITE;
             else
                 throw runtime_error("Property access type with name " + _name + " does not exist.");
         }
 
-        EPropertyScopeType TagToPropertyScopeType(const std::string& _name)
+        CTopoProperty::EScopeType TagToPropertyScopeType(const std::string& _name)
         {
             if (_name == "collection")
-                return EPropertyScopeType::COLLECTION;
+                return CTopoProperty::EScopeType::COLLECTION;
             if (_name == "global")
-                return EPropertyScopeType::GLOBAL;
+                return CTopoProperty::EScopeType::GLOBAL;
             else
                 throw runtime_error("Property scope type with name " + _name + " does not exist.");
         }
 
-        ERequirementType TagToRequirementType(const string& _name)
+        CTopoRequirement::EType TagToRequirementType(const string& _name)
         {
             if (_name == "wnname")
-                return ERequirementType::WnName;
+                return CTopoRequirement::EType::WnName;
             if (_name == "hostname")
-                return ERequirementType::HostName;
+                return CTopoRequirement::EType::HostName;
             if (_name == "gpu")
-                return ERequirementType::Gpu;
+                return CTopoRequirement::EType::Gpu;
             else
                 throw runtime_error("Host pattern type with name " + _name + " does not exist.");
         }
 
-        std::string RequirementTypeToTag(ERequirementType _type)
+        std::string RequirementTypeToTag(CTopoRequirement::EType _type)
         {
             switch (_type)
             {
-                case ERequirementType::WnName:
+                case CTopoRequirement::EType::WnName:
                     return "WnName";
-                case ERequirementType::HostName:
+                case CTopoRequirement::EType::HostName:
                     return "HostName";
-                case ERequirementType::Gpu:
+                case CTopoRequirement::EType::Gpu:
                     return "Gpu";
                 default:
                     throw runtime_error("Topology element not found.");
             }
         }
 
-        EConditionType TagToConditionType(const std::string& _name)
+        CTopoTrigger::EConditionType TagToConditionType(const std::string& _name)
         {
             if (_name == "TaskCrashed")
-                return EConditionType::TaskCrashed;
+                return CTopoTrigger::EConditionType::TaskCrashed;
             else
                 throw runtime_error("Condition type with name " + _name + " does not exist.");
         }
 
-        std::string ConditionTypeToTag(EConditionType _type)
+        std::string ConditionTypeToTag(CTopoTrigger::EConditionType _type)
         {
             switch (_type)
             {
-                case EConditionType::TaskCrashed:
+                case CTopoTrigger::EConditionType::TaskCrashed:
                     return "TaskCrashed";
                 default:
                     throw runtime_error("Topology element not found.");
             }
         }
 
-        EActionType TagToActionType(const std::string& _name)
+        CTopoTrigger::EActionType TagToActionType(const std::string& _name)
         {
             if (_name == "RestartTask")
-                return EActionType::RestartTask;
+                return CTopoTrigger::EActionType::RestartTask;
             else
                 throw runtime_error("Action type with name " + _name + " does not exist.");
         }
 
-        std::string ActionTypeToTag(EActionType _type)
+        std::string ActionTypeToTag(CTopoTrigger::EActionType _type)
         {
             switch (_type)
             {
-                case EActionType::RestartTask:
+                case CTopoTrigger::EActionType::RestartTask:
                     return "RestartTask";
                 default:
                     throw runtime_error("Topology element not found.");

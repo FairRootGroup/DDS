@@ -3,8 +3,8 @@
 //
 //
 
-#ifndef __DDS__Trigger__
-#define __DDS__Trigger__
+#ifndef __DDS__TopoTrigger__
+#define __DDS__TopoTrigger__
 
 // DDS
 #include "TopoBase.h"
@@ -15,28 +15,32 @@ namespace dds
 {
     namespace topology_api
     {
-        enum class EConditionType
-        {
-            None,
-            TaskCrashed
-        };
-
-        enum class EActionType
-        {
-            None,
-            RestartTask
-        };
-
         /// \class CTrigger
         /// \brief Data class to hold task trigger.
-        class CTrigger : public CTopoBase
+        class CTopoTrigger : public CTopoBase
         {
           public:
+            enum class EConditionType
+            {
+                None,
+                TaskCrashed
+            };
+
+            enum class EActionType
+            {
+                None,
+                RestartTask
+            };
+
+            typedef std::shared_ptr<CTopoTrigger> Ptr_t;
+            typedef std::vector<CTopoTrigger::Ptr_t> PtrVector_t;
+
+          public:
             /// \brief Constructor.
-            CTrigger();
+            CTopoTrigger();
 
             /// \brief Destructor.
-            virtual ~CTrigger();
+            virtual ~CTopoTrigger();
 
             /// \brief Inherited from TopoBase
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
@@ -56,17 +60,14 @@ namespace dds
             /// \brief Operator << for convenient output to ostream.
             /// \return Insertion stream in order to be able to call a succession of
             /// insertion operations.
-            friend std::ostream& operator<<(std::ostream& _strm, const CTrigger& _trigger);
+            friend std::ostream& operator<<(std::ostream& _strm, const CTopoTrigger& _trigger);
 
           private:
             EActionType m_action;       ///< Action to be taken
             EConditionType m_condition; ///< Condition to fire the trigger
             std::string m_argument;     ///< Arguments string for action
         };
-
-        typedef std::shared_ptr<CTrigger> TriggerPtr_t;
-        typedef std::vector<TriggerPtr_t> TriggerPtrVector_t;
     } // namespace topology_api
 } // namespace dds
 
-#endif /* defined(__DDS__Trigger__) */
+#endif /* defined(__DDS__TopoTrigger__) */

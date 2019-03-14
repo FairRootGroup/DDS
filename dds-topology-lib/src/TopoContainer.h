@@ -3,8 +3,8 @@
 //
 //
 
-#ifndef __DDS__TaskContainer__
-#define __DDS__TaskContainer__
+#ifndef __DDS__TopoContainer__
+#define __DDS__TopoContainer__
 
 // DDS
 #include "TopoElement.h"
@@ -17,8 +17,12 @@ namespace dds
 {
     namespace topology_api
     {
-        class CTaskContainer : public CTopoElement
+        class CTopoContainer : public CTopoElement
         {
+          public:
+            typedef std::shared_ptr<CTopoContainer> Ptr_t;
+            typedef std::vector<CTopoContainer::Ptr_t> PtrVector_t;
+
           public:
             /// \brief Return number of elements.
             /// \return Number of elements.
@@ -27,15 +31,15 @@ namespace dds
             /// \brief Return topology element by index.
             /// \return Topology element by index.
             /// \throw std::out_of_range
-            TopoElementPtr_t getElement(size_t _i) const;
+            CTopoElement::Ptr_t getElement(size_t _i) const;
 
             /// \brief Return vector of elements.
             /// \return Vector of elements.
-            const TopoElementPtrVector_t& getElements() const;
+            const CTopoElement::PtrVector_t& getElements() const;
 
-            void setElements(const TopoElementPtrVector_t& _elements);
+            void setElements(const CTopoElement::PtrVector_t& _elements);
 
-            void addElement(TopoElementPtr_t _element);
+            void addElement(CTopoElement::Ptr_t _element);
 
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
@@ -44,25 +48,22 @@ namespace dds
             /// \brief Operator << for convenient output to ostream.
             /// \return Insertion stream in order to be able to call a succession of
             /// insertion operations.
-            friend std::ostream& operator<<(std::ostream& _strm, const CTaskContainer& _taskContainer);
+            friend std::ostream& operator<<(std::ostream& _strm, const CTopoContainer& _taskContainer);
 
           protected:
             /// \brief Constructor.
-            CTaskContainer();
+            CTopoContainer();
 
             /// \brief Destructor.
-            virtual ~CTaskContainer();
+            virtual ~CTopoContainer();
 
             /// \brief Default implementation for TopoElement::getNofTasks, TopoElement::getTotalNofTasks.
             /// Calculate recursively number of tasks in all daughter elements.
             size_t getNofTasksDefault() const;
 
           private:
-            TopoElementPtrVector_t m_elements; ///< Vector of topology elements in collection.
+            CTopoElement::PtrVector_t m_elements; ///< Vector of topology elements in collection.
         };
-
-        typedef std::shared_ptr<CTaskContainer> TaskContainerPtr_t;
-        typedef std::vector<TaskContainerPtr_t> TaskContainerPtrVector_t;
     } // namespace topology_api
 } // namespace dds
-#endif /* defined(__DDS__TaskContainer__) */
+#endif /* defined(__DDS__TopoContainer__) */

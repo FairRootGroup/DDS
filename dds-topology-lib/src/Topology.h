@@ -7,11 +7,10 @@
 #define __DDS__Topology__
 
 // DDS Topo
-#include "Task.h"
-#include "TaskCollection.h"
-#include "TaskGroup.h"
+#include "TopoCollection.h"
 #include "TopoElement.h"
-#include "TopoIndex.h"
+#include "TopoGroup.h"
+#include "TopoTask.h"
 // STD
 #include <map>
 #include <ostream>
@@ -29,10 +28,7 @@ namespace dds
             /// Hash is calculated using CRC64 algorithm.
             typedef std::set<uint64_t> HashSet_t;
 
-            typedef std::map<std::string, TaskPtr_t> HashPathToTaskMap_t;
-            typedef std::map<std::string, TaskCollectionPtr_t> HashPathToTaskCollectionMap_t;
-            typedef std::map<CTopoIndex, TopoElementPtr_t, CompareTopoIndexLess> TopoIndexToTopoElementMap_t;
-
+          public:
             /// \brief Constructor.
             CTopology();
 
@@ -58,28 +54,25 @@ namespace dds
             void setXMLValidationDisabled(bool _val);
 
             /// Accessors
-            TaskGroupPtr_t getMainGroup() const;
-            TopoElementPtr_t getTopoElementByTopoIndex(const CTopoIndex& _index) const;
-            TaskPtr_t getTaskByHash(uint64_t _hash) const;
-            const STaskInfo& getTaskInfoByHash(uint64_t _hash) const;
-            const STaskCollectionInfo& getTaskCollectionInfoByHash(uint64_t _hash) const;
-            TaskPtr_t getTaskByHashPath(const std::string& _hashPath) const;
-
-            /// Accessors to internal data structures. Used for unit tests.
-            const TopoIndexToTopoElementMap_t& getTopoIndexToTopoElementMap() const;
-            const HashToTaskInfoMap_t& getHashToTaskInfoMap() const;
-            const HashToTaskCollectionInfoMap_t& getHashToTaskCollectionInfoMap() const;
-            const HashPathToTaskMap_t& getHashPathToTaskMap() const;
-            const HashPathToTaskCollectionMap_t& getHashPathToTaskCollectionMap() const;
+            CTopoGroup::Ptr_t getMainGroup() const;
+            const STopoRuntimeTask& getRuntimeTaskByHash(uint64_t _hash) const;
+            const STopoRuntimeCollection& getRuntimeCollectionByHash(uint64_t _hash) const;
+            const STopoRuntimeTask& getRuntimeTaskByHashPath(const std::string& _hashPath) const;
+            const STopoRuntimeCollection& getRuntimeCollectionByHashPath(const std::string& _hashPath) const;
 
             /// Iterators
-            TaskInfoIteratorPair_t getTaskInfoIterator(const HashToTaskInfoMap_t& _map,
-                                                       TaskInfoCondition_t _condition) const;
-            TaskInfoIteratorPair_t getTaskInfoIterator(TaskInfoCondition_t _condition = nullptr) const;
-            TaskCollectionInfoIteratorPair_t getTaskCollectionInfoIterator(
-                TaskCollectionInfoCondition_t _condition = nullptr) const;
-            TaskInfoIteratorPair_t getTaskInfoIteratorForPropertyId(const std::string& _propertyId,
-                                                                    uint64_t _taskHash) const;
+            STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIterator(
+                const STopoRuntimeTask::Map_t& _map, STopoRuntimeTask::Condition_t _condition) const;
+            STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIterator(
+                STopoRuntimeTask::Condition_t _condition = nullptr) const;
+            STopoRuntimeCollection::FilterIteratorPair_t getRuntimeCollectionIterator(
+                STopoRuntimeCollection::Condition_t _condition = nullptr) const;
+            STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIteratorForPropertyId(const std::string& _propertyId,
+                                                                                       uint64_t _taskHash) const;
+
+            /// Accessors to internal data structures. Used for unit tests.
+            const STopoRuntimeTask::Map_t& getHashToRuntimeTaskMap() const;
+            const STopoRuntimeCollection::Map_t& getHashToRuntimeCollectionMap() const;
 
             std::string stringOfTasks(const HashSet_t& _ids) const;
             std::string stringOfCollections(const HashSet_t& _ids) const;
@@ -94,27 +87,16 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopology& _topology);
 
           private:
-            void FillTopoIndexToTopoElementMap(const TopoElementPtr_t& _element);
-            void FillHashToTopoElementMap(const TopoElementPtr_t& _element, bool _fillHashPathMaps = false);
+            void FillTopoIndexToTopoElementMap(const CTopoElement::Ptr_t& _element);
+            void FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element);
 
-            uint64_t getNextHashForTask(uint64_t _crc) const;
-            uint64_t getNextHashForTaskCollection(uint64_t _crc) const;
+            CTopoGroup::Ptr_t m_main; ///< Main task group which we run
 
-            TaskGroupPtr_t m_main; ///< Main task group which we run
-
-            TopoIndexToTopoElementMap_t m_topoIndexToTopoElementMap;
-
-            HashToTaskInfoMap_t m_hashToTaskInfoMap;
-            HashToTaskCollectionInfoMap_t m_hashToTaskCollectionInfoMap;
+            STopoRuntimeTask::Map_t m_hashToRuntimeTaskMap;
+            STopoRuntimeCollection::Map_t m_hashToRuntimeCollectionMap;
             std::map<std::string, size_t> m_counterMap;
-            std::string m_currentTaskCollectionHashPath;
-            uint64_t m_currentTaskCollectionCrc;
-
-            // FIXME: Hash path maps has to be removed due to performance reasons.
-            // In any case we do not need them.
-            // For the moment we store them only for tests.
-            HashPathToTaskMap_t m_hashPathToTaskMap;
-            HashPathToTaskCollectionMap_t m_hashPathToTaskCollectionMap;
+            std::string m_currentCollectionHashPath;
+            uint64_t m_currentCollectionCrc;
 
             bool m_bXMLValidationDisabled; ///< if true than XML will not be validated agains XSD
         };

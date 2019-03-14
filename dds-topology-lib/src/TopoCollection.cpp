@@ -4,9 +4,9 @@
 //
 
 // DDS
-#include "TaskCollection.h"
-#include "Task.h"
+#include "TopoCollection.h"
 #include "TopoFactory.h"
+#include "TopoTask.h"
 #include "TopoUtils.h"
 
 using namespace std;
@@ -14,56 +14,57 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTaskCollection::CTaskCollection()
-    : CTaskContainer()
+CTopoCollection::CTopoCollection()
+    : CTopoContainer()
 {
-    setType(ETopoType::COLLECTION);
+    setType(CTopoBase::EType::COLLECTION);
 }
 
-CTaskCollection::~CTaskCollection()
+CTopoCollection::~CTopoCollection()
 {
 }
 
-size_t CTaskCollection::getNofTasks() const
-{
-    return getNofTasksDefault();
-}
-
-size_t CTaskCollection::getTotalNofTasks() const
+size_t CTopoCollection::getNofTasks() const
 {
     return getNofTasksDefault();
 }
 
-size_t CTaskCollection::getTotalCounter() const
+size_t CTopoCollection::getTotalNofTasks() const
+{
+    return getNofTasksDefault();
+}
+
+size_t CTopoCollection::getTotalCounter() const
 {
     return getTotalCounterDefault();
 }
 
-size_t CTaskCollection::getNofRequirements() const
+size_t CTopoCollection::getNofRequirements() const
 {
     return m_requirements.size();
 }
 
-const RequirementPtrVector_t& CTaskCollection::getRequirements() const
+const CTopoRequirement::PtrVector_t& CTopoCollection::getRequirements() const
 {
     return m_requirements;
 }
 
-void CTaskCollection::setRequirement(const RequirementPtrVector_t& _requirements)
+void CTopoCollection::setRequirement(const CTopoRequirement::PtrVector_t& _requirements)
 {
     m_requirements = _requirements;
 }
 
-void CTaskCollection::addRequirement(RequirementPtr_t _requirement)
+void CTopoCollection::addRequirement(CTopoRequirement::Ptr_t _requirement)
 {
     m_requirements.push_back(_requirement);
 }
 
-void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& collectionPT = CTopoElement::findElement(ETopoType::COLLECTION, _name, _pt.get_child("topology"));
+        const ptree& collectionPT =
+            CTopoElement::findElement(CTopoBase::EType::COLLECTION, _name, _pt.get_child("topology"));
 
         setId(collectionPT.get<string>("<xmlattr>.id"));
 
@@ -72,7 +73,7 @@ void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt
         {
             for (const auto& requirement : requirementsPT.get())
             {
-                RequirementPtr_t newRequirement = make_shared<CRequirement>();
+                CTopoRequirement::Ptr_t newRequirement = make_shared<CTopoRequirement>();
                 newRequirement->setParent(this);
                 newRequirement->initFromPropertyTree(requirement.second.data(), _pt);
                 addRequirement(newRequirement);
@@ -84,7 +85,7 @@ void CTaskCollection::initFromPropertyTree(const string& _name, const ptree& _pt
         {
             for (const auto& task : tasksPT.get())
             {
-                TopoElementPtr_t newElement = make_shared<CTask>();
+                CTopoElement::Ptr_t newElement = make_shared<CTopoTask>();
                 newElement->setParent(this);
                 newElement->initFromPropertyTree(task.second.data(), _pt);
                 addElement(newElement);

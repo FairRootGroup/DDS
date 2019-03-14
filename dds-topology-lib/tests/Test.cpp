@@ -11,14 +11,13 @@
 #include <boost/test/unit_test.hpp>
 
 // DDS
-#include "Task.h"
-#include "TaskCollection.h"
-#include "TaskGroup.h"
 #include "TopoBase.h"
+#include "TopoCollection.h"
 #include "TopoElement.h"
 #include "TopoFactory.h"
-#include "TopoIndex.h"
+#include "TopoGroup.h"
 #include "TopoProperty.h"
+#include "TopoTask.h"
 #include "TopoUtils.h"
 #include "Topology.h"
 #include "TopologyParserXML.h"
@@ -76,25 +75,11 @@ void check_topology_maps(const string& _topoName)
     string topoFile(_topoName + ".xml");
     topology.init(topoFile, true);
 
-    output_test_stream output1(_topoName + "_maps_1.txt", true);
-    for (const auto& v : topology.getTopoIndexToTopoElementMap())
-    {
-        output1 << v.first.getPath() << " " << v.second->getPath() << "\n";
-        // std::cout << v.first.getPath() << " " << v.second->getPath() << "\n";
-    }
-    BOOST_CHECK(output1.match_pattern());
-
     output_test_stream output2(_topoName + "_maps_2.txt", true);
-    check_topology_map_task(topology.getHashToTaskInfoMap(), output2);
+    check_topology_map_task(topology.getHashToRuntimeTaskMap(), output2);
 
     output_test_stream output3(_topoName + "_maps_3.txt", true);
-    check_topology_map_collection(topology.getHashToTaskCollectionInfoMap(), output3);
-
-    output_test_stream output4(_topoName + "_maps_4.txt", true);
-    check_topology_map(topology.getHashPathToTaskMap(), output4);
-
-    output_test_stream output5(_topoName + "_maps_5.txt", true);
-    check_topology_map(topology.getHashPathToTaskCollectionMap(), output5);
+    check_topology_map_collection(topology.getHashToRuntimeCollectionMap(), output3);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_maps)
@@ -132,31 +117,32 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 
     // Task iterators
     output_test_stream output1("topology_test_1_iterators_1.txt", true);
-    TaskInfoIteratorPair_t taskIt1 =
-        topology.getTaskInfoIterator([](const TaskInfoIterator_t::value_type& value) -> bool {
-            TaskPtr_t task = value.second.m_task;
+    STopoRuntimeTask::FilterIteratorPair_t taskIt1 =
+        topology.getRuntimeTaskIterator([](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
+            CTopoTask::Ptr_t task = value.second.m_task;
             return (task->getId() == "task1");
         });
     check_topology_iterator_task(taskIt1, output1);
 
     output_test_stream output2("topology_test_1_iterators_2.txt", true);
-    check_topology_iterator_task(topology.getTaskInfoIterator(), output2);
+    check_topology_iterator_task(topology.getRuntimeTaskIterator(), output2);
 
     // Task collection iterators
     output_test_stream output3("topology_test_1_iterators_3.txt", true);
-    TaskCollectionInfoIteratorPair_t tcIt1 =
-        topology.getTaskCollectionInfoIterator([](TaskCollectionInfoIterator_t::value_type value) -> bool {
-            TaskCollectionPtr_t tc = value.second.m_collection;
+    STopoRuntimeCollection::FilterIteratorPair_t tcIt1 =
+        topology.getRuntimeCollectionIterator([](STopoRuntimeCollection::FilterIterator_t::value_type value) -> bool {
+            CTopoCollection::Ptr_t tc = value.second.m_collection;
             return (tc->getId() == "collection1");
         });
     check_topology_iterator_collection(tcIt1, output3);
 
     output_test_stream output4("topology_test_1_iterators_4.txt", true);
-    check_topology_iterator_collection(topology.getTaskCollectionInfoIterator(), output4);
+    check_topology_iterator_collection(topology.getRuntimeCollectionIterator(), output4);
 
     // Task iterators for property
     output_test_stream output5("topology_test_1_iterators_5.txt", true);
-    check_topology_iterator_task(topology.getTaskInfoIteratorForPropertyId("property4", 2918576458378016727), output5);
+    check_topology_iterator_task(topology.getRuntimeTaskIteratorForPropertyId("property4", 2918576458378016727),
+                                 output5);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)
@@ -165,35 +151,12 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)
     topology.init("topology_test_1.xml");
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topology_1)
-{
-    CTopology topology;
-    topology.init("topology_test_1.xml");
-
-    TopoElementPtr_t e1 = topology.getTopoElementByTopoIndex(CTopoIndex("main/task1"));
-    BOOST_CHECK(e1->getPath() == "main/task1");
-
-    TopoElementPtr_t e2 = topology.getTopoElementByTopoIndex(CTopoIndex("main/collection1"));
-    BOOST_CHECK(e2->getPath() == "main/collection1");
-
-    TopoElementPtr_t e3 = topology.getTopoElementByTopoIndex(CTopoIndex("main/group1"));
-    BOOST_CHECK(e3->getPath() == "main/group1");
-
-    TopoElementPtr_t e4 = topology.getTopoElementByTopoIndex(CTopoIndex("main/group1/collection1"));
-    BOOST_CHECK(e4->getPath() == "main/group1/collection1");
-
-    TopoElementPtr_t e5 = topology.getTopoElementByTopoIndex(CTopoIndex("main/group2/collection2/task5"));
-    BOOST_CHECK(e5->getPath() == "main/group2/collection2/task5");
-
-    BOOST_CHECK_THROW(topology.getTopoElementByTopoIndex(CTopoIndex("wrong_path")), runtime_error);
-}
-
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
     CTopology topology;
     topology.init("topology_test_1.xml");
     // std::cout << topology.toString();
-    TaskGroupPtr_t main = topology.getMainGroup();
+    CTopoGroup::Ptr_t main = topology.getMainGroup();
 
     //  CTopologyParserXML parser;
     //  TaskGroupPtr_t main = make_shared<CTaskGroup>();
@@ -210,14 +173,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(main->getPath() == "main");
     BOOST_CHECK_THROW(main->getElement(4), std::out_of_range);
 
-    TopoElementPtr_t element1 = main->getElement(0);
+    CTopoElement::Ptr_t element1 = main->getElement(0);
     BOOST_CHECK(element1->getId() == "task1");
-    BOOST_CHECK(element1->getType() == ETopoType::TASK);
+    BOOST_CHECK(element1->getType() == CTopoBase::EType::TASK);
     BOOST_CHECK(element1->getParent() == main.get());
     BOOST_CHECK(element1->getPath() == "main/task1");
     BOOST_CHECK(element1->getNofTasks() == 1);
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
-    TaskPtr_t casted1 = dynamic_pointer_cast<CTask>(element1);
+    CTopoTask::Ptr_t casted1 = dynamic_pointer_cast<CTopoTask>(element1);
     BOOST_CHECK(casted1->getNofProperties() == 2);
     //    BOOST_CHECK(casted1->getProperty(0)->getId() == "property1");
     //    BOOST_CHECK(casted1->getProperty(1)->getId() == "property4");
@@ -230,28 +193,28 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted1->isExeReachable() == true);
     BOOST_CHECK(casted1->isEnvReachable() == false);
     BOOST_CHECK(casted1->getNofRequirements() == 1);
-    RequirementPtr_t requirement = casted1->getRequirements()[0];
+    CTopoRequirement::Ptr_t requirement = casted1->getRequirements()[0];
     BOOST_CHECK(requirement->getId() == "requirement1");
-    BOOST_CHECK(requirement->getType() == ETopoType::REQUIREMENT);
+    BOOST_CHECK(requirement->getType() == CTopoBase::EType::REQUIREMENT);
     BOOST_CHECK(requirement->getParent() == element1.get());
     BOOST_CHECK(requirement->getValue() == ".+.gsi.de");
-    BOOST_CHECK(requirement->getRequirementType() == ERequirementType::HostName);
+    BOOST_CHECK(requirement->getRequirementType() == CTopoRequirement::EType::HostName);
     BOOST_CHECK(casted1->getNofTriggers() == 2);
-    TriggerPtr_t trigger = casted1->getTriggers()[0];
+    CTopoTrigger::Ptr_t trigger = casted1->getTriggers()[0];
     BOOST_CHECK(trigger->getId() == "trigger1");
-    BOOST_CHECK(trigger->getType() == ETopoType::TRIGGER);
+    BOOST_CHECK(trigger->getType() == CTopoBase::EType::TRIGGER);
     BOOST_CHECK(trigger->getParent() == element1.get());
-    BOOST_CHECK(trigger->getCondition() == EConditionType::TaskCrashed);
-    BOOST_CHECK(trigger->getAction() == EActionType::RestartTask);
+    BOOST_CHECK(trigger->getCondition() == CTopoTrigger::EConditionType::TaskCrashed);
+    BOOST_CHECK(trigger->getAction() == CTopoTrigger::EActionType::RestartTask);
     BOOST_CHECK(trigger->getArgument() == "5");
-    TopoElementPtr_t element2 = main->getElement(1);
+    CTopoElement::Ptr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getId() == "collection1");
-    BOOST_CHECK(element2->getType() == ETopoType::COLLECTION);
+    BOOST_CHECK(element2->getType() == CTopoBase::EType::COLLECTION);
     BOOST_CHECK(element2->getParent() == main.get());
     BOOST_CHECK(element2->getPath() == "main/collection1");
     BOOST_CHECK(element2->getNofTasks() == 4);
     BOOST_CHECK(element2->getTotalNofTasks() == 4);
-    TaskCollectionPtr_t casted2 = dynamic_pointer_cast<CTaskCollection>(element2);
+    CTopoCollection::Ptr_t casted2 = dynamic_pointer_cast<CTopoCollection>(element2);
     BOOST_CHECK(casted2->getNofElements() == 4);
     BOOST_CHECK_THROW(casted2->getElement(4), std::out_of_range);
 
@@ -261,33 +224,33 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
         BOOST_CHECK(v->getParent() == element2.get());
     }
 
-    TopoElementPtr_t element3 = main->getElement(2);
+    CTopoElement::Ptr_t element3 = main->getElement(2);
     BOOST_CHECK(element3->getId() == "group1");
-    BOOST_CHECK(element3->getType() == ETopoType::GROUP);
+    BOOST_CHECK(element3->getType() == CTopoBase::EType::GROUP);
     BOOST_CHECK(element3->getParent() == main.get());
     BOOST_CHECK(element3->getPath() == "main/group1");
     BOOST_CHECK(element3->getNofTasks() == 8);
     BOOST_CHECK(element3->getTotalNofTasks() == 80);
-    TaskGroupPtr_t casted3 = dynamic_pointer_cast<CTaskGroup>(element3);
+    CTopoGroup::Ptr_t casted3 = dynamic_pointer_cast<CTopoGroup>(element3);
     BOOST_CHECK(casted3->getNofElements() == 3);
     BOOST_CHECK_THROW(casted3->getElement(3), std::out_of_range);
     BOOST_CHECK(casted3->getN() == 10);
 
-    TopoElementPtr_t element4 = main->getElement(3);
+    CTopoElement::Ptr_t element4 = main->getElement(3);
     BOOST_CHECK(element4->getId() == "group2");
-    BOOST_CHECK(element4->getType() == ETopoType::GROUP);
+    BOOST_CHECK(element4->getType() == CTopoBase::EType::GROUP);
     BOOST_CHECK(element4->getParent() == main.get());
     BOOST_CHECK(element4->getPath() == "main/group2");
     BOOST_CHECK(element4->getNofTasks() == 9);
     BOOST_CHECK(element4->getTotalNofTasks() == 135);
-    TaskGroupPtr_t casted4 = dynamic_pointer_cast<CTaskGroup>(element4);
+    CTopoGroup::Ptr_t casted4 = dynamic_pointer_cast<CTopoGroup>(element4);
     BOOST_CHECK(casted4->getNofElements() == 4);
     BOOST_CHECK_THROW(casted4->getElement(4), std::out_of_range);
     BOOST_CHECK(casted4->getN() == 15);
 
-    TaskCollectionPtr_t casted5 = dynamic_pointer_cast<CTaskCollection>(casted4->getElement(2));
+    CTopoCollection::Ptr_t casted5 = dynamic_pointer_cast<CTopoCollection>(casted4->getElement(2));
     BOOST_CHECK(casted5->getId() == "collection1");
-    BOOST_CHECK(casted5->getType() == ETopoType::COLLECTION);
+    BOOST_CHECK(casted5->getType() == CTopoBase::EType::COLLECTION);
     BOOST_CHECK(casted5->getParent() == casted4.get());
     BOOST_CHECK(casted5->getPath() == "main/group2/collection1");
     BOOST_CHECK(casted5->getNofTasks() == 4);
@@ -297,9 +260,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK_THROW(casted5->getElement(4), std::out_of_range);
     BOOST_CHECK(casted5->getTotalCounter() == 15);
 
-    TaskPtr_t casted6 = dynamic_pointer_cast<CTask>(casted5->getElement(0));
+    CTopoTask::Ptr_t casted6 = dynamic_pointer_cast<CTopoTask>(casted5->getElement(0));
     BOOST_CHECK(casted6->getId() == "task1");
-    BOOST_CHECK(casted6->getType() == ETopoType::TASK);
+    BOOST_CHECK(casted6->getType() == CTopoBase::EType::TASK);
     BOOST_CHECK(casted6->getParent() == casted5.get());
     BOOST_CHECK(casted6->getPath() == "main/group2/collection1/task1");
     BOOST_CHECK(casted6->getNofTasks() == 1);
@@ -311,71 +274,55 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(casted6->isEnvReachable() == false);
 
     // Test getElementsByType and getTotalCounter
-    TopoElementPtrVector_t elements1 = main->getElementsByType(ETopoType::TASK);
+    CTopoElement::PtrVector_t elements1 = main->getElementsByType(CTopoBase::EType::TASK);
     BOOST_CHECK(elements1.size() == 4);
     for (const auto& v : elements1)
     {
-        BOOST_CHECK(v->getType() == ETopoType::TASK);
+        BOOST_CHECK(v->getType() == CTopoBase::EType::TASK);
     }
-    TaskPtr_t castedTask = dynamic_pointer_cast<CTask>(elements1[0]);
+    CTopoTask::Ptr_t castedTask = dynamic_pointer_cast<CTopoTask>(elements1[0]);
     BOOST_CHECK(castedTask->getId() == "task1");
     BOOST_CHECK(castedTask->getPath() == "main/task1");
     BOOST_CHECK(castedTask->getTotalCounter() == 1);
-    castedTask = dynamic_pointer_cast<CTask>(elements1[1]);
+    castedTask = dynamic_pointer_cast<CTopoTask>(elements1[1]);
     BOOST_CHECK(castedTask->getId() == "task1");
     BOOST_CHECK(castedTask->getPath() == "main/group1/task1");
     BOOST_CHECK(castedTask->getTotalCounter() == 10);
-    castedTask = dynamic_pointer_cast<CTask>(elements1[2]);
+    castedTask = dynamic_pointer_cast<CTopoTask>(elements1[2]);
     BOOST_CHECK(castedTask->getId() == "task3");
     BOOST_CHECK(castedTask->getPath() == "main/group2/task3");
     BOOST_CHECK(castedTask->getTotalCounter() == 15);
-    castedTask = dynamic_pointer_cast<CTask>(elements1[3]);
+    castedTask = dynamic_pointer_cast<CTopoTask>(elements1[3]);
     BOOST_CHECK(castedTask->getId() == "task4");
     BOOST_CHECK(castedTask->getPath() == "main/group2/task4");
     BOOST_CHECK(castedTask->getTotalCounter() == 15);
 
-    TopoElementPtrVector_t elements2 = main->getElementsByType(ETopoType::COLLECTION);
+    CTopoElement::PtrVector_t elements2 = main->getElementsByType(CTopoBase::EType::COLLECTION);
     BOOST_CHECK(elements2.size() == 5);
     for (const auto& v : elements2)
     {
-        BOOST_CHECK(v->getType() == ETopoType::COLLECTION);
+        BOOST_CHECK(v->getType() == CTopoBase::EType::COLLECTION);
     }
-    TaskCollectionPtr_t castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[0]);
+    CTopoCollection::Ptr_t castedCollection = dynamic_pointer_cast<CTopoCollection>(elements2[0]);
     BOOST_CHECK(castedCollection->getId() == "collection1");
     BOOST_CHECK(castedCollection->getPath() == "main/collection1");
     BOOST_CHECK(castedCollection->getTotalCounter() == 1);
-    castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[1]);
+    castedCollection = dynamic_pointer_cast<CTopoCollection>(elements2[1]);
     BOOST_CHECK(castedCollection->getId() == "collection1");
     BOOST_CHECK(castedCollection->getPath() == "main/group1/collection1");
     BOOST_CHECK(castedCollection->getTotalCounter() == 10);
-    castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[2]);
+    castedCollection = dynamic_pointer_cast<CTopoCollection>(elements2[2]);
     BOOST_CHECK(castedCollection->getId() == "collection2");
     BOOST_CHECK(castedCollection->getPath() == "main/group1/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 10);
-    castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[3]);
+    castedCollection = dynamic_pointer_cast<CTopoCollection>(elements2[3]);
     BOOST_CHECK(castedCollection->getId() == "collection1");
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection1");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
-    castedCollection = dynamic_pointer_cast<CTaskCollection>(elements2[4]);
+    castedCollection = dynamic_pointer_cast<CTopoCollection>(elements2[4]);
     BOOST_CHECK(castedCollection->getId() == "collection2");
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
-
-    /// test getIndicesByType
-    TopoIndexVector_t ids1 = main->getTopoIndicesByType(ETopoType::COLLECTION);
-    BOOST_CHECK(ids1.size() == 5);
-    BOOST_CHECK(ids1[0].getPath() == "main/collection1");
-    BOOST_CHECK(ids1[1].getPath() == "main/group1/collection1");
-    BOOST_CHECK(ids1[2].getPath() == "main/group1/collection2");
-    BOOST_CHECK(ids1[3].getPath() == "main/group2/collection1");
-    BOOST_CHECK(ids1[4].getPath() == "main/group2/collection2");
-
-    TopoIndexVector_t ids2 = main->getTopoIndicesByType(ETopoType::TASK);
-    BOOST_CHECK(ids2.size() == 4);
-    BOOST_CHECK(ids2[0].getPath() == "main/task1");
-    BOOST_CHECK(ids2[1].getPath() == "main/group1/task1");
-    BOOST_CHECK(ids2[2].getPath() == "main/group2/task3");
-    BOOST_CHECK(ids2[3].getPath() == "main/group2/task4");
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)
@@ -430,108 +377,108 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_wrong)
 BOOST_AUTO_TEST_CASE(test_dds_topo_factory)
 {
     // DDSCreateTopoBase
-    BOOST_CHECK_THROW(CreateTopoBase(ETopoType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoBase(ETopoType::TOPO_ELEMENT), runtime_error);
-    TopoBasePtr_t baseTopoProperty = CreateTopoBase(ETopoType::TOPO_PROPERTY);
+    BOOST_CHECK_THROW(CreateTopoBase(CTopoBase::EType::TOPO_BASE), runtime_error);
+    BOOST_CHECK_THROW(CreateTopoBase(CTopoBase::EType::TOPO_ELEMENT), runtime_error);
+    CTopoBase::Ptr_t baseTopoProperty = CreateTopoBase(CTopoBase::EType::TOPO_PROPERTY);
     BOOST_CHECK(baseTopoProperty != nullptr);
-    TopoBasePtr_t baseTask = CreateTopoBase(ETopoType::TASK);
+    CTopoBase::Ptr_t baseTask = CreateTopoBase(CTopoBase::EType::TASK);
     BOOST_CHECK(baseTask != nullptr);
-    TopoBasePtr_t baseCollection = CreateTopoBase(ETopoType::COLLECTION);
+    CTopoBase::Ptr_t baseCollection = CreateTopoBase(CTopoBase::EType::COLLECTION);
     BOOST_CHECK(baseCollection != nullptr);
-    TopoBasePtr_t baseGroup = CreateTopoBase(ETopoType::GROUP);
+    CTopoBase::Ptr_t baseGroup = CreateTopoBase(CTopoBase::EType::GROUP);
     BOOST_CHECK(baseGroup != nullptr);
 
     // DDSCreateTopoElement
-    BOOST_CHECK_THROW(CreateTopoElement(ETopoType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoElement(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoElement(ETopoType::TOPO_PROPERTY), runtime_error);
-    TopoElementPtr_t elementTask = CreateTopoElement(ETopoType::TASK);
+    BOOST_CHECK_THROW(CreateTopoElement(CTopoBase::EType::TOPO_BASE), runtime_error);
+    BOOST_CHECK_THROW(CreateTopoElement(CTopoBase::EType::TOPO_ELEMENT), runtime_error);
+    BOOST_CHECK_THROW(CreateTopoElement(CTopoBase::EType::TOPO_PROPERTY), runtime_error);
+    CTopoElement::Ptr_t elementTask = CreateTopoElement(CTopoBase::EType::TASK);
     BOOST_CHECK(elementTask != nullptr);
-    TopoElementPtr_t elementCollection = CreateTopoElement(ETopoType::COLLECTION);
+    CTopoElement::Ptr_t elementCollection = CreateTopoElement(CTopoBase::EType::COLLECTION);
     BOOST_CHECK(elementCollection != nullptr);
-    TopoElementPtr_t elementGroup = CreateTopoElement(ETopoType::GROUP);
+    CTopoElement::Ptr_t elementGroup = CreateTopoElement(CTopoBase::EType::GROUP);
     BOOST_CHECK(elementGroup != nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
 {
     // TopoTypeToUseTag
-    BOOST_CHECK_THROW(TopoTypeToUseTag(ETopoType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(TopoTypeToUseTag(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::TASK) == "task");
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::COLLECTION) == "collection");
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::GROUP) == "group");
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::TOPO_PROPERTY) == "property");
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::REQUIREMENT) == "requirement");
-    BOOST_CHECK(TopoTypeToUseTag(ETopoType::TRIGGER) == "trigger");
+    BOOST_CHECK_THROW(TopoTypeToUseTag(CTopoBase::EType::TOPO_BASE), runtime_error);
+    BOOST_CHECK_THROW(TopoTypeToUseTag(CTopoBase::EType::TOPO_ELEMENT), runtime_error);
+    BOOST_CHECK(TopoTypeToUseTag(CTopoBase::EType::TASK) == "task");
+    BOOST_CHECK(TopoTypeToUseTag(CTopoBase::EType::COLLECTION) == "collection");
+    BOOST_CHECK(TopoTypeToUseTag(CTopoBase::EType::GROUP) == "group");
+    BOOST_CHECK(TopoTypeToUseTag(CTopoBase::EType::TOPO_PROPERTY) == "property");
+    BOOST_CHECK(TopoTypeToUseTag(CTopoBase::EType::REQUIREMENT) == "requirement");
+    BOOST_CHECK(TopoTypeToUseTag(CTopoBase::EType::TRIGGER) == "trigger");
 
     // UseTagToTopoType
     BOOST_CHECK_THROW(UseTagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(UseTagToTopoType("topobase"), runtime_error);
     BOOST_CHECK_THROW(UseTagToTopoType("topoelement"), runtime_error);
-    BOOST_CHECK(UseTagToTopoType("task") == ETopoType::TASK);
-    BOOST_CHECK(UseTagToTopoType("collection") == ETopoType::COLLECTION);
-    BOOST_CHECK(UseTagToTopoType("group") == ETopoType::GROUP);
-    BOOST_CHECK(UseTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
-    BOOST_CHECK(UseTagToTopoType("requirement") == ETopoType::REQUIREMENT);
-    BOOST_CHECK(UseTagToTopoType("trigger") == ETopoType::TRIGGER);
+    BOOST_CHECK(UseTagToTopoType("task") == CTopoBase::EType::TASK);
+    BOOST_CHECK(UseTagToTopoType("collection") == CTopoBase::EType::COLLECTION);
+    BOOST_CHECK(UseTagToTopoType("group") == CTopoBase::EType::GROUP);
+    BOOST_CHECK(UseTagToTopoType("property") == CTopoBase::EType::TOPO_PROPERTY);
+    BOOST_CHECK(UseTagToTopoType("requirement") == CTopoBase::EType::REQUIREMENT);
+    BOOST_CHECK(UseTagToTopoType("trigger") == CTopoBase::EType::TRIGGER);
 
     // TopoTypeToDeclTag
-    BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(TopoTypeToDeclTag(ETopoType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TASK) == "decltask");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::COLLECTION) == "declcollection");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::GROUP) == "group");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_PROPERTY) == "property");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::REQUIREMENT) == "declrequirement");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TOPO_VARS) == "var");
-    BOOST_CHECK(TopoTypeToDeclTag(ETopoType::TRIGGER) == "decltrigger");
+    BOOST_CHECK_THROW(TopoTypeToDeclTag(CTopoBase::EType::TOPO_BASE), runtime_error);
+    BOOST_CHECK_THROW(TopoTypeToDeclTag(CTopoBase::EType::TOPO_ELEMENT), runtime_error);
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::TASK) == "decltask");
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::COLLECTION) == "declcollection");
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::GROUP) == "group");
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::TOPO_PROPERTY) == "property");
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::REQUIREMENT) == "declrequirement");
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::TOPO_VARS) == "var");
+    BOOST_CHECK(TopoTypeToDeclTag(CTopoBase::EType::TRIGGER) == "decltrigger");
 
     // TagToPropertyAccessType
-    BOOST_CHECK(TagToPropertyAccessType("read") == EPropertyAccessType::READ);
-    BOOST_CHECK(TagToPropertyAccessType("write") == EPropertyAccessType::WRITE);
-    BOOST_CHECK(TagToPropertyAccessType("readwrite") == EPropertyAccessType::READWRITE);
+    BOOST_CHECK(TagToPropertyAccessType("read") == CTopoProperty::EAccessType::READ);
+    BOOST_CHECK(TagToPropertyAccessType("write") == CTopoProperty::EAccessType::WRITE);
+    BOOST_CHECK(TagToPropertyAccessType("readwrite") == CTopoProperty::EAccessType::READWRITE);
     BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
 
     // TagToPropertyScopeType
-    BOOST_CHECK(TagToPropertyScopeType("global") == EPropertyScopeType::GLOBAL);
-    BOOST_CHECK(TagToPropertyScopeType("collection") == EPropertyScopeType::COLLECTION);
+    BOOST_CHECK(TagToPropertyScopeType("global") == CTopoProperty::EScopeType::GLOBAL);
+    BOOST_CHECK(TagToPropertyScopeType("collection") == CTopoProperty::EScopeType::COLLECTION);
     BOOST_CHECK_THROW(TagToPropertyScopeType("globalglobal"), runtime_error);
 
     // TagToRequirementType
-    BOOST_CHECK(TagToRequirementType("wnname") == ERequirementType::WnName);
-    BOOST_CHECK(TagToRequirementType("hostname") == ERequirementType::HostName);
-    BOOST_CHECK(TagToRequirementType("gpu") == ERequirementType::Gpu);
+    BOOST_CHECK(TagToRequirementType("wnname") == CTopoRequirement::EType::WnName);
+    BOOST_CHECK(TagToRequirementType("hostname") == CTopoRequirement::EType::HostName);
+    BOOST_CHECK(TagToRequirementType("gpu") == CTopoRequirement::EType::Gpu);
     BOOST_CHECK_THROW(TagToRequirementType("wn_name"), runtime_error);
 
     // RequirementTypeToTag
-    BOOST_CHECK(RequirementTypeToTag(ERequirementType::WnName) == "WnName");
-    BOOST_CHECK(RequirementTypeToTag(ERequirementType::HostName) == "HostName");
-    BOOST_CHECK(RequirementTypeToTag(ERequirementType::Gpu) == "Gpu");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::WnName) == "WnName");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::HostName) == "HostName");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::Gpu) == "Gpu");
 
     // TagToConditionType
-    BOOST_CHECK(TagToConditionType("TaskCrashed") == EConditionType::TaskCrashed);
+    BOOST_CHECK(TagToConditionType("TaskCrashed") == CTopoTrigger::EConditionType::TaskCrashed);
 
     // ConditionTypeToTag
-    BOOST_CHECK(ConditionTypeToTag(EConditionType::TaskCrashed) == "TaskCrashed");
+    BOOST_CHECK(ConditionTypeToTag(CTopoTrigger::EConditionType::TaskCrashed) == "TaskCrashed");
 
     // TagToActionType
-    BOOST_CHECK(TagToActionType("RestartTask") == EActionType::RestartTask);
+    BOOST_CHECK(TagToActionType("RestartTask") == CTopoTrigger::EActionType::RestartTask);
 
     // ActionTypeToTag
-    BOOST_CHECK(ActionTypeToTag(EActionType::RestartTask) == "RestartTask");
+    BOOST_CHECK(ActionTypeToTag(CTopoTrigger::EActionType::RestartTask) == "RestartTask");
 
     // DeclTagToTopoType
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topobase"), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topoelement"), runtime_error);
-    BOOST_CHECK(DeclTagToTopoType("decltask") == ETopoType::TASK);
-    BOOST_CHECK(DeclTagToTopoType("declcollection") == ETopoType::COLLECTION);
-    BOOST_CHECK(DeclTagToTopoType("group") == ETopoType::GROUP);
-    BOOST_CHECK(DeclTagToTopoType("property") == ETopoType::TOPO_PROPERTY);
-    BOOST_CHECK(DeclTagToTopoType("declrequirement") == ETopoType::REQUIREMENT);
-    BOOST_CHECK(DeclTagToTopoType("var") == ETopoType::TOPO_VARS);
-    BOOST_CHECK(DeclTagToTopoType("decltrigger") == ETopoType::TRIGGER);
+    BOOST_CHECK(DeclTagToTopoType("decltask") == CTopoBase::EType::TASK);
+    BOOST_CHECK(DeclTagToTopoType("declcollection") == CTopoBase::EType::COLLECTION);
+    BOOST_CHECK(DeclTagToTopoType("group") == CTopoBase::EType::GROUP);
+    BOOST_CHECK(DeclTagToTopoType("property") == CTopoBase::EType::TOPO_PROPERTY);
+    BOOST_CHECK(DeclTagToTopoType("declrequirement") == CTopoBase::EType::REQUIREMENT);
+    BOOST_CHECK(DeclTagToTopoType("var") == CTopoBase::EType::TOPO_VARS);
+    BOOST_CHECK(DeclTagToTopoType("decltrigger") == CTopoBase::EType::TRIGGER);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
@@ -539,37 +486,41 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_base_find_element)
     ptree pt;
     read_xml("topology_test_6.xml", pt);
 
-    const ptree& pt1 = CTopoBase::findElement(ETopoType::TASK, "task1", pt.get_child("topology"));
+    const ptree& pt1 = CTopoBase::findElement(CTopoBase::EType::TASK, "task1", pt.get_child("topology"));
     BOOST_CHECK(pt1.get<string>("<xmlattr>.id") == "task1");
 
-    const ptree& pt2 = CTopoBase::findElement(ETopoType::COLLECTION, "collection1", pt.get_child("topology"));
+    const ptree& pt2 = CTopoBase::findElement(CTopoBase::EType::COLLECTION, "collection1", pt.get_child("topology"));
     BOOST_CHECK(pt2.get<string>("<xmlattr>.id") == "collection1");
 
-    const ptree& pt3 = CTopoBase::findElement(ETopoType::GROUP, "group1", pt.get_child("topology.main"));
+    const ptree& pt3 = CTopoBase::findElement(CTopoBase::EType::GROUP, "group1", pt.get_child("topology.main"));
     BOOST_CHECK(pt3.get<string>("<xmlattr>.id") == "group1");
 
-    const ptree& pt4 = CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "property1", pt.get_child("topology"));
+    const ptree& pt4 = CTopoBase::findElement(CTopoBase::EType::TOPO_PROPERTY, "property1", pt.get_child("topology"));
     BOOST_CHECK(pt4.get<string>("<xmlattr>.id") == "property1");
 
-    const ptree& pt5 = CTopoBase::findElement(ETopoType::REQUIREMENT, "requirement1", pt.get_child("topology"));
+    const ptree& pt5 = CTopoBase::findElement(CTopoBase::EType::REQUIREMENT, "requirement1", pt.get_child("topology"));
     BOOST_CHECK(pt5.get<string>("<xmlattr>.id") == "requirement1");
 
     // Wrong path to property tree
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task1", pt), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::GROUP, "group1", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::TASK, "task1", pt), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::GROUP, "group1", pt.get_child("topology")), logic_error);
 
     // Wrong element names
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "NO", pt.get_child("topology")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::COLLECTION, "NO", pt.get_child("topology")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::GROUP, "NO", pt.get_child("topology.main")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "NO", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::TASK, "NO", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::COLLECTION, "NO", pt.get_child("topology")),
+                      logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::GROUP, "NO", pt.get_child("topology.main")),
+                      logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::TOPO_PROPERTY, "NO", pt.get_child("topology")),
+                      logic_error);
 
     // Dublicated names
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TASK, "task2", pt.get_child("topology")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::COLLECTION, "collection2", pt.get_child("topology")),
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::TASK, "task2", pt.get_child("topology")), logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::COLLECTION, "collection2", pt.get_child("topology")),
                       logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::GROUP, "group2", pt.get_child("topology.main")), logic_error);
-    BOOST_CHECK_THROW(CTopoBase::findElement(ETopoType::TOPO_PROPERTY, "property3", pt.get_child("topology")),
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::GROUP, "group2", pt.get_child("topology.main")),
+                      logic_error);
+    BOOST_CHECK_THROW(CTopoBase::findElement(CTopoBase::EType::TOPO_PROPERTY, "property3", pt.get_child("topology")),
                       logic_error);
 }
 
@@ -593,28 +544,28 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
     output1 << "----- Removed tasks -----\n";
     for (auto& v : removedTasks)
     {
-        const STaskInfo& info = topo.getTaskInfoByHash(v);
+        const STopoRuntimeTask& info = topo.getRuntimeTaskByHash(v);
         output1 << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
     }
 
     output1 << "----- Removed collections -----\n";
     for (auto& v : removedCollections)
     {
-        STaskCollectionInfo collectionInfo = topo.getTaskCollectionInfoByHash(v);
+        STopoRuntimeCollection collectionInfo = topo.getRuntimeCollectionByHash(v);
         output1 << v << " " << collectionInfo.m_collection->getPath() << "\n";
     }
 
     output1 << "----- Added tasks -----\n";
     for (auto& v : addedTasks)
     {
-        const STaskInfo& info = newTopo.getTaskInfoByHash(v);
+        const STopoRuntimeTask& info = newTopo.getRuntimeTaskByHash(v);
         output1 << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
     }
 
     output1 << "----- Added collections -----\n";
     for (auto& v : addedCollections)
     {
-        STaskCollectionInfo collection = newTopo.getTaskCollectionInfoByHash(v);
+        STopoRuntimeCollection collection = newTopo.getRuntimeCollectionByHash(v);
         output1 << v << " " << collection.m_collection->getPath() << "\n";
     }
 
@@ -626,17 +577,17 @@ long long test_property(const CTopology& _topology)
     auto execTime = STimeMeasure<>::execution([&_topology]() {
         for (size_t i = 0; i < 1000; i++)
         {
-            const HashToTaskInfoMap_t& taskMap = _topology.getHashToTaskInfoMap();
+            const STopoRuntimeTask::Map_t& taskMap = _topology.getHashToRuntimeTaskMap();
 
             for (const auto& v : taskMap)
             {
                 uint64_t taskID = v.first;
-                const STaskInfo& taskInfo = v.second;
+                const STopoRuntimeTask& taskInfo = v.second;
 
-                const TopoPropertyPtrMap_t& properties = taskInfo.m_task->getProperties();
+                const CTopoProperty::PtrMap_t& properties = taskInfo.m_task->getProperties();
                 for (const auto& property : properties)
                 {
-                    _topology.getTaskInfoIteratorForPropertyId(property.first, taskID);
+                    _topology.getRuntimeTaskIteratorForPropertyId(property.first, taskID);
                 }
             }
         }

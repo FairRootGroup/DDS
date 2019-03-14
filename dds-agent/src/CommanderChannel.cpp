@@ -61,7 +61,8 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
 
                 string propertyID(attachmentPtr->m_propertyID);
                 uint64_t taskID(attachmentPtr->m_senderTaskID);
-                TaskInfoIteratorPair_t taskIt = m_topo.getTaskInfoIteratorForPropertyId(propertyID, taskID);
+                STopoRuntimeTask::FilterIteratorPair_t taskIt =
+                    m_topo.getRuntimeTaskIteratorForPropertyId(propertyID, taskID);
 
                 for (auto it = taskIt.first; it != taskIt.second; ++it)
                 {
@@ -71,10 +72,10 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
                     if (taskID == receiverTaskID)
                         continue;
 
-                    auto task = m_topo.getTaskByHash(receiverTaskID);
+                    auto task = m_topo.getRuntimeTaskByHash(receiverTaskID).m_task;
                     auto property = task->getProperty(propertyID);
-                    if (property != nullptr && (property->getAccessType() == EPropertyAccessType::READ ||
-                                                property->getAccessType() == EPropertyAccessType::READWRITE))
+                    if (property != nullptr && (property->getAccessType() == CTopoProperty::EAccessType::READ ||
+                                                property->getAccessType() == CTopoProperty::EAccessType::READWRITE))
                     {
                         SUpdateKeyCmd cmd;
                         cmd.m_propertyID = propertyID;

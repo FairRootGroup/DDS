@@ -8,7 +8,7 @@
 // DDS
 #include "AgentChannel.h"
 #include "ChannelInfo.h"
-#include "Task.h"
+#include "TopoTask.h"
 #include "Topology.h"
 // STD
 #include <vector>
@@ -28,7 +28,7 @@ namespace dds
                 }
 
                 uint64_t m_taskID;
-                topology_api::STaskInfo m_taskInfo;
+                topology_api::STopoRuntimeTask m_taskInfo;
                 dds::protocol_api::SWeakChannelInfo<CAgentChannel> m_weakChannelInfo;
             };
 
@@ -78,7 +78,7 @@ namespace dds
                                bool useRequirement,
                                const topology_api::CTopology::HashSet_t* _addedTasks);
 
-            bool checkRequirement(topology_api::RequirementPtr_t _requirement,
+            bool checkRequirement(topology_api::CTopoRequirement::Ptr_t _requirement,
                                   bool _useRequirement,
                                   const std::string& _hostName,
                                   const std::string& _wnName) const;
