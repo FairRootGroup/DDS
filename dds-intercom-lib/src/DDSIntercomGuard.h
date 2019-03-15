@@ -62,8 +62,6 @@ namespace dds
             void on_cmdUSER_TASK_DONE_SM(
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment);
-            void on_cmdDELETE_KEY(const protocol_api::SSenderInfo& _sender,
-                                  protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment);
             void on_cmdCUSTOM_CMD_SM(
                 const protocol_api::SSenderInfo& _sender,
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment);

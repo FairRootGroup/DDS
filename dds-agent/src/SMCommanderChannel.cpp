@@ -506,13 +506,6 @@ bool CSMCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>
     return false;
 }
 
-bool CSMCommanderChannel::on_cmdDELETE_KEY(SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment,
-                                           SSenderInfo& _sender)
-{
-    LOG(debug) << "Received a key delete notifications: " << *_attachment;
-    return false;
-}
-
 bool CSMCommanderChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
                                            SSenderInfo& _sender)
 {

@@ -26,7 +26,6 @@ namespace dds
             BEGIN_SM_MSG_MAP(CSMAgentChannel)
                 SM_MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
                 SM_MESSAGE_HANDLER_DISPATCH(cmdUPDATE_KEY)
-                SM_MESSAGE_HANDLER_DISPATCH(cmdDELETE_KEY)
                 SM_MESSAGE_HANDLER_DISPATCH(cmdSIMPLE_MSG)
                 SM_MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
             END_SM_MSG_MAP()

@@ -86,12 +86,6 @@ void CDDSIntercomGuard::start(const std::string& _sessionID)
                 this->on_cmdUSER_TASK_DONE_SM(_sender, _attachment);
             });
 
-        // Subscribe for cmdDELETE_KEY from SM channel
-        m_SMChannel->registerHandler<cmdDELETE_KEY>(
-            [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDELETE_KEY>::ptr_t _attachment) {
-                this->on_cmdDELETE_KEY(_sender, _attachment);
-            });
-
         // Subscribe for cmdCUSTOM_CMD from SM channel
         m_SMChannel->registerHandler<cmdCUSTOM_CMD>(
             [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
@@ -245,13 +239,6 @@ void CDDSIntercomGuard::on_cmdUSER_TASK_DONE_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment)
 {
     execUserSignal(m_keyValueTaskDoneSignal, _attachment->m_taskID, _attachment->m_exitCode);
-}
-
-void CDDSIntercomGuard::on_cmdDELETE_KEY(
-    const protocol_api::SSenderInfo& _sender,
-    protocol_api::SCommandAttachmentImpl<protocol_api::cmdDELETE_KEY>::ptr_t _attachment)
-{
-    LOG(info) << "Received cmdDELETE_KEY: " << *_attachment;
 }
 
 void CDDSIntercomGuard::on_cmdCUSTOM_CMD_SM(

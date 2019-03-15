@@ -52,7 +52,6 @@ namespace dds
             cmdUSER_TASK_DONE, // attachment: SUserTaskDoneCmd
             cmdTRANSPORT_TEST,
             cmdUPDATE_KEY, // attachment: SUpdateKeyCmd
-            cmdDELETE_KEY, // attachment: SDeleteKeyCmd
             cmdGET_PROP_LIST,
             cmdGET_PROP_VALUES,
             cmdPROGRESS, // attachment: SProgressCmd
@@ -99,7 +98,6 @@ namespace dds
             { cmdUSER_TASK_DONE, NAME_TO_STRING(cmdUSER_TASK_DONE) },
             { cmdTRANSPORT_TEST, NAME_TO_STRING(cmdTRANSPORT_TEST) },
             { cmdUPDATE_KEY, NAME_TO_STRING(cmdUPDATE_KEY) },
-            { cmdDELETE_KEY, NAME_TO_STRING(cmdDELETE_KEY) },
             { cmdGET_PROP_LIST, NAME_TO_STRING(cmdGET_PROP_LIST) },
             { cmdGET_PROP_VALUES, NAME_TO_STRING(cmdGET_PROP_VALUES) },
             { cmdPROGRESS, NAME_TO_STRING(cmdPROGRESS) },

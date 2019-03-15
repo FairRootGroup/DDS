@@ -663,7 +663,6 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
                 // TODO: FIXME: Do we need to deque messages in new decentralized concept?
                 // dequeue important (or expensive) messages
                 ptr->dequeueMsg<cmdUPDATE_KEY>();
-                ptr->dequeueMsg<cmdDELETE_KEY>();
             }
 
             broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
@@ -1077,44 +1076,6 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     };
     broadcastMsg<cmdUSER_TASK_DONE>(*_attachment, condition);
 
-    // Delete corresponding keys
-    uint64_t taskID = _attachment->m_taskID;
-
-    auto task = m_topo.getRuntimeTaskByHash(taskID).m_task;
-
-    const CTopoProperty::PtrMap_t& properties = task->getProperties();
-    for (const auto& property : properties)
-    {
-        STopoRuntimeTask::FilterIteratorPair_t taskIt =
-            m_topo.getRuntimeTaskIteratorForPropertyName(property.first, taskID);
-
-        for (auto it = taskIt.first; it != taskIt.second; ++it)
-        {
-            auto iter = m_taskIDToAgentChannelMap.find(it->first);
-            if (iter == m_taskIDToAgentChannelMap.end())
-            {
-                LOG(debug) << "on_cmdDELETE_KEY task <" << it->first
-                           << "> not found in map. Property will not be deleted.";
-            }
-            else
-            {
-                if (iter->second.m_channel.expired())
-                    continue;
-                auto ptr = iter->second.m_channel.lock();
-
-                SDeleteKeyCmd cmd;
-                cmd.setKey(property.first, taskID);
-
-                SAgentInfo info = ptr->getAgentInfo(iter->second.m_protocolHeaderID);
-                if (info.m_taskID != 0 && info.m_taskID != taskID)
-                {
-                    ptr->pushMsg<cmdDELETE_KEY>(cmd, iter->second.m_protocolHeaderID);
-                    LOG(debug) << "Property deleted from agent channel: <" << *_attachment << ">";
-                }
-            }
-        }
-    }
-
     if (!_channel.expired())
     {
         auto channelPtr = _channel.lock();
@@ -1135,7 +1096,8 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     //        m_taskIDToAgentChannelMap.erase(it);
     //}
 
-    LOG(info) << "User task <" << taskID << "> with path " << task->getPath() << " done";
+    auto task = m_topo.getRuntimeTaskByHash(_attachment->m_taskID).m_task;
+    LOG(info) << "User task <" << _attachment->m_taskID << "> with path " << task->getPath() << " done";
 }
 
 void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& _sender,

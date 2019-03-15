@@ -11,7 +11,6 @@
 #include "BinaryAttachmentReceivedCmd.h"
 #include "BinaryAttachmentStartCmd.h"
 #include "CustomCmdCmd.h"
-#include "DeleteKeyCmd.h"
 #include "GetPropValuesCmd.h"
 #include "HostInfoCmd.h"
 #include "MoveFileCmd.h"
@@ -93,7 +92,6 @@ namespace dds
         REGISTER_CMD_ATTACHMENT(SUpdateKeyCmd, cmdUPDATE_KEY)
         REGISTER_CMD_ATTACHMENT(SProgressCmd, cmdPROGRESS)
         REGISTER_CMD_ATTACHMENT(SUserTaskDoneCmd, cmdUSER_TASK_DONE)
-        REGISTER_CMD_ATTACHMENT(SDeleteKeyCmd, cmdDELETE_KEY)
         REGISTER_CMD_ATTACHMENT(SGetPropValuesCmd, cmdGET_PROP_VALUES)
         REGISTER_CMD_ATTACHMENT(SUpdateTopologyCmd, cmdUPDATE_TOPOLOGY)
         REGISTER_CMD_ATTACHMENT(SCustomCmdCmd, cmdCUSTOM_CMD)

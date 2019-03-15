@@ -248,16 +248,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
     TestCommand(cmd_src, cmdUPDATE_KEY, cmdSize);
 }
 
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdDELETE_KEY)
-{
-    const unsigned int cmdSize = 12;
-
-    SDeleteKeyCmd cmd;
-    cmd.m_sKey = "0123456789";
-
-    TestCommand(cmd, cmdDELETE_KEY, cmdSize);
-}
-
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_AGENTS_INFO)
 {
     const unsigned int cmdSize = 32;
