@@ -63,7 +63,7 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
     {
         const ptree& propertyPT =
             CTopoBase::findElement(CTopoBase::EType::TOPO_PROPERTY, _name, _pt.get_child("topology"));
-        setId(propertyPT.get<string>("<xmlattr>.id"));
+        setName(propertyPT.get<string>("<xmlattr>.name"));
 
         boost::optional<const ptree&> childScope = propertyPT.get_child_optional("<xmlattr>.scope");
         if (childScope)
@@ -81,7 +81,7 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
 string CTopoProperty::toString() const
 {
     stringstream ss;
-    ss << "DDSTopoProperty: m_id=" << getId() << " m_value=" << getValue();
+    ss << "DDSTopoProperty: m_name=" << getName() << " m_value=" << getValue();
     return ss.str();
 }
 

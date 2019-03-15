@@ -31,7 +31,7 @@ namespace dds
                 , m_bNeedAgentsList(false)
                 , m_bNeedPropList(false)
                 , m_bNeedPropValues(false)
-                , m_propertyID()
+                , m_propertyName()
                 , m_sid(boost::uuids::nil_uuid())
                 , m_nIdleAgentsCount(0)
             {
@@ -43,7 +43,7 @@ namespace dds
             bool m_bNeedAgentsList;
             bool m_bNeedPropList;
             bool m_bNeedPropValues;
-            std::string m_propertyID;
+            std::string m_propertyName;
             boost::uuids::uuid m_sid;
             int m_nIdleAgentsCount;
         } SOptions_t;
@@ -84,9 +84,9 @@ namespace dds
             options.add_options()("prop-values",
                                   bpo::bool_switch(&_options->m_bNeedPropValues),
                                   "Returns a key-value pairs from all agents.");
-            options.add_options()("prop-id",
-                                  bpo::value<std::string>(&_options->m_propertyID),
-                                  "Specify property IDs that have to be returned.");
+            options.add_options()("prop-name",
+                                  bpo::value<std::string>(&_options->m_propertyName),
+                                  "Specify property names that have to be returned.");
             options.add_options()(
                 "wait-for-idle-agents",
                 bpo::value<int>(&_options->m_nIdleAgentsCount),
@@ -113,7 +113,7 @@ namespace dds
                 PrintVersion();
                 return false;
             }
-            if (vm.count("prop-id") && !_options->m_bNeedPropValues)
+            if (vm.count("prop-name") && !_options->m_bNeedPropValues)
             {
                 LOG(MiscCommon::log_stdout) << "Option prop-id has to be used together with prop-values.";
                 return false;

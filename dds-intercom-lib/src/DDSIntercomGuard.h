@@ -21,7 +21,7 @@ namespace dds
         // Key-value types
         /// \typedef Update key callback function
         typedef boost::signals2::signal<void(
-            const std::string& /*_propertyID*/, const std::string& /*_value*/, uint64_t /*_senderTaskID*/)>
+            const std::string& /*_propertyName*/, const std::string& /*_value*/, uint64_t /*_senderTaskID*/)>
             keyValueSignal_t;
         /// \typedef Task Done callback function
         typedef boost::signals2::signal<void(uint64_t /*_taskID*/, uint32_t /*_exitCode*/)> keyValueTaskDoneSignal_t;

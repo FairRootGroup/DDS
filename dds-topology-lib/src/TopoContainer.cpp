@@ -71,7 +71,7 @@ size_t CTopoContainer::getNofTasksDefault() const
 string CTopoContainer::toString() const
 {
     stringstream ss;
-    ss << "TaskContainer: m_id=" << getId() << " nofElements=" << getNofElements() << " elements:\n";
+    ss << "TaskContainer: m_name=" << getName() << " nofElements=" << getNofElements() << " elements:\n";
     for (const auto& element : m_elements)
     {
         ss << " - " << element->toString() << std::endl;

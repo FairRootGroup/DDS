@@ -20,7 +20,8 @@ Added: The command reports now the time it took to submit the job.
 Modified: The watchdog now terminates/kills not only user tasks (parent processes), but also their children if they spawn any. (GH-212)    
 
 ### dds-topology
-Fixed: dds-topology --activate hangs if there are no active agents. (GH-218)   
+Fixed: dds-topology --activate hangs if there are no active agents. (GH-218)    
+Modified: rename "id" to "name" in the topology XML file and topology classes. WARNING: this change is incompatible with an older XML topology files. Rename all "id" attributes and tags to "name" in the XML topology files in order to be compatible with current version of DDS.    
 
 ## v2.2 (2018-11-27)
 

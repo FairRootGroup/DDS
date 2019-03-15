@@ -62,7 +62,7 @@ void CTopoTrigger::initFromPropertyTree(const std::string& _name, const boost::p
     try
     {
         const ptree& triggerPT = CTopoBase::findElement(CTopoBase::EType::TRIGGER, _name, _pt.get_child("topology"));
-        setId(triggerPT.get<string>("<xmlattr>.id"));
+        setName(triggerPT.get<string>("<xmlattr>.name"));
         setAction(TagToActionType(triggerPT.get<std::string>("<xmlattr>.action", "")));
         setCondition(TagToConditionType(triggerPT.get<std::string>("<xmlattr>.condition", "")));
         setArgument(triggerPT.get<std::string>("<xmlattr>.arg", ""));
@@ -76,7 +76,7 @@ void CTopoTrigger::initFromPropertyTree(const std::string& _name, const boost::p
 string CTopoTrigger::toString() const
 {
     stringstream ss;
-    ss << "DDSTrigger: id=" << getId() << " action=" << ActionTypeToTag(getAction())
+    ss << "DDSTrigger: name=" << getName() << " action=" << ActionTypeToTag(getAction())
        << " condition=" << ConditionTypeToTag(getCondition()) << " arguments=" << getArgument();
     return ss.str();
 }

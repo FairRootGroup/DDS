@@ -61,7 +61,7 @@ void CTopoTask::setProperties(const CTopoProperty::PtrMap_t& _properties)
 
 void CTopoTask::addProperty(CTopoProperty::Ptr_t _property)
 {
-    m_properties.insert(make_pair(_property->getId(), _property));
+    m_properties.insert(make_pair(_property->getName(), _property));
 }
 
 void CTopoTask::setRequirements(const CTopoRequirement::PtrVector_t& _requirements)
@@ -159,7 +159,7 @@ const CTopoTrigger::PtrVector_t& CTopoTask::getTriggers() const
 
 std::string CTopoTask::getParentCollectionId() const
 {
-    return (getParent() == nullptr || getParent()->getType() == CTopoBase::EType::GROUP) ? "" : getParent()->getId();
+    return (getParent() == nullptr || getParent()->getType() == CTopoBase::EType::GROUP) ? "" : getParent()->getName();
 }
 
 std::string CTopoTask::getParentGroupId() const
@@ -167,9 +167,9 @@ std::string CTopoTask::getParentGroupId() const
     if (getParent() == nullptr)
         return "";
     else if (getParent()->getType() == CTopoBase::EType::GROUP)
-        return getParent()->getId();
+        return getParent()->getName();
     else if (getParent()->getParent() != nullptr)
-        return getParent()->getParent()->getId();
+        return getParent()->getParent()->getName();
     return "";
 }
 
@@ -179,7 +179,7 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
     {
         const ptree& taskPT = CTopoElement::findElement(CTopoBase::EType::TASK, _name, _pt.get_child("topology"));
 
-        setId(taskPT.get<string>("<xmlattr>.id"));
+        setName(taskPT.get<string>("<xmlattr>.name"));
         setExe(taskPT.get<string>("exe"));
         setEnv(taskPT.get<string>("env", ""));
         setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));
@@ -231,7 +231,7 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 string CTopoTask::toString() const
 {
     stringstream ss;
-    ss << "Task: m_id=" << getId() << " m_exe=" << m_exe << " m_env=" << m_env << " m_properties:\n";
+    ss << "Task: m_name=" << getName() << " m_exe=" << m_exe << " m_env=" << m_env << " m_properties:\n";
     for (const auto& property : m_properties)
     {
         ss << " - " << property.second->toString() << endl;

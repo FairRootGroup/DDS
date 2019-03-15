@@ -749,7 +749,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
         cmd->m_taskPath = sch.m_taskInfo.m_taskPath;
         cmd->m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
         cmd->m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
-        cmd->m_taskName = sch.m_taskInfo.m_task->getId();
+        cmd->m_taskName = sch.m_taskInfo.m_task->getName();
 
         if (sch.m_taskInfo.m_task->isExeReachable())
         {
@@ -1086,7 +1086,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     for (const auto& property : properties)
     {
         STopoRuntimeTask::FilterIteratorPair_t taskIt =
-            m_topo.getRuntimeTaskIteratorForPropertyId(property.first, taskID);
+            m_topo.getRuntimeTaskIteratorForPropertyName(property.first, taskID);
 
         for (auto it = taskIt.first; it != taskIt.second; ++it)
         {

@@ -38,11 +38,11 @@ namespace dds
 
           public:
             /// Modifiers
-            void setId(const std::string& _id);
+            void setName(const std::string& _name);
             void setParent(CTopoBase* _parent);
 
             /// Accessors
-            std::string getId() const;
+            std::string getName() const;
             CTopoBase::EType getType() const;
             CTopoBase* getParent() const;
 
@@ -84,7 +84,7 @@ namespace dds
             void setType(CTopoBase::EType _type);
 
           private:
-            std::string m_id;        ///< Identificator of topology element
+            std::string m_name;      ///< Name of topology element
             CTopoBase::EType m_type; ///< Type of the topology element
             CTopoBase* m_parent;     ///< Pointer to parent element
         };

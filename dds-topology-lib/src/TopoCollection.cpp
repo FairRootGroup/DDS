@@ -66,7 +66,7 @@ void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt
         const ptree& collectionPT =
             CTopoElement::findElement(CTopoBase::EType::COLLECTION, _name, _pt.get_child("topology"));
 
-        setId(collectionPT.get<string>("<xmlattr>.id"));
+        setName(collectionPT.get<string>("<xmlattr>.name"));
 
         boost::optional<const ptree&> requirementsPT = collectionPT.get_child_optional("requirements");
         if (requirementsPT)

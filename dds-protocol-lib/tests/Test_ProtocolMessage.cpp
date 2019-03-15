@@ -232,15 +232,15 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdUPDATE_KEY)
 {
-    const string propertyID = "test_Property";
+    const string propertyName = "test_Property";
     const string value = "test_Value";
     const uint64_t senderTaskID = 1111111111;
     const uint64_t receiverTaskID = 2222222222;
     const unsigned int cmdSize =
-        propertyID.size() + sizeof(uint16_t) + value.size() + sizeof(uint16_t) + sizeof(uint64_t) + sizeof(uint64_t);
+        propertyName.size() + sizeof(uint16_t) + value.size() + sizeof(uint16_t) + sizeof(uint64_t) + sizeof(uint64_t);
 
     SUpdateKeyCmd cmd_src;
-    cmd_src.m_propertyID = propertyID;
+    cmd_src.m_propertyName = propertyName;
     cmd_src.m_value = value;
     cmd_src.m_senderTaskID = senderTaskID;
     cmd_src.m_receiverTaskID = receiverTaskID;

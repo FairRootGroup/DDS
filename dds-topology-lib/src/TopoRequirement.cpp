@@ -53,7 +53,7 @@ void CTopoRequirement::initFromPropertyTree(const std::string& _name, const boos
     {
         const ptree& requirementPT =
             CTopoBase::findElement(CTopoBase::EType::REQUIREMENT, _name, _pt.get_child("topology"));
-        setId(requirementPT.get<string>("<xmlattr>.id"));
+        setName(requirementPT.get<string>("<xmlattr>.name"));
         setValue(requirementPT.get<std::string>("<xmlattr>.value", ""));
         setRequirementType(TagToRequirementType(requirementPT.get<std::string>("<xmlattr>.type", "")));
     }
@@ -66,7 +66,7 @@ void CTopoRequirement::initFromPropertyTree(const std::string& _name, const boos
 string CTopoRequirement::toString() const
 {
     stringstream ss;
-    ss << "DDSRequirement: id=" << getId() << " type=" << RequirementTypeToTag(getRequirementType())
+    ss << "DDSRequirement: name=" << getName() << " type=" << RequirementTypeToTag(getRequirementType())
        << " value=" << getValue();
     return ss.str();
 }

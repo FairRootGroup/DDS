@@ -655,16 +655,17 @@ void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
 
 void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
 {
-    string propertyID(_attachment->m_propertyID);
+    string propertyName(_attachment->m_propertyName);
     uint64_t taskID(m_SMCommanderChannel->getTaskID());
 
     auto task = m_topo.getRuntimeTaskByHash(taskID).m_task;
-    auto property = task->getProperty(propertyID);
+    auto property = task->getProperty(propertyName);
     // Property doesn't exists for task
     if (property == nullptr)
     {
         stringstream ss;
-        ss << "Can't propagate property <" << propertyID << "> that doesn't exist for task <" << task->getId() << ">";
+        ss << "Can't propagate property <" << propertyName << "> that doesn't exist for task <" << task->getName()
+           << ">";
         m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
         return;
     }
@@ -672,8 +673,8 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
     if (property->getAccessType() == CTopoProperty::EAccessType::READ)
     {
         stringstream ss;
-        ss << "Can't propagate property <" << property->getId() << "> which has a READ access type for task <"
-           << task->getId() << ">";
+        ss << "Can't propagate property <" << property->getName() << "> which has a READ access type for task <"
+           << task->getName() << ">";
         m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
         return;
     }
@@ -682,14 +683,14 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
         (task->getParent()->getType() != CTopoBase::EType::COLLECTION))
     {
         stringstream ss;
-        ss << "Can't propagate property <" << property->getId() << "> which has a COLLECTION scope type but task <"
-           << task->getId() << "> is not in any collection";
+        ss << "Can't propagate property <" << property->getName() << "> which has a COLLECTION scope type but task <"
+           << task->getName() << "> is not in any collection";
         m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY));
         return;
     }
 
     SUpdateKeyCmd cmd;
-    cmd.m_propertyID = propertyID;
+    cmd.m_propertyName = propertyName;
     cmd.m_value = _attachment->m_value;
     cmd.m_senderTaskID = taskID;
     m_SMCommanderChannel->pushMsg<cmdUPDATE_KEY>(cmd, m_SMCommanderChannel->getProtocolHeaderID());

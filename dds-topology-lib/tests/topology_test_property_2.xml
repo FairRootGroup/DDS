@@ -1,69 +1,69 @@
-<topology id="myTopology">
+<topology name="myTopology">
     
-    <var id="numCollections" value="15" />
-    <var id="userTask0" value="userTask0.exe" />
-    <var id="userTask1" value="userTask1.exe" />
+    <var name="numCollections" value="15" />
+    <var name="userTask0" value="userTask0.exe" />
+    <var name="userTask1" value="userTask1.exe" />
     
-    <property id="property_1" scope="collection" />
-    <property id="property_2" scope="collection" />
-    <property id="property_3" scope="collection" />
-    <property id="property_4" scope="collection" />
-    <property id="property_5" scope="collection" />
-    <property id="property_6" scope="collection" />
-    <property id="property_7" scope="collection" />
-    <property id="property_8" scope="collection" />
-    <property id="property_9" scope="collection" />
-    <property id="property_10" scope="collection" />
+    <property name="property_1" scope="collection" />
+    <property name="property_2" scope="collection" />
+    <property name="property_3" scope="collection" />
+    <property name="property_4" scope="collection" />
+    <property name="property_5" scope="collection" />
+    <property name="property_6" scope="collection" />
+    <property name="property_7" scope="collection" />
+    <property name="property_8" scope="collection" />
+    <property name="property_9" scope="collection" />
+    <property name="property_10" scope="collection" />
     
-    <decltask id="TestKeyValue0">
+    <decltask name="TestKeyValue0">
         <exe reachable="false">${userTask0}</exe>
         <properties>
-            <id access="write">property_1</id>
-            <id access="write">property_2</id>
-            <id access="write">property_3</id>
-            <id access="write">property_4</id>
-            <id access="write">property_5</id>
-            <id access="read">property_6</id>
-            <id access="read">property_7</id>
-            <id access="read">property_8</id>
-            <id access="read">property_9</id>
-            <id access="read">property_10</id>
+            <name access="write">property_1</name>
+            <name access="write">property_2</name>
+            <name access="write">property_3</name>
+            <name access="write">property_4</name>
+            <name access="write">property_5</name>
+            <name access="read">property_6</name>
+            <name access="read">property_7</name>
+            <name access="read">property_8</name>
+            <name access="read">property_9</name>
+            <name access="read">property_10</name>
         </properties>
     </decltask>
     
-    <decltask id="TestKeyValue1">
+    <decltask name="TestKeyValue1">
         <exe reachable="false">${userTask1}</exe>
         <properties>
-            <id access="read">property_1</id>
-            <id access="read">property_2</id>
-            <id access="read">property_3</id>
-            <id access="read">property_4</id>
-            <id access="read">property_5</id>
-            <id access="write">property_6</id>
-            <id access="write">property_7</id>
-            <id access="write">property_8</id>
-            <id access="write">property_9</id>
-            <id access="write">property_10</id>
+            <name access="read">property_1</name>
+            <name access="read">property_2</name>
+            <name access="read">property_3</name>
+            <name access="read">property_4</name>
+            <name access="read">property_5</name>
+            <name access="write">property_6</name>
+            <name access="write">property_7</name>
+            <name access="write">property_8</name>
+            <name access="write">property_9</name>
+            <name access="write">property_10</name>
         </properties>
     </decltask>
     
-    <declcollection id="TestCollection">
+    <declcollection name="TestCollection">
         <tasks>
-            <id>TestKeyValue0</id>
-            <id>TestKeyValue0</id>
-            <id>TestKeyValue0</id>
-            <id>TestKeyValue0</id>
-            <id>TestKeyValue0</id>
-            <id>TestKeyValue1</id>
-            <id>TestKeyValue1</id>
-            <id>TestKeyValue1</id>
-            <id>TestKeyValue1</id>
-            <id>TestKeyValue1</id>
+            <name>TestKeyValue0</name>
+            <name>TestKeyValue0</name>
+            <name>TestKeyValue0</name>
+            <name>TestKeyValue0</name>
+            <name>TestKeyValue0</name>
+            <name>TestKeyValue1</name>
+            <name>TestKeyValue1</name>
+            <name>TestKeyValue1</name>
+            <name>TestKeyValue1</name>
+            <name>TestKeyValue1</name>
         </tasks>
     </declcollection>
     
-    <main id="main">
-        <group id="group1" n="${numCollections}">
+    <main name="main">
+        <group name="group1" n="${numCollections}">
             <collection>TestCollection</collection>
         </group>
     </main>

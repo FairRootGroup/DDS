@@ -21,7 +21,7 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SGetPropValuesCmd& val) const;
 
-            std::string m_sPropertyID;
+            std::string m_sPropertyName;
         };
         std::ostream& operator<<(std::ostream& _stream, const SGetPropValuesCmd& val);
         bool operator!=(const SGetPropValuesCmd& lhs, const SGetPropValuesCmd& rhs);

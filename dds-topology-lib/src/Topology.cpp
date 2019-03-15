@@ -172,25 +172,25 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIter
     return make_pair(begin_iterator, end_iterator);
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPropertyId(const std::string& _propertyId,
-                                                                                      uint64_t _taskHash) const
+STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPropertyName(
+    const std::string& _propertyName, uint64_t _taskHash) const
 {
     auto taskIt = m_hashToRuntimeTaskMap.find(_taskHash);
     if (taskIt == m_hashToRuntimeTaskMap.end())
         throw runtime_error("Can't find task with ID" + to_string(_taskHash));
 
     const STopoRuntimeTask& taskInfo = taskIt->second;
-    CTopoProperty::Ptr_t property = taskInfo.m_task->getProperty(_propertyId);
+    CTopoProperty::Ptr_t property = taskInfo.m_task->getProperty(_propertyName);
     if (property == nullptr)
-        throw runtime_error("Property <" + _propertyId + "> for task " + to_string(_taskHash) + " doesn't exist");
+        throw runtime_error("Property <" + _propertyName + "> for task " + to_string(_taskHash) + " doesn't exist");
 
     switch (property->getScopeType())
     {
         case CTopoProperty::EScopeType::GLOBAL:
             return getRuntimeTaskIterator(
-                [&_propertyId](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
+                [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
                     CTopoTask::Ptr_t task = value.second.m_task;
-                    CTopoProperty::Ptr_t property = task->getProperty(_propertyId);
+                    CTopoProperty::Ptr_t property = task->getProperty(_propertyName);
                     return property != nullptr;
                 });
 
@@ -198,7 +198,7 @@ STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPrope
         {
             uint64_t collectionHash = taskInfo.m_taskCollectionHash;
             if (collectionHash == 0)
-                throw runtime_error("Property <" + _propertyId + "> is set for COLLECTION scope only but task " +
+                throw runtime_error("Property <" + _propertyName + "> is set for COLLECTION scope only but task " +
                                     to_string(_taskHash) + " doesn't belong to any collection");
 
             auto it = m_hashToRuntimeCollectionMap.find(collectionHash);
@@ -209,9 +209,9 @@ STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPrope
 
             return getRuntimeTaskIterator(
                 collectionInfo.m_hashToRuntimeTaskMap,
-                [&_propertyId](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
+                [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
                     CTopoTask::Ptr_t task = value.second.m_task;
-                    CTopoProperty::Ptr_t property = task->getProperty(_propertyId);
+                    CTopoProperty::Ptr_t property = task->getProperty(_propertyName);
                     return property != nullptr;
                 });
         }
@@ -227,7 +227,7 @@ void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
         size_t collectionCounter;
         if (task->getParent()->getType() == CTopoBase::EType::COLLECTION)
         {
-            path = m_currentCollectionHashPath + "/" + task->getId();
+            path = m_currentCollectionHashPath + "/" + task->getName();
             collectionCounter = m_counterMap[task->getParent()->getPath()] - 1;
         }
         else

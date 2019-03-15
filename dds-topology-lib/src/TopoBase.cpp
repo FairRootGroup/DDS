@@ -15,7 +15,7 @@ using namespace dds;
 using namespace topology_api;
 
 CTopoBase::CTopoBase()
-    : m_id("")
+    : m_name("")
     , m_type(CTopoBase::EType::TOPO_BASE)
     , m_parent(nullptr)
 {
@@ -30,9 +30,9 @@ void CTopoBase::setType(CTopoBase::EType _type)
     m_type = _type;
 }
 
-void CTopoBase::setId(const string& _id)
+void CTopoBase::setName(const string& _name)
 {
-    m_id = _id;
+    m_name = _name;
 }
 
 void CTopoBase::setParent(CTopoBase* _parent)
@@ -40,9 +40,9 @@ void CTopoBase::setParent(CTopoBase* _parent)
     m_parent = _parent;
 }
 
-string CTopoBase::getId() const
+string CTopoBase::getName() const
 {
-    return m_id;
+    return m_name;
 }
 
 CTopoBase::EType CTopoBase::getType() const
@@ -59,11 +59,11 @@ string CTopoBase::getPath() const
 {
     if (getParent() == nullptr)
     {
-        return getId();
+        return getName();
     }
     else
     {
-        return getParent()->getPath() + "/" + getId();
+        return getParent()->getPath() + "/" + getName();
     }
 }
 
@@ -73,7 +73,7 @@ const ptree& CTopoBase::findElement(CTopoBase::EType _type, const string& _name,
     for (const auto& v : _pt)
     {
         const auto& elementPT = v.second;
-        if (v.first == TopoTypeToDeclTag(_type) && elementPT.get<string>("<xmlattr>.id") == _name)
+        if (v.first == TopoTypeToDeclTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
         {
             if (result != nullptr)
                 throw logic_error("Element \"" + _name + "\" has dublicated name.");
@@ -89,7 +89,7 @@ const ptree& CTopoBase::findElement(CTopoBase::EType _type, const string& _name,
 string CTopoBase::toString() const
 {
     stringstream ss;
-    ss << "TopoBase: m_id=" << m_id;
+    ss << "TopoBase: m_name=" << m_name;
     return ss.str();
 }
 

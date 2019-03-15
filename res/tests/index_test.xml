@@ -1,38 +1,38 @@
-<topology id="myTopology">
+<topology name="myTopology">
 	
-	<property id="TestKey" />
+	<property name="TestKey" />
 	
-  	<decltask id="TestTask0">
+  	<decltask name="TestTask0">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type 0 --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
 		<properties>
-			<id access="write">TestKey</id>
+			<name access="write">TestKey</name>
 		</properties>
 	</decltask>
 	
-  	<decltask id="TestTask1">
+  	<decltask name="TestTask1">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type 1 --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
 		<properties>
-			<id access="read">TestKey</id>
+			<name access="read">TestKey</name>
 		</properties>
 	</decltask>
 	
-  	<decltask id="TestTask2">
+  	<decltask name="TestTask2">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --type 2 --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
 		<properties>
-			<id access="read">TestKey</id>
+			<name access="read">TestKey</name>
 		</properties>
 	</decltask>
 	
-	<declcollection id="CollectionTask">
+	<declcollection name="CollectionTask">
 		<tasks>
-			<id>TestTask1</id>
+			<name>TestTask1</name>
 		</tasks>
 	</declcollection>
 	
-	<main id="main">
+	<main name="main">
 		<task>TestTask0</task>
 		<collection>CollectionTask</collection>
-		<group id="group1" n="2">
+		<group name="group1" n="2">
             <task>TestTask2</task>
 			<collection>CollectionTask</collection>
 		</group>

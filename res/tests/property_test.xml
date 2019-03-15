@@ -1,50 +1,50 @@
-<topology id="myTopology">
+<topology name="myTopology">
 
-	<property id="property_1" />
-	<property id="property_2" />
-	<property id="property_3" />
-	<property id="property_4" />
-	<property id="property_5" />
-	<property id="property_6" />
-	<property id="property_7" />
-	<property id="property_8" />
-	<property id="property_9" />
-	<property id="property_10" />
+	<property name="property_1" />
+	<property name="property_2" />
+	<property name="property_3" />
+	<property name="property_4" />
+	<property name="property_5" />
+	<property name="property_6" />
+	<property name="property_7" />
+	<property name="property_8" />
+	<property name="property_9" />
+	<property name="property_10" />
 
-  	<decltask id="TestKeyValue0">
+  	<decltask name="TestKeyValue0">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value -i 5 --max-value 10 -t 0 --test-errors</exe>
 		<properties>
-			<id access="write">property_1</id>
-			<id access="write">property_2</id>
-			<id access="write">property_3</id>
-			<id access="write">property_4</id>
-			<id access="write">property_5</id>
-			<id access="read">property_6</id>
-			<id access="read">property_7</id>
-			<id access="read">property_8</id>
-			<id access="read">property_9</id>
-			<id access="read">property_10</id>
+			<name access="write">property_1</name>
+			<name access="write">property_2</name>
+			<name access="write">property_3</name>
+			<name access="write">property_4</name>
+			<name access="write">property_5</name>
+			<name access="read">property_6</name>
+			<name access="read">property_7</name>
+			<name access="read">property_8</name>
+			<name access="read">property_9</name>
+			<name access="read">property_10</name>
 		</properties>
 	</decltask>
 
-  	<decltask id="TestKeyValue1">
+  	<decltask name="TestKeyValue1">
 		<exe reachable="false">$DDS_LOCATION/tests/task-test_key_value -i 5 --max-value 10 -t 1 --test-errors</exe>
 		<properties>
-			<id access="read">property_1</id>
-			<id access="read">property_2</id>
-			<id access="read">property_3</id>
-			<id access="read">property_4</id>
-			<id access="read">property_5</id>
-			<id access="write">property_6</id>
-			<id access="write">property_7</id>
-			<id access="write">property_8</id>
-			<id access="write">property_9</id>
-			<id access="write">property_10</id>
+			<name access="read">property_1</name>
+			<name access="read">property_2</name>
+			<name access="read">property_3</name>
+			<name access="read">property_4</name>
+			<name access="read">property_5</name>
+			<name access="write">property_6</name>
+			<name access="write">property_7</name>
+			<name access="write">property_8</name>
+			<name access="write">property_9</name>
+			<name access="write">property_10</name>
 		</properties>
 	</decltask>
 
-	<main id="main">
-		<group id="group1" n="5">
+	<main name="main">
+		<group name="group1" n="5">
 			<task>TestKeyValue0</task>
 			<task>TestKeyValue1</task>
 		</group>

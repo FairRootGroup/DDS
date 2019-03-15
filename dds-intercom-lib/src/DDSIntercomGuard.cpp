@@ -237,7 +237,7 @@ void CDDSIntercomGuard::on_cmdUPDATE_KEY_SM(
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
     execUserSignal(
-        m_keyValueUpdateSignal, _attachment->m_propertyID, _attachment->m_value, _attachment->m_senderTaskID);
+        m_keyValueUpdateSignal, _attachment->m_propertyName, _attachment->m_value, _attachment->m_senderTaskID);
 }
 
 void CDDSIntercomGuard::on_cmdUSER_TASK_DONE_SM(
@@ -361,7 +361,7 @@ void CDDSIntercomGuard::putValue(const std::string& _key, const std::string& _va
     LOG(debug) << "CCDDSIntercomGuard putValue: key=" << _key << " value=" << _value;
 
     SUpdateKeyCmd cmd;
-    cmd.m_propertyID = _key;
+    cmd.m_propertyName = _key;
     cmd.m_senderTaskID = env_prop<task_id>();
     cmd.m_value = _value;
 

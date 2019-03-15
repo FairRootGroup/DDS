@@ -67,8 +67,8 @@ namespace dds
                 STopoRuntimeTask::Condition_t _condition = nullptr) const;
             STopoRuntimeCollection::FilterIteratorPair_t getRuntimeCollectionIterator(
                 STopoRuntimeCollection::Condition_t _condition = nullptr) const;
-            STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIteratorForPropertyId(const std::string& _propertyId,
-                                                                                       uint64_t _taskHash) const;
+            STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIteratorForPropertyName(
+                const std::string& _propertyName, uint64_t _taskHash) const;
 
             /// Accessors to internal data structures. Used for unit tests.
             const STopoRuntimeTask::Map_t& getHashToRuntimeTaskMap() const;

@@ -42,7 +42,7 @@ void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::prop
             const auto& elementPT = v.second;
             if (v.first == TopoTypeToDeclTag(CTopoBase::EType::TOPO_VARS))
             {
-                m_map[elementPT.get<string>("<xmlattr>.id")] = elementPT.get<string>("<xmlattr>.value");
+                m_map[elementPT.get<string>("<xmlattr>.name")] = elementPT.get<string>("<xmlattr>.value");
             }
         }
     }
@@ -55,7 +55,7 @@ void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::prop
 string CTopoVars::toString() const
 {
     stringstream ss;
-    ss << "DDSTopoVars: m_id=" << getId() << endl;
+    ss << "DDSTopoVars: m_name=" << getName() << endl;
     for (const auto& v : m_map)
     {
         ss << v.first << " --> " << v.second << endl;

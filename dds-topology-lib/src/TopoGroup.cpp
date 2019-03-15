@@ -50,7 +50,7 @@ void CTopoGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
         const ptree& groupPT =
             (_name == "main") ? mainPT : CTopoElement::findElement(CTopoBase::EType::GROUP, _name, mainPT);
 
-        setId(groupPT.get<string>("<xmlattr>.id"));
+        setName(groupPT.get<string>("<xmlattr>.name"));
         setN(groupPT.get<size_t>("<xmlattr>.n", 1));
 
         for (const auto& element : groupPT)
@@ -60,7 +60,7 @@ void CTopoGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
             CTopoElement::Ptr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
             newElement->setParent(this);
             boost::optional<const ptree&> child = element.second.get_child_optional("<xmlattr>");
-            string name = (child) ? child.get().get<string>("id") : element.second.data();
+            string name = (child) ? child.get().get<string>("name") : element.second.data();
             newElement->initFromPropertyTree(name, _pt);
             addElement(newElement);
         }
@@ -103,7 +103,7 @@ CTopoElement::PtrVector_t CTopoGroup::getElementsByType(CTopoBase::EType _type) 
 string CTopoGroup::toString() const
 {
     stringstream ss;
-    ss << "TaskGroup: m_id=" << getId() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
+    ss << "TaskGroup: m_name=" << getName() << " m_n=" << m_n << " nofElements=" << getNofElements() << " elements:\n";
     const auto& elements = getElements();
     for (const auto& element : elements)
     {

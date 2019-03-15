@@ -11,32 +11,32 @@ using namespace dds;
 using namespace dds::protocol_api;
 
 SGetPropValuesCmd::SGetPropValuesCmd()
-    : m_sPropertyID()
+    : m_sPropertyName()
 {
 }
 size_t SGetPropValuesCmd::size() const
 {
-    return dsize(m_sPropertyID);
+    return dsize(m_sPropertyName);
 }
 
 bool SGetPropValuesCmd::operator==(const SGetPropValuesCmd& val) const
 {
-    return (m_sPropertyID == val.m_sPropertyID);
+    return (m_sPropertyName == val.m_sPropertyName);
 }
 
 void SGetPropValuesCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
-    SAttachmentDataProvider(_data).get(m_sPropertyID);
+    SAttachmentDataProvider(_data).get(m_sPropertyName);
 }
 
 void SGetPropValuesCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
-    SAttachmentDataProvider(_data).put(m_sPropertyID);
+    SAttachmentDataProvider(_data).put(m_sPropertyName);
 }
 
 std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SGetPropValuesCmd& val)
 {
-    return _stream << "propertyID: " << val.m_sPropertyID;
+    return _stream << "propertyName: " << val.m_sPropertyName;
 }
 
 bool dds::protocol_api::operator!=(const SGetPropValuesCmd& lhs, const SGetPropValuesCmd& rhs)

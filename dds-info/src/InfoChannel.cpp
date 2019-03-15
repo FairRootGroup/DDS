@@ -29,7 +29,7 @@ CInfoChannel::CInfoChannel(boost::asio::io_service& _service, uint64_t _protocol
         else if (m_options.m_bNeedPropValues)
         {
             protocol_api::SGetPropValuesCmd cmd;
-            cmd.m_sPropertyID = m_options.m_propertyID;
+            cmd.m_sPropertyName = m_options.m_propertyName;
             pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
         }
         else if (m_options.m_nIdleAgentsCount > 0)

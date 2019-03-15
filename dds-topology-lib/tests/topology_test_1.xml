@@ -1,98 +1,98 @@
-<topology id="myTopology">
+<topology name="myTopology">
 
-	<var id="requirementVar" value=".+.gsi.de" />
-	<var id="appNameVar" value="app1 -l -n" />
-	<var id="nofGroups" value="10" />
+	<var name="requirementVar" value=".+.gsi.de" />
+	<var name="appNameVar" value="app1 -l -n" />
+	<var name="nofGroups" value="10" />
 
-	<property id="property1"/>
-	<property id="property2"/>
-	<property id="property3"/>
-	<property id="property4"/>
+	<property name="property1"/>
+	<property name="property2"/>
+	<property name="property3"/>
+	<property name="property4"/>
 
-	<declrequirement id="requirement1" type="hostname" value="${requirementVar}"/>
+	<declrequirement name="requirement1" type="hostname" value="${requirementVar}"/>
 
-	<decltrigger id="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
-	<decltrigger id="trigger2" condition="TaskCrashed" action="RestartTask" arg="10"/>
+	<decltrigger name="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
+	<decltrigger name="trigger2" condition="TaskCrashed" action="RestartTask" arg="10"/>
 
 	<!-- THIS IS A COMMENT -->
 
-  	<decltask id="task1">
+  	<decltask name="task1">
 		<exe reachable="true">${appNameVar}</exe>
 		<env reachable="false">env1</env>
 		<requirements>
-			<id>requirement1</id>
+			<name>requirement1</name>
 		</requirements>
 		<properties>
-			<id access="read">property1</id>
-			<id access="write">property4</id>
-			<id access="readwrite">property1</id>
+			<name access="read">property1</name>
+			<name access="write">property4</name>
+			<name access="readwrite">property1</name>
 		</properties>
     <triggers>
-			<id>trigger1</id>
-			<id>trigger2</id>
+			<name>trigger1</name>
+			<name>trigger2</name>
 		</triggers>
 	</decltask>
-	<decltask id="task2">
+	<decltask name="task2">
 		<exe>app2</exe>
 		<properties>
-		   <id access="read">property1</id>
-		   <id access="read">property2</id>
+		   <name access="read">property1</name>
+		   <name access="read">property2</name>
 	    </properties>
 	</decltask>
-	<decltask id="task3">
+	<decltask name="task3">
 		<exe reachable="true">app3</exe>
 		<properties>
-		   <id access="read">property2</id>
-		   <id access="read">property3</id>
+		   <name access="read">property2</name>
+		   <name access="read">property3</name>
 	  </properties>
 		<triggers>
-			<id>trigger1</id>
+			<name>trigger1</name>
 		</triggers>
 	</decltask>
-	<decltask id="task4">
+	<decltask name="task4">
 		<exe>app4</exe>
 		<properties>
-		   <id access="read">property3</id>
-		   <id access="read">property4</id>
+		   <name access="read">property3</name>
+		   <name access="read">property4</name>
 	    </properties>
 	</decltask>
-	<decltask id="task5">
+	<decltask name="task5">
 		<exe reachable="false">app5</exe>
 		<properties>
-		   <id access="read">property1</id>
+		   <name access="read">property1</name>
 	    </properties>
 	</decltask>
 
-  	<declcollection id="collection1">
+  	<declcollection name="collection1">
 		<requirements>
-			<id>requirement1</id>
+			<name>requirement1</name>
 		</requirements>
 		<tasks>
-   		   <id>task1</id>
-		   <id>task2</id>
-		   <id>task2</id>
-		   <id>task3</id>
+   		   <name>task1</name>
+		   <name>task2</name>
+		   <name>task2</name>
+		   <name>task3</name>
 	    </tasks>
   	</declcollection>
 
-  	<declcollection id="collection2">
+  	<declcollection name="collection2">
 		<tasks>
-   		   <id>task4</id>
-		   <id>task4</id>
-		   <id>task5</id>
+   		   <name>task4</name>
+		   <name>task4</name>
+		   <name>task5</name>
 	    </tasks>
   	</declcollection>
 
-	<main id="main">
+	<main name="main">
 		<!--task>task2</task-->
 	    <task>task1</task>
 	    <collection>collection1</collection>
-		<group id="group1" n="${nofGroups}">
+		<group name="group1" n="${nofGroups}">
 			<task>task1</task>
 			<collection>collection1</collection>
 			<collection>collection2</collection>
 		</group>
-		<group id="group2" n="15">
+		<group name="group2" n="15">
 			<task>task3</task>
 			<task>task4</task>
 			<collection>collection1</collection>
