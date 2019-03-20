@@ -17,14 +17,14 @@ namespace dds
 {
     namespace topology_api
     {
-        class CTopologyParserXML
+        class CTopoParserXML
         {
           public:
             /// \brief Constructor.
-            CTopologyParserXML();
+            CTopoParserXML();
 
             /// \brief Destructor.
-            virtual ~CTopologyParserXML();
+            virtual ~CTopoParserXML();
 
             /// \brief Read topology from specified XML file.
             /// \param[in] _fileName Name of file with topology.

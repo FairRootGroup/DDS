@@ -10,7 +10,7 @@
 #include <boost/test/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
 // DDS
-#include "Topology.h"
+#include "TopoCore.h"
 // MiscCommon
 #include "TimeMeasure.h"
 
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_SUITE(test_dds_topology_performance)
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_performance_1)
 {
-    CTopology topology;
+    CTopoCore topology;
 
     auto execTime = STimeMeasure<>::execution([&topology]() {
         for (size_t i = 0; i < 3; i++)

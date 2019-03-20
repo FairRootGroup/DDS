@@ -9,6 +9,8 @@
 #include <stdexcept>
 
 using namespace std;
+using namespace boost::property_tree;
+
 namespace dds
 {
     namespace topology_api
@@ -181,5 +183,25 @@ namespace dds
                     throw runtime_error("Topology element not found.");
             }
         }
+
+        const ptree& FindElementInPropertyTree(CTopoBase::EType _type, const string& _name, const ptree& _pt)
+        {
+            const ptree* result = nullptr;
+            for (const auto& v : _pt)
+            {
+                const auto& elementPT = v.second;
+                if (v.first == TopoTypeToDeclTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
+                {
+                    if (result != nullptr)
+                        throw logic_error("Element \"" + _name + "\" has dublicated name.");
+                    result = &elementPT;
+                }
+            }
+            if (result == nullptr)
+                throw logic_error("Element \"" + _name + "\"not found in property tree.");
+
+            return *result;
+        }
+
     } // namespace topology_api
 } // namespace dds

@@ -7,6 +7,7 @@
 #define __DDS__TopoTask__
 
 // DDS
+#include "TopoDef.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
 #include "TopoRequirement.h"
@@ -97,8 +98,8 @@ namespace dds
 
         struct STopoRuntimeTask
         {
-            typedef std::map<uint64_t, STopoRuntimeTask> Map_t;
-            typedef std::function<bool(std::pair<uint64_t, const STopoRuntimeTask&>)> Condition_t;
+            typedef std::map<Id_t, STopoRuntimeTask> Map_t;
+            typedef std::function<bool(std::pair<Id_t, const STopoRuntimeTask&>)> Condition_t;
             typedef boost::filter_iterator<STopoRuntimeTask::Condition_t, STopoRuntimeTask::Map_t::const_iterator>
                 FilterIterator_t;
             typedef std::pair<STopoRuntimeTask::FilterIterator_t, STopoRuntimeTask::FilterIterator_t>
@@ -109,14 +110,14 @@ namespace dds
                 , m_taskIndex(0)
                 , m_collectionIndex(std::numeric_limits<uint32_t>::max())
                 , m_taskPath()
-                , m_taskCollectionHash(0)
+                , m_taskCollectionId(0)
             {
             }
             CTopoTask::Ptr_t m_task;
             size_t m_taskIndex;
             size_t m_collectionIndex;
             std::string m_taskPath;
-            uint64_t m_taskCollectionHash;
+            Id_t m_taskCollectionId;
         };
     } // namespace topology_api
 } // namespace dds

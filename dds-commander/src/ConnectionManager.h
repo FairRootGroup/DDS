@@ -9,7 +9,7 @@
 #include "ConnectionManagerImpl.h"
 #include "Options.h"
 #include "SSHScheduler.h"
-#include "Topology.h"
+#include "TopoCore.h"
 #include "UIChannelInfo.h"
 // STD
 #include <condition_variable>
@@ -135,7 +135,7 @@ namespace dds
             CTestChannelInfo m_transportTest;
             CUpdateTopologyChannelInfo m_updateTopology;
             CSubmitAgentsChannelInfo m_SubmitAgents;
-            topology_api::CTopology m_topo;
+            topology_api::CTopoCore m_topo;
 
             // TODO: This is temporary storage only. Store this information as a part of scheduler.
             typedef std::map<uint64_t, weakChannelInfo_t> TaskIDToAgentChannelMap_t;

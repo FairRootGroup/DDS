@@ -5,7 +5,6 @@
 
 // DDS
 #include "TopoBase.h"
-#include "TopoUtils.h"
 // STD
 #include <iostream>
 
@@ -65,25 +64,6 @@ string CTopoBase::getPath() const
     {
         return getParent()->getPath() + "/" + getName();
     }
-}
-
-const ptree& CTopoBase::findElement(CTopoBase::EType _type, const string& _name, const ptree& _pt)
-{
-    const ptree* result = nullptr;
-    for (const auto& v : _pt)
-    {
-        const auto& elementPT = v.second;
-        if (v.first == TopoTypeToDeclTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
-        {
-            if (result != nullptr)
-                throw logic_error("Element \"" + _name + "\" has dublicated name.");
-            result = &elementPT;
-        }
-    }
-    if (result == nullptr)
-        throw logic_error("Element \"" + _name + "\"not found in property tree.");
-
-    return *result;
 }
 
 string CTopoBase::toString() const

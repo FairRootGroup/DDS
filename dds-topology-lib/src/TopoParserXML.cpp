@@ -4,7 +4,7 @@
 //
 
 // DDS
-#include "TopologyParserXML.h"
+#include "TopoParserXML.h"
 #include "FindCfgFile.h"
 #include "Process.h"
 #include "TopoCollection.h"
@@ -48,15 +48,15 @@ using namespace topology_api;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
 
-CTopologyParserXML::CTopologyParserXML()
+CTopoParserXML::CTopoParserXML()
 {
 }
 
-CTopologyParserXML::~CTopologyParserXML()
+CTopoParserXML::~CTopoParserXML()
 {
 }
 
-bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidationDisabled, std::string* _output)
+bool CTopoParserXML::isValid(const std::string& _fileName, bool _xmlValidationDisabled, std::string* _output)
 {
     if (_xmlValidationDisabled)
         return true;
@@ -88,7 +88,7 @@ bool CTopologyParserXML::isValid(const std::string& _fileName, bool _xmlValidati
     return (exitCode == 0);
 }
 
-void CTopologyParserXML::parse(const string& _fileName, CTopoGroup::Ptr_t _main, bool _xmlValidationDisabled)
+void CTopoParserXML::parse(const string& _fileName, CTopoGroup::Ptr_t _main, bool _xmlValidationDisabled)
 {
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");
@@ -159,7 +159,7 @@ void CTopologyParserXML::parse(const string& _fileName, CTopoGroup::Ptr_t _main,
     }
 }
 
-void CTopologyParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const
+void CTopoParserXML::PrintPropertyTree(const string& _path, const ptree& _pt) const
 {
     if (_pt.size() == 0)
     {

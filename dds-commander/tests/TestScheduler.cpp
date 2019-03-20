@@ -14,7 +14,7 @@
 #include "ConnectionManager.h"
 #include "HostInfoCmd.h"
 #include "SSHScheduler.h"
-#include "Topology.h"
+#include "TopoCore.h"
 // MiscCommon
 #include "TimeMeasure.h"
 // BOOST
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 
     boost::asio::io_service io_service;
 
-    CTopology topology;
+    CTopoCore topology;
     topology.init("topology_scheduler_test_1.xml");
 
     CConnectionManager::channelInfo_t::container_t agents;
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 
     boost::asio::io_service io_service;
 
-    CTopology topology;
+    CTopoCore topology;
     topology.init("topology_scheduler_test_2.xml");
 
     CConnectionManager::channelInfo_t::container_t agents;
@@ -189,16 +189,16 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
         weakAgents.push_back(CConnectionManager::weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID));
     }
 
-    CTopology topo;
+    CTopoCore topo;
     topo.init("topology_test_diff_1.xml", true);
 
-    CTopology newTopo;
+    CTopoCore newTopo;
     newTopo.init("topology_test_diff_2.xml", true);
 
-    CTopology::HashSet_t removedTasks;
-    CTopology::HashSet_t removedCollections;
-    CTopology::HashSet_t addedTasks;
-    CTopology::HashSet_t addedCollections;
+    CTopoCore::IdSet_t removedTasks;
+    CTopoCore::IdSet_t removedCollections;
+    CTopoCore::IdSet_t addedTasks;
+    CTopoCore::IdSet_t addedCollections;
 
     topo.getDifference(newTopo, removedTasks, removedCollections, addedTasks, addedCollections);
 

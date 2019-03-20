@@ -72,7 +72,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t
                     if (taskID == receiverTaskID)
                         continue;
 
-                    auto task = m_topo.getRuntimeTaskByHash(receiverTaskID).m_task;
+                    auto task = m_topo.getRuntimeTaskById(receiverTaskID).m_task;
                     auto property = task->getProperty(propertyName);
                     if (property != nullptr && (property->getAccessType() == CTopoProperty::EAccessType::READ ||
                                                 property->getAccessType() == CTopoProperty::EAccessType::READWRITE))
@@ -188,7 +188,7 @@ bool CCommanderChannel::on_rawMessage(CProtocolMessage::protocolMessagePtr_t _cu
 
         if (attachmentPtr->m_srcCommand == cmdUPDATE_TOPOLOGY)
         {
-            topology_api::CTopology topo;
+            topology_api::CTopoCore topo;
             // Topology already validated on the commander, no need to validate it again
             topo.setXMLValidationDisabled(true);
             topo.init(attachmentPtr->m_receivedFilePath);

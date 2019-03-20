@@ -634,7 +634,7 @@ void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     destFilePath /= _attachment->m_requestedFileName;
 
     // Activating new topology
-    CTopology topo;
+    CTopoCore topo;
     // Topology already validated on the commander, no need to validate it again
     topo.setXMLValidationDisabled(true);
     topo.init(destFilePath.string());
@@ -652,7 +652,7 @@ void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDAT
     string propertyName(_attachment->m_propertyName);
     uint64_t taskID(m_SMCommanderChannel->getTaskID());
 
-    auto task = m_topo.getRuntimeTaskByHash(taskID).m_task;
+    auto task = m_topo.getRuntimeTaskById(taskID).m_task;
     auto property = task->getProperty(propertyName);
     // Property doesn't exists for task
     if (property == nullptr)

@@ -177,7 +177,7 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
 {
     try
     {
-        const ptree& taskPT = CTopoElement::findElement(CTopoBase::EType::TASK, _name, _pt.get_child("topology"));
+        const ptree& taskPT = FindElementInPropertyTree(CTopoBase::EType::TASK, _name, _pt.get_child("topology"));
 
         setName(taskPT.get<string>("<xmlattr>.name"));
         setExe(taskPT.get<string>("exe"));

@@ -4,9 +4,9 @@
 //
 
 // DDS
-#include "Topology.h"
+#include "TopoCore.h"
+#include "TopoParserXML.h"
 #include "TopoUtils.h"
-#include "TopologyParserXML.h"
 // STD
 #include <string>
 // MiscCommon
@@ -20,60 +20,58 @@ using namespace dds;
 using namespace topology_api;
 using namespace boost;
 
-CTopology::CTopology()
+CTopoCore::CTopoCore()
     : m_main(nullptr)
-    , m_currentCollectionCrc(0)
+    , m_currentCollectionId(0)
     , m_bXMLValidationDisabled(false)
 {
 }
 
-CTopology::~CTopology()
+CTopoCore::~CTopoCore()
 {
 }
 
-CTopoGroup::Ptr_t CTopology::getMainGroup() const
+CTopoGroup::Ptr_t CTopoCore::getMainGroup() const
 {
     return m_main;
 }
 
-void CTopology::init(const std::string& _fileName, bool _initForTest)
+void CTopoCore::init(const std::string& _fileName, bool _initForTest)
 {
-    CTopologyParserXML parser;
+    CTopoParserXML parser;
     m_main = std::make_shared<CTopoGroup>();
     parser.parse(_fileName, m_main, m_bXMLValidationDisabled);
 
     m_counterMap.clear();
-    m_hashToRuntimeTaskMap.clear();
-    m_hashToRuntimeCollectionMap.clear();
-    m_currentCollectionHashPath = "";
-    m_currentCollectionCrc = 0;
+    m_idToRuntimeTaskMap.clear();
+    m_idToRuntimeCollectionMap.clear();
+    m_currentCollectionIdPath = "";
+    m_currentCollectionId = 0;
 
-    FillHashToTopoElementMap(m_main);
+    FillIdToTopoElementMap(m_main);
 }
 
-void CTopology::getDifference(const CTopology& _topology,
-                              HashSet_t& _removedTasks,
-                              HashSet_t& _removedCollections,
-                              HashSet_t& _addedTasks,
-                              HashSet_t& _addedCollections)
+void CTopoCore::getDifference(const CTopoCore& _topology,
+                              IdSet_t& _removedTasks,
+                              IdSet_t& _removedCollections,
+                              IdSet_t& _addedTasks,
+                              IdSet_t& _addedCollections)
 {
     _removedTasks.clear();
     _removedCollections.clear();
     _addedTasks.clear();
     _addedCollections.clear();
 
-    HashSet_t tasks;
-    HashSet_t newTasks;
-    HashSet_t collections;
-    HashSet_t newCollections;
+    IdSet_t tasks;
+    IdSet_t newTasks;
+    IdSet_t collections;
+    IdSet_t newCollections;
 
     // Get all keys from maps as a set
-    boost::copy(m_hashToRuntimeTaskMap | boost::adaptors::map_keys, std::inserter(tasks, tasks.end()));
-    boost::copy(_topology.getHashToRuntimeTaskMap() | boost::adaptors::map_keys,
-                std::inserter(newTasks, newTasks.end()));
-    boost::copy(m_hashToRuntimeCollectionMap | boost::adaptors::map_keys,
-                std::inserter(collections, collections.end()));
-    boost::copy(_topology.getHashToRuntimeCollectionMap() | boost::adaptors::map_keys,
+    boost::copy(m_idToRuntimeTaskMap | boost::adaptors::map_keys, std::inserter(tasks, tasks.end()));
+    boost::copy(_topology.getIdToRuntimeTaskMap() | boost::adaptors::map_keys, std::inserter(newTasks, newTasks.end()));
+    boost::copy(m_idToRuntimeCollectionMap | boost::adaptors::map_keys, std::inserter(collections, collections.end()));
+    boost::copy(_topology.getIdToRuntimeCollectionMap() | boost::adaptors::map_keys,
                 std::inserter(newCollections, newCollections.end()));
 
     // Get difference between two sets
@@ -96,50 +94,50 @@ void CTopology::getDifference(const CTopology& _topology,
                         std::inserter(_addedCollections, _addedCollections.begin()));
 }
 
-void CTopology::setXMLValidationDisabled(bool _val)
+void CTopoCore::setXMLValidationDisabled(bool _val)
 {
     m_bXMLValidationDisabled = _val;
 }
 
-const STopoRuntimeTask::Map_t& CTopology::getHashToRuntimeTaskMap() const
+const STopoRuntimeTask::Map_t& CTopoCore::getIdToRuntimeTaskMap() const
 {
-    return m_hashToRuntimeTaskMap;
+    return m_idToRuntimeTaskMap;
 }
 
-const STopoRuntimeCollection::Map_t& CTopology::getHashToRuntimeCollectionMap() const
+const STopoRuntimeCollection::Map_t& CTopoCore::getIdToRuntimeCollectionMap() const
 {
-    return m_hashToRuntimeCollectionMap;
+    return m_idToRuntimeCollectionMap;
 }
 
-const STopoRuntimeTask& CTopology::getRuntimeTaskByHash(uint64_t _hash) const
+const STopoRuntimeTask& CTopoCore::getRuntimeTaskById(Id_t _id) const
 {
-    auto it = m_hashToRuntimeTaskMap.find(_hash);
-    if (it == m_hashToRuntimeTaskMap.end())
-        throw runtime_error("Can not find task info with hash " + to_string(_hash));
+    auto it = m_idToRuntimeTaskMap.find(_id);
+    if (it == m_idToRuntimeTaskMap.end())
+        throw runtime_error("Can not find task info with ID " + to_string(_id));
     return it->second;
 }
 
-const STopoRuntimeCollection& CTopology::getRuntimeCollectionByHash(uint64_t _hash) const
+const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionById(Id_t _id) const
 {
-    auto it = m_hashToRuntimeCollectionMap.find(_hash);
-    if (it == m_hashToRuntimeCollectionMap.end())
-        throw runtime_error("Can not find task collection with hash " + to_string(_hash));
+    auto it = m_idToRuntimeCollectionMap.find(_id);
+    if (it == m_idToRuntimeCollectionMap.end())
+        throw runtime_error("Can not find task collection with ID " + to_string(_id));
     return it->second;
 }
 
-const STopoRuntimeTask& CTopology::getRuntimeTaskByHashPath(const std::string& _hashPath) const
+const STopoRuntimeTask& CTopoCore::getRuntimeTaskByIdPath(const std::string& _idPath) const
 {
-    uint8_t hash = MiscCommon::crc64(_hashPath);
-    return getRuntimeTaskByHash(hash);
+    Id_t id = MiscCommon::crc64(_idPath);
+    return getRuntimeTaskById(id);
 }
 
-const STopoRuntimeCollection& CTopology::getRuntimeCollectionByHashPath(const std::string& _hashPath) const
+const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionByIdPath(const std::string& _idPath) const
 {
-    uint8_t hash = MiscCommon::crc64(_hashPath);
-    return getRuntimeCollectionByHash(hash);
+    Id_t id = MiscCommon::crc64(_idPath);
+    return getRuntimeCollectionById(id);
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIterator(const STopoRuntimeTask::Map_t& _map,
+STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIterator(const STopoRuntimeTask::Map_t& _map,
                                                                          STopoRuntimeTask::Condition_t _condition) const
 {
     STopoRuntimeTask::Condition_t condition = _condition;
@@ -152,12 +150,12 @@ STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIterator(const S
     return make_pair(begin_iterator, end_iterator);
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIterator(STopoRuntimeTask::Condition_t _condition) const
+STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIterator(STopoRuntimeTask::Condition_t _condition) const
 {
-    return getRuntimeTaskIterator(m_hashToRuntimeTaskMap, _condition);
+    return getRuntimeTaskIterator(m_idToRuntimeTaskMap, _condition);
 }
 
-STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIterator(
+STopoRuntimeCollection::FilterIteratorPair_t CTopoCore::getRuntimeCollectionIterator(
     STopoRuntimeCollection::Condition_t _condition) const
 {
     STopoRuntimeCollection::Condition_t condition = _condition;
@@ -166,23 +164,23 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIter
         condition = [](STopoRuntimeCollection::Map_t::value_type) -> bool { return true; };
     }
     STopoRuntimeCollection::FilterIterator_t begin_iterator(
-        condition, m_hashToRuntimeCollectionMap.begin(), m_hashToRuntimeCollectionMap.end());
+        condition, m_idToRuntimeCollectionMap.begin(), m_idToRuntimeCollectionMap.end());
     STopoRuntimeCollection::FilterIterator_t end_iterator(
-        condition, m_hashToRuntimeCollectionMap.end(), m_hashToRuntimeCollectionMap.end());
+        condition, m_idToRuntimeCollectionMap.end(), m_idToRuntimeCollectionMap.end());
     return make_pair(begin_iterator, end_iterator);
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPropertyName(
-    const std::string& _propertyName, uint64_t _taskHash) const
+STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPropertyName(
+    const std::string& _propertyName, Id_t _taskId) const
 {
-    auto taskIt = m_hashToRuntimeTaskMap.find(_taskHash);
-    if (taskIt == m_hashToRuntimeTaskMap.end())
-        throw runtime_error("Can't find task with ID" + to_string(_taskHash));
+    auto taskIt = m_idToRuntimeTaskMap.find(_taskId);
+    if (taskIt == m_idToRuntimeTaskMap.end())
+        throw runtime_error("Can't find task with ID" + to_string(_taskId));
 
     const STopoRuntimeTask& taskInfo = taskIt->second;
     CTopoProperty::Ptr_t property = taskInfo.m_task->getProperty(_propertyName);
     if (property == nullptr)
-        throw runtime_error("Property <" + _propertyName + "> for task " + to_string(_taskHash) + " doesn't exist");
+        throw runtime_error("Property <" + _propertyName + "> for task " + to_string(_taskId) + " doesn't exist");
 
     switch (property->getScopeType())
     {
@@ -196,19 +194,19 @@ STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPrope
 
         case CTopoProperty::EScopeType::COLLECTION:
         {
-            uint64_t collectionHash = taskInfo.m_taskCollectionHash;
-            if (collectionHash == 0)
+            Id_t collectionId = taskInfo.m_taskCollectionId;
+            if (collectionId == 0)
                 throw runtime_error("Property <" + _propertyName + "> is set for COLLECTION scope only but task " +
-                                    to_string(_taskHash) + " doesn't belong to any collection");
+                                    to_string(_taskId) + " doesn't belong to any collection");
 
-            auto it = m_hashToRuntimeCollectionMap.find(collectionHash);
-            if (it == m_hashToRuntimeCollectionMap.end())
-                throw runtime_error("Collection <" + to_string(m_currentCollectionCrc) + "> not found in map");
+            auto it = m_idToRuntimeCollectionMap.find(collectionId);
+            if (it == m_idToRuntimeCollectionMap.end())
+                throw runtime_error("Collection <" + to_string(m_currentCollectionId) + "> not found in map");
 
             const STopoRuntimeCollection& collectionInfo = it->second;
 
             return getRuntimeTaskIterator(
-                collectionInfo.m_hashToRuntimeTaskMap,
+                collectionInfo.m_idToRuntimeTaskMap,
                 [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
                     CTopoTask::Ptr_t task = value.second.m_task;
                     CTopoProperty::Ptr_t property = task->getProperty(_propertyName);
@@ -218,7 +216,7 @@ STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorForPrope
     }
 }
 
-void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
+void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
 {
     if (_element->getType() == CTopoBase::EType::TASK)
     {
@@ -227,7 +225,7 @@ void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
         size_t collectionCounter;
         if (task->getParent()->getType() == CTopoBase::EType::COLLECTION)
         {
-            path = m_currentCollectionHashPath + "/" + task->getName();
+            path = m_currentCollectionIdPath + "/" + task->getName();
             collectionCounter = m_counterMap[task->getParent()->getPath()] - 1;
         }
         else
@@ -238,12 +236,12 @@ void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
 
         size_t counter = ++m_counterMap[path];
         size_t index = counter - 1;
-        std::string hashPath = path + "_" + to_string(index);
+        std::string idPath = path + "_" + to_string(index);
 
-        uint64_t crc = MiscCommon::crc64(hashPath);
-        if (m_hashToRuntimeTaskMap.find(crc) != m_hashToRuntimeTaskMap.end())
+        Id_t crc = MiscCommon::crc64(idPath);
+        if (m_idToRuntimeTaskMap.find(crc) != m_idToRuntimeTaskMap.end())
         {
-            throw std::runtime_error("Failed to create unique hash for task with path " + hashPath +
+            throw std::runtime_error("Failed to create unique ID for task with path " + idPath +
                                      ". Rename task/collection/group in the path.");
         }
 
@@ -251,18 +249,18 @@ void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
         info.m_task = task;
         info.m_taskIndex = index;
         info.m_collectionIndex = collectionCounter;
-        info.m_taskPath = hashPath;
-        info.m_taskCollectionHash =
-            (task->getParent()->getType() == CTopoBase::EType::COLLECTION) ? m_currentCollectionCrc : 0;
-        m_hashToRuntimeTaskMap.insert(make_pair(crc, info));
+        info.m_taskPath = idPath;
+        info.m_taskCollectionId =
+            (task->getParent()->getType() == CTopoBase::EType::COLLECTION) ? m_currentCollectionId : 0;
+        m_idToRuntimeTaskMap.insert(make_pair(crc, info));
 
         if (task->getParent()->getType() == CTopoBase::EType::COLLECTION)
         {
-            auto it = m_hashToRuntimeCollectionMap.find(m_currentCollectionCrc);
-            if (it == m_hashToRuntimeCollectionMap.end())
-                throw runtime_error("Collection <" + to_string(m_currentCollectionCrc) + "> not found in map");
+            auto it = m_idToRuntimeCollectionMap.find(m_currentCollectionId);
+            if (it == m_idToRuntimeCollectionMap.end())
+                throw runtime_error("Collection <" + to_string(m_currentCollectionId) + "> not found in map");
 
-            it->second.m_hashToRuntimeTaskMap.insert(make_pair(crc, info));
+            it->second.m_idToRuntimeTaskMap.insert(make_pair(crc, info));
         }
 
         return;
@@ -274,27 +272,27 @@ void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
         std::string path = collection->getPath();
         size_t counter = ++m_counterMap[path];
         size_t index = counter - 1;
-        m_currentCollectionHashPath = path + "_" + to_string(index);
+        m_currentCollectionIdPath = path + "_" + to_string(index);
 
-        uint64_t crc = MiscCommon::crc64(m_currentCollectionHashPath);
-        if (m_hashToRuntimeCollectionMap.find(crc) != m_hashToRuntimeCollectionMap.end())
+        Id_t crc = MiscCommon::crc64(m_currentCollectionIdPath);
+        if (m_idToRuntimeCollectionMap.find(crc) != m_idToRuntimeCollectionMap.end())
         {
-            throw std::runtime_error("Failed to create unique hash for collection with path " +
-                                     m_currentCollectionHashPath + ". Rename task/collection/group in the path.");
+            throw std::runtime_error("Failed to create unique ID for collection with path " +
+                                     m_currentCollectionIdPath + ". Rename task/collection/group in the path.");
         }
 
         STopoRuntimeCollection info;
         info.m_collection = collection;
         info.m_collectionIndex = index;
-        info.m_collectionPath = m_currentCollectionHashPath;
-        m_hashToRuntimeCollectionMap.insert(make_pair(crc, info));
+        info.m_collectionPath = m_currentCollectionIdPath;
+        m_idToRuntimeCollectionMap.insert(make_pair(crc, info));
 
-        m_currentCollectionCrc = crc;
+        m_currentCollectionId = crc;
 
         const auto& elements = collection->getElements();
         for (const auto& v : elements)
         {
-            FillHashToTopoElementMap(v);
+            FillIdToTopoElementMap(v);
         }
     }
     else if (_element->getType() == CTopoBase::EType::GROUP)
@@ -306,20 +304,20 @@ void CTopology::FillHashToTopoElementMap(const CTopoElement::Ptr_t& _element)
         {
             for (const auto& v : elements)
             {
-                FillHashToTopoElementMap(v);
+                FillIdToTopoElementMap(v);
             }
         }
     }
 }
 
-std::string CTopology::stringOfTasks(const HashSet_t& _ids) const
+std::string CTopoCore::stringOfTasks(const IdSet_t& _ids) const
 {
     set<string> tasksSet;
     multiset<string> tasksMultiset;
     for (auto taskID : _ids)
     {
-        auto it = m_hashToRuntimeTaskMap.find(taskID);
-        if (it != m_hashToRuntimeTaskMap.end())
+        auto it = m_idToRuntimeTaskMap.find(taskID);
+        if (it != m_idToRuntimeTaskMap.end())
         {
             tasksSet.insert(it->second.m_task->getPath());
             tasksMultiset.insert(it->second.m_task->getPath());
@@ -335,14 +333,14 @@ std::string CTopology::stringOfTasks(const HashSet_t& _ids) const
     return ss.str();
 }
 
-std::string CTopology::stringOfCollections(const HashSet_t& _ids) const
+std::string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
 {
     set<string> collectionsSet;
     multiset<string> collectionsMultiset;
     for (auto collectionID : _ids)
     {
-        auto it = m_hashToRuntimeCollectionMap.find(collectionID);
-        if (it != m_hashToRuntimeCollectionMap.end())
+        auto it = m_idToRuntimeCollectionMap.find(collectionID);
+        if (it != m_idToRuntimeCollectionMap.end())
         {
             collectionsSet.insert(it->second.m_collection->getPath());
             collectionsMultiset.insert(it->second.m_collection->getPath());
@@ -358,24 +356,24 @@ std::string CTopology::stringOfCollections(const HashSet_t& _ids) const
     return ss.str();
 }
 
-string CTopology::toString() const
+string CTopoCore::toString() const
 {
     stringstream ss;
     ss << "CTopology:\n";
-    ss << "  m_hashToTaskMap size=" << m_hashToRuntimeTaskMap.size() << "\n";
-    for (const auto& v : m_hashToRuntimeTaskMap)
+    ss << "  m_idToRuntimeTaskMap size=" << m_idToRuntimeTaskMap.size() << "\n";
+    for (const auto& v : m_idToRuntimeTaskMap)
     {
         ss << "    " << v.first << " -> " << v.second.m_task->getPath() << "\n";
     }
-    ss << "  m_hashToTaskCollectionMap size=" << m_hashToRuntimeCollectionMap.size() << "\n";
-    for (const auto& v : m_hashToRuntimeCollectionMap)
+    ss << "  m_idToRuntimeCollectionMap size=" << m_idToRuntimeCollectionMap.size() << "\n";
+    for (const auto& v : m_idToRuntimeCollectionMap)
     {
         ss << "    " << v.first << " -> " << v.second.m_collection->getPath() << "\n";
     }
     return ss.str();
 }
 
-ostream& operator<<(ostream& _strm, const CTopology& _topology)
+ostream& operator<<(ostream& _strm, const CTopoCore& _topology)
 {
     _strm << _topology.toString();
     return _strm;

@@ -6,7 +6,7 @@
 #include "ActivateChannel.h"
 #include "DDSHelper.h"
 #include "Options.h"
-#include "Topology.h"
+#include "TopoCore.h"
 #include "UserDefaults.h"
 
 using namespace std;
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
     {
         try
         {
-            CTopology topology;
+            CTopoCore topology;
             topology.init(options.m_sTopoFile);
         }
         catch (exception& e)

@@ -64,7 +64,7 @@ void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt
     try
     {
         const ptree& collectionPT =
-            CTopoElement::findElement(CTopoBase::EType::COLLECTION, _name, _pt.get_child("topology"));
+            FindElementInPropertyTree(CTopoBase::EType::COLLECTION, _name, _pt.get_child("topology"));
 
         setName(collectionPT.get<string>("<xmlattr>.name"));
 

@@ -12,8 +12,6 @@
 #include <map>
 #include <sstream>
 #include <string>
-// BOOST
-#include <boost/property_tree/ptree.hpp>
 
 namespace dds
 {

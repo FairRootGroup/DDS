@@ -9,7 +9,7 @@
 // DDS
 #include "ClientChannelImpl.h"
 #include "SMFWChannel.h"
-#include "Topology.h"
+#include "TopoCore.h"
 
 namespace dds
 {
@@ -34,7 +34,7 @@ namespace dds
             CSMFWChannel::connectionPtr_t m_SMFWChannel;
             std::map<uint64_t, uint64_t> m_taskIDToChannelIDMap;
             std::mutex m_taskIDToChannelIDMapMutex;
-            topology_api::CTopology m_topo;
+            topology_api::CTopoCore m_topo;
         };
     } // namespace agent_cmd
 } // namespace dds

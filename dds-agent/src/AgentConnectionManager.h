@@ -12,7 +12,7 @@
 #include "SMCommanderChannel.h"
 #include "SMIntercomChannel.h"
 #include "SMLeaderChannel.h"
-#include "Topology.h"
+#include "TopoCore.h"
 
 namespace dds
 {
@@ -77,7 +77,7 @@ namespace dds
             pid_t m_taskPid;
             std::mutex m_taskPidMutex;
             bool m_bStarted;
-            topology_api::CTopology m_topo;
+            topology_api::CTopoCore m_topo;
         };
     } // namespace agent_cmd
 } // namespace dds

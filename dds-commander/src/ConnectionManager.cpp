@@ -8,7 +8,7 @@
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
 #include "MiscUtils.h"
-#include "Topology.h"
+#include "TopoCore.h"
 #include "dds_intercom.h"
 #include "ncf.h"
 // BOOST
@@ -587,7 +587,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         // Current topology is not active we reset
         if (!topologyActive)
         {
-            m_topo = CTopology();
+            m_topo = CTopoCore();
         }
         //
 
@@ -600,7 +600,7 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
         //
         // Get new topology and calculate the difference
         //
-        CTopology topo;
+        CTopoCore topo;
         // If topo file is empty than we stop the topology
         if (!_attachment->m_sTopologyFile.empty())
         {
@@ -608,10 +608,10 @@ void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
             topo.init(_attachment->m_sTopologyFile);
         }
 
-        topology_api::CTopology::HashSet_t removedTasks;
-        topology_api::CTopology::HashSet_t removedCollections;
-        topology_api::CTopology::HashSet_t addedTasks;
-        topology_api::CTopology::HashSet_t addedCollections;
+        topology_api::CTopoCore::IdSet_t removedTasks;
+        topology_api::CTopoCore::IdSet_t removedCollections;
+        topology_api::CTopoCore::IdSet_t addedTasks;
+        topology_api::CTopoCore::IdSet_t addedCollections;
         m_topo.getDifference(topo, removedTasks, removedCollections, addedTasks, addedCollections);
 
         stringstream ss;
@@ -1096,7 +1096,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     //        m_taskIDToAgentChannelMap.erase(it);
     //}
 
-    auto task = m_topo.getRuntimeTaskByHash(_attachment->m_taskID).m_task;
+    auto task = m_topo.getRuntimeTaskById(_attachment->m_taskID).m_task;
     LOG(info) << "User task <" << _attachment->m_taskID << "> with path " << task->getPath() << " done";
 }
 
@@ -1282,11 +1282,11 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
 
             std::shared_ptr<boost::regex> pathRegex;
 
-            // Check if we can find task for it's full hash path.
+            // Check if we can find task for it's full id path.
             bool taskFound = true;
             try
             {
-                const STopoRuntimeTask& runtimeTask = m_topo.getRuntimeTaskByHashPath(_attachment->m_sCondition);
+                const STopoRuntimeTask& runtimeTask = m_topo.getRuntimeTaskByIdPath(_attachment->m_sCondition);
             }
             catch (runtime_error& _e)
             {
@@ -1313,7 +1313,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 if (_attachment->m_sCondition.empty())
                     return true;
 
-                const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskByHash(inf.m_taskID);
+                const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(inf.m_taskID);
                 bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
                                           : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
 

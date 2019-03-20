@@ -54,17 +54,6 @@ namespace dds
             /// \param[in] _pt Property tree starting from root.
             virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt) = 0;
 
-            /// \brief Helper function to find element in property tree by type and name.
-            /// \param[in] _type Type of the topo element we are looking for.
-            /// \param[in] _name Name of element we are looking for.
-            /// \param[in] _pt Property tree.
-            /// \return Property tree with root node pointing to found element.
-            /// \throw logic_error if element was not found.
-            /// \note This function does not catch exceptions from property tree.
-            static const boost::property_tree::ptree& findElement(CTopoBase::EType _type,
-                                                                  const std::string& _name,
-                                                                  const boost::property_tree::ptree& _pt);
-
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
             virtual std::string toString() const;

@@ -25,17 +25,17 @@ CSSHScheduler::~CSSHScheduler()
 {
 }
 
-void CSSHScheduler::makeSchedule(const CTopology& _topology, const weakChannelInfoVector_t& _channels)
+void CSSHScheduler::makeSchedule(const CTopoCore& _topology, const weakChannelInfoVector_t& _channels)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
         [this, &_topology, &_channels]() { makeScheduleImpl(_topology, _channels, nullptr, nullptr); });
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
-void CSSHScheduler::makeSchedule(const topology_api::CTopology& _topology,
+void CSSHScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
                                  const weakChannelInfoVector_t& _channels,
-                                 const CTopology::HashSet_t& _addedTasks,
-                                 const CTopology::HashSet_t& _addedCollections)
+                                 const CTopoCore::IdSet_t& _addedTasks,
+                                 const CTopoCore::IdSet_t& _addedCollections)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
         [this, &_topology, &_channels, &_addedTasks, &_addedCollections]() {
@@ -44,10 +44,10 @@ void CSSHScheduler::makeSchedule(const topology_api::CTopology& _topology,
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
-void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
+void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
                                      const weakChannelInfoVector_t& _channels,
-                                     const CTopology::HashSet_t* _addedTasks,
-                                     const CTopology::HashSet_t* _addedCollections)
+                                     const CTopoCore::IdSet_t* _addedTasks,
+                                     const CTopoCore::IdSet_t* _addedCollections)
 {
     m_schedule.clear();
 
@@ -84,9 +84,9 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
         if (_addedCollections != nullptr && _addedCollections->find(it->first) == _addedCollections->end())
             continue;
 
-        const auto& taskMap = it->second.m_hashToRuntimeTaskMap;
+        const auto& taskMap = it->second.m_idToRuntimeTaskMap;
         boost::copy(taskMap | boost::adaptors::map_keys, std::inserter(tasksInCollections, tasksInCollections.end()));
-        collectionMap[it->second.m_hashToRuntimeTaskMap.size()].push_back(it->first);
+        collectionMap[it->second.m_idToRuntimeTaskMap.size()].push_back(it->first);
     }
 
     set<uint64_t> scheduledTasks;
@@ -110,13 +110,13 @@ void CSSHScheduler::makeScheduleImpl(const CTopology& _topology,
     LOG(debug) << toString();
 }
 
-void CSSHScheduler::scheduleTasks(const CTopology& _topology,
+void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
                                   const weakChannelInfoVector_t& _channels,
                                   hostToChannelMap_t& _hostToChannelMap,
                                   set<uint64_t>& _scheduledTasks,
                                   const set<uint64_t>& _tasksInCollections,
                                   bool useRequirement,
-                                  const CTopology::HashSet_t* _addedTasks)
+                                  const CTopoCore::IdSet_t* _addedTasks)
 {
     STopoRuntimeTask::FilterIteratorPair_t tasks = _topology.getRuntimeTaskIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
@@ -192,7 +192,7 @@ void CSSHScheduler::scheduleTasks(const CTopology& _topology,
     }
 }
 
-void CSSHScheduler::scheduleCollections(const CTopology& _topology,
+void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
                                         const weakChannelInfoVector_t& _channels,
                                         hostToChannelMap_t& _hostToChannelMap,
                                         set<uint64_t>& _scheduledTasks,
@@ -203,7 +203,7 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
     {
         for (auto id : it_col.second)
         {
-            const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionByHash(id);
+            const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionById(id);
 
             // First path only for collections with requirements;
             // Second path for collections without requirements.
@@ -231,9 +231,9 @@ void CSSHScheduler::scheduleCollections(const CTopology& _topology,
                 const bool requirementOk = checkRequirement(requirement, useRequirement, v.first.first, v.first.second);
                 if ((v.second.size() >= collectionInfo.m_collection->getNofTasks()) && requirementOk)
                 {
-                    const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionByHash(id);
+                    const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionById(id);
 
-                    for (auto taskIt : collectionInfo.m_hashToRuntimeTaskMap)
+                    for (auto taskIt : collectionInfo.m_idToRuntimeTaskMap)
                     {
                         const STopoRuntimeTask& info = taskIt.second;
 
