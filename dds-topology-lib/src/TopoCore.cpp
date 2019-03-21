@@ -7,6 +7,7 @@
 #include "TopoCore.h"
 #include "TopoParserXML.h"
 #include "TopoUtils.h"
+#include "UserDefaults.h"
 // STD
 #include <string>
 // MiscCommon
@@ -18,6 +19,7 @@
 using namespace std;
 using namespace dds;
 using namespace topology_api;
+using namespace user_defaults_api;
 using namespace boost;
 
 CTopoCore::CTopoCore()
@@ -36,11 +38,32 @@ CTopoGroup::Ptr_t CTopoCore::getMainGroup() const
     return m_main;
 }
 
-void CTopoCore::init(const std::string& _fileName, bool _initForTest)
+void CTopoCore::init(const std::string& _fileName)
 {
+    init(_fileName, CUserDefaults::getTopologyXSDFilePath());
+}
+
+void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFileName)
+{
+    string filename(_fileName);
+
+    // Take default file for agent $DDS_LOCATION/topology.xml
+    if (filename.empty())
+    {
+        filename = CUserDefaults::instance().getDDSPath() + "topology.xml";
+    }
+
+    if (_schemaFileName.empty() && !m_bXMLValidationDisabled)
+    {
+        throw runtime_error("XSD schema file not provided. Disable validation or provide a valid schema file.");
+    }
+
+    // Use empty string to disable validation in parser
+    string schemaFileName = (m_bXMLValidationDisabled) ? "" : _schemaFileName;
+
     CTopoParserXML parser;
     m_main = std::make_shared<CTopoGroup>();
-    parser.parse(_fileName, m_main, m_bXMLValidationDisabled);
+    parser.parse(filename, schemaFileName, m_main);
 
     m_counterMap.clear();
     m_idToRuntimeTaskMap.clear();

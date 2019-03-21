@@ -190,10 +190,10 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     }
 
     CTopoCore topo;
-    topo.init("topology_test_diff_1.xml", true);
+    topo.init("topology_test_diff_1.xml");
 
     CTopoCore newTopo;
-    newTopo.init("topology_test_diff_2.xml", true);
+    newTopo.init("topology_test_diff_2.xml");
 
     CTopoCore::IdSet_t removedTasks;
     CTopoCore::IdSet_t removedCollections;

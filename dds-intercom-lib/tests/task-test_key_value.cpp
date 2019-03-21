@@ -1,5 +1,7 @@
 // DDS
 #include "Logger.h"
+#include "Topology.h"
+#include "dds_env_prop.h"
 #include "dds_intercom.h"
 // STD
 #include <chrono>
@@ -18,6 +20,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::user_defaults_api;
+using namespace dds::topology_api;
 namespace bpo = boost::program_options;
 using namespace MiscCommon;
 
@@ -77,12 +80,31 @@ int main(int argc, char* argv[])
 
         testErrors = vm.count("test-errors");
 
-        const vector<string> propNames_0 = { "property_1", "property_2", "property_3", "property_4", "property_5" };
-
-        const vector<string> propNames_1 = { "property_6", "property_7", "property_8", "property_9", "property_10" };
-
         LOG(info) << "Start task with type " << type;
 
+        // Get list of READ and WRITE properties from topology
+        CTopology topo;
+        topo.init();
+        uint64_t taskId = env_prop<EEnvProp::task_id>();
+        const STopoRuntimeTask& runtimeTask = topo.getRuntimeTaskById(taskId);
+        const CTopoProperty::PtrMap_t& properties = runtimeTask.m_task->getProperties();
+        vector<string> readPropertyNames;
+        vector<string> writePropertyNames;
+        for (auto property : properties)
+        {
+            CTopoProperty::EAccessType accessType = property.second->getAccessType();
+            string propertyName(property.first);
+            if (accessType == CTopoProperty::EAccessType::READ)
+            {
+                readPropertyNames.push_back(propertyName);
+            }
+            else
+            {
+                writePropertyNames.push_back(propertyName);
+            }
+        }
+
+        // DDS Intercom API
         CIntercomService service;
         CKeyValue keyValue(service);
         mutex keyMutex;
@@ -150,8 +172,7 @@ int main(int argc, char* argv[])
                 LOG(info) << "Iteration " << i << " start sending values.";
 
                 string writePropValue = to_string(i);
-                const auto& writePropNames = (type == 0) ? propNames_0 : propNames_1;
-                for (const auto& prop : writePropNames)
+                for (const auto& prop : writePropertyNames)
                 {
                     keyValue.putValue(prop, writePropValue);
                 }
@@ -163,8 +184,7 @@ int main(int argc, char* argv[])
                 {
                     LOG(info) << "Iteration " << i << " sending wrong properties.";
                     keyValue.putValue("non_existing_property", "non_existing_property_name");
-                    const auto& readonlyPropNames = (type == 0) ? propNames_1 : propNames_0;
-                    for (const auto& prop : readonlyPropNames)
+                    for (const auto& prop : readPropertyNames)
                     {
                         keyValue.putValue(prop, writePropValue);
                     }

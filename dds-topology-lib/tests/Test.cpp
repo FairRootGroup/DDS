@@ -21,6 +21,7 @@
 #include "TopoProperty.h"
 #include "TopoTask.h"
 #include "TopoUtils.h"
+#include "UserDefaults.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -32,6 +33,7 @@ using namespace boost::property_tree;
 using boost::test_tools::output_test_stream;
 using namespace dds;
 using namespace dds::topology_api;
+using namespace dds::user_defaults_api;
 using namespace MiscCommon;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
@@ -73,7 +75,7 @@ void check_topology_maps(const string& _topoName)
 {
     CTopoCore topology;
     string topoFile(_topoName + ".xml");
-    topology.init(topoFile, true);
+    topology.init(topoFile);
 
     output_test_stream output2(_topoName + "_maps_2.txt", true);
     check_topology_map_task(topology.getIdToRuntimeTaskMap(), output2);
@@ -328,49 +330,49 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("topology_test_1.xml");
+    bool result = parser.isValid("topology_test_1.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_2)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("topology_test_2.xml");
+    bool result = parser.isValid("topology_test_2.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_3)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("topology_test_3.xml");
+    bool result = parser.isValid("topology_test_3.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_4)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("topology_test_4.xml");
+    bool result = parser.isValid("topology_test_4.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_5)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("topology_test_5.xml");
+    bool result = parser.isValid("topology_test_5.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == false);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_6)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("topology_test_6.xml");
+    bool result = parser.isValid("topology_test_6.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == true);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_wrong)
 {
     CTopoParserXML parser;
-    bool result = parser.isValid("wrong_file.xml");
+    bool result = parser.isValid("wrong_file.xml", CUserDefaults::getTopologyXSDFilePath());
     BOOST_CHECK(result == false);
 }
 
@@ -531,10 +533,10 @@ BOOST_AUTO_TEST_CASE(test_dds_find_element_in_property_tree)
 BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
 {
     CTopoCore topo;
-    topo.init("topology_test_diff_1.xml", true);
+    topo.init("topology_test_diff_1.xml");
 
     CTopoCore newTopo;
-    newTopo.init("topology_test_diff_2.xml", true);
+    newTopo.init("topology_test_diff_2.xml");
 
     CTopoCore::IdSet_t removedTasks;
     CTopoCore::IdSet_t removedCollections;

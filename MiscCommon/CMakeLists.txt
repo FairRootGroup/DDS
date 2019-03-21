@@ -35,4 +35,4 @@ else()
   message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 endif()
 
-install(FILES dds_env_prop.h DESTINATION include)
+install(FILES dds_env_prop.h DESTINATION "include/DDS")

@@ -38,7 +38,11 @@ namespace dds
 
             /// \brief Initializes topology from specified file.
             /// \throw runtime_error
-            void init(const std::string& _fileName, bool _initForTest = false);
+            void init(const std::string& _fileName);
+
+            /// \brief Initializes topology from specified file and validates with provided schema file.
+            /// \throw runtime_error
+            void init(const std::string& _fileName, const std::string& _schemaFileName);
 
             /// \brief Get difference between THIS topology and a new one.
             /// \param[in] _topology New topology to calculate the difference with.

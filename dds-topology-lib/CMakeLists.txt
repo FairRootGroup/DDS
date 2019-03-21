@@ -20,6 +20,7 @@ set(SOURCE_FILES
     src/TopoRequirement.cpp
     src/TopoVars.cpp
 	src/TopoTrigger.cpp
+    src/Topology.cpp
 )
 
 set(HEADER_FILES
@@ -40,15 +41,18 @@ set(HEADER_FILES
     src/TopoDef.h
 )
 
-# add_executable(dds_topology_lib ${SOURCE_FILES} ${HEADER_FILES})
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
+set(HEADER_FILES_EXT
+    src/Topology.h
+)
+
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
 	dds_user_defaults_lib
-  Boost::boost
-  Boost::filesystem
-  Boost::regex
+    Boost::boost
+    Boost::filesystem
+    Boost::regex
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -62,6 +66,7 @@ install(TARGETS ${PROJECT_NAME}
   EXPORT DDSTargets
   LIBRARY DESTINATION lib
 )
+install(FILES ${HEADER_FILES_EXT} DESTINATION "include/DDS")
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")

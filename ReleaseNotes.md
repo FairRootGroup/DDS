@@ -8,6 +8,7 @@ Fixed: WnName requirement is only used for SSH plug-in. For other plug-ins the r
 Fixed: build system writes temporary files only in build directory. (GH-182)   
 Added: support relative task executables. (GH-216)    
 Added: All DDS commands now learned about the DDS_SESSION_ID environment variable. If defined, it will be used instead of a default one. (GH-213)    
+Modified: install DDS headers to "include/DDS" instead of "include"    
 
 ### dds\_intercom\_lib
 Added: make custom command's condition regex aware. (GH-211)    
@@ -22,6 +23,7 @@ Modified: The watchdog now terminates/kills not only user tasks (parent processe
 ### dds-topology
 Fixed: dds-topology --activate hangs if there are no active agents. (GH-218)    
 Modified: rename "id" to "name" in the topology XML file and topology classes. WARNING: this change is incompatible with an older XML topology files. Rename all "id" attributes and tags to "name" in the XML topology files in order to be compatible with current version of DDS.    
+Added: new CTopology class for publicj user API.    
 
 ### dds-protocol
 Removed: cmdDELETE_KEY is obsolete and was removed.    

@@ -1,8 +1,6 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
 //
-//  TopoDef.h
-//  DDS
 //
-//  Created by Andrey Lebedev on 20.03.19.
 //
 
 #ifndef __DDS__TopoDef__

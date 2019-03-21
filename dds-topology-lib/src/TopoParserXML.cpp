@@ -56,12 +56,10 @@ CTopoParserXML::~CTopoParserXML()
 {
 }
 
-bool CTopoParserXML::isValid(const std::string& _fileName, bool _xmlValidationDisabled, std::string* _output)
+bool CTopoParserXML::isValid(const std::string& _fileName, const std::string& _schemaFileName, std::string* _output)
 {
-    if (_xmlValidationDisabled)
+    if (_schemaFileName.empty())
         return true;
-
-    string topoXSDPath = CUserDefaults::getTopologyXSDFilePath();
 
     // Find command paths in $PATH
     fs::path xmllintPath = bp::search_path("xmllint");
@@ -71,7 +69,7 @@ bool CTopoParserXML::isValid(const std::string& _fileName, bool _xmlValidationDi
 
     stringstream ssCmd;
     ssCmd << xmllintPath.string() << " --noout --schema "
-          << "\"" << topoXSDPath << "\""
+          << "\"" << _schemaFileName << "\""
           << " \"" << _fileName << "\"";
 
     string output;
@@ -88,7 +86,7 @@ bool CTopoParserXML::isValid(const std::string& _fileName, bool _xmlValidationDi
     return (exitCode == 0);
 }
 
-void CTopoParserXML::parse(const string& _fileName, CTopoGroup::Ptr_t _main, bool _xmlValidationDisabled)
+void CTopoParserXML::parse(const string& _fileName, const std::string& _schemaFileName, CTopoGroup::Ptr_t _main)
 {
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");
@@ -139,7 +137,7 @@ void CTopoParserXML::parse(const string& _fileName, CTopoGroup::Ptr_t _main, boo
 
         // Validate temporary XML file against XSD schema
         string output;
-        if (!isValid(tmpFilePath, _xmlValidationDisabled, &output))
+        if (!isValid(tmpFilePath, _schemaFileName, &output))
             throw runtime_error(string("XML file is not valid. Error details: ") + output);
 
         ptree pt;

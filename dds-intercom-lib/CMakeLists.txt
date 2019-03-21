@@ -52,7 +52,7 @@ install(TARGETS ${PROJECT_NAME}
   EXPORT DDSTargets
   LIBRARY DESTINATION lib
 )
-install(FILES ${SRC_HDRS} DESTINATION include)
+install(FILES ${SRC_HDRS} DESTINATION "include/DDS")
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} tests - YES")
