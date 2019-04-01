@@ -72,3 +72,8 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIter
 {
     return m_topo->getRuntimeCollectionIterator(_condition);
 }
+
+size_t CTopology::getRequiredNofAgents() const
+{
+    return m_topo->getRequiredNofAgents();
+}

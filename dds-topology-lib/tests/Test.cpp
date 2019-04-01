@@ -325,6 +325,8 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(castedCollection->getName() == "collection2");
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
+
+    BOOST_CHECK(topology.getRequiredNofAgents() == 220);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)

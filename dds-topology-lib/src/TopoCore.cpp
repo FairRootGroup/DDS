@@ -122,6 +122,11 @@ void CTopoCore::setXMLValidationDisabled(bool _val)
     m_bXMLValidationDisabled = _val;
 }
 
+size_t CTopoCore::getRequiredNofAgents() const
+{
+    return getMainGroup()->getTotalNofTasks();
+}
+
 const STopoRuntimeTask::Map_t& CTopoCore::getIdToRuntimeTaskMap() const
 {
     return m_idToRuntimeTaskMap;

@@ -5,7 +5,7 @@ echo "DDS from this location is used ${location}"
 source ${location}/DDS_env.sh
 
 topologyFile=${DDS_LOCATION}/tests/property_test.xml
-requiredNofAgents=10
+requiredNofAgents=$(dds-topology --required-agents ${topologyFile})
 
 echo "Starting DDS server..."
 dds-session start
@@ -15,7 +15,7 @@ sessionID=$(dds-user-defaults --default-session-id)
 echo "SESSION ID: ${sessionID}"
 
 echo "Submiting agents..."
-dds-submit -r localhost -n 10
+dds-submit -r localhost -n ${requiredNofAgents}
 
 dds-info --wait-for-idle-agents ${requiredNofAgents}
 

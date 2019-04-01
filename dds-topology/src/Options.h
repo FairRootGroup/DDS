@@ -28,7 +28,8 @@ namespace dds
             UPDATE = 0,
             ACTIVATE,
             STOP,
-            VALIDATE
+            VALIDATE,
+            REQUIRED_AGENTS
         };
 
         /// \brief dds-agent-cmd's container of options
@@ -81,6 +82,9 @@ namespace dds
             options.add_options()("validate",
                                   bpo::value<std::string>(&_options->m_sTopoFile),
                                   "Validate topology file against XSD schema.");
+            options.add_options()("required-agents",
+                                  bpo::value<std::string>(&_options->m_sTopoFile),
+                                  "Get the required number of agents for the topology.");
             options.add_options()("verbose,V", "Verbose output");
 
             // Parsing command-line
@@ -110,14 +114,23 @@ namespace dds
             }
             if (_options->m_bDisableValidation)
             {
-                if (!vm.count("activate") && !vm.count("update"))
+                if (!vm.count("activate") && !vm.count("update") && !vm.count("required-agents"))
                 {
-                    throw std::runtime_error("--disable-validation must be used together with --activate or --update");
+                    throw std::runtime_error(
+                        "--disable-validation must be used together with --activate, --update or --required-agents");
                 }
             }
             if (vm.count("validate") && !_options->m_sTopoFile.empty())
             {
                 _options->m_topologyCmd = ETopologyCmdType::VALIDATE;
+                // make absolute path
+                boost::filesystem::path pathTopoFile(_options->m_sTopoFile);
+                _options->m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();
+                return true;
+            }
+            if (vm.count("required-agents") && !_options->m_sTopoFile.empty())
+            {
+                _options->m_topologyCmd = ETopologyCmdType::REQUIRED_AGENTS;
                 // make absolute path
                 boost::filesystem::path pathTopoFile(_options->m_sTopoFile);
                 _options->m_sTopoFile = boost::filesystem::absolute(pathTopoFile).string();

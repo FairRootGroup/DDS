@@ -72,6 +72,9 @@ namespace dds
             STopoRuntimeCollection::FilterIteratorPair_t getRuntimeCollectionIterator(
                 STopoRuntimeCollection::Condition_t _condition = nullptr) const;
 
+            /// \brief Returns required number of agents for the topology.
+            size_t getRequiredNofAgents() const;
+
           private:
             std::shared_ptr<CTopoCore> m_topo;
         };
