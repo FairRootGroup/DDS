@@ -24,25 +24,25 @@ set(SOURCE_FILES
 )
 
 set(HEADER_FILES
-	src/TopoProperty.h
-	src/TopoBase.h
 	src/TopoUtils.h
 	src/TopoFactory.h
 	src/TopoCore.h
-	src/TopoTask.h
-	src/TopoCollection.h
-	src/TopoGroup.h
-	src/TopoElement.h
-	src/TopoContainer.h
 	src/TopoParserXML.h
-    src/TopoRequirement.h
     src/TopoVars.h
-	src/TopoTrigger.h
-    src/TopoDef.h
 )
 
 set(HEADER_FILES_EXT
     src/Topology.h
+    src/TopoCollection.h
+    src/TopoContainer.h
+    src/TopoElement.h
+    src/TopoBase.h
+    src/TopoDef.h
+    src/TopoRequirement.h
+    src/TopoTask.h
+    src/TopoProperty.h
+    src/TopoTrigger.h
+    src/TopoGroup.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})
