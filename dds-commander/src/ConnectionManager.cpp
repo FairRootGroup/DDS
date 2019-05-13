@@ -83,31 +83,10 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     CAgentChannel::weakConnectionPtr_t weakClient(_newClient);
 
     // Subscribe on protocol messages
-    _newClient->registerHandler<cmdGET_LOG>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment) {
-            this->on_cmdGET_LOG(_sender, _attachment, weakClient);
-        });
-
     _newClient->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
         [this, weakClient](const SSenderInfo& _sender,
                            SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
             this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdGET_AGENTS_INFO>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment) {
-            this->on_cmdGET_AGENTS_INFO(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdGET_IDLE_AGENTS_COUNT>(
-        [this, weakClient](const SSenderInfo& _sender,
-                           SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment) {
-            this->on_cmdGET_IDLE_AGENTS_COUNT(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdSUBMIT>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment) {
-            this->on_cmdSUBMIT(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdTRANSPORT_TEST>(
@@ -138,11 +117,6 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerHandler<cmdGET_PROP_VALUES>(
         [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment) {
             this->on_cmdGET_PROP_VALUES(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdUPDATE_TOPOLOGY>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_TOPOLOGY(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdREPLY_ID>(
@@ -269,52 +243,6 @@ void CConnectionManager::_deleteInfoFile() const
     unlink(sSrvCfg.c_str());
 }
 
-void CConnectionManager::on_cmdGET_LOG(const SSenderInfo& _sender,
-                                       SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment,
-                                       CAgentChannel::weakConnectionPtr_t _channel)
-{
-    lock_guard<mutex> lock(m_getLog.m_mutexStart);
-
-    if (!m_getLog.m_channel.expired())
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Can not process the request. The getlog command is already in progress."), _sender.m_ID);
-        return;
-    }
-    m_getLog.m_channel = _channel;
-    m_getLog.m_shutdownOnComplete = true;
-    m_getLog.zeroCounters();
-
-    auto p = m_getLog.m_channel.lock();
-    // Create directory to store logs
-    const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-    fs::path dir(sLogStorageDir);
-    if (!fs::exists(dir) && !fs::create_directories(dir))
-    {
-        stringstream ss;
-        ss << "Could not create directory " << sLogStorageDir << " to save log files.";
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str()), _sender.m_ID);
-
-        m_getLog.m_channel.reset();
-        return;
-    }
-
-    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
-    };
-
-    m_getLog.m_nofRequests = countNofChannels(condition);
-
-    if (m_getLog.m_nofRequests == 0)
-    {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("There are no connected agents."), _sender.m_ID);
-        return;
-    }
-
-    broadcastSimpleMsg<cmdGET_LOG>(condition);
-}
-
 void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     const SSenderInfo& _sender,
     SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
@@ -335,127 +263,6 @@ void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
             m_transportTest.processMessage<SBinaryAttachmentReceivedCmd>(_sender, *_attachment, _channel);
 
             return;
-        }
-    }
-}
-
-void CConnectionManager::on_cmdSUBMIT(const SSenderInfo& _sender,
-                                      SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attachment,
-                                      CAgentChannel::weakConnectionPtr_t _channel)
-{
-    try
-    {
-        auto p = _channel.lock();
-
-        string pluginDir = CUserDefaults::instance().getPluginDir(_attachment->m_sPath, _attachment->m_sRMSType);
-        stringstream ssPluginExe;
-        ssPluginExe << pluginDir << "dds-submit-" << _attachment->m_sRMSType;
-        if (!boost::filesystem::exists(ssPluginExe.str()))
-        {
-            stringstream ssErrMsg;
-            ssErrMsg << "Unknown RMS plug-in requested \"" << _attachment->m_sRMSType << "\" (" << ssPluginExe.str()
-                     << ")";
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ssErrMsg.str(), fatal, cmdSUBMIT), _sender.m_ID);
-            p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
-            return;
-        }
-
-        // Create a new submit communication info channel
-        lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
-        if (!m_SubmitAgents.m_channel.expired())
-            throw runtime_error("Can not process the request. Submit is already in progress.");
-
-        // Create / re-pack WN package
-        // Include inline script if present
-        string inlineShellScripCmds;
-        if (!_attachment->m_sCfgFile.empty())
-        {
-            ifstream f(_attachment->m_sCfgFile);
-            if (!f.is_open())
-            {
-                string msg("can't open configuration file \"");
-                msg += _attachment->m_sCfgFile;
-                msg += "\"";
-                throw runtime_error(msg);
-            }
-            CNcf config;
-            config.readFrom(f, true); // Read only bash commands if any
-            inlineShellScripCmds = config.getBashEnvCmds();
-            LOG(info)
-                << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
-
-            string scriptFileName(CUserDefaults::instance().getWrkPkgDir());
-            scriptFileName += "user_worker_env.sh";
-            smart_path(&scriptFileName);
-            ofstream f_script(scriptFileName.c_str());
-            if (!f_script.is_open())
-                throw runtime_error("Can't open for writing: " + scriptFileName);
-
-            f_script << inlineShellScripCmds;
-            f_script.close();
-        }
-        // pack worker package
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Creating new worker package...", info, cmdSUBMIT), _sender.m_ID);
-        // Use a lightweightpackage when possible
-        _createWnPkg(!inlineShellScripCmds.empty(), (_attachment->m_sRMSType == "localhost"));
-
-        // remember the UI channel, which requested to submit the job
-        m_SubmitAgents.m_channel = _channel;
-        m_SubmitAgents.zeroCounters();
-
-        SSubmit submitRequest;
-        submitRequest.m_cfgFilePath = _attachment->m_sCfgFile;
-        submitRequest.m_nInstances = _attachment->m_nNumberOfAgents;
-        submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath();
-        m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
-
-        string sPluginInfoMsg("RMS plug-in: ");
-        sPluginInfoMsg += ssPluginExe.str();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(sPluginInfoMsg, info, cmdSUBMIT), _sender.m_ID);
-
-        // Submitting the job
-        stringstream ssCmd;
-        ssCmd << ssPluginExe.str();
-        // TODO: Send ID to the plug-in
-        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id "
-              << "FAKE_ID_FOR_TESTS"
-              << " --path \"" << pluginDir << "\"";
-
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Initializing RMS plug-in...", info, cmdSUBMIT), _sender.m_ID);
-        LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
-
-        // Let the submit info channel now, that plug-in is about to start
-        m_SubmitAgents.initPlugin();
-
-        try
-        {
-            // don't wait for plug-in. Just execute it and expect it to connect.
-            // We will report to user if it won't connect.
-            execute(ssCmd.str());
-        }
-        catch (exception& e)
-        {
-            stringstream ssMsg;
-            ssMsg << "Failed to deploy agents: " << e.what();
-            throw runtime_error(ssMsg.str());
-        }
-    }
-    catch (bad_weak_ptr& e)
-    {
-        // TODO: Do we need to log something here?
-
-        // In case of any plugin initialization error, reset the info channel
-        m_SubmitAgents.m_channel.reset();
-    }
-    catch (exception& e)
-    {
-        // In case of any plugin initialization error, reset the info channel
-        m_SubmitAgents.m_channel.reset();
-
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), fatal, cmdSUBMIT), _sender.m_ID);
         }
     }
 }
@@ -523,10 +330,14 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     m_updateTopology.m_nofRequests = _agents.size();
 
     // Message to the UI
-    p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_msg, log_stdout, _cmd));
+    sendToolsAPIMsg(_channel, _msg, EMsgSeverity::info);
 
     // Initiate the progress on the UI
-    p->pushMsg<cmdPROGRESS>(SProgressCmd(_cmd, 0, m_updateTopology.m_nofRequests, 0));
+    dds::tools_api::SProgress progress(_cmd, 0, m_updateTopology.m_nofRequests, 0);
+    SCustomCmdCmd cmd;
+    cmd.m_sCmd = progress.toJSON();
+    cmd.m_sCondition = "";
+    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
 
     // Broadcast message or binary to agents
     size_t index = 0;
@@ -539,190 +350,6 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     // Wait until all replies are received
     unique_lock<mutex> conditionLock(m_updateTopoMutex);
     m_updateTopoCondition.wait(conditionLock);
-}
-
-void CConnectionManager::on_cmdUPDATE_TOPOLOGY(const SSenderInfo& _sender,
-                                               SCommandAttachmentImpl<cmdUPDATE_TOPOLOGY>::ptr_t _attachment,
-                                               CAgentChannel::weakConnectionPtr_t _channel)
-{
-    LOG(info) << "UI channel requested to update/activate/stop a topology. " << *_attachment;
-
-    // Only a single topology update/activate/stop can be active at a time
-    lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
-
-    try
-    {
-        auto p = _channel.lock();
-
-        SUpdateTopologyCmd::EUpdateType updateType = (SUpdateTopologyCmd::EUpdateType)_attachment->m_updateType;
-
-        string msg;
-        switch (updateType)
-        {
-            case SUpdateTopologyCmd::EUpdateType::UPDATE:
-                msg = "Updating topology to " + _attachment->m_sTopologyFile;
-                break;
-            case SUpdateTopologyCmd::EUpdateType::ACTIVATE:
-                msg = "Activating topology " + _attachment->m_sTopologyFile;
-                break;
-            case SUpdateTopologyCmd::EUpdateType::STOP:
-                msg = "Stopping topology " + _attachment->m_sTopologyFile;
-                break;
-            default:
-                break;
-        }
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
-
-        //
-        // Check if topology is currently active, i.e. there are executing tasks
-        //
-        CConnectionManager::weakChannelInfo_t::container_t channels(
-            getChannels([](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-                _stop = (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                         info.m_taskID > 0 && info.m_state == EAgentState::executing);
-                return _stop;
-            }));
-        bool topologyActive = !channels.empty();
-        // Current topology is not active we reset
-        if (!topologyActive)
-        {
-            m_topo = CTopoCore();
-        }
-        //
-
-        // If topology is active we can't activate it again
-        if (updateType == SUpdateTopologyCmd::EUpdateType::ACTIVATE && topologyActive)
-        {
-            throw runtime_error("Topology is currently active, can't activate it again.");
-        }
-
-        //
-        // Get new topology and calculate the difference
-        //
-        CTopoCore topo;
-        // If topo file is empty than we stop the topology
-        if (!_attachment->m_sTopologyFile.empty())
-        {
-            topo.setXMLValidationDisabled(_attachment->m_nDisableValidation);
-            topo.init(_attachment->m_sTopologyFile);
-        }
-
-        topology_api::CTopoCore::IdSet_t removedTasks;
-        topology_api::CTopoCore::IdSet_t removedCollections;
-        topology_api::CTopoCore::IdSet_t addedTasks;
-        topology_api::CTopoCore::IdSet_t addedCollections;
-        m_topo.getDifference(topo, removedTasks, removedCollections, addedTasks, addedCollections);
-
-        stringstream ss;
-        ss << "\nRemoved tasks: " << removedTasks.size() << "\n"
-           << m_topo.stringOfTasks(removedTasks) << "Removed collections: " << removedCollections.size() << "\n"
-           << m_topo.stringOfCollections(removedCollections) << "Added tasks: " << addedTasks.size() << "\n"
-           << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
-           << topo.stringOfCollections(addedCollections);
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), log_stdout, cmdUPDATE_TOPOLOGY), _sender.m_ID);
-
-        m_topo = topo; // Assign new topology
-        //
-
-        //
-        // Update topology on the agents
-        //
-        if (!_attachment->m_sTopologyFile.empty())
-        {
-            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
-            };
-            CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
-
-            if (allAgents.size() == 0)
-                throw runtime_error("There are no active agents.");
-
-            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
-                allAgents, _channel, "Updating topology for agents...", _attachment->m_sTopologyFile, "topology.xml");
-        }
-
-        //
-        // Stop removed tasks
-        //
-        if (removedTasks.size() > 0)
-        {
-            weakChannelInfo_t::container_t agents;
-            for (auto taskID : removedTasks)
-            {
-                auto agentChannel = m_taskIDToAgentChannelMap[taskID];
-                agents.push_back(agentChannel);
-            }
-
-            for (const auto& v : agents)
-            {
-                if (v.m_channel.expired())
-                    continue;
-                auto ptr = v.m_channel.lock();
-                // TODO: FIXME: Do we need to deque messages in new decentralized concept?
-                // dequeue important (or expensive) messages
-                ptr->dequeueMsg<cmdUPDATE_KEY>();
-            }
-
-            broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
-        }
-        //
-
-        //
-        // Activate added tasks
-        //
-        if (addedTasks.size() > 0)
-        {
-            auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                        info.m_state == EAgentState::idle);
-            };
-
-            CConnectionManager::weakChannelInfo_t::container_t idleAgents(getChannels(idleCondition));
-
-            size_t nofAgents = idleAgents.size();
-            if (nofAgents == 0)
-                throw runtime_error("There are no idle agents.");
-            if (nofAgents < addedTasks.size())
-            {
-                stringstream ssMsg;
-                ssMsg << "The number of agents is not sufficient for this topology (required/available "
-                      << addedTasks.size() << "/" << nofAgents << ").";
-                throw runtime_error(ssMsg.str());
-            }
-
-            // Schedule the tasks
-            CSSHScheduler scheduler;
-            scheduler.makeSchedule(m_topo, idleAgents, addedTasks, addedCollections);
-            const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
-
-            // Erase removed tasks
-            for (auto taskID : removedTasks)
-            {
-                m_taskIDToAgentChannelMap.erase(taskID);
-            }
-            // Add new elements
-            for (const auto& sch : schedule)
-            {
-                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
-            }
-
-            activateTasks(scheduler, _channel);
-        }
-
-        // Send shutdown to UI channel at the end
-        p->pushMsg<cmdSHUTDOWN>(_sender.m_ID);
-    }
-    catch (exception& _e)
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdUPDATE_TOPOLOGY), _sender.m_ID);
-
-        m_updateTopology.m_channel.reset();
-        return;
-    }
 }
 
 void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
@@ -796,89 +423,6 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
     }
 
     broadcastUpdateTopologyAndWait<cmdACTIVATE_USER_TASK>(assignmentAgents, _channel, "Activating user tasks...");
-}
-
-void CConnectionManager::on_cmdGET_AGENTS_INFO(const SSenderInfo& _sender,
-                                               SCommandAttachmentImpl<cmdGET_AGENTS_INFO>::ptr_t _attachment,
-                                               CAgentChannel::weakConnectionPtr_t _channel)
-{
-    CConnectionManager::weakChannelInfo_t::container_t channels(
-        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
-        }));
-
-    // No active agents
-    if (channels.empty() && !_channel.expired())
-    {
-        SAgentsInfoCmd cmd;
-        auto p = _channel.lock();
-        p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
-        return;
-    }
-
-    // Enumerate all agents
-    size_t i = 0;
-    for (const auto& v : channels)
-    {
-        SAgentsInfoCmd cmd;
-        stringstream ss;
-
-        if (v.m_channel.expired())
-            continue;
-        auto ptr = v.m_channel.lock();
-
-        SAgentInfo inf = ptr->getAgentInfo(v.m_protocolHeaderID);
-
-        string sTaskName("no task is assigned");
-        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
-        {
-            stringstream ssTaskString;
-            ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
-            sTaskName = ssTaskString.str();
-        }
-
-        ss << " -------------->>> " << inf.m_id << "\nHost Info: " << inf.m_remoteHostInfo.m_username << "@"
-           << inf.m_remoteHostInfo.m_host << ":" << inf.m_remoteHostInfo.m_DDSPath
-           << "\nAgent pid: " << inf.m_remoteHostInfo.m_agentPid
-           << "\nAgent startup time: " << chrono::duration<double>(inf.m_startUpTime).count() << " s"
-           << "\nState: " << g_agentStates.at(inf.m_state) << "\n"
-           << "\nTask ID: " << sTaskName << "\n";
-
-        cmd.m_nActiveAgents = channels.size();
-        cmd.m_nIndex = i++;
-        cmd.m_sAgentInfo = ss.str();
-
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            p->pushMsg<cmdREPLY_AGENTS_INFO>(cmd, _sender.m_ID);
-        }
-    }
-}
-
-void CConnectionManager::on_cmdGET_IDLE_AGENTS_COUNT(
-    const SSenderInfo& _sender,
-    SCommandAttachmentImpl<cmdGET_IDLE_AGENTS_COUNT>::ptr_t _attachment,
-    CAgentChannel::weakConnectionPtr_t _channel)
-{
-    size_t count = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                info.m_taskID == 0 && info.m_state == EAgentState::idle);
-    });
-
-    SSimpleMsgCmd cmd;
-    // No active agents
-    if (count == 0)
-        cmd.m_sMsg = "0";
-    else
-        cmd.m_sMsg = to_string(count);
-
-    if (!_channel.expired())
-    {
-        auto p = _channel.lock();
-        p->pushMsg<cmdREPLY_IDLE_AGENTS_COUNT>(cmd, _sender.m_ID);
-    }
 }
 
 void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
@@ -1279,6 +823,13 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 m_SubmitAgents.processCustomCommandMessage(*_attachment, _channel);
                 return;
             }
+            // Tools API request
+            else if (_attachment->m_sCondition == g_sToolsAPISign)
+            {
+                LOG(info) << "Received a message from TOOLS API.";
+                processToolsAPIRequests(*_attachment, _channel);
+                return;
+            }
 
             std::shared_ptr<boost::regex> pathRegex;
 
@@ -1341,5 +892,561 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     {
         LOG(error) << "on_cmdCUSTOM_CMD: " << _e.what();
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdCUSTOM_CMD), _sender.m_ID);
+    }
+}
+
+void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
+{
+    LOG(MiscCommon::info) << "Processing Tools API message: " << _cmd.m_sCmd;
+    boost::property_tree::ptree pt;
+
+    try
+    {
+        istringstream ss(_cmd.m_sCmd);
+        boost::property_tree::read_json(ss, pt);
+
+        const boost::property_tree::ptree& childPT = pt.get_child("dds.tools-api");
+
+        for (const auto& child : childPT)
+        {
+            const string& tag = child.first;
+            if (tag == "submit")
+            {
+                dds::tools_api::SSubmit submitInfo;
+                submitInfo.fromPT(pt);
+
+                submitAgents(submitInfo, _channel);
+            }
+            else if (tag == "topology")
+            {
+                dds::tools_api::STopology topoInfo;
+                topoInfo.fromPT(pt);
+
+                updateTopology(topoInfo, _channel);
+            }
+            else if (tag == "message")
+            {
+            }
+            else if (tag == "getlog")
+            {
+                dds::tools_api::SGetLog getlog;
+                getlog.fromPT(pt);
+
+                getLog(getlog, _channel);
+            }
+            else if (tag == "commanderInfo")
+            {
+                dds::tools_api::SCommanderInfo commanderInfo;
+                commanderInfo.fromPT(pt);
+
+                sendUICommanderInfo(commanderInfo, _channel);
+            }
+            else if (tag == "agentInfo")
+            {
+                dds::tools_api::SAgentInfo agentInfo;
+                agentInfo.fromPT(pt);
+
+                sendUIAgentInfo(agentInfo, _channel);
+            }
+        }
+    }
+    catch (const boost::property_tree::ptree_error& _e)
+    {
+        string msg("Failed to process Tools API message: ");
+        msg += _e.what();
+        LOG(MiscCommon::error) << msg;
+    }
+    catch (const exception& _e)
+    {
+        LOG(MiscCommon::error) << "CConnectionManager::processToolsAPIRequests: ";
+    }
+}
+
+void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo,
+                                      CAgentChannel::weakConnectionPtr_t _channel)
+{
+    try
+    {
+        string pluginDir = CUserDefaults::instance().getPluginDir(_submitInfo.m_pluginPath, _submitInfo.m_rms);
+        stringstream ssPluginExe;
+        ssPluginExe << pluginDir << "dds-submit-" << _submitInfo.m_rms;
+        if (!boost::filesystem::exists(ssPluginExe.str()))
+        {
+            stringstream ssErrMsg;
+            ssErrMsg << "Unknown RMS plug-in requested \"" << _submitInfo.m_rms << "\" (" << ssPluginExe.str() << ")";
+
+            sendToolsAPIMsg(_channel, ssErrMsg.str(), EMsgSeverity::error);
+            return;
+        }
+
+        // Create a new submit communication info channel
+        lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
+        if (!m_SubmitAgents.m_channel.expired())
+            throw runtime_error("Can not process the request. Submit is already in progress.");
+
+        // Create / re-pack WN package
+        // Include inline script if present
+        string inlineShellScripCmds;
+        if (!_submitInfo.m_config.empty())
+        {
+            ifstream f(_submitInfo.m_config);
+            if (!f.is_open())
+            {
+                string msg("can't open configuration file \"");
+                msg += _submitInfo.m_config;
+                msg += "\"";
+                throw runtime_error(msg);
+            }
+            CNcf config;
+            config.readFrom(f, true); // Read only bash commands if any
+            inlineShellScripCmds = config.getBashEnvCmds();
+            LOG(info)
+                << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
+
+            string scriptFileName(CUserDefaults::instance().getWrkPkgDir());
+            scriptFileName += "user_worker_env.sh";
+            smart_path(&scriptFileName);
+            ofstream f_script(scriptFileName.c_str());
+            if (!f_script.is_open())
+                throw runtime_error("Can't open for writing: " + scriptFileName);
+
+            f_script << inlineShellScripCmds;
+            f_script.close();
+        }
+        // pack worker package
+        sendToolsAPIMsg(_channel, "Creating new worker package...", EMsgSeverity::info);
+
+        // Use a lightweightpackage when possible
+        _createWnPkg(!inlineShellScripCmds.empty(), (_submitInfo.m_rms == "localhost"));
+
+        // remember the UI channel, which requested to submit the job
+        m_SubmitAgents.m_channel = _channel;
+        m_SubmitAgents.m_requestID = _submitInfo.m_requestID;
+        m_SubmitAgents.zeroCounters();
+
+        SSubmit submitRequest;
+        submitRequest.m_cfgFilePath = _submitInfo.m_config;
+        submitRequest.m_nInstances = _submitInfo.m_instances;
+        submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath();
+        m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
+
+        string sPluginInfoMsg("RMS plug-in: ");
+        sPluginInfoMsg += ssPluginExe.str();
+        sendToolsAPIMsg(_channel, sPluginInfoMsg, EMsgSeverity::info);
+
+        // Submitting the job
+        stringstream ssCmd;
+        ssCmd << ssPluginExe.str();
+        // TODO: Send ID to the plug-in
+        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id "
+              << "FAKE_ID_FOR_TESTS"
+              << " --path \"" << pluginDir << "\"";
+
+        sendToolsAPIMsg(_channel, "Initializing RMS plug-in...", EMsgSeverity::info);
+
+        LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
+
+        // Let the submit info channel now, that plug-in is about to start
+        m_SubmitAgents.initPlugin();
+
+        try
+        {
+            // don't wait for plug-in. Just execute it and expect it to connect.
+            // We will report to user if it won't connect.
+            execute(ssCmd.str());
+        }
+        catch (exception& e)
+        {
+            stringstream ssMsg;
+            ssMsg << "Failed to deploy agents: " << e.what();
+            throw runtime_error(ssMsg.str());
+        }
+    }
+    catch (bad_weak_ptr& e)
+    {
+        // TODO: Do we need to log something here?
+
+        // In case of any plugin initialization error, reset the info channel
+        m_SubmitAgents.m_channel.reset();
+    }
+    catch (exception& e)
+    {
+        // In case of any plugin initialization error, reset the info channel
+        m_SubmitAgents.m_channel.reset();
+
+        sendToolsAPIMsg(_channel, e.what(), EMsgSeverity::error);
+    }
+}
+
+void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topologyInfo,
+                                        CAgentChannel::weakConnectionPtr_t _channel)
+{
+    LOG(info) << "UI channel requested to update/activate/stop a topology.";
+
+    // Only a single topology update/activate/stop can be active at a time
+    lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
+
+    try
+    {
+        dds::tools_api::STopology::EUpdateType updateType = _topologyInfo.m_updateType;
+
+        string msg;
+        switch (updateType)
+        {
+            case dds::tools_api::STopology::EUpdateType::UPDATE:
+                msg = "Updating topology to " + _topologyInfo.m_topologyFile;
+                break;
+            case dds::tools_api::STopology::EUpdateType::ACTIVATE:
+                msg = "Activating topology " + _topologyInfo.m_topologyFile;
+                break;
+            case dds::tools_api::STopology::EUpdateType::STOP:
+                msg = "Stopping topology " + _topologyInfo.m_topologyFile;
+                break;
+            default:
+                break;
+        }
+
+        sendToolsAPIMsg(_channel, msg, EMsgSeverity::info);
+
+        //
+        // Check if topology is currently active, i.e. there are executing tasks
+        //
+        CConnectionManager::weakChannelInfo_t::container_t channels(
+            getChannels([](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+                _stop = (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                         info.m_taskID > 0 && info.m_state == EAgentState::executing);
+                return _stop;
+            }));
+        bool topologyActive = !channels.empty();
+        // Current topology is not active we reset
+        if (!topologyActive)
+        {
+            m_topo = CTopoCore();
+        }
+        //
+
+        // If topology is active we can't activate it again
+        if (updateType == dds::tools_api::STopology::EUpdateType::ACTIVATE && topologyActive)
+        {
+            throw runtime_error("Topology is currently active, can't activate it again.");
+        }
+
+        //
+        // Get new topology and calculate the difference
+        //
+        CTopoCore topo;
+        // If topo file is empty than we stop the topology
+        if (!_topologyInfo.m_topologyFile.empty())
+        {
+            topo.setXMLValidationDisabled(_topologyInfo.m_disableValidation);
+            topo.init(_topologyInfo.m_topologyFile);
+        }
+
+        topology_api::CTopoCore::IdSet_t removedTasks;
+        topology_api::CTopoCore::IdSet_t removedCollections;
+        topology_api::CTopoCore::IdSet_t addedTasks;
+        topology_api::CTopoCore::IdSet_t addedCollections;
+        m_topo.getDifference(topo, removedTasks, removedCollections, addedTasks, addedCollections);
+
+        stringstream ss;
+        ss << "\nRemoved tasks: " << removedTasks.size() << "\n"
+           << m_topo.stringOfTasks(removedTasks) << "Removed collections: " << removedCollections.size() << "\n"
+           << m_topo.stringOfCollections(removedCollections) << "Added tasks: " << addedTasks.size() << "\n"
+           << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
+           << topo.stringOfCollections(addedCollections);
+
+        sendToolsAPIMsg(_channel, ss.str(), EMsgSeverity::info);
+
+        m_topo = topo; // Assign new topology
+        //
+
+        //
+        // Update topology on the agents
+        //
+        if (!_topologyInfo.m_topologyFile.empty())
+        {
+            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+            };
+            CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
+
+            if (allAgents.size() == 0)
+                throw runtime_error("There are no active agents.");
+
+            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
+                allAgents, _channel, "Updating topology for agents...", _topologyInfo.m_topologyFile, "topology.xml");
+        }
+
+        //
+        // Stop removed tasks
+        //
+        if (removedTasks.size() > 0)
+        {
+            weakChannelInfo_t::container_t agents;
+            for (auto taskID : removedTasks)
+            {
+                auto agentChannel = m_taskIDToAgentChannelMap[taskID];
+                agents.push_back(agentChannel);
+            }
+
+            for (const auto& v : agents)
+            {
+                if (v.m_channel.expired())
+                    continue;
+                auto ptr = v.m_channel.lock();
+                // TODO: FIXME: Do we need to deque messages in new decentralized concept?
+                // dequeue important (or expensive) messages
+                ptr->dequeueMsg<cmdUPDATE_KEY>();
+            }
+
+            broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
+        }
+        //
+
+        //
+        // Activate added tasks
+        //
+        if (addedTasks.size() > 0)
+        {
+            auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                        info.m_state == EAgentState::idle);
+            };
+
+            CConnectionManager::weakChannelInfo_t::container_t idleAgents(getChannels(idleCondition));
+
+            size_t nofAgents = idleAgents.size();
+            if (nofAgents == 0)
+                throw runtime_error("There are no idle agents.");
+            if (nofAgents < addedTasks.size())
+            {
+                stringstream ssMsg;
+                ssMsg << "The number of agents is not sufficient for this topology (required/available "
+                      << addedTasks.size() << "/" << nofAgents << ").";
+                throw runtime_error(ssMsg.str());
+            }
+
+            // Schedule the tasks
+            CSSHScheduler scheduler;
+            scheduler.makeSchedule(m_topo, idleAgents, addedTasks, addedCollections);
+            const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
+
+            // Erase removed tasks
+            for (auto taskID : removedTasks)
+            {
+                m_taskIDToAgentChannelMap.erase(taskID);
+            }
+            // Add new elements
+            for (const auto& sch : schedule)
+            {
+                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
+            }
+
+            activateTasks(scheduler, _channel);
+        }
+
+        // Send shutdown to UI channel at the end
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            dds::tools_api::SDone done;
+            done.m_requestID = _topologyInfo.m_requestID;
+            SCustomCmdCmd cmd;
+            cmd.m_sCmd = done.toJSON();
+            cmd.m_sCondition = "";
+            p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+        }
+    }
+    catch (exception& _e)
+    {
+        sendToolsAPIMsg(_channel, _e.what(), EMsgSeverity::error);
+
+        m_updateTopology.m_channel.reset();
+        return;
+    }
+}
+
+void CConnectionManager::sendToolsAPIMsg(CAgentChannel::weakConnectionPtr_t _channel,
+                                         const string& _msg,
+                                         EMsgSeverity _severity)
+{
+    if (_channel.expired())
+        return;
+
+    auto p = _channel.lock();
+
+    dds::tools_api::SMessage msg;
+    msg.m_msg = _msg;
+    msg.m_severity = _severity;
+    SCustomCmdCmd cmd;
+    cmd.m_sCmd = msg.toJSON();
+    cmd.m_sCondition = "";
+    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+}
+
+void CConnectionManager::getLog(const dds::tools_api::SGetLog& _getLog, CAgentChannel::weakConnectionPtr_t _channel)
+{
+    lock_guard<mutex> lock(m_getLog.m_mutexStart);
+
+    if (!m_getLog.m_channel.expired())
+    {
+        sendToolsAPIMsg(
+            _channel, "Can not process the request. The getlog command is already in progress.", EMsgSeverity::error);
+        return;
+    }
+
+    m_getLog.m_channel = _channel;
+    m_getLog.m_shutdownOnComplete = true;
+    m_getLog.m_requestID = _getLog.m_requestID;
+    m_getLog.zeroCounters();
+
+    auto p = m_getLog.m_channel.lock();
+    // Create directory to store logs
+    const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+    fs::path dir(sLogStorageDir);
+    if (!fs::exists(dir) && !fs::create_directories(dir))
+    {
+        stringstream ss;
+        ss << "Could not create directory " << sLogStorageDir << " to save log files.";
+        sendToolsAPIMsg(_channel, ss.str(), EMsgSeverity::error);
+
+        m_getLog.m_channel.reset();
+        return;
+    }
+
+    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+    };
+
+    m_getLog.m_nofRequests = countNofChannels(condition);
+
+    if (m_getLog.m_nofRequests == 0)
+    {
+        sendToolsAPIMsg(_channel, "There are no connected agents.", EMsgSeverity::error);
+
+        m_getLog.m_channel.reset();
+        return;
+    }
+
+    broadcastSimpleMsg<cmdGET_LOG>(condition);
+}
+
+void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInfo& _info,
+                                             CAgentChannel::weakConnectionPtr_t _channel)
+{
+    dds::tools_api::SCommanderInfo info(_info);
+
+    info.m_pid = getpid();
+
+    size_t count = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                info.m_taskID == 0 && info.m_state == EAgentState::idle);
+    });
+
+    info.m_idleAgentsCount = count;
+
+    if (_channel.expired())
+        return;
+
+    auto p = _channel.lock();
+    if (!p)
+        return;
+
+    SCustomCmdCmd cmd;
+    cmd.m_sCmd = info.toJSON();
+    cmd.m_sCondition = "";
+    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+
+    dds::tools_api::SDone done;
+    done.m_requestID = _info.m_requestID;
+    cmd.m_sCmd = done.toJSON();
+    cmd.m_sCondition = "";
+    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+}
+
+void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfo& _info,
+                                         CAgentChannel::weakConnectionPtr_t _channel)
+{
+    CConnectionManager::weakChannelInfo_t::container_t channels(
+        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+        }));
+
+    // No active agents
+    if (channels.empty() && !_channel.expired())
+    {
+        auto p = _channel.lock();
+
+        dds::tools_api::SAgentInfo info(_info);
+        SCustomCmdCmd cmd;
+        cmd.m_sCmd = info.toJSON();
+        cmd.m_sCondition = "";
+        p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+
+        dds::tools_api::SDone done;
+        done.m_requestID = _info.m_requestID;
+        cmd.m_sCmd = done.toJSON();
+        cmd.m_sCondition = "";
+        p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+
+        return;
+    }
+
+    // Enumerate all agents
+    size_t i = 0;
+    for (const auto& v : channels)
+    {
+        dds::tools_api::SAgentInfo info;
+        stringstream ss;
+
+        if (v.m_channel.expired())
+            continue;
+        auto ptr = v.m_channel.lock();
+
+        SAgentInfo inf = ptr->getAgentInfo(v.m_protocolHeaderID);
+
+        string sTaskName("no task is assigned");
+        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
+        {
+            stringstream ssTaskString;
+            ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
+            sTaskName = ssTaskString.str();
+        }
+
+        ss << " -------------->>> " << inf.m_id << "\nHost Info: " << inf.m_remoteHostInfo.m_username << "@"
+           << inf.m_remoteHostInfo.m_host << ":" << inf.m_remoteHostInfo.m_DDSPath
+           << "\nAgent pid: " << inf.m_remoteHostInfo.m_agentPid
+           << "\nAgent startup time: " << chrono::duration<double>(inf.m_startUpTime).count() << " s"
+           << "\nState: " << g_agentStates.at(inf.m_state) << "\n"
+           << "\nTask ID: " << sTaskName << "\n";
+
+        info.m_activeAgentsCount = channels.size();
+        info.m_index = i++;
+        info.m_agentInfo = ss.str();
+
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            SCustomCmdCmd cmd;
+            cmd.m_sCmd = info.toJSON();
+            cmd.m_sCondition = "";
+            p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+        }
+    }
+
+    if (!_channel.expired())
+    {
+        auto p = _channel.lock();
+
+        dds::tools_api::SDone done;
+        done.m_requestID = _info.m_requestID;
+        SCustomCmdCmd cmd;
+        cmd.m_sCmd = done.toJSON();
+        cmd.m_sCondition = "";
+        p->template pushMsg<cmdCUSTOM_CMD>(cmd);
     }
 }

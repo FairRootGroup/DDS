@@ -5,7 +5,6 @@
 // DDS
 #include "Stop.h"
 #include "DDSHelper.h"
-#include "InfoChannel.h"
 #include "Process.h"
 #include "UserDefaults.h"
 #include "version.h"

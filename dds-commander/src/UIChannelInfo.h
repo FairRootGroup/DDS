@@ -9,7 +9,7 @@
 #include "AgentChannel.h"
 #include "CustomCmdCmd.h"
 #include "ProtocolCommands.h"
-//#include "dds_intercom.h"
+#include "ToolsProtocol.h"
 // STD
 #include <chrono>
 #include <mutex>
@@ -74,22 +74,17 @@ namespace dds
                     T* pThis = static_cast<T*>(this);
                     std::string userMessage = pThis->getMessage(_sender, _cmd, _channel);
 
-                    if (!m_channel.expired())
-                    {
-                        auto pUI = m_channel.lock();
-                        pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
-                            protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::info));
+                    sendUIMessage(userMessage);
 
-                        // measure time to activate
-                        std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
+                    // measure time to activate
+                    std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
-                        pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
-                            m_srcCommand,
-                            m_nofReceived,
-                            m_nofRequests,
-                            m_nofReceivedErrors,
-                            std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime).count()));
-                    }
+                    sendUIProgress(dds::tools_api::SProgress(
+                        m_srcCommand,
+                        m_nofReceived,
+                        m_nofRequests,
+                        m_nofReceivedErrors,
+                        std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime).count()));
 
                     checkAllReceived();
                 }
@@ -115,22 +110,16 @@ namespace dds
                     T* pThis = static_cast<T*>(this);
                     std::string userMessage = pThis->getErrorMessage(_sender, _cmd, _channel);
 
-                    if (!m_channel.expired())
-                    {
-                        auto pUI = m_channel.lock();
-                        pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
-                            protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::error));
+                    sendUIMessage(userMessage, dds::intercom_api::EMsgSeverity::error);
 
-                        // measure time to activate
-                        std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
-
-                        pUI->template pushMsg<protocol_api::cmdPROGRESS>(protocol_api::SProgressCmd(
-                            m_srcCommand,
-                            m_nofReceived,
-                            m_nofRequests,
-                            m_nofReceivedErrors,
-                            std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime).count()));
-                    }
+                    // measure time to activate
+                    std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
+                    sendUIProgress(dds::tools_api::SProgress(
+                        m_srcCommand,
+                        m_nofReceived,
+                        m_nofRequests,
+                        m_nofReceivedErrors,
+                        std::chrono::duration_cast<std::chrono::milliseconds>(curTime - m_startTime).count()));
 
                     checkAllReceived();
                 }
@@ -142,6 +131,73 @@ namespace dds
                 return true;
             }
 
+            void sendUIMessage(const std::string& _msg,
+                               dds::intercom_api::EMsgSeverity _severity = dds::intercom_api::EMsgSeverity::info)
+            {
+                try
+                {
+                    if (m_channel.expired())
+                        return;
+
+                    auto pUI = m_channel.lock();
+                    if (pUI)
+                    {
+                        dds::tools_api::SMessage msg;
+                        msg.m_msg = _msg;
+                        msg.m_severity = _severity;
+
+                        protocol_api::SCustomCmdCmd cmd;
+                        cmd.m_sCmd = msg.toJSON();
+                        cmd.m_sCondition = "";
+                        pUI->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
+                    }
+                }
+                catch (...)
+                {
+                }
+            }
+
+            void sendUIProgress(const dds::tools_api::SProgress& _progress)
+            {
+                try
+                {
+                    if (m_channel.expired())
+                        return;
+
+                    auto pUI = m_channel.lock();
+                    if (pUI)
+                    {
+                        protocol_api::SCustomCmdCmd cmd;
+                        cmd.m_sCmd = _progress.toJSON();
+                        cmd.m_sCondition = "";
+                        pUI->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
+                    }
+                }
+                catch (...)
+                {
+                }
+            }
+
+            void doneWithUI()
+            {
+                try
+                {
+                    auto pUI = m_channel.lock();
+                    if (pUI)
+                    {
+                        dds::tools_api::SDone done;
+                        done.m_requestID = m_requestID;
+                        protocol_api::SCustomCmdCmd cmd;
+                        cmd.m_sCmd = done.toJSON();
+                        cmd.m_sCondition = "";
+                        pUI->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
+                    }
+                }
+                catch (...)
+                {
+                }
+            }
+
           private:
             void checkAllReceived()
             {
@@ -149,17 +205,15 @@ namespace dds
                 {
                     if (allReceived())
                     {
-                        T* pThis = static_cast<T*>(this);
-                        std::string userMessage = pThis->getAllReceivedMessage();
-
                         if (!m_channel.expired())
                         {
-                            auto pUI = m_channel.lock();
-                            pUI->template pushMsg<protocol_api::cmdSIMPLE_MSG>(
-                                protocol_api::SSimpleMsgCmd(userMessage, MiscCommon::info));
+                            T* pThis = static_cast<T*>(this);
+                            std::string userMessage = pThis->getAllReceivedMessage();
+
+                            sendUIMessage(userMessage);
                             if (m_shutdownOnComplete)
                             {
-                                pUI->template pushMsg<protocol_api::cmdSHUTDOWN>();
+                                doneWithUI();
                             }
                             m_channel.reset();
                         }
@@ -180,6 +234,7 @@ namespace dds
             std::mutex m_mutexReceive;
             bool m_shutdownOnComplete;
             uint16_t m_srcCommand;
+            uint64_t m_requestID = 0;
 
           private:
             std::chrono::steady_clock::time_point m_startTime;

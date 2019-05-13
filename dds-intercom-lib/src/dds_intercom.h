@@ -106,6 +106,8 @@ namespace dds
 
         /// Sign that is send to commander if RMS plug-in is connecting to it.
         const std::string g_sRmsAgentSign = "rms_agent_sign";
+        /// Sign that is send to commander if Tools-API is connecting to it.
+        const std::string g_sToolsAPISign = "tools_api_sign";
 
         /// \brief Enumeration with message severity.
         enum class EMsgSeverity

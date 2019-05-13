@@ -6,9 +6,10 @@
 #include "BOOSTHelper.h"
 #include "DDSHelper.h"
 #include "ErrorCode.h"
-#include "InfoChannel.h"
+#include "Options.h"
 #include "Process.h"
 #include "SysHelper.h"
+#include "Tools.h"
 #include "UserDefaults.h"
 
 using namespace std;
@@ -16,7 +17,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::info_cmd;
 using namespace dds::user_defaults_api;
-using boost::asio::ip::tcp;
+using namespace dds::tools_api;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -48,33 +49,122 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    string sid;
     try
     {
-        string sHost;
-        string sPort;
-        // We connect to UI commander channel.
-        findCommanderUI(&sHost, &sPort);
+        sid = CUserDefaults::instance().getLockedSID();
+    }
+    catch (...)
+    {
+        LOG(log_stderr) << g_cszDDSServerIsNotFound_StartIt << endl;
+        return EXIT_FAILURE;
+    }
 
-        boost::asio::io_context io_context;
+    try
+    {
+        CSession session;
+        session.attach(sid);
 
-        boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+        session.onResponse<SMessage>([&session](const SMessage& _message) {
+            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                << "Server reports: " << _message.m_msg;
 
-        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+            // stop communication on errors
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                session.stop();
+            return true;
+        });
 
-        CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_context, 0);
-        client->setOptions(options);
-        client->connect(iterator);
+        session.onResponse<SDone>([&session](const SDone& _message) {
+            session.stop();
+            return true;
+        });
 
-        io_context.run();
+        session.onResponse<SCommanderInfo>([&session, &options](const SCommanderInfo& _info) {
+            if (options.m_nIdleAgentsCount > 0)
+            {
+                if (_info.m_idleAgentsCount < options.m_nIdleAgentsCount)
+                {
+                    this_thread::sleep_for(chrono::milliseconds(500));
+                    SCommanderInfo commanderInfo;
+                    session.sendRequest(commanderInfo);
+                    return true;
+                }
+
+                LOG(log_stdout_clean) << "idle agents online: " << _info.m_idleAgentsCount;
+                session.stop();
+            }
+
+            if (options.m_bNeedCommanderPid)
+                LOG(log_stdout_clean) << _info.m_pid;
+
+            // Checking for "status" option
+            if (options.m_bNeedDDSStatus)
+            {
+                if (_info.m_pid > 0)
+                    LOG(log_stdout_clean) << "DDS commander server process (" << _info.m_pid << ") is running...";
+                else
+                    LOG(log_stdout_clean) << "DDS commander server is not running.";
+            }
+
+            session.stop();
+            return true;
+        });
+
+        session.onResponse<SAgentInfo>([&session, &options](const SAgentInfo& _info) {
+            if (options.m_bNeedAgentsNumber)
+            {
+                LOG(log_stdout_clean) << _info.m_activeAgentsCount;
+                // Close communication channel
+                session.stop();
+                return true;
+            }
+
+            if (options.m_bNeedAgentsList && !_info.m_agentInfo.empty())
+            {
+                LOG(log_stdout_clean) << _info.m_agentInfo;
+            }
+            else
+                session.stop();
+
+            return true;
+        });
+
+        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus)
+        {
+            SCommanderInfo commanderInfo;
+            session.sendRequest(commanderInfo);
+        }
+        else if (options.m_bNeedAgentsNumber || options.m_bNeedAgentsList)
+        {
+            SAgentInfo agentInfo;
+            session.sendRequest(agentInfo);
+        }
+        else if (options.m_bNeedPropList)
+        {
+            // TODO: NOT Implemented
+            LOG(log_stderr) << "The feature is disiabled for this version";
+            // pushMsg<protocol_api::cmdGET_PROP_LIST>();
+        }
+        else if (options.m_bNeedPropValues)
+        {
+            // TODO: NOT Implemented
+            LOG(log_stderr) << "The feature is disiabled for this version";
+            // protocol_api::SGetPropValuesCmd cmd;
+            // cmd.m_sPropertyName = m_options.m_propertyName;
+            // pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
+        }
+        else if (options.m_nIdleAgentsCount > 0)
+        {
+            SCommanderInfo commanderInfo;
+            session.sendRequest(commanderInfo);
+        }
+
+        session.start(true);
     }
     catch (exception& e)
     {
-        if (options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0)
-        {
-            LOG(log_stdout_clean) << "DDS commander server is not running.";
-        }
-        LOG(error) << e.what();
+        LOG(log_stderr) << e.what();
         return EXIT_FAILURE;
     }
 

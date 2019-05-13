@@ -7,12 +7,10 @@ configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
 set(SOURCE_FILES
 	src/main.cpp
-	src/ActivateChannel.cpp
 )
 
 set(HEADER_FILES
 	src/Options.h
-	src/ActivateChannel.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
@@ -22,14 +20,15 @@ target_link_libraries(${PROJECT_NAME}
   MiscCommon
 	dds_user_defaults_lib
 	dds_protocol_lib
-  dds_topology_lib
-  Boost::boost
+	dds_topology_lib
+	dds_tools_lib
+	Boost::boost
 	Boost::program_options
-  Boost::system
-  Boost::log
-  Boost::log_setup
-  Boost::thread
-  Boost::filesystem
+	Boost::system
+	Boost::log
+	Boost::log_setup
+	Boost::thread
+	Boost::filesystem
 )
 
 target_include_directories(${PROJECT_NAME}

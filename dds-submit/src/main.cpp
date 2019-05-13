@@ -6,7 +6,7 @@
 #include "DDSHelper.h"
 #include "ErrorCode.h"
 #include "Options.h"
-#include "SubmitChannel.h"
+#include "Tools.h"
 // BOOST
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -16,6 +16,7 @@ using namespace MiscCommon;
 using namespace dds;
 using namespace dds::submit_cmd;
 using namespace dds::user_defaults_api;
+using namespace dds::tools_api;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -81,41 +82,53 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     }
 
-    string sHost;
-    string sPort;
+    string sid;
     try
     {
-        // We want to connect to commnader's UI channel
-        findCommanderUI(&sHost, &sPort);
+        sid = CUserDefaults::instance().getLockedSID();
     }
-    catch (exception& e)
+    catch (...)
     {
-        LOG(log_stderr) << e.what();
-        LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
+        LOG(log_stderr) << g_cszDDSServerIsNotFound_StartIt << endl;
         return EXIT_FAILURE;
     }
 
     try
     {
-        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << " ...";
+        std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+        CSession session;
+        session.attach(sid);
 
-        boost::asio::io_context io_context;
+        LOG(MiscCommon::log_stdout) << "Connection established.";
+        LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
 
-        boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+        session.onResponse<SMessage>([&session](const SMessage& _message) {
+            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                << "Server reports: " << _message.m_msg;
 
-        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+            // stop communication on errors
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                session.stop();
+            return true;
+        });
 
-        CSubmitChannel::connectionPtr_t client = CSubmitChannel::makeNew(io_context, 0);
+        session.onResponse<SDone>([&session, &start](const SDone& _message) {
+            auto end = chrono::high_resolution_clock::now();
+            chrono::duration<double, std::milli> elapsed = end - start;
+            LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
 
-        client->setCfgFile(options.m_sCfgFile);
-        client->setRMSType(options.m_sRMS);
-        client->setPath(options.m_sPath);
-        client->setNumber(options.m_number);
+            session.stop();
+            return true;
+        });
 
-        client->connect(iterator);
+        SSubmit submitInfo;
+        submitInfo.m_config = options.m_sCfgFile;
+        submitInfo.m_rms = options.m_sRMS;
+        submitInfo.m_instances = options.m_number;
+        submitInfo.m_pluginPath = options.m_sPath;
+        session.sendRequest(submitInfo);
 
-        io_context.run();
+        session.start(true);
     }
     catch (exception& e)
     {

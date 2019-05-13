@@ -65,6 +65,7 @@ option(BUILD_dds-submit-slurm "Build dds-submit-slurm" ON)
 option(BUILD_dds-submit-pbs "Build dds-submit-pbs" ON)
 option(BUILD_dds-submit-lsf "Build dds-submit-lsf" ON)
 option(BUILD_dds-session "Build dds-session" ON)
+option(BUILD_dds_tools_lib "Build dds-tools-lib" ON)
 #
 # Custom targets
 #
@@ -329,6 +330,12 @@ if(BUILD_dds-session)
     message(STATUS "Build dds-session - YES")
     add_subdirectory ( dds-session )
 endif(BUILD_dds-session)
+
+# dds_tools_lib
+if(BUILD_dds_tools_lib)
+    message(STATUS "Build dds_tools_lib - YES")
+    add_subdirectory ( dds-tools-lib )
+endif(BUILD_dds_tools_lib)
 
 #
 # Install

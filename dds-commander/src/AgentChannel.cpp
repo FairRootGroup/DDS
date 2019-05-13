@@ -223,18 +223,6 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
     return true;
 }
 
-bool CAgentChannel::on_cmdGED_PID(SCommandAttachmentImpl<cmdGED_PID>::ptr_t _attachment, const SSenderInfo& _sender)
-{
-    pid_t pid = getpid();
-    SSimpleMsgCmd cmd_attachment;
-    stringstream ss;
-    ss << pid;
-    cmd_attachment.m_sMsg = ss.str();
-    pushMsg<cmdREPLY_PID>(cmd_attachment, _sender.m_ID);
-
-    return true;
-}
-
 bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, const SSenderInfo& _sender)
 {

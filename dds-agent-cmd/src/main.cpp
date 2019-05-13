@@ -4,16 +4,17 @@
 //
 // DDS
 #include "DDSHelper.h"
-#include "GenericChannel.h"
 #include "Options.h"
+#include "ProgressDisplay.h"
+#include "Tools.h"
 #include "UserDefaults.h"
 
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
-using namespace agent_cmd_cmd;
+using namespace dds::agent_cmd_cmd;
 using namespace dds::user_defaults_api;
-using boost::asio::ip::tcp;
+using namespace dds::tools_api;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -43,36 +44,71 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    string sHost;
-    string sPort;
+    string sid;
     try
     {
-        // We want to connect to commnader's UI channel
-        findCommanderUI(&sHost, &sPort);
+        sid = CUserDefaults::instance().getLockedSID();
     }
-    catch (exception& e)
+    catch (...)
     {
-        LOG(log_stderr) << e.what();
-        LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
+        LOG(log_stderr) << g_cszDDSServerIsNotFound_StartIt << endl;
         return EXIT_FAILURE;
     }
 
     try
     {
-        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
+        CSession session;
+        session.attach(sid);
 
-        boost::asio::io_context io_context;
+        LOG(MiscCommon::log_stdout) << "Connection established.";
+        switch (options.m_agentCmd)
+        {
+            case EAgentCmdType::GETLOG:
+                LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
+                break;
+            default:
+                LOG(MiscCommon::log_stderr) << "Uknown command.";
+                return EXIT_FAILURE;
+        }
 
-        boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+        session.onResponse<SMessage>([&session](const SMessage& _message) {
+            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                << "Server reports: " << _message.m_msg;
 
-        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+            // stop communication on errors
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                session.stop();
+            return true;
+        });
 
-        CGenericChannel::connectionPtr_t client = CGenericChannel::makeNew(io_context, 0);
-        client->setOptions(options);
-        client->connect(iterator);
+        session.onResponse<SDone>([&session](const SDone& _message) {
+            session.stop();
+            return true;
+        });
 
-        io_context.run();
+        session.onResponse<SProgress>([&options](const SProgress& _progress) {
+            if (options.m_verbose)
+                return true;
+
+            int completed = _progress.m_completed + _progress.m_errors;
+            if (completed < _progress.m_total)
+            {
+                cout << getProgressDisplayString(completed, _progress.m_total);
+                cout.flush();
+            }
+            else
+            {
+                cout << getProgressDisplayString(completed, _progress.m_total) << endl;
+                cout << "Received: " << _progress.m_completed << " errors: " << _progress.m_errors
+                     << " total: " << _progress.m_total << endl;
+            }
+            return true;
+        });
+
+        SGetLog getLog;
+        session.sendRequest(getLog);
+
+        session.start(true);
     }
     catch (exception& e)
     {

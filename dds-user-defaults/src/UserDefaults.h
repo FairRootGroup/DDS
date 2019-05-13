@@ -69,6 +69,7 @@ namespace dds
             std::string getAgentNamedMutexName() const;
             std::string getSessionsRootDir() const;
             std::string getSessionsHolderDirName() const;
+            bool IsSessionRunning() const;
             std::string getCommanderPidFileName() const;
             std::string getCommanderPidFile() const;
             std::string getWnBinsDir() const;

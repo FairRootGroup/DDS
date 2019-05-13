@@ -107,7 +107,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
                 ssMsg << "RMS plug-in is online. Startup time: "
                       << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms.";
                 LOG(MiscCommon::info) << ssMsg.str();
-                pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ssMsg.str(), MiscCommon::info));
+                sendUIMessage(ssMsg.str());
 
                 intercom_api::SInit init;
                 init.fromPT(pt);
@@ -123,14 +123,15 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
                 message.fromPT(pt);
                 stringstream ss;
                 ss << "Plug-in: " << message.m_msg;
-                pUI->template pushMsg<cmdSIMPLE_MSG>(
-                    SSimpleMsgCmd(ss.str(),
-                                  (message.m_msgSeverity == intercom_api::EMsgSeverity::info ? MiscCommon::info
-                                                                                             : MiscCommon::error)));
+                sendUIMessage(ss.str(),
+                              (message.m_msgSeverity == dds::intercom_api::EMsgSeverity::info
+                                   ? dds::intercom_api::EMsgSeverity::info
+                                   : dds::intercom_api::EMsgSeverity::error));
+
                 // Drop the connection if received an error message from plug-in
-                if (message.m_msgSeverity == intercom_api::EMsgSeverity::error)
+                if (message.m_msgSeverity == dds::intercom_api::EMsgSeverity::error)
                 {
-                    pUI->template pushMsg<cmdSHUTDOWN>();
+                    doneWithUI();
                     m_channel.reset();
                 }
             }
@@ -144,10 +145,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
         msg += _e.what();
         LOG(MiscCommon::error) << msg;
 
-        auto pUI = m_channel.lock();
-        if (pUI)
-            pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(msg, MiscCommon::error));
-
+        sendUIMessage(msg, dds::intercom_api::EMsgSeverity::error);
         shutdown();
     }
     catch (const exception& _e)
@@ -198,9 +196,7 @@ void CSubmitAgentsChannelInfo::checkPluginFailedToStart()
     {
         if (!m_channel.expired())
         {
-            auto pUI = m_channel.lock();
-            if (pUI)
-                pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd("Plug-in failed to start.", MiscCommon::error));
+            sendUIMessage("Plug-in failed to start.", dds::intercom_api::EMsgSeverity::error);
             shutdown();
         }
     }
@@ -211,9 +207,7 @@ void CSubmitAgentsChannelInfo::checkPluginFailedToStart()
             stringstream ss;
             ss << "still waiting for plug-in (elapsed " << chrono::duration_cast<chrono::seconds>(diff).count()
                << "s)...";
-            auto pUI = m_channel.lock();
-            if (pUI)
-                pUI->template pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info));
+            sendUIMessage(ss.str());
         }
     }
 }
@@ -225,9 +219,7 @@ void CSubmitAgentsChannelInfo::shutdown()
     {
         if (!m_channel.expired())
         {
-            auto pUI = m_channel.lock();
-            if (pUI)
-                pUI->template pushMsg<cmdSHUTDOWN>();
+            doneWithUI();
             m_channel.reset();
         }
     }

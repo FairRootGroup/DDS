@@ -3,9 +3,10 @@
 //
 //
 // DDS
-#include "ActivateChannel.h"
 #include "DDSHelper.h"
 #include "Options.h"
+#include "ProgressDisplay.h"
+#include "Tools.h"
 #include "TopoCore.h"
 #include "UserDefaults.h"
 
@@ -16,7 +17,7 @@ using namespace dds::topology_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
-using boost::asio::ip::tcp;
+using namespace dds::tools_api;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -80,41 +81,170 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     }
 
-    string sHost;
-    string sPort;
+    /*  string sHost;
+      string sPort;
+      try
+      {
+          // We want to connect to commnader's UI channel
+          findCommanderUI(&sHost, &sPort);
+      }
+      catch (exception& e)
+      {
+          LOG(log_stderr) << e.what();
+          LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
+          return EXIT_FAILURE;
+      }
+
+      try
+      {
+          LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
+
+          boost::asio::io_context io_context;
+
+          boost::asio::ip::tcp::resolver resolver(io_context);
+          boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+
+          boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+
+          CActivateChannel::connectionPtr_t client = nullptr;
+          if (options.m_topologyCmd == ETopologyCmdType::UPDATE || options.m_topologyCmd == ETopologyCmdType::ACTIVATE
+      || options.m_topologyCmd == ETopologyCmdType::STOP)
+          {
+              client = CActivateChannel::makeNew(io_context, 0);
+              client->setOptions(options);
+              client->connect(iterator);
+          }
+
+          io_context.run();
+      }
+      catch (exception& e)
+      {
+          LOG(log_stderr) << e.what();
+          return EXIT_FAILURE;
+      }*/
+
+    string sid;
     try
     {
-        // We want to connect to commnader's UI channel
-        findCommanderUI(&sHost, &sPort);
+        sid = CUserDefaults::instance().getLockedSID();
     }
-    catch (exception& e)
+    catch (...)
     {
-        LOG(log_stderr) << e.what();
-        LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
+        LOG(log_stderr) << g_cszDDSServerIsNotFound_StartIt << endl;
         return EXIT_FAILURE;
     }
 
     try
     {
-        LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
+        CSession session;
+        session.attach(sid);
 
-        boost::asio::io_context io_context;
+        LOG(MiscCommon::log_stdout) << "Connection established.";
 
-        boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+        session.onResponse<SMessage>([&session](const SMessage& _message) {
+            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                << "Server reports: " << _message.m_msg;
 
-        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+            // stop communication on errors
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                session.stop();
+            return true;
+        });
 
-        CActivateChannel::connectionPtr_t client = nullptr;
-        if (options.m_topologyCmd == ETopologyCmdType::UPDATE || options.m_topologyCmd == ETopologyCmdType::ACTIVATE ||
-            options.m_topologyCmd == ETopologyCmdType::STOP)
+        session.onResponse<SDone>([&session](const SDone& _message) {
+            session.stop();
+            return true;
+        });
+
+        session.onResponse<SProgress>([&options](const SProgress& _progress) {
+            if (options.m_verbose)
+                return true;
+
+            int completed = _progress.m_completed + _progress.m_errors;
+            if (completed < _progress.m_total)
+            {
+                cout << getProgressDisplayString(completed, _progress.m_total);
+                cout.flush();
+            }
+            else
+            {
+                cout << getProgressDisplayString(completed, _progress.m_total) << endl;
+
+                std::chrono::milliseconds timeToActivate(_progress.m_time);
+
+                switch (_progress.m_srcCommand)
+                {
+                    case cmdACTIVATE_USER_TASK:
+                        cout << "Activated tasks: " << _progress.m_completed << "\nErrors: " << _progress.m_errors
+                             << "\nTotal: " << _progress.m_total
+                             << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s"
+                             << endl;
+                        break;
+                    case cmdASSIGN_USER_TASK:
+                        cout << "Assigned/Uploaded tasks: " << _progress.m_completed
+                             << "\nErrors: " << _progress.m_errors << "\nTotal: " << _progress.m_total
+                             << "\nTime to assign/upload: " << std::chrono::duration<double>(timeToActivate).count()
+                             << " s" << endl;
+                        break;
+                    case cmdSTOP_USER_TASK:
+                        cout << "Stopped tasks: " << _progress.m_completed << "\nErrors: " << _progress.m_errors
+                             << "\nTotal: " << _progress.m_total
+                             << "\nTime to Stop: " << std::chrono::duration<double>(timeToActivate).count() << " s"
+                             << endl;
+                        break;
+                    case cmdUPDATE_TOPOLOGY:
+                        cout << "Updated agent topologies: " << _progress.m_completed
+                             << "\nErrors: " << _progress.m_errors << "\nTotal: " << _progress.m_total
+                             << "\nTime to update agent topologies: "
+                             << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
+                        break;
+                    default:;
+                }
+            }
+            return true;
+        });
+
+        string action;
+        switch (options.m_topologyCmd)
         {
-            client = CActivateChannel::makeNew(io_context, 0);
-            client->setOptions(options);
-            client->connect(iterator);
+            case ETopologyCmdType::ACTIVATE:
+                action = "ACTIVATE";
+                break;
+            case ETopologyCmdType::STOP:
+                action = "STOP";
+                break;
+            case ETopologyCmdType::UPDATE:
+                action = "UPDATE";
+                break;
+            default:
+                return EXIT_FAILURE;
         }
 
-        io_context.run();
+        LOG(MiscCommon::log_stdout) << "Requesting server to " << action << " a topology...";
+
+        switch (options.m_topologyCmd)
+        {
+            case ETopologyCmdType::ACTIVATE:
+            case ETopologyCmdType::STOP:
+            case ETopologyCmdType::UPDATE:
+            {
+                dds::tools_api::STopology topoInfo;
+                topoInfo.m_topologyFile = options.m_sTopoFile;
+                topoInfo.m_disableValidation = options.m_bDisableValidation;
+                // Set the proper update type
+                if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
+                    topoInfo.m_updateType = STopology::EUpdateType::ACTIVATE;
+                else if (options.m_topologyCmd == ETopologyCmdType::UPDATE)
+                    topoInfo.m_updateType = STopology::EUpdateType::UPDATE;
+                else if (options.m_topologyCmd == ETopologyCmdType::STOP)
+                    topoInfo.m_updateType = STopology::EUpdateType::STOP;
+                session.sendRequest(topoInfo);
+                session.start(true);
+            }
+            break;
+            default:
+                return EXIT_FAILURE;
+        }
     }
     catch (exception& e)
     {

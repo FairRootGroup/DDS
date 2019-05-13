@@ -19,6 +19,7 @@ target_link_libraries(${test}
   dds_protocol_lib
   dds_topology_lib
   dds_user_defaults_lib
+  dds_tools_lib
   Boost::boost
   Boost::unit_test_framework
   Boost::log

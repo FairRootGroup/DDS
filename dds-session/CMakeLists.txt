@@ -8,14 +8,12 @@ configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 set(SOURCE_FILES
 	src/main.cpp
 	src/Start.cpp
-	src/InfoChannel.cpp
 	src/Stop.cpp
 )
 
 set(HEADER_FILES
 	src/Options.h
 	src/Start.h
-	src/InfoChannel.h
 	src/Stop.h
 )
 
@@ -26,12 +24,13 @@ target_link_libraries(${PROJECT_NAME}
   MiscCommon
 	dds_user_defaults_lib
 	dds_protocol_lib
-  Boost::boost
-  Boost::program_options
-  Boost::log
-  Boost::log_setup
-  Boost::thread
-  Boost::filesystem
+	dds_tools_lib
+	Boost::boost
+	Boost::program_options
+	Boost::log
+	Boost::log_setup
+	Boost::thread
+	Boost::filesystem
 )
 
 target_include_directories(${PROJECT_NAME}

@@ -21,6 +21,7 @@
 
 // MiscCommon
 #include "FindCfgFile.h"
+#include "Process.h"
 #include "SessionIDFile.h"
 // DDS
 #include "version.h"
@@ -607,4 +608,24 @@ bool CUserDefaults::isAgentInstance() const
     fs::path pathFile(getDDSPath());
     pathFile /= getServerInfoFileName();
     return fs::exists(pathFile);
+}
+
+bool CUserDefaults::IsSessionRunning() const
+{
+    bool bRunning(false);
+
+    fs::path pathPidFile(CUserDefaults::instance().getCommanderPidFile());
+
+    if (!fs::is_regular_file(pathPidFile))
+        return bRunning;
+
+    pid_t pid(0);
+    ifstream f(pathPidFile.string());
+    if (!f.is_open())
+        return bRunning;
+    f >> pid;
+
+    bRunning = IsProcessRunning(pid);
+
+    return bRunning;
 }

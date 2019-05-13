@@ -10,7 +10,11 @@ Fixed: Workaround wait_for bug in boost::process.
 Added: support relative task executables. (GH-216)    
 Added: All DDS commands now learned about the DDS_SESSION_ID environment variable. If defined, it will be used instead of a default one. (GH-213)    
 Modified: install DDS headers to "include/DDS" instead of "include"   
-Modified: Bump minimum required Boost version to 1.70.    
+Modified: Add support for Boost version to 1.70+.  
+Modifued: All DDS CLI commands have been rewritten to use DDS Tools API rather than DDS Core protocol.    
+
+### dds\_toolsapi\_lib
+Added: Initial release
 
 ### dds\_intercom\_lib
 Added: make custom command's condition regex aware. (GH-211)    

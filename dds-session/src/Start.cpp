@@ -5,8 +5,8 @@
 // DDS
 #include "Start.h"
 #include "DDSHelper.h"
-#include "InfoChannel.h"
 #include "Process.h"
+#include "Tools.h"
 #include "UserDefaults.h"
 #include "version.h"
 // STD
@@ -20,6 +20,7 @@
 using namespace std;
 using namespace dds::session_cmd;
 using namespace dds::user_defaults_api;
+using namespace dds::tools_api;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
@@ -270,19 +271,49 @@ void CStart::checkCommanderStatus()
 
     LOG(log_stdout_clean) << "DDS commander appears online. Testing connection...";
 
-    boost::asio::io_context io_context;
+    try
+    {
+        CSession session;
+        session.attach(m_sSessionID);
 
-    boost::asio::ip::tcp::resolver resolver(io_context);
-    boost::asio::ip::tcp::resolver::query query(sHost, sPort);
+        LOG(log_stdout_clean) << "DDS commander is up and running.";
 
-    boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+        session.onResponse<SMessage>([&session](const SMessage& _message) {
+            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                << "Server reports: " << _message.m_msg;
 
-    CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_context, 0);
-    client->connect(iterator);
+            // stop communication on errors
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                session.stop();
+            return true;
+        });
 
-    LOG(log_stdout_clean) << "DDS commander is up and running.";
+        session.onResponse<SDone>([&session](const SDone& _message) {
+            session.stop();
+            return true;
+        });
 
-    io_context.run();
+        session.onResponse<SCommanderInfo>([&session](const SCommanderInfo& _info) {
+            LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
+            LOG(log_stdout_clean) << "------------------------";
+            LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
+            LOG(log_stdout_clean) << "------------------------";
+
+            // Close communication channel
+            session.stop();
+            return true;
+        });
+
+        SCommanderInfo commanderInfo;
+        session.sendRequest(commanderInfo);
+
+        session.start(true);
+    }
+    catch (exception& e)
+    {
+        LOG(log_stderr) << e.what();
+        return;
+    }
 }
 
 void CStart::printHint()

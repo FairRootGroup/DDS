@@ -56,8 +56,6 @@ namespace dds
                 MESSAGE_HANDLER(cmdSUBMIT, on_cmdSUBMIT)
                 MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
                 //====> replay on the "info" command request
-                // - get pid of the commander server
-                MESSAGE_HANDLER(cmdGED_PID, on_cmdGED_PID)
                 // - get Agents Info command
                 MESSAGE_HANDLER_DISPATCH(cmdGET_AGENTS_INFO)
                 MESSAGE_HANDLER_DISPATCH(cmdGET_IDLE_AGENTS_COUNT)
@@ -118,8 +116,6 @@ namespace dds
             bool on_cmdREPLY_HOST_INFO(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_HOST_INFO>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);
-            bool on_cmdGED_PID(protocol_api::SCommandAttachmentImpl<protocol_api::cmdGED_PID>::ptr_t _attachment,
-                               const protocol_api::SSenderInfo& _sender);
             bool on_cmdBINARY_ATTACHMENT_RECEIVED(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);

@@ -22,24 +22,9 @@ namespace fs = boost::filesystem;
 
 bool IsSessionRunning(const string& _sid)
 {
-    bool bRunning(false);
-
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(_sid), CUserDefaults::instance().currentUDFile());
 
-    fs::path pathPidFile(CUserDefaults::instance().getCommanderPidFile());
-
-    if (!fs::is_regular_file(pathPidFile))
-        return bRunning;
-
-    pid_t pid(0);
-    ifstream f(pathPidFile.string());
-    if (!f.is_open())
-        return bRunning;
-    f >> pid;
-
-    bRunning = IsProcessRunning(pid);
-
-    return bRunning;
+    return CUserDefaults::instance().IsSessionRunning();
 }
 
 void setDefaultSession(const StringVector_t& _sessions, const string& _sessionID)
