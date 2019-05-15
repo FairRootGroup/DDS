@@ -31,7 +31,7 @@ namespace dds
             void reconnectAgentWithErrorHandler(const std::function<void(const std::string&)>& callback);
 
           private:
-            CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0);
+            CAgentChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID = 0);
 
             std::string _remoteEndIDString()
             {

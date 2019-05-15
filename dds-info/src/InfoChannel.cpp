@@ -14,7 +14,7 @@ using namespace dds::info_cmd;
 using namespace dds::protocol_api;
 using namespace std;
 
-CInfoChannel::CInfoChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+CInfoChannel::CInfoChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
     : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
     , m_nCounter(0)
 {

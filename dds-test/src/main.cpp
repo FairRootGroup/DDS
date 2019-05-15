@@ -61,18 +61,18 @@ int main(int argc, char* argv[])
 
     try
     {
-        boost::asio::io_service io_service;
+        boost::asio::io_context io_context;
 
-        boost::asio::ip::tcp::resolver resolver(io_service);
+        boost::asio::ip::tcp::resolver resolver(io_context);
         boost::asio::ip::tcp::resolver::query query(sHost, sPort);
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-        CTestChannel::connectionPtr_t client = CTestChannel::makeNew(io_service, 0);
+        CTestChannel::connectionPtr_t client = CTestChannel::makeNew(io_context, 0);
         client->setOptions(options);
         client->connect(iterator);
 
-        io_service.run();
+        io_context.run();
     }
     catch (exception& e)
     {

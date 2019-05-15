@@ -20,7 +20,7 @@ namespace fs = boost::filesystem;
 
 const uint16_t g_MaxConnectionAttempts = 5;
 
-CCommanderChannel::CCommanderChannel(boost::asio::io_service& _service, uint64_t _ProtocolHeaderID)
+CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service, uint64_t _ProtocolHeaderID)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT, _ProtocolHeaderID)
     , m_connectionAttempts(1)
 {

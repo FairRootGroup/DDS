@@ -183,7 +183,7 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseSMChannelImpl<T>(boost::asio::io_service& _service,
+            CBaseSMChannelImpl<T>(boost::asio::io_context& _service,
                                   const std::string& _inputName,
                                   const std::string& _outputName,
                                   uint64_t _protocolHeaderID,
@@ -193,7 +193,7 @@ namespace dds
                 , m_isShuttingDown(false)
                 , m_started(false)
                 , m_protocolHeaderID(_protocolHeaderID)
-                , m_io_service(_service)
+                , m_ioContext(_service)
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
             {
                 // Input transport
@@ -219,7 +219,7 @@ namespace dds
                 stop();
             }
 
-            static connectionPtr_t makeNew(boost::asio::io_service& _service,
+            static connectionPtr_t makeNew(boost::asio::io_context& _service,
                                            const std::string& _inputName,
                                            const std::string& _outputName,
                                            uint64_t _ProtocolHeaderID,
@@ -382,7 +382,7 @@ namespace dds
                 m_isShuttingDown = false;
 
                 auto self(this->shared_from_this());
-                m_io_service.post([this, self] {
+                m_ioContext.post([this, self] {
                     try
                     {
                         readMessage();
@@ -450,7 +450,7 @@ namespace dds
 
                 // process standard async writing
                 auto self(this->shared_from_this());
-                m_io_service.post([this, self] {
+                m_ioContext.post([this, self] {
                     try
                     {
                         writeMessage();
@@ -602,7 +602,7 @@ namespace dds
                     if (currentCmd != cmdSHUTDOWN)
                     {
                         auto self(this->shared_from_this());
-                        m_io_service.post([this, self] {
+                        m_ioContext.post([this, self] {
                             try
                             {
                                 readMessage();
@@ -690,7 +690,7 @@ namespace dds
             uint64_t m_protocolHeaderID;
 
           private:
-            boost::asio::io_service& m_io_service; ///< IO service that is used as a thread pool
+            boost::asio::io_context& m_ioContext; ///< IO service that is used as a thread pool
 
             SMessageQueueInfo m_transportIn;  ///< Input message queue, i.e. we read from this queue
             messageQueueMap_t m_transportOut; ///< Map of output message queues, i.e. we write to this queues

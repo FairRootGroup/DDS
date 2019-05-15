@@ -112,7 +112,7 @@ namespace dds
             }
 
           private:
-            boost::asio::io_service m_io_service;
+            boost::asio::io_context m_io_context;
             boost::thread_group m_workerThreads;
 
             CAgentConnectionManager::ptr_t m_agentConnectionMng;

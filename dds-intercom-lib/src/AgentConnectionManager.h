@@ -20,7 +20,7 @@ namespace dds
           public:
             typedef std::shared_ptr<CAgentConnectionManager> ptr_t;
 
-            CAgentConnectionManager(boost::asio::io_service& _service);
+            CAgentConnectionManager(boost::asio::io_context& _service);
             virtual ~CAgentConnectionManager();
 
           public:
@@ -50,7 +50,7 @@ namespace dds
             }
 
           private:
-            boost::asio::io_service& m_io_service;
+            boost::asio::io_context& m_io_context;
 
             // Don't use m_channel directly, only via getAgentChannel
             // In case if channel is destoryed, there still could be user calling update key

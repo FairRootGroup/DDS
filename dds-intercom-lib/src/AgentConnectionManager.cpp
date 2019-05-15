@@ -32,8 +32,8 @@ namespace sp = std::placeholders;
 namespace fs = boost::filesystem;
 using boost::asio::ip::tcp;
 
-CAgentConnectionManager::CAgentConnectionManager(boost::asio::io_service& _service)
-    : m_io_service(_service)
+CAgentConnectionManager::CAgentConnectionManager(boost::asio::io_context& _service)
+    : m_io_context(_service)
     , m_bStarted(false)
 {
 }
@@ -73,12 +73,12 @@ void CAgentConnectionManager::start()
         LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
         // Resolve endpoint iterator from host and port
-        tcp::resolver resolver(m_io_service);
+        tcp::resolver resolver(m_io_context);
         tcp::resolver::query query(sHost, sPort);
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
         // Create new communication channel and push handshake message
-        m_channel = CAgentChannel::makeNew(m_io_service, 0);
+        m_channel = CAgentChannel::makeNew(m_io_context, 0);
         m_channel->setChannelType(channelType);
         // Subscribe to Shutdown command
         m_channel->registerHandler<cmdSHUTDOWN>(

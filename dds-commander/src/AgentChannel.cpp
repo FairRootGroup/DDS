@@ -17,8 +17,8 @@ using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 
-CAgentChannel::CAgentChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
-    : CServerChannelImpl<CAgentChannel>(_service, { EChannelType::AGENT, EChannelType::UI })
+CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t _protocolHeaderID)
+    : CServerChannelImpl<CAgentChannel>(_context, { EChannelType::AGENT, EChannelType::UI })
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
         [](const SSenderInfo& _sender) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });

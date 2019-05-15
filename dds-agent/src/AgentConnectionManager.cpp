@@ -29,7 +29,7 @@ namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
-    : m_signals(m_io_service)
+    : m_signals(m_io_context)
     , m_options(_options)
     , m_taskPid(0)
     , m_bStarted(false)
@@ -189,7 +189,7 @@ void CAgentConnectionManager::stop()
                 pSCFW->stop();
             m_commanderChannel->stop();
         }
-        m_io_service.stop();
+        m_io_context.stop();
     }
     catch (exception& e)
     {
@@ -207,7 +207,7 @@ void CAgentConnectionManager::startService()
         m_workerThreads.create_thread([this]() {
             try
             {
-                m_io_service.run();
+                m_io_context.run();
             }
             catch (exception& ex)
             {
@@ -235,12 +235,12 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
     LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
     // Resolve endpoint iterator from host and port
-    tcp::resolver resolver(m_io_service);
+    tcp::resolver resolver(m_io_context);
     tcp::resolver::query query(sHost, sPort);
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
     // Create new agent and push handshake message
-    m_commanderChannel = CCommanderChannel::makeNew(m_io_service, _protocolHeaderID);
+    m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID);
 
     // Connect to DDS commander
     m_commanderChannel->connect(endpoint_iterator);
@@ -250,7 +250,7 @@ void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
 {
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMLeaderChannel = CSMLeaderChannel::makeNew(m_io_service,
+    m_SMLeaderChannel = CSMLeaderChannel::makeNew(m_io_context,
                                                   userDefaults.getSMAgentLeaderOutputName(),
                                                   userDefaults.getSMAgentLeaderOutputName(),
                                                   _protocolHeaderID);
@@ -280,7 +280,7 @@ void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID
     // Shared memory channel for communication with user task
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     m_SMIntercomChannel = CSMIntercomChannel::makeNew(
-        m_io_service, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
+        m_io_context, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
 
     // TODO: Forwarding of update key commands without decoding using raw message API
     // Forward messages from shared memory to the agent.
@@ -304,7 +304,7 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     // Create shared memory agent channel
     m_SMCommanderChannel = CSMCommanderChannel::makeNew(
-        m_io_service, userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
+        m_io_context, userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
     m_SMCommanderChannel->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
 
     // Subscribe to Shutdown command

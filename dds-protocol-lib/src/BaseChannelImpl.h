@@ -241,14 +241,14 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseChannelImpl<T>(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+            CBaseChannelImpl<T>(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
                 : CChannelEventHandlersImpl()
                 , CChannelMessageHandlersImpl()
                 , CStatImpl(_service)
                 , m_isHandshakeOK(false)
                 , m_channelType(EChannelType::UNKNOWN)
                 , m_protocolHeaderID(_protocolHeaderID)
-                , m_io_service(_service)
+                , m_ioContext(_service)
                 , m_socket(_service)
                 , m_started(false)
                 , m_currentMsg(std::make_shared<CProtocolMessage>())
@@ -276,7 +276,7 @@ namespace dds
                 stop();
             }
 
-            static connectionPtr_t makeNew(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+            static connectionPtr_t makeNew(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
             {
                 connectionPtr_t newObject(new T(_service, _protocolHeaderID));
                 return newObject;
@@ -466,7 +466,7 @@ namespace dds
 
                 // process standard async writing
                 auto self(this->shared_from_this());
-                m_io_service.post([this, self] {
+                m_ioContext.post([this, self] {
                     try
                     {
                         writeMessage();
@@ -986,7 +986,7 @@ namespace dds
             uint64_t m_protocolHeaderID;
 
           private:
-            boost::asio::io_service& m_io_service;
+            boost::asio::io_context& m_ioContext;
             boost::asio::ip::tcp::socket m_socket;
             bool m_started;
             CProtocolMessage::protocolMessagePtr_t m_currentMsg;

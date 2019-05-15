@@ -53,7 +53,15 @@ void CStart::getNewSessionID()
     execute(ssCmd.str(), std::chrono::seconds(15), &sOut, &sErr, &nExitCode);
 
     if (nExitCode != 0 || !sErr.empty())
-        throw runtime_error(sErr);
+    {
+        stringstream ss;
+        if (nExitCode != 0)
+            ss << "dds-comnader prep-session exited with code " << nExitCode << "; ";
+        if (!sErr.empty())
+            ss << "error: " << sErr;
+
+        throw runtime_error(ss.str());
+    }
 
     m_sSessionID = sOut;
 
@@ -262,19 +270,19 @@ void CStart::checkCommanderStatus()
 
     LOG(log_stdout_clean) << "DDS commander appears online. Testing connection...";
 
-    boost::asio::io_service io_service;
+    boost::asio::io_context io_context;
 
-    boost::asio::ip::tcp::resolver resolver(io_service);
+    boost::asio::ip::tcp::resolver resolver(io_context);
     boost::asio::ip::tcp::resolver::query query(sHost, sPort);
 
     boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-    CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_service, 0);
+    CInfoChannel::connectionPtr_t client = CInfoChannel::makeNew(io_context, 0);
     client->connect(iterator);
 
     LOG(log_stdout_clean) << "DDS commander is up and running.";
 
-    io_service.run();
+    io_context.run();
 }
 
 void CStart::printHint()

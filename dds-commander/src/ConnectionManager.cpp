@@ -1286,7 +1286,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             bool taskFound = true;
             try
             {
-                const STopoRuntimeTask& runtimeTask = m_topo.getRuntimeTaskByIdPath(_attachment->m_sCondition);
+                /*const STopoRuntimeTask& runtimeTask = */ m_topo.getRuntimeTaskByIdPath(_attachment->m_sCondition);
             }
             catch (runtime_error& _e)
             {

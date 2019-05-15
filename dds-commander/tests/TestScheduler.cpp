@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     CUserDefaults::instance(); // Initialize user defaults
     Logger::instance().init(); // Initialize log
 
-    boost::asio::io_service io_service;
+    boost::asio::io_context io_context;
 
     CTopoCore topology;
     topology.init("topology_scheduler_test_1.xml");
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 
             SSenderInfo sender;
             sender.m_ID = counter++;
-            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_service, sender.m_ID);
+            CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(io_context, sender.m_ID);
             agent->updateAgentInfo(sender, info);
 
             agents.push_back(CConnectionManager::channelInfo_t(agent, sender.m_ID));
@@ -101,13 +101,13 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     std::cout << "SSH scheduler fail execution time: " << execFailTimeSeconds << " s\n";
 }
 
-void make_agent(boost::asio::io_service& _io_service,
+void make_agent(boost::asio::io_context& _io_context,
                 CConnectionManager::channelInfo_t::container_t& _agents,
                 const string& _hostName,
                 const string& _workerId,
                 uint64_t _protocolHeaderID)
 {
-    CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_service, _protocolHeaderID);
+    CAgentChannel::connectionPtr_t agent = CAgentChannel::makeNew(_io_context, _protocolHeaderID);
     SAgentInfo info;
     info.m_state = EAgentState::idle;
     SHostInfoCmd hostInfo;
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
     CUserDefaults::instance(); // Initialize user defaults
     Logger::instance().init(); // Initialize log
 
-    boost::asio::io_service io_service;
+    boost::asio::io_context io_context;
 
     CTopoCore topology;
     topology.init("topology_scheduler_test_2.xml");
@@ -138,19 +138,19 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
     {
         string indexStr = to_string(i);
         // Requirement type "hostname"
-        make_agent(io_service, agents, "host1_" + indexStr, "wn1", counter++);
-        make_agent(io_service, agents, "host2_" + indexStr, "wn2", counter++);
-        make_agent(io_service, agents, "host3_" + indexStr, "wn3", counter++);
-        make_agent(io_service, agents, "host4_" + indexStr, "wn4", counter++);
-        make_agent(io_service, agents, "host4_" + indexStr, "wn4", counter++);
-        make_agent(io_service, agents, "host4_" + indexStr, "wn4", counter++);
+        make_agent(io_context, agents, "host1_" + indexStr, "wn1", counter++);
+        make_agent(io_context, agents, "host2_" + indexStr, "wn2", counter++);
+        make_agent(io_context, agents, "host3_" + indexStr, "wn3", counter++);
+        make_agent(io_context, agents, "host4_" + indexStr, "wn4", counter++);
+        make_agent(io_context, agents, "host4_" + indexStr, "wn4", counter++);
+        make_agent(io_context, agents, "host4_" + indexStr, "wn4", counter++);
 
         // Requirement type "wnname"
-        make_agent(io_service, agents, "host5_0", "wn5", counter++);
-        make_agent(io_service, agents, "host6_0", "wn6", counter++);
+        make_agent(io_context, agents, "host5_0", "wn5", counter++);
+        make_agent(io_context, agents, "host6_0", "wn6", counter++);
 
         // No Requirement
-        make_agent(io_service, agents, "noname_host", "noname_wn", counter++);
+        make_agent(io_context, agents, "noname_host", "noname_wn", counter++);
     }
 
     CConnectionManager::weakChannelInfo_t::container_t weakAgents;
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     CUserDefaults::instance(); // Initialize user defaults
     Logger::instance().init(); // Initialize log
 
-    boost::asio::io_service io_service;
+    boost::asio::io_context io_context;
 
     CConnectionManager::channelInfo_t::container_t agents;
 
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     for (size_t i = 0; i < n; ++i)
     {
         // string indexStr = to_string(i);
-        make_agent(io_service, agents, "host.com", "wn", i + 1);
+        make_agent(io_context, agents, "host.com", "wn", i + 1);
     }
 
     CConnectionManager::weakChannelInfo_t::container_t weakAgents;

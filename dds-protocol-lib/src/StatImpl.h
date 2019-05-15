@@ -112,7 +112,7 @@ namespace dds
             typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
 
           public:
-            CStatImpl(boost::asio::io_service& _service)
+            CStatImpl(boost::asio::io_context& _context)
                 : m_statEnabled(false)
                 , m_logReadMutex()
                 , m_readMessageBytesAccumulator()
@@ -122,7 +122,7 @@ namespace dds
                 , m_writeQueueBytesAccumulator()
                 , m_writeQueueMessagesAccumulator()
                 , m_writeMessageBytesAccumulatorMap()
-                , m_io_service(_service)
+                , m_ioContext(_context)
             {
             }
 
@@ -155,7 +155,7 @@ namespace dds
             statsAccumulator_t m_writeQueueMessagesAccumulator;
             statsAccumulatorMap_t m_writeMessageBytesAccumulatorMap;
 
-            boost::asio::io_service& m_io_service;
+            boost::asio::io_context& m_ioContext;
         };
     } // namespace protocol_api
 };    // namespace dds

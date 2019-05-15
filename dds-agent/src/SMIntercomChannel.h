@@ -13,7 +13,7 @@ namespace dds
     class CSMIntercomChannel : public protocol_api::CBaseSMChannelImpl<CSMIntercomChannel>
     {
       protected:
-        CSMIntercomChannel(boost::asio::io_service& _service,
+        CSMIntercomChannel(boost::asio::io_context& _service,
                            const std::string& _inputName,
                            const std::string& _outputName,
                            uint64_t _protocolHeaderID,

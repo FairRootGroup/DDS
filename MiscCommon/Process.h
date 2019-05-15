@@ -504,7 +504,7 @@ namespace MiscCommon
     {
         try
         {
-            bio::io_service ios;
+            bio::io_context ios;
             std::future<std::string> out_data;
             std::future<std::string> err_data;
 
@@ -536,19 +536,47 @@ namespace MiscCommon
                 }
                 catch (std::exception& _e)
                 {
+                    throw _e;
                 }
             } };
 
-            if (!c.wait_for(_Timeout))
+            // TODO: The process library has a bug in BOOST 1.70, it causes to wait infinitly with HIGH CPU
+            // https://github.com/boostorg/process/issues/69
+            // https://github.com/toonetown/km-boost-process/commit/579f5e23a0ffd06f4df94037a56156b1cb60079c
+
+            /* if (!c.wait_for(_Timeout))
+             {
+             // Child didn't yet finish. Terminating it...
+             c.terminate();
+             // prevent leaving a zombie process
+             c.wait();
+             if(asioWorker.joinable())
+             asioWorker.join();
+             throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+             }*/
+            //>>>>>>>>  wait_for WORKAROUND >>>>>
+            pid_t pid = c.id();
+            int status(0);
+
+            auto start = std::chrono::steady_clock::now();
+            while (true)
             {
-                // Child didn't yet finish. Terminating it...
-                c.terminate();
-                // prevent leaving a zombie process
-                c.wait();
-                if (asioWorker.joinable())
-                    asioWorker.join();
-                throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+                pid_t ret = ::waitpid(pid, &status, WNOHANG | WUNTRACED);
+                if (ret < 0 || ret == pid)
+                    break;
+
+                if ((std::chrono::steady_clock::now() - start) > _Timeout)
+                {
+                    // Child didn't yet finish. Terminating it...
+                    c.terminate();
+                    // prevent leaving a zombie process
+                    c.wait();
+                    if (asioWorker.joinable())
+                        asioWorker.join();
+                    throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
+                }
             }
+            ///// <<<<<<  wait_for WORKAROUND <<<<<<<
 
             if (asioWorker.joinable())
                 asioWorker.join();
@@ -559,8 +587,13 @@ namespace MiscCommon
             if (_errout)
                 *_errout = err_data.get();
 
+            // if (_exitCode)
+            //    *_exitCode = c.exit_code();
+
+            //>>>>>>>>  wait_for WORKAROUND >>>>>
             if (_exitCode)
-                *_exitCode = c.exit_code();
+                *_exitCode = WEXITSTATUS(status);
+            //<<<<<<  wait_for WORKAROUND <<<<<<<
 
             return 0;
         }

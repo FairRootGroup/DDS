@@ -14,7 +14,7 @@ namespace dds
     {
         class CTestChannel : public dds::protocol_api::CClientChannelImpl<CTestChannel>
         {
-            CTestChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+            CTestChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
                 : CClientChannelImpl<CTestChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
                 registerHandler<protocol_api::EChannelEvents::OnRemoteEndDissconnected>(

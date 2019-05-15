@@ -23,7 +23,7 @@ namespace dds
             typedef std::function<void(T*)> handlerEventFunction_t;
 
           protected:
-            CClientChannelImpl<T>(boost::asio::io_service& _service,
+            CClientChannelImpl<T>(boost::asio::io_context& _service,
                                   EChannelType _channelType,
                                   uint64_t _protocolHeaderID)
                 : CBaseChannelImpl<T>(_service, _protocolHeaderID)

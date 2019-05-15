@@ -32,7 +32,7 @@ using namespace std;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
 
-CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_service& _service,
+CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_context& _service,
                                          const string& _inputName,
                                          const string& _outputName,
                                          uint64_t _protocolHeaderID,

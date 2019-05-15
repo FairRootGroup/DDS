@@ -64,7 +64,7 @@ namespace dds
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
 
           private:
-            boost::asio::io_service m_io_service;
+            boost::asio::io_context m_io_context;
             boost::thread_group m_workerThreads;
 
             CCommanderChannel::connectionPtr_t m_commanderChannel;

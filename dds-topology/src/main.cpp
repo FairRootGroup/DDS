@@ -98,9 +98,9 @@ int main(int argc, char* argv[])
     {
         LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
 
-        boost::asio::io_service io_service;
+        boost::asio::io_context io_context;
 
-        boost::asio::ip::tcp::resolver resolver(io_service);
+        boost::asio::ip::tcp::resolver resolver(io_context);
         boost::asio::ip::tcp::resolver::query query(sHost, sPort);
 
         boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
@@ -109,12 +109,12 @@ int main(int argc, char* argv[])
         if (options.m_topologyCmd == ETopologyCmdType::UPDATE || options.m_topologyCmd == ETopologyCmdType::ACTIVATE ||
             options.m_topologyCmd == ETopologyCmdType::STOP)
         {
-            client = CActivateChannel::makeNew(io_service, 0);
+            client = CActivateChannel::makeNew(io_context, 0);
             client->setOptions(options);
             client->connect(iterator);
         }
 
-        io_service.run();
+        io_context.run();
     }
     catch (exception& e)
     {

@@ -11,7 +11,7 @@ using namespace dds;
 using namespace std;
 using namespace dds::protocol_api;
 
-CSMFWChannel::CSMFWChannel(boost::asio::io_service& _service,
+CSMFWChannel::CSMFWChannel(boost::asio::io_context& _service,
                            const std::string& _inputName,
                            const std::string& _outputName,
                            uint64_t _protocolHeaderID,

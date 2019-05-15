@@ -14,7 +14,7 @@ using namespace dds::submit_cmd;
 using namespace dds::protocol_api;
 using namespace std;
 
-CSubmitChannel::CSubmitChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+CSubmitChannel::CSubmitChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
     : CClientChannelImpl<CSubmitChannel>(_service, EChannelType::UI, _protocolHeaderID)
     , m_number(0)
     , m_bXMLValidationDisabled(false)

@@ -11,7 +11,7 @@ using namespace dds;
 using namespace dds::protocol_api;
 using namespace std;
 
-CSMIntercomChannel::CSMIntercomChannel(boost::asio::io_service& _service,
+CSMIntercomChannel::CSMIntercomChannel(boost::asio::io_context& _service,
                                        const string& _inputName,
                                        const string& _outputName,
                                        uint64_t _protocolHeaderID,

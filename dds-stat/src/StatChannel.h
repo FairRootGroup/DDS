@@ -15,7 +15,7 @@ namespace dds
     {
         class CStatChannel : public protocol_api::CClientChannelImpl<CStatChannel>
         {
-            CStatChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0)
+            CStatChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID = 0)
                 : CClientChannelImpl<CStatChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
                 registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(

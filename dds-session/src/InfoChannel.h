@@ -15,7 +15,7 @@ namespace dds
     {
         class CInfoChannel : public protocol_api::CClientChannelImpl<CInfoChannel>
         {
-            CInfoChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0)
+            CInfoChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID = 0)
                 : CClientChannelImpl<CInfoChannel>(_service, protocol_api::EChannelType::UI, _protocolHeaderID)
             {
                 registerHandler<protocol_api::EChannelEvents::OnHandshakeOK>(

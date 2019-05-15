@@ -16,7 +16,7 @@ namespace dds
     {
         class CInfoChannel : public protocol_api::CClientChannelImpl<CInfoChannel>
         {
-            CInfoChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID = 0);
+            CInfoChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID = 0);
 
             REGISTER_DEFAULT_REMOTE_ID_STRING
 

@@ -13,7 +13,7 @@ using namespace std;
 using namespace dds::topology_cmd;
 using namespace dds::protocol_api;
 
-CActivateChannel::CActivateChannel(boost::asio::io_service& _service, uint64_t _protocolHeaderID)
+CActivateChannel::CActivateChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
     : CClientChannelImpl<CActivateChannel>(_service, EChannelType::UI, _protocolHeaderID)
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(

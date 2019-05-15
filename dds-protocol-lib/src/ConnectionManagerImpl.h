@@ -15,6 +15,7 @@
 // STD
 #include <mutex>
 // BOOST
+#include <boost/asio/basic_socket_acceptor.hpp>
 #include <boost/thread/thread.hpp>
 // MiscCommon
 #include "INet.h"
@@ -23,6 +24,10 @@ namespace dds
 {
     namespace protocol_api
     {
+        typedef boost::asio::basic_socket_acceptor<boost::asio::ip::tcp, boost::asio::io_context::executor_type>
+            asioAcceptor_t;
+        typedef std::shared_ptr<asioAcceptor_t> asioAcceptorPtr_t;
+
         /// \class CConnectionManagerImpl
         /// \brief Base class for connection managers.
         template <class T, class A>
@@ -38,19 +43,19 @@ namespace dds
             {
                 int nSrvPort =
                     (_minPort == 0 && _maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(_minPort, _maxPort);
-                m_acceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(
-                    m_io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
+                m_acceptor = std::make_shared<asioAcceptor_t>(
+                    m_ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
 
                 if (_useUITransport)
                 {
                     int nSrvPort =
                         (_minPort == 0 && _maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(_minPort, _maxPort);
-                    m_acceptorUI = std::make_shared<boost::asio::ip::tcp::acceptor>(
-                        m_io_service_UI, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
+                    m_acceptorUI = std::make_shared<asioAcceptor_t>(
+                        m_ioContext_UI, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
                 }
 
                 // Create and register signals
-                m_signals = std::make_shared<boost::asio::signal_set>(m_io_service);
+                m_signals = std::make_shared<boost::asio::signal_set>(m_ioContext);
 
                 // Register to handle the signals that indicate when the server should exit.
                 // It is safe to register for the same signal multiple times in a program,
@@ -63,7 +68,7 @@ namespace dds
 
                 m_signals->async_wait([this](boost::system::error_code /*ec*/, int signo) {
                     // The server is stopped by cancelling all outstanding asynchronous
-                    // operations. Once all operations have finished the io_service::run()
+                    // operations. Once all operations have finished the io_context::run()
                     // call will exit.
                     LOG(MiscCommon::info) << "Received a signal: " << signo;
                     LOG(MiscCommon::info) << "Sopping DDS transport server";
@@ -117,7 +122,8 @@ namespace dds
                         << "Starting DDS transport engine using " << concurrentThreads << " concurrent threads.";
                     for (int x = 0; x < concurrentThreads; ++x)
                     {
-                        m_workerThreads.create_thread([this]() { runService(10, m_acceptor->get_io_service()); });
+                        m_workerThreads.create_thread(
+                            [this]() { runService(10, m_acceptor->get_executor().context()); });
                     }
 
                     // Starting service for UI transport engine
@@ -128,7 +134,8 @@ namespace dds
                             << "Starting DDS UI transport engine using " << concurrentThreads << " concurrent threads.";
                         for (int x = 0; x < concurrentThreads; ++x)
                         {
-                            m_workerThreads.create_thread([this]() { runService(10, m_acceptorUI->get_io_service()); });
+                            m_workerThreads.create_thread(
+                                [this]() { runService(10, m_acceptorUI->get_executor().context()); });
                         }
                     }
 
@@ -141,21 +148,21 @@ namespace dds
                 }
             }
 
-            void runService(short _counter, boost::asio::io_service& _io_service)
+            void runService(short _counter, boost::asio::io_context& _io_context)
             {
                 if (_counter <= 0)
                 {
-                    LOG(MiscCommon::error) << "CConnectionManagerImpl: can't start another io_service.";
+                    LOG(MiscCommon::error) << "CConnectionManagerImpl: can't start another io_context.";
                 }
                 try
                 {
-                    _io_service.run();
+                    _io_context.run();
                 }
                 catch (std::exception& ex)
                 {
                     LOG(MiscCommon::error) << "CConnectionManagerImpl exception: " << ex.what();
-                    LOG(MiscCommon::info) << "CConnectionManagerImpl restarting io_service";
-                    runService(--_counter, _io_service);
+                    LOG(MiscCommon::info) << "CConnectionManagerImpl restarting io_context";
+                    runService(--_counter, _io_context);
                 }
             }
 
@@ -195,12 +202,12 @@ namespace dds
                     }
 
                     m_acceptor->close();
-                    m_acceptor->get_io_service().stop();
+                    m_acceptor->get_executor().context().stop();
 
-                    if (m_acceptor != nullptr)
+                    if (m_acceptorUI != nullptr)
                     {
                         m_acceptorUI->close();
-                        m_acceptorUI->get_io_service().stop();
+                        m_acceptorUI->get_executor().context().stop();
                     }
 
                     for (const auto& v : channels)
@@ -362,7 +369,7 @@ namespace dds
 
           private:
             void acceptHandler(typename T::connectionPtr_t _client,
-                               std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor,
+                               asioAcceptorPtr_t _acceptor,
                                const boost::system::error_code& _ec)
             {
                 if (!_ec)
@@ -380,9 +387,9 @@ namespace dds
                 }
             }
 
-            void createClientAndStartAccept(std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor)
+            void createClientAndStartAccept(asioAcceptorPtr_t _acceptor)
             {
-                typename T::connectionPtr_t newClient = T::makeNew(_acceptor->get_io_service(), 0);
+                typename T::connectionPtr_t newClient = T::makeNew(_acceptor->get_executor().context(), 0);
 
                 A* pThis = static_cast<A*>(this);
                 pThis->newClientCreated(newClient);
@@ -486,12 +493,12 @@ namespace dds
             typename channelInfo_t::container_t m_channels;
 
             /// Used for the main comunication
-            boost::asio::io_service m_io_service;
-            std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+            boost::asio::io_context m_ioContext;
+            asioAcceptorPtr_t m_acceptor;
 
             // Used for UI (priority) communication
-            boost::asio::io_service m_io_service_UI;
-            std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptorUI;
+            boost::asio::io_context m_ioContext_UI;
+            asioAcceptorPtr_t m_acceptorUI;
 
             boost::thread_group m_workerThreads;
 

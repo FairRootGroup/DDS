@@ -15,7 +15,7 @@ namespace dds
         class CSMAgentChannel : public protocol_api::CBaseSMChannelImpl<CSMAgentChannel>
         {
           protected:
-            CSMAgentChannel(boost::asio::io_service& _service,
+            CSMAgentChannel(boost::asio::io_context& _service,
                             const std::string& _inputName,
                             const std::string& _outputName,
                             uint64_t _ProtocolHeaderID,
