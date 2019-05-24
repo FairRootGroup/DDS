@@ -24,8 +24,12 @@ namespace dds
 {
     namespace protocol_api
     {
+#if BOOST_VERSION >= 107000
         typedef boost::asio::basic_socket_acceptor<boost::asio::ip::tcp, boost::asio::io_context::executor_type>
             asioAcceptor_t;
+#else
+        typedef boost::asio::basic_socket_acceptor<boost::asio::ip::tcp> asioAcceptor_t;
+#endif
         typedef std::shared_ptr<asioAcceptor_t> asioAcceptorPtr_t;
 
         /// \class CConnectionManagerImpl
