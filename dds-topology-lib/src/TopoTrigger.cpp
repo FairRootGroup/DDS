@@ -73,6 +73,22 @@ void CTopoTrigger::initFromPropertyTree(const std::string& _name, const boost::p
     }
 }
 
+void CTopoTrigger::saveToPropertyTree(boost::property_tree::ptree& _pt)
+{
+    try
+    {
+        std::string tag("topology.decltrigger.<xmlattr>");
+        _pt.put(tag + ".name", getName());
+        _pt.put(tag + ".action", ActionTypeToTag(getAction()));
+        _pt.put(tag + ".condition", ConditionTypeToTag(getCondition()));
+        _pt.put(tag + ".arg", getArgument());
+    }
+    catch (exception& error) // ptree_error, runtime_error
+    {
+        throw logic_error("Unable to save trigger " + getName() + " error:" + error.what());
+    }
+}
+
 string CTopoTrigger::toString() const
 {
     stringstream ss;

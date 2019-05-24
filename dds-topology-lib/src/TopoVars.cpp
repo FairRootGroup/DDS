@@ -52,6 +52,34 @@ void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::prop
     }
 }
 
+void CTopoVars::saveToPropertyTree(boost::property_tree::ptree& _pt)
+{
+    try
+    {
+        int counter = 0;
+        for (const auto& v : m_map)
+        {
+            std::string tag("topology.var.<xmlattr>");
+            if (counter == 0)
+            {
+                _pt.put(tag + ".name", v.first);
+                _pt.put(tag + ".value", v.second);
+            }
+            else
+            {
+                _pt.add(tag + ".name", v.first);
+                _pt.add(tag + ".value", v.second);
+            }
+
+            counter++;
+        }
+    }
+    catch (exception& error) // ptree_error, runtime_error
+    {
+        throw runtime_error("Unable to initialize topo vars " + getName() + " error: " + error.what());
+    }
+}
+
 string CTopoVars::toString() const
 {
     stringstream ss;

@@ -78,6 +78,20 @@ void CTopoProperty::initFromPropertyTree(const std::string& _name, const boost::
     }
 }
 
+void CTopoProperty::saveToPropertyTree(boost::property_tree::ptree& _pt)
+{
+    try
+    {
+        std::string tag("topology.property.<xmlattr>");
+        _pt.put(tag + ".name", getName());
+        _pt.put(tag + ".scope", PropertyScopeTypeToTag(getScopeType()));
+    }
+    catch (exception& error) // ptree_error, runtime_error
+    {
+        throw logic_error("Unable to save property " + getName() + " error:" + error.what());
+    }
+}
+
 string CTopoProperty::toString() const
 {
     stringstream ss;

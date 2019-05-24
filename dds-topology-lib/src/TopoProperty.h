@@ -49,6 +49,9 @@ namespace dds
             /// \brief Inherited from TopoBase
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
+            /// \brief Inherited from TopoBase
+            void saveToPropertyTree(boost::property_tree::ptree& _pt);
+
             const std::string& getValue() const;
             void setValue(const std::string& _value);
             CTopoProperty::EAccessType getAccessType() const;

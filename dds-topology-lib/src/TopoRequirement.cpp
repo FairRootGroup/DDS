@@ -63,6 +63,21 @@ void CTopoRequirement::initFromPropertyTree(const std::string& _name, const boos
     }
 }
 
+void CTopoRequirement::saveToPropertyTree(boost::property_tree::ptree& _pt)
+{
+    try
+    {
+        std::string tag("topology.declrequirement.<xmlattr>");
+        _pt.put(tag + ".name", getName());
+        _pt.put(tag + ".value", getValue());
+        _pt.put(tag + ".type", RequirementTypeToTag(getRequirementType()));
+    }
+    catch (exception& error) // ptree_error, runtime_error
+    {
+        throw logic_error("Unable to save requirement " + getName() + " error:" + error.what());
+    }
+}
+
 string CTopoRequirement::toString() const
 {
     stringstream ss;

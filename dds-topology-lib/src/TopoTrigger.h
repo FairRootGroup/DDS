@@ -45,6 +45,9 @@ namespace dds
             /// \brief Inherited from TopoBase
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
+            /// \brief Inherited from TopoBase
+            void saveToPropertyTree(boost::property_tree::ptree& _pt);
+
             EConditionType getCondition() const;
             EActionType getAction() const;
             const std::string& getArgument() const;

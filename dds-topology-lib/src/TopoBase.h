@@ -54,6 +54,10 @@ namespace dds
             /// \param[in] _pt Property tree starting from root.
             virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt) = 0;
 
+            /// \brief Save object to a property tree.
+            /// \param[out] _pt Output ptoperty tree.
+            virtual void saveToPropertyTree(boost::property_tree::ptree& _pt) = 0;
+
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
             virtual std::string toString() const;

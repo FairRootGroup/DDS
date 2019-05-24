@@ -34,6 +34,9 @@ namespace dds
             /// \brief Inherited from TopoBase.
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
+            /// \brief Inherited from TopoBase
+            void saveToPropertyTree(boost::property_tree::ptree& _pt);
+
             size_t getN() const;
 
             void setN(size_t _n);

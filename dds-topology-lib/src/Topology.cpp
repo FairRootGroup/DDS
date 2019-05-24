@@ -11,8 +11,8 @@ using namespace dds;
 using namespace dds::topology_api;
 
 CTopology::CTopology()
+    : m_topo(std::make_shared<CTopoCore>())
 {
-    m_topo = std::make_shared<CTopoCore>();
 }
 
 CTopology::~CTopology()

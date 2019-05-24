@@ -74,8 +74,11 @@ namespace dds
             /// \brief Inherited from DDSTopoElement.
             virtual size_t getTotalNofTasks() const;
 
-            /// \brief Inherited from DDSTopoElement.
+            /// \brief Inherited from TopoElement.
             virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+
+            /// \brief Inherited from TopoElement.
+            virtual void saveToPropertyTree(boost::property_tree::ptree& _pt);
 
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.

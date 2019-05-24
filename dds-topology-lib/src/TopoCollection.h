@@ -38,6 +38,9 @@ namespace dds
             /// \brief Inherited from TopoElement.
             void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
 
+            /// \brief Inherited from TopoBase
+            void saveToPropertyTree(boost::property_tree::ptree& _pt);
+
             /// \brief If parent is a group than return N, else return 1.
             size_t getTotalCounter() const;
 

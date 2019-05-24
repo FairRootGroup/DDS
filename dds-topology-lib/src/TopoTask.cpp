@@ -228,6 +228,41 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
     }
 }
 
+void CTopoTask::saveToPropertyTree(ptree& _pt)
+{
+    try
+    {
+        std::string tag("topology.decltask");
+        _pt.put(tag + ".<xmlattr>.name", getName());
+        _pt.put(tag + ".exe", getExe());
+        _pt.put(tag + ".env", getEnv());
+        _pt.put(tag + ".exe.<xmlattr>.reachable", isExeReachable());
+        _pt.put(tag + ".env.<xmlattr>.reachable", isEnvReachable());
+
+        for (const auto& v : m_requirements)
+        {
+            _pt.add(tag + ".requirements.name", v->getName());
+        }
+
+        for (const auto& v : m_properties)
+        {
+            boost::property_tree::ptree pt;
+            pt.put_value(v.first);
+            pt.add("<xmlattr>.access", PropertyAccessTypeToTag(v.second->getAccessType()));
+            _pt.add_child(tag + ".properties.name", pt);
+        }
+
+        for (const auto& v : m_triggers)
+        {
+            _pt.add(tag + ".triggers.name", v->getName());
+        }
+    }
+    catch (exception& error) // ptree_error, logic_error
+    {
+        throw logic_error("Unable to save task " + getName() + " error: " + error.what());
+    }
+}
+
 string CTopoTask::toString() const
 {
     stringstream ss;

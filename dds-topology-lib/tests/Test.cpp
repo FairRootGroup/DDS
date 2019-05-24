@@ -14,6 +14,7 @@
 #include "TopoBase.h"
 #include "TopoCollection.h"
 #include "TopoCore.h"
+#include "TopoCreatorCore.h"
 #include "TopoElement.h"
 #include "TopoFactory.h"
 #include "TopoGroup.h"
@@ -444,10 +445,19 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TagToPropertyAccessType("readwrite") == CTopoProperty::EAccessType::READWRITE);
     BOOST_CHECK_THROW(TagToPropertyAccessType("readread"), runtime_error);
 
+    // PropertyAccessTypeToTag
+    BOOST_CHECK(PropertyAccessTypeToTag(CTopoProperty::EAccessType::READ) == "read");
+    BOOST_CHECK(PropertyAccessTypeToTag(CTopoProperty::EAccessType::WRITE) == "write");
+    BOOST_CHECK(PropertyAccessTypeToTag(CTopoProperty::EAccessType::READWRITE) == "readwrite");
+
     // TagToPropertyScopeType
     BOOST_CHECK(TagToPropertyScopeType("global") == CTopoProperty::EScopeType::GLOBAL);
     BOOST_CHECK(TagToPropertyScopeType("collection") == CTopoProperty::EScopeType::COLLECTION);
     BOOST_CHECK_THROW(TagToPropertyScopeType("globalglobal"), runtime_error);
+
+    // PropertyScopeTypeToTag
+    BOOST_CHECK(PropertyScopeTypeToTag(CTopoProperty::EScopeType::GLOBAL) == "global");
+    BOOST_CHECK(PropertyScopeTypeToTag(CTopoProperty::EScopeType::COLLECTION) == "collection");
 
     // TagToRequirementType
     BOOST_CHECK(TagToRequirementType("wnname") == CTopoRequirement::EType::WnName);
@@ -456,9 +466,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK_THROW(TagToRequirementType("wn_name"), runtime_error);
 
     // RequirementTypeToTag
-    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::WnName) == "WnName");
-    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::HostName) == "HostName");
-    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::Gpu) == "Gpu");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::WnName) == "wnname");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::HostName) == "hostname");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::Gpu) == "gpu");
 
     // TagToConditionType
     BOOST_CHECK(TagToConditionType("TaskCrashed") == CTopoTrigger::EConditionType::TaskCrashed);
@@ -616,6 +626,17 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_property_performance)
     std::cout << "test_dds_topology_property_performance execution time2: " << time2 << " msec\n";
 
     std::cout << "test_dds_topology_property_performance delta: " << time2 - time1 << " msec\n";
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_save)
+{
+    std::string topoFile1("topology_test_creator_1.xml");
+    CTopoCreatorCore topo1;
+    topo1.init(topoFile1, CUserDefaults::getTopologyXSDFilePath());
+    output_test_stream output1(topoFile1, true);
+    topo1.save(output1);
+    // topo1.save("test_topology_test_creator_1.xml");
+    BOOST_CHECK(output1.match_pattern());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

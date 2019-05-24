@@ -21,6 +21,8 @@ set(SOURCE_FILES
     src/TopoVars.cpp
 	src/TopoTrigger.cpp
     src/Topology.cpp
+    src/TopoCreatorCore.cpp
+    src/TopoCreator.cpp
 )
 
 set(HEADER_FILES
@@ -29,6 +31,7 @@ set(HEADER_FILES
 	src/TopoCore.h
 	src/TopoParserXML.h
     src/TopoVars.h
+    src/TopoCreatorCore.h
 )
 
 set(HEADER_FILES_EXT
@@ -43,6 +46,7 @@ set(HEADER_FILES_EXT
     src/TopoProperty.h
     src/TopoTrigger.h
     src/TopoGroup.h
+    src/TopoCreator.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})

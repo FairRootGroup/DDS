@@ -97,3 +97,26 @@ void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt
         throw runtime_error("Unable to initialize task collection " + _name + " error: " + error.what());
     }
 }
+
+void CTopoCollection::saveToPropertyTree(boost::property_tree::ptree& _pt)
+{
+    try
+    {
+        std::string tag("topology.declcollection");
+        _pt.put(tag + ".<xmlattr>.name", getName());
+
+        for (const auto& v : m_requirements)
+        {
+            _pt.add(tag + ".requirements.name", v->getName());
+        }
+
+        for (const auto& v : getElements())
+        {
+            _pt.add(tag + ".tasks.name", v->getName());
+        }
+    }
+    catch (exception& error) // ptree_error, runtime_error
+    {
+        throw runtime_error("Unable to save task collection" + getName() + " error: " + error.what());
+    }
+}

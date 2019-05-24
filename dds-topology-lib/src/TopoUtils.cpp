@@ -109,6 +109,21 @@ namespace dds
                 throw runtime_error("Property access type with name " + _name + " does not exist.");
         }
 
+        std::string PropertyAccessTypeToTag(CTopoProperty::EAccessType _type)
+        {
+            switch (_type)
+            {
+                case CTopoProperty::EAccessType::READ:
+                    return "read";
+                case CTopoProperty::EAccessType::WRITE:
+                    return "write";
+                case CTopoProperty::EAccessType::READWRITE:
+                    return "readwrite";
+                default:
+                    throw runtime_error("Property access type not found");
+            }
+        }
+
         CTopoProperty::EScopeType TagToPropertyScopeType(const std::string& _name)
         {
             if (_name == "collection")
@@ -117,6 +132,19 @@ namespace dds
                 return CTopoProperty::EScopeType::GLOBAL;
             else
                 throw runtime_error("Property scope type with name " + _name + " does not exist.");
+        }
+
+        std::string PropertyScopeTypeToTag(CTopoProperty::EScopeType _type)
+        {
+            switch (_type)
+            {
+                case CTopoProperty::EScopeType::COLLECTION:
+                    return "collection";
+                case CTopoProperty::EScopeType::GLOBAL:
+                    return "global";
+                default:
+                    throw runtime_error("Property scope not found.");
+            }
         }
 
         CTopoRequirement::EType TagToRequirementType(const string& _name)
@@ -136,11 +164,11 @@ namespace dds
             switch (_type)
             {
                 case CTopoRequirement::EType::WnName:
-                    return "WnName";
+                    return "wnname";
                 case CTopoRequirement::EType::HostName:
-                    return "HostName";
+                    return "hostname";
                 case CTopoRequirement::EType::Gpu:
-                    return "Gpu";
+                    return "gpu";
                 default:
                     throw runtime_error("Topology element not found.");
             }

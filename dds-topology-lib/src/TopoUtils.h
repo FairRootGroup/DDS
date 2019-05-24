@@ -30,7 +30,11 @@ namespace dds
 
         CTopoProperty::EAccessType TagToPropertyAccessType(const std::string& _name);
 
+        std::string PropertyAccessTypeToTag(CTopoProperty::EAccessType _type);
+
         CTopoProperty::EScopeType TagToPropertyScopeType(const std::string& _name);
+
+        std::string PropertyScopeTypeToTag(CTopoProperty::EScopeType _type);
 
         CTopoRequirement::EType TagToRequirementType(const std::string& _name);
 

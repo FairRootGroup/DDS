@@ -71,6 +71,69 @@ void CTopoGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
     }
 }
 
+void CTopoGroup::saveToPropertyTree(boost::property_tree::ptree& _pt)
+{
+    try
+    {
+        std::string tag("topology.main");
+        if (getName() == "main")
+        {
+            _pt.put(tag + ".<xmlattr>.name", getName());
+        }
+        else
+        {
+            _pt.put("<xmlattr>.name", getName());
+            _pt.put("<xmlattr>.n", getN());
+        }
+
+        const auto& elements = getElements();
+        for (const auto& v : elements)
+        {
+            bool isParentMain = v->getParent() != nullptr && v->getParent()->getType() == CTopoBase::EType::GROUP &&
+                                v->getParent()->getName() == "main";
+            switch (v->getType())
+            {
+                case CTopoBase::EType::TASK:
+                    if (isParentMain)
+                    {
+                        _pt.add(tag + ".task", v->getName());
+                    }
+                    else
+                    {
+                        _pt.add("task", v->getName());
+                    }
+                    break;
+
+                case CTopoBase::EType::COLLECTION:
+                    if (isParentMain)
+                    {
+                        _pt.add(tag + ".collection", v->getName());
+                    }
+                    else
+                    {
+                        _pt.add("collection", v->getName());
+                    }
+                    break;
+
+                case CTopoBase::EType::GROUP:
+                {
+                    boost::property_tree::ptree pt;
+                    v->saveToPropertyTree(pt);
+                    _pt.add_child(tag + ".group", pt);
+                }
+                break;
+
+                default:
+                    break;
+            }
+        }
+    }
+    catch (exception& error) // ptree_error, runtime_error
+    {
+        throw runtime_error("Unable to save task group " + getName() + " error: " + error.what());
+    }
+}
+
 size_t CTopoGroup::getN() const
 {
     return m_n;
