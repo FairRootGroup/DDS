@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
         SGetLog getLog;
         session.sendRequest(getLog);
 
-        session.start(true);
+        session.blockCurrentThread();
     }
     catch (exception& e)
     {

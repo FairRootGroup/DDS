@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
                 else if (options.m_topologyCmd == ETopologyCmdType::STOP)
                     topoInfo.m_updateType = STopology::EUpdateType::STOP;
                 session.sendRequest(topoInfo);
-                session.start(true);
+                session.blockCurrentThread();
             }
             break;
             default:

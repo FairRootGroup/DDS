@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
         submitInfo.m_pluginPath = options.m_sPath;
         session.sendRequest(submitInfo);
 
-        session.start(true);
+        session.blockCurrentThread();
     }
     catch (exception& e)
     {

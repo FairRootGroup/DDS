@@ -146,7 +146,7 @@ boost::uuids::uuid CSession::getSessionID() const
     return m_sid;
 }
 
-void CSession::start(bool _block)
+void CSession::blockCurrentThread()
 {
     if (m_sid.is_nil())
         throw runtime_error("ToolsAPI: First create or attache to a DDS session.");
@@ -154,7 +154,7 @@ void CSession::start(bool _block)
     size_t num_slots = m_signalMessage.num_slots();
 
     // We wait only if _block is true and we have subscribers
-    if (_block && num_slots > 0)
+    if (num_slots > 0)
     {
         internal_api::CDDSIntercomGuard::instance().waitCondition();
     }

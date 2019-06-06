@@ -307,7 +307,7 @@ void CStart::checkCommanderStatus()
         SCommanderInfo commanderInfo;
         session.sendRequest(commanderInfo);
 
-        session.start(true);
+        session.blockCurrentThread();
     }
     catch (exception& e)
     {

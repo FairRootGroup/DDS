@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
             session.sendRequest(commanderInfo);
         }
 
-        session.start(true);
+        session.blockCurrentThread();
     }
     catch (exception& e)
     {

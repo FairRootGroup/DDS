@@ -75,7 +75,7 @@ namespace dds
 
          // Start API processor and block.
          // Blocking is optional, if you have your own internal loop in the app to keep the session object alive
-         session.start(true);
+         session.blockCurrentThread();
          * \endcode
          *
          *
@@ -115,7 +115,7 @@ namespace dds
          SAgentInfo agentInfo;
          session.sendRequest(agentInfo);
 
-         session.start(true);
+         session.blockCurrentThread();
          * \endcode
          *
          *
@@ -160,7 +160,7 @@ namespace dds
 
          // Request information about current agents
          SAgentInfo agentInfo;
-         session.sendRequest(agentInfo);
+         session.blockCurrentThread();
 
          session.start(true);
          * \endcode
@@ -207,7 +207,7 @@ namespace dds
             void unsubscribe();
             bool IsRunning() const;
             boost::uuids::uuid getSessionID() const;
-            /// \brief Send requests and listen for notifications.
+            /// \brief blockCurrentThread requests and listen for notifications.
             /// \brief param[in] _block If true than we stop the main thread.
             ///
             /// If _block is true function stops the thread and waits until one of the conditions is applied:
@@ -216,7 +216,7 @@ namespace dds
             /// 3. Explicit call of stop() function.
             ///
             /// \note If there are no subscribers function doesn't wait.
-            void start(bool _block = true);
+            void blockCurrentThread();
             void stop();
 
           public:
