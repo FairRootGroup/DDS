@@ -79,7 +79,7 @@ namespace dds
                     // measure time to activate
                     std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
 
-                    sendUIProgress(dds::tools_api::SProgress(
+                    sendUIProgress(dds::tools_api::SProgressResponseData(
                         m_srcCommand,
                         m_nofReceived,
                         m_nofRequests,
@@ -114,7 +114,7 @@ namespace dds
 
                     // measure time to activate
                     std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
-                    sendUIProgress(dds::tools_api::SProgress(
+                    sendUIProgress(dds::tools_api::SProgressResponseData(
                         m_srcCommand,
                         m_nofReceived,
                         m_nofRequests,
@@ -142,7 +142,8 @@ namespace dds
                     auto pUI = m_channel.lock();
                     if (pUI)
                     {
-                        dds::tools_api::SMessage msg;
+                        dds::tools_api::SMessageResponseData msg;
+                        msg.m_requestID = m_requestID;
                         msg.m_msg = _msg;
                         msg.m_severity = _severity;
 
@@ -157,7 +158,7 @@ namespace dds
                 }
             }
 
-            void sendUIProgress(const dds::tools_api::SProgress& _progress)
+            void sendUIProgress(const dds::tools_api::SProgressResponseData& _progress)
             {
                 try
                 {
@@ -168,7 +169,9 @@ namespace dds
                     if (pUI)
                     {
                         protocol_api::SCustomCmdCmd cmd;
-                        cmd.m_sCmd = _progress.toJSON();
+                        dds::tools_api::SProgressResponseData progress(_progress);
+                        progress.m_requestID = m_requestID;
+                        cmd.m_sCmd = progress.toJSON();
                         cmd.m_sCondition = "";
                         pUI->template pushMsg<protocol_api::cmdCUSTOM_CMD>(cmd);
                     }
@@ -185,7 +188,7 @@ namespace dds
                     auto pUI = m_channel.lock();
                     if (pUI)
                     {
-                        dds::tools_api::SDone done;
+                        dds::tools_api::SDoneResponseData done;
                         done.m_requestID = m_requestID;
                         protocol_api::SCustomCmdCmd cmd;
                         cmd.m_sCmd = done.toJSON();
@@ -234,7 +237,7 @@ namespace dds
             std::mutex m_mutexReceive;
             bool m_shutdownOnComplete;
             uint16_t m_srcCommand;
-            uint64_t m_requestID = 0;
+            dds::tools_api::requestID_t m_requestID = 0;
 
           private:
             std::chrono::steady_clock::time_point m_startTime;

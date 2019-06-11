@@ -7,6 +7,7 @@
 // STD
 #include <sstream>
 // BOOST
+#include <boost/any.hpp>
 #include <boost/process.hpp>
 #include <boost/regex.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -104,7 +105,7 @@ boost::uuids::uuid CSession::create()
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(boost::uuids::to_string(m_sid)),
                                      CUserDefaults::instance().currentUDFile());
-    // Logger::instance().reinit();
+    Logger::instance().reinit();
 
     return getSessionID();
 }
@@ -151,10 +152,10 @@ void CSession::blockCurrentThread()
     if (m_sid.is_nil())
         throw runtime_error("ToolsAPI: First create or attache to a DDS session.");
 
-    size_t num_slots = m_signalMessage.num_slots();
+    size_t num_requests = m_requests.size();
 
     // We wait only if _block is true and we have subscribers
-    if (num_slots > 0)
+    if (num_requests > 0)
     {
         internal_api::CDDSIntercomGuard::instance().waitCondition();
     }
@@ -164,14 +165,7 @@ void CSession::unsubscribe()
 {
     m_customCmd.unsubscribe();
 
-    m_signalMessage.disconnect_all_slots();
-    m_signalDone.disconnect_all_slots();
-    m_signalProgress.disconnect_all_slots();
-    m_signalSubmit.disconnect_all_slots();
-    m_signalTopology.disconnect_all_slots();
-    m_signalGetLog.disconnect_all_slots();
-    m_signalCommanderInfo.disconnect_all_slots();
-    m_signalAgentInfo.disconnect_all_slots();
+    m_requests.clear();
 }
 
 bool CSession::isDDSAvailable() const
@@ -201,63 +195,45 @@ void CSession::notify(std::istream& _stream)
 
         for (const auto& child : childPT)
         {
-            const string& tag = child.first;
-            if (tag == "message")
+            const requestID_t requestID = child.second.get<requestID_t>("requestID");
+
+            auto it = m_requests.find(requestID);
+            if (it == m_requests.end())
+                continue;
+
+            if (it->second.type() == typeid(SSubmitRequest::ptr_t))
             {
-                SMessage message;
-                message.fromPT(pt);
-                m_signalMessage(message);
+                processRequest<SSubmitRequest>(it->second, child, nullptr);
             }
-            else if (tag == "done")
+            else if (it->second.type() == typeid(STopologyRequest::ptr_t))
             {
-                SDone done;
-                done.fromPT(pt);
-                m_signalDone(done);
+                processRequest<STopologyRequest>(it->second, child, nullptr);
             }
-            else if (tag == "progress")
+            else if (it->second.type() == typeid(SGetLogRequest::ptr_t))
             {
-                SProgress progress;
-                progress.fromPT(pt);
-                m_signalProgress(progress);
+                processRequest<SGetLogRequest>(it->second, child, nullptr);
             }
-            else if (tag == "submit")
+            else if (it->second.type() == typeid(SCommanderInfoRequest::ptr_t))
             {
-                SSubmit submit;
-                submit.fromPT(pt);
-                m_signalSubmit(submit);
+                processRequest<SCommanderInfoRequest>(
+                    it->second, child, [&child](SCommanderInfoRequest::ptr_t _request) {
+                        SCommanderInfoResponseData data;
+                        data.fromPT(child.second);
+                        _request->execResponseCallback(data);
+                    });
             }
-            else if (tag == "topology")
+            else if (it->second.type() == typeid(SAgentInfoRequest::ptr_t))
             {
-                STopology topo;
-                topo.fromPT(pt);
-                m_signalTopology(topo);
-            }
-            else if (tag == "getlog")
-            {
-                SGetLog getlog;
-                getlog.fromPT(pt);
-                m_signalGetLog(getlog);
-            }
-            else if (tag == "commanderInfo")
-            {
-                SCommanderInfo commanderInfo;
-                commanderInfo.fromPT(pt);
-                m_signalCommanderInfo(commanderInfo);
-            }
-            else if (tag == "agentInfo")
-            {
-                SAgentInfo agentInfo;
-                agentInfo.fromPT(pt);
-                m_signalAgentInfo(agentInfo);
+                processRequest<SAgentInfoRequest>(it->second, child, [&child](SAgentInfoRequest::ptr_t _request) {
+                    SAgentInfoResponseData data;
+                    data.fromPT(child.second);
+                    _request->execResponseCallback(data);
+                });
             }
         }
     }
     catch (exception& error)
     {
-        SMessage msg;
-        msg.m_msg = "ToolsAPI: Can't parse input message: ";
-        msg.m_msg += error.what();
-        msg.m_severity = EMsgSeverity::error;
-        sendRequest(msg);
+        throw runtime_error("ToolsAPI: Can't parse input message: " + string(error.what()));
     }
 }

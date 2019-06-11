@@ -16,6 +16,7 @@ set(HEADER_FILES
 set(HEADER_FILES_EXT
     src/Tools.h
 	src/ToolsProtocol.h
+	src/ToolsProtocolCore.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})

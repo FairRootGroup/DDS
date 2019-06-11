@@ -81,48 +81,6 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     }
 
-    /*  string sHost;
-      string sPort;
-      try
-      {
-          // We want to connect to commnader's UI channel
-          findCommanderUI(&sHost, &sPort);
-      }
-      catch (exception& e)
-      {
-          LOG(log_stderr) << e.what();
-          LOG(log_stdout) << g_cszDDSServerIsNotFound_StartIt;
-          return EXIT_FAILURE;
-      }
-
-      try
-      {
-          LOG(log_stdout) << "Contacting DDS commander on " << sHost << ":" << sPort << "  ...";
-
-          boost::asio::io_context io_context;
-
-          boost::asio::ip::tcp::resolver resolver(io_context);
-          boost::asio::ip::tcp::resolver::query query(sHost, sPort);
-
-          boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-
-          CActivateChannel::connectionPtr_t client = nullptr;
-          if (options.m_topologyCmd == ETopologyCmdType::UPDATE || options.m_topologyCmd == ETopologyCmdType::ACTIVATE
-      || options.m_topologyCmd == ETopologyCmdType::STOP)
-          {
-              client = CActivateChannel::makeNew(io_context, 0);
-              client->setOptions(options);
-              client->connect(iterator);
-          }
-
-          io_context.run();
-      }
-      catch (exception& e)
-      {
-          LOG(log_stderr) << e.what();
-          return EXIT_FAILURE;
-      }*/
-
     string sid;
     try
     {
@@ -141,24 +99,64 @@ int main(int argc, char* argv[])
 
         LOG(MiscCommon::log_stdout) << "Connection established.";
 
-        session.onResponse<SMessage>([&session](const SMessage& _message) {
-            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
-                << "Server reports: " << _message.m_msg;
+        string action;
+        switch (options.m_topologyCmd)
+        {
+            case ETopologyCmdType::ACTIVATE:
+                action = "ACTIVATE";
+                break;
+            case ETopologyCmdType::STOP:
+                action = "STOP";
+                break;
+            case ETopologyCmdType::UPDATE:
+                action = "UPDATE";
+                break;
+            default:
+                return EXIT_FAILURE;
+        }
 
-            // stop communication on errors
-            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                session.stop();
-            return true;
+        LOG(MiscCommon::log_stdout) << "Requesting server to " << action << " a topology...";
+
+        STopologyRequest::request_t topoInfo;
+
+        switch (options.m_topologyCmd)
+        {
+            case ETopologyCmdType::ACTIVATE:
+            case ETopologyCmdType::STOP:
+            case ETopologyCmdType::UPDATE:
+            {
+                topoInfo.m_topologyFile = options.m_sTopoFile;
+                topoInfo.m_disableValidation = options.m_bDisableValidation;
+                // Set the proper update type
+                if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
+                    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+                else if (options.m_topologyCmd == ETopologyCmdType::UPDATE)
+                    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
+                else if (options.m_topologyCmd == ETopologyCmdType::STOP)
+                    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
+            }
+            break;
+            default:
+                return EXIT_FAILURE;
+        }
+
+        STopologyRequest::ptr_t requestPtr = STopologyRequest::makeRequest(topoInfo);
+
+        requestPtr->setMessageCallback([&options](const SMessageResponseData& _message) {
+            if (options.m_verbose || _message.m_severity == dds::intercom_api::EMsgSeverity::error)
+            {
+                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                    << "Server reports: " << _message.m_msg;
+            }
+            else
+            {
+                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? error : info) << _message.m_msg;
+            }
         });
 
-        session.onResponse<SDone>([&session](const SDone& _message) {
-            session.stop();
-            return true;
-        });
-
-        session.onResponse<SProgress>([&options](const SProgress& _progress) {
+        requestPtr->setProgressCallback([&options](const SProgressResponseData& _progress) {
             if (options.m_verbose)
-                return true;
+                return;
 
             int completed = _progress.m_completed + _progress.m_errors;
             if (completed < _progress.m_total)
@@ -201,50 +199,13 @@ int main(int argc, char* argv[])
                     default:;
                 }
             }
-            return true;
+            return;
         });
 
-        string action;
-        switch (options.m_topologyCmd)
-        {
-            case ETopologyCmdType::ACTIVATE:
-                action = "ACTIVATE";
-                break;
-            case ETopologyCmdType::STOP:
-                action = "STOP";
-                break;
-            case ETopologyCmdType::UPDATE:
-                action = "UPDATE";
-                break;
-            default:
-                return EXIT_FAILURE;
-        }
+        requestPtr->setDoneCallback([&session]() { session.stop(); });
 
-        LOG(MiscCommon::log_stdout) << "Requesting server to " << action << " a topology...";
-
-        switch (options.m_topologyCmd)
-        {
-            case ETopologyCmdType::ACTIVATE:
-            case ETopologyCmdType::STOP:
-            case ETopologyCmdType::UPDATE:
-            {
-                dds::tools_api::STopology topoInfo;
-                topoInfo.m_topologyFile = options.m_sTopoFile;
-                topoInfo.m_disableValidation = options.m_bDisableValidation;
-                // Set the proper update type
-                if (options.m_topologyCmd == ETopologyCmdType::ACTIVATE)
-                    topoInfo.m_updateType = STopology::EUpdateType::ACTIVATE;
-                else if (options.m_topologyCmd == ETopologyCmdType::UPDATE)
-                    topoInfo.m_updateType = STopology::EUpdateType::UPDATE;
-                else if (options.m_topologyCmd == ETopologyCmdType::STOP)
-                    topoInfo.m_updateType = STopology::EUpdateType::STOP;
-                session.sendRequest(topoInfo);
-                session.blockCurrentThread();
-            }
-            break;
-            default:
-                return EXIT_FAILURE;
-        }
+        session.sendRequest<STopologyRequest>(requestPtr);
+        session.blockCurrentThread();
     }
     catch (exception& e)
     {

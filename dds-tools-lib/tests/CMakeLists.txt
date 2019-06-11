@@ -21,3 +21,8 @@ install(TARGETS
   RUNTIME DESTINATION tests
 )
 
+install(FILES 
+  test_protocol_1.json
+
+  DESTINATION tests
+)

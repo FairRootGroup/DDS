@@ -36,6 +36,7 @@ using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 using namespace dds::ncf;
 using namespace dds::intercom_api;
+using namespace dds::tools_api;
 using namespace std;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
@@ -330,10 +331,10 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     m_updateTopology.m_nofRequests = _agents.size();
 
     // Message to the UI
-    sendToolsAPIMsg(_channel, _msg, EMsgSeverity::info);
+    sendToolsAPIMsg(_channel, m_updateTopology.m_requestID, _msg, EMsgSeverity::info);
 
     // Initiate the progress on the UI
-    dds::tools_api::SProgress progress(_cmd, 0, m_updateTopology.m_nofRequests, 0);
+    dds::tools_api::SProgressResponseData progress(_cmd, 0, m_updateTopology.m_nofRequests, 0);
     SCustomCmdCmd cmd;
     cmd.m_sCmd = progress.toJSON();
     cmd.m_sCondition = "";
@@ -912,15 +913,15 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
             const string& tag = child.first;
             if (tag == "submit")
             {
-                dds::tools_api::SSubmit submitInfo;
-                submitInfo.fromPT(pt);
+                dds::tools_api::SSubmitRequestData submitInfo;
+                submitInfo.fromPT(child.second);
 
                 submitAgents(submitInfo, _channel);
             }
             else if (tag == "topology")
             {
-                dds::tools_api::STopology topoInfo;
-                topoInfo.fromPT(pt);
+                dds::tools_api::STopologyRequestData topoInfo;
+                topoInfo.fromPT(child.second);
 
                 updateTopology(topoInfo, _channel);
             }
@@ -929,22 +930,22 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
             }
             else if (tag == "getlog")
             {
-                dds::tools_api::SGetLog getlog;
-                getlog.fromPT(pt);
+                dds::tools_api::SGetLogRequestData getlog;
+                getlog.fromPT(child.second);
 
                 getLog(getlog, _channel);
             }
             else if (tag == "commanderInfo")
             {
-                dds::tools_api::SCommanderInfo commanderInfo;
-                commanderInfo.fromPT(pt);
-
+                dds::tools_api::SCommanderInfoRequestData commanderInfo;
+                commanderInfo.fromPT(child.second);
+                LOG(info) << "ToolsAPI: processing commanderInfo with requestID = " << commanderInfo.m_requestID;
                 sendUICommanderInfo(commanderInfo, _channel);
             }
             else if (tag == "agentInfo")
             {
-                dds::tools_api::SAgentInfo agentInfo;
-                agentInfo.fromPT(pt);
+                dds::tools_api::SAgentInfoRequestData agentInfo;
+                agentInfo.fromPT(child.second);
 
                 sendUIAgentInfo(agentInfo, _channel);
             }
@@ -962,7 +963,7 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
     }
 }
 
-void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo,
+void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& _submitInfo,
                                       CAgentChannel::weakConnectionPtr_t _channel)
 {
     try
@@ -975,7 +976,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo
             stringstream ssErrMsg;
             ssErrMsg << "Unknown RMS plug-in requested \"" << _submitInfo.m_rms << "\" (" << ssPluginExe.str() << ")";
 
-            sendToolsAPIMsg(_channel, ssErrMsg.str(), EMsgSeverity::error);
+            sendToolsAPIMsg(_channel, _submitInfo.m_requestID, ssErrMsg.str(), EMsgSeverity::error);
             return;
         }
 
@@ -1014,7 +1015,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo
             f_script.close();
         }
         // pack worker package
-        sendToolsAPIMsg(_channel, "Creating new worker package...", EMsgSeverity::info);
+        sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
         // Use a lightweightpackage when possible
         _createWnPkg(!inlineShellScripCmds.empty(), (_submitInfo.m_rms == "localhost"));
@@ -1032,7 +1033,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo
 
         string sPluginInfoMsg("RMS plug-in: ");
         sPluginInfoMsg += ssPluginExe.str();
-        sendToolsAPIMsg(_channel, sPluginInfoMsg, EMsgSeverity::info);
+        sendToolsAPIMsg(_channel, _submitInfo.m_requestID, sPluginInfoMsg, EMsgSeverity::info);
 
         // Submitting the job
         stringstream ssCmd;
@@ -1042,7 +1043,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo
               << "FAKE_ID_FOR_TESTS"
               << " --path \"" << pluginDir << "\"";
 
-        sendToolsAPIMsg(_channel, "Initializing RMS plug-in...", EMsgSeverity::info);
+        sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Initializing RMS plug-in...", EMsgSeverity::info);
 
         LOG(info) << "Calling RMS plug-in: " << ssCmd.str();
 
@@ -1074,39 +1075,40 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmit& _submitInfo
         // In case of any plugin initialization error, reset the info channel
         m_SubmitAgents.m_channel.reset();
 
-        sendToolsAPIMsg(_channel, e.what(), EMsgSeverity::error);
+        sendToolsAPIMsg(_channel, _submitInfo.m_requestID, e.what(), EMsgSeverity::error);
     }
 }
 
-void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topologyInfo,
+void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestData& _topologyInfo,
                                         CAgentChannel::weakConnectionPtr_t _channel)
 {
     LOG(info) << "UI channel requested to update/activate/stop a topology.";
 
     // Only a single topology update/activate/stop can be active at a time
     lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
+    m_updateTopology.m_requestID = _topologyInfo.m_requestID;
 
     try
     {
-        dds::tools_api::STopology::EUpdateType updateType = _topologyInfo.m_updateType;
+        STopologyRequest::request_t::EUpdateType updateType = _topologyInfo.m_updateType;
 
         string msg;
         switch (updateType)
         {
-            case dds::tools_api::STopology::EUpdateType::UPDATE:
+            case STopologyRequest::request_t::EUpdateType::UPDATE:
                 msg = "Updating topology to " + _topologyInfo.m_topologyFile;
                 break;
-            case dds::tools_api::STopology::EUpdateType::ACTIVATE:
+            case STopologyRequest::request_t::EUpdateType::ACTIVATE:
                 msg = "Activating topology " + _topologyInfo.m_topologyFile;
                 break;
-            case dds::tools_api::STopology::EUpdateType::STOP:
+            case STopologyRequest::request_t::EUpdateType::STOP:
                 msg = "Stopping topology " + _topologyInfo.m_topologyFile;
                 break;
             default:
                 break;
         }
 
-        sendToolsAPIMsg(_channel, msg, EMsgSeverity::info);
+        sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, msg, EMsgSeverity::info);
 
         //
         // Check if topology is currently active, i.e. there are executing tasks
@@ -1127,7 +1129,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topolo
         //
 
         // If topology is active we can't activate it again
-        if (updateType == dds::tools_api::STopology::EUpdateType::ACTIVATE && topologyActive)
+        if (updateType == STopologyRequest::request_t::EUpdateType::ACTIVATE && topologyActive)
         {
             throw runtime_error("Topology is currently active, can't activate it again.");
         }
@@ -1156,7 +1158,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topolo
            << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
            << topo.stringOfCollections(addedCollections);
 
-        sendToolsAPIMsg(_channel, ss.str(), EMsgSeverity::info);
+        sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, ss.str(), EMsgSeverity::info);
 
         m_topo = topo; // Assign new topology
         //
@@ -1252,7 +1254,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topolo
         if (!_channel.expired())
         {
             auto p = _channel.lock();
-            dds::tools_api::SDone done;
+            SDoneResponseData done;
             done.m_requestID = _topologyInfo.m_requestID;
             SCustomCmdCmd cmd;
             cmd.m_sCmd = done.toJSON();
@@ -1262,7 +1264,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topolo
     }
     catch (exception& _e)
     {
-        sendToolsAPIMsg(_channel, _e.what(), EMsgSeverity::error);
+        sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, _e.what(), EMsgSeverity::error);
 
         m_updateTopology.m_channel.reset();
         return;
@@ -1270,6 +1272,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopology& _topolo
 }
 
 void CConnectionManager::sendToolsAPIMsg(CAgentChannel::weakConnectionPtr_t _channel,
+                                         requestID_t _requestID,
                                          const string& _msg,
                                          EMsgSeverity _severity)
 {
@@ -1278,7 +1281,8 @@ void CConnectionManager::sendToolsAPIMsg(CAgentChannel::weakConnectionPtr_t _cha
 
     auto p = _channel.lock();
 
-    dds::tools_api::SMessage msg;
+    SMessageResponseData msg;
+    msg.m_requestID = _requestID;
     msg.m_msg = _msg;
     msg.m_severity = _severity;
     SCustomCmdCmd cmd;
@@ -1287,14 +1291,17 @@ void CConnectionManager::sendToolsAPIMsg(CAgentChannel::weakConnectionPtr_t _cha
     p->template pushMsg<cmdCUSTOM_CMD>(cmd);
 }
 
-void CConnectionManager::getLog(const dds::tools_api::SGetLog& _getLog, CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::getLog(const dds::tools_api::SGetLogRequestData& _getLog,
+                                CAgentChannel::weakConnectionPtr_t _channel)
 {
     lock_guard<mutex> lock(m_getLog.m_mutexStart);
 
     if (!m_getLog.m_channel.expired())
     {
-        sendToolsAPIMsg(
-            _channel, "Can not process the request. The getlog command is already in progress.", EMsgSeverity::error);
+        sendToolsAPIMsg(_channel,
+                        _getLog.m_requestID,
+                        "Can not process the request. The getlog command is already in progress.",
+                        EMsgSeverity::error);
         return;
     }
 
@@ -1311,7 +1318,7 @@ void CConnectionManager::getLog(const dds::tools_api::SGetLog& _getLog, CAgentCh
     {
         stringstream ss;
         ss << "Could not create directory " << sLogStorageDir << " to save log files.";
-        sendToolsAPIMsg(_channel, ss.str(), EMsgSeverity::error);
+        sendToolsAPIMsg(_channel, _getLog.m_requestID, ss.str(), EMsgSeverity::error);
 
         m_getLog.m_channel.reset();
         return;
@@ -1325,7 +1332,7 @@ void CConnectionManager::getLog(const dds::tools_api::SGetLog& _getLog, CAgentCh
 
     if (m_getLog.m_nofRequests == 0)
     {
-        sendToolsAPIMsg(_channel, "There are no connected agents.", EMsgSeverity::error);
+        sendToolsAPIMsg(_channel, _getLog.m_requestID, "There are no connected agents.", EMsgSeverity::error);
 
         m_getLog.m_channel.reset();
         return;
@@ -1334,10 +1341,11 @@ void CConnectionManager::getLog(const dds::tools_api::SGetLog& _getLog, CAgentCh
     broadcastSimpleMsg<cmdGET_LOG>(condition);
 }
 
-void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInfo& _info,
+void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInfoRequestData& _info,
                                              CAgentChannel::weakConnectionPtr_t _channel)
 {
-    dds::tools_api::SCommanderInfo info(_info);
+    SCommanderInfoResponseData info;
+    info.m_requestID = _info.m_requestID;
 
     info.m_pid = getpid();
 
@@ -1361,14 +1369,14 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
     cmd.m_sCondition = "";
     p->template pushMsg<cmdCUSTOM_CMD>(cmd);
 
-    dds::tools_api::SDone done;
+    SDoneResponseData done;
     done.m_requestID = _info.m_requestID;
     cmd.m_sCmd = done.toJSON();
     cmd.m_sCondition = "";
     p->template pushMsg<cmdCUSTOM_CMD>(cmd);
 }
 
-void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfo& _info,
+void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequestData& _info,
                                          CAgentChannel::weakConnectionPtr_t _channel)
 {
     CConnectionManager::weakChannelInfo_t::container_t channels(
@@ -1381,13 +1389,15 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfo& _info
     {
         auto p = _channel.lock();
 
-        dds::tools_api::SAgentInfo info(_info);
+        SAgentInfoResponseData info;
+        info.m_requestID = _info.m_requestID;
+
         SCustomCmdCmd cmd;
         cmd.m_sCmd = info.toJSON();
         cmd.m_sCondition = "";
         p->template pushMsg<cmdCUSTOM_CMD>(cmd);
 
-        dds::tools_api::SDone done;
+        SDoneResponseData done;
         done.m_requestID = _info.m_requestID;
         cmd.m_sCmd = done.toJSON();
         cmd.m_sCondition = "";
@@ -1400,7 +1410,8 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfo& _info
     size_t i = 0;
     for (const auto& v : channels)
     {
-        dds::tools_api::SAgentInfo info;
+        SAgentInfoResponseData info;
+        info.m_requestID = _info.m_requestID;
         stringstream ss;
 
         if (v.m_channel.expired())
@@ -1442,7 +1453,7 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfo& _info
     {
         auto p = _channel.lock();
 
-        dds::tools_api::SDone done;
+        SDoneResponseData done;
         done.m_requestID = _info.m_requestID;
         SCustomCmdCmd cmd;
         cmd.m_sCmd = done.toJSON();

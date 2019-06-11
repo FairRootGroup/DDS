@@ -1,0 +1,50 @@
+{
+    "dds": {
+        "tools-api": {
+            "message": {
+                "msg": "string",
+                "severity": 123,
+                "requestID": 123
+            },
+            "done": {
+                "requestID": 123
+            },
+            "progress":{
+                "completed": 123,
+                "total": 123,
+                "errors": 123,
+                "time": 123,
+                "srcCommand": 123
+            },
+            "submit": {
+                "rms": "string",
+                "instances": 123,
+                "config": "string",
+                "pluginPath": "string",
+                "requestID": 123
+            },
+            "topology": {
+                "updateType": 123,
+                "topologyFile": "string",
+                "disableValidation": false,
+                "requestID": 123
+            },
+            "getlog": {
+                "requestID": 123
+            },
+            "commanderInfo":
+            {
+                "pid":432,
+                "idleAgentsCount": 105,
+                "requestID": 435
+            },
+            "agentInfo":
+            {
+                "activeAgentsCount": 123,
+                "index": 123,
+                "agentInfo": "string",
+                "requestID": 123
+            }
+        }
+    }
+}

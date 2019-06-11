@@ -20,6 +20,50 @@ using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
 
 //=============================================================================
+void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
+{
+    SCommanderInfoRequest::request_t requestInfo;
+    SCommanderInfoRequest::ptr_t requestPtr = SCommanderInfoRequest::makeRequest(requestInfo);
+
+    requestPtr->setMessageCallback([](const SMessageResponseData& _message) {
+        LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+            << "Server reports: " << _message.m_msg;
+    });
+
+    requestPtr->setDoneCallback([&_session]() { _session.stop(); });
+
+    requestPtr->setResponseCallback([&_session, &_options](const SCommanderInfoResponseData& _info) {
+        if (_options.m_nIdleAgentsCount > 0)
+        {
+            if (_info.m_idleAgentsCount < _options.m_nIdleAgentsCount)
+            {
+                this_thread::sleep_for(chrono::milliseconds(500));
+                requestCommanderInfo(_session, _options);
+                return;
+            }
+
+            LOG(log_stdout_clean) << "idle agents online: " << _info.m_idleAgentsCount;
+            _session.stop();
+        }
+
+        if (_options.m_bNeedCommanderPid)
+            LOG(log_stdout_clean) << _info.m_pid;
+
+        // Checking for "status" option
+        if (_options.m_bNeedDDSStatus)
+        {
+            if (_info.m_pid > 0)
+                LOG(log_stdout_clean) << "DDS commander server process (" << _info.m_pid << ") is running...";
+            else
+                LOG(log_stdout_clean) << "DDS commander server is not running.";
+        }
+
+        _session.stop();
+    });
+
+    _session.sendRequest<SCommanderInfoRequest>(requestPtr);
+}
+//=============================================================================
 int main(int argc, char* argv[])
 {
 
@@ -65,80 +109,40 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        session.onResponse<SMessage>([&session](const SMessage& _message) {
-            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
-                << "Server reports: " << _message.m_msg;
-
-            // stop communication on errors
-            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                session.stop();
-            return true;
-        });
-
-        session.onResponse<SDone>([&session](const SDone& _message) {
-            session.stop();
-            return true;
-        });
-
-        session.onResponse<SCommanderInfo>([&session, &options](const SCommanderInfo& _info) {
-            if (options.m_nIdleAgentsCount > 0)
-            {
-                if (_info.m_idleAgentsCount < options.m_nIdleAgentsCount)
-                {
-                    this_thread::sleep_for(chrono::milliseconds(500));
-                    SCommanderInfo commanderInfo;
-                    session.sendRequest(commanderInfo);
-                    return true;
-                }
-
-                LOG(log_stdout_clean) << "idle agents online: " << _info.m_idleAgentsCount;
-                session.stop();
-            }
-
-            if (options.m_bNeedCommanderPid)
-                LOG(log_stdout_clean) << _info.m_pid;
-
-            // Checking for "status" option
-            if (options.m_bNeedDDSStatus)
-            {
-                if (_info.m_pid > 0)
-                    LOG(log_stdout_clean) << "DDS commander server process (" << _info.m_pid << ") is running...";
-                else
-                    LOG(log_stdout_clean) << "DDS commander server is not running.";
-            }
-
-            session.stop();
-            return true;
-        });
-
-        session.onResponse<SAgentInfo>([&session, &options](const SAgentInfo& _info) {
-            if (options.m_bNeedAgentsNumber)
-            {
-                LOG(log_stdout_clean) << _info.m_activeAgentsCount;
-                // Close communication channel
-                session.stop();
-                return true;
-            }
-
-            if (options.m_bNeedAgentsList && !_info.m_agentInfo.empty())
-            {
-                LOG(log_stdout_clean) << _info.m_agentInfo;
-            }
-            else
-                session.stop();
-
-            return true;
-        });
-
-        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus)
+        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0)
         {
-            SCommanderInfo commanderInfo;
-            session.sendRequest(commanderInfo);
+            requestCommanderInfo(session, options);
         }
         else if (options.m_bNeedAgentsNumber || options.m_bNeedAgentsList)
         {
-            SAgentInfo agentInfo;
-            session.sendRequest(agentInfo);
+            SAgentInfoRequest::request_t requestInfo;
+            SAgentInfoRequest::ptr_t requestPtr = SAgentInfoRequest::makeRequest(requestInfo);
+
+            requestPtr->setMessageCallback([](const SMessageResponseData& message) {
+                LOG((message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                    << "Server reports: " << message.m_msg;
+            });
+
+            requestPtr->setDoneCallback([&session]() { session.stop(); });
+
+            requestPtr->setResponseCallback([&session, &options](const SAgentInfoResponseData& _info) {
+                if (options.m_bNeedAgentsNumber)
+                {
+                    LOG(log_stdout_clean) << _info.m_activeAgentsCount;
+                    // Close communication channel
+                    session.stop();
+                    return;
+                }
+
+                if (options.m_bNeedAgentsList && !_info.m_agentInfo.empty())
+                {
+                    LOG(log_stdout_clean) << _info.m_agentInfo;
+                }
+                else
+                    session.stop();
+            });
+
+            session.sendRequest<SAgentInfoRequest>(requestPtr);
         }
         else if (options.m_bNeedPropList)
         {
@@ -153,11 +157,6 @@ int main(int argc, char* argv[])
             // protocol_api::SGetPropValuesCmd cmd;
             // cmd.m_sPropertyName = m_options.m_propertyName;
             // pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
-        }
-        else if (options.m_nIdleAgentsCount > 0)
-        {
-            SCommanderInfo commanderInfo;
-            session.sendRequest(commanderInfo);
         }
 
         session.blockCurrentThread();

@@ -102,31 +102,27 @@ int main(int argc, char* argv[])
         LOG(MiscCommon::log_stdout) << "Connection established.";
         LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
 
-        session.onResponse<SMessage>([&session](const SMessage& _message) {
+        SSubmitRequest::request_t requestInfo;
+        requestInfo.m_config = options.m_sCfgFile;
+        requestInfo.m_rms = options.m_sRMS;
+        requestInfo.m_instances = options.m_number;
+        requestInfo.m_pluginPath = options.m_sPath;
+        SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
+
+        requestPtr->setMessageCallback([](const SMessageResponseData& _message) {
             LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
                 << "Server reports: " << _message.m_msg;
-
-            // stop communication on errors
-            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                session.stop();
-            return true;
         });
 
-        session.onResponse<SDone>([&session, &start](const SDone& _message) {
+        requestPtr->setDoneCallback([&session, &start]() {
             auto end = chrono::high_resolution_clock::now();
             chrono::duration<double, std::milli> elapsed = end - start;
             LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
 
             session.stop();
-            return true;
         });
 
-        SSubmit submitInfo;
-        submitInfo.m_config = options.m_sCfgFile;
-        submitInfo.m_rms = options.m_sRMS;
-        submitInfo.m_instances = options.m_number;
-        submitInfo.m_pluginPath = options.m_sPath;
-        session.sendRequest(submitInfo);
+        session.sendRequest<SSubmitRequest>(requestPtr);
 
         session.blockCurrentThread();
     }

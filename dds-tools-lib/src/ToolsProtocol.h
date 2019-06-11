@@ -10,126 +10,63 @@
 #include <string>
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 // DDS
-#include "dds_intercom.h"
-
-/*
-{
-    "dds": {
-        "tools-api": {
-            "message": {
-                "msg": "string",
-                "severity": 123,
-                "requestID": 123
-            },
-            "done": {
-                "requestID": 123
-            },
-            "progress":{
-                "completed": 123,
-                "total": 123,
-                "errors": 123,
-                "time": 123,
-                "srcCommand": 123
-            },
-            "submit": {
-                "rms": "string",
-                "instances": 123,
-                "config": "string",
-                "pluginPath": "string",
-                "requestID": 123
-            },
-            "topology": {
-                "updateType": 123,
-                "topologyFile": "string",
-                "disableValidation": false,
-            },
-            "getlog": {
-            },
-            "commanderInfo":
-            {
-                "pid":123,
-                "idleAgentsCount": 123
-            },
-            "agentInfo":
-            {
-                "activeAgentsCount": 123,
-                "index": 123,
-                "agentInfo": "string"
-            },
-
-        }
-    }
-}
-*/
+#include "ToolsProtocolCore.h"
 
 namespace dds
 {
     namespace tools_api
     {
-        template <class T>
-        struct SBaseMessageImpl
+        /// \brief Structure holds information of a done notification.
+        struct SDoneResponseData : SBaseResponseData<SDoneResponseData>
         {
-            uint64_t m_requestID = 0;
-
-            void setRequestID(const uint64_t _requestID)
+          private:
+            friend SBaseData<SDoneResponseData>;
+            friend SBaseResponseData<SDoneResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
             {
-                m_requestID = _requestID;
+                return "done";
             }
 
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string toJSON() const
-            {
-                return static_cast<const T*>(this)->_toJSON();
-            }
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void fromJSON(const std::string& _json)
-            {
-                return static_cast<T*>(this)->_fromJSON(_json);
-            }
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
-            void fromPT(const boost::property_tree::ptree& _pt)
-            {
-                return static_cast<T*>(this)->_fromPT(_pt);
-            }
-
+          public:
             /// \brief Equality operator.
-            bool operator==(const T& _val) const
+            bool operator==(const SDoneResponseData& _val) const
             {
-                return static_cast<T*>(this)->operator==(_val);
+                return SBaseData::operator==(_val);
             }
         };
 
-        /// \brief Structure holds information of a done notification. It indicates that a request with a corresponding
-        /// requestID is finished and there will be no other responses from DDS in this regards.
-        struct SDone : public SBaseMessageImpl<SDone>
+        /// \brief Structure holds information of a message notification.
+        struct SMessageResponseData : SBaseResponseData<SMessageResponseData>
         {
+            std::string m_msg;                                                                  ///< Message text.
+            dds::intercom_api::EMsgSeverity m_severity = dds::intercom_api::EMsgSeverity::info; ///< Message severity.
+
           private:
-            friend SBaseMessageImpl<SDone>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
+            friend SBaseData<SMessageResponseData>;
+            friend SBaseResponseData<SMessageResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "message";
+            }
 
+          public:
             /// \brief Equality operator.
-            bool operator==(const SDone& _val) const;
+            bool operator==(const SMessageResponseData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_msg == _val.m_msg && m_severity == _val.m_severity);
+            }
         };
 
         /// \brief Structure holds information of a progress notification.
-        struct SProgress : public SBaseMessageImpl<SProgress>
+        struct SProgressResponseData : SBaseResponseData<SProgressResponseData>
         {
             uint32_t m_completed = 0;
             uint32_t m_total = 0;
@@ -137,12 +74,11 @@ namespace dds
             uint32_t m_time = 0;
             uint16_t m_srcCommand = 0; ///< Reserved for internal use
 
-            SProgress()
-                : SBaseMessageImpl<SProgress>()
+            SProgressResponseData()
             {
             }
-            SProgress(uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0)
-                : SBaseMessageImpl<SProgress>()
+            SProgressResponseData(
+                uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0)
             {
                 m_srcCommand = _srcCmd;
                 m_completed = _completed;
@@ -152,51 +88,25 @@ namespace dds
             }
 
           private:
-            friend SBaseMessageImpl<SProgress>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
+            friend SBaseData<SProgressResponseData>;
+            friend SBaseResponseData<SProgressResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "progress";
+            }
 
+          public:
             /// \brief Equality operator.
-            bool operator==(const SProgress& _val) const;
+            bool operator==(const SProgressResponseData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_completed == _val.m_completed && m_total == _val.m_total &&
+                        m_errors == _val.m_errors && m_time == _val.m_time);
+            }
         };
 
-        /// \brief Structure holds information of a message notification.
-        struct SMessage : public SBaseMessageImpl<SMessage>
-        {
-            std::string m_msg;                                                                  ///< Message text.
-            dds::intercom_api::EMsgSeverity m_severity = dds::intercom_api::EMsgSeverity::info; ///< Message severity.
-
-          private:
-            friend SBaseMessageImpl<SMessage>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
-            void _fromPT(const boost::property_tree::ptree& _pt);
-
-            /// \brief Equality operator.
-            bool operator==(const SMessage& _val) const;
-        };
-
-        /// \brief Structure holds information of a submit notification.
-        struct SSubmit : public SBaseMessageImpl<SSubmit>
+        struct SSubmitRequestData : SBaseRequestData<SSubmitRequestData>
         {
             std::string m_rms;        ///< RMS.
             uint32_t m_instances = 0; ///< Number of instances.
@@ -204,26 +114,27 @@ namespace dds
             std::string m_pluginPath; ///< Optional. A plug-in's directory search path
 
           private:
-            friend SBaseMessageImpl<SSubmit>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
+            friend SBaseData<SSubmitRequestData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "submit";
+            }
 
+          public:
             /// \brief Equality operator.
-            bool operator==(const SSubmit& _val) const;
+            bool operator==(const SSubmitRequestData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_rms == _val.m_rms && m_instances == _val.m_instances &&
+                        m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
+            }
         };
 
-        /// \brief Structure holds information of topology notifications.
-        struct STopology : public SBaseMessageImpl<STopology>
+        /// \brief Structure holds information of a submit notification.
+        using SSubmitRequest = SBaseRequestImpl<SSubmitRequestData, SEmptyResponseData>;
+
+        struct STopologyRequestData : SBaseResponseData<STopologyRequestData>
         {
             enum class EUpdateType : uint8_t
             {
@@ -234,97 +145,145 @@ namespace dds
             EUpdateType m_updateType;         ///< Topology update type: Update, Activate, Stop
             std::string m_topologyFile;       ///< A topology file to process
             bool m_disableValidation = false; ///< A flag to disiable topology validation before processing it.
+
           private:
-            friend SBaseMessageImpl<STopology>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
+            friend SBaseData<STopologyRequestData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "topology";
+            }
 
+          public:
             /// \brief Equality operator.
-            bool operator==(const STopology& _val) const;
+            bool operator==(const STopologyRequestData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_updateType == _val.m_updateType &&
+                        m_topologyFile == _val.m_topologyFile && m_disableValidation == _val.m_disableValidation);
+            }
+        };
+
+        /// \brief Structure holds information of topology notifications.
+        using STopologyRequest = SBaseRequestImpl<STopologyRequestData, SEmptyResponseData>;
+
+        struct SGetLogRequestData : SBaseRequestData<SGetLogRequestData>
+        {
+          private:
+            friend SBaseData<SGetLogRequestData>;
+            friend SBaseRequestData<SGetLogRequestData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "getlog";
+            }
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SGetLogRequestData& _val) const
+            {
+                return SBaseData::operator==(_val);
+            }
         };
 
         /// \brief Structure holds information of a getlog notification.
-        struct SGetLog : public SBaseMessageImpl<SGetLog>
-        {
-          private:
-            friend SBaseMessageImpl<SGetLog>;
+        using SGetLogRequest = SBaseRequestImpl<SGetLogRequestData, SEmptyResponseData>;
 
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
-            void _fromPT(const boost::property_tree::ptree& _pt);
-
-            /// \brief Equality operator.
-            bool operator==(const SGetLog& _val) const;
-        };
-
-        /// \brief Structure holds information of a commanderInfo notification.
-        struct SCommanderInfo : public SBaseMessageImpl<SCommanderInfo>
+        struct SCommanderInfoResponseData : SBaseResponseData<SCommanderInfoResponseData>
         {
             pid_t m_pid = 0;                ///< PID of the commander
             uint32_t m_idleAgentsCount = 0; ///< The count of idle agents
 
           private:
-            friend SBaseMessageImpl<SCommanderInfo>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
+            friend SBaseData<SCommanderInfoResponseData>;
+            friend SBaseResponseData<SCommanderInfoResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "commanderInfo";
+            }
 
+          public:
             /// \brief Equality operator.
-            bool operator==(const SCommanderInfo& _val) const;
+            bool operator==(const SCommanderInfoResponseData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_pid == _val.m_pid &&
+                        m_idleAgentsCount == _val.m_idleAgentsCount);
+            }
+        };
+
+        struct SCommanderInfoRequestData : SBaseRequestData<SCommanderInfoRequestData>
+        {
+          private:
+            friend SBaseData<SCommanderInfoRequestData>;
+            friend SBaseRequestData<SCommanderInfoRequestData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "commanderInfo";
+            }
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SCommanderInfoRequestData& _val) const
+            {
+                return SBaseData::operator==(_val);
+            }
+        };
+
+        /// \brief Structure holds information of a commanderInfo notification.
+        using SCommanderInfoRequest = SBaseRequestImpl<SCommanderInfoRequestData, SCommanderInfoResponseData>;
+
+        struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
+        {
+            uint32_t m_activeAgentsCount = 0; ///< the number of online agents
+            uint32_t m_index = 0;             ///< index of the current agent
+            std::string m_agentInfo;          ///< info on the current agent
+
+          private:
+            friend SBaseData<SAgentInfoResponseData>;
+            friend SBaseResponseData<SAgentInfoResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "agentInfo";
+            }
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SAgentInfoResponseData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
+                        m_index == _val.m_index && m_agentInfo == _val.m_agentInfo);
+            }
+        };
+
+        struct SAgentInfoRequestData : SBaseRequestData<SAgentInfoRequestData>
+        {
+          private:
+            friend SBaseData<SAgentInfoRequestData>;
+            friend SBaseRequestData<SAgentInfoRequestData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "agentInfo";
+            }
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SAgentInfoRequestData& _val) const
+            {
+                return SBaseData::operator==(_val);
+            }
         };
 
         /// \brief Structure holds information of a agentInfo notification.
-        struct SAgentInfo : public SBaseMessageImpl<SAgentInfo>
-        {
-            uint32_t m_activeAgentsCount = 0; /// the number of online agents
-            uint32_t m_index = 0;             /// index of the current agent
-            std::string m_agentInfo;          /// info on the current agent
-
-          private:
-            friend SBaseMessageImpl<SAgentInfo>;
-
-            /// \brief Converts structure to JSON.
-            /// \return String with JSON.
-            std::string _toJSON() const;
-
-            /// \brief Init structure from JSON.
-            /// \param[in] _json JSON string with structure details.
-            void _fromJSON(const std::string& _json);
-
-            /// \brief Init structure from boost's property tree.
-            /// \param[in] _pt Property tree with structure details.
-            void _fromPT(const boost::property_tree::ptree& _pt);
-
-            /// \brief Equality operator.
-            bool operator==(const SAgentInfo& _val) const;
-        };
+        using SAgentInfoRequest = SBaseRequestImpl<SAgentInfoRequestData, SAgentInfoResponseData>;
     } // namespace tools_api
 } // namespace dds
 

@@ -148,6 +148,23 @@ BOOST_AUTO_TEST_CASE(Test_MiscCommon_parseExe)
                  "${DDS_LOCATION}/bash --arg1 arg1 --arg2 arg2 --arg3");
 
     BOOST_CHECK_THROW(testParseExe("my_location/test_exe --arg1 arg1", "", "", "", ""), std::runtime_error);
+
+    // wordexp will always fail with WRDE_SYNTAX if you have set the SIGCHLD signal to be ignored like so:
+    // signal(SIGCHLD, SIG_IGN). A library may be doing this without your knowledge. Presumably the implementation of
+    // wordexp on OS X actually spawns a shell as a child process to do the parsing.
+    // The solution is to call signal(SIGCHLD, SIG_DFL) before wordexp. You can restore signal(SIGCHLD, SIG_IGN)
+    // afterward.
+    boost::process::posix::sighandler_t old_sig = signal(SIGCHLD, SIG_IGN);
+    signal(SIGCHLD, SIG_DFL);
+    testParseExe("/private/var/folders/rl/5yb4plyn19xfhy2clkzs4whm0000gn/T/377770e4-10f7-499a-ac24-38d8191f5f8f/"
+                 "dds_2019-06-14-12-09-43-343/wn_4/task-test_key_value -i 5 --max-value 10 -t 1 --test-errors",
+                 "",
+                 "/private/var/folders/rl/5yb4plyn19xfhy2clkzs4whm0000gn/T/377770e4-10f7-499a-ac24-38d8191f5f8f/"
+                 "dds_2019-06-14-12-09-43-343/wn_4/task-test_key_value",
+                 "task-test_key_value",
+                 "/private/var/folders/rl/5yb4plyn19xfhy2clkzs4whm0000gn/T/377770e4-10f7-499a-ac24-38d8191f5f8f/"
+                 "dds_2019-06-14-12-09-43-343/wn_4/task-test_key_value -i 5 --max-value 10 -t 1 --test-errors");
+    signal(SIGCHLD, old_sig);
 }
 //=============================================================================
 

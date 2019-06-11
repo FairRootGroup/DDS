@@ -278,22 +278,17 @@ void CStart::checkCommanderStatus()
 
         LOG(log_stdout_clean) << "DDS commander is up and running.";
 
-        session.onResponse<SMessage>([&session](const SMessage& _message) {
+        SCommanderInfoRequest::request_t requestInfo;
+        SCommanderInfoRequest::ptr_t requestPtr = SCommanderInfoRequest::makeRequest(requestInfo);
+
+        requestPtr->setMessageCallback([](const SMessageResponseData& _message) {
             LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
                 << "Server reports: " << _message.m_msg;
-
-            // stop communication on errors
-            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                session.stop();
-            return true;
         });
 
-        session.onResponse<SDone>([&session](const SDone& _message) {
-            session.stop();
-            return true;
-        });
+        requestPtr->setDoneCallback([&session]() { session.stop(); });
 
-        session.onResponse<SCommanderInfo>([&session](const SCommanderInfo& _info) {
+        requestPtr->setResponseCallback([&session](const SCommanderInfoResponseData& _info) {
             LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
             LOG(log_stdout_clean) << "------------------------";
             LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
@@ -301,12 +296,9 @@ void CStart::checkCommanderStatus()
 
             // Close communication channel
             session.stop();
-            return true;
         });
 
-        SCommanderInfo commanderInfo;
-        session.sendRequest(commanderInfo);
-
+        session.sendRequest<SCommanderInfoRequest>(requestPtr);
         session.blockCurrentThread();
     }
     catch (exception& e)

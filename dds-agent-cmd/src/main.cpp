@@ -71,24 +71,26 @@ int main(int argc, char* argv[])
                 return EXIT_FAILURE;
         }
 
-        session.onResponse<SMessage>([&session](const SMessage& _message) {
-            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
-                << "Server reports: " << _message.m_msg;
+        SGetLogRequest::request_t requestInfo;
+        SGetLogRequest::ptr_t requestPtr = SGetLogRequest::makeRequest(requestInfo);
 
-            // stop communication on errors
-            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                session.stop();
-            return true;
+        requestPtr->setMessageCallback([&options](const SMessageResponseData& _message) {
+            if (options.m_verbose || _message.m_severity == dds::intercom_api::EMsgSeverity::error)
+            {
+                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                    << "Server reports: " << _message.m_msg;
+            }
+            else
+            {
+                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? error : info) << _message.m_msg;
+            }
         });
 
-        session.onResponse<SDone>([&session](const SDone& _message) {
-            session.stop();
-            return true;
-        });
+        requestPtr->setDoneCallback([&session]() { session.stop(); });
 
-        session.onResponse<SProgress>([&options](const SProgress& _progress) {
+        requestPtr->setProgressCallback([&options](const SProgressResponseData& _progress) {
             if (options.m_verbose)
-                return true;
+                return;
 
             int completed = _progress.m_completed + _progress.m_errors;
             if (completed < _progress.m_total)
@@ -102,11 +104,9 @@ int main(int argc, char* argv[])
                 cout << "Received: " << _progress.m_completed << " errors: " << _progress.m_errors
                      << " total: " << _progress.m_total << endl;
             }
-            return true;
         });
 
-        SGetLog getLog;
-        session.sendRequest(getLog);
+        session.sendRequest<SGetLogRequest>(requestPtr);
 
         session.blockCurrentThread();
     }

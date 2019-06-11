@@ -9,13 +9,9 @@
 // STD
 #include <string>
 // BOOST
+#include <boost/any.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/signals2/signal.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 // DDS
-#include "CRC.h"
 #include "ToolsProtocol.h"
 #include "dds_intercom.h"
 
@@ -168,24 +164,9 @@ namespace dds
          */
         class CSession
         {
-          public:
-            /// \brief Callback function for message notifications.
-            typedef boost::signals2::signal<void(const SMessage&)> signalMessage_t;
-            /// \brief Callback function for submit notifications.
-            typedef boost::signals2::signal<void(const SDone&)> signalDone_t;
-            /// \brief Callback function for progress notifications.
-            typedef boost::signals2::signal<void(const SProgress&)> signalProgress_t;
-            /// \brief Callback function for submit notifications.
-            typedef boost::signals2::signal<void(const SSubmit&)> signalSubmit_t;
-            /// \brief Callback function for topology notifications.
-            typedef boost::signals2::signal<void(const STopology&)> signalTopology_t;
-            /// \brief Callback function for getlog notifications.
-            typedef boost::signals2::signal<void(const SGetLog&)> signalGetLog_t;
-            /// \brief Callback function for commanderInfo notifications.
-            typedef boost::signals2::signal<void(const SCommanderInfo&)> signalCommanderInfo_t;
-            /// \brief Callback function for agentInfo notifications.
-            typedef boost::signals2::signal<void(const SAgentInfo&)> signalAgentInfo_t;
+            typedef std::map<requestID_t, boost::any> requests_t;
 
+          public:
             /// \brief Constructor of a DDS Session class.
             /// \param[in] _DDSLocation A full path to DDS directory
             CSession();
@@ -221,79 +202,15 @@ namespace dds
 
           public:
             template <class T>
-            uint64_t sendRequest(SBaseMessageImpl<T>& _msg)
+            void sendRequest(typename T::ptr_t _request)
             {
-                const boost::uuids::uuid id = boost::uuids::random_generator()();
-                std::stringstream strid;
-                strid << id;
-                const uint64_t requestID = MiscCommon::crc64(strid.str());
-                _msg.setRequestID(requestID);
-                m_customCmd.send(_msg.toJSON(), dds::intercom_api::g_sToolsAPISign);
-                return requestID;
-            }
+                if (!_request)
+                    throw std::runtime_error("sendRequest: argument can't be NULL");
 
-            /// \brief Subscribe for message notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SMessage, T>::value>::type* = nullptr>
-            void onResponse(typename signalMessage_t::slot_function_type _subscriber)
-            {
-                m_signalMessage.connect(_subscriber);
-            }
+                requestID_t reqID = _request->getRequest().m_requestID;
+                m_requests.insert(std::make_pair(reqID, _request));
 
-            /// \brief Subscribe for done notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SDone, T>::value>::type* = nullptr>
-            void onResponse(typename signalDone_t::slot_function_type _subscriber)
-            {
-                m_signalDone.connect(_subscriber);
-            }
-
-            /// \brief Subscribe for progress notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SProgress, T>::value>::type* = nullptr>
-            void onResponse(typename signalProgress_t::slot_function_type _subscriber)
-            {
-                m_signalProgress.connect(_subscriber);
-            }
-
-            /// \brief Subscribe for submit notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SSubmit, T>::value>::type* = nullptr>
-            void onResponse(typename signalSubmit_t::slot_function_type _subscriber)
-            {
-                m_signalSubmit.connect(_subscriber);
-            }
-
-            /// \brief Subscribe for topology notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<STopology, T>::value>::type* = nullptr>
-            void onResponse(typename boost::signals2::signal<void(const T&)>::slot_function_type _subscriber)
-            {
-                m_signalTopology.connect(_subscriber);
-            }
-
-            /// \brief Subscribe for getlog notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SGetLog, T>::value>::type* = nullptr>
-            void onResponse(typename boost::signals2::signal<void(const T&)>::slot_function_type _subscriber)
-            {
-                m_signalGetLog.connect(_subscriber);
-            }
-
-            /// \brief Subscribe for commanderInfo notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SCommanderInfo, T>::value>::type* = nullptr>
-            void onResponse(typename boost::signals2::signal<void(const T&)>::slot_function_type _subscriber)
-            {
-                m_signalCommanderInfo.connect(_subscriber);
-            }
-
-            /// \brief Subscribe for agentInfo notifications.
-            /// \param[in] _subscriber Callback function that is called when notification arrives.
-            template <class T, typename std::enable_if<std::is_same<SAgentInfo, T>::value>::type* = nullptr>
-            void onResponse(typename boost::signals2::signal<void(const T&)>::slot_function_type _subscriber)
-            {
-                m_signalAgentInfo.connect(_subscriber);
+                m_customCmd.send(_request->getRequest().toJSON(), dds::intercom_api::g_sToolsAPISign);
             }
 
           protected:
@@ -304,19 +221,54 @@ namespace dds
           private:
             bool isDDSAvailable() const;
 
+            template <class T>
+            void processRequest(requests_t::mapped_type _request,
+                                const boost::property_tree::ptree::value_type& _child,
+                                std::function<void(typename T::ptr_t)> _processResponseCallback)
+            {
+                const std::string& tag = _child.first;
+
+                auto request = boost::any_cast<typename T::ptr_t>(_request);
+                try
+                {
+                    if (tag == "done")
+                    {
+                        request->execDoneCallback();
+                    }
+                    else if (tag == "message")
+                    {
+                        SMessageResponseData msg;
+                        msg.fromPT(_child.second);
+                        request->execMessageCallback(msg);
+                    }
+                    else if (tag == "progress")
+                    {
+                        SProgressResponseData progress;
+                        progress.fromPT(_child.second);
+                        request->execProgressCallback(progress);
+                    }
+                    else
+                    {
+                        if (_processResponseCallback)
+                            _processResponseCallback(request);
+                    }
+                }
+                catch (const std::bad_weak_ptr& /*_we*/)
+                {
+                    throw std::runtime_error("DDS tools API: User's request object is out of scope");
+                }
+                catch (const std::exception& _e)
+                {
+                    throw std::runtime_error("DDS tools API: User's callback exception: " + std::string(_e.what()));
+                }
+            }
+
           private:
             boost::uuids::uuid m_sid;                      ///< Session ID
             dds::intercom_api::CIntercomService m_service; ///< Intercom service.
             dds::intercom_api::CCustomCmd m_customCmd; ///< Custom commands API. Used for communication with commander.
 
-            signalMessage_t m_signalMessage;             ///< Message signal.
-            signalDone_t m_signalDone;                   ///< Done signal.
-            signalProgress_t m_signalProgress;           ///< Progress signal.
-            signalSubmit_t m_signalSubmit;               ///< Submit signal.
-            signalTopology_t m_signalTopology;           ///< Topology signal.
-            signalGetLog_t m_signalGetLog;               ///< GetLog signal.
-            signalCommanderInfo_t m_signalCommanderInfo; ///< CommanderInfo singal
-            signalAgentInfo_t m_signalAgentInfo;         ///< AgentInfo singal
+            requests_t m_requests;
         };
     } // namespace tools_api
 } // namespace dds

@@ -14,79 +14,33 @@ using namespace boost::property_tree;
 ///////////////////////////////////
 // SDone
 ///////////////////////////////////
-std::string dds::tools_api::SDone::_toJSON() const
+void dds::tools_api::SDoneResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    ptree pt;
-
-    pt.put<uint64_t>("dds.tools-api.done.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
 }
 
-void dds::tools_api::SDone::_fromJSON(const std::string& _json)
+void dds::tools_api::SDoneResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
-}
-
-void dds::tools_api::SDone::_fromPT(const boost::property_tree::ptree& _pt)
-{
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_requestID = pt.get<uint64_t>("done.requestID", 0);
-}
-
-bool dds::tools_api::SDone::operator==(const SDone& val) const
-{
-    return (m_requestID == val.m_requestID);
 }
 
 ///////////////////////////////////
 // SProgress
 ///////////////////////////////////
-std::string dds::tools_api::SProgress::_toJSON() const
+void dds::tools_api::SProgressResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    ptree pt;
-
-    pt.put<uint32_t>("dds.tools-api.progress.completed", m_completed);
-    pt.put<uint32_t>("dds.tools-api.progress.total", m_total);
-    pt.put<uint32_t>("dds.tools-api.progress.errors", m_errors);
-    pt.put<uint32_t>("dds.tools-api.progress.time", m_time);
-    pt.put<uint32_t>("dds.tools-api.progress.srcCommand", m_srcCommand);
-    pt.put<uint32_t>("dds.tools-api.progress.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
+    _pt.put<uint32_t>("completed", m_completed);
+    _pt.put<uint32_t>("total", m_total);
+    _pt.put<uint32_t>("errors", m_errors);
+    _pt.put<uint32_t>("time", m_time);
+    _pt.put<uint32_t>("srcCommand", m_srcCommand);
 }
 
-void dds::tools_api::SProgress::_fromJSON(const std::string& _json)
+void dds::tools_api::SProgressResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
-}
-
-void dds::tools_api::SProgress::_fromPT(const boost::property_tree::ptree& _pt)
-{
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_completed = pt.get<uint32_t>("progress.completed", 0);
-    m_total = pt.get<uint32_t>("progress.total", 0);
-    m_errors = pt.get<uint32_t>("progress.errors", 0);
-    m_time = pt.get<uint32_t>("progress.time", 0);
-    m_srcCommand = pt.get<uint32_t>("progress.srcCommand", 0);
-    m_requestID = pt.get<uint32_t>("progress.requestID", 0);
-}
-
-bool dds::tools_api::SProgress::operator==(const SProgress& val) const
-{
-    return (m_requestID == val.m_requestID);
+    m_completed = _pt.get<uint32_t>("completed", 0);
+    m_total = _pt.get<uint32_t>("total", 0);
+    m_errors = _pt.get<uint32_t>("errors", 0);
+    m_time = _pt.get<uint32_t>("time", 0);
+    m_srcCommand = _pt.get<uint32_t>("srcCommand", 0);
 }
 
 ///////////////////////////////////
@@ -116,232 +70,106 @@ EMsgSeverity TagToSeverity(const std::string& _tag)
         throw runtime_error("Message severity for tag " + _tag + " does not exist.");
 }
 
-string dds::tools_api::SMessage::_toJSON() const
+void dds::tools_api::SMessageResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    ptree pt;
-
-    pt.put<string>("dds.tools-api.message.msg", m_msg);
-    pt.put<string>("dds.tools-api.message.severity", SeverityToTag(m_severity));
-    pt.put<uint64_t>("dds.tools-api.message.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
+    _pt.put<string>("msg", m_msg);
+    _pt.put<string>("severity", SeverityToTag(m_severity));
 }
 
-void dds::tools_api::SMessage::_fromJSON(const std::string& _json)
+void dds::tools_api::SMessageResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
-}
-
-void dds::tools_api::SMessage::_fromPT(const boost::property_tree::ptree& _pt)
-{
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_severity = TagToSeverity(pt.get<string>("message.severity", "info"));
-    m_msg = pt.get<string>("message.msg", "");
-    m_requestID = pt.get<uint64_t>("message.requestID", 0);
-}
-
-bool dds::tools_api::SMessage::operator==(const SMessage& val) const
-{
-    return (m_severity == val.m_severity) && (m_msg == val.m_msg);
-}
-
-///////////////////////////////////
-// SSubmit
-///////////////////////////////////
-std::string dds::tools_api::SSubmit::_toJSON() const
-{
-    ptree pt;
-
-    pt.put<int>("dds.tools-api.submit.instances", m_instances);
-    pt.put<string>("dds.tools-api.submit.config", m_config);
-    pt.put<string>("dds.tools-api.submit.rms", m_rms);
-    pt.put<string>("dds.tools-api.submit.pluginPath", m_pluginPath);
-    pt.put<uint64_t>("dds.tools-api.submit.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
-}
-
-void dds::tools_api::SSubmit::_fromJSON(const std::string& _json)
-{
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
-}
-
-void dds::tools_api::SSubmit::_fromPT(const boost::property_tree::ptree& _pt)
-{
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_instances = pt.get<int>("submit.instances", 0);
-    m_config = pt.get<string>("submit.config", "");
-    m_rms = pt.get<string>("submit.rms", "");
-    m_pluginPath = pt.get<string>("submit.pluginPath", "");
-    m_requestID = pt.get<uint64_t>("submit.requestID", 0);
-}
-
-bool dds::tools_api::SSubmit::operator==(const SSubmit& val) const
-{
-    return (m_instances == val.m_instances) && (m_config == val.m_config) && (m_rms == val.m_rms);
-}
-
-///////////////////////////////////
-// STopology
-///////////////////////////////////
-std::string dds::tools_api::STopology::_toJSON() const
-{
-    ptree pt;
-
-    pt.put<uint8_t>("dds.tools-api.topology.updateType", static_cast<uint8_t>(m_updateType));
-    pt.put<string>("dds.tools-api.topology.topologyFile", m_topologyFile);
-    pt.put<bool>("dds.tools-api.topology.disableValidation", m_disableValidation);
-    pt.put<uint64_t>("dds.tools-api.topology.requestID", m_requestID);
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
-}
-
-void dds::tools_api::STopology::_fromJSON(const std::string& _json)
-{
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
-}
-
-void dds::tools_api::STopology::_fromPT(const boost::property_tree::ptree& _pt)
-{
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_updateType = static_cast<EUpdateType>(pt.get<uint8_t>("topology.updateType", 0));
-    m_topologyFile = pt.get<string>("topology.topologyFile", "");
-    m_disableValidation = pt.get<bool>("topology.disableValidation", false);
-    m_requestID = pt.get<uint64_t>("topology.requestID", 0);
-}
-
-bool dds::tools_api::STopology::operator==(const STopology& val) const
-{
-    return (m_updateType == val.m_updateType) && (m_topologyFile == val.m_topologyFile) &&
-           (m_disableValidation == val.m_disableValidation);
+    m_severity = TagToSeverity(_pt.get<string>("severity", "info"));
+    m_msg = _pt.get<string>("msg", "");
 }
 
 ///////////////////////////////////
 // SGetLog
 ///////////////////////////////////
-std::string dds::tools_api::SGetLog::_toJSON() const
+void dds::tools_api::SGetLogRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    ptree pt;
-
-    pt.put<uint64_t>("dds.tools-api.getlog.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
+}
+void dds::tools_api::SGetLogRequestData::_toPT(boost::property_tree::ptree& _pt) const
+{
 }
 
-void dds::tools_api::SGetLog::_fromJSON(const std::string& _json)
+///////////////////////////////////
+// SSubmit
+///////////////////////////////////
+void dds::tools_api::SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
+    _pt.put<int>("instances", m_instances);
+    _pt.put<string>("config", m_config);
+    _pt.put<string>("rms", m_rms);
+    _pt.put<string>("pluginPath", m_pluginPath);
 }
 
-void dds::tools_api::SGetLog::_fromPT(const boost::property_tree::ptree& _pt)
+void dds::tools_api::SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_requestID = pt.get<uint64_t>("getlog.requestID", 0);
+    m_instances = _pt.get<int>("instances", 0);
+    m_config = _pt.get<string>("config", "");
+    m_rms = _pt.get<string>("rms", "");
+    m_pluginPath = _pt.get<string>("pluginPath", "");
 }
 
-bool dds::tools_api::SGetLog::operator==(const SGetLog& val) const
+///////////////////////////////////
+// STopology
+///////////////////////////////////
+void dds::tools_api::STopologyRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    return (m_requestID == val.m_requestID);
+    _pt.put<uint8_t>("updateType", static_cast<uint8_t>(m_updateType));
+    _pt.put<string>("topologyFile", m_topologyFile);
+    _pt.put<bool>("disableValidation", m_disableValidation);
+}
+
+void dds::tools_api::STopologyRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_updateType = static_cast<EUpdateType>(_pt.get<uint8_t>("updateType", 0));
+    m_topologyFile = _pt.get<string>("topologyFile", "");
+    m_disableValidation = _pt.get<bool>("disableValidation", false);
 }
 
 ///////////////////////////////////
 // SCommanderInfo
 ///////////////////////////////////
-std::string dds::tools_api::SCommanderInfo::_toJSON() const
+void dds::tools_api::SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    ptree pt;
-
-    pt.put<pid_t>("dds.tools-api.commanderInfo.pid", m_pid);
-    pt.put<uint32_t>("dds.tools-api.commanderInfo.idleAgentsCount", m_idleAgentsCount);
-    pt.put<uint64_t>("dds.tools-api.commanderInfo.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
+    _pt.put<pid_t>("pid", m_pid);
+    _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
 }
 
-void dds::tools_api::SCommanderInfo::_fromJSON(const std::string& _json)
+void dds::tools_api::SCommanderInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
+    m_pid = _pt.get<pid_t>("pid", 0);
+    m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
 }
 
-void dds::tools_api::SCommanderInfo::_fromPT(const boost::property_tree::ptree& _pt)
+void dds::tools_api::SCommanderInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_pid = pt.get<pid_t>("commanderInfo.pid", 0);
-    m_idleAgentsCount = pt.get<uint32_t>("commanderInfo.config", 0);
-    m_requestID = pt.get<uint64_t>("commanderInfo.requestID", 0);
 }
-
-bool dds::tools_api::SCommanderInfo::operator==(const SCommanderInfo& val) const
+void dds::tools_api::SCommanderInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    return (m_pid == val.m_pid) && (m_idleAgentsCount == val.m_idleAgentsCount) && (m_requestID == val.m_requestID);
 }
 
 ///////////////////////////////////
 // SAgentInfo
 ///////////////////////////////////
-std::string dds::tools_api::SAgentInfo::_toJSON() const
+void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    ptree pt;
-
-    pt.put<uint32_t>("dds.tools-api.agentInfo.activeAgentsCount", m_activeAgentsCount);
-    pt.put<uint32_t>("dds.tools-api.agentInfo.index", m_index);
-    pt.put<string>("dds.tools-api.agentInfo.agentInfo", m_agentInfo);
-    pt.put<uint64_t>("dds.tools-api.agentInfo.requestID", m_requestID);
-
-    stringstream json;
-    write_json(json, pt);
-
-    return json.str();
+    _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
+    _pt.put<uint32_t>("index", m_index);
+    _pt.put<string>("agentInfo", m_agentInfo);
 }
 
-void dds::tools_api::SAgentInfo::_fromJSON(const std::string& _json)
+void dds::tools_api::SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    ptree pt;
-    istringstream stream(_json);
-    read_json(stream, pt);
-    _fromPT(pt);
+    m_activeAgentsCount = _pt.get<uint32_t>("activeAgentsCount", 0);
+    m_index = _pt.get<uint32_t>("index", 0);
+    m_agentInfo = _pt.get<string>("agentInfo", "");
 }
 
-void dds::tools_api::SAgentInfo::_fromPT(const boost::property_tree::ptree& _pt)
+void dds::tools_api::SAgentInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    const ptree& pt = _pt.get_child("dds.tools-api");
-    m_activeAgentsCount = pt.get<uint32_t>("agentInfo.activeAgentsCount", 0);
-    m_index = pt.get<uint32_t>("agentInfo.index", 0);
-    m_agentInfo = pt.get<string>("agentInfo.agentInfo", "");
-    m_requestID = pt.get<uint64_t>("agentInfo.requestID", 0);
 }
-
-bool dds::tools_api::SAgentInfo::operator==(const SAgentInfo& val) const
+void dds::tools_api::SAgentInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    return (m_activeAgentsCount == val.m_activeAgentsCount) && (m_index == val.m_index) &&
-           (m_agentInfo == val.m_agentInfo) && (m_requestID == val.m_requestID);
 }

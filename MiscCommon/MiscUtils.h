@@ -258,9 +258,21 @@ namespace MiscCommon
                          std::string& _filename,
                          std::string& _cmdStr)
     {
+        // wordexp will always fail with WRDE_SYNTAX if you have set the SIGCHLD signal to be ignored like so:
+        // signal(SIGCHLD, SIG_IGN). A library may be doing this without your knowledge. Presumably the implementation
+        // of wordexp on OS X actually spawns a shell as a child process to do the parsing. The solution is to call
+        // signal(SIGCHLD, SIG_DFL) before wordexp. You can restore signal(SIGCHLD, SIG_IGN) afterward.
+        boost::process::posix::sighandler_t old_sig = signal(SIGCHLD, SIG_IGN);
+        signal(SIGCHLD, SIG_DFL);
+
         // Expand the string for the program to extract exe name and command line arguments
         wordexp_t result;
-        switch (wordexp(_exeStr.c_str(), &result, 0))
+        int err = wordexp(_exeStr.c_str(), &result, 0);
+
+        // restore old signal
+        signal(SIGCHLD, old_sig);
+
+        switch (err)
         {
             case 0:
             {

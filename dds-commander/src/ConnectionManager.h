@@ -114,16 +114,19 @@ namespace dds
             void _createWnPkg(bool _needInlineBashScript, bool _lightweightPkg) const;
             void processToolsAPIRequests(const protocol_api::SCustomCmdCmd& _cmd,
                                          CAgentChannel::weakConnectionPtr_t _channel);
-            void submitAgents(const dds::tools_api::SSubmit& _submitInfo, CAgentChannel::weakConnectionPtr_t _channel);
-            void updateTopology(const dds::tools_api::STopology& _topologyInfo,
+            void submitAgents(const dds::tools_api::SSubmitRequestData& _submitInfo,
+                              CAgentChannel::weakConnectionPtr_t _channel);
+            void updateTopology(const dds::tools_api::STopologyRequestData& _topologyInfo,
                                 CAgentChannel::weakConnectionPtr_t _channel);
-            void getLog(const dds::tools_api::SGetLog& _getLog, CAgentChannel::weakConnectionPtr_t _channel);
+            void getLog(const dds::tools_api::SGetLogRequestData& _getLog, CAgentChannel::weakConnectionPtr_t _channel);
             void sendToolsAPIMsg(CAgentChannel::weakConnectionPtr_t _channel,
+                                 dds::tools_api::requestID_t _requestID,
                                  const std::string& _msg,
                                  intercom_api::EMsgSeverity _severity);
-            void sendUICommanderInfo(const dds::tools_api::SCommanderInfo& _info,
+            void sendUICommanderInfo(const dds::tools_api::SCommanderInfoRequestData& _info,
                                      CAgentChannel::weakConnectionPtr_t _channel);
-            void sendUIAgentInfo(const dds::tools_api::SAgentInfo& _info, CAgentChannel::weakConnectionPtr_t _channel);
+            void sendUIAgentInfo(const dds::tools_api::SAgentInfoRequestData& _info,
+                                 CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
             CGetLogChannelInfo m_getLog;
