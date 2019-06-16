@@ -30,7 +30,11 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
             << "Server reports: " << _message.m_msg;
     });
 
-    requestPtr->setDoneCallback([&_session]() { _session.stop(); });
+    requestPtr->setDoneCallback([&_session, &_options]() {
+        // Stop only if we don't wait for idle agents
+        if (_options.m_nIdleAgentsCount == 0)
+            _session.stop();
+    });
 
     requestPtr->setResponseCallback([&_session, &_options](const SCommanderInfoResponseData& _info) {
         if (_options.m_nIdleAgentsCount > 0)
@@ -47,8 +51,10 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
         }
 
         if (_options.m_bNeedCommanderPid)
+        {
             LOG(log_stdout_clean) << _info.m_pid;
-
+            _session.stop();
+        }
         // Checking for "status" option
         if (_options.m_bNeedDDSStatus)
         {
@@ -56,9 +62,9 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
                 LOG(log_stdout_clean) << "DDS commander server process (" << _info.m_pid << ") is running...";
             else
                 LOG(log_stdout_clean) << "DDS commander server is not running.";
-        }
 
-        _session.stop();
+            _session.stop();
+        }
     });
 
     _session.sendRequest<SCommanderInfoRequest>(requestPtr);
