@@ -28,7 +28,7 @@ namespace dds
          *        Currently the following commands are \link ToolsProtocol.h \endlink
          *
          *        Please note, when you send a requests, server will respond with a corresponding reply with a following
-         Done event. But the server can also send an error message. Once you receive wither Done or an error, don't
+         Done event. But the server can also send an error message. Once you receive either Done or an error, don't
          expect the server to send anything else in the regards of the request. So, you can then stop the API or send
          another request.
          *
@@ -37,37 +37,32 @@ namespace dds
          * \code
          CSession session;
          // Create a DDS session
-         boost::uuids::uuid sessionID = session.creat();
+         boost::uuids::uuid sessionID = session.create();
 
-         // Subscribe on text messages from DDS server
-         session.onResponse<SMessage>([&session](const SMessage& _message) {
-                cout << "Server reports: " << _message.m_msg << endl;
-
-                // stop communication on errors
-                if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                    session.stop();
-                return true;
-         });
-
-         // Subscribe on Done evens.
-         // Server will send Done when there it has finsihed proccessing a corresponding request.
-         // If you have send multiple requests, then you can check for m_requestID of the Done message.
-         session.onResponse<SDone>([&session, &start](const SDone& _message) {
-                auto end = chrono::high_resolution_clock::now();
-                chrono::duration<double, std::milli> elapsed = end - start;
-                cout << "Submission took: " << elapsed.count() << " ms\n";
-
-                session.stop();
-                return true;
-         });
-
-         // Create a submit request to spawn agents
-         SSubmit submitInfo;
+         // Create submit request to spawn agents
+         SSubmitRequest::request_t submitInfo;
          submitInfo.m_config = "";
          submitInfo.m_rms = "localhost";
          submitInfo.m_instances = "10";
          submitInfo.m_pluginPath = "";
-         session.sendRequest(submitInfo);
+         SSubmitRequest::ptr_t submitRequestPtr = SSubmitRequest::makeRequest(submitInfo);
+
+         // Subscribe on text messages from DDS server
+         submitRequestPtr->setMessageCallback([&session](const SMessageResponseData& _message) {
+            cout << "Server reports: " << _message.m_msg << endl;
+         });
+
+         // Subscribe on Done evens.
+         // Server will send Done when there it has finsihed proccessing a corresponding request.
+         submitRequestPtr->setDoneCallback([&session, &start]() {
+             auto end = chrono::high_resolution_clock::now();
+             chrono::duration<double, std::milli> elapsed = end - start;
+             cout << "Submission took: " << elapsed.count() << " ms\n";
+             session.stop();
+         });
+
+         // Send request to commander
+         session.sendRequest<SSubmitRequest>(submitRequestPtr);
 
          // Start API processor and block.
          // Blocking is optional, if you have your own internal loop in the app to keep the session object alive
@@ -75,90 +70,36 @@ namespace dds
          * \endcode
          *
          *
-         * \par Example2: Attache to an existing DDS session and request the number of running agent
+         * \par Example2: Attach to an existing DDS session and request the number of running agent
          * \code
          CSession session;
          // Attach to a DDS sesion with sessionID = 446b4183-1313-4648-99aa-4f8fae81311c
          session.attach("446b4183-1313-4648-99aa-4f8fae81311c");
 
+         SAgentInfoRequest::ptr_t agentInfoRequestPtr = SAgentInfoRequest::makeRequest();
+
          // Subscribe on text messages from DDS server
-         session.onResponse<SMessage>([&session](const SMessage& _message) {
+         agentInfoRequestPtr->setMessageCallback([&session](const SMessageResponseData& _message) {
             cout << "Server reports: " << _message.m_msg << endl;
-
-            // stop communication on errors
-            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-                session.stop();
-            return true;
          });
 
          // Subscribe on Done evens.
          // Server will send Done when there it has finsihed proccessing a corresponding request.
-         // If you have send multiple requests, then you can check for m_requestID of the Done message.
-         session.onResponse<SDone>([&session](const SDone& _message) {
+         agentInfoRequestPtr->setDoneCallback([&session]() {
             session.stop();
-            return true;
          });
 
          // Subscribe on AgentInfo events
-         session.onResponse<SAgentInfo>([&session, &options](const SAgentInfo& _info) {
-                 cout << _info.m_activeAgentsCount << endl;
-                 // Close communication channel
-                 session.stop();
-                 return true;
+         agentInfoRequestPtr->setResponseCallback([&session](const SAgentInfoRequest::response_t& _info) {
+             cout << _info.m_activeAgentsCount << endl;
+             // Close communication channel
+             session.stop();
          });
 
-         // Request information about current agents
-         SAgentInfo agentInfo;
-         session.sendRequest(agentInfo);
+         // Send request to commander
+         session.sendRequest<SAgentInfoRequest>(agentInfoRequestPtr);
 
          session.blockCurrentThread();
-         * \endcode
-         *
-         *
-         *
-         * \par Example3: Attache to an existing DDS session and request a full list of agents with details
-         * \code
-         CSession session;
-         // Attach to a DDS sesion with sessionID = 446b4183-1313-4648-99aa-4f8fae81311c
-         session.attach("446b4183-1313-4648-99aa-4f8fae81311c");
-
-         // Subscribe on text messages from DDS server
-         session.onResponse<SMessage>([&session](const SMessage& _message) {
-         cout << "Server reports: " << _message.m_msg << endl;
-
-         // stop communication on errors
-         if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
-            session.stop();
-            return true;
-         });
-
-         // Subscribe on Done evens.
-         // Server will send Done when there it has finsihed proccessing a corresponding request.
-         // If you have send multiple requests, then you can check for m_requestID of the Done message.
-         session.onResponse<SDone>([&session](const SDone& _message) {
-                session.stop();
-                return true;
-         });
-
-         // Subscribe on AgentInfo events
-         session.onResponse<SAgentInfo>([&session](const SAgentInfo& _info) {
-                if (!_info.m_agentInfo.empty())
-                {
-                    // std::lock_guard<std::mutex> lock(mutexCounter);
-                    // ++nCounter;
-                    cout << _info.m_agentInfo << endl;
-                }
-                else
-                    session.stop();
-
-                return true;
-         });
-
-         // Request information about current agents
-         SAgentInfo agentInfo;
-         session.blockCurrentThread();
-
-         session.start(true);
          * \endcode
          *
          */
@@ -184,23 +125,28 @@ namespace dds
             void attach(const boost::uuids::uuid& _sid);
             /// \brief Shutdow currently attached DDS session
             void shutdown();
-
+            /// \brief Unsibscribe from request notifications
             void unsubscribe();
+            /// \brief Check if DDS session is running
             bool IsRunning() const;
+            /// \brief Returns DDS session ID
+            /// \return DDS session ID
             boost::uuids::uuid getSessionID() const;
-            /// \brief blockCurrentThread requests and listen for notifications.
-            /// \brief param[in] _block If true than we stop the main thread.
+            /// \brief blockCurrentThread Blocks current thread.
             ///
-            /// If _block is true function stops the thread and waits until one of the conditions is applied:
+            /// The function stops the thread and waits until one of the conditions is applied:
             /// 1. 10 minutes timeout;
             /// 2. Failed connection to DDS commander or disconnection from DDS commander;
             /// 3. Explicit call of stop() function.
             ///
             /// \note If there are no subscribers function doesn't wait.
             void blockCurrentThread();
+            /// \brief Stop DDS session
             void stop();
 
           public:
+            /// \brief Sends the request to DDS commander
+            /// \param[in] _request Request object. If _request is nullptr than throws std::runtime_error
             template <class T>
             void sendRequest(typename T::ptr_t _request)
             {
@@ -219,6 +165,8 @@ namespace dds
             void notify(std::istream& _stream);
 
           private:
+            /// \brief Checks if DDS is available.
+            /// \return True if DDS is available, otherwise False
             bool isDDSAvailable() const;
 
             template <class T>
@@ -264,11 +212,10 @@ namespace dds
             }
 
           private:
-            boost::uuids::uuid m_sid;                      ///< Session ID
+            boost::uuids::uuid m_sid;                      ///< Session ID.
             dds::intercom_api::CIntercomService m_service; ///< Intercom service.
             dds::intercom_api::CCustomCmd m_customCmd; ///< Custom commands API. Used for communication with commander.
-
-            requests_t m_requests;
+            requests_t m_requests;                     ///< Array of requests.
         };
     } // namespace tools_api
 } // namespace dds
