@@ -201,10 +201,6 @@ namespace dds
                             _processResponseCallback(request);
                     }
                 }
-                catch (const std::bad_weak_ptr& /*_we*/)
-                {
-                    throw std::runtime_error("DDS tools API: User's request object is out of scope");
-                }
                 catch (const std::exception& _e)
                 {
                     throw std::runtime_error("DDS tools API: User's callback exception: " + std::string(_e.what()));
