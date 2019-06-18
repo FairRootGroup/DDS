@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v2.4 (NOT YET RELEASED)
+## v2.4 (2019-06-18)
 
 ### DDS common
 Fixed: don't copy reachable task to agent's directory. (GH-215)    
@@ -10,7 +10,7 @@ Fixed: Workaround wait_for bug in boost::process.
 Added: support relative task executables. (GH-216)    
 Added: All DDS commands now learned about the DDS_SESSION_ID environment variable. If defined, it will be used instead of a default one. (GH-213)    
 Modified: install DDS headers to "include/DDS" instead of "include"   
-Modified: Add support for Boost version to 1.70+.  
+Modified: Add support for Boost version 1.70+.  
 Modifued: All DDS CLI commands have been rewritten to use DDS Tools API rather than DDS Core protocol.    
 
 ### dds\_toolsapi\_lib
