@@ -2,6 +2,7 @@
 #
 #
 project( DDS )
+set(BUILD_SHARED_LIBS ON)
 
 set(USER_DEFAULTS_CFG_VERSION "0.2")
 set(DDS_PROTOCOL_VERSION "2")
