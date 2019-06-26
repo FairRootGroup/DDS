@@ -242,6 +242,7 @@ STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPrope
                 });
         }
     }
+    return make_pair(STopoRuntimeTask::FilterIterator_t(), STopoRuntimeTask::FilterIterator_t());
 }
 
 void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
