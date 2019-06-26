@@ -1251,21 +1251,25 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         }
 
         // Send shutdown to UI channel at the end
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            SDoneResponseData done;
-            done.m_requestID = _topologyInfo.m_requestID;
-            SCustomCmdCmd cmd;
-            cmd.m_sCmd = done.toJSON();
-            cmd.m_sCondition = "";
-            p->template pushMsg<cmdCUSTOM_CMD>(cmd);
-        }
+        m_updateTopology.doneWithUI();
     }
     catch (exception& _e)
     {
         sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, _e.what(), EMsgSeverity::error);
 
+        if (!_channel.expired())
+        {
+            auto p = _channel.lock();
+            if (p)
+            {
+                SDoneResponseData done;
+                done.m_requestID = _topologyInfo.m_requestID;
+                SCustomCmdCmd cmd;
+                cmd.m_sCmd = done.toJSON();
+                cmd.m_sCondition = "";
+                p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+            }
+        }
         m_updateTopology.m_channel.reset();
         return;
     }

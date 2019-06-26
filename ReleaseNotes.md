@@ -1,5 +1,10 @@
 # DDS Release Notes
 
+## v2.6 (NOT YET RELEASED)
+
+### dds-topology
+Fixed: activate hangs on xml validation error. (GH-220).    
+
 ## v2.4 (2019-06-18)
 
 ### DDS common

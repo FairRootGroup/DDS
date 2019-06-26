@@ -185,6 +185,9 @@ namespace dds
             {
                 try
                 {
+                    if (m_channel.expired())
+                        return;
+
                     auto pUI = m_channel.lock();
                     if (pUI)
                     {
