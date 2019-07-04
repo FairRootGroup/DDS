@@ -220,8 +220,8 @@ namespace dds
                             if (m_shutdownOnComplete)
                             {
                                 doneWithUI();
+                                m_channel.reset();
                             }
-                            m_channel.reset();
                         }
                     }
                 }

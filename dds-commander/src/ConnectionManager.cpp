@@ -326,7 +326,6 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     auto p = _channel.lock();
 
     m_updateTopology.m_srcCommand = _cmd;
-    m_updateTopology.m_channel = _channel;
     m_updateTopology.zeroCounters();
     m_updateTopology.m_nofRequests = _agents.size();
 
@@ -1087,6 +1086,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
     // Only a single topology update/activate/stop can be active at a time
     lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
     m_updateTopology.m_requestID = _topologyInfo.m_requestID;
+    m_updateTopology.m_channel = _channel;
 
     try
     {
