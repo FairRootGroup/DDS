@@ -28,20 +28,16 @@ namespace dds
             /// \brief Destructor
             ~CTopology();
 
-            /// \brief Initializes default topology for DDS agent.
-            /// \throw runtime_error
-            void init();
-
-            /// \brief Initializes topology with the specified file without validation.
+            /// \brief Constructs and initializes topology with the specified file without validation.
             /// \param[in] _fileName Path to the topology file
             /// \throw runtime_error
-            void init(const std::string& _fileName);
+            CTopology(const std::string& _fileName);
 
-            /// \brief Initializes topology with the specified file and validates against provided schema file.
+            /// \brief Constructs and initializes topology with the specified file and validates against provided schema file.
             /// \param[in] _fileName Path to the topology file.
             /// \param[in] _schemaFileName Path to the XSD schema file.
             /// \throw runtime_error
-            void init(const std::string& _fileName, const std::string& _schemaFileName);
+            CTopology(const std::string& _fileName, const std::string& _schemaFileName);
 
             /// \brief Returns shared pointer to the main group of the topology
             CTopoGroup::Ptr_t getMainGroup() const;

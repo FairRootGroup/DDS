@@ -11,30 +11,24 @@ using namespace dds;
 using namespace dds::topology_api;
 
 CTopology::CTopology()
+    : CTopology("", "")
+{
+}
+
+CTopology::CTopology(const std::string& _fileName)
+    : CTopology(_fileName, "")
+{
+}
+
+CTopology::CTopology(const std::string& _fileName, const std::string& _schemaFileName)
     : m_topo(std::make_shared<CTopoCore>())
 {
+    m_topo->setXMLValidationDisabled(_fileName.empty() || _schemaFileName.empty());
+    m_topo->init(_fileName, _schemaFileName);
 }
 
 CTopology::~CTopology()
 {
-}
-
-void CTopology::init()
-{
-    m_topo->setXMLValidationDisabled(true);
-    m_topo->init("", "");
-}
-
-void CTopology::init(const std::string& _fileName)
-{
-    m_topo->setXMLValidationDisabled(true);
-    m_topo->init(_fileName, "");
-}
-
-void CTopology::init(const std::string& _fileName, const std::string& _schemaFileName)
-{
-    m_topo->setXMLValidationDisabled(false);
-    m_topo->init(_fileName, _schemaFileName);
 }
 
 CTopoGroup::Ptr_t CTopology::getMainGroup() const
