@@ -92,25 +92,27 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_maps)
 }
 
 template <class T>
-void check_topology_iterator_task(const T& _iterator, output_test_stream& _output)
+void check_topology_iterator_task(const T& _iterator, const std::string& _topoFile)
 {
+    output_test_stream output(_topoFile, true);
     for (auto it = _iterator.first; it != _iterator.second; it++)
     {
-        _output << it->first << " " << it->second.m_task->getPath() << "\n";
+        output << it->first << " " << it->second.m_task->getPath() << "\n";
         // std::cout << it->first << " " << it->second.m_task->getPath() << "\n";
     }
-    BOOST_CHECK(_output.match_pattern());
+    BOOST_CHECK(output.match_pattern());
 }
 
 template <class T>
-void check_topology_iterator_collection(const T& _iterator, output_test_stream& _output)
+void check_topology_iterator_collection(const T& _iterator, const std::string& _topoFile)
 {
+    output_test_stream output(_topoFile, true);
     for (auto it = _iterator.first; it != _iterator.second; it++)
     {
-        _output << it->first << " " << it->second.m_collection->getPath() << "\n";
+        output << it->first << " " << it->second.m_collection->getPath() << "\n";
         // std::cout << it->first << " " << it->second->getPath() << "\n";
     }
-    BOOST_CHECK(_output.match_pattern());
+    BOOST_CHECK(output.match_pattern());
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
@@ -125,27 +127,29 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
             CTopoTask::Ptr_t task = value.second.m_task;
             return (task->getName() == "task1");
         });
-    check_topology_iterator_task(taskIt1, output1);
-
-    output_test_stream output2("topology_test_1_iterators_2.txt", true);
-    check_topology_iterator_task(topology.getRuntimeTaskIterator(), output2);
+    check_topology_iterator_task(taskIt1, "topology_test_1_iterators_1.txt");
+    check_topology_iterator_task(topology.getRuntimeTaskIteratorMatchingPath("main/(.*)task1_([0-9]*)"),
+                                 "topology_test_1_iterators_1.txt");
+    check_topology_iterator_task(topology.getRuntimeTaskIterator(), "topology_test_1_iterators_2.txt");
+    check_topology_iterator_task(topology.getRuntimeTaskIteratorMatchingPath("(.*)"),
+                                 "topology_test_1_iterators_2.txt");
 
     // Task collection iterators
-    output_test_stream output3("topology_test_1_iterators_3.txt", true);
-    STopoRuntimeCollection::FilterIteratorPair_t tcIt1 =
-        topology.getRuntimeCollectionIterator([](STopoRuntimeCollection::FilterIterator_t::value_type value) -> bool {
+    STopoRuntimeCollection::FilterIteratorPair_t tcIt1 = topology.getRuntimeCollectionIterator(
+        [](const STopoRuntimeCollection::FilterIterator_t::value_type& value) -> bool {
             CTopoCollection::Ptr_t tc = value.second.m_collection;
             return (tc->getName() == "collection1");
         });
-    check_topology_iterator_collection(tcIt1, output3);
-
-    output_test_stream output4("topology_test_1_iterators_4.txt", true);
-    check_topology_iterator_collection(topology.getRuntimeCollectionIterator(), output4);
+    check_topology_iterator_collection(tcIt1, "topology_test_1_iterators_3.txt");
+    check_topology_iterator_collection(topology.getRuntimeCollectionIteratorMatchingPath("main/.*collection1"),
+                                       "topology_test_1_iterators_3.txt");
+    check_topology_iterator_collection(topology.getRuntimeCollectionIterator(), "topology_test_1_iterators_4.txt");
+    check_topology_iterator_collection(topology.getRuntimeCollectionIteratorMatchingPath(".*"),
+                                       "topology_test_1_iterators_4.txt");
 
     // Task iterators for property
-    output_test_stream output5("topology_test_1_iterators_5.txt", true);
     check_topology_iterator_task(topology.getRuntimeTaskIteratorForPropertyName("property4", 2918576458378016727),
-                                 output5);
+                                 "topology_test_1_iterators_5.txt");
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)

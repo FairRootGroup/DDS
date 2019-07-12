@@ -72,6 +72,16 @@ namespace dds
             STopoRuntimeCollection::FilterIteratorPair_t getRuntimeCollectionIterator(
                 STopoRuntimeCollection::Condition_t _condition = nullptr) const;
 
+            /// \brief Returns runtime task filter iterator matching the task path in the topology.
+            /// \param[in] _pathPattern Regex for task path in the topology.
+            STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIteratorMatchingPath(
+                const std::string& _pathPattern) const;
+
+            /// \brief Returns runtime collection filter iterator matching the collection path in the topology.
+            /// \param[in] _pathPattern Regex for collection path in the topology.
+            STopoRuntimeCollection::FilterIteratorPair_t getRuntimeCollectionIteratorMatchingPath(
+                const std::string& _pathPattern) const;
+
             /// \brief Returns required number of agents for the topology.
             size_t getRequiredNofAgents() const;
 

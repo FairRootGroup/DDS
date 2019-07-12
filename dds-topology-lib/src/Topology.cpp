@@ -73,6 +73,18 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIter
     return m_topo->getRuntimeCollectionIterator(_condition);
 }
 
+STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorMatchingPath(
+    const std::string& _pathPattern) const
+{
+    return m_topo->getRuntimeTaskIteratorMatchingPath(_pathPattern);
+}
+
+STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIteratorMatchingPath(
+    const std::string& _pathPattern) const
+{
+    return m_topo->getRuntimeCollectionIteratorMatchingPath(_pathPattern);
+}
+
 size_t CTopology::getRequiredNofAgents() const
 {
     return m_topo->getRequiredNofAgents();

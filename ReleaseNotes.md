@@ -2,8 +2,12 @@
 
 ## v2.6 (NOT YET RELEASED)
 
+### dds-tools-api
+Fixed: newly created DDS session fails to send custom commands.    
+
 ### dds-topology
 Fixed: activate hangs on xml validation error. (GH-220).    
+Added: get filter iterator matching the task/collection runtime path in the topology.    
 
 ## v2.4 (2019-06-18)
 
