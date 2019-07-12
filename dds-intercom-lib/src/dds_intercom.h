@@ -5,6 +5,7 @@
 #ifndef DDS_INTERCOM_H_
 #define DDS_INTERCOM_H_
 // STD
+#include <ostream>
 #include <string>
 // BOOST
 #include "dds_intercom_error_codes.h"
@@ -115,6 +116,19 @@ namespace dds
             info, ///< Information messages.
             error ///< Error messages.
         };
+
+        /// \brief Support ostreaming EMsgSeverity
+        inline std::ostream& operator<<(std::ostream& _os, EMsgSeverity _severity)
+        {
+            switch (_severity)
+            {
+                case EMsgSeverity::info:
+                    return _os << "info";
+                case EMsgSeverity::error:
+                default:
+                    return _os << "error";
+            }
+        }
 
         /// \brief Structure holds information of submit notification.
         struct SSubmit
