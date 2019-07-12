@@ -7,6 +7,7 @@
 #define DDS_TOOLSPROTOCOL_H
 
 // STD
+#include <ostream>
 #include <string>
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
@@ -62,6 +63,12 @@ namespace dds
             bool operator==(const SMessageResponseData& _val) const
             {
                 return (SBaseData::operator==(_val) && m_msg == _val.m_msg && m_severity == _val.m_severity);
+            }
+
+            /// \brief Support ostreaming SMessageResponseData
+            friend std::ostream& operator<<(std::ostream& _os, SMessageResponseData _m)
+            {
+                return _os << "<" << _m.m_severity << "> " << _m.m_msg;
             }
         };
 
