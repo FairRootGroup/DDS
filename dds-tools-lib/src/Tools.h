@@ -165,6 +165,8 @@ namespace dds
             void notify(std::istream& _stream);
 
           private:
+            /// \brief Subscribe to custom commands.
+            void subscribe();
             /// \brief Checks if DDS is available.
             /// \return True if DDS is available, otherwise False
             bool isDDSAvailable() const;

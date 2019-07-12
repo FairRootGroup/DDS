@@ -37,12 +37,6 @@ CSession::CSession()
     , m_service()
     , m_customCmd(m_service)
 {
-    m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
-        istringstream ss(_command);
-        notify(ss);
-    });
-
-    m_service.start();
 }
 
 CSession::~CSession()
@@ -107,6 +101,9 @@ boost::uuids::uuid CSession::create()
                                      CUserDefaults::instance().currentUDFile());
     Logger::instance().reinit();
 
+    // Subscribe to custom commands after the DDS session has started
+    subscribe();
+
     return getSessionID();
 }
 
@@ -126,6 +123,9 @@ void CSession::attach(const boost::uuids::uuid& _sid)
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(boost::uuids::to_string(m_sid)),
                                      CUserDefaults::instance().currentUDFile());
+
+    // Subscribe to custom commands after the DDS session has benn attached
+    subscribe();
 }
 
 void CSession::shutdown()
@@ -159,6 +159,16 @@ void CSession::blockCurrentThread()
     {
         internal_api::CDDSIntercomGuard::instance().waitCondition();
     }
+}
+
+void CSession::subscribe()
+{
+    m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
+        istringstream ss(_command);
+        notify(ss);
+    });
+
+    m_service.start();
 }
 
 void CSession::unsubscribe()
