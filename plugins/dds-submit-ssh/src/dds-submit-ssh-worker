@@ -38,8 +38,8 @@ SSH_CON_STR=""
 RDIR=""
 NWORKERS=1
 SSHOPT=""
-while getopts ":i:l:w:n:oh" opt; do
-  case $opt in
+while getopts "i:l:w:n:o:h" opt; do
+  case "$opt" in
   i)
     WORKER_ID="$OPTARG"
     ;;
@@ -110,7 +110,7 @@ logMsg()
 #=============================================================================
 # ***** MAIN *****
 #=============================================================================
-logMsg "$TOOL_NAME is started for $SSH_CON_STR (dir: $RDIR, nworkers: $NWORKERS, sshopt: $SSHOPT)"
+logMsg "$TOOL_NAME is started for $SSH_CON_STR (dir: $RDIR, nworkers: $NWORKERS, sshopt: \"$SSHOPT\")"
 
 # check that the worker package is ready
 if [ ! -r $WRK_S_L ]; then

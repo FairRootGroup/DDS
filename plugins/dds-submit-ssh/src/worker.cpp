@@ -51,16 +51,16 @@ bool CWorker::runTask(ETaskType _param) const
     boost::mutex::scoped_lock lck(*m_mutex);
 
     stringstream ssParams;
-    ssParams << " -i " << m_rec->m_id << " -l " << m_rec->m_addr << " -w " << m_rec->m_wrkDir;
+    ssParams << " -i \"" << m_rec->m_id << "\" -l \"" << m_rec->m_addr << "\" -w \"" << m_rec->m_wrkDir << "\"";
     if (!m_rec->m_sshOptions.empty())
-        ssParams << " -o " << m_rec->m_sshOptions;
+        ssParams << " -o \"" << m_rec->m_sshOptions << "\"";
 
     stringstream ssCmd;
     switch (_param)
     {
         case task_submit:
         {
-            ssParams << " -n " << m_rec->m_nWorkers;
+            ssParams << " -n \"" << m_rec->m_nWorkers << "\"";
             string cmd(m_path);
             cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);
