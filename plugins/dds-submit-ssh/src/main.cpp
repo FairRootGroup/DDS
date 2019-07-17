@@ -207,6 +207,10 @@ int main(int argc, char* argv[])
                     //     job slots to create
 
                     wrkCount += rec->m_nWorkers;
+
+                    stringstream ssWorkerInfoMsg;
+                    wrk.printInfo(ssWorkerInfoMsg);
+                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
                 }
             }
             stringstream ssMsg;

@@ -91,6 +91,7 @@ bool CWorker::runTask(ETaskType _param) const
 //=============================================================================
 bool CWorker::exec_command(const string& _cmd) const
 {
+    log(_cmd);
     string outPut;
     try
     {
