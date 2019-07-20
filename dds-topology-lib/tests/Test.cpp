@@ -161,7 +161,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators_for_property)
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
 {
     CTopoCore topology;
+    BOOST_CHECK_THROW(topology.getName(), std::runtime_error);
     topology.init("topology_test_1.xml");
+    BOOST_CHECK(topology.getName() == "myTopology");
     // std::cout << topology.toString();
     CTopoGroup::Ptr_t main = topology.getMainGroup();
 

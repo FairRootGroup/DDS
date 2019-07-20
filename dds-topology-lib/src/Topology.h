@@ -39,6 +39,10 @@ namespace dds
             /// \throw runtime_error
             CTopology(const std::string& _fileName, const std::string& _schemaFileName);
 
+            /// \brief Returns topology name
+            /// \throw runtime_error
+            std::string getName() const;
+
             /// \brief Returns shared pointer to the main group of the topology
             CTopoGroup::Ptr_t getMainGroup() const;
 

@@ -59,6 +59,7 @@ namespace dds
             void setXMLValidationDisabled(bool _val);
 
             /// Accessors
+            std::string getName() const;
             CTopoGroup::Ptr_t getMainGroup() const;
             const STopoRuntimeTask& getRuntimeTaskById(Id_t _id) const;
             const STopoRuntimeCollection& getRuntimeCollectionById(Id_t _id) const;
@@ -109,6 +110,7 @@ namespace dds
             Id_t m_currentCollectionId;
 
             bool m_bXMLValidationDisabled; ///< if true than XML will not be validated agains XSD
+            std::string m_name;
         };
     } // namespace topology_api
 } // namespace dds
