@@ -88,6 +88,12 @@ bool CTopoParserXML::isValid(const std::string& _fileName, const std::string& _s
 
 void CTopoParserXML::parse(const string& _fileName, const std::string& _schemaFileName, CTopoGroup::Ptr_t _main)
 {
+    std::string tmp;
+    parse(_fileName, _schemaFileName, _main, tmp);
+}
+
+void CTopoParserXML::parse(const string& _fileName, const std::string& _schemaFileName, CTopoGroup::Ptr_t _main, std::string& _name)
+{
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");
 
@@ -142,6 +148,8 @@ void CTopoParserXML::parse(const string& _fileName, const std::string& _schemaFi
 
         ptree pt;
         read_xml(tmpFilePath, pt);
+
+        _name = pt.get_child("topology").get<string>("<xmlattr>.name");
         _main->initFromPropertyTree("main", pt);
 
         // Delete temporary file
