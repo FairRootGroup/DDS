@@ -81,6 +81,24 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     }
 
+    if (options.m_topologyCmd == ETopologyCmdType::TOPOLOGY_NAME)
+    {
+        try
+        {
+            CTopoCore topology;
+            topology.setXMLValidationDisabled(options.m_bDisableValidation);
+            topology.init(options.m_sTopoFile);
+            LOG(log_stdout_clean) << topology.getName();
+        }
+        catch (exception& e)
+        {
+            LOG(log_stderr) << e.what();
+            return EXIT_FAILURE;
+        }
+
+        return EXIT_SUCCESS;
+    }
+
     string sid;
     try
     {
