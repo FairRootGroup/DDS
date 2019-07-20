@@ -199,8 +199,9 @@ namespace dds
 
         struct SCommanderInfoResponseData : SBaseResponseData<SCommanderInfoResponseData>
         {
-            pid_t m_pid = 0;                ///< PID of the commander
-            uint32_t m_idleAgentsCount = 0; ///< The count of idle agents
+            pid_t m_pid = 0;                  ///< PID of the commander
+            uint32_t m_idleAgentsCount = 0;   ///< The count of idle agents
+            std::string m_activeTopologyName; ///< Name of active topology, empty if none is active
 
           private:
             friend SBaseData<SCommanderInfoResponseData>;

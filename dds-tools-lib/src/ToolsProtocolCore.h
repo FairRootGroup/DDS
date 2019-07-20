@@ -56,6 +56,7 @@
             {
                 "pid":123,
                 "idleAgentsCount": 123,
+                "activeTopologyName": "string",
                 "requestID": 123
             },
             "agentInfo":

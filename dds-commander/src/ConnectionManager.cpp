@@ -1365,6 +1365,15 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
 
     info.m_idleAgentsCount = count;
 
+    {
+        lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
+        try {
+            info.m_activeTopologyName = m_topo.getName();
+        } catch (const std::runtime_error& e) {
+            // No active topology, return empty name.
+        }
+    }
+
     if (_channel.expired())
         return;
 
