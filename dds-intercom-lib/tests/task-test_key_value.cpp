@@ -84,7 +84,6 @@ int main(int argc, char* argv[])
 
         // Get list of READ and WRITE properties from topology
         CTopology topo;
-        topo.init();
         uint64_t taskId = env_prop<EEnvProp::task_id>();
         const STopoRuntimeTask& runtimeTask = topo.getRuntimeTaskById(taskId);
         const CTopoProperty::PtrMap_t& properties = runtimeTask.m_task->getProperties();
