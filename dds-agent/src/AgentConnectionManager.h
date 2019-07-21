@@ -14,6 +14,9 @@
 #include "SMLeaderChannel.h"
 #include "TopoCore.h"
 
+#include <condition_variable>
+#include <mutex>
+
 namespace dds
 {
     namespace agent_cmd
@@ -63,6 +66,11 @@ namespace dds
             void send_cmdUPDATE_KEY(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
 
+            void startHeartbeats();
+            void sendHeartbeatToCommander();
+            void stopHeartbeats();
+            bool sleepUntilNextHeartbeat();
+            void startWatchdog(pid_t);
           private:
             boost::asio::io_context m_io_context;
             boost::thread_group m_workerThreads;
@@ -78,6 +86,10 @@ namespace dds
             std::mutex m_taskPidMutex;
             bool m_bStarted;
             topology_api::CTopoCore m_topo;
+
+            std::mutex m_heartbeatMutex;
+            std::condition_variable m_heartbeatCv;
+            bool m_continueHeartbeats;
         };
     } // namespace agent_cmd
 } // namespace dds

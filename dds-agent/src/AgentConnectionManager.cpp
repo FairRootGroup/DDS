@@ -14,8 +14,9 @@
 #include "CommanderChannel.h"
 #include "DDSIntercomGuard.h"
 #include "Logger.h"
-#include "MonitoringThread.h"
 #include "SMCommanderChannel.h"
+
+#include <thread>
 
 using namespace boost::asio;
 namespace bi = boost::interprocess;
@@ -34,6 +35,9 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
     , m_taskPid(0)
     , m_bStarted(false)
     , m_topo()
+    , m_heartbeatMutex()
+    , m_heartbeatCv()
+    , m_continueHeartbeats(true)
 {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,
@@ -77,7 +81,6 @@ void CAgentConnectionManager::start()
     try
     {
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
-        CMonitoringThread::instance().start(maxIdleTime, []() { LOG(info) << "Idle callback called"; });
 
         // TODO: FIXME: Don't forget to delete mutex in scout
         // Open or create leader mutex
@@ -515,6 +518,119 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     m_SMCommanderChannel->pushMsg<cmdUSER_TASK_DONE>(cmd);
 }
 
+void CAgentConnectionManager::sendHeartbeatToCommander()
+{
+    // Send commander server the watchdog heartbeat.
+    // It indicates that the agent is executing a task and is not idle
+    m_SMCommanderChannel->pushMsg<cmdWATCHDOG_HEARTBEAT>();
+}
+
+void CAgentConnectionManager::startHeartbeats()
+{
+    auto self(shared_from_this());
+
+    {
+        std::lock_guard<std::mutex> lk(m_heartbeatMutex);
+        m_continueHeartbeats = true;
+    }
+
+    std::thread{[self]() {
+        while(true) {
+            self->sendHeartbeatToCommander();
+            if (!self->sleepUntilNextHeartbeat()) {
+                break;
+            }
+        }
+    }}.detach();
+}
+
+bool CAgentConnectionManager::sleepUntilNextHeartbeat()
+{
+    std::unique_lock<std::mutex> lk(m_heartbeatMutex);
+    m_heartbeatCv.wait_for(lk, std::chrono::seconds(5), [&]() { return !m_continueHeartbeats; });
+    return m_continueHeartbeats;
+}
+
+void CAgentConnectionManager::stopHeartbeats()
+{
+    {
+        std::lock_guard<std::mutex> lk(m_heartbeatMutex);
+        m_continueHeartbeats = false;
+    }
+    m_heartbeatCv.notify_one();
+}
+
+void CAgentConnectionManager::startWatchdog(pid_t _pid)
+{
+    auto self(shared_from_this());
+
+    std::thread{[self, _pid]() {
+        try
+        {
+            // NOTE: We don't use boost::process because it returned an evaluated exit status, but we need a raw to
+            // be able to detect how exactly the child exited.
+            // boost::process  only checks that the child ended because of a call to ::exit() and does not check for
+            // exiting via signal (WIFSIGNALED()).
+
+            // We must call "wait" to check exist status of a child process, otherwise we will crate a
+            // zombie :)
+            int status;
+            pid_t ret = ::waitpid(_pid, &status, WUNTRACED);
+            if (ret < 0)
+            {
+                switch (errno)
+                {
+                    case ECHILD:
+                        LOG(MiscCommon::error) << "Watchdog: The process or process group specified by pid "
+                                                  "does not exist or is not a child of the calling process.";
+                        break;
+                    case EFAULT:
+                        LOG(MiscCommon::error) << "Watchdog: stat_loc is not a writable address.";
+                        break;
+                    case EINTR:
+                        LOG(MiscCommon::error) << "Watchdog: The function was interrupted by a signal. The "
+                                                  "value of the location pointed to by stat_loc is undefined.";
+                        break;
+                    case EINVAL:
+                        LOG(MiscCommon::error) << "Watchdog: The options argument is not valid.";
+                        break;
+                    case ENOSYS:
+                        LOG(MiscCommon::error) << "Watchdog: pid specifies a process group (0 or less than "
+                                                  "-1), which is not currently supported.";
+                        break;
+                }
+                LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
+                LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+
+                self->taskExited(_pid, 0);
+            }
+            else if (ret == _pid)
+            {
+                if (WIFEXITED(status))
+                    LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "")
+                              << " with status " << WEXITSTATUS(status);
+                else if (WIFSTOPPED(status))
+                    LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
+                else if (WIFSIGNALED(status))
+                    LOG(info) << "User task killed by signal " << WTERMSIG(status)
+                              << (WCOREDUMP(status) ? "; (core dumped)" : "");
+                else
+                    LOG(info) << "User task exited with unexpected status: " << status;
+
+                LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+
+                self->taskExited(_pid, status);
+            }
+        }
+        catch (exception& _e)
+        {
+            LOG(fatal) << "User processe monitoring thread received an exception: " << _e.what();
+        }
+
+        self->stopHeartbeats();
+    }}.detach();
+}
+
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)
 {
     // watchdog
@@ -530,86 +646,11 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
         LOG(fatal) << "Can't add new user task to the list of children: " << _e.what();
     }
 
-    // Register the user task's watchdog
+    startHeartbeats();
 
     LOG(info) << "Starting the watchdog for user task pid = " << _pid;
 
-    auto self(shared_from_this());
-    CMonitoringThread::instance().registerCallbackFunction(
-        [this, self, _pid]() -> bool {
-            // Send commander server the watchdog heartbeat.
-            // It indicates that the agent is executing a task and is not idle
-            m_SMCommanderChannel->pushMsg<cmdWATCHDOG_HEARTBEAT>();
-            CMonitoringThread::instance().updateIdle();
-
-            try
-            {
-                // NOTE: We don't use boost::process because it returned an evaluated exit status, but we need a raw to
-                // be able to detect how exactly the child exited.
-                // boost::process  only checks that the child ended because of a call to ::exit() and does not check for
-                // exiting via signal (WIFSIGNALED()).
-
-                // We must call "wait" to check exist status of a child process, otherwise we will crate a
-                // zombie :)
-                int status;
-                pid_t ret = ::waitpid(_pid, &status, WNOHANG | WUNTRACED);
-                if (ret < 0)
-                {
-                    switch (errno)
-                    {
-                        case ECHILD:
-                            LOG(MiscCommon::error) << "Watchdog: The process or process group specified by pid "
-                                                      "does not exist or is not a child of the calling process.";
-                            break;
-                        case EFAULT:
-                            LOG(MiscCommon::error) << "Watchdog: stat_loc is not a writable address.";
-                            break;
-                        case EINTR:
-                            LOG(MiscCommon::error) << "Watchdog: The function was interrupted by a signal. The "
-                                                      "value of the location pointed to by stat_loc is undefined.";
-                            break;
-                        case EINVAL:
-                            LOG(MiscCommon::error) << "Watchdog: The options argument is not valid.";
-                            break;
-                        case ENOSYS:
-                            LOG(MiscCommon::error) << "Watchdog: pid specifies a process group (0 or less than "
-                                                      "-1), which is not currently supported.";
-                            break;
-                    }
-                    LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
-                    LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
-
-                    taskExited(_pid, 0);
-
-                    return false;
-                }
-                else if (ret == _pid)
-                {
-                    if (WIFEXITED(status))
-                        LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "")
-                                  << " with status " << WEXITSTATUS(status);
-                    else if (WIFSTOPPED(status))
-                        LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
-                    else if (WIFSIGNALED(status))
-                        LOG(info) << "User task killed by signal " << WTERMSIG(status)
-                                  << (WCOREDUMP(status) ? "; (core dumped)" : "");
-                    else
-                        LOG(info) << "User task exited with unexpected status: " << status;
-
-                    LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
-
-                    taskExited(_pid, status);
-                    return false;
-                }
-            }
-            catch (exception& _e)
-            {
-                LOG(fatal) << "User processe monitoring thread received an exception: " << _e.what();
-            }
-
-            return true;
-        },
-        std::chrono::seconds(5));
+    startWatchdog(_pid);
 
     LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
 }
