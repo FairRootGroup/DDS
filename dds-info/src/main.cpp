@@ -11,6 +11,7 @@
 #include "SysHelper.h"
 #include "Tools.h"
 #include "UserDefaults.h"
+#include <algorithm>
 
 using namespace std;
 using namespace MiscCommon;
@@ -20,7 +21,7 @@ using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
 
 //=============================================================================
-void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
+void requestCommanderInfo(CSession& _session, const SOptions_t& _options, int _pollInterval = 2)
 {
     SCommanderInfoRequest::request_t requestInfo;
     SCommanderInfoRequest::ptr_t requestPtr = SCommanderInfoRequest::makeRequest(requestInfo);
@@ -36,13 +37,13 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
             _session.stop();
     });
 
-    requestPtr->setResponseCallback([&_session, &_options](const SCommanderInfoResponseData& _info) {
+    requestPtr->setResponseCallback([&_session, &_options, &_pollInterval](const SCommanderInfoResponseData& _info) {
         if (_options.m_nIdleAgentsCount > 0)
         {
             if (_info.m_idleAgentsCount < _options.m_nIdleAgentsCount)
             {
-                this_thread::sleep_for(chrono::milliseconds(500));
-                requestCommanderInfo(_session, _options);
+                this_thread::sleep_for(chrono::milliseconds(_pollInterval));
+                requestCommanderInfo(_session, _options, std::min(512, _pollInterval * 2));
                 return;
             }
 
