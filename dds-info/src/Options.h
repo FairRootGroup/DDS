@@ -31,6 +31,7 @@ namespace dds
                 , m_bNeedAgentsList(false)
                 , m_bNeedPropList(false)
                 , m_bNeedPropValues(false)
+                , m_bNeedActiveTopology(false)
                 , m_propertyName()
                 , m_sid(boost::uuids::nil_uuid())
                 , m_nIdleAgentsCount(0)
@@ -43,6 +44,7 @@ namespace dds
             bool m_bNeedAgentsList;
             bool m_bNeedPropList;
             bool m_bNeedPropValues;
+            bool m_bNeedActiveTopology;
             std::string m_propertyName;
             boost::uuids::uuid m_sid;
             int m_nIdleAgentsCount;
@@ -91,6 +93,9 @@ namespace dds
                 "wait-for-idle-agents",
                 bpo::value<int>(&_options->m_nIdleAgentsCount),
                 "The command will block infinitely until a required number of idle agents are online.");
+            options.add_options()("active-topology",
+                                  bpo::bool_switch(&_options->m_bNeedActiveTopology),
+                                  "Returns the name of the active topology");
 
             // Parsing command-line
             bpo::variables_map vm;

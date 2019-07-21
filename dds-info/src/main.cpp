@@ -65,6 +65,16 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
 
             _session.stop();
         }
+
+        if (_options.m_bNeedActiveTopology)
+        {
+            if (_info.m_activeTopologyName.empty())
+                LOG(log_stdout_clean) << "no active topology";
+            else
+                LOG(log_stdout_clean) << "active topology: " << _info.m_activeTopologyName;
+
+            _session.stop();
+        }
     });
 
     _session.sendRequest<SCommanderInfoRequest>(requestPtr);
@@ -115,7 +125,7 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0)
+        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0 || options.m_bNeedActiveTopology)
         {
             requestCommanderInfo(session, options);
         }
