@@ -1088,6 +1088,10 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
     m_updateTopology.m_requestID = _topologyInfo.m_requestID;
     m_updateTopology.m_channel = _channel;
 
+    // Resolve environment variables
+    std::string topologyFile = _topologyInfo.m_topologyFile;
+    MiscCommon::smart_path(&topologyFile);
+
     try
     {
         STopologyRequest::request_t::EUpdateType updateType = _topologyInfo.m_updateType;
@@ -1096,13 +1100,13 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         switch (updateType)
         {
             case STopologyRequest::request_t::EUpdateType::UPDATE:
-                msg = "Updating topology to " + _topologyInfo.m_topologyFile;
+                msg = "Updating topology to " + topologyFile;
                 break;
             case STopologyRequest::request_t::EUpdateType::ACTIVATE:
-                msg = "Activating topology " + _topologyInfo.m_topologyFile;
+                msg = "Activating topology " + topologyFile;
                 break;
             case STopologyRequest::request_t::EUpdateType::STOP:
-                msg = "Stopping topology " + _topologyInfo.m_topologyFile;
+                msg = "Stopping topology " + topologyFile;
                 break;
             default:
                 break;
@@ -1139,10 +1143,10 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         CTopoCore topo;
         // If topo file is empty than we stop the topology
-        if (!_topologyInfo.m_topologyFile.empty())
+        if (!topologyFile.empty())
         {
             topo.setXMLValidationDisabled(_topologyInfo.m_disableValidation);
-            topo.init(_topologyInfo.m_topologyFile);
+            topo.init(topologyFile);
         }
 
         topology_api::CTopoCore::IdSet_t removedTasks;
@@ -1166,7 +1170,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         // Update topology on the agents
         //
-        if (!_topologyInfo.m_topologyFile.empty())
+        if (!topologyFile.empty())
         {
             auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
                 SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
@@ -1178,7 +1182,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
                 throw runtime_error("There are no active agents.");
 
             broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
-                allAgents, _channel, "Updating topology for agents...", _topologyInfo.m_topologyFile, "topology.xml");
+                allAgents, _channel, "Updating topology for agents...", topologyFile, "topology.xml");
         }
 
         //
