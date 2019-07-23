@@ -6,6 +6,7 @@
 Fixed: newly created DDS session fails to send custom commands.    
 
 ### dds-topology
+Added: parsing and reporting of the topology name: "dds-info --active-topology", "dds-topology --topology-name <topo.xml>", CTopology::getName().    
 Fixed: activate hangs on xml validation error. (GH-220).    
 Added: get filter iterator matching the task/collection runtime path in the topology.    
 
