@@ -37,7 +37,10 @@ namespace dds
             /// \param[out] _main Main task group or nullptr in case of error.
             /// \param[in] _xmlValidationDisabled If true than XML will not be validated against XSD.
             /// \param[out] _name Topology name.
-            void parse(const std::string& _fileName, const std::string& _schemaFileName, CTopoGroup::Ptr_t _main, std::string& _name);
+            void parse(const std::string& _fileName,
+                       const std::string& _schemaFileName,
+                       CTopoGroup::Ptr_t _main,
+                       std::string& _name);
 
             /// \brief Validate provided XML file against XSD using xmllint.
             /// \throw runtime_error

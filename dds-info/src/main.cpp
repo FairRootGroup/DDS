@@ -125,7 +125,8 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0 || options.m_bNeedActiveTopology)
+        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus || options.m_nIdleAgentsCount > 0 ||
+            options.m_bNeedActiveTopology)
         {
             requestCommanderInfo(session, options);
         }

@@ -120,7 +120,8 @@ void CTopoCore::getDifference(const CTopoCore& _topology,
 
 std::string CTopoCore::getName() const
 {
-    if(!m_main) {
+    if (!m_main)
+    {
         throw runtime_error("Topology not initialized. Call init first.");
     }
     return m_name;
