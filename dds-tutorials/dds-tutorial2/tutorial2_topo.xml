@@ -1,13 +1,13 @@
-<topology id="Tutorial2">
+<topology name="Tutorial2">
 	
-	<var id="nInstances" value="5" />
+	<var name="nInstances" value="5" />
 	
-  	<decltask id="TaskCustomCmd">
+  	<decltask name="TaskCustomCmd">
 		<exe reachable="false">$DDS_LOCATION/tutorials/tutorial2/task-custom-cmd</exe>
 	</decltask>
 	
-	<main id="main">
-		<group id="GroupCustomCmd" n="${nInstances}">
+	<main name="main">
+		<group name="GroupCustomCmd" n="${nInstances}">
 			<task>TaskCustomCmd</task>
 		</group>
 	</main>

@@ -1,35 +1,35 @@
-<topology id="Tutorial1">
+<topology name="Tutorial1">
 	
-	<var id="nInstances" value="5" />
+	<var name="nInstances" value="5" />
 	
-	<property id="TaskIndexProperty" />
-	<property id="ReplyProperty" />
+	<property name="TaskIndexProperty" />
+	<property name="ReplyProperty" />
 		
-	<!--declrequirement id="requirement1">
+	<!--declrequirement name="requirement1">
     	<hostPattern value=".*gsi.de"/>
 	</declrequirement-->
 	
-  	<decltask id="TaskTypeOne">
+  	<decltask name="TaskTypeOne">
 		<exe reachable="false">$DDS_LOCATION/tutorials/tutorial1/task-type-one --taskIndex %taskIndex%</exe>
 		<!--requirement>requirement1</requirement-->
 		<properties>
-			<id access="write">TaskIndexProperty</id>
-			<id access="read">ReplyProperty</id>
+			<name access="write">TaskIndexProperty</name>
+			<name access="read">ReplyProperty</name>
 		</properties>
 	</decltask>
 	
-  	<decltask id="TaskTypeTwo">
+  	<decltask name="TaskTypeTwo">
 		<exe reachable="false">$DDS_LOCATION/tutorials/tutorial1/task-type-two --instances ${nInstances}</exe>
 		<!--requirement>requirement1</requirement-->
 		<properties>
-			<id access="read">TaskIndexProperty</id>
-			<id access="write">ReplyProperty</id>
+			<name access="read">TaskIndexProperty</name>
+			<name access="write">ReplyProperty</name>
 		</properties>
 	</decltask>
 	
-	<main id="main">
+	<main name="main">
 		<task>TaskTypeTwo</task>
-		<group id="typeTwoGroup" n="${nInstances}">
+		<group name="typeTwoGroup" n="${nInstances}">
 			<task>TaskTypeOne</task>
 		</group>
 	</main>
