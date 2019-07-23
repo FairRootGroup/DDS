@@ -1367,9 +1367,12 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
 
     {
         lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
-        try {
+        try
+        {
             info.m_activeTopologyName = m_topo.getName();
-        } catch (const std::runtime_error& e) {
+        }
+        catch (const std::runtime_error& e)
+        {
             // No active topology, return empty name.
         }
     }

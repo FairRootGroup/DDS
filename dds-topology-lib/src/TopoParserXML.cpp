@@ -92,7 +92,10 @@ void CTopoParserXML::parse(const string& _fileName, const std::string& _schemaFi
     parse(_fileName, _schemaFileName, _main, tmp);
 }
 
-void CTopoParserXML::parse(const string& _fileName, const std::string& _schemaFileName, CTopoGroup::Ptr_t _main, std::string& _name)
+void CTopoParserXML::parse(const string& _fileName,
+                           const std::string& _schemaFileName,
+                           CTopoGroup::Ptr_t _main,
+                           std::string& _name)
 {
     if (_fileName.empty())
         throw runtime_error("topo file is not defined.");

@@ -86,9 +86,8 @@ namespace dds
             options.add_options()("required-agents",
                                   bpo::value<std::string>(&_options->m_sTopoFile),
                                   "Get the required number of agents for the topology.");
-            options.add_options()("topology-name",
-                                  bpo::value<std::string>(&_options->m_sTopoFile),
-                                  "Get the name of the topology.");
+            options.add_options()(
+                "topology-name", bpo::value<std::string>(&_options->m_sTopoFile), "Get the name of the topology.");
             options.add_options()("verbose,V", "Verbose output");
 
             // Parsing command-line
@@ -118,10 +117,11 @@ namespace dds
             }
             if (_options->m_bDisableValidation)
             {
-                if (!vm.count("activate") && !vm.count("update") && !vm.count("required-agents") && !vm.count("topology-name"))
+                if (!vm.count("activate") && !vm.count("update") && !vm.count("required-agents") &&
+                    !vm.count("topology-name"))
                 {
-                    throw std::runtime_error(
-                        "--disable-validation must be used together with --activate, --update, --required-agents or --topology-name");
+                    throw std::runtime_error("--disable-validation must be used together with --activate, --update, "
+                                             "--required-agents or --topology-name");
                 }
             }
             if (vm.count("validate") && !_options->m_sTopoFile.empty())

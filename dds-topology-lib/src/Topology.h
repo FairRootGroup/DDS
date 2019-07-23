@@ -33,10 +33,9 @@ namespace dds
             /// \throw runtime_error
             CTopology(const std::string& _fileName);
 
-            /// \brief Constructs and initializes topology with the specified file and validates against provided schema file.
-            /// \param[in] _fileName Path to the topology file.
-            /// \param[in] _schemaFileName Path to the XSD schema file.
-            /// \throw runtime_error
+            /// \brief Constructs and initializes topology with the specified file and validates against provided schema
+            /// file. \param[in] _fileName Path to the topology file. \param[in] _schemaFileName Path to the XSD schema
+            /// file. \throw runtime_error
             CTopology(const std::string& _fileName, const std::string& _schemaFileName);
 
             /// \brief Returns topology name
