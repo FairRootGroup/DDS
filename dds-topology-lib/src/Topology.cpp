@@ -36,6 +36,11 @@ CTopoGroup::Ptr_t CTopology::getMainGroup() const
     return m_topo->getMainGroup();
 }
 
+std::string CTopology::getName() const
+{
+    return m_topo->getName();
+}
+
 const STopoRuntimeTask& CTopology::getRuntimeTaskById(Id_t _id) const
 {
     return m_topo->getRuntimeTaskById(_id);
