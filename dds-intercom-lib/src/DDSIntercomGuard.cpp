@@ -57,6 +57,9 @@ CDDSIntercomGuard& CDDSIntercomGuard::instance()
 
 void CDDSIntercomGuard::start(const std::string& _sessionID)
 {
+    if (m_started)
+        return;
+
     // Choose transport type.
     // If we connect to agent, i.e. agent config file exists than we use shared memory transport.
     // If we connect to commander, i.e. commander config file exists we use asio transport.
