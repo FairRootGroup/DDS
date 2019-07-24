@@ -134,14 +134,12 @@ void dds::tools_api::STopologyRequestData::_fromPT(const boost::property_tree::p
 void dds::tools_api::SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<pid_t>("pid", m_pid);
-    _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
     _pt.put<std::string>("activeTopologyName", m_activeTopologyName);
 }
 
 void dds::tools_api::SCommanderInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_pid = _pt.get<pid_t>("pid", 0);
-    m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
     m_activeTopologyName = _pt.get<std::string>("activeTopologyName", std::string());
 }
 
@@ -158,6 +156,8 @@ void dds::tools_api::SCommanderInfoRequestData::_toPT(boost::property_tree::ptre
 void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
+    _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
+    _pt.put<uint32_t>("executingAgentsCount", m_executingAgentsCount);
     _pt.put<uint32_t>("index", m_index);
     _pt.put<string>("agentInfo", m_agentInfo);
 }
@@ -165,13 +165,17 @@ void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& 
 void dds::tools_api::SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_activeAgentsCount = _pt.get<uint32_t>("activeAgentsCount", 0);
+    m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
+    m_executingAgentsCount = _pt.get<uint32_t>("executingAgentsCount", 0);
     m_index = _pt.get<uint32_t>("index", 0);
     m_agentInfo = _pt.get<string>("agentInfo", "");
 }
 
 void dds::tools_api::SAgentInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
+    m_countersOnly = _pt.get<bool>("countersOnly", false);
 }
 void dds::tools_api::SAgentInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
+    _pt.put<bool>("countersOnly", m_countersOnly);
 }

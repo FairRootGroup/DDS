@@ -10,6 +10,9 @@ Added: parsing and reporting of the topology name: "dds-info --active-topology",
 Fixed: activate hangs on xml validation error. (GH-220).    
 Added: get filter iterator matching the task/collection runtime path in the topology.    
 
+### dds-info
+Added: --wait-for-executing-agents option to wait for the required number of agent with executing state.     
+
 ## v2.4 (2019-06-18)
 
 ### DDS common

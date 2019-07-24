@@ -35,6 +35,7 @@ namespace dds
                 , m_propertyName()
                 , m_sid(boost::uuids::nil_uuid())
                 , m_nIdleAgentsCount(0)
+                , m_nExecutingAgentsCount(0)
             {
             }
 
@@ -48,6 +49,7 @@ namespace dds
             std::string m_propertyName;
             boost::uuids::uuid m_sid;
             int m_nIdleAgentsCount;
+            int m_nExecutingAgentsCount;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -93,6 +95,10 @@ namespace dds
                 "wait-for-idle-agents",
                 bpo::value<int>(&_options->m_nIdleAgentsCount),
                 "The command will block infinitely until a required number of idle agents are online.");
+            options.add_options()(
+                "wait-for-executing-agents",
+                bpo::value<int>(&_options->m_nExecutingAgentsCount),
+                "The command will block infinitely until a required number of executing agents are online.");
             options.add_options()("active-topology",
                                   bpo::bool_switch(&_options->m_bNeedActiveTopology),
                                   "Returns the name of the active topology");
@@ -127,7 +133,15 @@ namespace dds
             if (vm.count("session"))
                 _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
-            if (vm.count("wait-for-idle-agents") && _options->m_nIdleAgentsCount <= 0)
+            if (vm.count("wait-for-idle-agents") && vm.count("wait-for-executing-agents"))
+            {
+                LOG(MiscCommon::log_stderr)
+                    << "--wait-for-idle-agents and --wait-for-executing-agents can't be used together.";
+                return false;
+            }
+
+            if ((vm.count("wait-for-idle-agents") && _options->m_nIdleAgentsCount <= 0) ||
+                (vm.count("wait-for-executing-agents") && _options->m_nExecutingAgentsCount <= 0))
             {
                 LOG(MiscCommon::log_stderr) << "A number of agents to wait must be higher than 0.";
                 return false;

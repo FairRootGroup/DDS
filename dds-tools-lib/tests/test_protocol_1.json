@@ -35,12 +35,14 @@
             "commanderInfo":
             {
                 "pid":432,
-                "idleAgentsCount": 105,
+                "activeTopologyName": "TopoName",
                 "requestID": 435
             },
             "agentInfo":
             {
                 "activeAgentsCount": 123,
+                "idleAgentsCount": 105,
+                "executingAgentsCount": 35,
                 "index": 123,
                 "agentInfo": "string",
                 "requestID": 123
