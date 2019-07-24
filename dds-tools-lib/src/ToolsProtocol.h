@@ -200,7 +200,6 @@ namespace dds
         struct SCommanderInfoResponseData : SBaseResponseData<SCommanderInfoResponseData>
         {
             pid_t m_pid = 0;                  ///< PID of the commander
-            uint32_t m_idleAgentsCount = 0;   ///< The count of idle agents
             std::string m_activeTopologyName; ///< Name of active topology, empty if none is active
 
           private:
@@ -218,7 +217,7 @@ namespace dds
             bool operator==(const SCommanderInfoResponseData& _val) const
             {
                 return (SBaseData::operator==(_val) && m_pid == _val.m_pid &&
-                        m_idleAgentsCount == _val.m_idleAgentsCount);
+                        m_activeTopologyName == _val.m_activeTopologyName);
             }
         };
 
@@ -247,9 +246,11 @@ namespace dds
 
         struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
         {
-            uint32_t m_activeAgentsCount = 0; ///< the number of online agents
-            uint32_t m_index = 0;             ///< index of the current agent
-            std::string m_agentInfo;          ///< info on the current agent
+            uint32_t m_activeAgentsCount = 0;    ///< the number of online agents
+            uint32_t m_idleAgentsCount = 0;      ///< The count of idle agents
+            uint32_t m_executingAgentsCount = 0; ///< The count of executing agents
+            uint32_t m_index = 0;                ///< index of the current agent
+            std::string m_agentInfo;             ///< info on the current agent
 
           private:
             friend SBaseData<SAgentInfoResponseData>;
@@ -266,12 +267,15 @@ namespace dds
             bool operator==(const SAgentInfoResponseData& _val) const
             {
                 return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
-                        m_index == _val.m_index && m_agentInfo == _val.m_agentInfo);
+                        m_idleAgentsCount == _val.m_idleAgentsCount &&
+                        m_executingAgentsCount == _val.m_executingAgentsCount && m_index == _val.m_index &&
+                        m_agentInfo == _val.m_agentInfo);
             }
         };
 
         struct SAgentInfoRequestData : SBaseRequestData<SAgentInfoRequestData>
         {
+            bool m_countersOnly = false; ///< Send number of active, idle and executing agents
           private:
             friend SBaseData<SAgentInfoRequestData>;
             friend SBaseRequestData<SAgentInfoRequestData>;
@@ -286,7 +290,7 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SAgentInfoRequestData& _val) const
             {
-                return SBaseData::operator==(_val);
+                return SBaseData::operator==(_val) && m_countersOnly == _val.m_countersOnly;
             }
         };
 

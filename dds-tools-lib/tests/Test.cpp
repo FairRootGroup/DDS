@@ -39,24 +39,112 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 {
     ptree pt;
 
-    read_json("/Users/anar/DDS/2.3.30.g1de2e54/tests/test_protocol_1.json", pt);
+    read_json("test_protocol_1.json", pt);
 
     const ptree& childPT = pt.get_child("dds.tools-api");
 
     for (const auto& child : childPT)
     {
         const string& tag = child.first;
-        if (tag == "commanderInfo")
+        if (tag == "message")
         {
-            SCommanderInfoResponseData dataCommanderInfoTest;
-            dataCommanderInfoTest.m_idleAgentsCount = 105;
-            dataCommanderInfoTest.m_pid = 432;
-            dataCommanderInfoTest.m_requestID = 435;
+            SMessageResponseData testData;
+            testData.m_msg = "string";
+            testData.m_severity = dds::intercom_api::EMsgSeverity(123);
+            testData.m_requestID = 123;
 
-            SCommanderInfoResponseData dataCommanderInfo;
-            dataCommanderInfo.fromPT(child.second);
+            SMessageResponseData data;
+            data.fromPT(child.second);
 
-            BOOST_CHECK(dataCommanderInfo == dataCommanderInfoTest);
+            BOOST_CHECK(testData == data);
+        }
+        else if (tag == "done")
+        {
+            SDoneResponseData testData;
+            testData.m_requestID = 435;
+
+            SDoneResponseData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "progress")
+        {
+            SProgressResponseData testData;
+            testData.m_completed = 123;
+            testData.m_total = 123;
+            testData.m_errors = 123;
+            testData.m_time = 123;
+            testData.m_srcCommand = 123;
+
+            SProgressResponseData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "submit")
+        {
+            SSubmitRequestData testData;
+            testData.m_rms = "string";
+            testData.m_instances = 123;
+            testData.m_config = "string";
+            testData.m_pluginPath = "string";
+            testData.m_requestID = 123;
+
+            SSubmitRequestData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "topology")
+        {
+            STopologyRequestData testData;
+            testData.m_updateType = dds::tools_api::STopologyRequestData::EUpdateType(123);
+            testData.m_topologyFile = "string";
+            testData.m_disableValidation = false;
+            testData.m_requestID = 123;
+
+            STopologyRequestData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "getlog")
+        {
+            SGetLogRequestData testData;
+            testData.m_requestID = 123;
+
+            SGetLogRequestData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "agentInfo")
+        {
+            SAgentInfoResponseData testData;
+            testData.m_activeAgentsCount = 123;
+            testData.m_idleAgentsCount = 105;
+            testData.m_executingAgentsCount = 35;
+            testData.m_index = 123;
+            testData.m_agentInfo = "string";
+            testData.m_requestID = 123;
+
+            SAgentInfoResponseData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "commanderInfo")
+        {
+            SCommanderInfoResponseData testData;
+            testData.m_pid = 432;
+            testData.m_requestID = 435;
+            testData.m_activeTopologyName = "TopoName";
+
+            SCommanderInfoResponseData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
         }
     }
 }
@@ -64,7 +152,6 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_toJSON)
 {
     SCommanderInfoResponseData dataCommanderInfoTest;
-    dataCommanderInfoTest.m_idleAgentsCount = 105;
     dataCommanderInfoTest.m_pid = 432;
     dataCommanderInfoTest.m_requestID = 435;
 

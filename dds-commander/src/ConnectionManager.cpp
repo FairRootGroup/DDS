@@ -323,8 +323,6 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     if (_agents.size() == 0)
         return;
 
-    auto p = _channel.lock();
-
     m_updateTopology.m_srcCommand = _cmd;
     m_updateTopology.zeroCounters();
     m_updateTopology.m_nofRequests = _agents.size();
@@ -334,10 +332,7 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
 
     // Initiate the progress on the UI
     dds::tools_api::SProgressResponseData progress(_cmd, 0, m_updateTopology.m_nofRequests, 0);
-    SCustomCmdCmd cmd;
-    cmd.m_sCmd = progress.toJSON();
-    cmd.m_sCondition = "";
-    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+    sendCustomCommandResponse(_channel, progress.toJSON());
 
     // Broadcast message or binary to agents
     size_t index = 0;
@@ -1260,20 +1255,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
     catch (exception& _e)
     {
         sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, _e.what(), EMsgSeverity::error);
-
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            if (p)
-            {
-                SDoneResponseData done;
-                done.m_requestID = _topologyInfo.m_requestID;
-                SCustomCmdCmd cmd;
-                cmd.m_sCmd = done.toJSON();
-                cmd.m_sCondition = "";
-                p->template pushMsg<cmdCUSTOM_CMD>(cmd);
-            }
-        }
+        sendDoneResponse(_channel, _topologyInfo.m_requestID);
         m_updateTopology.m_channel.reset();
         return;
     }
@@ -1284,19 +1266,12 @@ void CConnectionManager::sendToolsAPIMsg(CAgentChannel::weakConnectionPtr_t _cha
                                          const string& _msg,
                                          EMsgSeverity _severity)
 {
-    if (_channel.expired())
-        return;
-
-    auto p = _channel.lock();
-
     SMessageResponseData msg;
     msg.m_requestID = _requestID;
     msg.m_msg = _msg;
     msg.m_severity = _severity;
-    SCustomCmdCmd cmd;
-    cmd.m_sCmd = msg.toJSON();
-    cmd.m_sCondition = "";
-    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+
+    sendCustomCommandResponse(_channel, msg.toJSON());
 }
 
 void CConnectionManager::getLog(const dds::tools_api::SGetLogRequestData& _getLog,
@@ -1357,14 +1332,6 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
 
     info.m_pid = getpid();
 
-    size_t count = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                info.m_taskID == 0 && info.m_state == EAgentState::idle);
-    });
-
-    info.m_idleAgentsCount = count;
-
     {
         lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
         try
@@ -1377,23 +1344,8 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
         }
     }
 
-    if (_channel.expired())
-        return;
-
-    auto p = _channel.lock();
-    if (!p)
-        return;
-
-    SCustomCmdCmd cmd;
-    cmd.m_sCmd = info.toJSON();
-    cmd.m_sCondition = "";
-    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
-
-    SDoneResponseData done;
-    done.m_requestID = _info.m_requestID;
-    cmd.m_sCmd = done.toJSON();
-    cmd.m_sCondition = "";
-    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+    sendCustomCommandResponse(_channel, info.toJSON());
+    sendDoneResponse(_channel, _info.m_requestID);
 }
 
 void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequestData& _info,
@@ -1405,23 +1357,39 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
         }));
 
     // No active agents
-    if (channels.empty() && !_channel.expired())
+    if (channels.empty())
     {
-        auto p = _channel.lock();
-
         SAgentInfoResponseData info;
         info.m_requestID = _info.m_requestID;
 
-        SCustomCmdCmd cmd;
-        cmd.m_sCmd = info.toJSON();
-        cmd.m_sCondition = "";
-        p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+        sendCustomCommandResponse(_channel, info.toJSON());
+        sendDoneResponse(_channel, _info.m_requestID);
 
-        SDoneResponseData done;
-        done.m_requestID = _info.m_requestID;
-        cmd.m_sCmd = done.toJSON();
-        cmd.m_sCondition = "";
-        p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+        return;
+    }
+
+    size_t activeCounter = channels.size();
+    size_t idleCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                info.m_taskID == 0 && info.m_state == EAgentState::idle);
+    });
+    size_t executingCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && info.m_taskID > 0 &&
+                info.m_state == EAgentState::executing);
+    });
+
+    if (_info.m_countersOnly)
+    {
+        SAgentInfoResponseData info;
+        info.m_requestID = _info.m_requestID;
+        info.m_activeAgentsCount = activeCounter;
+        info.m_idleAgentsCount = idleCounter;
+        info.m_executingAgentsCount = executingCounter;
+
+        sendCustomCommandResponse(_channel, info.toJSON());
+        sendDoneResponse(_channel, _info.m_requestID);
 
         return;
     }
@@ -1455,29 +1423,35 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
            << "\nState: " << g_agentStates.at(inf.m_state) << "\n"
            << "\nTask ID: " << sTaskName << "\n";
 
-        info.m_activeAgentsCount = channels.size();
+        info.m_activeAgentsCount = activeCounter;
+        info.m_idleAgentsCount = idleCounter;
+        info.m_executingAgentsCount = executingCounter;
         info.m_index = i++;
         info.m_agentInfo = ss.str();
 
-        if (!_channel.expired())
-        {
-            auto p = _channel.lock();
-            SCustomCmdCmd cmd;
-            cmd.m_sCmd = info.toJSON();
-            cmd.m_sCondition = "";
-            p->template pushMsg<cmdCUSTOM_CMD>(cmd);
-        }
+        sendCustomCommandResponse(_channel, info.toJSON());
     }
 
-    if (!_channel.expired())
-    {
-        auto p = _channel.lock();
+    sendDoneResponse(_channel, _info.m_requestID);
+}
 
-        SDoneResponseData done;
-        done.m_requestID = _info.m_requestID;
-        SCustomCmdCmd cmd;
-        cmd.m_sCmd = done.toJSON();
-        cmd.m_sCondition = "";
-        p->template pushMsg<cmdCUSTOM_CMD>(cmd);
-    }
+void CConnectionManager::sendCustomCommandResponse(CAgentChannel::weakConnectionPtr_t _channel,
+                                                   const string& _json) const
+{
+    if (_channel.expired())
+        return;
+
+    auto p = _channel.lock();
+
+    SCustomCmdCmd cmd;
+    cmd.m_sCmd = _json;
+    cmd.m_sCondition = "";
+    p->template pushMsg<cmdCUSTOM_CMD>(cmd);
+}
+
+void CConnectionManager::sendDoneResponse(CAgentChannel::weakConnectionPtr_t _channel, requestID_t _requestID) const
+{
+    SDoneResponseData done;
+    done.m_requestID = _requestID;
+    sendCustomCommandResponse(_channel, done.toJSON());
 }
