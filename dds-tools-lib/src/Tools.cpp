@@ -140,6 +140,8 @@ void CSession::shutdown()
 
     if (nExitCode == 0)
         m_sid = boost::uuids::nil_uuid();
+
+    unsubscribe();
 }
 
 boost::uuids::uuid CSession::getSessionID() const
