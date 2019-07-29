@@ -127,6 +127,8 @@ namespace dds
                                      CAgentChannel::weakConnectionPtr_t _channel);
             void sendUIAgentInfo(const dds::tools_api::SAgentInfoRequestData& _info,
                                  CAgentChannel::weakConnectionPtr_t _channel);
+            void sendUIAgentCount(const dds::tools_api::SAgentCountRequestData& _info,
+                                  CAgentChannel::weakConnectionPtr_t _channel);
 
             void sendCustomCommandResponse(CAgentChannel::weakConnectionPtr_t _channel, const std::string& _json) const;
             void sendDoneResponse(CAgentChannel::weakConnectionPtr_t _channel, tools_api::requestID_t _requestID) const;

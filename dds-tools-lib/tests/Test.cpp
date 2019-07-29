@@ -122,14 +122,24 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
         else if (tag == "agentInfo")
         {
             SAgentInfoResponseData testData;
-            testData.m_activeAgentsCount = 123;
-            testData.m_idleAgentsCount = 105;
-            testData.m_executingAgentsCount = 35;
             testData.m_index = 123;
             testData.m_agentInfo = "string";
             testData.m_requestID = 123;
 
             SAgentInfoResponseData data;
+            data.fromPT(child.second);
+
+            BOOST_CHECK(data == testData);
+        }
+        else if (tag == "agentCount")
+        {
+            SAgentCountResponseData testData;
+            testData.m_activeAgentsCount = 123;
+            testData.m_idleAgentsCount = 234;
+            testData.m_executingAgentsCount = 345;
+            testData.m_requestID = 123;
+
+            SAgentCountResponseData data;
             data.fromPT(child.second);
 
             BOOST_CHECK(data == testData);

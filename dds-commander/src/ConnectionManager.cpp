@@ -943,6 +943,13 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
 
                 sendUIAgentInfo(agentInfo, _channel);
             }
+            else if (tag == "agentCount")
+            {
+                dds::tools_api::SAgentCountRequestData agentCount;
+                agentCount.fromPT(child.second);
+
+                sendUIAgentCount(agentCount, _channel);
+            }
         }
     }
     catch (const boost::property_tree::ptree_error& _e)
@@ -1356,44 +1363,6 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
             return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
         }));
 
-    // No active agents
-    if (channels.empty())
-    {
-        SAgentInfoResponseData info;
-        info.m_requestID = _info.m_requestID;
-
-        sendCustomCommandResponse(_channel, info.toJSON());
-        sendDoneResponse(_channel, _info.m_requestID);
-
-        return;
-    }
-
-    size_t activeCounter = channels.size();
-    size_t idleCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                info.m_taskID == 0 && info.m_state == EAgentState::idle);
-    });
-    size_t executingCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && info.m_taskID > 0 &&
-                info.m_state == EAgentState::executing);
-    });
-
-    if (_info.m_countersOnly)
-    {
-        SAgentInfoResponseData info;
-        info.m_requestID = _info.m_requestID;
-        info.m_activeAgentsCount = activeCounter;
-        info.m_idleAgentsCount = idleCounter;
-        info.m_executingAgentsCount = executingCounter;
-
-        sendCustomCommandResponse(_channel, info.toJSON());
-        sendDoneResponse(_channel, _info.m_requestID);
-
-        return;
-    }
-
     // Enumerate all agents
     size_t i = 0;
     for (const auto& v : channels)
@@ -1423,15 +1392,54 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
            << "\nState: " << g_agentStates.at(inf.m_state) << "\n"
            << "\nTask ID: " << sTaskName << "\n";
 
-        info.m_activeAgentsCount = activeCounter;
-        info.m_idleAgentsCount = idleCounter;
-        info.m_executingAgentsCount = executingCounter;
         info.m_index = i++;
         info.m_agentInfo = ss.str();
 
         sendCustomCommandResponse(_channel, info.toJSON());
     }
 
+    sendDoneResponse(_channel, _info.m_requestID);
+}
+
+void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountRequestData& _info,
+                                          CAgentChannel::weakConnectionPtr_t _channel)
+{
+    CConnectionManager::weakChannelInfo_t::container_t channels(
+        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+        }));
+
+    // No active agents
+    if (channels.empty())
+    {
+        SAgentCountResponseData info;
+        info.m_requestID = _info.m_requestID;
+
+        sendCustomCommandResponse(_channel, info.toJSON());
+        sendDoneResponse(_channel, _info.m_requestID);
+
+        return;
+    }
+
+    size_t activeCounter = channels.size();
+    size_t idleCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                info.m_taskID == 0 && info.m_state == EAgentState::idle);
+    });
+    size_t executingCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && info.m_taskID > 0 &&
+                info.m_state == EAgentState::executing);
+    });
+
+    SAgentCountResponseData info;
+    info.m_requestID = _info.m_requestID;
+    info.m_activeAgentsCount = activeCounter;
+    info.m_idleAgentsCount = idleCounter;
+    info.m_executingAgentsCount = executingCounter;
+
+    sendCustomCommandResponse(_channel, info.toJSON());
     sendDoneResponse(_channel, _info.m_requestID);
 }
 

@@ -66,7 +66,6 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
 void requestAgentInfo(CSession& _session, const SOptions_t& _options)
 {
     SAgentInfoRequest::request_t requestInfo;
-    requestInfo.m_countersOnly = !_options.m_bNeedAgentsList;
     SAgentInfoRequest::ptr_t requestPtr = SAgentInfoRequest::makeRequest(requestInfo);
 
     requestPtr->setMessageCallback([](const SMessageResponseData& message) {
@@ -74,48 +73,63 @@ void requestAgentInfo(CSession& _session, const SOptions_t& _options)
             << "Server reports: " << message.m_msg;
     });
 
+    requestPtr->setDoneCallback([&_session]() { _session.stop(); });
+
+    requestPtr->setResponseCallback(
+        [](const SAgentInfoResponseData& _info) { LOG(log_stdout_clean) << _info.m_agentInfo; });
+
+    _session.sendRequest<SAgentInfoRequest>(requestPtr);
+}
+
+void requestAgentCount(CSession& _session, const SOptions_t& _options)
+{
+    SAgentCountRequest::request_t requestInfo;
+    SAgentCountRequest::ptr_t requestPtr = SAgentCountRequest::makeRequest(requestInfo);
+
+    requestPtr->setMessageCallback([](const SMessageResponseData& message) {
+        LOG((message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+            << "Server reports: " << message.m_msg;
+    });
+
     requestPtr->setDoneCallback([&_session, &_options]() {
-        // Stop only if we don't wait for idle or executing agents
-        if (_options.m_nIdleAgentsCount == 0 && _options.m_nExecutingAgentsCount == 0)
+        // Stop only if we don't need to wait for the required number of agents
+        if (_options.m_nWaitCount == 0)
             _session.stop();
     });
 
-    requestPtr->setResponseCallback([&_session, &_options](const SAgentInfoResponseData& _info) {
-        bool checkIdle = _options.m_nIdleAgentsCount > 0;
-        bool checkExecuting = _options.m_nExecutingAgentsCount > 0;
-        if (checkIdle || checkExecuting)
+    requestPtr->setResponseCallback([&_session, &_options](const SAgentCountResponseData& _info) {
+        bool needToWait = _options.m_nWaitCount > 0;
+        if (needToWait)
         {
-            if ((checkIdle && (_info.m_idleAgentsCount < _options.m_nIdleAgentsCount)) ||
-                (checkExecuting && (_info.m_executingAgentsCount < _options.m_nExecutingAgentsCount)))
+            // Check if we have the required number of agents
+            if ((_options.m_bNeedActiveCount && (_info.m_activeAgentsCount < _options.m_nWaitCount)) ||
+                (_options.m_bNeedIdleCount && (_info.m_idleAgentsCount < _options.m_nWaitCount)) ||
+                (_options.m_bNeedExecutingCount && (_info.m_executingAgentsCount < _options.m_nWaitCount)))
             {
                 this_thread::sleep_for(chrono::milliseconds(500));
-                requestAgentInfo(_session, _options);
+                requestAgentCount(_session, _options);
                 return;
             }
 
-            LOG(log_stdout_clean) << ((checkIdle)
-                                          ? "idle agents online: " + to_string(_info.m_idleAgentsCount)
-                                          : "executing agents online: " + to_string(_info.m_executingAgentsCount));
+            LOG(log_stdout_clean) << "Active agents online: " + to_string(_info.m_activeAgentsCount) << endl
+                                  << "Idle agents online: " + to_string(_info.m_idleAgentsCount) << endl
+                                  << "Executing agents online: " + to_string(_info.m_executingAgentsCount);
             _session.stop();
-        }
-
-        if (_options.m_bNeedAgentsNumber)
-        {
-            LOG(log_stdout_clean) << _info.m_activeAgentsCount;
-            // Close communication channel
-            _session.stop();
-            return;
-        }
-
-        if (_options.m_bNeedAgentsList && !_info.m_agentInfo.empty())
-        {
-            LOG(log_stdout_clean) << _info.m_agentInfo;
         }
         else
+        {
+            if (_options.m_bNeedActiveCount)
+                LOG(log_stdout_clean) << _info.m_activeAgentsCount;
+            else if (_options.m_bNeedIdleCount)
+                LOG(log_stdout_clean) << _info.m_idleAgentsCount;
+            else if (_options.m_bNeedExecutingCount)
+                LOG(log_stdout_clean) << _info.m_executingAgentsCount;
+
             _session.stop();
+        }
     });
 
-    _session.sendRequest<SAgentInfoRequest>(requestPtr);
+    _session.sendRequest<SAgentCountRequest>(requestPtr);
 }
 //=============================================================================
 int main(int argc, char* argv[])
@@ -167,10 +181,13 @@ int main(int argc, char* argv[])
         {
             requestCommanderInfo(session, options);
         }
-        else if (options.m_bNeedAgentsNumber || options.m_nIdleAgentsCount > 0 || options.m_nExecutingAgentsCount > 0 ||
-                 options.m_bNeedAgentsList)
+        else if (options.m_bNeedAgentsList)
         {
             requestAgentInfo(session, options);
+        }
+        else if (options.m_bNeedActiveCount || options.m_bNeedIdleCount || options.m_bNeedExecutingCount)
+        {
+            requestAgentCount(session, options);
         }
         else if (options.m_bNeedPropList)
         {

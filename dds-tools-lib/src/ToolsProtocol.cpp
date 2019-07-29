@@ -155,27 +155,43 @@ void dds::tools_api::SCommanderInfoRequestData::_toPT(boost::property_tree::ptre
 ///////////////////////////////////
 void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
-    _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
-    _pt.put<uint32_t>("executingAgentsCount", m_executingAgentsCount);
     _pt.put<uint32_t>("index", m_index);
     _pt.put<string>("agentInfo", m_agentInfo);
 }
 
 void dds::tools_api::SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    m_activeAgentsCount = _pt.get<uint32_t>("activeAgentsCount", 0);
-    m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
-    m_executingAgentsCount = _pt.get<uint32_t>("executingAgentsCount", 0);
     m_index = _pt.get<uint32_t>("index", 0);
     m_agentInfo = _pt.get<string>("agentInfo", "");
 }
 
 void dds::tools_api::SAgentInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    m_countersOnly = _pt.get<bool>("countersOnly", false);
 }
 void dds::tools_api::SAgentInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    _pt.put<bool>("countersOnly", m_countersOnly);
+}
+
+///////////////////////////////////
+// SAgentCount
+///////////////////////////////////
+void dds::tools_api::SAgentCountResponseData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
+    _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
+    _pt.put<uint32_t>("executingAgentsCount", m_executingAgentsCount);
+}
+
+void dds::tools_api::SAgentCountResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_activeAgentsCount = _pt.get<uint32_t>("activeAgentsCount", 0);
+    m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
+    m_executingAgentsCount = _pt.get<uint32_t>("executingAgentsCount", 0);
+}
+
+void dds::tools_api::SAgentCountRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+}
+void dds::tools_api::SAgentCountRequestData::_toPT(boost::property_tree::ptree& _pt) const
+{
 }

@@ -27,29 +27,31 @@ namespace dds
             SOptions()
                 : m_bNeedCommanderPid(false)
                 , m_bNeedDDSStatus(false)
-                , m_bNeedAgentsNumber(false)
                 , m_bNeedAgentsList(false)
                 , m_bNeedPropList(false)
                 , m_bNeedPropValues(false)
                 , m_bNeedActiveTopology(false)
                 , m_propertyName()
                 , m_sid(boost::uuids::nil_uuid())
-                , m_nIdleAgentsCount(0)
-                , m_nExecutingAgentsCount(0)
+                , m_bNeedActiveCount(false)
+                , m_bNeedIdleCount(false)
+                , m_bNeedExecutingCount(false)
+                , m_nWaitCount(0)
             {
             }
 
             bool m_bNeedCommanderPid;
             bool m_bNeedDDSStatus;
-            bool m_bNeedAgentsNumber;
             bool m_bNeedAgentsList;
             bool m_bNeedPropList;
             bool m_bNeedPropValues;
             bool m_bNeedActiveTopology;
             std::string m_propertyName;
             boost::uuids::uuid m_sid;
-            int m_nIdleAgentsCount;
-            int m_nExecutingAgentsCount;
+            bool m_bNeedActiveCount;
+            bool m_bNeedIdleCount;
+            bool m_bNeedExecutingCount;
+            int m_nWaitCount;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -77,9 +79,6 @@ namespace dds
             options.add_options()("status",
                                   bpo::bool_switch(&_options->m_bNeedDDSStatus),
                                   "Query current status of DDS commander server");
-            options.add_options()("agents-number,n",
-                                  bpo::bool_switch(&_options->m_bNeedAgentsNumber),
-                                  "Returns a number of online agents");
             options.add_options()("agents-list,l",
                                   bpo::bool_switch(&_options->m_bNeedAgentsList),
                                   "Show detailed info about all online agents");
@@ -91,14 +90,18 @@ namespace dds
             options.add_options()("prop-name",
                                   bpo::value<std::string>(&_options->m_propertyName),
                                   "Specify property names that have to be returned.");
+            options.add_options()("active-count,n",
+                                  bpo::bool_switch(&_options->m_bNeedActiveCount),
+                                  "Returns a number of online agents.");
             options.add_options()(
-                "wait-for-idle-agents",
-                bpo::value<int>(&_options->m_nIdleAgentsCount),
-                "The command will block infinitely until a required number of idle agents are online.");
-            options.add_options()(
-                "wait-for-executing-agents",
-                bpo::value<int>(&_options->m_nExecutingAgentsCount),
-                "The command will block infinitely until a required number of executing agents are online.");
+                "idle-count", bpo::bool_switch(&_options->m_bNeedIdleCount), "Returns a number of idle agents.");
+            options.add_options()("executing-count",
+                                  bpo::bool_switch(&_options->m_bNeedExecutingCount),
+                                  "Returns a number of executing agents.");
+            options.add_options()("wait",
+                                  bpo::value<int>(&_options->m_nWaitCount),
+                                  "The command will block infinitely until a required number of agents are available. "
+                                  "Must be used together with --active-count, --idle-count or --executing-count");
             options.add_options()("active-topology",
                                   bpo::bool_switch(&_options->m_bNeedActiveTopology),
                                   "Returns the name of the active topology");
@@ -133,15 +136,25 @@ namespace dds
             if (vm.count("session"))
                 _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
-            if (vm.count("wait-for-idle-agents") && vm.count("wait-for-executing-agents"))
+            size_t numCounters =
+                _options->m_bNeedActiveCount + _options->m_bNeedIdleCount + _options->m_bNeedExecutingCount;
+            if (numCounters > 1)
             {
                 LOG(MiscCommon::log_stderr)
-                    << "--wait-for-idle-agents and --wait-for-executing-agents can't be used together.";
+                    << "--active-count, --idle-count, --executing-count can't be used together.";
                 return false;
             }
 
-            if ((vm.count("wait-for-idle-agents") && _options->m_nIdleAgentsCount <= 0) ||
-                (vm.count("wait-for-executing-agents") && _options->m_nExecutingAgentsCount <= 0))
+            bool needCount =
+                _options->m_bNeedActiveCount || _options->m_bNeedIdleCount || _options->m_bNeedExecutingCount;
+            if (vm.count("wait") && !needCount)
+            {
+                LOG(MiscCommon::log_stderr)
+                    << "Option --wait must be used together with --active-count, --idle-count or --executing-count.";
+                return false;
+            }
+
+            if (vm.count("wait") && _options->m_nWaitCount <= 0)
             {
                 LOG(MiscCommon::log_stderr) << "A number of agents to wait must be higher than 0.";
                 return false;

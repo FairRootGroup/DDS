@@ -249,6 +249,14 @@ void CSession::notify(std::istream& _stream)
                     _request->execResponseCallback(data);
                 });
             }
+            else if (it->second.type() == typeid(SAgentCountRequest::ptr_t))
+            {
+                processRequest<SAgentCountRequest>(it->second, child, [&child](SAgentCountRequest::ptr_t _request) {
+                    SAgentCountResponseData data;
+                    data.fromPT(child.second);
+                    _request->execResponseCallback(data);
+                });
+            }
         }
     }
     catch (exception& error)

@@ -17,12 +17,12 @@ echo "SESSION ID: ${sessionID}"
 echo "Submiting agents..."
 dds-submit -r localhost -n ${requiredNofAgents}
 
-dds-info --wait-for-idle-agents ${requiredNofAgents}
+dds-info --idle-count --wait ${requiredNofAgents}
 
 echo "Activating topology..."
 dds-topology --disable-validation --activate ${topologyFile}
 
-dds-info --wait-for-idle-agents ${requiredNofAgents}
+dds-info --idle-count --wait ${requiredNofAgents}
 
 echo "Getting logs..."
 dds-agent-cmd getlog -a
