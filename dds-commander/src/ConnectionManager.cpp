@@ -1369,7 +1369,6 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
     {
         SAgentInfoResponseData info;
         info.m_requestID = _info.m_requestID;
-        stringstream ss;
 
         if (v.m_channel.expired())
             continue;
@@ -1385,15 +1384,16 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
             sTaskName = ssTaskString.str();
         }
 
-        ss << " -------------->>> " << inf.m_id << "\nHost Info: " << inf.m_remoteHostInfo.m_username << "@"
-           << inf.m_remoteHostInfo.m_host << ":" << inf.m_remoteHostInfo.m_DDSPath
-           << "\nAgent pid: " << inf.m_remoteHostInfo.m_agentPid
-           << "\nAgent startup time: " << chrono::duration<double>(inf.m_startUpTime).count() << " s"
-           << "\nState: " << g_agentStates.at(inf.m_state) << "\n"
-           << "\nTask ID: " << sTaskName << "\n";
-
         info.m_index = i++;
-        info.m_agentInfo = ss.str();
+        info.m_lobbyLeader = inf.m_lobbyLeader;
+        info.m_agentID = inf.m_id;
+        info.m_taskID = inf.m_taskID;
+        info.m_startUpTime = inf.m_startUpTime;
+        info.m_agentState = g_agentStates.at(inf.m_state);
+        info.m_username = inf.m_remoteHostInfo.m_username;
+        info.m_host = inf.m_remoteHostInfo.m_host;
+        info.m_DDSPath = inf.m_remoteHostInfo.m_DDSPath;
+        info.m_agentPid = inf.m_remoteHostInfo.m_agentPid;
 
         sendCustomCommandResponse(_channel, info.toJSON());
     }

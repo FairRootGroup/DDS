@@ -61,17 +61,25 @@
             },
             "agentInfo":
             {
-                "index": 123,
-                "agentInfo": "string",
+                "index": 0,
+                "lobbyLeader" : true,
+                "agentID": 3456,
+                "taskID": 5678,
+                "startUpTime": 12345,
+                "agentState": "executing",
+                "username": "user1"
+                "host": "host1",
+                "DDSPath": "/path/to/dds",
+                "agentPid": 34
                 "requestID": 123
             },
-             "agentCount":
-             {
-                 "activeAgentsCount": 123,
-                 "idleAgentsCount" : 234,
-                 "executingAgentsCount": 345,
-                 "requestID": 123
-             },
+            "agentCount":
+            {
+                "activeAgentsCount": 123,
+                "idleAgentsCount" : 234,
+                "executingAgentsCount": 345,
+                "requestID": 123
+            },
         }
     }
 }

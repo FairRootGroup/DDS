@@ -156,13 +156,29 @@ void dds::tools_api::SCommanderInfoRequestData::_toPT(boost::property_tree::ptre
 void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("index", m_index);
-    _pt.put<string>("agentInfo", m_agentInfo);
+    _pt.put<bool>("lobbyLeader", m_lobbyLeader);
+    _pt.put<uint64_t>("agentID", m_agentID);
+    _pt.put<uint64_t>("taskID", m_taskID);
+    _pt.put<size_t>("startUpTime", m_startUpTime.count());
+    _pt.put<string>("agentState", m_agentState);
+    _pt.put<string>("username", m_username);
+    _pt.put<string>("host", m_host);
+    _pt.put<string>("DDSPath", m_DDSPath);
+    _pt.put<uint32_t>("agentPid", m_agentPid);
 }
 
 void dds::tools_api::SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_index = _pt.get<uint32_t>("index", 0);
-    m_agentInfo = _pt.get<string>("agentInfo", "");
+    m_lobbyLeader = _pt.get<bool>("lobbyLeader", false);
+    m_agentID = _pt.get<uint64_t>("agentID", 0);
+    m_taskID = _pt.get<uint64_t>("taskID", 0);
+    m_startUpTime = std::chrono::milliseconds(_pt.get<size_t>("startUpTime", 0));
+    m_agentState = _pt.get<string>("agentState", "unknown");
+    m_username = _pt.get<string>("username", "");
+    m_host = _pt.get<string>("host", "");
+    m_DDSPath = _pt.get<string>("DDSPath", "");
+    m_agentPid = _pt.get<uint32_t>("agentPid", 0);
 }
 
 void dds::tools_api::SAgentInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
