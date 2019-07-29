@@ -104,8 +104,8 @@ namespace dds
                 ACTIVATE,
                 STOP
             };
-            EUpdateType m_updateType;         ///< Topology update type: Update, Activate, Stop
-            std::string m_topologyFile;       ///< A topology file to process
+            EUpdateType m_updateType = EUpdateType::UPDATE; ///< Topology update type: Update, Activate, Stop
+            std::string m_topologyFile;                     ///< A topology file to process
             bool m_disableValidation = false; ///< A flag to disiable topology validation before processing it.
 
           private:
@@ -168,7 +168,7 @@ namespace dds
             std::string m_username;                                                 ///< Username
             std::string m_host;                                                     ///< Hostname
             std::string m_DDSPath;                                                  ///< DDS path
-            uint32_t m_agentPid;                                                    ///< Agent's process ID
+            uint32_t m_agentPid = 0;                                                ///< Agent's process ID
 
           private:
             friend SBaseData<SAgentInfoResponseData>;
