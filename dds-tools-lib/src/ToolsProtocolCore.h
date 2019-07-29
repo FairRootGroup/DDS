@@ -61,12 +61,17 @@
             },
             "agentInfo":
             {
-                "activeAgentsCount": 123,
                 "index": 123,
                 "agentInfo": "string",
                 "requestID": 123
             },
-
+             "agentCount":
+             {
+                 "activeAgentsCount": 123,
+                 "idleAgentsCount" : 234,
+                 "executingAgentsCount": 345,
+                 "requestID": 123
+             },
         }
     }
 }

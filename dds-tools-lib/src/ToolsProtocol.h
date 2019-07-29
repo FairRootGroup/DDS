@@ -246,11 +246,8 @@ namespace dds
 
         struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
         {
-            uint32_t m_activeAgentsCount = 0;    ///< the number of online agents
-            uint32_t m_idleAgentsCount = 0;      ///< The count of idle agents
-            uint32_t m_executingAgentsCount = 0; ///< The count of executing agents
-            uint32_t m_index = 0;                ///< index of the current agent
-            std::string m_agentInfo;             ///< info on the current agent
+            uint32_t m_index = 0;    ///< index of the current agent
+            std::string m_agentInfo; ///< info on the current agent
 
           private:
             friend SBaseData<SAgentInfoResponseData>;
@@ -266,16 +263,12 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SAgentInfoResponseData& _val) const
             {
-                return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
-                        m_idleAgentsCount == _val.m_idleAgentsCount &&
-                        m_executingAgentsCount == _val.m_executingAgentsCount && m_index == _val.m_index &&
-                        m_agentInfo == _val.m_agentInfo);
+                return (SBaseData::operator==(_val) && m_index == _val.m_index && m_agentInfo == _val.m_agentInfo);
             }
         };
 
         struct SAgentInfoRequestData : SBaseRequestData<SAgentInfoRequestData>
         {
-            bool m_countersOnly = false; ///< Send number of active, idle and executing agents
           private:
             friend SBaseData<SAgentInfoRequestData>;
             friend SBaseRequestData<SAgentInfoRequestData>;
@@ -290,12 +283,62 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SAgentInfoRequestData& _val) const
             {
-                return SBaseData::operator==(_val) && m_countersOnly == _val.m_countersOnly;
+                return SBaseData::operator==(_val);
             }
         };
 
         /// \brief Structure holds information of a agentInfo notification.
         using SAgentInfoRequest = SBaseRequestImpl<SAgentInfoRequestData, SAgentInfoResponseData>;
+
+        struct SAgentCountResponseData : SBaseResponseData<SAgentCountResponseData>
+        {
+            uint32_t m_activeAgentsCount = 0;    ///< the number of online agents
+            uint32_t m_idleAgentsCount = 0;      ///< The count of idle agents
+            uint32_t m_executingAgentsCount = 0; ///< The count of executing agents
+
+          private:
+            friend SBaseData<SAgentCountResponseData>;
+            friend SBaseResponseData<SAgentCountResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "agentCount";
+            }
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SAgentCountResponseData& _val) const
+            {
+                return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
+                        m_idleAgentsCount == _val.m_idleAgentsCount &&
+                        m_executingAgentsCount == _val.m_executingAgentsCount);
+            }
+        };
+
+        struct SAgentCountRequestData : SBaseRequestData<SAgentCountRequestData>
+        {
+          private:
+            friend SBaseData<SAgentCountRequestData>;
+            friend SBaseRequestData<SAgentCountRequestData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static std::string _protocolTag()
+            {
+                return "agentCount";
+            }
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SAgentCountRequestData& _val) const
+            {
+                return SBaseData::operator==(_val);
+            }
+        };
+
+        /// \brief Structure holds information of a agentCount notification.
+        using SAgentCountRequest = SBaseRequestImpl<SAgentCountRequestData, SAgentCountResponseData>;
+
     } // namespace tools_api
 } // namespace dds
 
