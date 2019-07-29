@@ -21,28 +21,10 @@ namespace dds
 {
     namespace tools_api
     {
-        /// \brief Structure holds information of a done notification.
-        struct SDoneResponseData : SBaseResponseData<SDoneResponseData>
-        {
-          private:
-            friend SBaseData<SDoneResponseData>;
-            friend SBaseResponseData<SDoneResponseData>;
-            void _fromPT(const boost::property_tree::ptree& _pt);
-            void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "done";
-            }
+        /// \brief Structure holds information of a done response.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseResponseData, SDoneResponseData, "done")
 
-          public:
-            /// \brief Equality operator.
-            bool operator==(const SDoneResponseData& _val) const
-            {
-                return SBaseData::operator==(_val);
-            }
-        };
-
-        /// \brief Structure holds information of a message notification.
+        /// \brief Structure holds information of a message response.
         struct SMessageResponseData : SBaseResponseData<SMessageResponseData>
         {
             std::string m_msg;                                                                  ///< Message text.
@@ -53,26 +35,16 @@ namespace dds
             friend SBaseResponseData<SMessageResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "message";
-            }
+            static constexpr const char* _protocolTag = "message";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SMessageResponseData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_msg == _val.m_msg && m_severity == _val.m_severity);
-            }
-
-            /// \brief Support ostreaming SMessageResponseData
-            friend std::ostream& operator<<(std::ostream& _os, SMessageResponseData _m)
-            {
-                return _os << "<" << _m.m_severity << "> " << _m.m_msg;
-            }
+            bool operator==(const SMessageResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SMessageResponseData& _data);
         };
 
-        /// \brief Structure holds information of a progress notification.
+        /// \brief Structure holds information of a progress response.
         struct SProgressResponseData : SBaseResponseData<SProgressResponseData>
         {
             uint32_t m_completed = 0;
@@ -81,38 +53,25 @@ namespace dds
             uint32_t m_time = 0;
             uint16_t m_srcCommand = 0; ///< Reserved for internal use
 
-            SProgressResponseData()
-            {
-            }
+            SProgressResponseData();
             SProgressResponseData(
-                uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0)
-            {
-                m_srcCommand = _srcCmd;
-                m_completed = _completed;
-                m_total = _total;
-                m_errors = _errors;
-                m_time = _time;
-            }
+                uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0);
 
           private:
             friend SBaseData<SProgressResponseData>;
             friend SBaseResponseData<SProgressResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "progress";
-            }
+            static constexpr const char* _protocolTag = "progress";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SProgressResponseData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_completed == _val.m_completed && m_total == _val.m_total &&
-                        m_errors == _val.m_errors && m_time == _val.m_time);
-            }
+            bool operator==(const SProgressResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SProgressResponseData& _data);
         };
 
+        /// \brief Structure holds information of a submit request.
         struct SSubmitRequestData : SBaseRequestData<SSubmitRequestData>
         {
             std::string m_rms;        ///< RMS.
@@ -124,23 +83,19 @@ namespace dds
             friend SBaseData<SSubmitRequestData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "submit";
-            }
+            static constexpr const char* _protocolTag = "submit";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SSubmitRequestData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_rms == _val.m_rms && m_instances == _val.m_instances &&
-                        m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
-            }
+            bool operator==(const SSubmitRequestData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data);
         };
 
-        /// \brief Structure holds information of a submit notification.
+        /// \brief Request class of submit.
         using SSubmitRequest = SBaseRequestImpl<SSubmitRequestData, SEmptyResponseData>;
 
+        /// \brief Structure holds information of topology request.
         struct STopologyRequestData : SBaseResponseData<STopologyRequestData>
         {
             enum class EUpdateType : uint8_t
@@ -157,46 +112,25 @@ namespace dds
             friend SBaseData<STopologyRequestData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "topology";
-            }
+            static constexpr const char* _protocolTag = "topology";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const STopologyRequestData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_updateType == _val.m_updateType &&
-                        m_topologyFile == _val.m_topologyFile && m_disableValidation == _val.m_disableValidation);
-            }
+            bool operator==(const STopologyRequestData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data);
         };
 
-        /// \brief Structure holds information of topology notifications.
+        /// \brief Request class of topology.
         using STopologyRequest = SBaseRequestImpl<STopologyRequestData, SEmptyResponseData>;
 
-        struct SGetLogRequestData : SBaseRequestData<SGetLogRequestData>
-        {
-          private:
-            friend SBaseData<SGetLogRequestData>;
-            friend SBaseRequestData<SGetLogRequestData>;
-            void _fromPT(const boost::property_tree::ptree& _pt);
-            void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "getlog";
-            }
+        /// \brief Structure holds information of a getlog request.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SGetLogRequestData, "getlog")
 
-          public:
-            /// \brief Equality operator.
-            bool operator==(const SGetLogRequestData& _val) const
-            {
-                return SBaseData::operator==(_val);
-            }
-        };
-
-        /// \brief Structure holds information of a getlog notification.
+        /// \brief Request class of getlog.
         using SGetLogRequest = SBaseRequestImpl<SGetLogRequestData, SEmptyResponseData>;
 
+        /// \brief Structure holds information of commanderInfo response.
         struct SCommanderInfoResponseData : SBaseResponseData<SCommanderInfoResponseData>
         {
             pid_t m_pid = 0;                  ///< PID of the commander
@@ -207,43 +141,22 @@ namespace dds
             friend SBaseResponseData<SCommanderInfoResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "commanderInfo";
-            }
+            static constexpr const char* _protocolTag = "commanderInfo";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SCommanderInfoResponseData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_pid == _val.m_pid &&
-                        m_activeTopologyName == _val.m_activeTopologyName);
-            }
+            bool operator==(const SCommanderInfoResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data);
         };
 
-        struct SCommanderInfoRequestData : SBaseRequestData<SCommanderInfoRequestData>
-        {
-          private:
-            friend SBaseData<SCommanderInfoRequestData>;
-            friend SBaseRequestData<SCommanderInfoRequestData>;
-            void _fromPT(const boost::property_tree::ptree& _pt);
-            void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "commanderInfo";
-            }
+        /// \brief Structure holds information of a commanderInfo request.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SCommanderInfoRequestData, "commanderInfo")
 
-          public:
-            /// \brief Equality operator.
-            bool operator==(const SCommanderInfoRequestData& _val) const
-            {
-                return SBaseData::operator==(_val);
-            }
-        };
-
-        /// \brief Structure holds information of a commanderInfo notification.
+        /// \brief Request class of commanderInfo.
         using SCommanderInfoRequest = SBaseRequestImpl<SCommanderInfoRequestData, SCommanderInfoResponseData>;
 
+        /// \brief Structure holds information of agentInfo response.
         struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
         {
             uint32_t m_index = 0;                                                   ///< Index of the current agent
@@ -262,49 +175,25 @@ namespace dds
             friend SBaseResponseData<SAgentInfoResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "agentInfo";
-            }
+            static constexpr const char* _protocolTag = "agentInfo";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SAgentInfoResponseData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_index == _val.m_index && m_lobbyLeader == _val.m_lobbyLeader &&
-                        m_agentID == _val.m_agentID && m_taskID == _val.m_taskID &&
-                        m_startUpTime == _val.m_startUpTime && m_agentState == _val.m_agentState &&
-                        m_username == _val.m_username && m_host == _val.m_host && m_DDSPath == _val.m_DDSPath &&
-                        m_agentPid == _val.m_agentPid);
-            }
+            bool operator==(const SAgentInfoResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data);
         };
 
-        struct SAgentInfoRequestData : SBaseRequestData<SAgentInfoRequestData>
-        {
-          private:
-            friend SBaseData<SAgentInfoRequestData>;
-            friend SBaseRequestData<SAgentInfoRequestData>;
-            void _fromPT(const boost::property_tree::ptree& _pt);
-            void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "agentInfo";
-            }
+        /// \brief Structure holds information of agentInfo request.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SAgentInfoRequestData, "agentInfo")
 
-          public:
-            /// \brief Equality operator.
-            bool operator==(const SAgentInfoRequestData& _val) const
-            {
-                return SBaseData::operator==(_val);
-            }
-        };
-
-        /// \brief Structure holds information of a agentInfo notification.
+        /// \brief Request class of agentInfo.
         using SAgentInfoRequest = SBaseRequestImpl<SAgentInfoRequestData, SAgentInfoResponseData>;
 
+        /// \brief Structure holds information of agentCount response.
         struct SAgentCountResponseData : SBaseResponseData<SAgentCountResponseData>
         {
-            uint32_t m_activeAgentsCount = 0;    ///< the number of online agents
+            uint32_t m_activeAgentsCount = 0;    ///< The number of online agents
             uint32_t m_idleAgentsCount = 0;      ///< The count of idle agents
             uint32_t m_executingAgentsCount = 0; ///< The count of executing agents
 
@@ -313,42 +202,19 @@ namespace dds
             friend SBaseResponseData<SAgentCountResponseData>;
             void _fromPT(const boost::property_tree::ptree& _pt);
             void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "agentCount";
-            }
+            static constexpr const char* _protocolTag = "agentCount";
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SAgentCountResponseData& _val) const
-            {
-                return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
-                        m_idleAgentsCount == _val.m_idleAgentsCount &&
-                        m_executingAgentsCount == _val.m_executingAgentsCount);
-            }
+            bool operator==(const SAgentCountResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SAgentCountResponseData& _data);
         };
 
-        struct SAgentCountRequestData : SBaseRequestData<SAgentCountRequestData>
-        {
-          private:
-            friend SBaseData<SAgentCountRequestData>;
-            friend SBaseRequestData<SAgentCountRequestData>;
-            void _fromPT(const boost::property_tree::ptree& _pt);
-            void _toPT(boost::property_tree::ptree& _pt) const;
-            static std::string _protocolTag()
-            {
-                return "agentCount";
-            }
+        /// \brief Structure holds information of agentCount response.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SAgentCountRequestData, "agentCount")
 
-          public:
-            /// \brief Equality operator.
-            bool operator==(const SAgentCountRequestData& _val) const
-            {
-                return SBaseData::operator==(_val);
-            }
-        };
-
-        /// \brief Structure holds information of a agentCount notification.
+        /// \brief Request class of agentCount.
         using SAgentCountRequest = SBaseRequestImpl<SAgentCountRequestData, SAgentCountResponseData>;
 
     } // namespace tools_api

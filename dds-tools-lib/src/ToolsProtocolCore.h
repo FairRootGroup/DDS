@@ -85,6 +85,27 @@
 }
 */
 
+#define DDS_TOOLS_DECLARE_DATA_CLASS(theBaseClass, theClass, theTag) \
+    struct theClass : theBaseClass<theClass>                         \
+    {                                                                \
+      private:                                                       \
+        friend SBaseData<theClass>;                                  \
+        friend theBaseClass<theClass>;                               \
+        void _fromPT(const boost::property_tree::ptree& _pt)         \
+        {                                                            \
+        }                                                            \
+        void _toPT(boost::property_tree::ptree& _pt) const           \
+        {                                                            \
+        }                                                            \
+        static constexpr const char* _protocolTag = theTag;          \
+                                                                     \
+      public:                                                        \
+        bool operator==(const theClass& _val) const                  \
+        {                                                            \
+            return SBaseData::operator==(_val);                      \
+        }                                                            \
+    };
+
 namespace dds
 {
     namespace tools_api
@@ -107,7 +128,7 @@ namespace dds
                 boost::property_tree::ptree ptParent;
 
                 auto parentPtr = static_cast<const T*>(this);
-                ptParent.put_child("dds.tools-api." + parentPtr->_protocolTag(), pt);
+                ptParent.put_child("dds.tools-api." + std::string(parentPtr->_protocolTag), pt);
 
                 std::stringstream json;
                 boost::property_tree::write_json(json, ptParent);
@@ -141,6 +162,22 @@ namespace dds
             bool operator==(const T& _val) const
             {
                 return (m_requestID == _val.m_requestID);
+            }
+
+            /// \brief Stream operator
+            friend std::ostream& operator<<(std::ostream& _os, const SBaseData& _data)
+            {
+                auto parentPtr = static_cast<const T*>(_data);
+                return _os << "requestID: " << _data.m_requestID << "; protocolTag: " << parentPtr->_protocolTag;
+            }
+
+            /// \brief Default string representation
+            std::string defaultToString() const
+            {
+                std::stringstream ss;
+                auto parentPtr = static_cast<const T*>(this);
+                ss << "requestID: " << m_requestID << "; protocolTag: " << parentPtr->_protocolTag;
+                return ss.str();
             }
         };
 

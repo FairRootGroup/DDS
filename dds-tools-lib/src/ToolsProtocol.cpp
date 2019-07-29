@@ -12,20 +12,23 @@ using namespace dds::intercom_api;
 using namespace boost::property_tree;
 
 ///////////////////////////////////
-// SDone
+// SProgressResponseData
 ///////////////////////////////////
-void dds::tools_api::SDoneResponseData::_toPT(boost::property_tree::ptree& _pt) const
+SProgressResponseData::SProgressResponseData()
 {
 }
 
-void dds::tools_api::SDoneResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+SProgressResponseData::SProgressResponseData(
+    uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time)
+    : m_completed(_completed)
+    , m_total(_total)
+    , m_errors(_errors)
+    , m_time(_time)
+    , m_srcCommand(_srcCmd)
 {
 }
 
-///////////////////////////////////
-// SProgress
-///////////////////////////////////
-void dds::tools_api::SProgressResponseData::_toPT(boost::property_tree::ptree& _pt) const
+void SProgressResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("completed", m_completed);
     _pt.put<uint32_t>("total", m_total);
@@ -34,7 +37,7 @@ void dds::tools_api::SProgressResponseData::_toPT(boost::property_tree::ptree& _
     _pt.put<uint32_t>("srcCommand", m_srcCommand);
 }
 
-void dds::tools_api::SProgressResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+void SProgressResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_completed = _pt.get<uint32_t>("completed", 0);
     m_total = _pt.get<uint32_t>("total", 0);
@@ -43,8 +46,21 @@ void dds::tools_api::SProgressResponseData::_fromPT(const boost::property_tree::
     m_srcCommand = _pt.get<uint32_t>("srcCommand", 0);
 }
 
+bool SProgressResponseData::operator==(const SProgressResponseData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_completed == _val.m_completed && m_total == _val.m_total &&
+            m_errors == _val.m_errors && m_time == _val.m_time);
+}
+
+std::ostream& operator<<(std::ostream& _os, const SProgressResponseData& _data)
+{
+    return _os << _data.defaultToString() << "; completed: " << _data.m_completed << "; total: " << _data.m_total
+               << "; errors: " << _data.m_errors << "; time: " << _data.m_time
+               << "; srcCommand: " << _data.m_srcCommand;
+}
+
 ///////////////////////////////////
-// SMessage
+// SMessageResponseData
 ///////////////////////////////////
 
 string SeverityToTag(EMsgSeverity _severity)
@@ -70,32 +86,32 @@ EMsgSeverity TagToSeverity(const std::string& _tag)
         throw runtime_error("Message severity for tag " + _tag + " does not exist.");
 }
 
-void dds::tools_api::SMessageResponseData::_toPT(boost::property_tree::ptree& _pt) const
+void SMessageResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<string>("msg", m_msg);
     _pt.put<string>("severity", SeverityToTag(m_severity));
 }
 
-void dds::tools_api::SMessageResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+void SMessageResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_severity = TagToSeverity(_pt.get<string>("severity", "info"));
     m_msg = _pt.get<string>("msg", "");
 }
 
-///////////////////////////////////
-// SGetLog
-///////////////////////////////////
-void dds::tools_api::SGetLogRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+bool SMessageResponseData::operator==(const SMessageResponseData& _val) const
 {
+    return (SBaseData::operator==(_val) && m_msg == _val.m_msg && m_severity == _val.m_severity);
 }
-void dds::tools_api::SGetLogRequestData::_toPT(boost::property_tree::ptree& _pt) const
+
+std::ostream& operator<<(std::ostream& _os, const SMessageResponseData& _data)
 {
+    return _os << _data.defaultToString() << "; severity: " << _data.m_severity << "; msg: " << _data.m_msg;
 }
 
 ///////////////////////////////////
-// SSubmit
+// SSubmitRequestData
 ///////////////////////////////////
-void dds::tools_api::SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
+void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<int>("instances", m_instances);
     _pt.put<string>("config", m_config);
@@ -103,7 +119,7 @@ void dds::tools_api::SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt)
     _pt.put<string>("pluginPath", m_pluginPath);
 }
 
-void dds::tools_api::SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_instances = _pt.get<int>("instances", 0);
     m_config = _pt.get<string>("config", "");
@@ -111,49 +127,77 @@ void dds::tools_api::SSubmitRequestData::_fromPT(const boost::property_tree::ptr
     m_pluginPath = _pt.get<string>("pluginPath", "");
 }
 
+bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_rms == _val.m_rms && m_instances == _val.m_instances &&
+            m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
+}
+
+std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data)
+{
+    return _os << _data.defaultToString() << "; instances: " << _data.m_instances << "; config: " << _data.m_config
+               << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
+}
+
 ///////////////////////////////////
-// STopology
+// STopologyRequestData
 ///////////////////////////////////
-void dds::tools_api::STopologyRequestData::_toPT(boost::property_tree::ptree& _pt) const
+void STopologyRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint8_t>("updateType", static_cast<uint8_t>(m_updateType));
     _pt.put<string>("topologyFile", m_topologyFile);
     _pt.put<bool>("disableValidation", m_disableValidation);
 }
 
-void dds::tools_api::STopologyRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+void STopologyRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_updateType = static_cast<EUpdateType>(_pt.get<uint8_t>("updateType", 0));
     m_topologyFile = _pt.get<string>("topologyFile", "");
     m_disableValidation = _pt.get<bool>("disableValidation", false);
 }
 
+bool STopologyRequestData::operator==(const STopologyRequestData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_updateType == _val.m_updateType && m_topologyFile == _val.m_topologyFile &&
+            m_disableValidation == _val.m_disableValidation);
+}
+
+std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data)
+{
+    return _os << _data.defaultToString() << "; updateType: " << static_cast<uint8_t>(_data.m_updateType)
+               << "; topologyFile: " << _data.m_topologyFile << "; disableValidation: " << _data.m_disableValidation;
+}
+
 ///////////////////////////////////
-// SCommanderInfo
+// SCommanderInfoResponseData
 ///////////////////////////////////
-void dds::tools_api::SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
+void SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<pid_t>("pid", m_pid);
     _pt.put<std::string>("activeTopologyName", m_activeTopologyName);
 }
 
-void dds::tools_api::SCommanderInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+void SCommanderInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_pid = _pt.get<pid_t>("pid", 0);
     m_activeTopologyName = _pt.get<std::string>("activeTopologyName", std::string());
 }
 
-void dds::tools_api::SCommanderInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+bool SCommanderInfoResponseData::operator==(const SCommanderInfoResponseData& _val) const
 {
+    return (SBaseData::operator==(_val) && m_pid == _val.m_pid && m_activeTopologyName == _val.m_activeTopologyName);
 }
-void dds::tools_api::SCommanderInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
+
+std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
 {
+    return _os << _data.defaultToString() << "; pid: " << _data.m_pid
+               << "; activeTopologyName: " << _data.m_activeTopologyName;
 }
 
 ///////////////////////////////////
-// SAgentInfo
+// SAgentInfoResponseData
 ///////////////////////////////////
-void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
+void SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("index", m_index);
     _pt.put<bool>("lobbyLeader", m_lobbyLeader);
@@ -167,7 +211,7 @@ void dds::tools_api::SAgentInfoResponseData::_toPT(boost::property_tree::ptree& 
     _pt.put<uint32_t>("agentPid", m_agentPid);
 }
 
-void dds::tools_api::SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+void SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_index = _pt.get<uint32_t>("index", 0);
     m_lobbyLeader = _pt.get<bool>("lobbyLeader", false);
@@ -181,33 +225,49 @@ void dds::tools_api::SAgentInfoResponseData::_fromPT(const boost::property_tree:
     m_agentPid = _pt.get<uint32_t>("agentPid", 0);
 }
 
-void dds::tools_api::SAgentInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) const
 {
+    return (SBaseData::operator==(_val) && m_index == _val.m_index && m_lobbyLeader == _val.m_lobbyLeader &&
+            m_agentID == _val.m_agentID && m_taskID == _val.m_taskID && m_startUpTime == _val.m_startUpTime &&
+            m_agentState == _val.m_agentState && m_username == _val.m_username && m_host == _val.m_host &&
+            m_DDSPath == _val.m_DDSPath && m_agentPid == _val.m_agentPid);
 }
-void dds::tools_api::SAgentInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
+
+std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
 {
+    return _os << _data.defaultToString() << "; index: " << _data.m_index << "; m_lobbyLeader: " << _data.m_lobbyLeader
+               << "; agentID: " << _data.m_agentID << "; taskID: " << _data.m_taskID
+               << "; startUpTime: " << _data.m_startUpTime.count() << "; agentState: " << _data.m_agentState
+               << "; username: " << _data.m_username << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath
+               << "; agentPid: " << _data.m_agentPid;
 }
 
 ///////////////////////////////////
-// SAgentCount
+// SAgentCountResponseData
 ///////////////////////////////////
-void dds::tools_api::SAgentCountResponseData::_toPT(boost::property_tree::ptree& _pt) const
+void SAgentCountResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
     _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
     _pt.put<uint32_t>("executingAgentsCount", m_executingAgentsCount);
 }
 
-void dds::tools_api::SAgentCountResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+void SAgentCountResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_activeAgentsCount = _pt.get<uint32_t>("activeAgentsCount", 0);
     m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
     m_executingAgentsCount = _pt.get<uint32_t>("executingAgentsCount", 0);
 }
 
-void dds::tools_api::SAgentCountRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+bool SAgentCountResponseData::operator==(const SAgentCountResponseData& _val) const
 {
+    return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
+            m_idleAgentsCount == _val.m_idleAgentsCount && m_executingAgentsCount == _val.m_executingAgentsCount);
 }
-void dds::tools_api::SAgentCountRequestData::_toPT(boost::property_tree::ptree& _pt) const
+
+std::ostream& operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
 {
+    return _os << _data.defaultToString() << "; activeAgentsCount: " << _data.m_activeAgentsCount
+               << "; idleAgentsCount: " << _data.m_idleAgentsCount
+               << "; executingAgentsCount: " << _data.m_executingAgentsCount;
 }
