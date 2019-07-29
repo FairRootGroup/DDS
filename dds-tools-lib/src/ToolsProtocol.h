@@ -246,8 +246,16 @@ namespace dds
 
         struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
         {
-            uint32_t m_index = 0;    ///< index of the current agent
-            std::string m_agentInfo; ///< info on the current agent
+            uint32_t m_index = 0;                                                   ///< Index of the current agent
+            bool m_lobbyLeader = false;                                             ///< Agent is lobby leader
+            uint64_t m_agentID = 0;                                                 ///< Agent ID
+            uint64_t m_taskID = 0;                                                  ///< Task ID, 0 for idle agents
+            std::chrono::milliseconds m_startUpTime = std::chrono::milliseconds(0); ///< Agent's startup time
+            std::string m_agentState = "unknown";                                   ///< Agent's state
+            std::string m_username;                                                 ///< Username
+            std::string m_host;                                                     ///< Hostname
+            std::string m_DDSPath;                                                  ///< DDS path
+            uint32_t m_agentPid;                                                    ///< Agent's process ID
 
           private:
             friend SBaseData<SAgentInfoResponseData>;
@@ -263,7 +271,11 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SAgentInfoResponseData& _val) const
             {
-                return (SBaseData::operator==(_val) && m_index == _val.m_index && m_agentInfo == _val.m_agentInfo);
+                return (SBaseData::operator==(_val) && m_index == _val.m_index && m_lobbyLeader == _val.m_lobbyLeader &&
+                        m_agentID == _val.m_agentID && m_taskID == _val.m_taskID &&
+                        m_startUpTime == _val.m_startUpTime && m_agentState == _val.m_agentState &&
+                        m_username == _val.m_username && m_host == _val.m_host && m_DDSPath == _val.m_DDSPath &&
+                        m_agentPid == _val.m_agentPid);
             }
         };
 

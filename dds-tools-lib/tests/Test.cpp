@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
         {
             SMessageResponseData testData;
             testData.m_msg = "string";
-            testData.m_severity = dds::intercom_api::EMsgSeverity(123);
+            testData.m_severity = dds::intercom_api::EMsgSeverity::info;
             testData.m_requestID = 123;
 
             SMessageResponseData data;
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
         else if (tag == "topology")
         {
             STopologyRequestData testData;
-            testData.m_updateType = dds::tools_api::STopologyRequestData::EUpdateType(123);
+            testData.m_updateType = dds::tools_api::STopologyRequestData::EUpdateType::UPDATE;
             testData.m_topologyFile = "string";
             testData.m_disableValidation = false;
             testData.m_requestID = 123;
@@ -123,7 +123,15 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
         {
             SAgentInfoResponseData testData;
             testData.m_index = 123;
-            testData.m_agentInfo = "string";
+            testData.m_lobbyLeader = true;
+            testData.m_agentID = 3456;
+            testData.m_taskID = 5678;
+            testData.m_startUpTime = std::chrono::milliseconds(12345);
+            testData.m_agentState = "executing";
+            testData.m_username = "user1";
+            testData.m_host = "host1";
+            testData.m_DDSPath = "/path/to/dds";
+            testData.m_agentPid = 34;
             testData.m_requestID = 123;
 
             SAgentInfoResponseData data;

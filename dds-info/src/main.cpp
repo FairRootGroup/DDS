@@ -75,8 +75,14 @@ void requestAgentInfo(CSession& _session, const SOptions_t& _options)
 
     requestPtr->setDoneCallback([&_session]() { _session.stop(); });
 
-    requestPtr->setResponseCallback(
-        [](const SAgentInfoResponseData& _info) { LOG(log_stdout_clean) << _info.m_agentInfo; });
+    requestPtr->setResponseCallback([](const SAgentInfoResponseData& _info) {
+        LOG(log_stdout_clean) << " -------------->>> " << _info.m_agentID << "\nHost Info: " << _info.m_username << "@"
+                              << _info.m_host << ":" << _info.m_DDSPath << "\nAgent pid: " << _info.m_agentPid
+                              << "\nAgent startup time: " << chrono::duration<double>(_info.m_startUpTime).count()
+                              << " s"
+                              << "\nState: " << _info.m_agentState << "\n"
+                              << "\nTask ID: " << _info.m_taskID << "\n";
+    });
 
     _session.sendRequest<SAgentInfoRequest>(requestPtr);
 }

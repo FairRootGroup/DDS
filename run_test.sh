@@ -90,6 +90,11 @@ echo "dds-user-defaults UNIT-TESTs"
 echo "----------------------"
 exec_test "dds-user-defaults-tests"
 
+echo "----------------------"
+echo "dds_tools_lib-tests UNIT-TESTs"
+echo "----------------------"
+exec_test "dds_tools_lib-tests"
+
 popd
 
 exit 0
