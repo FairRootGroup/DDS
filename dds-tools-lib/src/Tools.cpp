@@ -181,7 +181,7 @@ boost::uuids::uuid CSession::getSessionID() const
 void CSession::blockCurrentThread()
 {
     if (m_impl->m_sid.is_nil())
-        throw runtime_error("ToolsAPI: First create or attache to a DDS session.");
+        throw runtime_error("ToolsAPI: First create or attach to a DDS session.");
 
     size_t num_requests = m_impl->m_requests.size();
 
@@ -350,3 +350,148 @@ template void CSession::sendRequest<SGetLogRequest>(SGetLogRequest::ptr_t);
 template void CSession::sendRequest<SCommanderInfoRequest>(SCommanderInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentInfoRequest>(SAgentInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentCountRequest>(SAgentCountRequest::ptr_t);
+
+template <class Request_t>
+void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
+                               const std::chrono::seconds& _timeout,
+                               std::ostream* _out)
+{
+    typename Request_t::responseVector_t responseVector;
+    syncSendRequest<Request_t>(_requestData, responseVector, _timeout, _out);
+}
+
+template void CSession::syncSendRequest<SSubmitRequest>(const SSubmitRequest::request_t&,
+                                                        const std::chrono::seconds&,
+                                                        ostream*);
+template void CSession::syncSendRequest<STopologyRequest>(const STopologyRequest::request_t&,
+                                                          const std::chrono::seconds&,
+                                                          ostream*);
+template void CSession::syncSendRequest<SGetLogRequest>(const SGetLogRequest::request_t&,
+                                                        const std::chrono::seconds&,
+                                                        ostream*);
+
+template <class Request_t>
+void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
+                               typename Request_t::response_t& _responseData,
+                               const std::chrono::seconds& _timeout,
+                               std::ostream* _out)
+{
+    typename Request_t::responseVector_t responseVector;
+    syncSendRequest<Request_t>(_requestData, responseVector, _timeout, _out);
+    if (responseVector.empty())
+        throw runtime_error("Request failed: empty vector of response data");
+    _responseData = responseVector.front();
+}
+
+template void CSession::syncSendRequest<SCommanderInfoRequest>(const SCommanderInfoRequest::request_t&,
+                                                               SCommanderInfoRequest::response_t&,
+                                                               const std::chrono::seconds&,
+                                                               ostream*);
+template void CSession::syncSendRequest<SAgentCountRequest>(const SAgentCountRequest::request_t&,
+                                                            SAgentCountRequest::response_t&,
+                                                            const std::chrono::seconds&,
+                                                            ostream*);
+
+template <class Request_t>
+void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
+                               typename Request_t::responseVector_t& _responseDataVector,
+                               const std::chrono::seconds& _timeout,
+                               std::ostream* _out)
+{
+    // TODO: FIXME: Dublicate output to DDS log?
+
+    if (getSessionID().is_nil() || !IsRunning())
+        throw runtime_error("Failed to send request: DDS session is not running");
+
+    _responseDataVector.clear();
+
+    typename Request_t::ptr_t requestPtr = Request_t::makeRequest(_requestData);
+
+    requestPtr->setResponseCallback(
+        [&_responseDataVector](const typename Request_t::response_t& _data) { _responseDataVector.push_back(_data); });
+
+    //    requestPtr->setProgressCallback([](const SProgressResponseData&) {
+    //        // No progress reporting for sync version
+    //    });
+
+    requestPtr->setMessageCallback([&_out](const SMessageResponseData& _message) {
+        if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+        {
+            throw runtime_error("Failed to submit agents: server reports error: " + _message.m_msg);
+        }
+        else
+        {
+            if (_out != nullptr)
+                *_out << "Server reports: " << _message.m_msg << endl;
+        }
+    });
+
+    std::condition_variable cv;
+
+    requestPtr->setDoneCallback([&cv]() { cv.notify_all(); });
+
+    sendRequest<Request_t>(requestPtr);
+
+    std::mutex mtx;
+    std::unique_lock<std::mutex> lock(mtx);
+    if (_timeout.count() == 0)
+    {
+        cv.wait(lock);
+    }
+    else
+    {
+        std::cv_status waitStatus = cv.wait_for(lock, _timeout);
+        if (waitStatus == std::cv_status::timeout)
+        {
+            throw runtime_error("Timed out waiting for request");
+        }
+    }
+
+    if (_out != nullptr)
+        *_out << "Request finished successfully" << endl;
+}
+
+template void CSession::syncSendRequest<SAgentInfoRequest>(const SAgentInfoRequest::request_t&,
+                                                           SAgentInfoRequest::responseVector_t&,
+                                                           const std::chrono::seconds&,
+                                                           ostream*);
+
+template <CSession::EAgentState _state>
+void CSession::waitForNumAgents(size_t _numAgents,
+                                const std::chrono::seconds& _timeout,
+                                const std::chrono::milliseconds& _requestInterval,
+                                size_t _maxRequests,
+                                ostream* _out)
+{
+    size_t counter = 0;
+    while (true)
+    {
+        SAgentCountRequest::response_t response;
+        syncSendRequest<SAgentCountRequest>(SAgentCountRequest::request_t(), response, _timeout, _out);
+
+        // Check if we have the required number of agents
+        if ((_state == CSession::EAgentState::active && (response.m_activeAgentsCount < _numAgents)) ||
+            (_state == CSession::EAgentState::idle && (response.m_idleAgentsCount < _numAgents)) ||
+            (_state == CSession::EAgentState::executing && (response.m_executingAgentsCount < _numAgents)))
+        {
+            if (_maxRequests != 0 && counter > _maxRequests)
+            {
+                throw runtime_error(
+                    "Failed to wait for the required number of agents: exceed maximum number of requests");
+            }
+            this_thread::sleep_for(_requestInterval);
+        }
+        else
+        {
+            return;
+        }
+        counter++;
+    }
+}
+
+template void CSession::waitForNumAgents<CSession::EAgentState::active>(
+    size_t, const std::chrono::seconds&, const std::chrono::milliseconds&, size_t, ostream*);
+template void CSession::waitForNumAgents<CSession::EAgentState::idle>(
+    size_t, const std::chrono::seconds&, const std::chrono::milliseconds&, size_t, ostream*);
+template void CSession::waitForNumAgents<CSession::EAgentState::executing>(
+    size_t, const std::chrono::seconds&, const std::chrono::milliseconds&, size_t, ostream*);

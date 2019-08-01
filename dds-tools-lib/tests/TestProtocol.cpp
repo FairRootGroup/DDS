@@ -19,7 +19,7 @@ using namespace dds;
 using namespace dds::tools_api;
 using namespace boost::property_tree;
 
-BOOST_AUTO_TEST_SUITE(test_dds_tools)
+BOOST_AUTO_TEST_SUITE(test_dds_tools_protocol)
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_Done)
 {
@@ -183,24 +183,6 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_toJSON)
     dataCommanderInfo.fromPT(childPT);
 
     BOOST_CHECK(dataCommanderInfo == dataCommanderInfoTest);
-}
-
-BOOST_AUTO_TEST_CASE(test_dds_tools_session)
-{
-    CSession session;
-    boost::uuids::uuid sid = session.create();
-    BOOST_CHECK(!sid.is_nil());
-    BOOST_CHECK(session.IsRunning());
-
-    CSession sessionAttach;
-    sessionAttach.attach(session.getSessionID());
-    BOOST_CHECK(!sessionAttach.getSessionID().is_nil());
-    BOOST_CHECK(sessionAttach.IsRunning());
-
-    session.shutdown();
-    BOOST_CHECK(session.getSessionID().is_nil());
-    BOOST_CHECK(!session.IsRunning());
-    BOOST_CHECK(!sessionAttach.IsRunning());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

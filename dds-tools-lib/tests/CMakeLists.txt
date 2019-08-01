@@ -5,10 +5,11 @@ project(dds_tools_lib-tests)
 
 #=============================================================================
 
-add_executable(dds_tools_lib-tests Test.cpp)
+add_executable(dds_tools_lib-protocol-tests TestProtocol.cpp)
 
-target_link_libraries(dds_tools_lib-tests
+target_link_libraries(dds_tools_lib-protocol-tests
   PUBLIC
+    dds_topology_lib
   	dds_tools_lib
 	dds_user_defaults_lib
 	Boost::unit_test_framework
@@ -16,7 +17,7 @@ target_link_libraries(dds_tools_lib-tests
 )
 
 install(TARGETS
-  dds_tools_lib-tests
+  dds_tools_lib-protocol-tests
 
   RUNTIME DESTINATION tests
 )
@@ -25,4 +26,24 @@ install(FILES
   test_protocol_1.json
 
   DESTINATION tests
+)
+
+
+#=============================================================================
+
+add_executable(dds_tools_lib-session-tests TestSession.cpp)
+
+target_link_libraries(dds_tools_lib-session-tests
+  PUBLIC
+    dds_topology_lib
+  	dds_tools_lib
+	dds_user_defaults_lib
+	Boost::unit_test_framework
+	Boost::filesystem
+)
+
+install(TARGETS
+  dds_tools_lib-session-tests
+
+  RUNTIME DESTINATION tests
 )

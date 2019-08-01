@@ -91,9 +91,14 @@ echo "----------------------"
 exec_test "dds-user-defaults-tests"
 
 echo "----------------------"
-echo "dds_tools_lib-tests UNIT-TESTs"
+echo "dds_tools_lib-protocol-tests UNIT-TESTs"
 echo "----------------------"
-exec_test "dds_tools_lib-tests"
+exec_test "dds_tools_lib-protocol-tests"
+
+echo "----------------------"
+echo "dds_tools_lib-session-tests UNIT-TESTs"
+echo "----------------------"
+exec_test "dds_tools_lib-session-tests"
 
 popd
 

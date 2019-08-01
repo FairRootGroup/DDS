@@ -7,7 +7,7 @@ configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
 set(SOURCE_FILES
     src/Tools.cpp
-	src/ToolsProtocol.cpp
+    src/ToolsProtocol.cpp
 )
 
 set(HEADER_FILES
@@ -15,19 +15,19 @@ set(HEADER_FILES
 
 set(HEADER_FILES_EXT
     src/Tools.h
-	src/ToolsProtocol.h
-	src/ToolsProtocolCore.h
+    src/ToolsProtocol.h
+    src/ToolsProtocolCore.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-	dds_user_defaults_lib
-	dds_intercom_lib
+    dds_user_defaults_lib
+    dds_intercom_lib
     Boost::boost
     Boost::filesystem
-	Boost::regex
+    Boost::regex
 )
 
 target_include_directories(${PROJECT_NAME}
