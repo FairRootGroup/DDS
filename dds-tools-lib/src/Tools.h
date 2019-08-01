@@ -6,14 +6,13 @@
 #ifndef DDS_TOOLS_H
 #define DDS_TOOLS_H
 
+// DDS
+#include "ToolsProtocol.h"
 // STD
 #include <string>
 // BOOST
-#include <boost/any.hpp>
-#include <boost/filesystem.hpp>
-// DDS
-#include "ToolsProtocol.h"
-#include "dds_intercom.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/uuid/uuid.hpp>
 
 namespace dds
 {
@@ -105,16 +104,12 @@ namespace dds
          */
         class CSession
         {
-            typedef std::map<requestID_t, boost::any> requests_t;
-
           public:
             /// \brief Constructor of a DDS Session class.
             /// \param[in] _DDSLocation A full path to DDS directory
             CSession();
             /// \brief A destructor
             ~CSession();
-
-          public:
             /// \brief Creates a new DDS session
             boost::uuids::uuid create();
             /// \brief Attaches to an existing DDS session
@@ -143,26 +138,10 @@ namespace dds
             void blockCurrentThread();
             /// \brief Stop DDS session
             void stop();
-
-          public:
             /// \brief Sends the request to DDS commander
             /// \param[in] _request Request object. If _request is nullptr than throws std::runtime_error
             template <class T>
-            void sendRequest(typename T::ptr_t _request)
-            {
-                if (!_request)
-                    throw std::runtime_error("sendRequest: argument can't be NULL");
-
-                requestID_t reqID = _request->getRequest().m_requestID;
-                m_requests.insert(std::make_pair(reqID, _request));
-
-                m_customCmd.send(_request->getRequest().toJSON(), dds::intercom_api::g_sToolsAPISign);
-            }
-
-          protected:
-            /// \brief Parse the input stream and notify subscribers.
-            /// \param[in] _stream Stream with JSON data from DDS commander.
-            void notify(std::istream& _stream);
+            void sendRequest(typename T::ptr_t _request);
 
           private:
             /// \brief Subscribe to custom commands.
@@ -171,49 +150,18 @@ namespace dds
             /// \return True if DDS is available, otherwise False
             bool isDDSAvailable() const;
 
+            void notify(std::istream& _stream);
+
+            // Map request ID to the actual request object
+            typedef std::map<requestID_t, boost::any> requests_t;
+
             template <class T>
             void processRequest(requests_t::mapped_type _request,
                                 const boost::property_tree::ptree::value_type& _child,
-                                std::function<void(typename T::ptr_t)> _processResponseCallback)
-            {
-                const std::string& tag = _child.first;
+                                std::function<void(typename T::ptr_t)> _processResponseCallback);
 
-                auto request = boost::any_cast<typename T::ptr_t>(_request);
-                try
-                {
-                    if (tag == "done")
-                    {
-                        request->execDoneCallback();
-                    }
-                    else if (tag == "message")
-                    {
-                        SMessageResponseData msg;
-                        msg.fromPT(_child.second);
-                        request->execMessageCallback(msg);
-                    }
-                    else if (tag == "progress")
-                    {
-                        SProgressResponseData progress;
-                        progress.fromPT(_child.second);
-                        request->execProgressCallback(progress);
-                    }
-                    else
-                    {
-                        if (_processResponseCallback)
-                            _processResponseCallback(request);
-                    }
-                }
-                catch (const std::exception& _e)
-                {
-                    throw std::runtime_error("DDS tools API: User's callback exception: " + std::string(_e.what()));
-                }
-            }
-
-          private:
-            boost::uuids::uuid m_sid;                      ///< Session ID.
-            dds::intercom_api::CIntercomService m_service; ///< Intercom service.
-            dds::intercom_api::CCustomCmd m_customCmd; ///< Custom commands API. Used for communication with commander.
-            requests_t m_requests;                     ///< Array of requests.
+            struct SImpl;
+            std::shared_ptr<SImpl> m_impl;
         };
     } // namespace tools_api
 } // namespace dds
