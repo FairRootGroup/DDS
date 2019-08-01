@@ -5,6 +5,7 @@
 ### dds-tools-api
 Fixed: newly created DDS session fails to send custom commands.    
 Added: Agent count options moved from SAgentInfoRequest to a new SAgentCountRequest.    
+Added: Sync counterparts for each request in Tools API.    
 
 ### dds-topology
 Added: parsing and reporting of the topology name: "dds-info --active-topology", "dds-topology --topology-name <topo.xml>", CTopology::getName().    

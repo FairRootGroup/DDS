@@ -9,6 +9,7 @@
 // DDS
 #include "ToolsProtocol.h"
 // STD
+#include <iostream>
 #include <string>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
@@ -101,10 +102,48 @@ namespace dds
          session.blockCurrentThread();
          * \endcode
          *
+         *
+         * \par Example3: Sync Tools API example
+         * \code
+         const string topoFile("property_test.xml");
+         const std::chrono::seconds timeout(20);
+         const std::chrono::milliseconds requestInterval(500);
+         const size_t maxRequests(10);
+         
+         CSession session;
+         boost::uuids::uuid sid = session.create();
+         
+         CTopology topo(topoFile);
+         size_t numAgents = topo.getRequiredNofAgents();
+         
+         SSubmitRequest::request_t submitInfo;
+         submitInfo.m_rms = "localhost";
+         submitInfo.m_instances = numAgents;
+         session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout);
+         
+         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests, &std::cout);
+         
+         STopologyRequest::request_t topoInfo;
+         topoInfo.m_topologyFile = topoFile;
+         topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+         session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout);
+         
+         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests, &std::cout);
+         
+         session.shutdown();
+         * \endcode
+         *
          */
         class CSession
         {
           public:
+            enum class EAgentState
+            {
+                active = 0,
+                idle,
+                executing
+            };
+
             /// \brief Constructor of a DDS Session class.
             /// \param[in] _DDSLocation A full path to DDS directory
             CSession();
@@ -138,10 +177,60 @@ namespace dds
             void blockCurrentThread();
             /// \brief Stop DDS session
             void stop();
-            /// \brief Sends the request to DDS commander
+
+            /// \brief Sends the async request to DDS commander
             /// \param[in] _request Request object. If _request is nullptr than throws std::runtime_error
             template <class T>
             void sendRequest(typename T::ptr_t _request);
+
+            /// \brief Sends the sync request to DDS commander.
+            /// \param[in] _requestData Request data object.
+            /// \param[in] _timeout Timeout in seconds. Timeout of 0 means no timeout is applied (default).
+            /// \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
+            /// \throw std::runtime_error
+            template <class Request_t>
+            void syncSendRequest(const typename Request_t::request_t& _requestData,
+                                 const std::chrono::seconds& _timeout = std::chrono::seconds(0),
+                                 std::ostream* _out = nullptr);
+
+            /// \brief Sends the sync request to DDS commander.
+            /// \param[in] _requestData Request data object.
+            /// \param[out] _responseData Response data object.
+            /// \param[in] _timeout Timeout in seconds. Timeout of 0 means no timeout is applied (default).
+            /// \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
+            /// \throw std::runtime_error
+            template <class Request_t>
+            void syncSendRequest(const typename Request_t::request_t& _requestData,
+                                 typename Request_t::response_t& _responseData,
+                                 const std::chrono::seconds& _timeout = std::chrono::seconds(0),
+                                 std::ostream* _out = nullptr);
+
+            /// \brief Sends the sync request to DDS commander.
+            /// \param[in] _requestData Request data object.
+            /// \param[out] _responseDataVector Vector of response data object.
+            /// \param[in] _timeout Timeout in seconds. Timeout of 0 means no timeout is applied (default).
+            /// \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
+            /// \throw std::runtime_error
+            template <class Request_t>
+            void syncSendRequest(const typename Request_t::request_t& _requestData,
+                                 typename Request_t::responseVector_t& _responseDataVector,
+                                 const std::chrono::seconds& _timeout = std::chrono::seconds(0),
+                                 std::ostream* _out = nullptr);
+
+            /// \brief Wait for the required number of agents with a certain state.
+            /// \param[in] _numAgents Required number of agents. Must be > 0.
+            /// \param[in] _timeout Timeout per each request in seconds. Timeout of 0 means no timeout is applied
+            /// (default).
+            /// \param[in] _requestInterval Interval between SAgentCountRequest requests in milliseconds.
+            /// \param[in] _maxRequests Maximum number of requests. 0 means no limits (default).
+            /// \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
+            /// \throw std::runtime_error
+            template <EAgentState _state>
+            void waitForNumAgents(size_t _numAgents,
+                                  const std::chrono::seconds& _timeout = std::chrono::seconds(0),
+                                  const std::chrono::milliseconds& _requestInterval = std::chrono::milliseconds(500),
+                                  size_t _maxRequests = 0,
+                                  std::ostream* _out = nullptr);
 
           private:
             /// \brief Subscribe to custom commands.

@@ -225,6 +225,7 @@ namespace dds
         {
             using response_t = TResponse;
             using request_t = TRequest;
+            using responseVector_t = std::vector<response_t>;
 
             typedef std::shared_ptr<SBaseRequestImpl> ptr_t;
 
