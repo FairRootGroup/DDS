@@ -9,13 +9,11 @@
 // STD
 #include <ostream>
 #include <string>
-// BOOST
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
+//// BOOST
+#include <boost/property_tree/ptree.hpp>
 // DDS
 #include "ToolsProtocolCore.h"
+#include "dds_intercom.h"
 
 namespace dds
 {
