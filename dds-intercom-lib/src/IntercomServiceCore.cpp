@@ -245,7 +245,7 @@ connection_t CIntercomServiceCore::connectKeyValue(keyValueSignal_t::slot_functi
     return m_keyValueUpdateSignal.connect(_subscriber);
 }
 
-connection_t CIntercomServiceCore::connectKeyValueDelete(keyValueTaskDoneSignal_t::slot_function_type _subscriber)
+connection_t CIntercomServiceCore::connectKeyValueTaskDone(keyValueTaskDoneSignal_t::slot_function_type _subscriber)
 {
     return m_keyValueTaskDoneSignal.connect(_subscriber);
 }

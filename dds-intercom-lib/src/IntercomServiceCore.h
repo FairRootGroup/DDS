@@ -54,7 +54,7 @@ namespace dds
             connection_t connectCustomCmd(customCmdSignal_t::slot_function_type _subscriber);
             connection_t connectCustomCmdReply(customCmdReplySignal_t::slot_function_type _subscriber);
             connection_t connectKeyValue(keyValueSignal_t::slot_function_type _subscriber);
-            connection_t connectKeyValueDelete(keyValueTaskDoneSignal_t::slot_function_type _subscriber);
+            connection_t connectKeyValueTaskDone(keyValueTaskDoneSignal_t::slot_function_type _subscriber);
             void disconnectCustomCmd();
             void disconnectKeyValue();
 

@@ -25,12 +25,13 @@ CIntercomService::~CIntercomService()
 void CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
 {
     connection_t connection = m_impl->connectError(_subscriber);
+    LOG(info) << "User process is waiting error events.";
 }
 
 void CIntercomService::subscribeOnTaskDone(taskDoneSignal_t::slot_function_type _subscriber)
 {
-    connection_t connection = m_impl->connectKeyValueDelete(_subscriber);
-    LOG(info) << "User process is waiting for property keys deletes.";
+    connection_t connection = m_impl->connectKeyValueTaskDone(_subscriber);
+    LOG(info) << "User process is waiting for task done events.";
 }
 
 void CIntercomService::start(const std::string& _sessionID)
