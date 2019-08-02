@@ -4,6 +4,8 @@
 //
 #ifndef DDS_INTERCOM_H_
 #define DDS_INTERCOM_H_
+// DDS
+#include "IntercomServiceCore.h"
 // STD
 #include <ostream>
 #include <string>
@@ -37,6 +39,7 @@ namespace dds
             typedef boost::signals2::signal<void(uint64_t /*_taskID*/, uint32_t /*_exitCode*/)> taskDoneSignal_t;
 
           public:
+            CIntercomService();
             ~CIntercomService();
 
             /// \brief Subscribe on error messages from DDS intercom service
@@ -45,6 +48,15 @@ namespace dds
             void subscribeOnTaskDone(taskDoneSignal_t::slot_function_type _subscriber);
             /// \brief Start DDS service, i.e. receiving and sending messages.
             void start(const std::string& _sessionID = "");
+
+            // TODO: FIXME: workaround for old functionality. This functions will be removed in the future releases.
+            void waitCondition();
+            void stopCondition();
+
+          private:
+            friend class CKeyValue;
+            friend class CCustomCmd;
+            internal_api::CIntercomServiceCore::ptr_t m_impl;
         };
 
         ///////////////////////////////////
@@ -67,10 +79,8 @@ namespace dds
             void subscribe(signal_t::slot_function_type _subscriber);
             void unsubscribe();
 
-          public:
-            CIntercomService& m_service; ///< Reference to intercom service. Internally we don't use this object. We
-                                         /// store the reference in order to keep the relation between CKeyValue and
-                                         /// CIntercomService.
+          private:
+            CIntercomService& m_service; ///< Reference to intercom service.
         };
 
         ///////////////////////////////////
@@ -95,10 +105,8 @@ namespace dds
             void subscribeOnReply(replySignal_t::slot_function_type _subscriber);
             void unsubscribe();
 
-          public:
-            CIntercomService& m_service; ///< Reference to intercom service. Internally we don't use this object. We
-                                         /// store the reference in order to keep the relation between CCustomCmd and
-                                         /// CIntercomService.
+          private:
+            CIntercomService& m_service; ///< Reference to intercom service.
         };
 
         ///////////////////////////////////

@@ -224,13 +224,13 @@ void CRMSPluginProtocol::start(bool _block)
     // We wait only if _block is true and we have subscribers
     if (_block && num_slots > 0)
     {
-        internal_api::CIntercomServiceCore::instance().waitCondition();
+        m_service.waitCondition();
     }
 }
 
 void CRMSPluginProtocol::stop()
 {
-    internal_api::CIntercomServiceCore::instance().stopCondition();
+    m_service.stopCondition();
 }
 
 void CRMSPluginProtocol::sendMessage(EMsgSeverity _severity, const std::string& _msg)
