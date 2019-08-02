@@ -5,17 +5,21 @@
 #ifndef DDS_INTERCOM_H_
 #define DDS_INTERCOM_H_
 // DDS
-#include "IntercomServiceCore.h"
+#include "dds_intercom_error_codes.h"
 // STD
 #include <ostream>
 #include <string>
 // BOOST
-#include "dds_intercom_error_codes.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/signals2/signal.hpp>
 
 namespace dds
 {
+    namespace internal_api
+    {
+        class CIntercomServiceCore;
+    }
+
     /// \brief DDS intercom API
     ///
     /// \detail
@@ -56,7 +60,7 @@ namespace dds
           private:
             friend class CKeyValue;
             friend class CCustomCmd;
-            internal_api::CIntercomServiceCore::ptr_t m_impl;
+            std::shared_ptr<internal_api::CIntercomServiceCore> m_impl;
         };
 
         ///////////////////////////////////
