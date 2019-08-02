@@ -5,8 +5,8 @@
 
 // DDS
 #include "AgentConnectionManager.h"
-#include "DDSIntercomGuard.h"
 #include "ErrorCode.h"
+#include "IntercomServiceCore.h"
 #include "Logger.h"
 #include "Options.h"
 #include "SessionIDFile.h"
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
     {
         try
         {
-            dds::internal_api::CDDSIntercomGuard::clean();
+            dds::internal_api::CIntercomServiceCore::clean();
             clean();
         }
         catch (exception& e)

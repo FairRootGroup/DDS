@@ -2,7 +2,7 @@
 //
 //
 // DDS
-#include "DDSIntercomGuard.h"
+#include "IntercomServiceCore.h"
 #include "dds_intercom.h"
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
@@ -224,13 +224,13 @@ void CRMSPluginProtocol::start(bool _block)
     // We wait only if _block is true and we have subscribers
     if (_block && num_slots > 0)
     {
-        internal_api::CDDSIntercomGuard::instance().waitCondition();
+        internal_api::CIntercomServiceCore::instance().waitCondition();
     }
 }
 
 void CRMSPluginProtocol::stop()
 {
-    internal_api::CDDSIntercomGuard::instance().stopCondition();
+    internal_api::CIntercomServiceCore::instance().stopCondition();
 }
 
 void CRMSPluginProtocol::sendMessage(EMsgSeverity _severity, const std::string& _msg)

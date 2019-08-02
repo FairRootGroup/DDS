@@ -16,7 +16,7 @@
 // MiscCommon
 #include "Process.h"
 // DDS
-#include "DDSIntercomGuard.h"
+#include "IntercomServiceCore.h"
 #include "ToolsProtocol.h"
 #include "UserDefaults.h"
 #include "dds_intercom.h"
@@ -83,7 +83,7 @@ void CSession::stop()
     unsubscribe();
 
     // Stop intercome
-    internal_api::CDDSIntercomGuard::instance().stopCondition();
+    internal_api::CIntercomServiceCore::instance().stopCondition();
 }
 
 boost::uuids::uuid CSession::create()
@@ -188,7 +188,7 @@ void CSession::blockCurrentThread()
     // We wait only if _block is true and we have subscribers
     if (num_requests > 0)
     {
-        internal_api::CDDSIntercomGuard::instance().waitCondition();
+        internal_api::CIntercomServiceCore::instance().waitCondition();
     }
 }
 

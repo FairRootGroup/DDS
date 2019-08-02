@@ -17,6 +17,7 @@ namespace dds
         enum EErrorCode
         {
             ConnectionFailed,        ///< Failed to connect either to DDS commander or to DDS agent.
+            RemoteEndDisconnected,   ///< Remote end closed the connection.
             TransportServiceFailed,  ///< Error in the transport, for example, if DDS is not running.
             UpdateKeyValueFailed,    ///< Key-value update error on the DDS commander side.
             SendKeyValueFailed,      ///< Error sending key-value (if not connected to DDS commander or DDS agent).

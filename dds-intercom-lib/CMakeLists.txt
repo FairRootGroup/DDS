@@ -8,17 +8,15 @@ configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 set(SOURCE_FILES
 	src/dds_intercom.cpp
 	src/dds_rms_plugin_protocol.cpp
-	src/DDSIntercomGuard.cpp
+	src/IntercomServiceCore.cpp
 	src/SMAgentChannel.cpp
-  src/AgentChannel.cpp
-  src/AgentConnectionManager.cpp
+    src/AgentChannel.cpp
 )
 
 set(SRC_HDRS_INT
-	src/DDSIntercomGuard.h
+	src/IntercomServiceCore.h
 	src/SMAgentChannel.h
-  src/AgentChannel.h
-  src/AgentConnectionManager.h
+    src/AgentChannel.h
 )
 
 set(SRC_HDRS
