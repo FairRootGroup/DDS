@@ -12,7 +12,6 @@
 // DDS
 #include "AgentConnectionManager.h"
 #include "CommanderChannel.h"
-#include "DDSIntercomGuard.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 #include "SMCommanderChannel.h"

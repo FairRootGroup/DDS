@@ -5,8 +5,6 @@
 
 // DDS
 #include "AgentChannel.h"
-#include "DDSIntercomGuard.h"
-#include "version.h"
 
 using namespace MiscCommon;
 using namespace dds;
@@ -18,7 +16,6 @@ const uint16_t g_MaxConnectionAttempts = 12;
 
 CAgentChannel::CAgentChannel(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::UNKNOWN, _protocolHeaderID)
-    , m_syncHelper(nullptr)
     , m_connectionAttempts(1)
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
@@ -51,43 +48,4 @@ void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const str
 
         callback(errorMsg);
     }
-}
-
-bool CAgentChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                     const protocol_api::SSenderInfo& _sender)
-{
-    switch (_attachment->m_srcCommand)
-    {
-        case cmdCUSTOM_CMD:
-            LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
-
-            // Call user callback function
-            CDDSIntercomGuard::instance().m_customCmdReplySignal(_attachment->m_sMsg);
-            break;
-
-        default:
-            LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
-            return true;
-    }
-
-    return true;
-}
-
-bool CAgentChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                                   const protocol_api::SSenderInfo& _sender)
-{
-    LOG(info) << "api-guard connection channel exited.";
-    stop();
-    return false;
-}
-
-bool CAgentChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment,
-                                     const protocol_api::SSenderInfo& _sender)
-{
-    LOG(info) << "CAgentChannel::on_cmdCUSTOM_CMD: received custom command: " << *_attachment;
-
-    // Call user callback function
-    CDDSIntercomGuard::instance().m_customCmdSignal(
-        _attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
-    return true;
 }

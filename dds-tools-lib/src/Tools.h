@@ -109,27 +109,29 @@ namespace dds
          const std::chrono::seconds timeout(20);
          const std::chrono::milliseconds requestInterval(500);
          const size_t maxRequests(10);
-         
+
          CSession session;
          boost::uuids::uuid sid = session.create();
-         
+
          CTopology topo(topoFile);
          size_t numAgents = topo.getRequiredNofAgents();
-         
+
          SSubmitRequest::request_t submitInfo;
          submitInfo.m_rms = "localhost";
          submitInfo.m_instances = numAgents;
          session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout);
-         
-         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests, &std::cout);
-         
+
+         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests,
+         &std::cout);
+
          STopologyRequest::request_t topoInfo;
          topoInfo.m_topologyFile = topoFile;
          topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
          session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout);
-         
-         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests, &std::cout);
-         
+
+         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests,
+         &std::cout);
+
          session.shutdown();
          * \endcode
          *
