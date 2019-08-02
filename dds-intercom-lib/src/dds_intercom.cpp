@@ -12,25 +12,40 @@ using namespace dds::protocol_api;
 using namespace MiscCommon;
 using namespace std;
 
+CIntercomService::CIntercomService()
+    : m_impl(make_shared<CIntercomServiceCore>())
+{
+}
+
 CIntercomService::~CIntercomService()
 {
-    CIntercomServiceCore::instance().stop();
+    m_impl->stop();
 }
 
 void CIntercomService::subscribeOnError(errorSignal_t::slot_function_type _subscriber)
 {
-    connection_t connection = CIntercomServiceCore::instance().connectError(_subscriber);
+    connection_t connection = m_impl->connectError(_subscriber);
 }
 
 void CIntercomService::subscribeOnTaskDone(taskDoneSignal_t::slot_function_type _subscriber)
 {
-    connection_t connection = CIntercomServiceCore::instance().connectKeyValueDelete(_subscriber);
+    connection_t connection = m_impl->connectKeyValueDelete(_subscriber);
     LOG(info) << "User process is waiting for property keys deletes.";
 }
 
 void CIntercomService::start(const std::string& _sessionID)
 {
-    CIntercomServiceCore::instance().start(_sessionID);
+    m_impl->start(_sessionID);
+}
+
+void CIntercomService::waitCondition()
+{
+    m_impl->waitCondition();
+}
+
+void CIntercomService::stopCondition()
+{
+    m_impl->stopCondition();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,19 +64,19 @@ CKeyValue::~CKeyValue()
 
 void CKeyValue::putValue(const string& _key, const string& _value)
 {
-    CIntercomServiceCore::instance().putValue(_key, _value);
+    m_service.m_impl->putValue(_key, _value);
 }
 
 void CKeyValue::subscribe(signal_t::slot_function_type _subscriber)
 {
-    connection_t connection = CIntercomServiceCore::instance().connectKeyValue(_subscriber);
+    connection_t connection = m_service.m_impl->connectKeyValue(_subscriber);
     LOG(info) << "User process is waiting for property keys updates.";
 }
 
 void CKeyValue::unsubscribe()
 {
     LOG(info) << "Unsubscribing from KeyValue events.";
-    CIntercomServiceCore::instance().disconnectKeyValue();
+    m_service.m_impl->disconnectKeyValue();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,23 +95,23 @@ CCustomCmd::~CCustomCmd()
 
 void CCustomCmd::send(const std::string& _command, const std::string& _condition)
 {
-    CIntercomServiceCore::instance().sendCustomCmd(_command, _condition);
+    m_service.m_impl->sendCustomCmd(_command, _condition);
 }
 
 void CCustomCmd::subscribe(signal_t::slot_function_type _subscriber)
 {
-    connection_t connection = CIntercomServiceCore::instance().connectCustomCmd(_subscriber);
+    connection_t connection = m_service.m_impl->connectCustomCmd(_subscriber);
     LOG(info) << "User process is waiting for custom commands.";
 }
 
 void CCustomCmd::subscribeOnReply(replySignal_t::slot_function_type _subscriber)
 {
-    connection_t connection = CIntercomServiceCore::instance().connectCustomCmdReply(_subscriber);
+    connection_t connection = m_service.m_impl->connectCustomCmdReply(_subscriber);
     LOG(info) << "User process is waiting for replys from custom commands.";
 }
 
 void CCustomCmd::unsubscribe()
 {
     LOG(info) << "Unsubscribing from CustomCmd events.";
-    CIntercomServiceCore::instance().disconnectCustomCmd();
+    m_service.m_impl->disconnectCustomCmd();
 }

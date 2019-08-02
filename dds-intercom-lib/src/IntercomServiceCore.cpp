@@ -35,12 +35,6 @@ CIntercomServiceCore::~CIntercomServiceCore()
 {
 }
 
-CIntercomServiceCore& CIntercomServiceCore::instance()
-{
-    static CIntercomServiceCore instance;
-    return instance;
-}
-
 void CIntercomServiceCore::start(const std::string& _sessionID)
 {
     if (m_started)
