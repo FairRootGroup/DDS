@@ -56,6 +56,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SMessageResponseData data;
             data.fromPT(child.second);
 
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
             BOOST_CHECK(testData == data);
         }
         else if (tag == "done")
@@ -80,6 +84,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SProgressResponseData data;
             data.fromPT(child.second);
 
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
             BOOST_CHECK(data == testData);
         }
         else if (tag == "submit")
@@ -94,6 +102,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SSubmitRequestData data;
             data.fromPT(child.second);
 
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
             BOOST_CHECK(data == testData);
         }
         else if (tag == "topology")
@@ -106,6 +118,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 
             STopologyRequestData data;
             data.fromPT(child.second);
+
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
 
             BOOST_CHECK(data == testData);
         }
@@ -137,6 +153,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SAgentInfoResponseData data;
             data.fromPT(child.second);
 
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
             BOOST_CHECK(data == testData);
         }
         else if (tag == "agentCount")
@@ -150,6 +170,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SAgentCountResponseData data;
             data.fromPT(child.second);
 
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
             BOOST_CHECK(data == testData);
         }
         else if (tag == "commanderInfo")
@@ -161,6 +185,10 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 
             SCommanderInfoResponseData data;
             data.fromPT(child.second);
+
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
 
             BOOST_CHECK(data == testData);
         }

@@ -52,7 +52,7 @@ bool SProgressResponseData::operator==(const SProgressResponseData& _val) const
             m_errors == _val.m_errors && m_time == _val.m_time);
 }
 
-std::ostream& operator<<(std::ostream& _os, const SProgressResponseData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SProgressResponseData& _data)
 {
     return _os << _data.defaultToString() << "; completed: " << _data.m_completed << "; total: " << _data.m_total
                << "; errors: " << _data.m_errors << "; time: " << _data.m_time
@@ -103,7 +103,7 @@ bool SMessageResponseData::operator==(const SMessageResponseData& _val) const
     return (SBaseData::operator==(_val) && m_msg == _val.m_msg && m_severity == _val.m_severity);
 }
 
-std::ostream& operator<<(std::ostream& _os, const SMessageResponseData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SMessageResponseData& _data)
 {
     return _os << _data.defaultToString() << "; severity: " << _data.m_severity << "; msg: " << _data.m_msg;
 }
@@ -133,7 +133,7 @@ bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
             m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
 }
 
-std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SSubmitRequestData& _data)
 {
     return _os << _data.defaultToString() << "; instances: " << _data.m_instances << "; config: " << _data.m_config
                << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
@@ -162,7 +162,7 @@ bool STopologyRequestData::operator==(const STopologyRequestData& _val) const
             m_disableValidation == _val.m_disableValidation);
 }
 
-std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const STopologyRequestData& _data)
 {
     return _os << _data.defaultToString() << "; updateType: " << static_cast<uint8_t>(_data.m_updateType)
                << "; topologyFile: " << _data.m_topologyFile << "; disableValidation: " << _data.m_disableValidation;
@@ -188,7 +188,7 @@ bool SCommanderInfoResponseData::operator==(const SCommanderInfoResponseData& _v
     return (SBaseData::operator==(_val) && m_pid == _val.m_pid && m_activeTopologyName == _val.m_activeTopologyName);
 }
 
-std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
 {
     return _os << _data.defaultToString() << "; pid: " << _data.m_pid
                << "; activeTopologyName: " << _data.m_activeTopologyName;
@@ -233,7 +233,7 @@ bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) cons
             m_DDSPath == _val.m_DDSPath && m_agentPid == _val.m_agentPid);
 }
 
-std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
 {
     return _os << _data.defaultToString() << "; index: " << _data.m_index << "; m_lobbyLeader: " << _data.m_lobbyLeader
                << "; agentID: " << _data.m_agentID << "; taskID: " << _data.m_taskID
@@ -265,7 +265,7 @@ bool SAgentCountResponseData::operator==(const SAgentCountResponseData& _val) co
             m_idleAgentsCount == _val.m_idleAgentsCount && m_executingAgentsCount == _val.m_executingAgentsCount);
 }
 
-std::ostream& operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
+std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
 {
     return _os << _data.defaultToString() << "; activeAgentsCount: " << _data.m_activeAgentsCount
                << "; idleAgentsCount: " << _data.m_idleAgentsCount
