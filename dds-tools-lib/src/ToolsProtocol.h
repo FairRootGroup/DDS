@@ -39,9 +39,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const SMessageResponseData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const SMessageResponseData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const SMessageResponseData& _data);
 
         /// \brief Structure holds information of a progress response.
         struct SProgressResponseData : SBaseResponseData<SProgressResponseData>
@@ -66,9 +66,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const SProgressResponseData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const SProgressResponseData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const SProgressResponseData& _data);
 
         /// \brief Structure holds information of a submit request.
         struct SSubmitRequestData : SBaseRequestData<SSubmitRequestData>
@@ -87,9 +87,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const SSubmitRequestData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data);
 
         /// \brief Request class of submit.
         using SSubmitRequest = SBaseRequestImpl<SSubmitRequestData, SEmptyResponseData>;
@@ -116,9 +116,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const STopologyRequestData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data);
 
         /// \brief Request class of topology.
         using STopologyRequest = SBaseRequestImpl<STopologyRequestData, SEmptyResponseData>;
@@ -145,9 +145,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const SCommanderInfoResponseData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data);
 
         /// \brief Structure holds information of a commanderInfo request.
         DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SCommanderInfoRequestData, "commanderInfo")
@@ -179,9 +179,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const SAgentInfoResponseData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data);
 
         /// \brief Structure holds information of agentInfo request.
         DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SAgentInfoRequestData, "agentInfo")
@@ -206,9 +206,9 @@ namespace dds
           public:
             /// \brief Equality operator.
             bool operator==(const SAgentCountResponseData& _val) const;
-            /// \brief Ostream operator.
-            friend std::ostream& operator<<(std::ostream& _os, const SAgentCountResponseData& _data);
         };
+        /// \brief Ostream operator.
+        std::ostream& operator<<(std::ostream& _os, const SAgentCountResponseData& _data);
 
         /// \brief Structure holds information of agentCount response.
         DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SAgentCountRequestData, "agentCount")
