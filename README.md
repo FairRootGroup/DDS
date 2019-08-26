@@ -12,6 +12,11 @@ DDS:
 - provides a key-value properties propagation service for tasks,
 - provides a rules based execution of tasks.
 
+## Documentation
+- [User's manual](http://dds.gsi.de/documentation.html)
+- [Installation](http://dds.gsi.de/doc/nightly/install.html)
+- [Quick Start](http://dds.gsi.de/doc/nightly/quick-start.html)
+
 ## Building 3rd-party
 
 ### BOOST on macOS
