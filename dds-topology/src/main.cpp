@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
             return;
         });
 
-        requestPtr->setDoneCallback([&session]() { session.stop(); });
+        requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
         session.sendRequest<STopologyRequest>(requestPtr);
         session.blockCurrentThread();

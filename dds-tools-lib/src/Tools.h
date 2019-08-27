@@ -147,7 +147,6 @@ namespace dds
             };
 
             /// \brief Constructor of a DDS Session class.
-            /// \param[in] _DDSLocation A full path to DDS directory
             CSession();
             /// \brief A destructor
             ~CSession();
@@ -159,10 +158,8 @@ namespace dds
             /// \brief Attaches to an existing DDS session
             /// \param[in] _sid A destination DDS session ID
             void attach(const boost::uuids::uuid& _sid);
-            /// \brief Shutdow currently attached DDS session
+            /// \brief Shutdown currently attached DDS session
             void shutdown();
-            /// \brief Unsibscribe from request notifications
-            void unsubscribe();
             /// \brief Check if DDS session is running
             bool IsRunning() const;
             /// \brief Returns DDS session ID
@@ -178,7 +175,7 @@ namespace dds
             /// \note If there are no subscribers function doesn't wait.
             void blockCurrentThread();
             /// \brief Stop DDS session
-            void stop();
+            void unblockCurrentThread();
 
             /// \brief Sends the async request to DDS commander
             /// \param[in] _request Request object. If _request is nullptr than throws std::runtime_error

@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
             }
         });
 
-        requestPtr->setDoneCallback([&session]() { session.stop(); });
+        requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
         requestPtr->setProgressCallback([&options](const SProgressResponseData& _progress) {
             if (options.m_verbose)

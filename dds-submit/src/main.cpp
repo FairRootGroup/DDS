@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
             chrono::duration<double, std::milli> elapsed = end - start;
             LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
 
-            session.stop();
+            session.unblockCurrentThread();
         });
 
         session.sendRequest<SSubmitRequest>(requestPtr);

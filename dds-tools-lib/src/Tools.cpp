@@ -39,8 +39,8 @@ struct CSession::SImpl
 {
     SImpl()
         : m_sid(boost::uuids::nil_uuid())
-        , m_service()
-        , m_customCmd(m_service)
+        , m_service(nullptr)
+        , m_customCmd(nullptr)
     {
     }
 
@@ -54,10 +54,11 @@ struct CSession::SImpl
     SImpl& operator=(const SImpl&) = delete;
     SImpl& operator=(SImpl&&) = delete;
 
-    boost::uuids::uuid m_sid;                      ///< Session ID.
-    dds::intercom_api::CIntercomService m_service; ///< Intercom service.
-    dds::intercom_api::CCustomCmd m_customCmd;     ///< Custom commands API. Used for communication with commander.
-    requests_t m_requests;                         ///< Array of requests.
+    boost::uuids::uuid m_sid;                                       ///< Session ID.
+    std::shared_ptr<dds::intercom_api::CIntercomService> m_service; ///< Intercom service.
+    std::shared_ptr<dds::intercom_api::CCustomCmd>
+        m_customCmd;       ///< Custom commands API. Used for communication with commander.
+    requests_t m_requests; ///< Array of requests.
 };
 
 ///////////////////////////////////
@@ -70,20 +71,6 @@ CSession::CSession()
 
 CSession::~CSession()
 {
-    if (m_impl->m_sid.is_nil())
-        return;
-
-    unsubscribe();
-
-    stop();
-}
-
-void CSession::stop()
-{
-    unsubscribe();
-
-    // Stop intercome
-    m_impl->m_service.stopCondition();
 }
 
 boost::uuids::uuid CSession::create()
@@ -91,6 +78,9 @@ boost::uuids::uuid CSession::create()
     if (!isDDSAvailable())
         throw runtime_error(
             "ToolsAPI: Missing DDS environment. Make sure to init DDS env using DDS_env.sh before using this API");
+
+    if (!m_impl->m_sid.is_nil())
+        throw runtime_error("ToolsAPI: DDS session is already running.");
 
     // Call "dds-session start" to fireup a new session
     // Get new session ID
@@ -124,6 +114,8 @@ boost::uuids::uuid CSession::create()
             m_impl->m_sid = boost::uuids::string_generator()(results[1].str());
         }
     }
+    if (m_impl->m_sid == boost::uuids::nil_uuid())
+        throw runtime_error("Failed to parse DDS session ID from: " + sOut + "; error: " + sErr);
 
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(boost::uuids::to_string(m_impl->m_sid)),
@@ -147,6 +139,9 @@ void CSession::attach(const boost::uuids::uuid& _sid)
         throw runtime_error(
             "ToolsAPI: Missing DDS environment. Make sure to init DDS env using DDS_env.sh before using this API");
 
+    if (!m_impl->m_sid.is_nil())
+        throw runtime_error("ToolsAPI: DDS session is already running.");
+
     m_impl->m_sid = _sid;
 
     // Reinit UserDefaults and Log with new session ID
@@ -159,6 +154,13 @@ void CSession::attach(const boost::uuids::uuid& _sid)
 
 void CSession::shutdown()
 {
+    if (!isDDSAvailable())
+        throw runtime_error(
+            "ToolsAPI: Missing DDS environment. Make sure to init DDS env using DDS_env.sh before using this API");
+
+    if (m_impl->m_sid.is_nil())
+        throw runtime_error("ToolsAPI: DDS session is not running.");
+
     // stop active session
     string sOut;
     string sErr;
@@ -167,10 +169,13 @@ void CSession::shutdown()
     ssCmd << boost::process::search_path("dds-session").string() << " stop " << boost::uuids::to_string(m_impl->m_sid);
     execute(ssCmd.str(), std::chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
-    if (nExitCode == 0)
-        m_impl->m_sid = boost::uuids::nil_uuid();
+    m_impl->m_sid = boost::uuids::nil_uuid();
+    m_impl->m_customCmd = nullptr;
+    m_impl->m_service = nullptr;
+    m_impl->m_requests.clear();
 
-    unsubscribe();
+    if (nExitCode != 0)
+        throw runtime_error("ToolsAPI: Failed to stop DDS session. Exit code: " + to_string(nExitCode));
 }
 
 boost::uuids::uuid CSession::getSessionID() const
@@ -180,40 +185,34 @@ boost::uuids::uuid CSession::getSessionID() const
 
 void CSession::blockCurrentThread()
 {
-    if (m_impl->m_sid.is_nil())
+    if (m_impl->m_sid.is_nil() || m_impl->m_service == nullptr)
         throw runtime_error("ToolsAPI: First create or attach to a DDS session.");
 
-    size_t num_requests = m_impl->m_requests.size();
-
-    // We wait only if _block is true and we have subscribers
-    if (num_requests > 0)
+    if (m_impl->m_requests.size() > 0)
     {
-        m_impl->m_service.waitCondition();
+        m_impl->m_service->waitCondition();
     }
+}
+
+void CSession::unblockCurrentThread()
+{
+    if (m_impl->m_sid.is_nil() || m_impl->m_service == nullptr)
+        throw runtime_error("ToolsAPI: First create or attach to a DDS session.");
+
+    m_impl->m_service->stopCondition();
 }
 
 void CSession::subscribe()
 {
-    m_impl->m_customCmd.subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
-        // TODO: FIXME: temporary solution for Tools API and custom command living in the same process
-        try
-        {
-            istringstream ss(_command);
-            notify(ss);
-        }
-        catch (exception& error)
-        {
-        }
+    m_impl->m_service = make_shared<dds::intercom_api::CIntercomService>();
+    m_impl->m_customCmd = make_shared<dds::intercom_api::CCustomCmd>(*m_impl->m_service);
+
+    m_impl->m_customCmd->subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
+        istringstream ss(_command);
+        notify(ss);
     });
 
-    m_impl->m_service.start();
-}
-
-void CSession::unsubscribe()
-{
-    m_impl->m_customCmd.unsubscribe();
-
-    m_impl->m_requests.clear();
+    m_impl->m_service->start();
 }
 
 bool CSession::isDDSAvailable() const
@@ -335,13 +334,16 @@ void CSession::processRequest(requests_t::mapped_type _request,
 template <class T>
 void CSession::sendRequest(typename T::ptr_t _request)
 {
-    if (!_request)
+    if (_request == nullptr)
         throw std::runtime_error("sendRequest: argument can't be NULL");
+
+    if (m_impl->m_customCmd == nullptr)
+        throw std::runtime_error("sendRequest: custom commands service is not running");
 
     requestID_t reqID = _request->getRequest().m_requestID;
     m_impl->m_requests.insert(std::make_pair(reqID, _request));
 
-    m_impl->m_customCmd.send(_request->getRequest().toJSON(), dds::intercom_api::g_sToolsAPISign);
+    m_impl->m_customCmd->send(_request->getRequest().toJSON(), dds::intercom_api::g_sToolsAPISign);
 }
 
 template void CSession::sendRequest<SSubmitRequest>(SSubmitRequest::ptr_t);
