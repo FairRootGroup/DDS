@@ -170,8 +170,8 @@ void CSession::shutdown()
     execute(ssCmd.str(), std::chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
     m_impl->m_sid = boost::uuids::nil_uuid();
-    m_impl->m_customCmd = nullptr;
-    m_impl->m_service = nullptr;
+    m_impl->m_customCmd.reset();
+    m_impl->m_service.reset();
     m_impl->m_requests.clear();
 
     if (nExitCode != 0)

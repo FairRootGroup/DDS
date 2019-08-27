@@ -22,31 +22,48 @@ using namespace dds::topology_api;
 
 BOOST_AUTO_TEST_SUITE(test_dds_tools_session)
 
-void createDDS()
+void createDDS(CSession& _session)
 {
-    CSession session;
     boost::uuids::uuid sid;
-    BOOST_CHECK_NO_THROW(sid = session.create());
+    BOOST_CHECK_NO_THROW(sid = _session.create());
     BOOST_CHECK(!sid.is_nil());
-    BOOST_CHECK(session.IsRunning());
+    BOOST_CHECK(_session.IsRunning());
+    BOOST_CHECK_THROW(_session.create(), runtime_error);
+    BOOST_CHECK_THROW(_session.attach(sid), runtime_error);
 
     CSession sessionAttach;
-    BOOST_CHECK_NO_THROW(sessionAttach.attach(session.getSessionID()));
+    BOOST_CHECK_NO_THROW(sessionAttach.attach(_session.getSessionID()));
     BOOST_CHECK(!sessionAttach.getSessionID().is_nil());
     BOOST_CHECK(sessionAttach.IsRunning());
 
-    BOOST_CHECK_NO_THROW(session.shutdown());
-    BOOST_CHECK(session.getSessionID().is_nil());
-    BOOST_CHECK(!session.IsRunning());
+    BOOST_CHECK_NO_THROW(_session.shutdown());
+    BOOST_CHECK(_session.getSessionID().is_nil());
+    BOOST_CHECK(!_session.IsRunning());
+    BOOST_CHECK_THROW(_session.shutdown(), runtime_error);
+
     BOOST_CHECK(!sessionAttach.IsRunning());
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_tools_session_create)
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_mult)
 {
-    // Start and stop DDS session multiple times without stopping the process
-    createDDS();
-    createDDS();
-    createDDS();
+    // Start and stop DDS session multiple times.
+    // Each time create new DDSSession instance.
+    for (size_t i = 0; i < 5; i++)
+    {
+        CSession session;
+        createDDS(session);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_single)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    CSession session;
+    for (size_t i = 0; i < 5; i++)
+    {
+        createDDS(session);
+    }
 }
 
 void checkIdleAgents(CSession& _session, size_t _numAgents)
@@ -66,17 +83,16 @@ void checkIdleAgents(CSession& _session, size_t _numAgents)
     BOOST_CHECK_EQUAL(agentCountInfo.m_executingAgentsCount, 0);
 }
 
-void runDDS()
+void runDDS(CSession& _session)
 {
     const string topoFile("property_test.xml");
     const std::chrono::seconds timeout(30);
     boost::filesystem::path topoPath(boost::filesystem::current_path());
     topoPath.append(topoFile);
 
-    CSession session;
-    boost::uuids::uuid sid = session.create();
+    boost::uuids::uuid sid = _session.create();
     BOOST_CHECK(!sid.is_nil());
-    BOOST_CHECK(session.IsRunning());
+    BOOST_CHECK(_session.IsRunning());
 
     CTopology topo(topoPath.string());
     size_t numAgents = topo.getRequiredNofAgents();
@@ -84,58 +100,52 @@ void runDDS()
     SSubmitRequest::request_t submitInfo;
     submitInfo.m_rms = "localhost";
     submitInfo.m_instances = numAgents;
-    BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
 
-    checkIdleAgents(session, numAgents);
+    checkIdleAgents(_session, numAgents);
 
     STopologyRequest::request_t topoInfo;
     topoInfo.m_topologyFile = topoPath.string();
     topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
-    BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
 
-    checkIdleAgents(session, numAgents);
+    checkIdleAgents(_session, numAgents);
 
     SAgentInfoRequest::responseVector_t agentInfo;
     BOOST_CHECK_NO_THROW(
-        session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, timeout, &std::cout));
+        _session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, timeout, &std::cout));
     BOOST_CHECK_EQUAL(agentInfo.size(), numAgents);
 
     SCommanderInfoRequest::response_t commanderInfo;
-    BOOST_CHECK_NO_THROW(session.syncSendRequest<SCommanderInfoRequest>(
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SCommanderInfoRequest>(
         SCommanderInfoRequest::request_t(), commanderInfo, timeout, &std::cout));
 
-    BOOST_CHECK_NO_THROW(session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
 
-    session.shutdown();
-    BOOST_CHECK(session.getSessionID().is_nil());
-    BOOST_CHECK(!session.IsRunning());
+    _session.shutdown();
+    BOOST_CHECK(_session.getSessionID().is_nil());
+    BOOST_CHECK(!_session.IsRunning());
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_tools_session_run)
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult)
 {
-    // Start and stop DDS session multiple times without stopping the process
-    runDDS();
-    runDDS();
-    runDDS();
-}
-
-BOOST_AUTO_TEST_CASE(test_dds_tools_single_session_create)
-{
-    CSession session;
-
-    // Start and shutdown DDS session instance multiple times
+    // Start and stop DDS session multiple times.
+    // Each time create new DDSSession instance.
     for (size_t i = 0; i < 5; i++)
     {
-        boost::uuids::uuid sid;
-        BOOST_CHECK_NO_THROW(sid = session.create());
-        BOOST_CHECK(!sid.is_nil());
-        BOOST_CHECK(session.IsRunning());
-        BOOST_CHECK_THROW(session.create(), runtime_error);
-        BOOST_CHECK_THROW(session.attach(sid), runtime_error);
-        BOOST_CHECK_NO_THROW(session.shutdown());
-        BOOST_CHECK(session.getSessionID().is_nil());
-        BOOST_CHECK(!session.IsRunning());
-        BOOST_CHECK_THROW(session.shutdown(), runtime_error);
+        CSession session;
+        runDDS(session);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    CSession session;
+    for (size_t i = 0; i < 5; i++)
+    {
+        runDDS(session);
     }
 }
 
