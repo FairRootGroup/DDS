@@ -30,13 +30,13 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
             << "Server reports: " << _message.m_msg;
     });
 
-    requestPtr->setDoneCallback([&_session]() { _session.stop(); });
+    requestPtr->setDoneCallback([&_session]() { _session.unblockCurrentThread(); });
 
     requestPtr->setResponseCallback([&_session, &_options](const SCommanderInfoResponseData& _info) {
         if (_options.m_bNeedCommanderPid)
         {
             LOG(log_stdout_clean) << _info.m_pid;
-            _session.stop();
+            _session.unblockCurrentThread();
         }
         // Checking for "status" option
         if (_options.m_bNeedDDSStatus)
@@ -46,7 +46,7 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
             else
                 LOG(log_stdout_clean) << "DDS commander server is not running.";
 
-            _session.stop();
+            _session.unblockCurrentThread();
         }
 
         if (_options.m_bNeedActiveTopology)
@@ -56,7 +56,7 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
             else
                 LOG(log_stdout_clean) << "active topology: " << _info.m_activeTopologyName;
 
-            _session.stop();
+            _session.unblockCurrentThread();
         }
     });
 
@@ -73,7 +73,7 @@ void requestAgentInfo(CSession& _session, const SOptions_t& _options)
             << "Server reports: " << message.m_msg;
     });
 
-    requestPtr->setDoneCallback([&_session]() { _session.stop(); });
+    requestPtr->setDoneCallback([&_session]() { _session.unblockCurrentThread(); });
 
     requestPtr->setResponseCallback([](const SAgentInfoResponseData& _info) {
         LOG(log_stdout_clean) << " -------------->>> " << _info.m_agentID << "\nHost Info: " << _info.m_username << "@"
@@ -100,7 +100,7 @@ void requestAgentCount(CSession& _session, const SOptions_t& _options)
     requestPtr->setDoneCallback([&_session, &_options]() {
         // Stop only if we don't need to wait for the required number of agents
         if (_options.m_nWaitCount == 0)
-            _session.stop();
+            _session.unblockCurrentThread();
     });
 
     requestPtr->setResponseCallback([&_session, &_options](const SAgentCountResponseData& _info) {
@@ -120,7 +120,7 @@ void requestAgentCount(CSession& _session, const SOptions_t& _options)
             LOG(log_stdout_clean) << "Active agents online: " + to_string(_info.m_activeAgentsCount) << endl
                                   << "Idle agents online: " + to_string(_info.m_idleAgentsCount) << endl
                                   << "Executing agents online: " + to_string(_info.m_executingAgentsCount);
-            _session.stop();
+            _session.unblockCurrentThread();
         }
         else
         {
@@ -131,7 +131,7 @@ void requestAgentCount(CSession& _session, const SOptions_t& _options)
             else if (_options.m_bNeedExecutingCount)
                 LOG(log_stdout_clean) << _info.m_executingAgentsCount;
 
-            _session.stop();
+            _session.unblockCurrentThread();
         }
     });
 

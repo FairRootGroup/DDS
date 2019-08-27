@@ -286,16 +286,14 @@ void CStart::checkCommanderStatus()
                 << "Server reports: " << _message.m_msg;
         });
 
-        requestPtr->setDoneCallback([&session]() { session.stop(); });
+        requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
         requestPtr->setResponseCallback([&session](const SCommanderInfoResponseData& _info) {
             LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
             LOG(log_stdout_clean) << "------------------------";
             LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
             LOG(log_stdout_clean) << "------------------------";
-
-            // Close communication channel
-            session.stop();
+            session.unblockCurrentThread();
         });
 
         session.sendRequest<SCommanderInfoRequest>(requestPtr);

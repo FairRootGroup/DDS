@@ -119,4 +119,24 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_run)
     runDDS();
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_tools_single_session_create)
+{
+    CSession session;
+
+    // Start and shutdown DDS session instance multiple times
+    for (size_t i = 0; i < 5; i++)
+    {
+        boost::uuids::uuid sid;
+        BOOST_CHECK_NO_THROW(sid = session.create());
+        BOOST_CHECK(!sid.is_nil());
+        BOOST_CHECK(session.IsRunning());
+        BOOST_CHECK_THROW(session.create(), runtime_error);
+        BOOST_CHECK_THROW(session.attach(sid), runtime_error);
+        BOOST_CHECK_NO_THROW(session.shutdown());
+        BOOST_CHECK(session.getSessionID().is_nil());
+        BOOST_CHECK(!session.IsRunning());
+        BOOST_CHECK_THROW(session.shutdown(), runtime_error);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
