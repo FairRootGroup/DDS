@@ -2,6 +2,9 @@
 
 ## v2.6 (NOT YET RELEASED)
 
+### dds-commander
+Fixed: fix cases when multiple commanders trying to bind the same found free port in the same time. (GH-250)    
+
 ### dds-tools-api
 Fixed: newly created DDS session fails to send custom commands.    
 Added: Agent count options moved from SAgentInfoRequest to a new SAgentCountRequest.    

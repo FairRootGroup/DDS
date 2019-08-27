@@ -44,20 +44,10 @@ namespace dds
 
           public:
             CConnectionManagerImpl(size_t _minPort, size_t _maxPort, bool _useUITransport)
+                : m_minPort(_minPort)
+                , m_maxPort(_maxPort)
+                , m_useUITransport(_useUITransport)
             {
-                int nSrvPort =
-                    (_minPort == 0 && _maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(_minPort, _maxPort);
-                m_acceptor = std::make_shared<asioAcceptor_t>(
-                    m_ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
-
-                if (_useUITransport)
-                {
-                    int nSrvPort =
-                        (_minPort == 0 && _maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(_minPort, _maxPort);
-                    m_acceptorUI = std::make_shared<asioAcceptor_t>(
-                        m_ioContext_UI, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
-                }
-
                 // Create and register signals
                 m_signals = std::make_shared<boost::asio::signal_set>(m_ioContext);
 
@@ -96,20 +86,20 @@ namespace dds
                     A* pThis = static_cast<A*>(this);
                     pThis->_start();
 
-                    // Start monitoring thread
                     const float maxIdleTime =
                         user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
                     CMonitoringThread::instance().start(maxIdleTime,
                                                         []() { LOG(MiscCommon::info) << "Idle callback called."; });
-                    m_acceptor->listen();
+
+                    bindPortAndListen(m_acceptor);
                     createClientAndStartAccept(m_acceptor);
 
                     // If we use second channel for communication with UI we have to start acceptiing connection on that
                     // channel.
-                    if (m_acceptorUI != nullptr)
+                    if (m_useUITransport)
                     {
-                        m_acceptorUI->listen();
+                        bindPortAndListen(m_acceptorUI);
                         createClientAndStartAccept(m_acceptorUI);
                     }
 
@@ -371,6 +361,16 @@ namespace dds
                 return counter;
             }
 
+            void addDisconnectedChannelsStatToStat(SReadStat& _readStat, SWriteStat& _writeStat)
+            {
+                // Add disconnected channels statistics to some external statistics.
+                // This is done in order not to copy self stat structures and return them.
+                // Or not to return reference to self stat together with mutex.
+                std::lock_guard<std::mutex> lock(m_statMutex);
+                _readStat.addFromStat(m_readStatDisconnectedChannels);
+                _writeStat.addFromStat(m_writeStatDisconnectedChannels);
+            }
+
           private:
             void acceptHandler(typename T::connectionPtr_t _client,
                                asioAcceptorPtr_t _acceptor,
@@ -391,7 +391,7 @@ namespace dds
                 }
             }
 
-            void createClientAndStartAccept(asioAcceptorPtr_t _acceptor)
+            void createClientAndStartAccept(asioAcceptorPtr_t& _acceptor)
             {
                 typename T::connectionPtr_t newClient = T::makeNew(_acceptor->get_executor().context(), 0);
 
@@ -479,18 +479,42 @@ namespace dds
                                  m_channels.end());
             }
 
-          public:
-            void addDisconnectedChannelsStatToStat(SReadStat& _readStat, SWriteStat& _writeStat)
+            void bindPortAndListen(asioAcceptorPtr_t& _acceptor)
             {
-                // Add disconnected channels statistics to some external statistics.
-                // This is done in order not to copy self stat structures and return them.
-                // Or not to return reference to self stat together with mutex.
-                std::lock_guard<std::mutex> lock(m_statMutex);
-                _readStat.addFromStat(m_readStatDisconnectedChannels);
-                _writeStat.addFromStat(m_writeStatDisconnectedChannels);
+                const int nMaxCount = 20; // Maximum number of attempts to open the port
+                int nCount = 0;
+                // Start monitoring thread
+                while (true)
+                {
+                    int nSrvPort =
+                        (m_minPort == 0 && m_maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(m_minPort, m_maxPort);
+                    try
+                    {
+                        _acceptor = std::make_shared<asioAcceptor_t>(
+                            m_ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), nSrvPort));
+
+                        _acceptor->listen();
+                    }
+                    catch (std::exception& _e)
+                    {
+                        if (++nCount >= nMaxCount)
+                            throw _e;
+
+                        LOG(MiscCommon::info) << "Can't bind port " << nSrvPort << ". Will try another port.";
+                        // If multiple commanders are started in the same time, then let's give them a chnce to find
+                        // a free port.
+                        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                        continue;
+                    }
+
+                    break;
+                }
             }
 
           private:
+            size_t m_minPort;
+            size_t m_maxPort;
+            bool m_useUITransport;
             /// The signal_set is used to register for process termination notifications.
             std::shared_ptr<boost::asio::signal_set> m_signals;
             std::mutex m_mutex;
