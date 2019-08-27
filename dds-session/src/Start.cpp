@@ -288,12 +288,11 @@ void CStart::checkCommanderStatus()
 
         requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
-        requestPtr->setResponseCallback([&session](const SCommanderInfoResponseData& _info) {
+        requestPtr->setResponseCallback([](const SCommanderInfoResponseData& _info) {
             LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
             LOG(log_stdout_clean) << "------------------------";
             LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
             LOG(log_stdout_clean) << "------------------------";
-            session.unblockCurrentThread();
         });
 
         session.sendRequest<SCommanderInfoRequest>(requestPtr);
