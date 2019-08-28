@@ -58,7 +58,7 @@ namespace dds
              auto end = chrono::high_resolution_clock::now();
              chrono::duration<double, std::milli> elapsed = end - start;
              cout << "Submission took: " << elapsed.count() << " ms\n";
-             session.stop();
+             session.unblockCurrentThread();
          });
 
          // Send request to commander
@@ -83,17 +83,15 @@ namespace dds
             cout << "Server reports: " << _message.m_msg << endl;
          });
 
-         // Subscribe on Done evens.
-         // Server will send Done when there it has finsihed proccessing a corresponding request.
+         // Subscribe on Done event.
+         // Server sends Done when it has finsihed proccessing the request.
          agentInfoRequestPtr->setDoneCallback([&session]() {
-            session.stop();
+            session.unblockCurrentThread();
          });
 
          // Subscribe on AgentInfo events
          agentInfoRequestPtr->setResponseCallback([&session](const SAgentInfoRequest::response_t& _info) {
              cout << _info.m_activeAgentsCount << endl;
-             // Close communication channel
-             session.stop();
          });
 
          // Send request to commander
