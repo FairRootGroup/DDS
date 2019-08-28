@@ -42,6 +42,9 @@ void createDDS(CSession& _session)
     BOOST_CHECK_THROW(_session.shutdown(), runtime_error);
 
     BOOST_CHECK(!sessionAttach.IsRunning());
+    BOOST_CHECK(!sessionAttach.getSessionID().is_nil());
+    BOOST_CHECK_NO_THROW(sessionAttach.detach());
+    BOOST_CHECK(sessionAttach.getSessionID().is_nil());
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_mult)

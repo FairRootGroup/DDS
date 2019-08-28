@@ -158,6 +158,8 @@ namespace dds
             void attach(const boost::uuids::uuid& _sid);
             /// \brief Shutdown currently attached DDS session
             void shutdown();
+            /// \brief Detach from the session without shutting it down
+            void detach();
             /// \brief Check if DDS session is running
             bool IsRunning() const;
             /// \brief Returns DDS session ID

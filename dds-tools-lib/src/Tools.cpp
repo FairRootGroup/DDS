@@ -114,7 +114,7 @@ boost::uuids::uuid CSession::create()
             m_impl->m_sid = boost::uuids::string_generator()(results[1].str());
         }
     }
-    if (m_impl->m_sid == boost::uuids::nil_uuid())
+    if (m_impl->m_sid.is_nil())
         throw runtime_error("Failed to parse DDS session ID from: " + sOut + "; error: " + sErr);
 
     // Reinit UserDefaults and Log with new session ID
@@ -176,6 +176,17 @@ void CSession::shutdown()
 
     if (nExitCode != 0)
         throw runtime_error("ToolsAPI: Failed to stop DDS session. Exit code: " + to_string(nExitCode));
+}
+
+void CSession::detach()
+{
+    if (m_impl->m_sid.is_nil())
+        throw runtime_error("ToolsAPI: DDS session is not running.");
+
+    m_impl->m_sid = boost::uuids::nil_uuid();
+    m_impl->m_customCmd.reset();
+    m_impl->m_service.reset();
+    m_impl->m_requests.clear();
 }
 
 boost::uuids::uuid CSession::getSessionID() const
