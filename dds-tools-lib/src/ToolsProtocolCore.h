@@ -274,7 +274,8 @@ namespace dds
             {
                 try
                 {
-                    m_callbackResponse(_arg);
+                    if (m_callbackResponse)
+                        m_callbackResponse(_arg);
                 }
                 catch (const std::exception& e)
                 {
@@ -286,7 +287,8 @@ namespace dds
             {
                 try
                 {
-                    m_callbackProgress(_arg);
+                    if (m_callbackProgress)
+                        m_callbackProgress(_arg);
                 }
                 catch (const std::exception& e)
                 {
@@ -298,7 +300,8 @@ namespace dds
             {
                 try
                 {
-                    m_callbackMessage(_arg);
+                    if (m_callbackMessage)
+                        m_callbackMessage(_arg);
                 }
                 catch (const std::exception& e)
                 {
@@ -310,7 +313,8 @@ namespace dds
             {
                 try
                 {
-                    m_callbackDone();
+                    if (m_callbackDone)
+                        m_callbackDone();
                 }
                 catch (const std::exception& e)
                 {
