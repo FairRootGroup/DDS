@@ -521,6 +521,7 @@ namespace MiscCommon
 
             bp::child c(smartCmd, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
 
+            // Need this loop to make sure that the asio thread is started oly after the process is up
             while (c.valid() && !c.running())
                 ;
 

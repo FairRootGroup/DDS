@@ -126,7 +126,9 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_bad_process)
 {
-    BOOST_CHECK_THROW(execute("1111111", std::chrono::seconds(3)), runtime_error);
+    string output;
+    string error;
+    BOOST_CHECK_THROW(execute("1111111", std::chrono::seconds(3), &output, &error), runtime_error);
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_getprocbyname)
