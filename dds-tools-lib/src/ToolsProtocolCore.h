@@ -272,22 +272,50 @@ namespace dds
             /// For tests or internal use
             void execResponseCallback(const response_t& _arg)
             {
-                m_callbackResponse(_arg);
+                try
+                {
+                    m_callbackResponse(_arg);
+                }
+                catch (const std::exception& e)
+                {
+                    throw std::runtime_error(std::string("ResponseCallback: ") + e.what());
+                }
             }
 
             void execProgressCallback(const SProgressResponseData& _arg)
             {
-                m_callbackProgress(_arg);
+                try
+                {
+                    m_callbackProgress(_arg);
+                }
+                catch (const std::exception& e)
+                {
+                    throw std::runtime_error(std::string("ProgressCallback: ") + e.what());
+                }
             }
 
             void execMessageCallback(const SMessageResponseData& _arg)
             {
-                m_callbackMessage(_arg);
+                try
+                {
+                    m_callbackMessage(_arg);
+                }
+                catch (const std::exception& e)
+                {
+                    throw std::runtime_error(std::string("MessageCallback: ") + e.what());
+                }
             }
 
             void execDoneCallback()
             {
-                m_callbackDone();
+                try
+                {
+                    m_callbackDone();
+                }
+                catch (const std::exception& e)
+                {
+                    throw std::runtime_error(std::string("DoneCallback: ") + e.what());
+                }
             }
 
             const request_t& getRequest() const
