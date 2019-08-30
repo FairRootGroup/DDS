@@ -496,11 +496,13 @@ namespace MiscCommon
     // TODO: Document me!
     // If _Timeout is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
     // return value is 0.
-    inline pid_t execute(const std::string& _Command,
-                         const std::chrono::seconds& _Timeout,
-                         std::string* _output = nullptr,
-                         std::string* _errout = nullptr,
-                         int* _exitCode = nullptr)
+    inline pid_t execute(
+        const std::string& _Command,
+        const std::chrono::seconds& _Timeout,
+        std::string* _output = nullptr,
+        std::string* _errout = nullptr,
+        int* _exitCode = nullptr,
+        const std::chrono::seconds& _unit_test_Sleep = std::chrono::seconds(0) /*used for unit tests only*/)
     {
         try
         {
@@ -521,12 +523,23 @@ namespace MiscCommon
 
             bp::child c(smartCmd, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
 
-            // Need this loop to make sure that the asio thread is started oly after the process is up
-            while (c.valid() && !c.running())
-                ;
-
             if (!c.valid())
                 throw std::runtime_error("Can't execute the given process.");
+
+            if (_unit_test_Sleep > std::chrono::seconds(0))
+                std::this_thread::sleep_for(_unit_test_Sleep);
+
+            // Need this loop to make sure that the asio thread is started only after the process is up.
+            // This loop  checks two race conditions, that the process is already started and already finished at this
+            // moment.
+            while (c.valid())
+            {
+                int status(0);
+                pid_t pid = c.id();
+                pid_t ret = ::waitpid(pid, &status, WNOHANG | WUNTRACED | WNOWAIT);
+                if (ret < 0 || ret == pid)
+                    break;
+            }
 
             // since we use async io to be able to read both stdout and stderr and have a timeout on process execution,
             // we need to have a worker thread for asio service to prevent blocking of the main thread.
@@ -588,6 +601,9 @@ namespace MiscCommon
             if (_errout)
                 *_errout = err_data.get();
 
+            // BOOST process doesn't return all statuses, like whether proc. recieved a signal, for instance.
+            // It returns only the exit code of the process.
+            //
             // if (_exitCode)
             //    *_exitCode = c.exit_code();
 

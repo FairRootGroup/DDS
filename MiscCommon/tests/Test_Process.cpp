@@ -78,12 +78,15 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_stdout_stderr)
 {
     // Check stderr
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f 1>&2\"";
+    ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f 1>&2; exit 11;\"";
     string output;
     string error;
-    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error);
-    BOOST_CHECK(output.empty());
-    BOOST_CHECK(!error.empty());
+    int exitCode(-1);
+
+    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode, std::chrono::seconds(5));
+    BOOST_TEST(output.empty());
+    BOOST_TEST(!error.empty());
+    BOOST_TEST(exitCode == 11);
 }
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
@@ -102,10 +105,15 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
     pid_t pid(0);
     pid = execute(ssCmd.str(), stdoutFile, sterrorFile);
 
-    std::error_code ec;
-    boost::process::child c(pid);
-    BOOST_CHECK(c.wait_for(std::chrono::seconds(5), ec));
-    BOOST_CHECK_MESSAGE(!ec, ec.message());
+    BOOST_TEST(pid != 0);
+    // Wait for the preocess to finish
+    int status(0);
+    while (true)
+    {
+        pid_t ret = ::waitpid(pid, &status, WNOHANG | WUNTRACED);
+        if (ret < 0 || ret == pid)
+            break;
+    }
 
     ifstream fStdout(stdoutFile);
     BOOST_CHECK(fStdout.is_open());
