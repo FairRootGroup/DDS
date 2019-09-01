@@ -405,6 +405,36 @@ template void CSession::syncSendRequest<SAgentCountRequest>(const SAgentCountReq
                                                             const std::chrono::seconds&,
                                                             ostream*);
 
+struct SBlocker
+{
+    bool waitFor(const std::chrono::seconds& _timeout) const
+    {
+        std::unique_lock<std::mutex> lock(m_mtx);
+
+        if (_timeout.count() == 0)
+        {
+            m_cv.wait(lock, [&]() { return m_done; });
+            return true;
+        }
+
+        return m_cv.wait_for(lock, _timeout, [&]() { return m_done; });
+    }
+
+    void signal()
+    {
+        {
+            std::lock_guard<std::mutex> lock(m_mtx);
+            m_done = true;
+        }
+        m_cv.notify_one();
+    }
+
+  private:
+    mutable std::condition_variable m_cv;
+    mutable std::mutex m_mtx;
+    bool m_done = false; // needed to catch spurious thread wake-ups
+};
+
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
                                typename Request_t::responseVector_t& _responseDataVector,
@@ -439,25 +469,15 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
         }
     });
 
-    std::condition_variable cv;
+    auto blocker = std::make_shared<SBlocker>();
 
-    requestPtr->setDoneCallback([&cv]() { cv.notify_all(); });
+    requestPtr->setDoneCallback([blocker]() { blocker->signal(); });
 
     sendRequest<Request_t>(requestPtr);
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    if (_timeout.count() == 0)
+    if (!blocker->waitFor(_timeout))
     {
-        cv.wait(lock);
-    }
-    else
-    {
-        std::cv_status waitStatus = cv.wait_for(lock, _timeout);
-        if (waitStatus == std::cv_status::timeout)
-        {
-            throw runtime_error("Timed out waiting for request");
-        }
+        throw runtime_error("Timed out waiting for request");
     }
 
     if (_out != nullptr)
