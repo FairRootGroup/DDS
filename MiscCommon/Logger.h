@@ -6,7 +6,9 @@
 #define LOGGER_H
 
 // BOOST
+#ifndef BOOST_LOG_DYN_LINK
 #define BOOST_LOG_DYN_LINK
+#endif
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #if BOOST_VERSION < 105700
