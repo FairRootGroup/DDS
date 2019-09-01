@@ -480,6 +480,8 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
         throw runtime_error("Timed out waiting for request");
     }
 
+    m_impl->m_requests.erase(requestPtr->getRequest().m_requestID);
+
     if (_out != nullptr)
         *_out << "Request finished successfully" << endl;
 }
