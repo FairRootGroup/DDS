@@ -14,6 +14,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 // MiscCommon
+#include "ConditionEvent.h"
 #include "Process.h"
 // DDS
 #include "IntercomServiceCore.h"
@@ -439,22 +440,19 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
         }
     });
 
-    std::condition_variable cv;
+    CConditionEvent cv;
 
-    requestPtr->setDoneCallback([&cv]() { cv.notify_all(); });
+    requestPtr->setDoneCallback([&cv]() { cv.notifyAll(); });
 
     sendRequest<Request_t>(requestPtr);
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
     if (_timeout.count() == 0)
     {
-        cv.wait(lock);
+        cv.wait();
     }
     else
     {
-        std::cv_status waitStatus = cv.wait_for(lock, _timeout);
-        if (waitStatus == std::cv_status::timeout)
+        if (!cv.waitFor(_timeout))
         {
             throw runtime_error("Timed out waiting for request");
         }
