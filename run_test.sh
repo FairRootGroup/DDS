@@ -22,23 +22,7 @@ fi
 
 }
 
-export DDS_LOCATION=$1
-# TODO: pass DDS_LOCATION as an argument to the script
-eval DDS_LOCATION=$1
-if [ -z "${LD_LIBRARY_PATH}" ]; then
-   LD_LIBRARY_PATH=$DDS_LOCATION/lib; export LD_LIBRARY_PATH
-else
-   LD_LIBRARY_PATH=$DDS_LOCATION/lib:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
-fi
-
-# Mac OS X
-if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-   DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:; export DYLD_LIBRARY_PATH   # Mac OS X
-else
-   DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
-fi
-
-$DDS_LOCATION/bin/dds-user-defaults -d -c $DDS_LOCATION/DDS.cfg
+esource "$1/DDS_env.sh"
 
 pushd $(pwd)
 cd "$1"/tests
