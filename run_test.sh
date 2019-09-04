@@ -22,7 +22,7 @@ fi
 
 }
 
-esource "$1/DDS_env.sh"
+source "$1/DDS_env.sh"
 
 pushd $(pwd)
 cd "$1"/tests
