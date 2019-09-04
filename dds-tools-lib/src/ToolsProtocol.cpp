@@ -11,20 +11,32 @@ using namespace dds::tools_api;
 using namespace dds::intercom_api;
 using namespace boost::property_tree;
 
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SGetLogRequestData::_protocolTag;
+constexpr const char* SAgentInfoRequestData::_protocolTag;
+constexpr const char* SAgentCountRequestData::_protocolTag;
+constexpr const char* SCommanderInfoRequestData::_protocolTag;
+constexpr const char* SDoneResponseData::_protocolTag;
+
 ///////////////////////////////////
 // SProgressResponseData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SProgressResponseData::_protocolTag;
+
 SProgressResponseData::SProgressResponseData()
 {
 }
 
 SProgressResponseData::SProgressResponseData(
-    uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time)
-    : m_completed(_completed)
-    , m_total(_total)
-    , m_errors(_errors)
-    , m_time(_time)
-    , m_srcCommand(_srcCmd)
+                                             uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time)
+: m_completed(_completed)
+, m_total(_total)
+, m_errors(_errors)
+, m_time(_time)
+, m_srcCommand(_srcCmd)
 {
 }
 
@@ -55,13 +67,16 @@ bool SProgressResponseData::operator==(const SProgressResponseData& _val) const
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SProgressResponseData& _data)
 {
     return _os << _data.defaultToString() << "; completed: " << _data.m_completed << "; total: " << _data.m_total
-               << "; errors: " << _data.m_errors << "; time: " << _data.m_time
-               << "; srcCommand: " << _data.m_srcCommand;
+    << "; errors: " << _data.m_errors << "; time: " << _data.m_time
+    << "; srcCommand: " << _data.m_srcCommand;
 }
 
 ///////////////////////////////////
 // SMessageResponseData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SMessageResponseData::_protocolTag;
 
 string SeverityToTag(EMsgSeverity _severity)
 {
@@ -111,6 +126,10 @@ std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SMessageRespon
 ///////////////////////////////////
 // SSubmitRequestData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SSubmitRequestData::_protocolTag;
+
 void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<int>("instances", m_instances);
@@ -136,12 +155,16 @@ bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SSubmitRequestData& _data)
 {
     return _os << _data.defaultToString() << "; instances: " << _data.m_instances << "; config: " << _data.m_config
-               << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
+    << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
 }
 
 ///////////////////////////////////
 // STopologyRequestData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* STopologyRequestData::_protocolTag;
+
 void STopologyRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint8_t>("updateType", static_cast<uint8_t>(m_updateType));
@@ -165,12 +188,16 @@ bool STopologyRequestData::operator==(const STopologyRequestData& _val) const
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const STopologyRequestData& _data)
 {
     return _os << _data.defaultToString() << "; updateType: " << static_cast<uint8_t>(_data.m_updateType)
-               << "; topologyFile: " << _data.m_topologyFile << "; disableValidation: " << _data.m_disableValidation;
+    << "; topologyFile: " << _data.m_topologyFile << "; disableValidation: " << _data.m_disableValidation;
 }
 
 ///////////////////////////////////
 // SCommanderInfoResponseData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SCommanderInfoResponseData::_protocolTag;
+
 void SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<pid_t>("pid", m_pid);
@@ -191,12 +218,16 @@ bool SCommanderInfoResponseData::operator==(const SCommanderInfoResponseData& _v
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
 {
     return _os << _data.defaultToString() << "; pid: " << _data.m_pid
-               << "; activeTopologyName: " << _data.m_activeTopologyName;
+    << "; activeTopologyName: " << _data.m_activeTopologyName;
 }
 
 ///////////////////////////////////
 // SAgentInfoResponseData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SAgentInfoResponseData::_protocolTag;
+
 void SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("index", m_index);
@@ -236,15 +267,19 @@ bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) cons
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
 {
     return _os << _data.defaultToString() << "; index: " << _data.m_index << "; m_lobbyLeader: " << _data.m_lobbyLeader
-               << "; agentID: " << _data.m_agentID << "; taskID: " << _data.m_taskID
-               << "; startUpTime: " << _data.m_startUpTime.count() << "; agentState: " << _data.m_agentState
-               << "; username: " << _data.m_username << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath
-               << "; agentPid: " << _data.m_agentPid;
+    << "; agentID: " << _data.m_agentID << "; taskID: " << _data.m_taskID
+    << "; startUpTime: " << _data.m_startUpTime.count() << "; agentState: " << _data.m_agentState
+    << "; username: " << _data.m_username << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath
+    << "; agentPid: " << _data.m_agentPid;
 }
 
 ///////////////////////////////////
 // SAgentCountResponseData
 ///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SAgentCountResponseData::_protocolTag;
+
 void SAgentCountResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
@@ -268,6 +303,6 @@ bool SAgentCountResponseData::operator==(const SAgentCountResponseData& _val) co
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
 {
     return _os << _data.defaultToString() << "; activeAgentsCount: " << _data.m_activeAgentsCount
-               << "; idleAgentsCount: " << _data.m_idleAgentsCount
-               << "; executingAgentsCount: " << _data.m_executingAgentsCount;
+    << "; idleAgentsCount: " << _data.m_idleAgentsCount
+    << "; executingAgentsCount: " << _data.m_executingAgentsCount;
 }
