@@ -32,8 +32,8 @@ find . -name '*.dylib' -exec bash -c 'nm=$(basename $1);install_name_tool $1 -id
 ### BOOST on Linux
 
 ```bash
-./bootstrap.sh --prefix=/lustre/rz/andrey/Soft/boost/1_70_0 --without-icu
-./b2 --disable-icu --prefix=/lustre/rz/andrey/Soft/boost/1_70_0 -j8 --layout=system threading=multi link=shared,static cxxflags="-std=c++11" install
+./bootstrap.sh --prefix=[INSTALL DIR] --without-icu
+./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=system threading=multi link=shared,static cxxflags="-std=c++11" install
 ```
 
 ### clang-format on macOS
