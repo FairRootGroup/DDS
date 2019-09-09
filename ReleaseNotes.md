@@ -4,6 +4,7 @@
 
 ### DDS common
 Fixed: a race condition in DDS Core in external process handling. (GH-252)    
+Fixed: Support list of values in DDS_LD_LIBRARY_PATH. (GH-262)     
 
 ### dds-commander
 Fixed: fix cases when multiple commanders trying to bind the same found free port in the same time. (GH-250)    
