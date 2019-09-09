@@ -15,6 +15,10 @@ cd $JOB_WRK_DIR
 cp %DDS_SCOUT% $JOB_WRK_DIR/
 
 # execute DDS Scout
-./DDSWorker.sh 
+if [ -z "${DDS_AGENTS_PER_JOB}" ]; then
+	./DDSWorker.sh
+else
+	./DDSWorker.sh ${DDS_AGENTS_PER_JOB}
+fi
 
 exit 0
