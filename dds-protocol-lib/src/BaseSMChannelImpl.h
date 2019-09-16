@@ -297,8 +297,14 @@ namespace dds
                 return m_transportIn.m_name;
             }
 
-            void addOutput(uint64_t _outputID, const std::string& _name, EMQOpenType _openType = EMQOpenType::OpenOnly)
+            void addOutput(uint64_t _outputID,
+                           const std::string& _name,
+                           EMQOpenType _openType = EMQOpenType::OpenOrCreate)
             {
+                // We use EMQOpenType::OpenOrCreate in order to prevent race condition when the leader is already
+                // selected, but the shared memory has not been created yet. If the shared memory was not created by the
+                // lobby leader it will be automatically created by the lobby member.
+
                 if (_outputID < 1)
                 {
                     std::stringstream ss;
