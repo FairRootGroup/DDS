@@ -287,7 +287,10 @@ void CIntercomServiceCore::on_cmdCUSTOM_CMD_SM(
     const protocol_api::SSenderInfo& _sender,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
-    LOG(info) << "Received custom command: " << *_attachment;
+    auto timestamp =
+        chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    auto duration = timestamp - _attachment->m_timestamp;
+    LOG(info) << "Received custom command: " << *_attachment << " Delivery time (ms): " << duration;
     execUserSignal(m_customCmdSignal, _attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
 }
 
@@ -339,6 +342,8 @@ void CIntercomServiceCore::sendCustomCmd(const std::string& _command, const std:
     if (m_channel != nullptr)
     {
         SCustomCmdCmd cmd;
+        cmd.m_timestamp =
+            chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         cmd.m_sCmd = _command;
         cmd.m_sCondition = _condition;
         m_channel->pushMsg<cmdCUSTOM_CMD>(cmd, 0);
@@ -346,6 +351,8 @@ void CIntercomServiceCore::sendCustomCmd(const std::string& _command, const std:
     else if (m_SMChannel != nullptr)
     {
         SCustomCmdCmd cmd;
+        cmd.m_timestamp =
+            chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         cmd.m_sCmd = _command;
         cmd.m_sCondition = _condition;
         m_SMChannel->pushMsg<cmdCUSTOM_CMD>(cmd);
