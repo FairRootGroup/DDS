@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdPROGRESS)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdCUSTOM_CMD)
 {
-    const unsigned int cmdSize = 24;
+    const unsigned int cmdSize = 32;
 
     SCustomCmdCmd cmd;
     cmd.m_sCmd = "cmd";

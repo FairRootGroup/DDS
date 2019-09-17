@@ -287,6 +287,13 @@ namespace dds
             }
 
           public:
+            double getInputQueueSaturation() const
+            {
+                return (m_transportIn.m_mq == nullptr)
+                           ? 0.
+                           : m_transportIn.m_mq->get_num_msg() / m_transportIn.m_mq->get_max_msg();
+            }
+
             uint64_t getProtocolHeaderID() const
             {
                 return m_protocolHeaderID;
