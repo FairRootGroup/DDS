@@ -19,6 +19,7 @@ namespace dds
             void _convertToData(MiscCommon::BYTEVector_t* _data) const;
             bool operator==(const SCustomCmdCmd& val) const;
 
+            uint64_t m_timestamp;
             uint64_t m_senderId;
             std::string m_sCmd;
             std::string m_sCondition;
