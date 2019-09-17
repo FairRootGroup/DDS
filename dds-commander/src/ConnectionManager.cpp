@@ -779,6 +779,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     auto p = _channel.lock();
     try
     {
+        auto now = chrono::system_clock::now();
+
         SAgentInfo inf = p->getAgentInfo(_sender.m_ID);
         // Assign sender ID of this custom command
         _attachment->m_senderId = inf.m_id;
@@ -878,8 +880,11 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             ptr->pushMsg<cmdCUSTOM_CMD>(*_attachment, v.m_protocolHeaderID);
         }
 
+        auto duration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - now).count();
         stringstream ss;
-        ss << "Send custom command to " << channels.size() << " channels." << endl;
+        ss << "Send custom command to " << channels.size() << " channels. on_cmdCUSTOM_CMD duration: " << duration
+           << endl;
 
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD), _sender.m_ID);
     }

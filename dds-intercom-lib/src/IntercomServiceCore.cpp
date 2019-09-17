@@ -290,7 +290,12 @@ void CIntercomServiceCore::on_cmdCUSTOM_CMD_SM(
     auto timestamp =
         chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
     auto duration = timestamp - _attachment->m_timestamp;
-    LOG(info) << "Received custom command: " << *_attachment << " Delivery time (ms): " << duration;
+    stringstream ss;
+    if (m_SMChannel != nullptr)
+    {
+        ss << " queue saturation: " << std::setprecision(3) << m_SMChannel->getInputQueueSaturation();
+    }
+    LOG(info) << "Received custom command: " << *_attachment << " Delivery time (ms): " << duration << ss.str();
     execUserSignal(m_customCmdSignal, _attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
 }
 
