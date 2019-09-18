@@ -41,6 +41,7 @@ namespace dds
             typedef SChannelInfo<T> channelInfo_t;
             typedef SWeakChannelInfo<T> weakChannelInfo_t;
             typedef std::function<bool(const channelInfo_t& _channelInfo, bool& /*_stop*/)> conditionFunction_t;
+            using channelContainerCache_t = std::map<uint64_t, weakChannelInfo_t>;
 
           public:
             CConnectionManagerImpl(size_t _minPort, size_t _maxPort, bool _useUITransport)
@@ -226,6 +227,43 @@ namespace dds
             }
 
           protected:
+            weakChannelInfo_t getChannelByID(uint64_t _protocolHeaderID)
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+
+                // Initial creation of the cache
+                if (m_channelsCache.empty())
+                {
+                    for (auto& v : m_channels)
+                    {
+                        if (v.m_protocolHeaderID == 0)
+                            continue;
+                        commander_cmd::SAgentInfo inf = v.m_channel->getAgentInfo(v.m_protocolHeaderID);
+                        m_channelsCache.insert(
+                            std::make_pair(v.m_protocolHeaderID, weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID)));
+                    }
+                }
+
+                // Value found in the cache
+                auto it = m_channelsCache.find(_protocolHeaderID);
+                if (it != m_channelsCache.end())
+                    return it->second;
+
+                for (auto& v : m_channels)
+                {
+                    commander_cmd::SAgentInfo inf = v.m_channel->getAgentInfo(v.m_protocolHeaderID);
+                    if (inf.m_id == _protocolHeaderID)
+                    {
+                        // Add the item into the cache
+                        m_channelsCache.insert(
+                            std::make_pair(v.m_protocolHeaderID, weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID)));
+                        // TODO: need to clean cache from dead channels
+                        return weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID);
+                    }
+                }
+                return weakChannelInfo_t();
+            }
+
             typename weakChannelInfo_t::container_t getChannels(conditionFunction_t _condition = nullptr)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
@@ -242,7 +280,7 @@ namespace dds
                             break;
                     }
                 }
-                return result;
+                return std::move(result);
             }
 
             template <ECmdType _cmd, class AttachmentType>
@@ -519,6 +557,7 @@ namespace dds
             std::shared_ptr<boost::asio::signal_set> m_signals;
             std::mutex m_mutex;
             typename channelInfo_t::container_t m_channels;
+            channelContainerCache_t m_channelsCache;
 
             /// Used for the main comunication
             boost::asio::io_context m_ioContext;
