@@ -779,8 +779,6 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     auto p = _channel.lock();
     try
     {
-        auto now = chrono::system_clock::now();
-
         SAgentInfo inf = p->getAgentInfo(_sender.m_ID);
         // Assign sender ID of this custom command
         _attachment->m_senderId = inf.m_id;
@@ -793,11 +791,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
         {
             // If condition in the attachment is not of type uint64_t function throws an exception.
             uint64_t channelId = boost::lexical_cast<uint64_t>(_attachment->m_sCondition);
-            channels = getChannels([channelId](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-                _stop = (inf.m_id == channelId);
-                return _stop;
-            });
+            channels.push_back(getChannelByID(channelId));
         }
         catch (boost::bad_lexical_cast&)
         {
@@ -880,11 +874,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             ptr->pushMsg<cmdCUSTOM_CMD>(*_attachment, v.m_protocolHeaderID);
         }
 
-        auto duration =
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - now).count();
         stringstream ss;
-        ss << "Send custom command to " << channels.size() << " channels. on_cmdCUSTOM_CMD duration: " << duration
-           << endl;
+        ss << "Send custom command to " << channels.size() << " channels." << endl;
 
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD), _sender.m_ID);
     }
