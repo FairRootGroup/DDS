@@ -122,7 +122,7 @@ void CAgentConnectionManager::start()
             // Start shared memory agent channel
             m_SMCommanderChannel->start();
 
-            startService();
+            startService(6 + CUserDefaults::getNumLeaderFW());
 
             leaderMutex->unlock();
         }
@@ -147,7 +147,7 @@ void CAgentConnectionManager::start()
             // Start shared memory agent channel
             m_SMCommanderChannel->start();
 
-            startService();
+            startService(7);
         }
 
         // Free mutex
@@ -197,11 +197,10 @@ void CAgentConnectionManager::stop()
     LOG(info) << "Shutting down DDS transport - DONE";
 }
 
-void CAgentConnectionManager::startService()
+void CAgentConnectionManager::startService(size_t _numThreads)
 {
-    const int nConcurrentThreads(7);
-    LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
-    for (int x = 0; x < nConcurrentThreads; ++x)
+    LOG(MiscCommon::info) << "Starting DDS transport engine using " << _numThreads << " concurrent threads.";
+    for (int x = 0; x < _numThreads; ++x)
     {
         m_workerThreads.create_thread([this]() {
             try
@@ -302,8 +301,10 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
 {
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     // Create shared memory agent channel
-    m_SMCommanderChannel = CSMCommanderChannel::makeNew(
-        m_io_context, userDefaults.getSMAgentInputName(), userDefaults.getSMAgentOutputName(), _protocolHeaderID);
+    m_SMCommanderChannel = CSMCommanderChannel::makeNew(m_io_context,
+                                                        userDefaults.getSMAgentInputName(),
+                                                        userDefaults.getSMAgentOutputName(_protocolHeaderID),
+                                                        _protocolHeaderID);
     m_SMCommanderChannel->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
 
     // Subscribe to Shutdown command

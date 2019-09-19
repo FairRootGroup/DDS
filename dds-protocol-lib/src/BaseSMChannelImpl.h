@@ -172,6 +172,7 @@ namespace dds
             };
 
             typedef std::map<uint64_t, SMessageQueueInfo> messageQueueMap_t;
+            typedef std::vector<SMessageQueueInfo> messageQueueVector_t;
 
           public:
             typedef std::shared_ptr<T> connectionPtr_t;
@@ -194,20 +195,47 @@ namespace dds
                 , m_started(false)
                 , m_protocolHeaderID(_protocolHeaderID)
                 , m_ioContext(_service)
-                , m_currentMsg(std::make_shared<CProtocolMessage>())
             {
-                // Input transport
-                m_transportIn.m_name = _inputName;
-                m_transportIn.m_openType = _inputOpenType;
+                defaultInit({ _inputName }, _outputName, _inputOpenType, _outputOpenType);
+            }
+
+            CBaseSMChannelImpl<T>(boost::asio::io_context& _service,
+                                  const std::vector<std::string>& _inputNames,
+                                  const std::string& _outputName,
+                                  uint64_t _protocolHeaderID,
+                                  EMQOpenType _inputOpenType,
+                                  EMQOpenType _outputOpenType)
+                : CChannelMessageHandlersImpl()
+                , m_isShuttingDown(false)
+                , m_started(false)
+                , m_protocolHeaderID(_protocolHeaderID)
+                , m_ioContext(_service)
+            {
+                defaultInit(_inputNames, _outputName, _inputOpenType, _outputOpenType);
+            }
+
+            void defaultInit(const std::vector<std::string> _inputNames,
+                             const std::string& _outputName,
+                             EMQOpenType _inputOpenType,
+                             EMQOpenType _outputOpenType)
+            {
+                for (const auto& v : _inputNames)
+                {
+                    SMessageQueueInfo inInfo;
+                    inInfo.m_name = v;
+                    inInfo.m_openType = _inputOpenType;
+                    m_transportIn.push_back(inInfo);
+                }
+
                 // Output transport - default output transport initialized with protocol header ID
-                SMessageQueueInfo info;
-                info.m_name = _outputName;
-                info.m_openType = _outputOpenType;
-                m_transportOut.emplace(0, info);
+                SMessageQueueInfo outInfo;
+                outInfo.m_name = _outputName;
+                outInfo.m_openType = _outputOpenType;
+                m_transportOut.emplace(0, outInfo);
 
                 createMessageQueue();
 
-                LOG(MiscCommon::info) << "SM: New channel: inputName=" << m_transportIn.m_name
+                LOG(MiscCommon::info) << "SM: New channel: inputName=" << m_transportIn.front().m_name
                                       << " outputName=" << m_transportOut[0].m_name
                                       << " protocolHeaderID=" << m_protocolHeaderID;
             }
@@ -215,7 +243,7 @@ namespace dds
           public:
             ~CBaseSMChannelImpl<T>()
             {
-                LOG(MiscCommon::info) << "SM: channel destructor is called. MQ: " << m_transportIn.m_name;
+                LOG(MiscCommon::info) << "SM: channel destructor is called. MQ: " << getName();
                 stop();
             }
 
@@ -231,20 +259,34 @@ namespace dds
                 return newObject;
             }
 
+            static connectionPtr_t makeNew(boost::asio::io_context& _service,
+                                           const std::vector<std::string>& _inputNames,
+                                           const std::string& _outputName,
+                                           uint64_t _ProtocolHeaderID,
+                                           EMQOpenType _inputOpenType = EMQOpenType::OpenOrCreate,
+                                           EMQOpenType _outputOpenType = EMQOpenType::OpenOrCreate)
+            {
+                connectionPtr_t newObject(
+                    new T(_service, _inputNames, _outputName, _ProtocolHeaderID, _inputOpenType, _outputOpenType));
+                return newObject;
+            }
+
           private:
             void createMessageQueue()
             {
-                LOG(MiscCommon::info) << "SM: Initializing message queue: " << m_transportIn.m_name;
-
-                m_transportIn.m_mq.reset();
-                m_transportIn.m_mq = createMessageQueue(m_transportIn.m_name.c_str(), m_transportIn.m_openType);
+                for (auto& info : m_transportIn)
+                {
+                    LOG(MiscCommon::info) << "SM: Initializing input message queue: " << info.m_name;
+                    info.m_mq.reset();
+                    info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
+                }
 
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
                     for (auto& v : m_transportOut)
                     {
                         SMessageQueueInfo& info = v.second;
-                        LOG(MiscCommon::info) << "SM: Initializing message queue: " << info.m_name;
+                        LOG(MiscCommon::info) << "SM: Initializing output message queue: " << info.m_name;
                         info.m_mq.reset();
                         info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
                     }
@@ -287,21 +329,9 @@ namespace dds
             }
 
           public:
-            double getInputQueueSaturation() const
-            {
-                return (m_transportIn.m_mq == nullptr)
-                           ? 0.
-                           : m_transportIn.m_mq->get_num_msg() / m_transportIn.m_mq->get_max_msg();
-            }
-
             uint64_t getProtocolHeaderID() const
             {
                 return m_protocolHeaderID;
-            }
-
-            std::string getInputName() const
-            {
-                return m_transportIn.m_name;
             }
 
             void addOutput(uint64_t _outputID,
@@ -368,7 +398,16 @@ namespace dds
             void start()
             {
                 // Check that all message queues were succesfully created
-                bool queuesCreated = m_transportIn.m_mq != nullptr;
+                bool queuesCreated(true);
+                for (const auto& v : m_transportIn)
+                {
+                    if (v.m_mq == nullptr)
+                    {
+                        queuesCreated = false;
+                        break;
+                    }
+                }
+
                 if (queuesCreated)
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
@@ -395,16 +434,19 @@ namespace dds
                 m_isShuttingDown = false;
 
                 auto self(this->shared_from_this());
-                m_ioContext.post([this, self] {
-                    try
-                    {
-                        readMessage();
-                    }
-                    catch (std::exception& ex)
-                    {
-                        LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                    }
-                });
+                for (const auto& v : m_transportIn)
+                {
+                    m_ioContext.post([this, self, &v] {
+                        try
+                        {
+                            readMessage(v);
+                        }
+                        catch (std::exception& ex)
+                        {
+                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                        }
+                    });
+                }
 
                 SSenderInfo sender;
                 sender.m_ID = m_protocolHeaderID;
@@ -413,7 +455,7 @@ namespace dds
 
             void stop()
             {
-                LOG(MiscCommon::info) << "SM: channel STOP is called. MQ: " << m_transportIn.m_name;
+                LOG(MiscCommon::info) << "SM: channel STOP is called. MQ: " << getName();
                 if (!m_started)
                     return;
 
@@ -423,8 +465,11 @@ namespace dds
 
             void removeMessageQueue()
             {
-                const bool status = boost::interprocess::message_queue::remove(m_transportIn.m_name.c_str());
-                LOG(MiscCommon::info) << "Message queue " << m_transportIn.m_name << " remove status: " << status;
+                for (const auto& v : m_transportIn)
+                {
+                    const bool status = boost::interprocess::message_queue::remove(v.m_name.c_str());
+                    LOG(MiscCommon::info) << "Message queue " << v.m_name << " remove status: " << status;
+                }
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
                     for (const auto& v : m_transportOut)
@@ -452,13 +497,12 @@ namespace dds
                     if (cmdUNKNOWN != _cmd)
                         m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
 
-                    LOG(MiscCommon::debug) << m_transportIn.m_name
-                                           << ": BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
+                    LOG(MiscCommon::debug)
+                        << getName() << ": BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error)
-                        << m_transportIn.m_name << ":  BaseSMChannelImpl can't push message: " << ex.what();
+                    LOG(MiscCommon::error) << getName() << ":  BaseSMChannelImpl can't push message: " << ex.what();
                 }
 
                 // process standard async writing
@@ -525,50 +569,51 @@ namespace dds
 
             void sendYourselfShutdown()
             {
-                LOG(MiscCommon::debug) << m_transportIn.m_name << ": Sends itself a SHUTDOWN msg";
+                LOG(MiscCommon::debug) << m_transportIn.front().m_name << ": Sends itself a SHUTDOWN msg";
                 // Send cmdSHUTDOWN with higher priority in order to stop read operation.
                 SEmptyCmd cmd;
                 CProtocolMessage::protocolMessagePtr_t msg =
                     SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
                 // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
                 boost::system_time const timeout = boost::get_system_time() + boost::posix_time::milliseconds(500);
-                while (!m_transportIn.m_mq->timed_send(msg->data(), msg->length(), 0, timeout))
+                while (!m_transportIn.front().m_mq->timed_send(msg->data(), msg->length(), 0, timeout))
                 {
                     if (m_isShuttingDown)
                     {
-                        LOG(MiscCommon::debug)
-                            << m_transportIn.m_name << ": stopping send yourself shutdown while already shutting down";
+                        LOG(MiscCommon::debug) << m_transportIn.front().m_name
+                                               << ": stopping send yourself shutdown while already shutting down";
                         return;
                     }
                 }
             }
 
-            void readMessage()
+            void readMessage(const SMessageQueueInfo& _info)
             {
                 try
                 {
+                    CProtocolMessage::protocolMessagePtr_t currentMsg = std::make_shared<CProtocolMessage>();
+
                     unsigned int priority;
                     boost::interprocess::message_queue::size_type receivedSize;
 
                     // We need to allocate the memory of the size equal to the maximum size of the message
-                    m_currentMsg->resize(m_transportIn.m_mq->get_max_msg_size());
-                    m_transportIn.m_mq->receive(
-                        m_currentMsg->data(), m_transportIn.m_mq->get_max_msg_size(), receivedSize, priority);
+                    currentMsg->resize(_info.m_mq->get_max_msg_size());
+                    _info.m_mq->receive(currentMsg->data(), _info.m_mq->get_max_msg_size(), receivedSize, priority);
 
                     if (receivedSize < CProtocolMessage::header_length)
                     {
                         LOG(MiscCommon::debug)
-                            << m_transportIn.m_name << ": Received message: " << receivedSize
-                            << " bytes, expected at least" << CProtocolMessage::header_length << " bytes";
+                            << _info.m_name << ": Received message: " << receivedSize << " bytes, expected at least"
+                            << CProtocolMessage::header_length << " bytes";
                     }
                     else
                     {
                         // Resize message data to the actually received bytes
-                        m_currentMsg->resize(receivedSize);
-                        if (m_currentMsg->decode_header())
+                        currentMsg->resize(receivedSize);
+                        if (currentMsg->decode_header())
                         {
                             // If the header is ok, process the body of the message
-                            processBody(receivedSize - CProtocolMessage::header_length);
+                            processBody(receivedSize - CProtocolMessage::header_length, _info, currentMsg);
                         }
                         else
                         {
@@ -582,43 +627,42 @@ namespace dds
                 }
             }
 
-            void processBody(boost::interprocess::message_queue::size_type _bodySize)
+            void processBody(boost::interprocess::message_queue::size_type _bodySize,
+                             const SMessageQueueInfo& _info,
+                             const CProtocolMessage::protocolMessagePtr_t& _currentMsg)
             {
-                if (_bodySize != m_currentMsg->body_length())
+                if (_bodySize != _currentMsg->body_length())
                 {
-                    LOG(MiscCommon::error) << m_transportIn.m_name << ": Received message BODY: " << _bodySize
-                                           << " bytes, expected " << m_currentMsg->body_length();
+                    LOG(MiscCommon::error) << _info.m_name << ": Received message BODY: " << _bodySize
+                                           << " bytes, expected " << _currentMsg->body_length();
                 }
                 else
                 {
-                    if (m_currentMsg->body_length() == 0)
+                    if (_currentMsg->body_length() == 0)
                     {
-                        LOG(MiscCommon::debug) << m_transportIn.m_name
-                                               << ": Received message BODY no attachment: " << m_currentMsg->toString();
+                        LOG(MiscCommon::debug)
+                            << _info.m_name << ": Received message BODY no attachment: " << _currentMsg->toString();
                     }
                     else
                     {
-                        LOG(MiscCommon::debug) << m_transportIn.m_name << ": Received message BODY (" << _bodySize
-                                               << " bytes): " << m_currentMsg->toString();
+                        LOG(MiscCommon::debug) << _info.m_name << ": Received message BODY (" << _bodySize
+                                               << " bytes): " << _currentMsg->toString();
                     }
 
                     // process received message
                     T* pThis = static_cast<T*>(this);
-                    pThis->processMessage(m_currentMsg);
+                    pThis->processMessage(_currentMsg);
 
-                    ECmdType currentCmd = static_cast<ECmdType>(m_currentMsg->header().m_cmd);
-
-                    // Read next message
-                    m_currentMsg = std::make_shared<CProtocolMessage>();
+                    ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
 
                     // Do not start readMessage if cmdSHUTDOWN was sent
                     if (currentCmd != cmdSHUTDOWN)
                     {
                         auto self(this->shared_from_this());
-                        m_ioContext.post([this, self] {
+                        m_ioContext.post([this, self, &_info] {
                             try
                             {
-                                readMessage();
+                                readMessage(_info);
                             }
                             catch (std::exception& ex)
                             {
@@ -629,7 +673,7 @@ namespace dds
                     else
                     {
                         m_isShuttingDown = true;
-                        LOG(MiscCommon::debug) << m_transportIn.m_name << ": Stopping readMessage thread...";
+                        LOG(MiscCommon::debug) << _info.m_name << ": Stopping readMessage thread...";
                     }
                 }
             }
@@ -669,8 +713,7 @@ namespace dds
                             {
                                 if (m_isShuttingDown)
                                 {
-                                    LOG(MiscCommon::debug)
-                                        << m_transportIn.m_name << ": stopping write operation due to shutdown";
+                                    LOG(MiscCommon::debug) << getName() << ": stopping write operation due to shutdown";
                                     return;
                                 }
                             }
@@ -697,6 +740,11 @@ namespace dds
                 writeMessage();
             }
 
+            const std::string& getName() const
+            {
+                return m_transportIn.front().m_name;
+            }
+
           protected:
             std::atomic<bool> m_isShuttingDown;
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
@@ -705,11 +753,9 @@ namespace dds
           private:
             boost::asio::io_context& m_ioContext; ///< IO service that is used as a thread pool
 
-            SMessageQueueInfo m_transportIn;  ///< Input message queue, i.e. we read from this queue
-            messageQueueMap_t m_transportOut; ///< Map of output message queues, i.e. we write to this queues
-            std::mutex m_mutexTransportOut;   ///< Mutex for transport output map
-
-            CProtocolMessage::protocolMessagePtr_t m_currentMsg; ///> Current message that we read and process
+            messageQueueVector_t m_transportIn; ///< Vector of input message queues, i.e. we read from this queues
+            messageQueueMap_t m_transportOut;   ///< Map of output message queues, i.e. we write to this queues
+            std::mutex m_mutexTransportOut;     ///< Mutex for transport output map
 
             protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
             std::mutex m_mutexWriteBuffer;

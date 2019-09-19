@@ -7,18 +7,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
-#include <boost/property_tree/ptree.hpp>
-
-// silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#endif
 #include <boost/property_tree/ini_parser.hpp>
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic pop
-#endif
-
+#include <boost/property_tree/ptree.hpp>
 // MiscCommon
 #include "FindCfgFile.h"
 #include "Process.h"
@@ -404,13 +394,32 @@ std::string CUserDefaults::getSMAgentInputName() const
     return storageName;
 }
 
-std::string CUserDefaults::getSMAgentOutputName() const
+size_t CUserDefaults::getNumLeaderFW()
+{
+    return 4;
+}
+
+std::vector<std::string> CUserDefaults::getSMAgentOutputNames() const
 {
     // Shared memory for all messages addressed to commander
-    // TODO: FIXME: maximum length of the SM name
     string smName("DDSAO-");
     smName += getLockedSID();
-    return smName.substr(0, 24);
+    string baseName(smName.substr(0, 24));
+    vector<string> names;
+    for (size_t i = 0; i < CUserDefaults::getNumLeaderFW(); i++)
+    {
+        names.push_back(baseName + "_" + to_string(i));
+    }
+    return names;
+}
+
+std::string CUserDefaults::getSMAgentOutputName(uint64_t _protocolHeaderID) const
+{
+    // Shared memory for all messages addressed to commander
+    string smName("DDSAO-");
+    smName += getLockedSID();
+    std::string name = smName.substr(0, 24);
+    return name + '_' + to_string(_protocolHeaderID % CUserDefaults::getNumLeaderFW());
 }
 
 std::string CUserDefaults::getSMAgentLeaderOutputName() const

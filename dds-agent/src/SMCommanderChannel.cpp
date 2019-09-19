@@ -49,9 +49,9 @@ CSMCommanderChannel::CSMCommanderChannel(boost::asio::io_context& _service,
     , m_collectionName()
     , m_taskName()
 {
-    registerHandler<EChannelEvents::OnSMStart>([this](const SSenderInfo& _sender) {
+    registerHandler<EChannelEvents::OnSMStart>([this, _inputName](const SSenderInfo& _sender) {
         pushMsg<cmdLOBBY_MEMBER_INFO>(
-            SSimpleMsgCmd(getInputName(), info, cmdLOBBY_MEMBER_INFO), _sender.m_ID, EOutputID::Leader);
+            SSimpleMsgCmd(_inputName, info, cmdLOBBY_MEMBER_INFO), _sender.m_ID, EOutputID::Leader);
     });
 }
 

@@ -32,7 +32,7 @@ namespace dds
             void stop();
 
           private:
-            void startService();
+            void startService(size_t _numThreads);
             void createCommanderChannel(uint64_t _protocolHeaderID);
             void createSMIntercomChannel(uint64_t _protocolHeaderID);
             void createSMLeaderChannel(uint64_t _protocolHeaderID);
