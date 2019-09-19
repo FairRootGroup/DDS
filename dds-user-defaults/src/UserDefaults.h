@@ -12,6 +12,7 @@
 #include "Options.h"
 // STD
 #include <string>
+#include <vector>
 
 namespace dds
 {
@@ -57,7 +58,8 @@ namespace dds
             std::string getSMInputName() const;
             std::string getSMOutputName() const;
             std::string getSMAgentInputName() const;
-            std::string getSMAgentOutputName() const;
+            std::vector<std::string> getSMAgentOutputNames() const;
+            std::string getSMAgentOutputName(uint64_t _protocolHeaderID) const;
             std::string getSMAgentLeaderOutputName() const;
             std::string getPluginsRootDir() const;
             std::string getMainSIDFile() const;
@@ -75,6 +77,7 @@ namespace dds
             std::string getWnBinsDir() const;
             static std::string getTopologyXSDFilePath();
             bool isAgentInstance() const;
+            static size_t getNumLeaderFW(); // Number of SM agent outputs
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
             /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)

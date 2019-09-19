@@ -14,7 +14,7 @@ namespace dds
     {
       protected:
         CSMFWChannel(boost::asio::io_context& _service,
-                     const std::string& _inputName,
+                     const std::vector<std::string>& _inputNames,
                      const std::string& _outputName,
                      uint64_t _protocolHeaderID,
                      protocol_api::EMQOpenType _inputOpenType,

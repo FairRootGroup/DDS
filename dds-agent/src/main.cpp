@@ -27,11 +27,15 @@ void clean()
     // Cleaning shared memory of agent's shared memory channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     const std::string inputName(userDefaults.getSMAgentInputName());
-    const std::string outputName(userDefaults.getSMAgentOutputName());
     const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
-    const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
     LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
-    LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+
+    const std::vector<string> names(userDefaults.getSMAgentOutputNames());
+    for (const auto& outputName : names)
+    {
+        const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
+        LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+    }
 
     // Clean named mutex
     const string mutexName(userDefaults.getAgentNamedMutexName());
