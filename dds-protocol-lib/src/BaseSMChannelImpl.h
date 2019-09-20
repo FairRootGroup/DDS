@@ -166,6 +166,8 @@ namespace dds
 
             struct SMessageQueueInfo
             {
+                using Container_t = std::vector<SMessageQueueInfo>;
+
                 std::string m_name;     ///< Message queue name
                 EMQOpenType m_openType; ///< Message queue open type
                 messageQueuePtr_t m_mq; ///< Message queue
@@ -176,13 +178,12 @@ namespace dds
                 using Ptr_t = std::shared_ptr<SMessageOutputBuffer>;
                 using Container_t = std::map<uint64_t, Ptr_t>;
 
+                SMessageQueueInfo m_info;
+
                 protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
                 std::mutex m_mutexWriteBuffer;
                 protocolMessagePtrQueue_t m_writeBufferQueue;
             };
-
-            typedef std::map<uint64_t, SMessageQueueInfo> messageQueueMap_t;
-            typedef std::vector<SMessageQueueInfo> messageQueueVector_t;
 
           public:
             typedef std::shared_ptr<T> connectionPtr_t;
@@ -238,18 +239,15 @@ namespace dds
                 }
 
                 // Output transport - default output transport initialized with protocol header ID
-                SMessageQueueInfo outInfo;
-                outInfo.m_name = _outputName;
-                outInfo.m_openType = _outputOpenType;
-                m_transportOut.emplace(0, outInfo);
-
-                m_outputBuffers.emplace(0, std::make_shared<SMessageOutputBuffer>());
+                auto buffer = std::make_shared<SMessageOutputBuffer>();
+                buffer->m_info.m_name = _outputName;
+                buffer->m_info.m_openType = _outputOpenType;
+                m_outputBuffers.emplace(0, buffer);
 
                 createMessageQueue();
 
                 LOG(MiscCommon::info) << "SM: New channel: inputName=" << m_transportIn.front().m_name
-                                      << " outputName=" << m_transportOut[0].m_name
-                                      << " protocolHeaderID=" << m_protocolHeaderID;
+                                      << " outputName=" << _outputName << " protocolHeaderID=" << m_protocolHeaderID;
             }
 
           public:
@@ -295,9 +293,9 @@ namespace dds
 
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (auto& v : m_transportOut)
+                    for (auto& v : m_outputBuffers)
                     {
-                        SMessageQueueInfo& info = v.second;
+                        SMessageQueueInfo& info = v.second->m_info;
                         LOG(MiscCommon::info) << "SM: Initializing output message queue: " << info.m_name;
                         info.m_mq.reset();
                         info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
@@ -364,8 +362,8 @@ namespace dds
 
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    auto it = m_transportOut.find(_outputID);
-                    if (it != m_transportOut.end())
+                    auto it = m_outputBuffers.find(_outputID);
+                    if (it != m_outputBuffers.end())
                     {
                         std::stringstream ss;
                         ss << "Can't add output " << _name << ". Output with ID " << _outputID << " already exists.";
@@ -373,15 +371,15 @@ namespace dds
                     }
                 }
 
-                SMessageQueueInfo info;
-                info.m_name = _name;
-                info.m_openType = _openType;
-                info.m_mq = createMessageQueue(_name, _openType);
+                auto buffer = std::make_shared<SMessageOutputBuffer>();
+                buffer->m_info.m_name = _name;
+                buffer->m_info.m_openType = _openType;
+                buffer->m_info.m_mq = createMessageQueue(_name, _openType);
 
-                if (info.m_mq != nullptr)
+                if (buffer->m_info.m_mq != nullptr)
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    auto result = m_transportOut.emplace(_outputID, info);
+                    auto result = m_outputBuffers.emplace(_outputID, buffer);
                     if (!result.second)
                     {
                         std::stringstream ss;
@@ -393,8 +391,6 @@ namespace dds
                         LOG(MiscCommon::info)
                             << "Added shared memory channel output with ID: " << _outputID << " name: " << _name;
                     }
-
-                    m_outputBuffers.emplace(_outputID, std::make_shared<SMessageOutputBuffer>());
                 }
                 else
                 {
@@ -426,9 +422,9 @@ namespace dds
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
 
-                    for (const auto& v : m_transportOut)
+                    for (const auto& v : m_outputBuffers)
                     {
-                        if (v.second.m_mq == nullptr)
+                        if (v.second->m_info.m_mq == nullptr)
                         {
                             queuesCreated = false;
                             break;
@@ -486,9 +482,9 @@ namespace dds
                 }
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (const auto& v : m_transportOut)
+                    for (const auto& v : m_outputBuffers)
                     {
-                        const SMessageQueueInfo& info = v.second;
+                        const SMessageQueueInfo& info = v.second->m_info;
                         const bool status = boost::interprocess::message_queue::remove(info.m_name.c_str());
                         LOG(MiscCommon::info) << "Message queue " << info.m_name << " remove status: " << status;
                     }
@@ -565,14 +561,14 @@ namespace dds
                 // Send cmdSHUTDOWN to all connected outputs except yourself
                 {
                     std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (auto it : m_transportOut)
+                    for (auto it : m_outputBuffers)
                     {
                         if (it.first == 0 || it.first == m_protocolHeaderID)
                             continue;
                         SEmptyCmd cmd;
                         CProtocolMessage::protocolMessagePtr_t msg =
                             SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
-                        messageQueuePtr_t mq = it.second.m_mq;
+                        messageQueuePtr_t mq = it.second->m_info.m_mq;
                         // TODO: FIXME: Revise the code, use timed_send
                         mq->send(msg->data(), msg->length(), 1);
                     }
@@ -727,20 +723,12 @@ namespace dds
                 {
                     for (auto& msg : _buffer->m_writeBufferQueue)
                     {
-                        messageQueuePtr_t mq = nullptr;
-                        bool exists = false;
-                        {
-                            std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                            auto it = m_transportOut.find(msg.m_outputID);
-                            exists = (it != m_transportOut.end());
-                            mq = it->second.m_mq;
-                        }
-
-                        if (exists && mq != nullptr)
+                        if (_buffer->m_info.m_mq != nullptr)
                         {
                             boost::system_time const timeout =
                                 boost::get_system_time() + boost::posix_time::milliseconds(500);
-                            while (!mq->timed_send(msg.m_msg->data(), msg.m_msg->length(), 0, timeout))
+                            while (
+                                !_buffer->m_info.m_mq->timed_send(msg.m_msg->data(), msg.m_msg->length(), 0, timeout))
                             {
                                 if (m_isShuttingDown)
                                 {
@@ -784,11 +772,10 @@ namespace dds
           private:
             boost::asio::io_context& m_ioContext; ///< IO service that is used as a thread pool
 
-            messageQueueVector_t m_transportIn; ///< Vector of input message queues, i.e. we read from this queues
-            messageQueueMap_t m_transportOut;   ///< Map of output message queues, i.e. we write to this queues
-            std::mutex m_mutexTransportOut;     ///< Mutex for transport output map
-
+            typename SMessageQueueInfo::Container_t
+                m_transportIn; ///< Vector of input message queues, i.e. we read from this queues
             typename SMessageOutputBuffer::Container_t m_outputBuffers;
+            std::mutex m_mutexTransportOut; ///< Mutex for transport output map
         };
     } // namespace protocol_api
 } // namespace dds
