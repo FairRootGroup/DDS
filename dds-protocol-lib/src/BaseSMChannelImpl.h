@@ -284,6 +284,7 @@ namespace dds
           private:
             void createMessageQueue()
             {
+                std::lock_guard<std::mutex> lock(m_mutexTransport);
                 for (auto& info : m_transportIn)
                 {
                     LOG(MiscCommon::info) << "SM: Initializing input message queue: " << info.m_name;
@@ -291,15 +292,12 @@ namespace dds
                     info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
                 }
 
+                for (auto& v : m_outputBuffers)
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (auto& v : m_outputBuffers)
-                    {
-                        SMessageQueueInfo& info = v.second->m_info;
-                        LOG(MiscCommon::info) << "SM: Initializing output message queue: " << info.m_name;
-                        info.m_mq.reset();
-                        info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
-                    }
+                    SMessageQueueInfo& info = v.second->m_info;
+                    LOG(MiscCommon::info) << "SM: Initializing output message queue: " << info.m_name;
+                    info.m_mq.reset();
+                    info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
                 }
             }
 
@@ -361,7 +359,7 @@ namespace dds
                 }
 
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    std::lock_guard<std::mutex> lock(m_mutexTransport);
                     auto it = m_outputBuffers.find(_outputID);
                     if (it != m_outputBuffers.end())
                     {
@@ -378,7 +376,7 @@ namespace dds
 
                 if (buffer->m_info.m_mq != nullptr)
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    std::lock_guard<std::mutex> lock(m_mutexTransport);
                     auto result = m_outputBuffers.emplace(_outputID, buffer);
                     if (!result.second)
                     {
@@ -420,7 +418,7 @@ namespace dds
 
                 if (queuesCreated)
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    std::lock_guard<std::mutex> lock(m_mutexTransport);
 
                     for (const auto& v : m_outputBuffers)
                     {
@@ -475,19 +473,17 @@ namespace dds
 
             void removeMessageQueue()
             {
+                std::lock_guard<std::mutex> lock(m_mutexTransport);
                 for (const auto& v : m_transportIn)
                 {
                     const bool status = boost::interprocess::message_queue::remove(v.m_name.c_str());
                     LOG(MiscCommon::info) << "Message queue " << v.m_name << " remove status: " << status;
                 }
+                for (const auto& v : m_outputBuffers)
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (const auto& v : m_outputBuffers)
-                    {
-                        const SMessageQueueInfo& info = v.second->m_info;
-                        const bool status = boost::interprocess::message_queue::remove(info.m_name.c_str());
-                        LOG(MiscCommon::info) << "Message queue " << info.m_name << " remove status: " << status;
-                    }
+                    const SMessageQueueInfo& info = v.second->m_info;
+                    const bool status = boost::interprocess::message_queue::remove(info.m_name.c_str());
+                    LOG(MiscCommon::info) << "Message queue " << info.m_name << " remove status: " << status;
                 }
             }
 
@@ -560,7 +556,7 @@ namespace dds
             {
                 // Send cmdSHUTDOWN to all connected outputs except yourself
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                    std::lock_guard<std::mutex> lock(m_mutexTransport);
                     for (auto it : m_outputBuffers)
                     {
                         if (it.first == 0 || it.first == m_protocolHeaderID)
@@ -578,7 +574,7 @@ namespace dds
           private:
             const typename SMessageOutputBuffer::Ptr_t& getOutputBuffer(uint64_t _outputID)
             {
-                std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                std::lock_guard<std::mutex> lock(m_mutexTransport);
                 auto it = m_outputBuffers.find(_outputID);
                 if (it != m_outputBuffers.end())
                     return it->second;
@@ -593,20 +589,24 @@ namespace dds
 
             void sendYourselfShutdown()
             {
-                LOG(MiscCommon::debug) << m_transportIn.front().m_name << ": Sends itself a SHUTDOWN msg";
+                std::lock_guard<std::mutex> lock(m_mutexTransport);
                 // Send cmdSHUTDOWN with higher priority in order to stop read operation.
-                SEmptyCmd cmd;
-                CProtocolMessage::protocolMessagePtr_t msg =
-                    SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
-                // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
-                boost::system_time const timeout = boost::get_system_time() + boost::posix_time::milliseconds(500);
-                while (!m_transportIn.front().m_mq->timed_send(msg->data(), msg->length(), 0, timeout))
+                for (auto& info : m_transportIn)
                 {
-                    if (m_isShuttingDown)
+                    LOG(MiscCommon::debug) << info.m_name << ": Sends itself a SHUTDOWN msg";
+                    SEmptyCmd cmd;
+                    CProtocolMessage::protocolMessagePtr_t msg =
+                        SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
+                    // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
+                    boost::system_time const timeout = boost::get_system_time() + boost::posix_time::milliseconds(500);
+                    while (!info.m_mq->timed_send(msg->data(), msg->length(), 0, timeout))
                     {
-                        LOG(MiscCommon::debug) << m_transportIn.front().m_name
-                                               << ": stopping send yourself shutdown while already shutting down";
-                        return;
+                        if (m_isShuttingDown)
+                        {
+                            LOG(MiscCommon::debug)
+                                << info.m_name << ": stopping send yourself shutdown while already shutting down";
+                            break;
+                        }
                     }
                 }
             }
@@ -775,7 +775,7 @@ namespace dds
             typename SMessageQueueInfo::Container_t
                 m_transportIn; ///< Vector of input message queues, i.e. we read from this queues
             typename SMessageOutputBuffer::Container_t m_outputBuffers;
-            std::mutex m_mutexTransportOut; ///< Mutex for transport output map
+            std::mutex m_mutexTransport; ///< Mutex for transport output map
         };
     } // namespace protocol_api
 } // namespace dds
