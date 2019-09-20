@@ -171,6 +171,16 @@ namespace dds
                 messageQueuePtr_t m_mq; ///< Message queue
             };
 
+            struct SMessageOutputBuffer
+            {
+                using Ptr_t = std::shared_ptr<SMessageOutputBuffer>;
+                using Container_t = std::map<uint64_t, Ptr_t>;
+
+                protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
+                std::mutex m_mutexWriteBuffer;
+                protocolMessagePtrQueue_t m_writeBufferQueue;
+            };
+
             typedef std::map<uint64_t, SMessageQueueInfo> messageQueueMap_t;
             typedef std::vector<SMessageQueueInfo> messageQueueVector_t;
 
@@ -232,6 +242,8 @@ namespace dds
                 outInfo.m_name = _outputName;
                 outInfo.m_openType = _outputOpenType;
                 m_transportOut.emplace(0, outInfo);
+
+                m_outputBuffers.emplace(0, std::make_shared<SMessageOutputBuffer>());
 
                 createMessageQueue();
 
@@ -381,6 +393,8 @@ namespace dds
                         LOG(MiscCommon::info)
                             << "Added shared memory channel output with ID: " << _outputID << " name: " << _name;
                     }
+
+                    m_outputBuffers.emplace(_outputID, std::make_shared<SMessageOutputBuffer>());
                 }
                 else
                 {
@@ -491,32 +505,36 @@ namespace dds
 
                 try
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
+                    // Get corresponding buffer
+                    const typename SMessageOutputBuffer::Ptr_t& buffer = getOutputBuffer(_outputID);
+
+                    std::lock_guard<std::mutex> lock(buffer->m_mutexWriteBuffer);
 
                     // add the current message to the queue
                     if (cmdUNKNOWN != _cmd)
-                        m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
+                        buffer->m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
 
                     LOG(MiscCommon::debug)
-                        << getName() << ": BaseSMChannelImpl pushMsg: WriteQueue size = " << m_writeQueue.size();
+                        << getName()
+                        << ": BaseSMChannelImpl pushMsg: WriteQueue size = " << buffer->m_writeQueue.size();
+
+                    // process standard async writing
+                    auto self(this->shared_from_this());
+                    m_ioContext.post([this, self, &buffer] {
+                        try
+                        {
+                            writeMessage(buffer);
+                        }
+                        catch (std::exception& ex)
+                        {
+                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't write message: " << ex.what();
+                        }
+                    });
                 }
                 catch (std::exception& ex)
                 {
                     LOG(MiscCommon::error) << getName() << ":  BaseSMChannelImpl can't push message: " << ex.what();
                 }
-
-                // process standard async writing
-                auto self(this->shared_from_this());
-                m_ioContext.post([this, self] {
-                    try
-                    {
-                        writeMessage();
-                    }
-                    catch (std::exception& ex)
-                    {
-                        LOG(MiscCommon::error) << "BaseSMChannelImpl can't write message: " << ex.what();
-                    }
-                });
             }
 
             template <ECmdType _cmd, class A>
@@ -562,6 +580,16 @@ namespace dds
             }
 
           private:
+            const typename SMessageOutputBuffer::Ptr_t& getOutputBuffer(uint64_t _outputID)
+            {
+                std::lock_guard<std::mutex> lock(m_mutexTransportOut);
+                auto it = m_outputBuffers.find(_outputID);
+                if (it != m_outputBuffers.end())
+                    return it->second;
+
+                throw std::runtime_error("Can't find corresponding output buffer: " + std::to_string(_outputID));
+            }
+
             uint64_t adjustProtocolHeaderID(uint64_t _protocolHeaderID) const
             {
                 return (_protocolHeaderID == 0) ? m_protocolHeaderID : _protocolHeaderID;
@@ -678,23 +706,26 @@ namespace dds
                 }
             }
 
-            void writeMessage()
+            void writeMessage(const typename SMessageOutputBuffer::Ptr_t& _buffer)
             {
+                if (_buffer == nullptr)
+                    throw std::runtime_error("Can't find corresponding output buffer");
+
                 {
-                    std::lock_guard<std::mutex> lockWriteBuffer(m_mutexWriteBuffer);
-                    if (!m_writeBufferQueue.empty())
+                    std::lock_guard<std::mutex> lockWriteBuffer(_buffer->m_mutexWriteBuffer);
+                    if (!_buffer->m_writeBufferQueue.empty())
                         return; // A write is in progress, don't start anything
 
-                    if (m_writeQueue.empty())
+                    if (_buffer->m_writeQueue.empty())
                         return; // There is nothing to send.
 
-                    m_writeBufferQueue.assign(m_writeQueue.begin(), m_writeQueue.end());
-                    m_writeQueue.clear();
+                    _buffer->m_writeBufferQueue.assign(_buffer->m_writeQueue.begin(), _buffer->m_writeQueue.end());
+                    _buffer->m_writeQueue.clear();
                 }
 
                 try
                 {
-                    for (auto& msg : m_writeBufferQueue)
+                    for (auto& msg : _buffer->m_writeBufferQueue)
                     {
                         messageQueuePtr_t mq = nullptr;
                         bool exists = false;
@@ -733,11 +764,11 @@ namespace dds
 
                 // Lock the modification of the container
                 {
-                    std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
-                    m_writeBufferQueue.clear();
+                    std::lock_guard<std::mutex> lock(_buffer->m_mutexWriteBuffer);
+                    _buffer->m_writeBufferQueue.clear();
                 }
                 // We might need to send more messages
-                writeMessage();
+                writeMessage(_buffer);
             }
 
             const std::string& getName() const
@@ -757,9 +788,7 @@ namespace dds
             messageQueueMap_t m_transportOut;   ///< Map of output message queues, i.e. we write to this queues
             std::mutex m_mutexTransportOut;     ///< Mutex for transport output map
 
-            protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
-            std::mutex m_mutexWriteBuffer;
-            protocolMessagePtrQueue_t m_writeBufferQueue;
+            typename SMessageOutputBuffer::Container_t m_outputBuffers;
         };
     } // namespace protocol_api
 } // namespace dds
