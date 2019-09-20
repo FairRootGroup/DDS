@@ -421,22 +421,19 @@ void CAgentConnectionManager::terminateChildrenProcesses()
     }
 
     LOG(info) << "Wait for task to exit...";
-    if (IsProcessRunning(m_taskPid))
+
+    // wait 10 seconds each
+    for (size_t i = 0; i < 10; ++i)
     {
-        // wait 10 seconds each
-        for (size_t i = 0; i < 10; ++i)
         {
+            lock_guard<mutex> lock(m_taskPidMutex);
             LOG(info) << "Waiting for pid = " << m_taskPid;
-            int stat(0);
-            if (m_taskPid == ::waitpid(m_taskPid, &stat, WNOHANG | WUNTRACED))
-            {
-                LOG(info) << "pid = " << m_taskPid << " - done; exit status = " << WEXITSTATUS(stat);
-                break;
-            }
-            // TODO: Needs to be fixed! Implement time-function based timeout measurements
-            // instead
-            sleep(1);
+            if (m_taskPid > 0 && IsProcessRunning(m_taskPid))
+                continue;
         }
+        // TODO: Needs to be fixed! Implement time-function based timeout measurements
+        // instead
+        sleep(1);
     }
 
     // kill all child process of tasks if there are any
@@ -597,6 +594,8 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
                         LOG(info) << "User task exited with unexpected status: " << status;
 
                     LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+
+                    LOG(info) << "pid = " << m_taskPid << " - done; exit status = " << WEXITSTATUS(status);
 
                     taskExited(_pid, status);
                     return false;
