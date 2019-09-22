@@ -280,7 +280,7 @@ namespace dds
                             break;
                     }
                 }
-                return std::move(result);
+                return result;
             }
 
             template <ECmdType _cmd, class AttachmentType>
