@@ -67,6 +67,11 @@ option(BUILD_dds-submit-pbs "Build dds-submit-pbs" ON)
 option(BUILD_dds-submit-lsf "Build dds-submit-lsf" ON)
 option(BUILD_dds-session "Build dds-session" ON)
 option(BUILD_dds_tools_lib "Build dds-tools-lib" ON)
+if( BUILD_TESTS )
+	option(BUILD_performance-tests "Build performance-tests" ON)
+elseif(BUILD_TESTS)
+	option(BUILD_performance-tests "Build performance-tests" OFF)
+endif(BUILD_TESTS)
 #
 # Custom targets
 #
@@ -191,9 +196,9 @@ SET(DDS_SHARE_FILES
 # Search for BOOST
 #
 set(Boost_Components log log_setup thread program_options filesystem system regex)
-if( BUILD_TESTS)
+if(BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
-endif( BUILD_TESTS)
+endif(BUILD_TESTS)
 
 find_package(Boost 1.67 REQUIRED COMPONENTS  ${Boost_Components})
 if(Boost_FOUND)
@@ -337,6 +342,12 @@ if(BUILD_dds_tools_lib)
     message(STATUS "Build dds_tools_lib - YES")
     add_subdirectory ( dds-tools-lib )
 endif(BUILD_dds_tools_lib)
+
+# BUILD_performance-tests
+if(BUILD_performance-tests)
+    message(STATUS "Build performance-tests - YES")
+    add_subdirectory ( performance-tests )
+endif(BUILD_performance-tests)
 
 #
 # Install
