@@ -306,7 +306,10 @@ namespace dds
                 static const unsigned int maxNofMessages = 100;
                 // Taking into account that maximum size of the string for the command is 2^16 plus some extra bytes
                 // for key size (128 bytes) and other.
-                static const unsigned int maxMessageSize = 65000;
+                // TODO: Because of performance problems we had to reduce the size of the message from 65K to 1K.
+                // TODO: Need to implement an algorithm to break protocol messages on smaller chunks if they are bigger
+                // than nmaxMessageSize
+                static const unsigned int maxMessageSize = 1024;
 
                 try
                 {
@@ -729,7 +732,7 @@ namespace dds
                             // won't be blocked by infinitely retrying to send
                             size_t nRetryCount(0);
                             const size_t nTimedSendAbsTime(500); // in ms.
-                            const size_t maxRetry(50);
+                            const size_t maxRetry(40);
 
                             while (!_buffer->m_info.m_mq->timed_send(
                                 msg.m_msg->data(),

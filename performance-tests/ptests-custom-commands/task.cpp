@@ -54,7 +54,10 @@ int main(int argc, char* argv[])
             string senderIdStr = to_string(_senderId);
 
             if (_command == g_stopSignal)
+            {
                 cv.notify_all();
+                return;
+            }
 
             for (int i = 0; i < 10; ++i)
                 customCmd.send(_command + "_" + senderIdStr, senderIdStr);
