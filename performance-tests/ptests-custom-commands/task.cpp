@@ -1,8 +1,10 @@
 // DDS
 #include "dds_intercom.h"
 // STD
+#include <condition_variable>
 #include <exception>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include <thread>
 // BOOST
