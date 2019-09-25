@@ -725,15 +725,32 @@ namespace dds
                     {
                         if (_buffer->m_info.m_mq != nullptr)
                         {
-                            boost::system_time const timeout =
-                                boost::get_system_time() + boost::posix_time::milliseconds(500);
-                            while (
-                                !_buffer->m_info.m_mq->timed_send(msg.m_msg->data(), msg.m_msg->length(), 0, timeout))
+                            // The retry count makes sure that if the other end is disconnected or the queue is full, we
+                            // won't be blocked by infinitely retrying to send
+                            size_t nRetryCount(0);
+                            const size_t nTimedSendAbsTime(500); // in ms.
+                            const size_t maxRetry(50);
+
+                            while (!_buffer->m_info.m_mq->timed_send(
+                                msg.m_msg->data(),
+                                msg.m_msg->length(),
+                                0,
+                                (boost::get_system_time() + boost::posix_time::milliseconds(nTimedSendAbsTime))))
                             {
                                 if (m_isShuttingDown)
                                 {
                                     LOG(MiscCommon::debug) << getName() << ": stopping write operation due to shutdown";
                                     return;
+                                }
+                                ++nRetryCount;
+                                if (nRetryCount > maxRetry)
+                                {
+                                    nRetryCount = 0;
+                                    LOG(MiscCommon::error)
+                                        << getName()
+                                        << ": Queue is full or other end has disconnected, failed to write message: "
+                                        << g_cmdToString[msg.m_msg->header().m_cmd];
+                                    break;
                                 }
                             }
                         }
