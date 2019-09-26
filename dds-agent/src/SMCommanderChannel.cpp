@@ -435,6 +435,8 @@ bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACT
         if (::setenv("DDS_TASK_NAME", m_taskName.c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_NAME");
 
+        dispatchHandlers<>(EChannelEvents::OnAssignUserTask, _sender);
+
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
 

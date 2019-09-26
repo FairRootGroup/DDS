@@ -355,6 +355,12 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
         });
 
     // Call this callback when a user process is activated
+    m_SMCommanderChannel->registerHandler<EChannelEvents::OnAssignUserTask>([this](const SSenderInfo& _sender) {
+        // Stop drainning the intercom write queue
+        m_SMIntercomChannel->drainWriteQueue(false);
+    });
+
+    // Call this callback when a user process is activated
     m_SMCommanderChannel->registerHandler<EChannelEvents::OnNewUserTask>(
         [this](const SSenderInfo& _sender, pid_t _pid) { this->onNewUserTask(_pid); });
 
@@ -510,6 +516,9 @@ void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
     cmd.m_exitCode = _exitCode;
     cmd.m_taskID = m_SMCommanderChannel->getTaskID();
     m_SMCommanderChannel->pushMsg<cmdUSER_TASK_DONE>(cmd);
+
+    // Drainning the Intercom write queue
+    m_SMIntercomChannel->drainWriteQueue(true);
 }
 
 void CAgentConnectionManager::onNewUserTask(pid_t _pid)

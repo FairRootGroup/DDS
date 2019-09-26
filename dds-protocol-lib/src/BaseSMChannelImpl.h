@@ -204,6 +204,7 @@ namespace dds
                 : CChannelMessageHandlersImpl()
                 , m_isShuttingDown(false)
                 , m_started(false)
+                , m_drainWriteQueue(false)
                 , m_protocolHeaderID(_protocolHeaderID)
                 , m_ioContext(_service)
             {
@@ -574,6 +575,11 @@ namespace dds
                 }
             }
 
+            void drainWriteQueue(bool _newVal)
+            {
+                m_drainWriteQueue = _newVal;
+            }
+
           private:
             const typename SMessageOutputBuffer::Ptr_t& getOutputBuffer(uint64_t _outputID)
             {
@@ -728,30 +734,27 @@ namespace dds
                     {
                         if (_buffer->m_info.m_mq != nullptr)
                         {
-                            // The retry count makes sure that if the other end is disconnected or the queue is full, we
-                            // won't be blocked by infinitely retrying to send
-                            size_t nRetryCount(0);
-                            const size_t nTimedSendAbsTime(500); // in ms.
-                            const size_t maxRetry(40);
-
                             while (!_buffer->m_info.m_mq->timed_send(
                                 msg.m_msg->data(),
                                 msg.m_msg->length(),
                                 0,
-                                (boost::get_system_time() + boost::posix_time::milliseconds(nTimedSendAbsTime))))
+                                (boost::get_system_time() + boost::posix_time::milliseconds(500))))
                             {
                                 if (m_isShuttingDown)
                                 {
                                     LOG(MiscCommon::debug) << getName() << ": stopping write operation due to shutdown";
                                     return;
                                 }
-                                ++nRetryCount;
-                                if (nRetryCount > maxRetry)
+
+                                // If the other end is disconnected or the queue is full, we
+                                // will block the thread by infinitely retrying to send.
+                                // For such cases there is a drain command. The connection manager can initiate the
+                                // drain, when needed. For example in case when a user task disconnects from the
+                                // Intercom channel a drain will be initiated util we receive a new task assignment
+                                if (m_drainWriteQueue)
                                 {
-                                    nRetryCount = 0;
-                                    LOG(MiscCommon::error)
-                                        << getName()
-                                        << ": Queue is full or other end has disconnected, failed to write message: "
+                                    LOG(MiscCommon::warning)
+                                        << getName() << ": Draining write queue, while there is a message pending: "
                                         << g_cmdToString[msg.m_msg->header().m_cmd];
                                     break;
                                 }
@@ -787,6 +790,7 @@ namespace dds
           protected:
             std::atomic<bool> m_isShuttingDown;
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
+            std::atomic<bool> m_drainWriteQueue;
             uint64_t m_protocolHeaderID;
 
           private:
