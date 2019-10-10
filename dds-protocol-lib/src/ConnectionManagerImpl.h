@@ -227,6 +227,26 @@ namespace dds
             }
 
           protected:
+            void updateChannelProtocolHeaderID(const weakChannelInfo_t& _channelInfo)
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+
+                auto p = _channelInfo.m_channel.lock();
+                if (p == nullptr)
+                    return;
+
+                for (auto& inf : m_channels)
+                {
+                    if (inf.m_channel.get() == p.get() && inf.m_protocolHeaderID == 0)
+                    {
+                        inf.m_protocolHeaderID = _channelInfo.m_protocolHeaderID;
+                        return;
+                    }
+                }
+                LOG(MiscCommon::error) << "Failed to update protocol channel header ID <"
+                                       << _channelInfo.m_protocolHeaderID << "> . Channel is not registered";
+            }
+
             weakChannelInfo_t getChannelByID(uint64_t _protocolHeaderID)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
@@ -238,9 +258,9 @@ namespace dds
                     {
                         if (v.m_protocolHeaderID == 0)
                             continue;
-                        commander_cmd::SAgentInfo inf = v.m_channel->getAgentInfo(v.m_protocolHeaderID);
-                        m_channelsCache.insert(
-                            std::make_pair(v.m_protocolHeaderID, weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID)));
+                        //    commander_cmd::SAgentInfo inf = v.m_channel->getAgentInfo(v.m_protocolHeaderID);
+                        m_channelsCache.insert(std::make_pair(
+                            v.m_protocolHeaderID, weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID, v.m_isSlot)));
                     }
                 }
 
@@ -251,14 +271,14 @@ namespace dds
 
                 for (auto& v : m_channels)
                 {
-                    commander_cmd::SAgentInfo inf = v.m_channel->getAgentInfo(v.m_protocolHeaderID);
-                    if (inf.m_id == _protocolHeaderID)
+                    //  commander_cmd::SAgentInfo inf = v.m_channel->getAgentInfo(v.m_protocolHeaderID);
+                    if (v.m_protocolHeaderID == _protocolHeaderID)
                     {
                         // Add the item into the cache
-                        m_channelsCache.insert(
-                            std::make_pair(v.m_protocolHeaderID, weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID)));
+                        m_channelsCache.insert(std::make_pair(
+                            v.m_protocolHeaderID, weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID, v.m_isSlot)));
                         // TODO: need to clean cache from dead channels
-                        return weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID);
+                        return weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID, v.m_isSlot);
                     }
                 }
                 return weakChannelInfo_t();
@@ -275,7 +295,7 @@ namespace dds
                     bool stop = false;
                     if (_condition == nullptr || _condition(v, stop))
                     {
-                        result.push_back(weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID));
+                        result.push_back(weakChannelInfo_t(v.m_channel, v.m_protocolHeaderID, v.m_isSlot));
                         if (stop)
                             break;
                     }
@@ -418,7 +438,7 @@ namespace dds
                 {
                     {
                         std::lock_guard<std::mutex> lock(m_mutex);
-                        m_channels.push_back(channelInfo_t(_client, _client->getProtocolHeaderID()));
+                        m_channels.push_back(channelInfo_t(_client, _client->getProtocolHeaderID(), false));
                     }
                     _client->start();
                     createClientAndStartAccept(_acceptor);
@@ -437,33 +457,15 @@ namespace dds
                 pThis->newClientCreated(newClient);
 
                 // Subsribe on lobby member handshake
-                newClient->template registerHandler<EChannelEvents::OnLobbyMemberHandshakeOK>(
+                newClient->template registerHandler<EChannelEvents::OnReplyAddSlot>(
                     [this, newClient](const SSenderInfo& _sender) -> void {
                         {
                             std::lock_guard<std::mutex> lock(m_mutex);
-
-                            // Avoid adding lobby leader twice
-                            if (newClient->getProtocolHeaderID() != _sender.m_ID)
-                            {
-                                m_channels.push_back(channelInfo_t(newClient, _sender.m_ID));
-                            }
-                            else
-                            {
-                                // Replace empty PHID for lobby leaders
-                                channelInfo_t inf(newClient, 0);
-                                auto it = std::find(m_channels.begin(), m_channels.end(), inf);
-                                if (it != m_channels.end() && it->m_protocolHeaderID == 0)
-                                {
-                                    it->m_protocolHeaderID = _sender.m_ID;
-                                }
-                                else
-                                {
-                                    LOG(MiscCommon::error)
-                                        << "Handshake for unregistered lobby leader connection senderID="
-                                        << _sender.m_ID;
-                                }
-                            }
+                            m_channels.push_back(channelInfo_t(newClient, _sender.m_ID, true));
                         }
+
+                        LOG(MiscCommon::info)
+                            << "Adding new slot to " << newClient->getId() << " with id " << _sender.m_ID;
                     });
 
                 // Subscribe on dissconnect event

@@ -14,7 +14,7 @@ namespace dds
     {
       protected:
         CSMLeaderChannel(boost::asio::io_context& _service,
-                         const std::string& _inputName,
+                         const std::vector<std::string>& _inputNames,
                          const std::string& _outputName,
                          uint64_t _protocolHeaderID,
                          protocol_api::EMQOpenType _inputOpenType,
@@ -25,14 +25,17 @@ namespace dds
 
       public:
         BEGIN_SM_MSG_MAP(CSMLeaderChannel)
-            SM_MESSAGE_HANDLER(protocol_api::cmdLOBBY_MEMBER_INFO, on_cmdLOBBY_MEMBER_INFO)
+            SM_MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
+            SM_MESSAGE_HANDLER_DISPATCH(cmdUPDATE_KEY)
+            SM_MESSAGE_HANDLER_DISPATCH(cmdSIMPLE_MSG)
+            SM_MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
         END_SM_MSG_MAP()
 
       private:
         // Message Handlers
-        bool on_cmdLOBBY_MEMBER_INFO(
-            protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
-            const protocol_api::SSenderInfo& _sender);
+        //        bool on_cmdLOBBY_MEMBER_INFO(
+        //            protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment,
+        //            const protocol_api::SSenderInfo& _sender);
     };
 } // namespace dds
 #endif

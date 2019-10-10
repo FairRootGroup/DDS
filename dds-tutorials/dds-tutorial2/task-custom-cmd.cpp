@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
             cout << "Received custom command: " << _command << " condition: " << _condition
                  << " senderId: " << _senderId << endl;
             string senderIdStr = to_string(_senderId);
-            customCmd.send(_command + "_" + senderIdStr, senderIdStr);
+            customCmd.send("reply_" + senderIdStr, senderIdStr);
         });
 
         // Subscribe on reply from DDS commander server

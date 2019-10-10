@@ -23,7 +23,8 @@ namespace dds
         collection_name,  ///< associated with $DDS_COLLECTION_NAME - ID of the parent collection.
         group_name,       ///< associated with $DDS_GROUP_NAME - ID of the parent group.
         dds_location,     ///< associated with $DDS_LOCATION  environemnt variable.
-        dds_session_id    ///< associated with $DDS_SESSION_ID - session ID of the DDS.
+        dds_session_id,   ///< associated with $DDS_SESSION_ID - session ID of the DDS.
+        dds_slot_id       ///< associated with $DDS_SLOT_ID - slot ID
     };
 
     /// \brief The function returns a value for a given environment property.
@@ -35,7 +36,7 @@ namespace dds
     /// \tparam T type one of the environment property listed in #EEnvProp.
     /// \return a numeric value for a given environment property.
     template <EEnvProp T>
-    inline typename std::enable_if<T == task_id, uint64_t>::type env_prop()
+    inline typename std::enable_if<T == task_id || T == dds_slot_id, uint64_t>::type env_prop()
     {
         size_t ret(0);
         std::string envName;
@@ -43,6 +44,9 @@ namespace dds
         {
             case task_id:
                 envName = "DDS_TASK_ID";
+                break;
+            case dds_slot_id:
+                envName = "DDS_SLOT_ID";
                 break;
             default:
                 return 0;
@@ -53,7 +57,7 @@ namespace dds
 
         try
         {
-            ret = std::stoul(env);
+            ret = std::stoull(env);
         }
         catch (...)
         {

@@ -13,18 +13,17 @@ namespace dds
         template <class T>
         struct SChannelInfo
         {
-            SChannelInfo()
-                : m_protocolHeaderID(0)
-            {
-            }
+            SChannelInfo() = default;
 
-            SChannelInfo(typename T::connectionPtr_t _channel, uint64_t _protocolHeaderID)
+            SChannelInfo(typename T::connectionPtr_t _channel, uint64_t _protocolHeaderID, bool _isSlot)
                 : m_channel(_channel)
                 , m_protocolHeaderID(_protocolHeaderID)
+                , m_isSlot(_isSlot)
             {
             }
             typename T::connectionPtr_t m_channel;
-            uint64_t m_protocolHeaderID;
+            uint64_t m_protocolHeaderID{ 0 };
+            bool m_isSlot{ false };
 
             typedef std::vector<SChannelInfo<T>> container_t;
         };
@@ -38,21 +37,26 @@ namespace dds
         template <class T>
         struct SWeakChannelInfo
         {
-            SWeakChannelInfo()
-                : m_protocolHeaderID(0)
-            {
-            }
+            SWeakChannelInfo() = default;
 
-            SWeakChannelInfo(typename T::weakConnectionPtr_t _channel, uint64_t _protocolHeaderID)
+            SWeakChannelInfo(typename T::weakConnectionPtr_t _channel, uint64_t _protocolHeaderID, bool _isSlot)
                 : m_channel(_channel)
                 , m_protocolHeaderID(_protocolHeaderID)
+                , m_isSlot(_isSlot)
             {
             }
             typename T::weakConnectionPtr_t m_channel;
-            uint64_t m_protocolHeaderID;
+            uint64_t m_protocolHeaderID{ 0 };
+            bool m_isSlot{ false };
 
             typedef std::vector<SWeakChannelInfo> container_t;
         };
+
+        template <class T>
+        bool operator==(const SWeakChannelInfo<T>& lhs, const SWeakChannelInfo<T>& rhs)
+        {
+            return lhs.m_channel.get() == rhs.m_channel.get();
+        }
     } // namespace protocol_api
 } // namespace dds
 #endif /* __DDS__ChannelInfo_h */

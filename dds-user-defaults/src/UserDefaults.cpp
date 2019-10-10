@@ -373,36 +373,68 @@ pid_t CUserDefaults::getScoutPid() const
     return nDDSScoutPid;
 }
 
-string CUserDefaults::getSMInputName() const
-{
-    string storageName(to_string(getScoutPid()));
-    storageName += "_DDSSMI";
-    return storageName;
-}
-
-string CUserDefaults::getSMOutputName() const
-{
-    string storageName(to_string(getScoutPid()));
-    storageName += "_DDSSMO";
-    return storageName;
-}
-
-std::string CUserDefaults::getSMAgentInputName() const
-{
-    string storageName(to_string(getScoutPid()));
-    storageName += "_DDSSMAI";
-    return storageName;
-}
-
+// string CUserDefaults::getSMInputName() const
+//{
+//    string storageName(to_string(getScoutPid()));
+//    storageName += "_DDSSMI";
+//    return storageName;
+//}
+//
+// string CUserDefaults::getSMOutputName() const
+//{
+//    string storageName(to_string(getScoutPid()));
+//    storageName += "_DDSSMO";
+//    return storageName;
+//}
+//
+// std::string CUserDefaults::getSMAgentInputName() const
+//{
+//    string storageName(to_string(getScoutPid()));
+//    storageName += "_DDSSMAI";
+//    return storageName;
+//}
+//
 size_t CUserDefaults::getNumLeaderFW()
 {
     return 4;
 }
+//
+// std::vector<std::string> CUserDefaults::getSMAgentOutputNames() const
+//{
+//    // Shared memory for all messages addressed to commander
+//    string smName("DDSAO-");
+//    smName += getLockedSID();
+//    string baseName(smName.substr(0, 24));
+//    vector<string> names;
+//    for (size_t i = 0; i < CUserDefaults::getNumLeaderFW(); i++)
+//    {
+//        names.push_back(baseName + "_" + to_string(i));
+//    }
+//    return names;
+//}
 
-std::vector<std::string> CUserDefaults::getSMAgentOutputNames() const
+std::string CUserDefaults::getSMLeaderOutputName(uint64_t _protocolHeaderID) const
 {
     // Shared memory for all messages addressed to commander
     string smName("DDSAO-");
+    smName += to_string(_protocolHeaderID);
+    return smName.substr(0, 24);
+}
+
+std::string CUserDefaults::getSMLeaderInputName(uint64_t _protocolHeaderID) const
+{
+    // Shared memory addressed to lobby leader
+    // TODO: FIXME: maximum length of the SM name
+    string smName("DDSAI-");
+    smName += getLockedSID();
+    std::string name = smName.substr(0, 24);
+    return name + '_' + to_string(_protocolHeaderID % CUserDefaults::getNumLeaderFW());
+}
+
+std::vector<std::string> CUserDefaults::getSMLeaderInputNames() const
+{
+    // Shared memory for all messages addressed to commander
+    string smName("DDSAI-");
     smName += getLockedSID();
     string baseName(smName.substr(0, 24));
     vector<string> names;
@@ -411,24 +443,6 @@ std::vector<std::string> CUserDefaults::getSMAgentOutputNames() const
         names.push_back(baseName + "_" + to_string(i));
     }
     return names;
-}
-
-std::string CUserDefaults::getSMAgentOutputName(uint64_t _protocolHeaderID) const
-{
-    // Shared memory for all messages addressed to commander
-    string smName("DDSAO-");
-    smName += getLockedSID();
-    std::string name = smName.substr(0, 24);
-    return name + '_' + to_string(_protocolHeaderID % CUserDefaults::getNumLeaderFW());
-}
-
-std::string CUserDefaults::getSMAgentLeaderOutputName() const
-{
-    // Shared memory addressed to lobby leader
-    // TODO: FIXME: maximum length of the SM name
-    string smName("DDSALO-");
-    smName += getLockedSID();
-    return smName.substr(0, 24);
 }
 
 string CUserDefaults::getPluginsRootDir() const
@@ -637,4 +651,11 @@ bool CUserDefaults::IsSessionRunning() const
     bRunning = IsProcessRunning(pid);
 
     return bRunning;
+}
+
+std::string CUserDefaults::getSlotsRootDir() const
+{
+    boost::filesystem::path pathWrkDir(CUserDefaults::getDDSPath());
+    pathWrkDir /= "slots";
+    return pathWrkDir.string();
 }

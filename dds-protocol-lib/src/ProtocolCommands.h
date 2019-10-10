@@ -45,9 +45,10 @@ namespace dds
             cmdSET_ID,   // attachment: SUUIDCmd
             cmdGET_LOG,
             cmdGET_AGENTS_INFO,
-            cmdREPLY_AGENTS_INFO,  // attachment: SAgentsInfoCmd
-            cmdASSIGN_USER_TASK,   // attachment: SAssignUserTaskCmd
-            cmdACTIVATE_USER_TASK, // this command activates a given agent and triggers a start of an assigned user task
+            cmdREPLY_AGENTS_INFO, // attachment: SAgentsInfoCmd
+            cmdASSIGN_USER_TASK,  // attachment: SAssignUserTaskCmd
+            //  this command activates a given agent and triggers a start of an assigned user task
+            cmdACTIVATE_USER_TASK, // attachment: SIDCmd
             cmdSTOP_USER_TASK,
             cmdUSER_TASK_DONE, // attachment: SUserTaskDoneCmd
             cmdTRANSPORT_TEST,
@@ -67,7 +68,9 @@ namespace dds
             cmdMOVE_FILE,              // attachment: SMoveFileCmd
             cmdREPLY,                  // attachment: SReplyCmd
             cmdGET_IDLE_AGENTS_COUNT,
-            cmdREPLY_IDLE_AGENTS_COUNT // attachment: SSimpleMsgCmd
+            cmdREPLY_IDLE_AGENTS_COUNT, // attachment: SSimpleMsgCmd
+            cmdADD_SLOT,                // attachment: SIDCmd
+            cmdREPLY_ADD_SLOT           // attachment: SUUIDCmd
         };
 
         static std::map<uint16_t, std::string> g_cmdToString{
@@ -113,7 +116,9 @@ namespace dds
             { cmdMOVE_FILE, NAME_TO_STRING(cmdMOVE_FILE) },
             { cmdREPLY, NAME_TO_STRING(cmdREPLY) },
             { cmdGET_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdGET_IDLE_AGENT_COUNT) },
-            { cmdREPLY_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdREPLY_IDLE_AGENT_COUNT) }
+            { cmdREPLY_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdREPLY_IDLE_AGENT_COUNT) },
+            { cmdADD_SLOT, NAME_TO_STRING(cmdADD_SLOT) },
+            { cmdREPLY_ADD_SLOT, NAME_TO_STRING(cmdREPLY_ADD_SLOT) }
         };
     } // namespace protocol_api
 } // namespace dds

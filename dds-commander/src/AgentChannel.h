@@ -21,28 +21,59 @@ namespace dds
         };
         const std::array<std::string, 3> g_agentStates = { { "unknown", "idle", "executing" } };
 
+        using slotID_t = uint64_t;
+        using taskID_t = uint64_t;
+        struct SSlotInfo
+        {
+            slotID_t m_id{ 0 }; /// slot ID
+            taskID_t m_taskID{ 0 };
+            EAgentState m_state{ EAgentState::unknown };
+        };
+
         struct SAgentInfo
         {
+            using SlotContainer_t = std::map<slotID_t, SSlotInfo>;
+
             SAgentInfo()
-                : m_lobbyLeader(false)
-                , m_id(0)
-                , m_taskID(0)
+                : m_id(0)
                 , m_startUpTime(0)
-                , m_state(EAgentState::unknown)
             {
             }
+            void addSlot(const SSlotInfo& _slot)
+            {
+                std::lock_guard<std::mutex> lock(m_mtxSlot);
+                m_slots.insert(std::make_pair(_slot.m_id, _slot));
+            }
+            SlotContainer_t& getSlots()
+            {
+                return m_slots;
+            }
 
-            bool m_lobbyLeader;
+            SSlotInfo& getSlotByID(slotID_t _slotID)
+            {
+                std::lock_guard<std::mutex> lock(m_mtxSlot);
+                auto it = m_slots.find(_slotID);
+                if (it == m_slots.end())
+                {
+                    std::stringstream ss;
+                    ss << "getSlotByID: slot " << _slotID << " does not exist.";
+                    throw std::runtime_error(ss.str());
+                }
+
+                return it->second;
+            }
+
             // We use unique ID because we need to identify a new agent after shutdown of the system on the same host.
             // We have to distinguish between new and old agent.
             uint64_t m_id;
             protocol_api::SHostInfoCmd m_remoteHostInfo;
-            uint64_t m_taskID;
             std::chrono::milliseconds m_startUpTime;
-            EAgentState m_state;
+
+          private:
+            std::mutex m_mtxSlot;
+            SlotContainer_t m_slots;
         };
 
-        typedef std::map<uint64_t, SAgentInfo> AgentInfoContainer_t;
         typedef std::vector<uint64_t> LobbyProtocolHeaderIdContainer_t;
 
         class CAgentChannel : public protocol_api::CServerChannelImpl<CAgentChannel>
@@ -79,11 +110,13 @@ namespace dds
                 MESSAGE_HANDLER_DISPATCH(cmdGET_STAT)
                 // custom command
                 MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
+                // TASK SLOTS
+                MESSAGE_HANDLER(cmdREPLY_ADD_SLOT, on_cmdREPLY_ADD_SLOT)
             END_MSG_MAP()
 
           public:
-            uint64_t getId(const dds::protocol_api::SSenderInfo& _sender);
-            void setId(const dds::protocol_api::SSenderInfo& _sender, uint64_t _id);
+            uint64_t getId() const;
+            void setId(uint64_t _id);
 
             protocol_api::SHostInfoCmd getRemoteHostInfo(const dds::protocol_api::SSenderInfo& _sender);
             // This function only used in tests
@@ -100,14 +133,14 @@ namespace dds
 
             // AgentInfo operations
             /// add new or update existing Agent info
-            void updateAgentInfo(const dds::protocol_api::SSenderInfo& _sender, const SAgentInfo& _info);
-            void updateAgentInfo(uint64_t _protocolHeaderID, const SAgentInfo& _info);
+            //    void updateAgentInfo(const dds::protocol_api::SSenderInfo& _sender, const SAgentInfo& _info);
+            //    void updateAgentInfo(uint64_t _protocolHeaderID, const SAgentInfo& _info);
             /// Get a copy of the agent info
             // FIXME: This function makes a copy of the info struct. Find a solution to avoid copy operations. But the
             // function and the info struct still must be thread safe.
-            SAgentInfo getAgentInfo(const dds::protocol_api::SSenderInfo& _sender);
-            SAgentInfo getAgentInfo(uint64_t _protocolHeaderID);
-            LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
+            SAgentInfo& getAgentInfo();
+            //   SAgentInfo getAgentInfo(uint64_t _protocolHeaderID);
+            //            LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
 
           private:
             // Message Handlers
@@ -124,12 +157,15 @@ namespace dds
             bool on_cmdWATCHDOG_HEARTBEAT(
                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment,
                 const protocol_api::SSenderInfo& _sender);
+            bool on_cmdREPLY_ADD_SLOT(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ADD_SLOT>::ptr_t _attachment,
+                const protocol_api::SSenderInfo& _sender);
 
             std::string _remoteEndIDString();
 
           private:
             std::string m_sCurrentTopoFile;
-            AgentInfoContainer_t m_info;
+            SAgentInfo m_info;
             std::mutex m_mtxInfo;
         };
     } // namespace commander_cmd

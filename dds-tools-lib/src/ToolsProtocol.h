@@ -158,16 +158,14 @@ namespace dds
         /// \brief Structure holds information of agentInfo response.
         struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
         {
-            uint32_t m_index = 0;                                                   ///< Index of the current agent
-            bool m_lobbyLeader = false;                                             ///< Agent is lobby leader
-            uint64_t m_agentID = 0;                                                 ///< Agent ID
-            uint64_t m_taskID = 0;                                                  ///< Task ID, 0 for idle agents
-            std::chrono::milliseconds m_startUpTime = std::chrono::milliseconds(0); ///< Agent's startup time
-            std::string m_agentState = "unknown";                                   ///< Agent's state
-            std::string m_username;                                                 ///< Username
-            std::string m_host;                                                     ///< Hostname
-            std::string m_DDSPath;                                                  ///< DDS path
-            uint32_t m_agentPid = 0;                                                ///< Agent's process ID
+            uint32_t m_index{ 0 };                                                   ///< Index of the current agent
+            uint64_t m_agentID{ 0 };                                                 ///< Agent ID
+            std::chrono::milliseconds m_startUpTime{ std::chrono::milliseconds(0) }; ///< Agent's startup time
+            std::string m_username;                                                  ///< Username
+            std::string m_host;                                                      ///< Hostname
+            std::string m_DDSPath;                                                   ///< DDS path
+            uint32_t m_agentPid{ 0 };                                                ///< Agent's process ID
+            uint32_t m_nSlots{ 0 };                                                  ///< Number of task slots
 
           private:
             friend SBaseData<SAgentInfoResponseData>;
