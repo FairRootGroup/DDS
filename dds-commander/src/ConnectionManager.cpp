@@ -359,6 +359,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
     // Data of user task assignment
     weakChannelInfo_t::container_t assignmentAgents;
     vector<typename SCommandAttachmentImpl<cmdASSIGN_USER_TASK>::ptr_t> assignmentAttachments;
+    vector<typename SCommandAttachmentImpl<cmdACTIVATE_USER_TASK>::ptr_t> activateAttachments;
 
     // Collecting data for broadcasting
     for (const auto& sch : schedule)
@@ -390,9 +391,12 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
             uploadFilenames.push_back(filename);
             uploadAgents.push_back(sch.m_weakChannelInfo);
         }
+        typename SCommandAttachmentImpl<cmdACTIVATE_USER_TASK>::ptr_t activate_cmd = make_shared<SIDCmd>();
+        activate_cmd->m_id = sch.m_weakChannelInfo.m_protocolHeaderID;
 
         assignmentAgents.push_back(sch.m_weakChannelInfo);
         assignmentAttachments.push_back(cmd);
+        activateAttachments.push_back(activate_cmd);
     }
 
     if (uploadAgents.size() > 0)
@@ -411,13 +415,14 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
             continue;
         auto ptr = sch.m_weakChannelInfo.m_channel.lock();
 
-        SAgentInfo inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
-        inf.m_taskID = sch.m_taskID;
-        inf.m_state = EAgentState::executing;
-        ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
+        //        SAgentInfo inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
+        //        inf.m_taskID = sch.m_taskID;
+        //        inf.m_state = EAgentState::executing;
+        //        ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
     }
 
-    broadcastUpdateTopologyAndWait<cmdACTIVATE_USER_TASK>(assignmentAgents, _channel, "Activating user tasks...");
+    broadcastUpdateTopologyAndWait<cmdACTIVATE_USER_TASK>(
+        assignmentAgents, _channel, "Activating user tasks...", activateAttachments);
 }
 
 void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
@@ -503,11 +508,11 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
                 // In case of error set the idle state
                 if (!_channel.expired())
                 {
-                    auto p = _channel.lock();
-                    SAgentInfo info = p->getAgentInfo(_sender);
-                    info.m_state = EAgentState::idle;
-                    info.m_taskID = 0;
-                    p->updateAgentInfo(_sender, info);
+                    //                   auto p = _channel.lock();
+                    //                    SAgentInfo info = p->getAgentInfo(_sender);
+                    //                    info.m_state = EAgentState::idle;
+                    //                    info.m_taskID = 0;
+                    //                    p->updateAgentInfo(_sender, info);
                 }
                 m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
             }
@@ -527,11 +532,11 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
                     // Task was successfully stopped, set the idle state
                     if (!_channel.expired())
                     {
-                        auto p = _channel.lock();
-                        SAgentInfo info = p->getAgentInfo(_sender);
-                        info.m_state = EAgentState::idle;
-                        info.m_taskID = 0;
-                        p->updateAgentInfo(_sender, info);
+                        //                        auto p = _channel.lock();
+                        //                        SAgentInfo info = p->getAgentInfo(_sender);
+                        //                        info.m_state = EAgentState::idle;
+                        //                        info.m_taskID = 0;
+                        //                        p->updateAgentInfo(_sender, info);
                     }
                 }
             }
@@ -619,10 +624,10 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     {
         auto channelPtr = _channel.lock();
         // zero task ID from the channel
-        SAgentInfo info = channelPtr->getAgentInfo(_sender);
-        info.m_taskID = 0;
-        info.m_state = EAgentState::idle;
-        channelPtr->updateAgentInfo(_sender, info);
+        //        SAgentInfo info = channelPtr->getAgentInfo(_sender);
+        //        info.m_taskID = 0;
+        //        info.m_state = EAgentState::idle;
+        //        channelPtr->updateAgentInfo(_sender, info);
     }
 
     // remove task ID from the map
@@ -662,20 +667,20 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
     {
         LOG(debug) << "cmdREPLY_ID attachment [" << *_attachment << "] received from: " << p->remoteEndIDString();
 
-        SAgentInfo inf = p->getAgentInfo(_sender.m_ID);
         if (_attachment->m_id == 0)
         {
-            inf.m_id = DDSChannelId::getChannelId();
+            uint64_t id = DDSChannelId::getChannelId();
             SIDCmd msg_cmd;
-            msg_cmd.m_id = inf.m_id;
+            msg_cmd.m_id = id;
+
+            p->setId(id);
 
             p->pushMsg<cmdSET_ID>(msg_cmd, _sender.m_ID);
         }
         else
         {
-            inf.m_id = _attachment->m_id;
+            p->setId(_attachment->m_id);
         }
-        p->updateAgentInfo(_sender.m_ID, inf);
     }
     catch (exception& _e)
     {
@@ -779,9 +784,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     auto p = _channel.lock();
     try
     {
-        SAgentInfo inf = p->getAgentInfo(_sender.m_ID);
         // Assign sender ID of this custom command
-        _attachment->m_senderId = inf.m_id;
+        _attachment->m_senderId = p->getId();
 
         CConnectionManager::weakChannelInfo_t::container_t channels;
 
@@ -828,7 +832,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             bool taskFound = true;
             try
             {
-                /*const STopoRuntimeTask& runtimeTask = */ m_topo.getRuntimeTaskByIdPath(_attachment->m_sCondition);
+                /*const STopoRuntimeTask& runtimeTask = */
+                m_topo.getRuntimeTaskByIdPath(_attachment->m_sCondition);
             }
             catch (runtime_error& _e)
             {
@@ -837,32 +842,34 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 pathRegex = make_shared<boost::regex>(_attachment->m_sCondition);
             }
 
-            SAgentInfo thisInf = p->getAgentInfo(_sender.m_ID);
-            channels = getChannels([this, taskFound, &_attachment, &thisInf, pathRegex](
-                                       const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-
-                // Only for Agents which are started already and executing task
-                if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
-                    inf.m_state != EAgentState::executing)
-                    return false;
-
-                // Do not send command to self
-                if (inf.m_taskID == thisInf.m_taskID)
-                    return false;
-
-                // If condition is empty we broadcast command to all agents
-                if (_attachment->m_sCondition.empty())
-                    return true;
-
-                const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(inf.m_taskID);
-                bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
-                                          : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
-
-                _stop = (taskFound && result);
-
-                return result;
-            });
+            //                SAgentInfo thisInf = p->getAgentInfo(_sender.m_ID);
+            //                channels = getChannels([this, taskFound, &_attachment, &thisInf, pathRegex](
+            //                                           const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+            //                    SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+            //
+            //                    // Only for Agents which are started already and executing task
+            //                    if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started()
+            //                    ||
+            //                        inf.m_state != EAgentState::executing)
+            //                        return false;
+            //
+            //                    // Do not send command to self
+            //                    if (inf.m_taskID == thisInf.m_taskID)
+            //                        return false;
+            //
+            //                    // If condition is empty we broadcast command to all agents
+            //                    if (_attachment->m_sCondition.empty())
+            //                        return true;
+            //
+            //                    const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(inf.m_taskID);
+            //                    bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
+            //                                              : boost::regex_match(taskInfo.m_task->getPath(),
+            //                                              *pathRegex);
+            //
+            //                    _stop = (taskFound && result);
+            //
+            //                    return result;
+            //                });
         }
 
         for (const auto& v : channels)
@@ -1117,9 +1124,13 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         CConnectionManager::weakChannelInfo_t::container_t channels(
             getChannels([](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+                if (!_v.m_isSlot)
+                    return false;
+
+                const SAgentInfo& info = _v.m_channel->getAgentInfo();
+                const SSlotInfo& slot = info.getSlotByID(_v.m_protocolHeaderID);
                 _stop = (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                         info.m_taskID > 0 && info.m_state == EAgentState::executing);
+                         slot.m_taskID > 0 && slot.m_state == EAgentState::executing);
                 return _stop;
             }));
         bool topologyActive = !channels.empty();
@@ -1171,8 +1182,8 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         if (!topologyFile.empty())
         {
             auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+                return (!_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
+                        _v.m_channel->started());
             };
             CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
 
@@ -1215,9 +1226,9 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         if (addedTasks.size() > 0)
         {
             auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-                SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-                return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                        info.m_state == EAgentState::idle);
+                return (_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
+                        _v.m_channel->started() &&
+                        _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID).m_state == EAgentState::idle);
             };
 
             CConnectionManager::weakChannelInfo_t::container_t idleAgents(getChannels(idleCondition));
@@ -1356,7 +1367,7 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
 {
     CConnectionManager::weakChannelInfo_t::container_t channels(
         getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
         }));
 
     // Enumerate all agents
@@ -1370,26 +1381,24 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
             continue;
         auto ptr = v.m_channel.lock();
 
-        SAgentInfo inf = ptr->getAgentInfo(v.m_protocolHeaderID);
+        const SAgentInfo& inf = ptr->getAgentInfo();
 
         string sTaskName("no task is assigned");
-        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
-        {
-            stringstream ssTaskString;
-            ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
-            sTaskName = ssTaskString.str();
-        }
+        //        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
+        //        {
+        //            stringstream ssTaskString;
+        //            ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
+        //            sTaskName = ssTaskString.str();
+        //        }
 
         info.m_index = i++;
-        info.m_lobbyLeader = inf.m_lobbyLeader;
         info.m_agentID = inf.m_id;
-        info.m_taskID = inf.m_taskID;
         info.m_startUpTime = inf.m_startUpTime;
-        info.m_agentState = g_agentStates.at(inf.m_state);
         info.m_username = inf.m_remoteHostInfo.m_username;
         info.m_host = inf.m_remoteHostInfo.m_host;
         info.m_DDSPath = inf.m_remoteHostInfo.m_DDSPath;
         info.m_agentPid = inf.m_remoteHostInfo.m_agentPid;
+        info.m_nSlots = inf.getSlots().size();
 
         sendCustomCommandResponse(_channel, info.toJSON());
     }
@@ -1419,14 +1428,20 @@ void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountReque
 
     size_t activeCounter = channels.size();
     size_t idleCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
+        if (!_v.m_isSlot)
+            return false;
+
+        const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
         return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                info.m_taskID == 0 && info.m_state == EAgentState::idle);
+                slot.m_taskID == 0 && slot.m_state == EAgentState::idle);
     });
     size_t executingCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        SAgentInfo info = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && info.m_taskID > 0 &&
-                info.m_state == EAgentState::executing);
+        if (!_v.m_isSlot)
+            return false;
+
+        const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && slot.m_taskID > 0 &&
+                slot.m_state == EAgentState::executing);
     });
 
     SAgentCountResponseData info;

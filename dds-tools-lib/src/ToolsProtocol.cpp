@@ -230,46 +230,40 @@ constexpr const char* SAgentInfoResponseData::_protocolTag;
 void SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("index", m_index);
-    _pt.put<bool>("lobbyLeader", m_lobbyLeader);
     _pt.put<uint64_t>("agentID", m_agentID);
-    _pt.put<uint64_t>("taskID", m_taskID);
     _pt.put<size_t>("startUpTime", m_startUpTime.count());
-    _pt.put<string>("agentState", m_agentState);
     _pt.put<string>("username", m_username);
     _pt.put<string>("host", m_host);
     _pt.put<string>("DDSPath", m_DDSPath);
     _pt.put<uint32_t>("agentPid", m_agentPid);
+    _pt.put<uint32_t>("nSlots", m_nSlots);
 }
 
 void SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_index = _pt.get<uint32_t>("index", 0);
-    m_lobbyLeader = _pt.get<bool>("lobbyLeader", false);
     m_agentID = _pt.get<uint64_t>("agentID", 0);
-    m_taskID = _pt.get<uint64_t>("taskID", 0);
     m_startUpTime = std::chrono::milliseconds(_pt.get<size_t>("startUpTime", 0));
-    m_agentState = _pt.get<string>("agentState", "unknown");
     m_username = _pt.get<string>("username", "");
     m_host = _pt.get<string>("host", "");
     m_DDSPath = _pt.get<string>("DDSPath", "");
     m_agentPid = _pt.get<uint32_t>("agentPid", 0);
+    m_nSlots = _pt.get<uint32_t>("nSlots", 0);
 }
 
 bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) const
 {
-    return (SBaseData::operator==(_val) && m_index == _val.m_index && m_lobbyLeader == _val.m_lobbyLeader &&
-            m_agentID == _val.m_agentID && m_taskID == _val.m_taskID && m_startUpTime == _val.m_startUpTime &&
-            m_agentState == _val.m_agentState && m_username == _val.m_username && m_host == _val.m_host &&
-            m_DDSPath == _val.m_DDSPath && m_agentPid == _val.m_agentPid);
+    return (SBaseData::operator==(_val) && m_index == _val.m_index && m_agentID == _val.m_agentID &&
+            m_startUpTime == _val.m_startUpTime && m_username == _val.m_username && m_host == _val.m_host &&
+            m_DDSPath == _val.m_DDSPath && m_agentPid == _val.m_agentPid && m_nSlots == _val.m_nSlots);
 }
 
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
 {
-    return _os << _data.defaultToString() << "; index: " << _data.m_index << "; m_lobbyLeader: " << _data.m_lobbyLeader
-               << "; agentID: " << _data.m_agentID << "; taskID: " << _data.m_taskID
-               << "; startUpTime: " << _data.m_startUpTime.count() << "; agentState: " << _data.m_agentState
-               << "; username: " << _data.m_username << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath
-               << "; agentPid: " << _data.m_agentPid;
+    return _os << _data.defaultToString() << "; index: " << _data.m_index << "; agentID: " << _data.m_agentID
+               << "; startUpTime: " << _data.m_startUpTime.count() << "; username: " << _data.m_username
+               << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath << "; agentPid: " << _data.m_agentPid
+               << "; nSlots: " << _data.m_nSlots;
 }
 
 ///////////////////////////////////

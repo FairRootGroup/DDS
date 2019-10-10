@@ -22,9 +22,9 @@ namespace dds
             OnNewUserTask,
             OnAssignUserTask,
             OnSMStart, ///< Shared memory channel start
-            OnLobbyMemberHandshakeOK,
-            OnLobbyMemberHandshakeFailed,
-            OnLobbyMemberInfo
+            OnReplyAddSlot,
+            //            OnLobbyMemberHandshakeFailed,
+            //            OnLobbyMemberInfo
         };
 
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
@@ -47,7 +47,7 @@ namespace dds
                                        void(const protocol_api::SSenderInfo&))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnNewUserTask,
-                                       void(const protocol_api::SSenderInfo&, pid_t))
+                                       void(const protocol_api::SSenderInfo&, uint64_t, pid_t))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnAssignUserTask,
                                        void(const protocol_api::SSenderInfo&))
@@ -55,14 +55,14 @@ namespace dds
                                        EChannelEvents::OnSMStart,
                                        void(const protocol_api::SSenderInfo&))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnLobbyMemberHandshakeOK,
+                                       EChannelEvents::OnReplyAddSlot,
                                        void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnLobbyMemberHandshakeFailed,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnLobbyMemberInfo,
-                                       void(const protocol_api::SSenderInfo&, const std::string&))
+            //            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+            //                                       EChannelEvents::OnLobbyMemberHandshakeFailed,
+            //                                       void(const protocol_api::SSenderInfo&))
+            //            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
+            //                                       EChannelEvents::OnLobbyMemberInfo,
+            //                                       void(const protocol_api::SSenderInfo&, const std::string&))
             DDS_END_EVENT_HANDLERS
         };
     } // namespace protocol_api

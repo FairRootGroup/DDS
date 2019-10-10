@@ -139,16 +139,14 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
         {
             SAgentInfoResponseData testData;
             testData.m_index = 123;
-            testData.m_lobbyLeader = true;
             testData.m_agentID = 3456;
-            testData.m_taskID = 5678;
             testData.m_startUpTime = std::chrono::milliseconds(12345);
-            testData.m_agentState = "executing";
             testData.m_username = "user1";
             testData.m_host = "host1";
             testData.m_DDSPath = "/path/to/dds";
             testData.m_agentPid = 34;
             testData.m_requestID = 123;
+            testData.m_nSlots = 10;
 
             SAgentInfoResponseData data;
             data.fromPT(child.second);

@@ -47,12 +47,7 @@ namespace dds
     {
         struct SSenderInfo
         {
-            SSenderInfo()
-                : m_ID(0)
-            {
-            }
-
-            uint64_t m_ID;
+            uint64_t m_ID{ 0 };
         };
 
         /// Helpers for event dispatching

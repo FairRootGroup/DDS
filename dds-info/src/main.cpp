@@ -80,8 +80,7 @@ void requestAgentInfo(CSession& _session, const SOptions_t& _options)
                               << _info.m_host << ":" << _info.m_DDSPath << "\nAgent pid: " << _info.m_agentPid
                               << "\nAgent startup time: " << chrono::duration<double>(_info.m_startUpTime).count()
                               << " s"
-                              << "\nState: " << _info.m_agentState << "\n"
-                              << "\nTask ID: " << _info.m_taskID << "\n";
+                              << "\nSlots: " << _info.m_nSlots << "\n";
     });
 
     _session.sendRequest<SAgentInfoRequest>(requestPtr);

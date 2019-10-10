@@ -51,28 +51,33 @@ namespace dds
                     });
 
                 // Register handshake callback
-                this->template registerHandler<cmdLOBBY_MEMBER_HANDSHAKE>(
-                    [this](const SSenderInfo& _sender,
-                           SCommandAttachmentImpl<cmdLOBBY_MEMBER_HANDSHAKE>::ptr_t _attachment) {
-                        if (!processHandshake_channelTypeSupported(
-                                static_cast<EChannelType>(_attachment->m_channelType), false, _sender.m_ID))
-                            return;
-                        if (!processHandshake_versionMatch(_attachment->m_version, false, _sender.m_ID))
-                            return;
-                        if (!processHandshake_sessionIDMatch(_attachment->m_sSID, false, _sender.m_ID))
-                            return;
-
-                        // everything is OK, we can work with this agent
-                        LOG(MiscCommon::info)
-                            << "New lobby member [" << _sender.m_ID << "] has successfully connected.";
-
-                        SReplyCmd cmd =
-                            SReplyCmd("", (uint16_t)SReplyCmd::EStatusCode::OK, 0, (uint16_t)cmdLOBBY_MEMBER_HANDSHAKE);
-                        this->template pushMsg<cmdREPLY>(cmd, _sender.m_ID);
-
-                        // notify all subscribers about the event
-                        this->dispatchHandlers(EChannelEvents::OnLobbyMemberHandshakeOK, _sender);
-                    });
+                //                this->template registerHandler<cmdLOBBY_MEMBER_HANDSHAKE>(
+                //                    [this](const SSenderInfo& _sender,
+                //                           SCommandAttachmentImpl<cmdLOBBY_MEMBER_HANDSHAKE>::ptr_t _attachment) {
+                //                        if (!processHandshake_channelTypeSupported(
+                //                                static_cast<EChannelType>(_attachment->m_channelType), false,
+                //                                _sender.m_ID))
+                //                            return;
+                //                        if (!processHandshake_versionMatch(_attachment->m_version, false,
+                //                        _sender.m_ID))
+                //                            return;
+                //                        if (!processHandshake_sessionIDMatch(_attachment->m_sSID, false,
+                //                        _sender.m_ID))
+                //                            return;
+                //
+                //                        // everything is OK, we can work with this agent
+                //                        LOG(MiscCommon::info)
+                //                            << "New lobby member [" << _sender.m_ID << "] has successfully
+                //                            connected.";
+                //
+                //                        SReplyCmd cmd =
+                //                            SReplyCmd("", (uint16_t)SReplyCmd::EStatusCode::OK, 0,
+                //                            (uint16_t)cmdLOBBY_MEMBER_HANDSHAKE);
+                //                        this->template pushMsg<cmdREPLY>(cmd, _sender.m_ID);
+                //
+                //                        // notify all subscribers about the event
+                //                        this->dispatchHandlers(EChannelEvents::OnLobbyMemberHandshakeOK, _sender);
+                //                    });
             }
 
             ~CServerChannelImpl<T>()
@@ -129,21 +134,9 @@ namespace dds
                 this->m_channelType = EChannelType::UNKNOWN;
                 LOG(MiscCommon::warning) << _reason << "; Client: " << this->remoteEndIDString();
 
-                if (_lobbyLeader)
-                {
-                    this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(_reason, MiscCommon::fatal),
-                                                                   _senderID);
-                    // notify all subscribers about the event
-                    this->dispatchHandlers(EChannelEvents::OnHandshakeFailed, SSenderInfo());
-                }
-                else
-                {
-                    SReplyCmd cmd = SReplyCmd(
-                        _reason, (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, (uint16_t)cmdLOBBY_MEMBER_HANDSHAKE);
-                    this->template pushMsg<cmdREPLY>(cmd, _senderID);
-                    // notify all subscribers about the event
-                    this->dispatchHandlers(EChannelEvents::OnLobbyMemberHandshakeFailed, SSenderInfo());
-                }
+                this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(_reason, MiscCommon::fatal), _senderID);
+                // notify all subscribers about the event
+                this->dispatchHandlers(EChannelEvents::OnHandshakeFailed, SSenderInfo());
             }
 
           private:

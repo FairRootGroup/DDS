@@ -261,7 +261,7 @@ namespace dds
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender) << "] -> "
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> "
                    << _cmd.m_requestedFileName;
                 return ss.str();
             }
@@ -272,7 +272,7 @@ namespace dds
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId(_sender) << "]: " << _cmd.m_sMsg;
+                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
                 return ss.str();
             }
 
@@ -304,8 +304,8 @@ namespace dds
                 auto p = _channel.lock();
                 float downloadTime = 0.000001 * _cmd.m_downloadTime; // micros->s
                 float speed = (downloadTime != 0.) ? 0.001 * _cmd.m_receivedFileSize / downloadTime : 0;
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender)
-                   << "]: " << _cmd.m_receivedFileSize << " bytes in " << downloadTime << " s (" << speed << " KB/s)";
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "]: " << _cmd.m_receivedFileSize
+                   << " bytes in " << downloadTime << " s (" << speed << " KB/s)";
                 return ss.str();
             }
 
@@ -315,7 +315,7 @@ namespace dds
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId(_sender) << "]: " << _cmd.m_sMsg;
+                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
                 return ss.str();
             }
 
@@ -357,7 +357,7 @@ namespace dds
                     str = "Stopped";
                 else if (m_srcCommand == protocol_api::cmdUPDATE_TOPOLOGY)
                     str = "Topology updated";
-                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId(_sender) << "] -> " << str;
+                ss << nofReceived() << "/" << m_nofRequests << " [" << p->getId() << "] -> " << str;
                 return ss.str();
             }
 
@@ -367,7 +367,7 @@ namespace dds
             {
                 std::stringstream ss;
                 auto p = _channel.lock();
-                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId(_sender) << "]: " << _cmd.m_sMsg;
+                ss << nofReceived() << "/" << m_nofRequests << " Error [" << p->getId() << "]: " << _cmd.m_sMsg;
                 return ss.str();
             }
 

@@ -30,7 +30,6 @@ using boost::asio::ip::tcp;
 CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
     : m_signals(m_io_context)
     , m_options(_options)
-    , m_taskPid(0)
     , m_bStarted(false)
     , m_topo()
 {
@@ -106,21 +105,21 @@ void CAgentConnectionManager::start()
             // - error processing if memory can't be created
             // - create network channel
 
-            LOG(info) << "Lobby status: leader";
+            LOG(info) << "Master agent";
 
             // To communicate with tasks
-            createSMIntercomChannel(protocolHeaderID);
-            createSMLeaderChannel(protocolHeaderID);
-            createSMCommanderChannel(protocolHeaderID);
+            //   createSMIntercomChannel(protocolHeaderID);
+            //   createSMLeaderChannel(protocolHeaderID);
+            //   createSMCommanderChannel(protocolHeaderID);
             // Start network channel. This is a blocking function call.
             createCommanderChannel(protocolHeaderID);
 
             // Start listening for messages from shared memory
-            m_SMIntercomChannel->start();
+            // m_SMIntercomChannel->start();
             // Start listening for messages from shared memory
-            m_SMLeaderChannel->start();
+            //  m_SMLeaderChannel->start();
             // Start shared memory agent channel
-            m_SMCommanderChannel->start();
+            // m_SMCommanderChannel->start();
 
             startService(6 + CUserDefaults::getNumLeaderFW());
 
@@ -128,26 +127,26 @@ void CAgentConnectionManager::start()
         }
         else
         {
-            // TODO: FIXME:
-            // - open shared memory
-            // - error processing if memory can't be opened
-
-            // TODO: FIXME:
-            // - block execution, channels are working in threads
-            // leaderMutex->lock();
-
-            LOG(info) << "Lobby status: member";
-
-            createSMIntercomChannel(protocolHeaderID);
-            // Blocking function call
-            createSMCommanderChannel(protocolHeaderID);
-
-            // Start listening for messages from shared memory
-            m_SMIntercomChannel->start();
-            // Start shared memory agent channel
-            m_SMCommanderChannel->start();
-
-            startService(7);
+            //            // TODO: FIXME:
+            //            // - open shared memory
+            //            // - error processing if memory can't be opened
+            //
+            //            // TODO: FIXME:
+            //            // - block execution, channels are working in threads
+            //            // leaderMutex->lock();
+            //
+            //            LOG(info) << "Lobby status: member";
+            //
+            //            createSMIntercomChannel(protocolHeaderID);
+            //            // Blocking function call
+            //            createSMCommanderChannel(protocolHeaderID);
+            //
+            //            // Start listening for messages from shared memory
+            //            m_SMIntercomChannel->start();
+            //            // Start shared memory agent channel
+            //            m_SMCommanderChannel->start();
+            //
+            //            startService(7);
         }
 
         // Free mutex
@@ -174,18 +173,18 @@ void CAgentConnectionManager::stop()
 
     try
     {
-        if (m_SMCommanderChannel)
-            m_SMCommanderChannel->stop();
-        if (m_SMIntercomChannel)
-            m_SMIntercomChannel->stop();
-        if (m_SMLeaderChannel)
-            m_SMLeaderChannel->stop();
+        //        if (m_SMCommanderChannel)
+        //            m_SMCommanderChannel->stop();
+        //        if (m_SMIntercomChannel)
+        //            m_SMIntercomChannel->stop();
+        //        if (m_SMLeaderChannel)
+        //            m_SMLeaderChannel->stop();
         if (m_commanderChannel)
         {
             // Stop forwarder's readMessage thread
-            auto pSCFW = m_commanderChannel->getSMFWChannel().lock();
-            if (pSCFW)
-                pSCFW->stop();
+            //            auto pSCFW = m_commanderChannel->getSMFWChannel().lock();
+            //            if (pSCFW)
+            //                pSCFW->stop();
             m_commanderChannel->stop();
         }
         m_io_context.stop();
@@ -240,6 +239,28 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
     // Create new agent and push handshake message
     m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID);
 
+    // Call this callback when a user process is activated
+    m_commanderChannel->registerHandler<EChannelEvents::OnNewUserTask>(
+        [this](const SSenderInfo& _sender, uint64_t _slotID, pid_t _pid) { this->onNewUserTask(_slotID, _pid); });
+
+    // Subscribe for cmdBINARY_ATTACHMENT_RECEIVED
+    m_commanderChannel->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
+            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, m_commanderChannel);
+        });
+
+    // Subscribe for cmdSIMPLE_MSG
+    m_commanderChannel->registerHandler<cmdSIMPLE_MSG>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+            this->on_cmdSIMPLE_MSG(_sender, _attachment, m_commanderChannel);
+        });
+
+    // Subscribe to Shutdown command
+    m_commanderChannel->registerHandler<cmdSHUTDOWN>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
+            this->on_cmdSHUTDOWN(_sender, _attachment, m_commanderChannel);
+        });
+
     // Connect to DDS commander
     m_commanderChannel->connect(endpoint_iterator);
 }
@@ -247,30 +268,30 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
 void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
 {
     // Shared memory channel for communication with user task
-    const CUserDefaults& userDefaults = CUserDefaults::instance();
-    m_SMLeaderChannel = CSMLeaderChannel::makeNew(m_io_context,
-                                                  userDefaults.getSMAgentLeaderOutputName(),
-                                                  userDefaults.getSMAgentLeaderOutputName(),
-                                                  _protocolHeaderID);
-    m_SMLeaderChannel->registerHandler<EChannelEvents::OnLobbyMemberInfo>(
-        [this](const SSenderInfo& _sender, const string& _name) {
-            try
-            {
-                // Add output for lobby members, skipping output for itself
-                if (_sender.m_ID != m_SMLeaderChannel->getProtocolHeaderID())
-                {
-                    auto p = m_commanderChannel->getSMFWChannel().lock();
-                    p->addOutput(_sender.m_ID, _name);
-                }
-            }
-            catch (exception& _e)
-            {
-                LOG(MiscCommon::error) << "Failed to open forwarder MQ " << _name << " of the new member "
-                                       << _sender.m_ID << " error: " << _e.what();
-            }
-        });
-
-    LOG(info) << "SM channel: Leader created";
+    //    const CUserDefaults& userDefaults = CUserDefaults::instance();
+    //    m_SMLeaderChannel = CSMLeaderChannel::makeNew(m_io_context,
+    //                                                  userDefaults.getSMAgentLeaderOutputName(),
+    //                                                  userDefaults.getSMAgentLeaderOutputName(),
+    //                                                  _protocolHeaderID);
+    //    m_SMLeaderChannel->registerHandler<EChannelEvents::OnLobbyMemberInfo>(
+    //        [this](const SSenderInfo& _sender, const string& _name) {
+    //            try
+    //            {
+    //                // Add output for lobby members, skipping output for itself
+    //                if (_sender.m_ID != m_SMLeaderChannel->getProtocolHeaderID())
+    //                {
+    //                    auto p = m_commanderChannel->getSMFWChannel().lock();
+    //                    p->addOutput(_sender.m_ID, _name);
+    //                }
+    //            }
+    //            catch (exception& _e)
+    //            {
+    //                LOG(MiscCommon::error) << "Failed to open forwarder MQ " << _name << " of the new member "
+    //                                       << _sender.m_ID << " error: " << _e.what();
+    //            }
+    //        });
+    //
+    //    LOG(info) << "SM channel: Leader created";
 }
 
 void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID)
@@ -307,12 +328,6 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
                                                         _protocolHeaderID);
     m_SMCommanderChannel->addOutput(CSMCommanderChannel::EOutputID::Leader, userDefaults.getSMAgentLeaderOutputName());
 
-    // Subscribe to Shutdown command
-    m_SMCommanderChannel->registerHandler<cmdSHUTDOWN>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-            this->on_cmdSHUTDOWN(_sender, _attachment, m_SMCommanderChannel);
-        });
-
     // Subscribe to reply command
     m_SMCommanderChannel->registerHandler<cmdREPLY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment) {
@@ -336,12 +351,6 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
             m_SMIntercomChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment);
         });
 
-    // Subscribe for cmdSIMPLE_MSG
-    m_SMCommanderChannel->registerHandler<cmdSIMPLE_MSG>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG(_sender, _attachment, m_SMCommanderChannel);
-        });
-
     // Subscribe for cmdSTOP_USER_TASK
     m_SMCommanderChannel->registerHandler<cmdSTOP_USER_TASK>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
@@ -360,40 +369,35 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
         m_SMIntercomChannel->drainWriteQueue(false);
     });
 
-    // Call this callback when a user process is activated
-    m_SMCommanderChannel->registerHandler<EChannelEvents::OnNewUserTask>(
-        [this](const SSenderInfo& _sender, pid_t _pid) { this->onNewUserTask(_pid); });
-
-    // Subscribe for cmdBINARY_ATTACHMENT_RECEIVED
-    m_SMCommanderChannel->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
-            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, m_SMCommanderChannel);
-        });
-
     LOG(info) << "SM channel: Agent is created";
 }
 
-void CAgentConnectionManager::terminateChildrenProcesses()
+void CAgentConnectionManager::terminateChildrenProcesses(uint64_t _taskID)
 {
-    // terminate user process, if any
-    // TODO: Maybe it needs to be moved to the monitoring thread. Can be activated them by a
-    // signal variable.
+    // terminate all child process
+
+    pid_t mainPid(0);
+    if (_taskID > 0)
     {
-        lock_guard<mutex> lock(m_taskPidMutex);
-        if (m_taskPid == 0)
+        lock_guard<std::mutex> lock(m_taskPidsMutex);
+        auto task_it = m_taskPids.find(_taskID);
+        if (task_it == m_taskPids.end())
         {
-            LOG(info) << "There is no task to terminate. We are good to go...";
+            LOG(info) << "terminateChildrenProcesses: can't find task " << _taskID;
             return;
         }
+        mainPid = task_it->second;
     }
+    else
+        mainPid = getpid();
 
-    LOG(info) << "Getting a list of child processes of the task with pid = " << m_taskPid;
+    LOG(info) << "Getting a list of child processes of the agent with pid " << mainPid;
     std::vector<std::string> vecChildren;
     try
     {
         // a pgrep command is used to find out the list of child processes of the task
         stringstream ssCmd;
-        ssCmd << boost::process::search_path("pgrep").string() << " -P " << m_taskPid;
+        ssCmd << boost::process::search_path("pgrep").string() << " -P " << mainPid;
         string output;
         execute(ssCmd.str(), std::chrono::seconds(10), &output);
         boost::split(vecChildren, output, boost::is_any_of(" \n"), boost::token_compress_on);
@@ -411,30 +415,26 @@ void CAgentConnectionManager::terminateChildrenProcesses()
             sChildren += ", ";
         sChildren += i;
     }
-    LOG(info) << "Process " << m_taskPid << " has " << vecChildren.size() << " child process(es)"
+    LOG(info) << "terminateChildrenProcesses: found " << vecChildren.size() << " child process(es)"
               << (sChildren.empty() ? "." : " " + sChildren);
 
-    LOG(info) << "Sending graceful terminate signal to a parent process " << m_taskPid;
-    {
-        lock_guard<mutex> lock(m_taskPidMutex);
-        if (m_taskPid > 0)
-            kill(m_taskPid, SIGTERM);
-    }
+    LOG(info) << "Sending graceful terminate signal to child processes.";
     for (const auto i : vecChildren)
     {
-        LOG(info) << "Sending graceful terminate signal to a child process " << i;
+        LOG(info) << "Sending graceful terminate signal to child process " << i;
         kill(stol(i), SIGTERM);
     }
 
-    LOG(info) << "Wait for task to exit...";
+    LOG(info) << "Wait for tasks to exit...";
 
-    // wait 10 seconds each
+    // wait 10 seconds
     for (size_t i = 0; i < 10; ++i)
     {
+        for (auto const& pid : vecChildren)
         {
-            lock_guard<mutex> lock(m_taskPidMutex);
-            LOG(info) << "Waiting for pid = " << m_taskPid;
-            if (m_taskPid > 0 && IsProcessRunning(m_taskPid))
+            long lpid = stol(pid);
+            LOG(info) << "Waiting for pid = " << lpid;
+            if (lpid > 0 && IsProcessRunning(lpid))
                 continue;
         }
         // TODO: Needs to be fixed! Implement time-function based timeout measurements
@@ -453,26 +453,16 @@ void CAgentConnectionManager::terminateChildrenProcesses()
         LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
         kill(stol(pid), SIGKILL);
     }
-
-    // Force kill of the tasks
-    if (IsProcessRunning(m_taskPid))
-    {
-        LOG(info) << "Timeout has been reached, child process with pid = " << m_taskPid << " will be forced to exit...";
-        lock_guard<mutex> lock(m_taskPidMutex);
-        if (m_taskPid > 0)
-            kill(m_taskPid, SIGKILL);
-    }
 }
 
 void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
                                              SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                                             CSMCommanderChannel::weakConnectionPtr_t _channel)
+                                             CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Commander requested to shutdown.
-    // Shutting down all members of the lobby.
     if (m_SMLeaderChannel != nullptr)
     {
-        LOG(info) << "Sending SHUTDOWN to all lobby members";
+        // LOG(info) << "Sending SHUTDOWN to all lobby members";
         m_SMLeaderChannel->syncSendShutdownAll();
     }
     stop();
@@ -480,7 +470,7 @@ void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
 
 void CAgentConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
                                                SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment,
-                                               CSMCommanderChannel::weakConnectionPtr_t _channel)
+                                               CCommanderChannel::weakConnectionPtr_t _channel)
 {
     if (_attachment->m_srcCommand == cmdUPDATE_KEY || _attachment->m_srcCommand == cmdCUSTOM_CMD)
     {
@@ -489,7 +479,7 @@ void CAgentConnectionManager::on_cmdSIMPLE_MSG(const SSenderInfo& _sender,
             LOG(MiscCommon::error) << _attachment->m_sMsg;
         }
         // Forward message to user task
-        m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment);
+        // m_SMIntercomChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment);
     }
     else
     {
@@ -505,44 +495,41 @@ void CAgentConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     m_SMIntercomChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
 }
 
-void CAgentConnectionManager::taskExited(int _pid, int _exitCode)
+void CAgentConnectionManager::taskExited(uint64_t _slotID, int _pid, int _exitCode)
 {
     // remove pid from the active children list
     {
-        lock_guard<mutex> lock(m_taskPidMutex);
-        m_taskPid = 0;
+        lock_guard<mutex> lock(m_taskPidsMutex);
+        m_taskPids.erase(_slotID);
     }
-    SUserTaskDoneCmd cmd;
-    cmd.m_exitCode = _exitCode;
-    cmd.m_taskID = m_SMCommanderChannel->getTaskID();
-    m_SMCommanderChannel->pushMsg<cmdUSER_TASK_DONE>(cmd);
+    m_commanderChannel->sendTaskDone(_slotID, _exitCode);
 
     // Drainning the Intercom write queue
     m_SMIntercomChannel->drainWriteQueue(true);
 }
 
-void CAgentConnectionManager::onNewUserTask(pid_t _pid)
+void CAgentConnectionManager::onNewUserTask(uint64_t _slotID, pid_t _pid)
 {
     // watchdog
-    LOG(info) << "Adding user task pid " << _pid << " to the tasks queue";
+    LOG(info) << "Adding user task on slot " << _slotID << " with pid " << _pid << " to tasks queue";
     try
     {
-        // remove pid from the active children list
-        lock_guard<mutex> lock(m_taskPidMutex);
-        m_taskPid = _pid;
+        // Add a new task to the watchdog list
+        lock_guard<mutex> lock(m_taskPidsMutex);
+        m_taskPids.insert(make_pair(_slotID, _pid));
     }
     catch (exception& _e)
     {
-        LOG(fatal) << "Can't add new user task to the list of children: " << _e.what();
+        LOG(fatal) << "Can't add new user task on slot " << _slotID << " to the list of children: " << _e.what();
     }
 
     // Register the user task's watchdog
 
-    LOG(info) << "Starting the watchdog for user task pid = " << _pid;
+    LOG(info) << "Starting the watchdog for user task on slot " << _slotID << " pid = " << _pid;
 
     auto self(shared_from_this());
     CMonitoringThread::instance().registerCallbackFunction(
-        [this, self, _pid]() -> bool {
+        [this, self, _slotID, _pid]() -> bool {
             // Send commander server the watchdog heartbeat.
             // It indicates that the agent is executing a task and is not idle
             m_SMCommanderChannel->pushMsg<cmdWATCHDOG_HEARTBEAT>();
@@ -564,49 +551,55 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
                     switch (errno)
                     {
                         case ECHILD:
-                            LOG(MiscCommon::error) << "Watchdog: The process or process group specified by pid "
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID
+                                                   << ": The process or process group specified by pid "
                                                       "does not exist or is not a child of the calling process.";
                             break;
                         case EFAULT:
-                            LOG(MiscCommon::error) << "Watchdog: stat_loc is not a writable address.";
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": stat_loc is not a writable address.";
                             break;
                         case EINTR:
-                            LOG(MiscCommon::error) << "Watchdog: The function was interrupted by a signal. The "
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID
+                                                   << ": The function was interrupted by a signal. The "
                                                       "value of the location pointed to by stat_loc is undefined.";
                             break;
                         case EINVAL:
-                            LOG(MiscCommon::error) << "Watchdog: The options argument is not valid.";
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": The options argument is not valid.";
                             break;
                         case ENOSYS:
-                            LOG(MiscCommon::error) << "Watchdog: pid specifies a process group (0 or less than "
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID
+                                                   << ": pid specifies a process group (0 or less than "
                                                       "-1), which is not currently supported.";
                             break;
                     }
-                    LOG(info) << "User Tasks cannot be found. Probably it has exited. pid = " << _pid;
-                    LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+                    LOG(info) << "User Tasks on slot " << _slotID
+                              << " cannot be found. Probably it has exited. pid = " << _pid;
+                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
 
-                    taskExited(_pid, 0);
+                    taskExited(_slotID, _pid, 0);
 
                     return false;
                 }
                 else if (ret == _pid)
                 {
                     if (WIFEXITED(status))
-                        LOG(info) << "User task exited" << (WCOREDUMP(status) ? " and dumped core" : "")
-                                  << " with status " << WEXITSTATUS(status);
+                        LOG(info) << "User task on slot " << _slotID << " exited"
+                                  << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
+                                  << WEXITSTATUS(status);
                     else if (WIFSTOPPED(status))
-                        LOG(info) << "User task stopped by signal " << WSTOPSIG(status);
+                        LOG(info) << "User task on slot " << _slotID << " stopped by signal " << WSTOPSIG(status);
                     else if (WIFSIGNALED(status))
-                        LOG(info) << "User task killed by signal " << WTERMSIG(status)
+                        LOG(info) << "User task on slot " << _slotID << " killed by signal " << WTERMSIG(status)
                                   << (WCOREDUMP(status) ? "; (core dumped)" : "");
                     else
-                        LOG(info) << "User task exited with unexpected status: " << status;
+                        LOG(info) << "User task on slot " << _slotID << " exited with unexpected status: " << status;
 
-                    LOG(info) << "Stopping the watchdog for user task pid = " << _pid;
+                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
 
-                    LOG(info) << "pid = " << m_taskPid << " - done; exit status = " << WEXITSTATUS(status);
+                    LOG(info) << "slot = " << _slotID << " pid = " << _pid
+                              << " - done; exit status = " << WEXITSTATUS(status);
 
-                    taskExited(_pid, status);
+                    taskExited(_slotID, _pid, status);
                     return false;
                 }
             }
@@ -619,7 +612,7 @@ void CAgentConnectionManager::onNewUserTask(pid_t _pid)
         },
         std::chrono::seconds(5));
 
-    LOG(info) << "Watchdog for task pid = " << _pid << " has been registered.";
+    LOG(info) << "Watchdog for task on slot " << _slotID << " pid = " << _pid << " has been registered.";
 }
 
 void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
@@ -628,14 +621,14 @@ void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
 {
     // TODO: add error processing, in case if user tasks won't quite
     terminateChildrenProcesses();
-    auto p = _channel.lock();
-    p->pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
+    if (auto p = _channel.lock())
+        p->pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
 }
 
 void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     const SSenderInfo& _sender,
     SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment,
-    CSMCommanderChannel::weakConnectionPtr_t _channel)
+    CCommanderChannel::weakConnectionPtr_t _channel)
 {
     // Topology file path
     boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
@@ -651,8 +644,8 @@ void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
     LOG(info) << "Topology activated";
 
     // Send response back to server
-    auto p = _channel.lock();
-    p->pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
+    if (auto p = _channel.lock())
+        p->pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
 }
 
 void CAgentConnectionManager::send_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)

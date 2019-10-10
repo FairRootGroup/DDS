@@ -58,13 +58,14 @@ void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
     for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)
     {
         const auto& v = _channels[iChannel];
-        if (v.m_channel.expired())
-            continue;
         auto ptr = v.m_channel.lock();
+        if (ptr == nullptr)
+            continue;
 
-        SAgentInfo info = ptr->getAgentInfo(v.m_protocolHeaderID);
+        const SAgentInfo& info = ptr->getAgentInfo();
+        const SSlotInfo& slot = info.getSlotByID(v.m_protocolHeaderID);
         // Only idle DDS agents
-        if (info.m_state != EAgentState::idle)
+        if (slot.m_state != EAgentState::idle)
             continue;
 
         const SHostInfoCmd& hostInfo = info.m_remoteHostInfo;
@@ -304,11 +305,11 @@ string CSSHScheduler::toString()
     ss << "Scheduled tasks: " << m_schedule.size() << endl;
     for (const auto& s : m_schedule)
     {
-        if (s.m_weakChannelInfo.m_channel.expired())
-            continue;
         auto ptr = s.m_weakChannelInfo.m_channel.lock();
+        if (ptr == nullptr)
+            continue;
 
-        SAgentInfo info = ptr->getAgentInfo(s.m_weakChannelInfo.m_protocolHeaderID);
+        const SAgentInfo& info = ptr->getAgentInfo();
         ss << "<" << s.m_taskID << ">"
            << " <" << s.m_taskInfo.m_task->getPath() << "> ---> " << info.m_remoteHostInfo.m_host << endl;
     }
