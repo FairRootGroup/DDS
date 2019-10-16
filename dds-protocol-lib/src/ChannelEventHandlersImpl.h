@@ -19,7 +19,6 @@ namespace dds
             OnRemoteEndDissconnected,
             OnHandshakeOK,
             OnHandshakeFailed,
-            OnNewUserTask,
             OnAssignUserTask,
             OnSMStart, ///< Shared memory channel start
             OnReplyAddSlot,
@@ -45,9 +44,6 @@ namespace dds
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnHandshakeFailed,
                                        void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnNewUserTask,
-                                       void(const protocol_api::SSenderInfo&, uint64_t, pid_t))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnAssignUserTask,
                                        void(const protocol_api::SSenderInfo&))

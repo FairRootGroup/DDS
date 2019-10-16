@@ -497,40 +497,40 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
 {
     LOG(info) << "Received a user task assignment. " << *_attachment;
 
-    auto slot_iter = m_slots.find(_sender.m_ID);
-    if (slot_iter == m_slots.end())
+    SSlotInfo* slot;
+    try
     {
-        stringstream ss;
-        ss << "No matching slot for " << _sender.m_ID;
-        pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
-        LOG(error) << "Assign task error: " << ss.str();
+        slot = &(getSlotInfoById(_sender.m_ID));
+    }
+    catch (exception& _e)
+    {
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
+        LOG(error) << "Assign task error: " << _e.what();
         return true;
     }
 
-    SSlotInfo& slot = slot_iter->second;
-
-    slot.m_sUsrExe = _attachment->m_sExeFile;
-    slot.m_taskID = _attachment->m_taskID;
-    slot.m_taskIndex = _attachment->m_taskIndex;
-    slot.m_collectionIndex = _attachment->m_collectionIndex;
-    slot.m_taskPath = _attachment->m_taskPath;
-    slot.m_groupName = _attachment->m_groupName;
-    slot.m_collectionName = _attachment->m_collectionName;
-    slot.m_taskName = _attachment->m_taskName;
+    slot->m_sUsrExe = _attachment->m_sExeFile;
+    slot->m_taskID = _attachment->m_taskID;
+    slot->m_taskIndex = _attachment->m_taskIndex;
+    slot->m_collectionIndex = _attachment->m_collectionIndex;
+    slot->m_taskPath = _attachment->m_taskPath;
+    slot->m_groupName = _attachment->m_groupName;
+    slot->m_collectionName = _attachment->m_collectionName;
+    slot->m_taskName = _attachment->m_taskName;
 
     // Replace all %taskIndex% and %collectionIndex% in executable path with their values.
-    boost::algorithm::replace_all(slot.m_sUsrExe, "%taskIndex%", to_string(slot.m_taskIndex));
-    if (slot.m_collectionIndex != numeric_limits<uint32_t>::max())
-        boost::algorithm::replace_all(slot.m_sUsrExe, "%collectionIndex%", to_string(slot.m_collectionIndex));
+    boost::algorithm::replace_all(slot->m_sUsrExe, "%taskIndex%", to_string(slot->m_taskIndex));
+    if (slot->m_collectionIndex != numeric_limits<uint32_t>::max())
+        boost::algorithm::replace_all(slot->m_sUsrExe, "%collectionIndex%", to_string(slot->m_collectionIndex));
 
     try
     {
         string filePath;
         string filename;
         string cmdStr;
-        smart_path(&slot.m_sUsrExe);
-        parseExe(slot.m_sUsrExe, "", filePath, filename, cmdStr);
-        slot.m_sUsrExe = cmdStr;
+        smart_path(&slot->m_sUsrExe);
+        parseExe(slot->m_sUsrExe, "", filePath, filename, cmdStr);
+        slot->m_sUsrExe = cmdStr;
     }
     catch (exception& _e)
     {
@@ -645,7 +645,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     ss << "User task (pid:" << pidUsrTask << ") is activated.";
     LOG(info) << ss.str();
 
-    dispatchHandlers<>(EChannelEvents::OnNewUserTask, _sender, slot.m_id, pidUsrTask);
+    onNewUserTask(slot.m_id, pidUsrTask);
 
     // Send response back to server
     pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdACTIVATE_USER_TASK));
@@ -656,17 +656,29 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
 bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
                                              SSenderInfo& _sender)
 {
-    //    if (m_taskID == 0)
-    //    {
-    //        // No running tasks, nothing to stop
-    //        // Send response back to server
-    //        pushMsg<cmdREPLY>(SReplyCmd(
-    //            "No tasks is running. Nothing to stop.", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
-    //        return true;
-    //    }
+    try
+    {
+        auto& slot = getSlotInfoById(_sender.m_ID);
 
-    // Let the parent should terminate user tasks
-    return false;
+        if (slot.m_pid > 0)
+            terminateChildrenProcesses(slot.m_pid);
+
+        if (slot.m_taskID == 0)
+        {
+            // No running tasks, nothing to stop
+            // Send response back to server
+            pushMsg<cmdREPLY>(SReplyCmd(
+                "No tasks is running. Nothing to stop.", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
+            return true;
+        }
+    }
+    catch (exception& _e)
+    {
+        LOG(warning) << "Can't find user task on slot " << _sender.m_ID << ": " << _e.what();
+    }
+
+    pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
+    return true;
 }
 
 bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_t _attachment, SSenderInfo& _sender)
@@ -701,20 +713,212 @@ bool CCommanderChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::
     return false;
 }
 
-void CCommanderChannel::sendTaskDone(uint64_t _slotID, int _exitCode)
+void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
 {
-    SSlotInfo::container_t::const_iterator slot_iter;
+    // watchdog
+    LOG(info) << "Adding user task on slot " << _slotID << " with pid " << _pid << " to tasks queue";
+    try
     {
-        lock_guard<std::mutex> lock(m_mutexSlots);
-        slot_iter = m_slots.find(_slotID);
-        if (slot_iter == m_slots.end())
-        {
-            LOG(error) << "Can't send TASK_DONE. The coresponding slot is missing";
-            return;
-        }
+        // Add a new task to the watchdog list
+        auto& slot = getSlotInfoById(_slotID);
+        slot.m_pid = _pid;
     }
-    SUserTaskDoneCmd cmd;
-    cmd.m_exitCode = _exitCode;
-    cmd.m_taskID = slot_iter->second.m_taskID;
-    pushMsg<cmdUSER_TASK_DONE>(cmd);
+    catch (exception& _e)
+    {
+        LOG(fatal) << "Can't add new user task on slot " << _slotID << " to the list of children: " << _e.what();
+    }
+
+    // Register the user task's watchdog
+
+    LOG(info) << "Starting the watchdog for user task on slot " << _slotID << " pid = " << _pid;
+
+    auto self(shared_from_this());
+    CMonitoringThread::instance().registerCallbackFunction(
+        [this, self, _slotID, _pid]() -> bool {
+            // Send commander server the watchdog heartbeat.
+            // It indicates that the agent is executing a task and is not idle
+            pushMsg<cmdWATCHDOG_HEARTBEAT>();
+            CMonitoringThread::instance().updateIdle();
+
+            try
+            {
+                // NOTE: We don't use boost::process because it returned an evaluated exit status, but we need a raw to
+                // be able to detect how exactly the child exited.
+                // boost::process  only checks that the child ended because of a call to ::exit() and does not check for
+                // exiting via signal (WIFSIGNALED()).
+
+                // We must call "wait" to check exist status of a child process, otherwise we will crate a
+                // zombie :)
+                int status;
+                pid_t ret = ::waitpid(_pid, &status, WNOHANG | WUNTRACED);
+                if (ret < 0)
+                {
+                    switch (errno)
+                    {
+                        case ECHILD:
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID
+                                                   << ": The process or process group specified by pid "
+                                                      "does not exist or is not a child of the calling process.";
+                            break;
+                        case EFAULT:
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": stat_loc is not a writable address.";
+                            break;
+                        case EINTR:
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID
+                                                   << ": The function was interrupted by a signal. The "
+                                                      "value of the location pointed to by stat_loc is undefined.";
+                            break;
+                        case EINVAL:
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": The options argument is not valid.";
+                            break;
+                        case ENOSYS:
+                            LOG(MiscCommon::error) << "Watchdog " << _slotID
+                                                   << ": pid specifies a process group (0 or less than "
+                                                      "-1), which is not currently supported.";
+                            break;
+                    }
+                    LOG(info) << "User Tasks on slot " << _slotID
+                              << " cannot be found. Probably it has exited. pid = " << _pid;
+                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
+
+                    taskExited(_slotID, 0);
+
+                    return false;
+                }
+                else if (ret == _pid)
+                {
+                    if (WIFEXITED(status))
+                        LOG(info) << "User task on slot " << _slotID << " exited"
+                                  << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
+                                  << WEXITSTATUS(status);
+                    else if (WIFSTOPPED(status))
+                        LOG(info) << "User task on slot " << _slotID << " stopped by signal " << WSTOPSIG(status);
+                    else if (WIFSIGNALED(status))
+                        LOG(info) << "User task on slot " << _slotID << " killed by signal " << WTERMSIG(status)
+                                  << (WCOREDUMP(status) ? "; (core dumped)" : "");
+                    else
+                        LOG(info) << "User task on slot " << _slotID << " exited with unexpected status: " << status;
+
+                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
+
+                    LOG(info) << "slot = " << _slotID << " pid = " << _pid
+                              << " - done; exit status = " << WEXITSTATUS(status);
+
+                    taskExited(_slotID, status);
+                    return false;
+                }
+            }
+            catch (exception& _e)
+            {
+                LOG(fatal) << "User processe monitoring thread received an exception: " << _e.what();
+            }
+
+            return true;
+        },
+        std::chrono::seconds(5));
+
+    LOG(info) << "Watchdog for task on slot " << _slotID << " pid = " << _pid << " has been registered.";
+}
+
+void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
+{
+    // terminate all child processes of the given parent
+    // Either tasks or all processes of the agent.
+    pid_t mainPid((_parentPid > 0) ? _parentPid : getpid());
+
+    LOG(info) << "Getting a list of child processes of the agent with pid " << mainPid;
+    std::vector<std::string> vecChildren;
+    try
+    {
+        // a pgrep command is used to find out the list of child processes of the task
+        stringstream ssCmd;
+        ssCmd << boost::process::search_path("pgrep").string() << " -P " << mainPid;
+        string output;
+        execute(ssCmd.str(), std::chrono::seconds(10), &output);
+        boost::split(vecChildren, output, boost::is_any_of(" \n"), boost::token_compress_on);
+        vecChildren.erase(
+            remove_if(vecChildren.begin(), vecChildren.end(), [](const string& _val) { return _val.empty(); }),
+            vecChildren.end());
+    }
+    catch (...)
+    {
+    }
+    string sChildren;
+    for (const auto i : vecChildren)
+    {
+        if (!sChildren.empty())
+            sChildren += ", ";
+        sChildren += i;
+    }
+    LOG(info) << "terminateChildrenProcesses: found " << vecChildren.size() << " child process(es)"
+              << (sChildren.empty() ? "." : " " + sChildren);
+
+    LOG(info) << "Sending graceful terminate signal to child processes.";
+    for (const auto i : vecChildren)
+    {
+        LOG(info) << "Sending graceful terminate signal to child process " << i;
+        kill(stol(i), SIGTERM);
+    }
+
+    LOG(info) << "Wait for tasks to exit...";
+
+    // wait 10 seconds
+    for (size_t i = 0; i < 10; ++i)
+    {
+        for (auto const& pid : vecChildren)
+        {
+            long lpid = stol(pid);
+            LOG(info) << "Waiting for pid = " << lpid;
+            if (lpid > 0 && IsProcessRunning(lpid))
+                continue;
+        }
+        // TODO: Needs to be fixed! Implement time-function based timeout measurements
+        // instead
+        sleep(1);
+    }
+
+    // kill all child process of tasks if there are any
+    // We do it before terminating tasks to give parenrt task processes a change to read state of children - otherwise
+    // we will get zombies if user tasks don't manage their children properly
+    for (auto const& pid : vecChildren)
+    {
+        if (!IsProcessRunning(stol(pid)))
+            continue;
+
+        LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
+        kill(stol(pid), SIGKILL);
+    }
+}
+
+void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
+{
+    // remove pid from the active children list
+    try
+    {
+        // Add a new task to the watchdog list
+        auto& slot = getSlotInfoById(_slotID);
+        slot.m_pid = 0;
+
+        SUserTaskDoneCmd cmd;
+        cmd.m_exitCode = _exitCode;
+        cmd.m_taskID = slot.m_taskID;
+        pushMsg<cmdUSER_TASK_DONE>(cmd);
+
+        // Drainning the Intercom write queue
+        // m_SMIntercomChannel->drainWriteQueue(true);
+    }
+    catch (exception& _e)
+    {
+        LOG(fatal) << "Failed to remove user task on slot " << _slotID << " from the list of children: " << _e.what();
+        LOG(error) << "Can't send TASK_DONE. The coresponding slot is missing";
+    }
+}
+
+void CCommanderChannel::stopChannel()
+{
+    // terminate external children processes (like user tasks, for example)
+    terminateChildrenProcesses(0);
+
+    // stop channel
+    stop();
 }

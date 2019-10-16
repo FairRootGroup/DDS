@@ -22,15 +22,16 @@ namespace dds
         {
             using container_t = std::map<slotId_t, SSlotInfo>;
 
-            slotId_t m_id = 0;
+            slotId_t m_id{ 0 };
             std::string m_sUsrExe;
-            taskId_t m_taskID = 0;
-            size_t m_taskIndex = 0;
-            size_t m_collectionIndex = 0;
+            taskId_t m_taskID{ 0 };
+            size_t m_taskIndex{ 0 };
+            size_t m_collectionIndex{ 0 };
             std::string m_taskPath;
             std::string m_groupName;
             std::string m_collectionName;
             std::string m_taskName;
+            pid_t m_pid{ 0 };
         };
         class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>
         {
@@ -59,6 +60,9 @@ namespace dds
             END_MSG_MAP()
 
             //   CSMFWChannel::weakConnectionPtr_t getSMFWChannel();
+
+          public:
+            void stopChannel();
 
           private:
             // Message Handlers
@@ -96,17 +100,26 @@ namespace dds
             bool on_cmdADD_SLOT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdADD_SLOT>::ptr_t _attachment,
                                 protocol_api::SSenderInfo& _sender);
 
-          public:
-            //            uint64_t getTaskID() const
-            //            {
-            //                return m_taskID;
-            //            }
-            void sendTaskDone(uint64_t _slotID, int _exitCode);
-
           private:
             void readAgentIDFile();
             void createAgentIDFile() const;
             void deleteAgentIDFile() const;
+            void onNewUserTask(uint64_t _slotID, pid_t _pid);
+            void terminateChildrenProcesses(pid_t _parentPid = 0);
+            void taskExited(uint64_t _taskID, int _exitCode);
+            SSlotInfo& getSlotInfoById(const slotId_t& _slotID)
+            {
+                std::lock_guard<std::mutex> lock(m_mutexSlots);
+                auto it = m_slots.find(_slotID);
+                if (it == m_slots.end())
+                {
+                    std::stringstream ss;
+                    ss << "No matching slot for " << _slotID;
+                    throw std::runtime_error(ss.str());
+                }
+
+                return it->second;
+            }
 
           private:
             uint64_t m_id = 0;

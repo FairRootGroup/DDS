@@ -477,7 +477,7 @@ bool CSMCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACT
     ss << "User task (pid:" << pidUsrTask << ") is activated.";
     LOG(info) << ss.str();
 
-    dispatchHandlers<>(EChannelEvents::OnNewUserTask, _sender, pidUsrTask);
+    // dispatchHandlers<>(EChannelEvents::OnNewUserTask, _sender, pidUsrTask);
 
     // Send response back to server
     pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdACTIVATE_USER_TASK));

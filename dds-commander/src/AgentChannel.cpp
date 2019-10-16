@@ -90,7 +90,7 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t _protoc
 //    return SAgentInfo();
 //}
 
-const SAgentInfo& CAgentChannel::getAgentInfo() const
+SAgentInfo& CAgentChannel::getAgentInfo()
 {
     return m_info;
 }

@@ -415,10 +415,11 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
             continue;
         auto ptr = sch.m_weakChannelInfo.m_channel.lock();
 
-        //        SAgentInfo inf = ptr->getAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID);
-        //        inf.m_taskID = sch.m_taskID;
-        //        inf.m_state = EAgentState::executing;
-        //        ptr->updateAgentInfo(sch.m_weakChannelInfo.m_protocolHeaderID, inf);
+        SAgentInfo& inf = ptr->getAgentInfo();
+        SSlotInfo& slot = inf.getSlotByID(sch.m_weakChannelInfo.m_protocolHeaderID);
+
+        slot.m_taskID = sch.m_taskID;
+        slot.m_state = EAgentState::executing;
     }
 
     broadcastUpdateTopologyAndWait<cmdACTIVATE_USER_TASK>(
@@ -506,13 +507,13 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
             else if (SReplyCmd::EStatusCode(_attachment->m_statusCode) == SReplyCmd::EStatusCode::ERROR)
             {
                 // In case of error set the idle state
-                if (!_channel.expired())
+                if (auto p = _channel.lock())
                 {
-                    //                   auto p = _channel.lock();
-                    //                    SAgentInfo info = p->getAgentInfo(_sender);
-                    //                    info.m_state = EAgentState::idle;
-                    //                    info.m_taskID = 0;
-                    //                    p->updateAgentInfo(_sender, info);
+                    SAgentInfo& inf = p->getAgentInfo();
+                    SSlotInfo& slot = inf.getSlotByID(_sender.m_ID);
+
+                    slot.m_taskID = 0;
+                    slot.m_state = EAgentState::idle;
                 }
                 m_updateTopology.processErrorMessage<SReplyCmd>(_sender, *_attachment, _channel);
             }
@@ -530,13 +531,13 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
                 m_updateTopology.processMessage<SReplyCmd>(_sender, *_attachment, _channel);
                 {
                     // Task was successfully stopped, set the idle state
-                    if (!_channel.expired())
+                    if (auto p = _channel.lock())
                     {
-                        //                        auto p = _channel.lock();
-                        //                        SAgentInfo info = p->getAgentInfo(_sender);
-                        //                        info.m_state = EAgentState::idle;
-                        //                        info.m_taskID = 0;
-                        //                        p->updateAgentInfo(_sender, info);
+                        SAgentInfo& inf = p->getAgentInfo();
+                        SSlotInfo& slot = inf.getSlotByID(_sender.m_ID);
+
+                        slot.m_taskID = 0;
+                        slot.m_state = EAgentState::idle;
                     }
                 }
             }
@@ -1127,8 +1128,8 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
                 if (!_v.m_isSlot)
                     return false;
 
-                const SAgentInfo& info = _v.m_channel->getAgentInfo();
-                const SSlotInfo& slot = info.getSlotByID(_v.m_protocolHeaderID);
+                SAgentInfo& info = _v.m_channel->getAgentInfo();
+                SSlotInfo& slot = info.getSlotByID(_v.m_protocolHeaderID);
                 _stop = (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
                          slot.m_taskID > 0 && slot.m_state == EAgentState::executing);
                 return _stop;
@@ -1381,7 +1382,7 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
             continue;
         auto ptr = v.m_channel.lock();
 
-        const SAgentInfo& inf = ptr->getAgentInfo();
+        SAgentInfo& inf = ptr->getAgentInfo();
 
         string sTaskName("no task is assigned");
         //        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)

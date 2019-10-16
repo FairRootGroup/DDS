@@ -62,8 +62,8 @@ void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
         if (ptr == nullptr)
             continue;
 
-        const SAgentInfo& info = ptr->getAgentInfo();
-        const SSlotInfo& slot = info.getSlotByID(v.m_protocolHeaderID);
+        SAgentInfo& info = ptr->getAgentInfo();
+        SSlotInfo& slot = info.getSlotByID(v.m_protocolHeaderID);
         // Only idle DDS agents
         if (slot.m_state != EAgentState::idle)
             continue;

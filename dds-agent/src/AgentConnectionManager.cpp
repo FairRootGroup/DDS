@@ -168,8 +168,6 @@ void CAgentConnectionManager::stop()
     m_bStarted = false;
 
     LOG(info) << "Shutting down DDS transport...";
-    // terminate external children processes (like user tasks, for example)
-    terminateChildrenProcesses();
 
     try
     {
@@ -185,7 +183,7 @@ void CAgentConnectionManager::stop()
             //            auto pSCFW = m_commanderChannel->getSMFWChannel().lock();
             //            if (pSCFW)
             //                pSCFW->stop();
-            m_commanderChannel->stop();
+            m_commanderChannel->stopChannel();
         }
         m_io_context.stop();
     }
@@ -239,10 +237,6 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
     // Create new agent and push handshake message
     m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID);
 
-    // Call this callback when a user process is activated
-    m_commanderChannel->registerHandler<EChannelEvents::OnNewUserTask>(
-        [this](const SSenderInfo& _sender, uint64_t _slotID, pid_t _pid) { this->onNewUserTask(_slotID, _pid); });
-
     // Subscribe for cmdBINARY_ATTACHMENT_RECEIVED
     m_commanderChannel->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
@@ -260,6 +254,30 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
             this->on_cmdSHUTDOWN(_sender, _attachment, m_commanderChannel);
         });
+
+    // Subscribe for key updates. Forward message to user task.
+    m_commanderChannel->registerHandler<cmdUPDATE_KEY>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            // m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
+        });
+
+    // Subscribe for User Task Done events
+    m_commanderChannel->registerHandler<cmdUSER_TASK_DONE>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
+            // m_SMIntercomChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment);
+        });
+
+    // Subscribe for cmdCUSTOM_CMD
+    m_commanderChannel->registerHandler<cmdCUSTOM_CMD>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            //   this->on_cmdCUSTOM_CMD(_sender, _attachment, m_commanderChannel);
+        });
+
+    // Call this callback when a user process is activated
+    m_commanderChannel->registerHandler<EChannelEvents::OnAssignUserTask>([this](const SSenderInfo& _sender) {
+        // Stop drainning the intercom write queue
+        // m_SMIntercomChannel->drainWriteQueue(false);
+    });
 
     // Connect to DDS commander
     m_commanderChannel->connect(endpoint_iterator);
@@ -338,121 +356,7 @@ void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderI
             }
         });
 
-    // Subscribe for key updates. Forward message to user task.
-    // TODO: Forwarding of update key commands without decoding using raw mwssage API
-    m_SMCommanderChannel->registerHandler<cmdUPDATE_KEY>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            m_SMIntercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment);
-        });
-
-    // Subscribe for User Task Done events
-    m_SMCommanderChannel->registerHandler<cmdUSER_TASK_DONE>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
-            m_SMIntercomChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment);
-        });
-
-    // Subscribe for cmdSTOP_USER_TASK
-    m_SMCommanderChannel->registerHandler<cmdSTOP_USER_TASK>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment) {
-            this->on_cmdSTOP_USER_TASK(_sender, _attachment, m_SMCommanderChannel);
-        });
-
-    // Subscribe for cmdCUSTOM_CMD
-    m_SMCommanderChannel->registerHandler<cmdCUSTOM_CMD>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD(_sender, _attachment, m_SMCommanderChannel);
-        });
-
-    // Call this callback when a user process is activated
-    m_SMCommanderChannel->registerHandler<EChannelEvents::OnAssignUserTask>([this](const SSenderInfo& _sender) {
-        // Stop drainning the intercom write queue
-        m_SMIntercomChannel->drainWriteQueue(false);
-    });
-
     LOG(info) << "SM channel: Agent is created";
-}
-
-void CAgentConnectionManager::terminateChildrenProcesses(uint64_t _taskID)
-{
-    // terminate all child process
-
-    pid_t mainPid(0);
-    if (_taskID > 0)
-    {
-        lock_guard<std::mutex> lock(m_taskPidsMutex);
-        auto task_it = m_taskPids.find(_taskID);
-        if (task_it == m_taskPids.end())
-        {
-            LOG(info) << "terminateChildrenProcesses: can't find task " << _taskID;
-            return;
-        }
-        mainPid = task_it->second;
-    }
-    else
-        mainPid = getpid();
-
-    LOG(info) << "Getting a list of child processes of the agent with pid " << mainPid;
-    std::vector<std::string> vecChildren;
-    try
-    {
-        // a pgrep command is used to find out the list of child processes of the task
-        stringstream ssCmd;
-        ssCmd << boost::process::search_path("pgrep").string() << " -P " << mainPid;
-        string output;
-        execute(ssCmd.str(), std::chrono::seconds(10), &output);
-        boost::split(vecChildren, output, boost::is_any_of(" \n"), boost::token_compress_on);
-        vecChildren.erase(
-            remove_if(vecChildren.begin(), vecChildren.end(), [](const string& _val) { return _val.empty(); }),
-            vecChildren.end());
-    }
-    catch (...)
-    {
-    }
-    string sChildren;
-    for (const auto i : vecChildren)
-    {
-        if (!sChildren.empty())
-            sChildren += ", ";
-        sChildren += i;
-    }
-    LOG(info) << "terminateChildrenProcesses: found " << vecChildren.size() << " child process(es)"
-              << (sChildren.empty() ? "." : " " + sChildren);
-
-    LOG(info) << "Sending graceful terminate signal to child processes.";
-    for (const auto i : vecChildren)
-    {
-        LOG(info) << "Sending graceful terminate signal to child process " << i;
-        kill(stol(i), SIGTERM);
-    }
-
-    LOG(info) << "Wait for tasks to exit...";
-
-    // wait 10 seconds
-    for (size_t i = 0; i < 10; ++i)
-    {
-        for (auto const& pid : vecChildren)
-        {
-            long lpid = stol(pid);
-            LOG(info) << "Waiting for pid = " << lpid;
-            if (lpid > 0 && IsProcessRunning(lpid))
-                continue;
-        }
-        // TODO: Needs to be fixed! Implement time-function based timeout measurements
-        // instead
-        sleep(1);
-    }
-
-    // kill all child process of tasks if there are any
-    // We do it before terminating tasks to give parenrt task processes a change to read state of children - otherwise
-    // we will get zombies if user tasks don't manage their children properly
-    for (auto const& pid : vecChildren)
-    {
-        if (!IsProcessRunning(stol(pid)))
-            continue;
-
-        LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
-        kill(stol(pid), SIGKILL);
-    }
 }
 
 void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
@@ -493,136 +397,6 @@ void CAgentConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
 {
     // Forward message to user task
     m_SMIntercomChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment);
-}
-
-void CAgentConnectionManager::taskExited(uint64_t _slotID, int _pid, int _exitCode)
-{
-    // remove pid from the active children list
-    {
-        lock_guard<mutex> lock(m_taskPidsMutex);
-        m_taskPids.erase(_slotID);
-    }
-    m_commanderChannel->sendTaskDone(_slotID, _exitCode);
-
-    // Drainning the Intercom write queue
-    m_SMIntercomChannel->drainWriteQueue(true);
-}
-
-void CAgentConnectionManager::onNewUserTask(uint64_t _slotID, pid_t _pid)
-{
-    // watchdog
-    LOG(info) << "Adding user task on slot " << _slotID << " with pid " << _pid << " to tasks queue";
-    try
-    {
-        // Add a new task to the watchdog list
-        lock_guard<mutex> lock(m_taskPidsMutex);
-        m_taskPids.insert(make_pair(_slotID, _pid));
-    }
-    catch (exception& _e)
-    {
-        LOG(fatal) << "Can't add new user task on slot " << _slotID << " to the list of children: " << _e.what();
-    }
-
-    // Register the user task's watchdog
-
-    LOG(info) << "Starting the watchdog for user task on slot " << _slotID << " pid = " << _pid;
-
-    auto self(shared_from_this());
-    CMonitoringThread::instance().registerCallbackFunction(
-        [this, self, _slotID, _pid]() -> bool {
-            // Send commander server the watchdog heartbeat.
-            // It indicates that the agent is executing a task and is not idle
-            m_SMCommanderChannel->pushMsg<cmdWATCHDOG_HEARTBEAT>();
-            CMonitoringThread::instance().updateIdle();
-
-            try
-            {
-                // NOTE: We don't use boost::process because it returned an evaluated exit status, but we need a raw to
-                // be able to detect how exactly the child exited.
-                // boost::process  only checks that the child ended because of a call to ::exit() and does not check for
-                // exiting via signal (WIFSIGNALED()).
-
-                // We must call "wait" to check exist status of a child process, otherwise we will crate a
-                // zombie :)
-                int status;
-                pid_t ret = ::waitpid(_pid, &status, WNOHANG | WUNTRACED);
-                if (ret < 0)
-                {
-                    switch (errno)
-                    {
-                        case ECHILD:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID
-                                                   << ": The process or process group specified by pid "
-                                                      "does not exist or is not a child of the calling process.";
-                            break;
-                        case EFAULT:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": stat_loc is not a writable address.";
-                            break;
-                        case EINTR:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID
-                                                   << ": The function was interrupted by a signal. The "
-                                                      "value of the location pointed to by stat_loc is undefined.";
-                            break;
-                        case EINVAL:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": The options argument is not valid.";
-                            break;
-                        case ENOSYS:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID
-                                                   << ": pid specifies a process group (0 or less than "
-                                                      "-1), which is not currently supported.";
-                            break;
-                    }
-                    LOG(info) << "User Tasks on slot " << _slotID
-                              << " cannot be found. Probably it has exited. pid = " << _pid;
-                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
-
-                    taskExited(_slotID, _pid, 0);
-
-                    return false;
-                }
-                else if (ret == _pid)
-                {
-                    if (WIFEXITED(status))
-                        LOG(info) << "User task on slot " << _slotID << " exited"
-                                  << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
-                                  << WEXITSTATUS(status);
-                    else if (WIFSTOPPED(status))
-                        LOG(info) << "User task on slot " << _slotID << " stopped by signal " << WSTOPSIG(status);
-                    else if (WIFSIGNALED(status))
-                        LOG(info) << "User task on slot " << _slotID << " killed by signal " << WTERMSIG(status)
-                                  << (WCOREDUMP(status) ? "; (core dumped)" : "");
-                    else
-                        LOG(info) << "User task on slot " << _slotID << " exited with unexpected status: " << status;
-
-                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
-
-                    LOG(info) << "slot = " << _slotID << " pid = " << _pid
-                              << " - done; exit status = " << WEXITSTATUS(status);
-
-                    taskExited(_slotID, _pid, status);
-                    return false;
-                }
-            }
-            catch (exception& _e)
-            {
-                LOG(fatal) << "User processe monitoring thread received an exception: " << _e.what();
-            }
-
-            return true;
-        },
-        std::chrono::seconds(5));
-
-    LOG(info) << "Watchdog for task on slot " << _slotID << " pid = " << _pid << " has been registered.";
-}
-
-void CAgentConnectionManager::on_cmdSTOP_USER_TASK(const SSenderInfo& _sender,
-                                                   SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
-                                                   CSMCommanderChannel::weakConnectionPtr_t _channel)
-{
-    // TODO: add error processing, in case if user tasks won't quite
-    terminateChildrenProcesses();
-    if (auto p = _channel.lock())
-        p->pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
 }
 
 void CAgentConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(

@@ -44,13 +44,14 @@ namespace dds
                 std::lock_guard<std::mutex> lock(m_mtxSlot);
                 m_slots.insert(std::make_pair(_slot.m_id, _slot));
             }
-            const SlotContainer_t& getSlots() const
+            SlotContainer_t& getSlots()
             {
                 return m_slots;
             }
 
-            const SSlotInfo& getSlotByID(slotID_t _slotID) const
+            SSlotInfo& getSlotByID(slotID_t _slotID)
             {
+                std::lock_guard<std::mutex> lock(m_mtxSlot);
                 auto it = m_slots.find(_slotID);
                 if (it == m_slots.end())
                 {
@@ -137,7 +138,7 @@ namespace dds
             /// Get a copy of the agent info
             // FIXME: This function makes a copy of the info struct. Find a solution to avoid copy operations. But the
             // function and the info struct still must be thread safe.
-            const SAgentInfo& getAgentInfo() const;
+            SAgentInfo& getAgentInfo();
             //   SAgentInfo getAgentInfo(uint64_t _protocolHeaderID);
             LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
 
