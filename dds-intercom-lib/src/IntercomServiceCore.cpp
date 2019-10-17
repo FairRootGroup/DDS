@@ -82,11 +82,11 @@ void CIntercomServiceCore::start(const std::string& _sessionID)
 void CIntercomServiceCore::setupSMChannel()
 {
     // Shared memory channel for communication with DDS Agent
-    std::string inputName = CUserDefaults::instance().getSMInputName();
-    std::string outputName = CUserDefaults::instance().getSMOutputName();
+    uint64_t slotID = dds::env_prop<dds::dds_slot_id>();
+    std::string inputName = CUserDefaults::instance().getSMLeaderInputName(slotID);
+    std::string outputName = CUserDefaults::instance().getSMLeaderOutputName(slotID);
     // For the user task shared memory names are opposite: input shared memory name has output name and output
-    // shared
-    // memory name has input name.
+    // shared memory name has input name.
     m_SMChannel = CSMAgentChannel::makeNew(m_io_context, outputName, inputName, 0);
 
     // Subscribe for cmdUPDATE_KEY from SM channel
@@ -356,7 +356,8 @@ void CIntercomServiceCore::sendCustomCmd(const std::string& _command, const std:
             chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         cmd.m_sCmd = _command;
         cmd.m_sCondition = _condition;
-        m_SMChannel->pushMsg<cmdCUSTOM_CMD>(cmd);
+        uint64_t slotID = dds::env_prop<dds::dds_slot_id>();
+        m_SMChannel->pushMsg<cmdCUSTOM_CMD>(cmd, slotID);
     }
 }
 
@@ -387,13 +388,15 @@ void CIntercomServiceCore::putValue(const std::string& _key, const std::string& 
     cmd.m_propertyName = _key;
     cmd.m_senderTaskID = env_prop<task_id>();
     cmd.m_value = _value;
-    m_SMChannel->pushMsg<cmdUPDATE_KEY>(cmd);
+    uint64_t slotID = dds::env_prop<dds::dds_slot_id>();
+    m_SMChannel->pushMsg<cmdUPDATE_KEY>(cmd, slotID);
 }
 
 void CIntercomServiceCore::clean()
 {
-    std::string inputName = CUserDefaults::instance().getSMInputName();
-    std::string outputName = CUserDefaults::instance().getSMOutputName();
+    uint64_t slotID = dds::env_prop<dds::dds_slot_id>();
+    std::string inputName = CUserDefaults::instance().getSMLeaderInputName(slotID);
+    std::string outputName = CUserDefaults::instance().getSMLeaderOutputName(slotID);
     const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
     const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
     LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;

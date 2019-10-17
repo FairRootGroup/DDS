@@ -227,6 +227,26 @@ namespace dds
             }
 
           protected:
+            void updateChannelProtocolHeaderID(const weakChannelInfo_t& _channelInfo)
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+
+                auto p = _channelInfo.m_channel.lock();
+                if (p == nullptr)
+                    return;
+
+                for (auto& inf : m_channels)
+                {
+                    if (inf.m_channel.get() == p.get() && inf.m_protocolHeaderID == 0)
+                    {
+                        inf.m_protocolHeaderID = _channelInfo.m_protocolHeaderID;
+                        return;
+                    }
+                }
+                LOG(MiscCommon::error) << "Failed to update protocol channel header ID <"
+                                       << _channelInfo.m_protocolHeaderID << "> . Channel is not registered";
+            }
+
             weakChannelInfo_t getChannelByID(uint64_t _protocolHeaderID)
             {
                 std::lock_guard<std::mutex> lock(m_mutex);

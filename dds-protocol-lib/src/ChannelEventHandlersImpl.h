@@ -6,6 +6,7 @@
 #define DDS_ChannelEventHandlersImpl_h
 
 #include "BaseEventHandlersImpl.h"
+#include "ChannelInfo.h"
 
 namespace dds
 {
@@ -22,43 +23,23 @@ namespace dds
             OnAssignUserTask,
             OnSMStart, ///< Shared memory channel start
             OnReplyAddSlot,
-            //            OnLobbyMemberHandshakeFailed,
-            //            OnLobbyMemberInfo
+            OnChangeChannelInfo
         };
 
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
         {
             DDS_BEGIN_EVENT_HANDLERS(EChannelEvents)
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnConnected,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnFailedToConnect,
-                                       void(const protocol_api::SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnConnected, void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnFailedToConnect, void(const SSenderInfo&))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
                                        EChannelEvents::OnRemoteEndDissconnected,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnHandshakeOK,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnHandshakeFailed,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnAssignUserTask,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnSMStart,
-                                       void(const protocol_api::SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-                                       EChannelEvents::OnReplyAddSlot,
-                                       void(const protocol_api::SSenderInfo&))
-            //            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-            //                                       EChannelEvents::OnLobbyMemberHandshakeFailed,
-            //                                       void(const protocol_api::SSenderInfo&))
-            //            DDS_REGISTER_EVENT_HANDLER(EChannelEvents,
-            //                                       EChannelEvents::OnLobbyMemberInfo,
-            //                                       void(const protocol_api::SSenderInfo&, const std::string&))
+                                       void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeOK, void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeFailed, void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnAssignUserTask, void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnSMStart, void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnReplyAddSlot, void(const SSenderInfo&))
+            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnChangeChannelInfo, void(const SSenderInfo&))
             DDS_END_EVENT_HANDLERS
         };
     } // namespace protocol_api

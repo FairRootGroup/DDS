@@ -100,15 +100,15 @@ uint64_t CAgentChannel::getId() const
     return m_info.m_id;
 }
 
-LobbyProtocolHeaderIdContainer_t CAgentChannel::getLobbyPHID() const
-{
-    //    LobbyProtocolHeaderIdContainer_t ret;
-    //    for (const auto& v : m_info)
-    //        ret.push_back(v.first);
-    //
-    //    return ret;
-    return LobbyProtocolHeaderIdContainer_t();
-}
+// LobbyProtocolHeaderIdContainer_t CAgentChannel::getLobbyPHID() const
+//{
+//    //    LobbyProtocolHeaderIdContainer_t ret;
+//    //    for (const auto& v : m_info)
+//    //        ret.push_back(v.first);
+//    //
+//    //    return ret;
+//    return LobbyProtocolHeaderIdContainer_t();
+//}
 
 void CAgentChannel::setId(uint64_t _id)
 {
@@ -204,8 +204,9 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
 
     // Request agent to add Task Slots
     // TODO: Take the number of slots from the host info struct
-    LOG(info) << "Requesting " << 10 << " task slots from " << m_info.m_id;
-    for (size_t i = 0; i < 10; ++i)
+    size_t numSlots{ 120 };
+    LOG(info) << "Requesting " << numSlots << " task slots from " << m_info.m_id;
+    for (size_t i = 0; i < numSlots; ++i)
     {
         SIDCmd msg_cmd;
         msg_cmd.m_id = DDSChannelId::getChannelId();

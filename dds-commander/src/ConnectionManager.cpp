@@ -83,6 +83,16 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 
     CAgentChannel::weakConnectionPtr_t weakClient(_newClient);
 
+    _newClient->registerHandler<EChannelEvents::OnHandshakeOK>([this, weakClient](const SSenderInfo& _sender) {
+        if (auto p = weakClient.lock())
+            if (p->getChannelType() == EChannelType::UI)
+            {
+                LOG(info) << "Updating UI channel ID to " << p->getId();
+                CConnectionManagerImpl::weakChannelInfo_t inf(weakClient, p->getId(), false);
+                updateChannelProtocolHeaderID(inf);
+            }
+    });
+
     // Subscribe on protocol messages
     _newClient->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
         [this, weakClient](const SSenderInfo& _sender,
@@ -682,6 +692,9 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
         {
             p->setId(_attachment->m_id);
         }
+
+        CConnectionManagerImpl::weakChannelInfo_t inf(_channel, p->getId(), false);
+        updateChannelProtocolHeaderID(inf);
     }
     catch (exception& _e)
     {
@@ -786,7 +799,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     try
     {
         // Assign sender ID of this custom command
-        _attachment->m_senderId = p->getId();
+        _attachment->m_senderId = (p->getChannelType() == EChannelType::UI) ? p->getId() : _sender.m_ID;
 
         CConnectionManager::weakChannelInfo_t::container_t channels;
 
@@ -796,7 +809,16 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
         {
             // If condition in the attachment is not of type uint64_t function throws an exception.
             uint64_t channelId = boost::lexical_cast<uint64_t>(_attachment->m_sCondition);
-            channels.push_back(getChannelByID(channelId));
+            auto channel = getChannelByID(channelId);
+            if (auto p = channel.m_channel.lock())
+            {
+                channels.push_back(channel);
+            }
+            else
+            {
+                LOG(error) << "Failed to deliver. Channel is missing. CUSTOM_CMD senderID: " << _sender.m_ID
+                           << "; attachemnt: " << *_attachment;
+            }
         }
         catch (boost::bad_lexical_cast&)
         {
@@ -843,34 +865,46 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 pathRegex = make_shared<boost::regex>(_attachment->m_sCondition);
             }
 
-            //                SAgentInfo thisInf = p->getAgentInfo(_sender.m_ID);
-            //                channels = getChannels([this, taskFound, &_attachment, &thisInf, pathRegex](
-            //                                           const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-            //                    SAgentInfo inf = _v.m_channel->getAgentInfo(_v.m_protocolHeaderID);
-            //
-            //                    // Only for Agents which are started already and executing task
-            //                    if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started()
-            //                    ||
-            //                        inf.m_state != EAgentState::executing)
-            //                        return false;
-            //
-            //                    // Do not send command to self
-            //                    if (inf.m_taskID == thisInf.m_taskID)
-            //                        return false;
-            //
-            //                    // If condition is empty we broadcast command to all agents
-            //                    if (_attachment->m_sCondition.empty())
-            //                        return true;
-            //
-            //                    const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(inf.m_taskID);
-            //                    bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
-            //                                              : boost::regex_match(taskInfo.m_task->getPath(),
-            //                                              *pathRegex);
-            //
-            //                    _stop = (taskFound && result);
-            //
-            //                    return result;
-            //                });
+            uint64_t thisTaskID(0);
+            try
+            {
+                SAgentInfo& thisInf = p->getAgentInfo();
+                SSlotInfo& thisSlotInf = thisInf.getSlotByID(_sender.m_ID);
+                thisTaskID = thisSlotInf.m_taskID;
+            }
+            catch (exception& _e)
+            {
+            }
+
+            channels = getChannels([this, taskFound, &_attachment, &thisTaskID, pathRegex](
+                                       const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+                if (!_v.m_isSlot)
+                    return false;
+
+                SAgentInfo& inf = _v.m_channel->getAgentInfo();
+                SSlotInfo& slotInf = inf.getSlotByID(_v.m_protocolHeaderID);
+
+                // Only for Agents which are started already and executing task
+                if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
+                    slotInf.m_state != EAgentState::executing)
+                    return false;
+
+                // Do not send command to self
+                if (thisTaskID > 0 && slotInf.m_taskID == thisTaskID)
+                    return false;
+
+                // If condition is empty we broadcast command to all agents
+                if (_attachment->m_sCondition.empty())
+                    return true;
+
+                const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(slotInf.m_taskID);
+                bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
+                                          : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
+
+                _stop = (taskFound && result);
+
+                return result;
+            });
         }
 
         for (const auto& v : channels)
@@ -1207,15 +1241,16 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
                 agents.push_back(agentChannel);
             }
 
-            for (const auto& v : agents)
-            {
-                if (v.m_channel.expired())
-                    continue;
-                auto ptr = v.m_channel.lock();
-                // TODO: FIXME: Do we need to deque messages in new decentralized concept?
-                // dequeue important (or expensive) messages
-                ptr->dequeueMsg<cmdUPDATE_KEY>();
-            }
+            // TODO: FIXME: Needs to be reviewed for the current architecture
+            //            for (const auto& v : agents)
+            //            {
+            //                if (v.m_channel.expired())
+            //                    continue;
+            //                auto ptr = v.m_channel.lock();
+            //                // TODO: FIXME: Do we need to deque messages in new decentralized concept?
+            //                // dequeue important (or expensive) messages
+            //                ptr->dequeueMsg<cmdUPDATE_KEY>();
+            //            }
 
             broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
         }
@@ -1412,6 +1447,9 @@ void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountReque
 {
     CConnectionManager::weakChannelInfo_t::container_t channels(
         getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            if (!_v.m_isSlot)
+                return false;
+
             return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
         }));
 

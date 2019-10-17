@@ -8,7 +8,7 @@
 
 // DDS
 #include "ClientChannelImpl.h"
-#include "SMFWChannel.h"
+#include "SMLeaderChannel.h"
 #include "TopoCore.h"
 
 namespace dds
@@ -56,7 +56,7 @@ namespace dds
                 MESSAGE_HANDLER(cmdUPDATE_KEY, on_cmdUPDATE_KEY)
                 MESSAGE_HANDLER(cmdCUSTOM_CMD, on_cmdCUSTOM_CMD)
                 MESSAGE_HANDLER(cmdADD_SLOT, on_cmdADD_SLOT)
-                MESSAGE_HANDLER_DISPATCH(cmdUSER_TASK_DONE)
+                MESSAGE_HANDLER(cmdUSER_TASK_DONE, on_cmdUSER_TASK_DONE)
             END_MSG_MAP()
 
             //   CSMFWChannel::weakConnectionPtr_t getSMFWChannel();
@@ -99,6 +99,12 @@ namespace dds
                                   protocol_api::SSenderInfo& _sender);
             bool on_cmdADD_SLOT(protocol_api::SCommandAttachmentImpl<protocol_api::cmdADD_SLOT>::ptr_t _attachment,
                                 protocol_api::SSenderInfo& _sender);
+            void send_cmdUPDATE_KEY(
+                const protocol_api::SSenderInfo& _sender,
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment);
+            bool on_cmdUSER_TASK_DONE(
+                protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment,
+                protocol_api::SSenderInfo& _sender);
 
           private:
             void readAgentIDFile();
@@ -124,10 +130,11 @@ namespace dds
           private:
             uint64_t m_id = 0;
             uint16_t m_connectionAttempts;
-            CSMFWChannel::connectionPtr_t m_SMFWChannel;
-            std::map<uint64_t, uint64_t> m_taskIDToChannelIDMap;
-            std::mutex m_taskIDToChannelIDMapMutex;
+            std::mutex m_taskIDToSlotIDMapMutex;
+            std::map<uint64_t, uint64_t> m_taskIDToSlotIDMap;
             topology_api::CTopoCore m_topo;
+
+            CSMLeaderChannel::connectionPtr_t m_leaderChannel;
 
             std::mutex m_mutexSlots;
             SSlotInfo::container_t m_slots;

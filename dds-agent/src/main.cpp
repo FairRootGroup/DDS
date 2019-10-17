@@ -26,15 +26,30 @@ void clean()
 {
     // Cleaning shared memory of agent's shared memory channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    const std::string inputName(userDefaults.getSMAgentInputName());
-    const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
-    LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
-
-    const std::vector<string> names(userDefaults.getSMAgentOutputNames());
-    for (const auto& outputName : names)
+    for (const auto& inputName : userDefaults.getSMLeaderInputNames())
     {
-        const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
-        LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+        const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
+        LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
+    }
+
+    boost::filesystem::path pathWrkDir(userDefaults.getSlotsRootDir());
+    for (auto& dir : boost::make_iterator_range(boost::filesystem::directory_iterator(pathWrkDir), {}))
+    {
+        try
+        {
+            if (boost::filesystem::is_directory(dir.path()))
+            {
+                std::string filename = dir.path().filename().string();
+                uint64_t slotID = std::stoull(filename);
+                const std::string outputName(userDefaults.getSMLeaderOutputName(slotID));
+                const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
+                LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+            }
+        }
+        catch (...)
+        {
+            continue;
+        }
     }
 
     // Clean named mutex

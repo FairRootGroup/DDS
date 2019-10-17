@@ -55,12 +55,13 @@ namespace dds
             std::string getLogFile() const;
             std::string getAgentLogStorageDir() const;
             pid_t getScoutPid() const;
-            std::string getSMInputName() const;
-            std::string getSMOutputName() const;
-            std::string getSMAgentInputName() const;
-            std::vector<std::string> getSMAgentOutputNames() const;
-            std::string getSMAgentOutputName(uint64_t _protocolHeaderID) const;
-            std::string getSMAgentLeaderOutputName() const;
+            //            std::string getSMInputName() const;
+            //            std::string getSMOutputName() const;
+            //            std::string getSMAgentInputName() const;
+            //            std::vector<std::string> getSMAgentOutputNames() const;
+            std::string getSMLeaderOutputName(uint64_t _protocolHeaderID) const;
+            std::string getSMLeaderInputName(uint64_t _protocolHeaderID) const;
+            std::vector<std::string> getSMLeaderInputNames() const;
             std::string getPluginsRootDir() const;
             std::string getMainSIDFile() const;
             std::string getSIDFile() const;
@@ -78,6 +79,7 @@ namespace dds
             static std::string getTopologyXSDFilePath();
             bool isAgentInstance() const;
             static size_t getNumLeaderFW(); // Number of SM agent outputs
+            std::string getSlotsRootDir() const;
 
             /// \brief Returns path to the plugin's directory for specified plug-in name.
             /// \param[in] _path Path to the root plug-ins directory. If not specified (i.e. empty string is provided)

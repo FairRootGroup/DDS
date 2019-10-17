@@ -51,6 +51,12 @@ namespace dds
 
             typedef std::vector<SWeakChannelInfo> container_t;
         };
+
+        template <class T>
+        bool operator==(const SWeakChannelInfo<T>& lhs, const SWeakChannelInfo<T>& rhs)
+        {
+            return lhs.m_channel.get() == rhs.m_channel.get();
+        }
     } // namespace protocol_api
 } // namespace dds
 #endif /* __DDS__ChannelInfo_h */

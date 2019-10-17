@@ -27,12 +27,36 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service, uint64_t
 {
     // Create shared memory channel for message forwarding from the network channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
-    //    m_SMFWChannel = CSMFWChannel::makeNew(_service,
-    //                                          userDefaults.getSMAgentOutputNames(),
-    //                                          userDefaults.getSMAgentInputName(),
-    //                                          _ProtocolHeaderID,
-    //                                          EMQOpenType::OpenOrCreate,
-    //                                          EMQOpenType::OpenOrCreate);
+
+    m_leaderChannel = CSMLeaderChannel::makeNew(_service,
+                                                userDefaults.getSMLeaderInputNames(),
+                                                userDefaults.getSMLeaderOutputName(_ProtocolHeaderID),
+                                                _ProtocolHeaderID,
+                                                EMQOpenType::OpenOrCreate,
+                                                EMQOpenType::OpenOrCreate);
+
+    m_leaderChannel->registerHandler<cmdCUSTOM_CMD>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
+            pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID);
+        });
+
+    m_leaderChannel->registerHandler<cmdUPDATE_KEY>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
+            send_cmdUPDATE_KEY(_sender, _attachment);
+        });
+
+    m_leaderChannel->registerHandler<cmdSIMPLE_MSG>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
+
+        });
+
+    m_leaderChannel->registerHandler<cmdUSER_TASK_DONE>(
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
+            LOG(info) << "DEBUG: cmdUSER_TASK_DONE: " << *_attachment;
+        });
+
+    m_leaderChannel->start();
+
     //
     //    m_SMFWChannel->registerHandler<cmdRAW_MSG>(
     //        [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
@@ -275,10 +299,16 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
             return true;
         }
         case cmdUPDATE_KEY:
-            return false; // let connection manager forward this info to UI channels
-
         case cmdCUSTOM_CMD:
-            return false; // let connection manager forward this info to UI channels
+        {
+            if (_attachment->m_msgSeverity == MiscCommon::error)
+            {
+                LOG(MiscCommon::error) << _attachment->m_sMsg;
+            }
+            // Forward message to user task
+            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment, _sender.m_ID, _sender.m_ID);
+            return true;
+        }
 
         default:
             LOG(debug) << "Received command cmdSIMPLE_MSG does not have a listener";
@@ -328,7 +358,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
 bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, SSenderInfo& _sender)
 {
     deleteAgentIDFile();
-    LOG(info) << "The SM Agent [" << m_id << "] received cmdSHUTDOWN.";
+    LOG(info) << "The Agent [" << m_id << "] received cmdSHUTDOWN.";
     // return false to let connection manager to catch this message as well
     return false;
 }
@@ -369,8 +399,19 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
 
-            // Connection manager will activate the topology
-            return false;
+            // Activating new topology
+            CTopoCore topo;
+            // Topology already validated on the commander, no need to validate it again
+            topo.setXMLValidationDisabled(true);
+            topo.init(destFilePath.string());
+            // Assign new topology
+            m_topo = topo;
+            LOG(info) << "Topology activated";
+
+            // Send response back to server
+            pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdUPDATE_TOPOLOGY));
+
+            return true;
         }
         default:
             LOG(debug) << "Received command cmdBINARY_ATTACHMENT_RECEIVED does not have a listener";
@@ -518,6 +559,11 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     slot->m_collectionName = _attachment->m_collectionName;
     slot->m_taskName = _attachment->m_taskName;
 
+    {
+        lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
+        m_taskIDToSlotIDMap.insert(make_pair(slot->m_taskID, slot->m_id));
+    }
+
     // Replace all %taskIndex% and %collectionIndex% in executable path with their values.
     boost::algorithm::replace_all(slot->m_sUsrExe, "%taskIndex%", to_string(slot->m_taskIndex));
     if (slot->m_collectionIndex != numeric_limits<uint32_t>::max())
@@ -585,7 +631,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
                   << "DDS_TASK_ID:" << slot.m_taskID << " DDS_TASK_INDEX:" << slot.m_taskIndex
                   << " DDS_COLLECTION_INDEX:" << slot.m_collectionIndex << " DDS_TASK_PATH:" << slot.m_taskPath
                   << " DDS_GROUP_NAME:" << slot.m_groupName << " DDS_COLLECTION_NAME:" << slot.m_collectionName
-                  << " DDS_TASK_NAME:" << slot.m_taskName
+                  << " DDS_TASK_NAME:" << slot.m_taskName << " DDS_SLOT_ID:" << slot.m_id
                   << " DDS_SESSION_ID: " << dds::env_prop<dds::EEnvProp::dds_session_id>();
         if (::setenv("DDS_TASK_ID", to_string(slot.m_taskID).c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
@@ -602,6 +648,8 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
             throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_NAME");
         if (::setenv("DDS_TASK_NAME", slot.m_taskName.c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_TASK_NAME");
+        if (::setenv("DDS_SLOT_ID", to_string(slot.m_id).c_str(), 1) == -1)
+            throw MiscCommon::system_error("Failed to set up $DDS_SLOT_ID");
 
         dispatchHandlers<>(EChannelEvents::OnAssignUserTask, _sender);
 
@@ -684,9 +732,18 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
 bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_t _attachment, SSenderInfo& _sender)
 {
     LOG(info) << "Received a ADD SLOT request, id = " << _attachment->m_id;
+
     // Add new Task slot
     SSlotInfo info;
     info.m_id = _attachment->m_id;
+
+    // TODO: catch exception if directory can not be created
+    fs::path dir(CUserDefaults::instance().getSlotsRootDir());
+    dir /= to_string(info.m_id);
+    fs::create_directories(dir);
+
+    // Add shared memory output for intercom API task
+    m_leaderChannel->addOutput(info.m_id, CUserDefaults::instance().getSMLeaderOutputName(info.m_id));
 
     {
         std::lock_guard<std::mutex> lock(m_mutexSlots);
@@ -703,14 +760,22 @@ bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_
 
 bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment, SSenderInfo& _sender)
 {
-    LOG(debug) << "Received a key update notifications: " << *_attachment;
-    return false;
+    LOG(debug) << "Received key value update: " << *_attachment;
+
+    // Forward message to user task
+    m_leaderChannel->pushMsg<cmdUPDATE_KEY>(*_attachment, _sender.m_ID, _sender.m_ID);
+
+    return true;
 }
 
 bool CCommanderChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment, SSenderInfo& _sender)
 {
     LOG(debug) << "Received custom command: " << *_attachment;
-    return false;
+
+    // Forward message to user task
+    m_leaderChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID, _sender.m_ID);
+
+    return true;
 }
 
 void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
@@ -897,12 +962,19 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
     {
         // Add a new task to the watchdog list
         auto& slot = getSlotInfoById(_slotID);
-        slot.m_pid = 0;
 
         SUserTaskDoneCmd cmd;
         cmd.m_exitCode = _exitCode;
         cmd.m_taskID = slot.m_taskID;
         pushMsg<cmdUSER_TASK_DONE>(cmd);
+
+        {
+            lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
+            m_taskIDToSlotIDMap.erase(slot.m_taskID);
+        }
+
+        slot.m_pid = 0;
+        slot.m_taskID = 0;
 
         // Drainning the Intercom write queue
         // m_SMIntercomChannel->drainWriteQueue(true);
@@ -919,6 +991,117 @@ void CCommanderChannel::stopChannel()
     // terminate external children processes (like user tasks, for example)
     terminateChildrenProcesses(0);
 
+    if (m_leaderChannel)
+        m_leaderChannel->stop();
+
     // stop channel
     stop();
+}
+
+void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
+                                           SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+{
+    LOG(debug) << "Received a key update notifications: " << *_attachment;
+
+    try
+    {
+        string propertyName(_attachment->m_propertyName);
+        uint64_t taskID(_attachment->m_senderTaskID);
+
+        auto task = m_topo.getRuntimeTaskById(taskID).m_task;
+        auto property = task->getProperty(propertyName);
+        // Property doesn't exists for task
+        if (property == nullptr)
+        {
+            stringstream ss;
+            ss << "Can't propagate property <" << propertyName << "> that doesn't exist for task <" << task->getName()
+               << ">";
+            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(
+                SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
+            return;
+        }
+        // Cant' propagate property with read access type
+        if (property->getAccessType() == CTopoProperty::EAccessType::READ)
+        {
+            stringstream ss;
+            ss << "Can't propagate property <" << property->getName() << "> which has a READ access type for task <"
+               << task->getName() << ">";
+            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(
+                SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
+            return;
+        }
+        // Can't send property with a collection scope if a task is outside a collection
+        if ((property->getScopeType() == CTopoProperty::EScopeType::COLLECTION) &&
+            (task->getParent()->getType() != CTopoBase::EType::COLLECTION))
+        {
+            stringstream ss;
+            ss << "Can't propagate property <" << property->getName()
+               << "> which has a COLLECTION scope type but task <" << task->getName() << "> is not in any collection";
+            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(
+                SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
+            return;
+        }
+
+        STopoRuntimeTask::FilterIteratorPair_t taskIt =
+            m_topo.getRuntimeTaskIteratorForPropertyName(propertyName, taskID);
+
+        for (auto it = taskIt.first; it != taskIt.second; ++it)
+        {
+            uint64_t receiverTaskID(it->first);
+
+            // Dont't send message to itself
+            if (taskID == receiverTaskID)
+                continue;
+
+            auto task = m_topo.getRuntimeTaskById(receiverTaskID).m_task;
+            auto property = task->getProperty(propertyName);
+            if (property != nullptr && (property->getAccessType() == CTopoProperty::EAccessType::READ ||
+                                        property->getAccessType() == CTopoProperty::EAccessType::READWRITE))
+            {
+                SUpdateKeyCmd cmd;
+                cmd.m_propertyName = propertyName;
+                cmd.m_value = _attachment->m_value;
+                cmd.m_receiverTaskID = receiverTaskID;
+                cmd.m_senderTaskID = taskID;
+
+                bool localPush(true);
+                uint64_t slotID(0);
+                {
+                    std::lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
+                    auto it = m_taskIDToSlotIDMap.find(receiverTaskID);
+                    localPush = (it != m_taskIDToSlotIDMap.end());
+                    slotID = it->second;
+                }
+
+                if (localPush)
+                {
+                    LOG(debug) << "Push update key via shared memory: cmd=<" << cmd << ">; slotID=" << slotID;
+                    m_leaderChannel->pushMsg<cmdUPDATE_KEY>(cmd, slotID, slotID);
+                }
+                else
+                {
+                    LOG(debug) << "Push update key via network channel: <" << cmd
+                               << ">; protocolHeaderID=" << _sender.m_ID;
+                    this->pushMsg<cmdUPDATE_KEY>(cmd, _sender.m_ID);
+                }
+
+                LOG(debug) << "Property update from agent channel: <" << cmd << ">";
+            }
+        }
+    }
+    catch (exception& _e)
+    {
+        LOG(error) << "Failed to update key: " << _e.what();
+    }
+}
+
+bool CCommanderChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
+                                             SSenderInfo& _sender)
+{
+    LOG(debug) << "Received user task done: " << *_attachment;
+
+    // Forward message to user task
+    m_leaderChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment, _sender.m_ID, _sender.m_ID);
+
+    return true;
 }

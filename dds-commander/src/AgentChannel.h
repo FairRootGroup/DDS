@@ -140,7 +140,7 @@ namespace dds
             // function and the info struct still must be thread safe.
             SAgentInfo& getAgentInfo();
             //   SAgentInfo getAgentInfo(uint64_t _protocolHeaderID);
-            LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
+            //            LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
 
           private:
             // Message Handlers
