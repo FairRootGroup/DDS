@@ -21,6 +21,8 @@ namespace dds
             bool operator==(const SHostInfoCmd& val) const;
 
             uint32_t m_agentPid;
+            // a number of task slots
+            uint32_t m_slots;
             // milliseconds since 1970-01-01 00:00:00 UTC
             uint64_t m_submitTime;
             std::string m_username;

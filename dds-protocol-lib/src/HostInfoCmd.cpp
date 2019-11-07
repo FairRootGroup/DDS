@@ -10,6 +10,7 @@ using namespace dds::protocol_api;
 
 SHostInfoCmd::SHostInfoCmd()
     : m_agentPid(0)
+    , m_slots(0)
     , m_submitTime(0)
     , m_username()
     , m_host()
@@ -28,14 +29,15 @@ size_t SHostInfoCmd::size() const
 bool SHostInfoCmd::operator==(const SHostInfoCmd& val) const
 {
     return (m_username == val.m_username && m_host == val.m_host && m_version == val.m_version &&
-            m_DDSPath == val.m_DDSPath && m_agentPid == val.m_agentPid && m_submitTime == val.m_submitTime &&
-            m_workerId == val.m_workerId);
+            m_DDSPath == val.m_DDSPath && m_agentPid == val.m_agentPid && m_slots == val.m_slots &&
+            m_submitTime == val.m_submitTime && m_submitTime == val.m_submitTime && m_workerId == val.m_workerId);
 }
 
 void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data)
         .get(m_agentPid)
+        .get(m_slots)
         .get(m_submitTime)
         .get(m_username)
         .get(m_host)
@@ -48,6 +50,7 @@ void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data)
         .put(m_agentPid)
+        .put(m_slots)
         .put(m_submitTime)
         .put(m_username)
         .put(m_host)
@@ -59,7 +62,8 @@ void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
 std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SHostInfoCmd& val)
 {
     _stream << val.m_username << ":" << val.m_host << ": " << val.m_version << ":" << val.m_DDSPath << "; agent ["
-            << val.m_agentPid << "]; startup time: " << val.m_submitTime << "; worker ID:" << val.m_workerId;
+            << val.m_agentPid << "]; Task slots: " << val.m_slots << "startup time: " << val.m_submitTime
+            << "; worker ID:" << val.m_workerId;
     return _stream;
 }
 

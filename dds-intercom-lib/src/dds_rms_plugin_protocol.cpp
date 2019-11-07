@@ -55,6 +55,7 @@ std::string SSubmit::toJSON()
 
     pt.put<string>("dds.plug-in.id", m_id);
     pt.put<int>("dds.plug-in.submit.nInstances", m_nInstances);
+    pt.put<int>("dds.plug-in.submit.slots", m_slots);
     pt.put<string>("dds.plug-in.submit.cfgFilePath", m_cfgFilePath);
     pt.put<string>("dds.plug-in.submit.wrkPackagePath", m_wrkPackagePath);
 
@@ -76,6 +77,7 @@ void SSubmit::fromPT(const boost::property_tree::ptree& _pt)
 {
     const ptree& pt = _pt.get_child("dds.plug-in");
     m_nInstances = pt.get<int>("submit.nInstances", 0);
+    m_slots = pt.get<int>("submit.slots", 0);
     m_cfgFilePath = pt.get<string>("submit.cfgFilePath", "");
     m_wrkPackagePath = pt.get<string>("submit.wrkPackagePath", "");
     m_id = pt.get<string>("id");
@@ -83,8 +85,8 @@ void SSubmit::fromPT(const boost::property_tree::ptree& _pt)
 
 bool SSubmit::operator==(const SSubmit& val) const
 {
-    return (m_id == val.m_id) && (m_nInstances == val.m_nInstances) && (m_cfgFilePath == val.m_cfgFilePath) &&
-           (m_wrkPackagePath == val.m_wrkPackagePath);
+    return (m_id == val.m_id) && (m_nInstances == val.m_nInstances) && (m_slots == val.m_slots) &&
+           (m_cfgFilePath == val.m_cfgFilePath) && (m_wrkPackagePath == val.m_wrkPackagePath);
 }
 
 ///////////////////////////////////

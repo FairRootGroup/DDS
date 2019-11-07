@@ -157,7 +157,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 }
 
 //=============================================================================
-void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightweightPkg) const
+void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightweightPkg, uint32_t _nSlots) const
 {
     // re-create the worker package if needed
     string out;
@@ -182,6 +182,9 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightwei
         // Session ID
         cmd += " -a ";
         cmd += CUserDefaults::instance().getCurrentSID();
+        // Slots per agent
+        cmd += " -t ";
+        cmd += to_string(_nSlots);
 
         if (_lightweightPkg)
             cmd += " -l ";
@@ -198,6 +201,8 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightwei
 
         // 10 sec time-out for this command
         execute(ssCmd.str(), chrono::seconds(10), &out, &err);
+        if (!err.empty())
+            throw runtime_error("failed");
     }
     catch (exception& e)
     {
@@ -1057,7 +1062,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
         // Use a lightweightpackage when possible
-        _createWnPkg(!inlineShellScripCmds.empty(), (_submitInfo.m_rms == "localhost"));
+        _createWnPkg(!inlineShellScripCmds.empty(), (_submitInfo.m_rms == "localhost"), _submitInfo.m_slots);
 
         // remember the UI channel, which requested to submit the job
         m_SubmitAgents.m_channel = _channel;
@@ -1067,6 +1072,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         SSubmit submitRequest;
         submitRequest.m_cfgFilePath = _submitInfo.m_config;
         submitRequest.m_nInstances = _submitInfo.m_instances;
+        submitRequest.m_slots = _submitInfo.m_slots;
         submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath();
         m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
 
@@ -1111,10 +1117,11 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
     }
     catch (exception& e)
     {
+        sendToolsAPIMsg(_channel, _submitInfo.m_requestID, e.what(), EMsgSeverity::error);
+        sendDoneResponse(_channel, _submitInfo.m_requestID);
+
         // In case of any plugin initialization error, reset the info channel
         m_SubmitAgents.m_channel.reset();
-
-        sendToolsAPIMsg(_channel, _submitInfo.m_requestID, e.what(), EMsgSeverity::error);
     }
 }
 

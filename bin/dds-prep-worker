@@ -30,6 +30,7 @@ Usage: $(basename $0) [OPTION]
      -i 			Re-pack user_worker_env.sh (for internal use only).
 	 -s arg			Submit time (optional).
 	 -a arg         DDS Session ID
+	 -t arg         A number of task slots
 	 -l             Create a lightweight package, without WN binaries
      -h          	Show summary of options.
 
@@ -43,7 +44,8 @@ REPACK_WRK_PKG=""
 SUBMIT_TIME=""
 DDS_SESSION_ID=""
 LIGHTWEIGHT_PKG=""
-while getopts ":is:a:lh" opt; do
+DDS_AGENT_SLOTS=""
+while getopts ":is:a:t:lh" opt; do
   case $opt in
   	i)
        REPACK_WRK_PKG="YES"
@@ -51,6 +53,8 @@ while getopts ":is:a:lh" opt; do
 	s) SUBMIT_TIME="$OPTARG"
 		;;
 	a) DDS_SESSION_ID="$OPTARG"
+	    ;;
+	t) DDS_AGENT_SLOTS="$OPTARG"
 	    ;;
 	l) LIGHTWEIGHT_PKG="YES"
 		;;
@@ -287,9 +291,15 @@ else
 	# in case if -s is not provided the submit time is zero	
 	 regexpr_wn_submit_time="s/\(export[[:space:]]*DDS_WN_SUBMIT_TIMESTAMP=\)[0-9]*/\10/g"
 fi
+
 # LANG is to silence: "sed: RE error: illegal byte sequence"
 LANG=C LC_ALL=C sed -e "$regexpr_wn_submit_time" $DDS_WRK_SCRIPT_TMP > "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp"
 mv "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp" $DDS_WRK_SCRIPT_TMP 
+
+# Replace a number of task slot variable with the actual value
+echo "$TOOL_NAME: setting agent task slots to $DDS_AGENT_SLOTS"
+LANG=C LC_ALL=C sed -i .back "s/_DDS_AGENT_SLOTS_/$DDS_AGENT_SLOTS/g" $DDS_WRK_SCRIPT_TMP
+rm -f "$DDS_WRK_SCRIPT_TMP.back"
 
 # copy worker script to the sandbox directory
 cp "$DDS_WRK_SCRIPT_TMP" "$WRK_SCRIPT" || { echo "error: Can't copy the worker script to the sandbox." >&2 ; exit 1; }

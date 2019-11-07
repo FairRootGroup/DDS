@@ -33,7 +33,6 @@ namespace dds
                 cmd_clean
             };
             SOptions()
-                : m_Command(cmd_start)
             {
             }
 
@@ -47,7 +46,8 @@ namespace dds
                 return cmd_unknown;
             }
 
-            ECommands m_Command;
+            ECommands m_Command{ cmd_start };
+            size_t m_slots{ 0 };
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -77,6 +77,8 @@ namespace dds
                                   "Commands:\n"
                                   "   start: \tStart dds-agent\n"
                                   "   clean: \tCleaning");
+            options.add_options()(
+                "slots,s", bpo::value<size_t>(&_options->m_slots), "Defines a number of task slots per agent.");
 
             //...positional
             bpo::positional_options_description pd;

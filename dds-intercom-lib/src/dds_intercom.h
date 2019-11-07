@@ -163,7 +163,8 @@ namespace dds
             /// \brief Equality operator.
             bool operator==(const SSubmit& _val) const;
 
-            uint32_t m_nInstances;        ///< Number of instances.
+            uint32_t m_nInstances;        ///< A number of instances.
+            uint32_t m_slots;             ///< A number of task slots.
             std::string m_cfgFilePath;    ///< Path to the configuration file.
             std::string m_id;             ///< ID for communication with DDS commander.
             std::string m_wrkPackagePath; ///< A full path of the agent worker package, which needs to be deployed.

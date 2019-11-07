@@ -223,6 +223,7 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
 
     // Create new agent and push handshake message
     m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID);
+    m_commanderChannel->setNumberOfSlots(m_options.m_slots);
 
     // Subscribe to Shutdown command
     m_commanderChannel->registerHandler<cmdSHUTDOWN>(

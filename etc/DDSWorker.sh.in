@@ -347,7 +347,8 @@ do
    # we try for 10 times to detect/start xpd
    # it is needed in case when several DDS workers are started in the same time on one machine
 
-   $dds_agent start&
+   # _DDS_AGENT_SLOTS_ is replaced (set) by the dds-prep-worker
+   $dds_agent start --slots _DDS_AGENT_SLOTS_&
    # wait for dds-agent's process
    DDSAGENT_PID=$!
    wait $DDSAGENT_PID

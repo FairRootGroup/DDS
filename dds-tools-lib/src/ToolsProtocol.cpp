@@ -132,6 +132,7 @@ constexpr const char* SSubmitRequestData::_protocolTag;
 void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<int>("instances", m_instances);
+    _pt.put<int>("slots", m_slots);
     _pt.put<string>("config", m_config);
     _pt.put<string>("rms", m_rms);
     _pt.put<string>("pluginPath", m_pluginPath);
@@ -140,6 +141,7 @@ void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_instances = _pt.get<int>("instances", 0);
+    m_slots = _pt.get<int>("slots", 0);
     m_config = _pt.get<string>("config", "");
     m_rms = _pt.get<string>("rms", "");
     m_pluginPath = _pt.get<string>("pluginPath", "");
@@ -148,13 +150,13 @@ void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
 {
     return (SBaseData::operator==(_val) && m_rms == _val.m_rms && m_instances == _val.m_instances &&
-            m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
+            m_slots == _val.m_slots && m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
 }
 
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SSubmitRequestData& _data)
 {
-    return _os << _data.defaultToString() << "; instances: " << _data.m_instances << "; config: " << _data.m_config
-               << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
+    return _os << _data.defaultToString() << "; instances: " << _data.m_instances << "; slots: " << _data.m_slots
+               << "; config: " << _data.m_config << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
 }
 
 ///////////////////////////////////

@@ -39,22 +39,13 @@ namespace dds
         /// \brief dds-commander's container of options
         typedef struct SOptions
         {
-            SOptions()
-                : m_sRMS("localhost")
-                , m_sCfgFile()
-                , m_sPath()
-                , m_number(0)
-                , m_bListPlugins(false)
-                , m_sid(boost::uuids::nil_uuid())
-            {
-            }
-
-            std::string m_sRMS;
+            std::string m_sRMS{ "localhost" };
             std::string m_sCfgFile;
             std::string m_sPath;
-            size_t m_number;
-            bool m_bListPlugins;
-            boost::uuids::uuid m_sid;
+            size_t m_number{ 0 };
+            size_t m_slots{ 0 };
+            bool m_bListPlugins{ false };
+            boost::uuids::uuid m_sid{ boost::uuids::nil_uuid() };
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -96,19 +87,21 @@ namespace dds
                                   bpo::value<std::string>(&_options->m_sPath),
                                   "A plug-in's directory search path. It can be used for external RMS plug-ins.");
             options.add_options()("number,n",
-                                  bpo::value<size_t>(&_options->m_number),
+                                  bpo::value<size_t>(&_options->m_number)->default_value(1),
                                   "Defines a number of agents to spawn."
                                   "If 0 is provided as an argument, then a number of available logical cores will be "
-                                  "used.\nThis option can not be mixed with \"--config\"");
+                                  "used.\n");
+            options.add_options()(
+                "slots", bpo::value<size_t>(&_options->m_slots), "Defines a number of task slots per agent.");
 
             // Parsing command-line
             bpo::variables_map vm;
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
 
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "number");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "rms");
             MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "config");
+            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "slots");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
@@ -122,8 +115,9 @@ namespace dds
                 return false;
             }
             // "rms" requires either "config" or "number"
-            if (vm.count("rms") && !vm.count("config") && !vm.count("number"))
+            if (vm.count("rms") && !vm.count("config") && !vm.count("number") && !vm.count("slots"))
             {
+                LOG(MiscCommon::log_stderr) << "--rms options requires either --config, --number, or --slots";
                 LOG(MiscCommon::log_stdout) << options;
                 return false;
             }

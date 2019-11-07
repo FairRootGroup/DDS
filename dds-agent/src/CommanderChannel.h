@@ -63,6 +63,7 @@ namespace dds
 
           public:
             void stopChannel();
+            void setNumberOfSlots(size_t _nSlots);
 
           private:
             // Message Handlers
@@ -128,7 +129,7 @@ namespace dds
             }
 
           private:
-            uint64_t m_id = 0;
+            uint64_t m_id{ 0 };
             uint16_t m_connectionAttempts;
             std::mutex m_taskIDToSlotIDMapMutex;
             std::map<uint64_t, uint64_t> m_taskIDToSlotIDMap;
@@ -138,6 +139,7 @@ namespace dds
 
             std::mutex m_mutexSlots;
             SSlotInfo::container_t m_slots;
+            size_t m_nSlots{ 0 };
         };
     } // namespace agent_cmd
 } // namespace dds

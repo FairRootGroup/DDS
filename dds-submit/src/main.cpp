@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
         requestInfo.m_config = options.m_sCfgFile;
         requestInfo.m_rms = options.m_sRMS;
         requestInfo.m_instances = options.m_number;
+        requestInfo.m_slots = options.m_slots;
         requestInfo.m_pluginPath = options.m_sPath;
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
 

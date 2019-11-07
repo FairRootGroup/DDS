@@ -238,6 +238,11 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service, uint64_t
 //    return m_SMFWChannel;
 //}
 
+void CCommanderChannel::setNumberOfSlots(size_t _nSlots)
+{
+    m_nSlots = _nSlots;
+}
+
 bool CCommanderChannel::on_cmdREPLY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY>::ptr_t _attachment,
                                     protocol_api::SSenderInfo& _sender)
 {
@@ -330,6 +335,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     cmd.m_version = PROJECT_VERSION_STRING;
     cmd.m_DDSPath = CUserDefaults::getDDSPath();
     cmd.m_agentPid = pid;
+    cmd.m_slots = m_nSlots;
 
     // get worker ID
     string sWorkerId;
