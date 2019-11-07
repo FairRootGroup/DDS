@@ -380,7 +380,8 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
         }
         case cmdASSIGN_USER_TASK:
         {
-            boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
+            boost::filesystem::path destFilePath(CUserDefaults::instance().getSlotsRootDir());
+            destFilePath /= to_string(_sender.m_ID);
             destFilePath /= _attachment->m_requestedFileName;
             boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
             // Add exec permissions for the users' task
@@ -568,6 +569,12 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     boost::algorithm::replace_all(slot->m_sUsrExe, "%taskIndex%", to_string(slot->m_taskIndex));
     if (slot->m_collectionIndex != numeric_limits<uint32_t>::max())
         boost::algorithm::replace_all(slot->m_sUsrExe, "%collectionIndex%", to_string(slot->m_collectionIndex));
+
+    // If the user task was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
+    boost::filesystem::path dir(CUserDefaults::instance().getSlotsRootDir());
+    dir /= to_string(_sender.m_ID);
+    dir += fs::path::preferred_separator;
+    boost::algorithm::replace_all(slot->m_sUsrExe, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
 
     try
     {
