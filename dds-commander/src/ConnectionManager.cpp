@@ -392,7 +392,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
             string filePath;
             string filename;
             string cmdStr;
-            parseExe(sch.m_taskInfo.m_task->getExe(), "$DDS_LOCATION/", filePath, filename, cmdStr);
+            parseExe(sch.m_taskInfo.m_task->getExe(), "%DDS_DEFAULT_TASK_PATH%", filePath, filename, cmdStr);
 
             cmd->m_sExeFile = cmdStr;
 
