@@ -37,8 +37,8 @@ namespace dds
             typedef std::vector<dds::protocol_api::SWeakChannelInfo<CAgentChannel>> weakChannelInfoVector_t;
 
           private:
-            // Map pair<host name, worker id> to vector of channel indeces.
-            typedef std::map<std::pair<std::string, std::string>, std::vector<size_t>> hostToChannelMap_t;
+            // Map tuple<agent ID, host name, worker id> to vector of channel indeces.
+            typedef std::map<std::tuple<uint64_t, std::string, std::string>, std::vector<size_t>> hostToChannelMap_t;
 
           public:
             CSSHScheduler();

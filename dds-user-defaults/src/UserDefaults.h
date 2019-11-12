@@ -55,10 +55,6 @@ namespace dds
             std::string getLogFile() const;
             std::string getAgentLogStorageDir() const;
             pid_t getScoutPid() const;
-            //            std::string getSMInputName() const;
-            //            std::string getSMOutputName() const;
-            //            std::string getSMAgentInputName() const;
-            //            std::vector<std::string> getSMAgentOutputNames() const;
             std::string getSMLeaderOutputName(uint64_t _protocolHeaderID) const;
             std::string getSMLeaderInputName(uint64_t _protocolHeaderID) const;
             std::vector<std::string> getSMLeaderInputNames() const;
@@ -69,7 +65,6 @@ namespace dds
             std::string getCurrentSID() const;
             std::string getDefaultSIDFile() const;
             std::string getDefaultSID() const;
-            std::string getAgentNamedMutexName() const;
             std::string getSessionsRootDir() const;
             std::string getSessionsHolderDirName() const;
             bool IsSessionRunning() const;
