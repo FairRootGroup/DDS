@@ -68,92 +68,18 @@ void CAgentConnectionManager::start()
 
     m_bStarted = true;
 
-    typedef std::shared_ptr<bi::named_mutex> namedMutexPtr_t;
-    namedMutexPtr_t leaderMutex;
     try
     {
         const float maxIdleTime = CUserDefaults::instance().getOptions().m_server.m_idleTime;
         CMonitoringThread::instance().start(maxIdleTime, []() { LOG(info) << "Idle callback called"; });
 
-        // TODO: FIXME: Don't forget to delete mutex in scout
-        // Open or create leader mutex
+        // Start network channel. This is a blocking function call.
+        createCommanderChannel(protocolHeaderID);
 
-        const CUserDefaults& userDefaults = CUserDefaults::instance();
-        string smName(userDefaults.getAgentNamedMutexName());
-        try
-        {
-            leaderMutex = make_shared<bi::named_mutex>(bi::open_or_create, smName.c_str());
-        }
-        catch (bi::interprocess_exception& ex)
-        {
-            // TODO: FIXME: Log the error and process further
-            // If we can't allocate mutex - fallback to the direct connection to the DDS commander
-
-            LOG(fatal) << "Can't start the DDS Agent: named mutex (" << smName
-                       << ") can't be created or opened: " << ex.what();
-            return;
-        }
-
-        bool locked = leaderMutex->try_lock();
-        // If locked then it's a lobby leader
-        if (locked)
-        {
-            // TODO: FIXME:
-            // - create shared memory
-            // - error processing if memory can't be created
-            // - create network channel
-
-            LOG(info) << "Master agent";
-
-            // To communicate with tasks
-            //   createSMIntercomChannel(protocolHeaderID);
-            //   createSMLeaderChannel(protocolHeaderID);
-            //   createSMCommanderChannel(protocolHeaderID);
-            // Start network channel. This is a blocking function call.
-            createCommanderChannel(protocolHeaderID);
-
-            // Start listening for messages from shared memory
-            // m_SMIntercomChannel->start();
-            // Start listening for messages from shared memory
-            //  m_SMLeaderChannel->start();
-            // Start shared memory agent channel
-            // m_SMCommanderChannel->start();
-
-            startService(6 + CUserDefaults::getNumLeaderFW());
-
-            leaderMutex->unlock();
-        }
-        else
-        {
-            //            // TODO: FIXME:
-            //            // - open shared memory
-            //            // - error processing if memory can't be opened
-            //
-            //            // TODO: FIXME:
-            //            // - block execution, channels are working in threads
-            //            // leaderMutex->lock();
-            //
-            //            LOG(info) << "Lobby status: member";
-            //
-            //            createSMIntercomChannel(protocolHeaderID);
-            //            // Blocking function call
-            //            createSMCommanderChannel(protocolHeaderID);
-            //
-            //            // Start listening for messages from shared memory
-            //            m_SMIntercomChannel->start();
-            //            // Start shared memory agent channel
-            //            m_SMCommanderChannel->start();
-            //
-            //            startService(7);
-        }
-
-        // Free mutex
-        leaderMutex.reset();
+        startService(6 + CUserDefaults::getNumLeaderFW());
     }
     catch (exception& e)
     {
-        leaderMutex->unlock();
-        leaderMutex.reset();
         LOG(fatal) << e.what();
     }
 }

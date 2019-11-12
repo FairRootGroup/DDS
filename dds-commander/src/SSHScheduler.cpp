@@ -69,7 +69,7 @@ void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
             continue;
 
         const SHostInfoCmd& hostInfo = info.m_remoteHostInfo;
-        hostToChannelMap[make_pair(hostInfo.m_host, hostInfo.m_workerId)].push_back(iChannel);
+        hostToChannelMap[make_tuple(info.m_id, hostInfo.m_host, hostInfo.m_workerId)].push_back(iChannel);
     }
 
     // TODO: before scheduling the collections we have to sort them by a number of tasks in the collection.
@@ -158,7 +158,8 @@ void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
 
         for (auto& v : _hostToChannelMap)
         {
-            const bool requirementOk = checkRequirement(requirement, useRequirement, v.first.first, v.first.second);
+            const bool requirementOk =
+                checkRequirement(requirement, useRequirement, std::get<1>(v.first), std::get<2>(v.first));
             if (requirementOk)
             {
                 if (!v.second.empty())
@@ -229,7 +230,8 @@ void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
 
             for (auto& v : _hostToChannelMap)
             {
-                const bool requirementOk = checkRequirement(requirement, useRequirement, v.first.first, v.first.second);
+                const bool requirementOk =
+                    checkRequirement(requirement, useRequirement, std::get<1>(v.first), std::get<2>(v.first));
                 if ((v.second.size() >= collectionInfo.m_collection->getNofTasks()) && requirementOk)
                 {
                     const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionById(id);

@@ -51,11 +51,6 @@ void clean()
             continue;
         }
     }
-
-    // Clean named mutex
-    const string mutexName(userDefaults.getAgentNamedMutexName());
-    const bool mutexRemoved = boost::interprocess::named_mutex::remove(mutexName.c_str());
-    LOG(MiscCommon::info) << "Named mutex " << mutexName << " remove status: " << mutexRemoved;
 }
 
 int main(int argc, char* argv[])
