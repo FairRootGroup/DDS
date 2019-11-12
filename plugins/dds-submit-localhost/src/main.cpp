@@ -174,6 +174,7 @@ int main(int argc, char* argv[])
                     EMsgSeverity::error,
                     "Submitting more than one agent on localhost is an overkill. Please omit -n [ --number ] option, "
                     "or call dds-submit multiple times if you really need multiple agents.");
+                proto.stop();
                 return;
             }
 
@@ -197,6 +198,7 @@ int main(int argc, char* argv[])
                 ss << "Can't create working directory: " << wrkDirPath.string();
                 proto.sendMessage(EMsgSeverity::error, ss.str());
                 ss.str("");
+                proto.stop();
                 return;
             }
 
