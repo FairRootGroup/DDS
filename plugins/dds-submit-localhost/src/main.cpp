@@ -166,9 +166,18 @@ int main(int argc, char* argv[])
     {
         // Subscribe on onSubmit command
         proto.onSubmit([&proto](const SSubmit& _submit) {
-            // If number of requested instances is zero than we take it based on the number of logical cores in CPU
-            unsigned int nInstances =
-                (_submit.m_nInstances == 0) ? thread::hardware_concurrency() : _submit.m_nInstances;
+            // Stop submission, if the number of instances is more than 1
+            // localhost needs only 1 agent to work
+            if (_submit.m_nInstances > 1)
+            {
+                proto.sendMessage(
+                    EMsgSeverity::error,
+                    "Submitting more than one agent on localhost is an overkill. Please omit -n [ --number ] option, "
+                    "or call dds-submit multiple times if you really need multiple agents.");
+                return;
+            }
+
+            unsigned int nInstances = _submit.m_nInstances;
 
             stringstream ss;
             ss << "Will use the local host to deploy " << nInstances << " agents";

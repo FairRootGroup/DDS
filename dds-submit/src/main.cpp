@@ -110,15 +110,27 @@ int main(int argc, char* argv[])
         requestInfo.m_pluginPath = options.m_sPath;
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
 
-        requestPtr->setMessageCallback([](const SMessageResponseData& _message) {
+        std::atomic<bool> isFailed(false);
+
+        requestPtr->setMessageCallback([&isFailed](const SMessageResponseData& _message) {
             LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
                 << "Server reports: " << _message.m_msg;
+
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                isFailed = true;
         });
 
-        requestPtr->setDoneCallback([&session, &start]() {
-            auto end = chrono::high_resolution_clock::now();
-            chrono::duration<double, std::milli> elapsed = end - start;
-            LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
+        requestPtr->setDoneCallback([&session, &start, &isFailed]() {
+            if (isFailed)
+            {
+                LOG(MiscCommon::log_stderr) << "Submission has Failed";
+            }
+            else
+            {
+                auto end = chrono::high_resolution_clock::now();
+                chrono::duration<double, std::milli> elapsed = end - start;
+                LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
+            }
 
             session.unblockCurrentThread();
         });
