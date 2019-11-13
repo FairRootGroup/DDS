@@ -238,7 +238,7 @@ void SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
     _pt.put<string>("host", m_host);
     _pt.put<string>("DDSPath", m_DDSPath);
     _pt.put<uint32_t>("agentPid", m_agentPid);
-    _pt.put<uint32_t>("nSlots", m_nSlots);
+    _pt.put<uint32_t>("slots", m_nSlots);
 }
 
 void SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
@@ -250,7 +250,7 @@ void SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
     m_host = _pt.get<string>("host", "");
     m_DDSPath = _pt.get<string>("DDSPath", "");
     m_agentPid = _pt.get<uint32_t>("agentPid", 0);
-    m_nSlots = _pt.get<uint32_t>("nSlots", 0);
+    m_nSlots = _pt.get<uint32_t>("slots", 0);
 }
 
 bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) const
@@ -277,27 +277,27 @@ constexpr const char* SAgentCountResponseData::_protocolTag;
 
 void SAgentCountResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    _pt.put<uint32_t>("activeAgentsCount", m_activeAgentsCount);
-    _pt.put<uint32_t>("idleAgentsCount", m_idleAgentsCount);
-    _pt.put<uint32_t>("executingAgentsCount", m_executingAgentsCount);
+    _pt.put<uint32_t>("activeSlotsCount", m_activeSlotsCount);
+    _pt.put<uint32_t>("idleSlotsCount", m_idleSlotsCount);
+    _pt.put<uint32_t>("executingSlotsCount", m_executingSlotsCount);
 }
 
 void SAgentCountResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    m_activeAgentsCount = _pt.get<uint32_t>("activeAgentsCount", 0);
-    m_idleAgentsCount = _pt.get<uint32_t>("idleAgentsCount", 0);
-    m_executingAgentsCount = _pt.get<uint32_t>("executingAgentsCount", 0);
+    m_activeSlotsCount = _pt.get<uint32_t>("activeSlotsCount", 0);
+    m_idleSlotsCount = _pt.get<uint32_t>("idleSlotsCount", 0);
+    m_executingSlotsCount = _pt.get<uint32_t>("executingSlotsCount", 0);
 }
 
 bool SAgentCountResponseData::operator==(const SAgentCountResponseData& _val) const
 {
-    return (SBaseData::operator==(_val) && m_activeAgentsCount == _val.m_activeAgentsCount &&
-            m_idleAgentsCount == _val.m_idleAgentsCount && m_executingAgentsCount == _val.m_executingAgentsCount);
+    return (SBaseData::operator==(_val) && m_activeSlotsCount == _val.m_activeSlotsCount &&
+            m_idleSlotsCount == _val.m_idleSlotsCount && m_executingSlotsCount == _val.m_executingSlotsCount);
 }
 
 std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
 {
-    return _os << _data.defaultToString() << "; activeAgentsCount: " << _data.m_activeAgentsCount
-               << "; idleAgentsCount: " << _data.m_idleAgentsCount
-               << "; executingAgentsCount: " << _data.m_executingAgentsCount;
+    return _os << _data.defaultToString() << "; activeSlotsCount: " << _data.m_activeSlotsCount
+               << "; idleSlotsCount: " << _data.m_idleSlotsCount
+               << "; executingSlotsCount: " << _data.m_executingSlotsCount;
 }

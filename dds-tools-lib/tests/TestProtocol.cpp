@@ -95,6 +95,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SSubmitRequestData testData;
             testData.m_rms = "string";
             testData.m_instances = 123;
+            testData.m_slots = 15;
             testData.m_config = "string";
             testData.m_pluginPath = "string";
             testData.m_requestID = 123;
@@ -160,9 +161,9 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
         else if (tag == "agentCount")
         {
             SAgentCountResponseData testData;
-            testData.m_activeAgentsCount = 123;
-            testData.m_idleAgentsCount = 234;
-            testData.m_executingAgentsCount = 345;
+            testData.m_activeSlotsCount = 123;
+            testData.m_idleSlotsCount = 234;
+            testData.m_executingSlotsCount = 345;
             testData.m_requestID = 123;
 
             SAgentCountResponseData data;

@@ -22,8 +22,8 @@ SHostInfoCmd::SHostInfoCmd()
 
 size_t SHostInfoCmd::size() const
 {
-    return dsize(m_username) + dsize(m_host) + dsize(m_agentPid) + dsize(m_submitTime) + dsize(m_version) +
-           dsize(m_DDSPath) + dsize(m_workerId);
+    return dsize(m_username) + dsize(m_host) + dsize(m_agentPid) + dsize(m_slots) + dsize(m_submitTime) +
+           dsize(m_version) + dsize(m_DDSPath) + dsize(m_workerId);
 }
 
 bool SHostInfoCmd::operator==(const SHostInfoCmd& val) const

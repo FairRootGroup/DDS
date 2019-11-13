@@ -73,9 +73,9 @@
             },
             "agentCount":
             {
-                "activeAgentsCount": 123,
-                "idleAgentsCount" : 234,
-                "executingAgentsCount": 345,
+                "activeSlotsCount": 123,
+                "idleSlotsCount" : 234,
+                "executingSlotsCount": 345,
                 "requestID": 123
             },
         }

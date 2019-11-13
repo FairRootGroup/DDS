@@ -107,28 +107,28 @@ void requestAgentCount(CSession& _session, const SOptions_t& _options)
         if (needToWait)
         {
             // Check if we have the required number of agents
-            if ((_options.m_bNeedActiveCount && (_info.m_activeAgentsCount < _options.m_nWaitCount)) ||
-                (_options.m_bNeedIdleCount && (_info.m_idleAgentsCount < _options.m_nWaitCount)) ||
-                (_options.m_bNeedExecutingCount && (_info.m_executingAgentsCount < _options.m_nWaitCount)))
+            if ((_options.m_bNeedActiveCount && (_info.m_activeSlotsCount < _options.m_nWaitCount)) ||
+                (_options.m_bNeedIdleCount && (_info.m_idleSlotsCount < _options.m_nWaitCount)) ||
+                (_options.m_bNeedExecutingCount && (_info.m_executingSlotsCount < _options.m_nWaitCount)))
             {
                 this_thread::sleep_for(chrono::milliseconds(500));
                 requestAgentCount(_session, _options);
                 return;
             }
 
-            LOG(log_stdout_clean) << "Active agents online: " + to_string(_info.m_activeAgentsCount) << endl
-                                  << "Idle agents online: " + to_string(_info.m_idleAgentsCount) << endl
-                                  << "Executing agents online: " + to_string(_info.m_executingAgentsCount);
+            LOG(log_stdout_clean) << "Active agents online: " + to_string(_info.m_activeSlotsCount) << endl
+                                  << "Idle agents online: " + to_string(_info.m_idleSlotsCount) << endl
+                                  << "Executing agents online: " + to_string(_info.m_executingSlotsCount);
             _session.unblockCurrentThread();
         }
         else
         {
             if (_options.m_bNeedActiveCount)
-                LOG(log_stdout_clean) << _info.m_activeAgentsCount;
+                LOG(log_stdout_clean) << _info.m_activeSlotsCount;
             else if (_options.m_bNeedIdleCount)
-                LOG(log_stdout_clean) << _info.m_idleAgentsCount;
+                LOG(log_stdout_clean) << _info.m_idleSlotsCount;
             else if (_options.m_bNeedExecutingCount)
-                LOG(log_stdout_clean) << _info.m_executingAgentsCount;
+                LOG(log_stdout_clean) << _info.m_executingSlotsCount;
 
             _session.unblockCurrentThread();
         }

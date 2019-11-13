@@ -132,9 +132,22 @@ void CTopoCore::setXMLValidationDisabled(bool _val)
     m_bXMLValidationDisabled = _val;
 }
 
-size_t CTopoCore::getRequiredNofAgents() const
+pair<size_t, size_t> CTopoCore::getRequiredNofAgents(size_t _defaultNumSlots) const
 {
-    return getMainGroup()->getTotalNofTasks();
+    if (_defaultNumSlots == 0)
+        throw invalid_argument("Default number of slots can't be zero");
+
+    size_t numTasks = getMainGroup()->getTotalNofTasks();
+    size_t maxNumSlots(_defaultNumSlots);
+    auto it = getRuntimeCollectionIterator();
+    for (auto i = it.first; i != it.second; i++)
+    {
+        const auto& collection = i->second;
+        maxNumSlots = max(collection.m_collection->getTotalNofTasks(), maxNumSlots);
+    }
+
+    size_t numAgents = numTasks / maxNumSlots + ((numTasks % maxNumSlots != 0) ? 1 : 0);
+    return make_pair(numAgents, maxNumSlots);
 }
 
 const STopoRuntimeTask::Map_t& CTopoCore::getIdToRuntimeTaskMap() const

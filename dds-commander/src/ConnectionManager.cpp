@@ -639,11 +639,10 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     if (!_channel.expired())
     {
         auto channelPtr = _channel.lock();
-        // zero task ID from the channel
-        //        SAgentInfo info = channelPtr->getAgentInfo(_sender);
-        //        info.m_taskID = 0;
-        //        info.m_state = EAgentState::idle;
-        //        channelPtr->updateAgentInfo(_sender, info);
+        SAgentInfo& thisInf = channelPtr->getAgentInfo();
+        SSlotInfo& thisSlotInf = thisInf.getSlotByID(_sender.m_ID);
+        thisSlotInf.m_state = EAgentState::idle;
+        thisSlotInf.m_taskID = 0;
     }
 
     // remove task ID from the map
@@ -1365,7 +1364,7 @@ void CConnectionManager::getLog(const dds::tools_api::SGetLogRequestData& _getLo
     }
 
     auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
     };
 
     m_getLog.m_nofRequests = countNofChannels(condition);
@@ -1492,9 +1491,9 @@ void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountReque
 
     SAgentCountResponseData info;
     info.m_requestID = _info.m_requestID;
-    info.m_activeAgentsCount = activeCounter;
-    info.m_idleAgentsCount = idleCounter;
-    info.m_executingAgentsCount = executingCounter;
+    info.m_activeSlotsCount = activeCounter;
+    info.m_idleSlotsCount = idleCounter;
+    info.m_executingSlotsCount = executingCounter;
 
     sendCustomCommandResponse(_channel, info.toJSON());
     sendDoneResponse(_channel, _info.m_requestID);

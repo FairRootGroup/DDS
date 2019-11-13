@@ -26,7 +26,6 @@ set(SOURCE_FILES
 	src/StatImpl.cpp
     src/CustomCmdCmd.cpp
     src/UpdateTopologyCmd.cpp
-    src/MoveFileCmd.cpp
     src/ReplyCmd.cpp
 )
 
@@ -62,7 +61,6 @@ set(SRC_HDRS
     src/BaseEventHandlersImpl.h
     src/ChannelInfo.h
     src/ProtocolDef.h
-    src/MoveFileCmd.h
     src/ReplyCmd.h
 )
 

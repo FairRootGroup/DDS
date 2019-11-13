@@ -333,7 +333,12 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK(castedCollection->getPath() == "main/group2/collection2");
     BOOST_CHECK(castedCollection->getTotalCounter() == 15);
 
-    BOOST_CHECK(topology.getRequiredNofAgents() == 220);
+    auto b1(topology.getRequiredNofAgents(1) == pair<size_t, size_t>(55, 4));
+    BOOST_CHECK_MESSAGE(b1, "Compare getRequiredNofAgents(1)");
+    auto b2(topology.getRequiredNofAgents(10) == pair<size_t, size_t>(22, 10));
+    BOOST_CHECK_MESSAGE(b2, "Compare getRequiredNofAgents(10)");
+    auto b3(topology.getRequiredNofAgents(15) == pair<size_t, size_t>(15, 15));
+    BOOST_CHECK_MESSAGE(b3, "Compare getRequiredNofAgents(15)");
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_1)

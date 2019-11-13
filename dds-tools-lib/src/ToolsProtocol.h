@@ -191,9 +191,9 @@ namespace dds
         /// \brief Structure holds information of agentCount response.
         struct SAgentCountResponseData : SBaseResponseData<SAgentCountResponseData>
         {
-            uint32_t m_activeAgentsCount = 0;    ///< The number of online agents
-            uint32_t m_idleAgentsCount = 0;      ///< The count of idle agents
-            uint32_t m_executingAgentsCount = 0; ///< The count of executing agents
+            uint32_t m_activeSlotsCount = 0;    ///< The number of online slots
+            uint32_t m_idleSlotsCount = 0;      ///< The count of idle slots
+            uint32_t m_executingSlotsCount = 0; ///< The count of executing slots
 
           private:
             friend SBaseData<SAgentCountResponseData>;

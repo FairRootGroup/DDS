@@ -81,9 +81,9 @@ void checkIdleAgents(CSession& _session, size_t _numAgents)
     SAgentCountRequest::response_t agentCountInfo;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SAgentCountRequest>(
         SAgentCountRequest::request_t(), agentCountInfo, timeout, &std::cout));
-    BOOST_CHECK_EQUAL(agentCountInfo.m_activeAgentsCount, _numAgents);
-    BOOST_CHECK_EQUAL(agentCountInfo.m_idleAgentsCount, _numAgents);
-    BOOST_CHECK_EQUAL(agentCountInfo.m_executingAgentsCount, 0);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_activeSlotsCount, _numAgents);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_idleSlotsCount, _numAgents);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_executingSlotsCount, 0);
 }
 
 void runDDS(CSession& _session)
@@ -98,26 +98,28 @@ void runDDS(CSession& _session)
     BOOST_CHECK(_session.IsRunning());
 
     CTopology topo(topoPath.string());
-    size_t numAgents = topo.getRequiredNofAgents();
+    auto numAgents = topo.getRequiredNofAgents(10);
 
     SSubmitRequest::request_t submitInfo;
     submitInfo.m_rms = "localhost";
-    submitInfo.m_instances = numAgents;
+    submitInfo.m_instances = numAgents.first;
+    submitInfo.m_slots = numAgents.second;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
 
-    checkIdleAgents(_session, numAgents);
+    size_t numSlots = numAgents.first * numAgents.second;
+    checkIdleAgents(_session, numSlots);
 
     STopologyRequest::request_t topoInfo;
     topoInfo.m_topologyFile = topoPath.string();
     topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
 
-    checkIdleAgents(_session, numAgents);
+    checkIdleAgents(_session, numSlots);
 
     SAgentInfoRequest::responseVector_t agentInfo;
     BOOST_CHECK_NO_THROW(
         _session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, timeout, &std::cout));
-    BOOST_CHECK_EQUAL(agentInfo.size(), numAgents);
+    BOOST_CHECK_EQUAL(agentInfo.size(), numAgents.first);
 
     SCommanderInfoRequest::response_t commanderInfo;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SCommanderInfoRequest>(

@@ -62,28 +62,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service, uint64_t
     //        [this](const SSenderInfo& _sender, CProtocolMessage::protocolMessagePtr_t _currentMsg) {
     //            ECmdType cmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
     //            // cmdMOVE_FILE is an exception. We have to forward it as a binary attachment.
-    //            if (cmd == cmdMOVE_FILE)
-    //            {
-    //                LOG(debug) << "cmdMOVE_FILE pushed to network channel: " << _currentMsg->toString();
-    //                SCommandAttachmentImpl<cmdMOVE_FILE>::ptr_t attachmentPtr =
-    //                    SCommandAttachmentImpl<cmdMOVE_FILE>::decode(_currentMsg);
-    //                this->pushBinaryAttachmentCmd(attachmentPtr->m_filePath,
-    //                                              attachmentPtr->m_requestedFileName,
-    //                                              attachmentPtr->m_srcCommand,
-    //                                              _currentMsg->header().m_ID);
-    //
-    //                // We take the ownership and we have to delete the file
-    //                try
-    //                {
-    //                    fs::remove(attachmentPtr->m_filePath);
-    //                }
-    //                catch (exception& _e)
-    //                {
-    //                    LOG(error) << "Can't remove log archive file: " << attachmentPtr->m_filePath
-    //                               << "; error: " << _e.what();
-    //                }
-    //            }
-    //            else if (cmd == cmdUPDATE_KEY)
+    //            if (cmd == cmdUPDATE_KEY)
     //            {
     //                SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t attachmentPtr =
     //                    SCommandAttachmentImpl<cmdUPDATE_KEY>::decode(_currentMsg);
@@ -486,11 +465,7 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         string output;
         execute(ssCmd.str(), chrono::seconds(60), &output);
 
-        SMoveFileCmd filePathCmd;
-        filePathCmd.m_filePath = filePath.string();
-        filePathCmd.m_requestedFileName = fileName.string();
-        filePathCmd.m_srcCommand = cmdGET_LOG;
-        pushMsg<cmdMOVE_FILE>(filePathCmd);
+        pushBinaryAttachmentCmd(filePath.string(), fileName.string(), cmdGET_LOG, _sender.m_ID);
     }
     catch (exception& e)
     {
@@ -979,7 +954,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         SUserTaskDoneCmd cmd;
         cmd.m_exitCode = _exitCode;
         cmd.m_taskID = slot.m_taskID;
-        pushMsg<cmdUSER_TASK_DONE>(cmd);
+        pushMsg<cmdUSER_TASK_DONE>(cmd, _slotID);
 
         {
             lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);

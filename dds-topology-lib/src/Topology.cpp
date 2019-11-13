@@ -84,7 +84,7 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIter
     return m_topo->getRuntimeCollectionIteratorMatchingPath(_pathPattern);
 }
 
-size_t CTopology::getRequiredNofAgents() const
+std::pair<size_t, size_t> CTopology::getRequiredNofAgents(size_t _defaultNumSlots) const
 {
-    return m_topo->getRequiredNofAgents();
+    return m_topo->getRequiredNofAgents(_defaultNumSlots);
 }

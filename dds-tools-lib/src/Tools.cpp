@@ -481,9 +481,9 @@ void CSession::waitForNumAgents(size_t _numAgents,
         syncSendRequest<SAgentCountRequest>(SAgentCountRequest::request_t(), response, _timeout, _out);
 
         // Check if we have the required number of agents
-        if ((_state == CSession::EAgentState::active && (response.m_activeAgentsCount < _numAgents)) ||
-            (_state == CSession::EAgentState::idle && (response.m_idleAgentsCount < _numAgents)) ||
-            (_state == CSession::EAgentState::executing && (response.m_executingAgentsCount < _numAgents)))
+        if ((_state == CSession::EAgentState::active && (response.m_activeSlotsCount < _numAgents)) ||
+            (_state == CSession::EAgentState::idle && (response.m_idleSlotsCount < _numAgents)) ||
+            (_state == CSession::EAgentState::executing && (response.m_executingSlotsCount < _numAgents)))
         {
             if (_maxRequests != 0 && counter > _maxRequests)
             {

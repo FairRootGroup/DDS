@@ -81,8 +81,12 @@ namespace dds
             STopoRuntimeCollection::FilterIteratorPair_t getRuntimeCollectionIteratorMatchingPath(
                 const std::string& _pathPattern) const;
 
-            /// \brief Returns required number of agents for the topology.
-            size_t getRequiredNofAgents() const;
+            /// \brief Returns required number of agents and slots for the topology as std::pair.
+            /// \warning Limitations: this function might return a wrong results for topologies containing requirements
+            /// and/or different number of tasks per collection. You might need to play with _defaultNumSlots to get a
+            /// right result for those cases. \param[in] _defaultNumSlots Default number of slots per agent. \return
+            /// std::pair of a number of agents (first) and slots (second).
+            std::pair<size_t, size_t> getRequiredNofAgents(size_t _defaultNumSlots) const;
 
           private:
             std::shared_ptr<CTopoCore> m_topo;

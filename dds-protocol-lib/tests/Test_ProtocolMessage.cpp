@@ -317,8 +317,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdTEST_CMD)
     cmd.m_vstring1 = { "string1_1", "string1_2", "string1_3" };
     cmd.m_vstring2 = { "string2_1", "string2_2", "string2_3", "string2_4", "string2_5" };
 
-    cout << "TestCmd size: " << cmd.size() << endl;
-
     TestCommand(cmd, cmdTEST_CMD, cmdSize);
 }
 
@@ -344,18 +342,6 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdLOBBY_MEMBER_HANDSHAKE)
     cmd.m_channelType = 2;
 
     TestCommand(cmd, cmdLOBBY_MEMBER_HANDSHAKE, cmdSize);
-}
-
-BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdFILE_PATH)
-{
-    const unsigned int cmdSize = 27;
-
-    SMoveFileCmd cmd;
-    cmd.m_filePath = "/path/to/file";
-    cmd.m_srcCommand = cmdGET_LOG;
-    cmd.m_requestedFileName = "logs.zip";
-
-    TestCommand(cmd, cmdMOVE_FILE, cmdSize);
 }
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY)

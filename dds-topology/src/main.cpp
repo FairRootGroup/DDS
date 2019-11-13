@@ -70,7 +70,8 @@ int main(int argc, char* argv[])
             CTopoCore topology;
             topology.setXMLValidationDisabled(options.m_bDisableValidation);
             topology.init(options.m_sTopoFile);
-            LOG(log_stdout_clean) << topology.getRequiredNofAgents();
+            auto v(topology.getRequiredNofAgents(10));
+            LOG(log_stdout_clean) << v.first << " " << v.second;
         }
         catch (exception& e)
         {

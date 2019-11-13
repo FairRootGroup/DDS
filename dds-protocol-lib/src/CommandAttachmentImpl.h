@@ -13,7 +13,6 @@
 #include "CustomCmdCmd.h"
 #include "GetPropValuesCmd.h"
 #include "HostInfoCmd.h"
-#include "MoveFileCmd.h"
 #include "ProgressCmd.h"
 #include "ProtocolCommands.h"
 #include "ProtocolMessage.h"
@@ -97,7 +96,6 @@ namespace dds
         REGISTER_CMD_ATTACHMENT(SCustomCmdCmd, cmdCUSTOM_CMD)
         REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdLOBBY_MEMBER_INFO)
         REGISTER_CMD_ATTACHMENT(SVersionCmd, cmdLOBBY_MEMBER_HANDSHAKE)
-        REGISTER_CMD_ATTACHMENT(SMoveFileCmd, cmdMOVE_FILE)
         REGISTER_CMD_ATTACHMENT(SReplyCmd, cmdREPLY)
         REGISTER_CMD_ATTACHMENT(SSimpleMsgCmd, cmdREPLY_IDLE_AGENTS_COUNT)
         REGISTER_CMD_ATTACHMENT(SIDCmd, cmdADD_SLOT)

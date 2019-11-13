@@ -65,7 +65,6 @@ namespace dds
             cmdCUSTOM_CMD,             // attachment: SCustomCmdCmd
             cmdLOBBY_MEMBER_INFO,      // attachment: SSimpleMsgCmd
             cmdLOBBY_MEMBER_HANDSHAKE, // attachment: SVersionCmd
-            cmdMOVE_FILE,              // attachment: SMoveFileCmd
             cmdREPLY,                  // attachment: SReplyCmd
             cmdGET_IDLE_AGENTS_COUNT,
             cmdREPLY_IDLE_AGENTS_COUNT, // attachment: SSimpleMsgCmd
@@ -113,7 +112,6 @@ namespace dds
             { cmdCUSTOM_CMD, NAME_TO_STRING(cmdCUSTOM_CMD) },
             { cmdLOBBY_MEMBER_INFO, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO) },
             { cmdLOBBY_MEMBER_HANDSHAKE, NAME_TO_STRING(cmdLOBBY_MEMBER_HANDSHAKE) },
-            { cmdMOVE_FILE, NAME_TO_STRING(cmdMOVE_FILE) },
             { cmdREPLY, NAME_TO_STRING(cmdREPLY) },
             { cmdGET_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdGET_IDLE_AGENT_COUNT) },
             { cmdREPLY_IDLE_AGENTS_COUNT, NAME_TO_STRING(cmdREPLY_IDLE_AGENT_COUNT) },
