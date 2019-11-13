@@ -66,6 +66,7 @@ namespace dds
             const STopoRuntimeTask& getRuntimeTaskByIdPath(const std::string& _idPath) const;
             const STopoRuntimeCollection& getRuntimeCollectionByIdPath(const std::string& _idPath) const;
             std::pair<size_t, size_t> getRequiredNofAgents(size_t _defaultNumSlots) const;
+            size_t getTotalNofTasks() const;
 
             /// Iterators
             STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIterator(

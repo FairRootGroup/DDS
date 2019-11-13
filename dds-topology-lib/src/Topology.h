@@ -88,6 +88,14 @@ namespace dds
             /// std::pair of a number of agents (first) and slots (second).
             std::pair<size_t, size_t> getRequiredNofAgents(size_t _defaultNumSlots) const;
 
+            /// \warning This finction is depricated, use std::pair<size_t, size_t> getRequiredNofAgents(size_t
+            /// _defaultNumSlots) const instead \brief Returns required number of agents and slots for the topology as
+            /// std::pair.
+            size_t getRequiredNofAgents() const;
+
+            /// \brief Returns total number of tasks in the topology.
+            size_t getTotalNofTasks() const;
+
           private:
             std::shared_ptr<CTopoCore> m_topo;
         };

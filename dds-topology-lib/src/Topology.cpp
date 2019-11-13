@@ -88,3 +88,13 @@ std::pair<size_t, size_t> CTopology::getRequiredNofAgents(size_t _defaultNumSlot
 {
     return m_topo->getRequiredNofAgents(_defaultNumSlots);
 }
+
+size_t CTopology::getRequiredNofAgents() const
+{
+    return getTotalNofTasks();
+}
+
+size_t CTopology::getTotalNofTasks() const
+{
+    return m_topo->getTotalNofTasks();
+}

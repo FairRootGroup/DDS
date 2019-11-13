@@ -150,6 +150,11 @@ pair<size_t, size_t> CTopoCore::getRequiredNofAgents(size_t _defaultNumSlots) co
     return make_pair(numAgents, maxNumSlots);
 }
 
+size_t CTopoCore::getTotalNofTasks() const
+{
+    return getMainGroup()->getTotalNofTasks();
+}
+
 const STopoRuntimeTask::Map_t& CTopoCore::getIdToRuntimeTaskMap() const
 {
     return m_idToRuntimeTaskMap;
