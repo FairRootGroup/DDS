@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 #DDS_NEED_ARRAY
+#DDS_CPU_PER_AGENT
 
 #SBATCH --workdir=%DDS_JOB_ROOT_WRK_DIR%
 
@@ -15,10 +16,6 @@ cd $JOB_WRK_DIR
 cp %DDS_SCOUT% $JOB_WRK_DIR/
 
 # execute DDS Scout
-if [ -z "${DDS_AGENTS_PER_JOB}" ]; then
-	./DDSWorker.sh
-else
-	./DDSWorker.sh ${DDS_AGENTS_PER_JOB}
-fi
+./DDSWorker.sh
 
 exit 0

@@ -134,6 +134,11 @@ int main(int argc, char* argv[])
                     boost::replace_all(
                         sSrcScript, "#DDS_NEED_ARRAY", "#SBATCH --array=1-" + to_string(_submit.m_nInstances));
 
+                // Replace #DDS_CPU_PER_AGENT
+                if (_submit.m_slots > 0)
+                    boost::replace_all(
+                        sSrcScript, "#DDS_CPU_PER_AGENT", "#SBATCH --cpus-per-task " + to_string(_submit.m_slots));
+
                 // Replace %DDS_JOB_ROOT_WRK_DIR%
                 std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
                 struct std::tm* ptm = std::localtime(&now);
