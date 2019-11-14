@@ -90,6 +90,8 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     config_file_options.add_options()(
         "server.idle_time",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(1800));
+    config_file_options.add_options()(
+        "agent.work_dir", boost::program_options::value<string>(&m_options.m_agent.m_workDir)->default_value(""), "");
 
     if (!_get_default)
     {
@@ -156,28 +158,34 @@ void CUserDefaults::printDefaults(ostream& _stream)
     CUserDefaults ud(boost::uuids::nil_uuid());
     ud.init(true);
 
-    _stream << "[server]\n"
-            << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
-            << "sandbox_dir=" << ud.getValueForKey("server.sandbox_dir") << "\n"
-            << "log_dir=" << ud.getValueForKey("server.log_dir") << "\n"
-            << "#\n"
-            << "# Log severity can be one of the following values:\n"
-            << "# p_l, p_m, p_h, dbg, inf, wrn, err, fat\n"
-            << "# p_l - protocol low level events and higher\n"
-            << "# p_m - protocol middle level events and higher\n"
-            << "# p_h - protocol high level events and higher\n"
-            << "# dbg - general debug events and higher\n"
-            << "# inf - info events and higher\n"
-            << "# wrn - warning events and higher\n"
-            << "# err - error events and higher\n"
-            << "# fat - fatal errors and higher\n"
-            << "#\n"
-            << "log_severity_level=" << ud.getValueForKey("server.log_severity_level") << "\n"
-            << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
-            << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
-            << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
-            << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
-            << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n";
+    _stream
+        << "[server]\n"
+        << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
+        << "sandbox_dir=" << ud.getValueForKey("server.sandbox_dir") << "\n"
+        << "log_dir=" << ud.getValueForKey("server.log_dir") << "\n"
+        << "#\n"
+        << "# Log severity can be one of the following values:\n"
+        << "# p_l, p_m, p_h, dbg, inf, wrn, err, fat\n"
+        << "# p_l - protocol low level events and higher\n"
+        << "# p_m - protocol middle level events and higher\n"
+        << "# p_h - protocol high level events and higher\n"
+        << "# dbg - general debug events and higher\n"
+        << "# inf - info events and higher\n"
+        << "# wrn - warning events and higher\n"
+        << "# err - error events and higher\n"
+        << "# fat - fatal errors and higher\n"
+        << "#\n"
+        << "log_severity_level=" << ud.getValueForKey("server.log_severity_level") << "\n"
+        << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
+        << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
+        << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
+        << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
+        << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n"
+        << "[agent]\n"
+        << "# This option is very RMS plug-in dependet. Each plug-in is free to decide where exatly to create work\n"
+           "# directory for agents. This option is ignored by localhost and ssh plug-ins. By default the wrk dir is\n"
+           "# placed inside server.sandbox_dir. It's recommended to keep this option empty.\n"
+        << "work_dir=" << ud.getValueForKey("agent.work_dir") << "\n";
 }
 
 string CUserDefaults::convertAnyToString(const boost::any& _any) const

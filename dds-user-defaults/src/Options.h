@@ -35,9 +35,16 @@ namespace dds
 
         } SDDSGeneralOptions_t;
 
+        typedef struct SDDSAgentOptions
+        {
+            //!< Working folder.
+            std::string m_workDir;
+        } SDDSAgentOptions_t;
+
         typedef struct SDDSUserDefaultOptions
         {
             SDDSServerOptions m_server;
+            SDDSAgentOptions_t m_agent;
         } SDDSUserDefaultsOptions_t;
     } // namespace user_defaults_api
 } // namespace dds
