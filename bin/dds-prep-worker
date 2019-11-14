@@ -298,7 +298,7 @@ mv "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp" $DDS_WRK_SCRIPT_TMP
 
 # Replace a number of task slot variable with the actual value
 echo "$TOOL_NAME: setting agent task slots to $DDS_AGENT_SLOTS"
-LANG=C LC_ALL=C sed -i back "s/_DDS_AGENT_SLOTS_/$DDS_AGENT_SLOTS/g" $DDS_WRK_SCRIPT_TMP
+LANG=C LC_ALL=C sed -i.back "s/_DDS_AGENT_SLOTS_/$DDS_AGENT_SLOTS/g" $DDS_WRK_SCRIPT_TMP
 rm -f "$DDS_WRK_SCRIPT_TMP.back"
 
 # copy worker script to the sandbox directory
