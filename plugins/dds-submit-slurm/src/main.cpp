@@ -145,13 +145,17 @@ int main(int argc, char* argv[])
                 char buffer[20];
                 std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
                 string sSandboxDir(smart_path(CUserDefaults::instance().getValueForKey("server.sandbox_dir")));
-                string sAgentWrkDir(CUserDefaults::instance().getValueForKey("agent.work_dir"));
-                // Uses AgentWrkDir as the agent's wrk dir, if not empty
-                fs::path pathJobWrkDir(sAgentWrkDir.empty() ? sSandboxDir : sAgentWrkDir);
+                fs::path pathJobWrkDir(sSandboxDir);
                 pathJobWrkDir /= buffer;
                 boost::replace_all(sSrcScript, "%DDS_JOB_ROOT_WRK_DIR%", pathJobWrkDir.string());
                 // create ROOT wrk dir for jobs
                 fs::create_directories(pathJobWrkDir);
+
+                string sAgentWrkDir(CUserDefaults::instance().getValueForKey("agent.work_dir"));
+                // Uses AgentWrkDir as the agent's wrk dir, if not empty
+                fs::path pathAgentWrkDir(sAgentWrkDir.empty() ? sSandboxDir : sAgentWrkDir);
+                pathAgentWrkDir /= buffer;
+                boost::replace_all(sSrcScript, "%DDS_AGENT_ROOT_WRK_DIR%", pathAgentWrkDir.string());
 
                 // Replace #DDS_USER_OPTIONS
                 fs::path pathUserOptions(_submit.m_cfgFilePath);
