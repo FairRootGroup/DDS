@@ -182,9 +182,10 @@ void CUserDefaults::printDefaults(ostream& _stream)
         << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
         << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n"
         << "[agent]\n"
-        << "# This option is very RMS plug-in dependet. Each plug-in is free to decide where exatly to create work\n"
-           "# directory for agents. This option is ignored by localhost and ssh plug-ins. By default the wrk dir is\n"
-           "# placed inside server.sandbox_dir. It's recommended to keep this option empty.\n"
+        << "# This option can help to relocate the work directory of agents.\n"
+        << "# The option is ignored by the localhost and ssh plug-ins.\n"
+        << "# By default the wrk dir is placed inside the path specified by server.sandbox_dir.\n"
+        << "# It's recommended to keep this option empty.\n"
         << "work_dir=" << ud.getValueForKey("agent.work_dir") << "\n";
 }
 
