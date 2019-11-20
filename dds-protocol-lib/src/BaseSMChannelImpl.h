@@ -506,6 +506,13 @@ namespace dds
 
                     std::lock_guard<std::mutex> lock(buffer->m_mutexWriteBuffer);
 
+                    // Need to drain the queue, i.e. skip messages
+                    if (buffer->m_drainWriteQueue)
+                    {
+                        buffer->m_writeQueue.clear();
+                        return;
+                    }
+
                     // add the current message to the queue
                     if (cmdUNKNOWN != _cmd)
                         buffer->m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
@@ -743,7 +750,8 @@ namespace dds
                             {
                                 if (m_isShuttingDown)
                                 {
-                                    LOG(MiscCommon::debug) << getName() << ": stopping write operation due to shutdown";
+                                    LOG(MiscCommon::debug)
+                                        << _buffer->m_info.m_name << ": stopping write operation due to shutdown";
                                     return;
                                 }
 
@@ -755,7 +763,8 @@ namespace dds
                                 if (_buffer->m_drainWriteQueue)
                                 {
                                     LOG(MiscCommon::warning)
-                                        << getName() << ": Draining write queue, while there is a message pending: "
+                                        << _buffer->m_info.m_name
+                                        << ": Draining write queue, while there is a message pending: "
                                         << g_cmdToString[msg.m_msg->header().m_cmd];
                                     break;
                                 }
@@ -764,14 +773,16 @@ namespace dds
                         else
                         {
                             LOG(MiscCommon::error)
-                                << "Can't find output transport with output ID " << msg.m_outputID
+                                << _buffer->m_info.m_name << ": Can't find output transport with output ID "
+                                << msg.m_outputID
                                 << ". Write message failed. Command: " << g_cmdToString[msg.m_msg->header().m_cmd];
                         }
                     }
                 }
                 catch (boost::interprocess::interprocess_exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseSMChannelImpl: error sending message: " << ex.what();
+                    LOG(MiscCommon::error)
+                        << _buffer->m_info.m_name << ": BaseSMChannelImpl: error sending message: " << ex.what();
                 }
 
                 // Lock the modification of the container

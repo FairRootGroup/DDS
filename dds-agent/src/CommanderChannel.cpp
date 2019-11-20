@@ -1092,7 +1092,20 @@ bool CCommanderChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK
     LOG(debug) << "Received user task done: " << *_attachment;
 
     // Forward message to user task
-    m_leaderChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment, _sender.m_ID, _sender.m_ID);
+    // WORKAROUND: to prevent locking the container on msg push, we create a tmp container with slot IDs
+    vector<slotId_t> slotsTmp;
+    {
+        std::lock_guard<std::mutex> lock(m_mutexSlots);
+        std::transform(m_slots.begin(),
+                       m_slots.end(),
+                       back_inserter(slotsTmp),
+                       boost::bind(&SSlotInfo::container_t::value_type::first, _1));
+    }
+
+    for (const auto& i : slotsTmp)
+    {
+        m_leaderChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment, i, i);
+    }
 
     return true;
 }

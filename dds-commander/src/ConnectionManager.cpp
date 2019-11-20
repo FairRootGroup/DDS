@@ -632,7 +632,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
 {
     // Send a broad cast message to all agents
     auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
     };
     broadcastMsg<cmdUSER_TASK_DONE>(*_attachment, condition);
 
@@ -920,10 +920,11 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             ptr->pushMsg<cmdCUSTOM_CMD>(*_attachment, v.m_protocolHeaderID);
         }
 
-        stringstream ss;
-        ss << "Send custom command to " << channels.size() << " channels." << endl;
+        // Debug msg: there are too many of such messages if tasks intensivly use CC
+        /*  stringstream ss;
+          ss << "Send custom command to " << channels.size() << " channels." << endl;
 
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD), _sender.m_ID);
+          p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD), _sender.m_ID);*/
     }
     catch (exception& _e)
     {
