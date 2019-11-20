@@ -158,9 +158,8 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
         });
 
     // Call this callback when a user process is activated
-    m_commanderChannel->registerHandler<EChannelEvents::OnAssignUserTask>([this](const SSenderInfo& _sender) {
-        // Stop drainning the intercom write queue
-        // m_SMIntercomChannel->drainWriteQueue(false);
+    m_commanderChannel->registerHandler<EChannelEvents::OnAssignUserTask>([/*this*/](const SSenderInfo& _sender) {
+        //
     });
 
     // Connect to DDS commander

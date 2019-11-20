@@ -596,6 +596,9 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
 
     const SSlotInfo& slot = slot_it->second;
 
+    // Revoke drain of the write queue to start accept messages
+    m_leaderChannel->drainWriteQueue(false, slot.m_id);
+
     string sUsrExe(slot.m_sUsrExe);
 
     if (sUsrExe.empty())
@@ -965,7 +968,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         slot.m_taskID = 0;
 
         // Drainning the Intercom write queue
-        // m_SMIntercomChannel->drainWriteQueue(true);
+        m_leaderChannel->drainWriteQueue(true, _slotID);
     }
     catch (exception& _e)
     {

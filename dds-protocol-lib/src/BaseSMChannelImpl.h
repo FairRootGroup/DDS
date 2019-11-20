@@ -183,6 +183,7 @@ namespace dds
                 protocolMessagePtrQueue_t m_writeQueue; ///< Cache for the messages that we want to send
                 std::mutex m_mutexWriteBuffer;
                 protocolMessagePtrQueue_t m_writeBufferQueue;
+                std::atomic<bool> m_drainWriteQueue{ false };
             };
 
           public:
@@ -204,7 +205,6 @@ namespace dds
                 : CChannelMessageHandlersImpl()
                 , m_isShuttingDown(false)
                 , m_started(false)
-                , m_drainWriteQueue(false)
                 , m_protocolHeaderID(_protocolHeaderID)
                 , m_ioContext(_service)
             {
@@ -575,9 +575,10 @@ namespace dds
                 }
             }
 
-            void drainWriteQueue(bool _newVal)
+            void drainWriteQueue(bool _newVal, uint64_t _outputID)
             {
-                m_drainWriteQueue = _newVal;
+                const typename SMessageOutputBuffer::Ptr_t& buffer = getOutputBuffer(_outputID);
+                buffer->m_drainWriteQueue = _newVal;
             }
 
           private:
@@ -751,7 +752,7 @@ namespace dds
                                 // For such cases there is a drain command. The connection manager can initiate the
                                 // drain, when needed. For example in case when a user task disconnects from the
                                 // Intercom channel a drain will be initiated util we receive a new task assignment
-                                if (m_drainWriteQueue)
+                                if (_buffer->m_drainWriteQueue)
                                 {
                                     LOG(MiscCommon::warning)
                                         << getName() << ": Draining write queue, while there is a message pending: "
@@ -790,7 +791,6 @@ namespace dds
           protected:
             std::atomic<bool> m_isShuttingDown;
             std::atomic<bool> m_started; ///< True if we were able to start the channel, False otherwise
-            std::atomic<bool> m_drainWriteQueue;
             uint64_t m_protocolHeaderID;
 
           private:
