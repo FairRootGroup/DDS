@@ -250,6 +250,8 @@ namespace dds
 
             struct SImpl;
             std::shared_ptr<SImpl> m_impl;
+
+            std::mutex m_mtxRequests;
         };
     } // namespace tools_api
 } // namespace dds

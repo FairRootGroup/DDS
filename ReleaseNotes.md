@@ -21,6 +21,7 @@ Fixed: activate hangs on xml validation error. (GH-220).
 Added: get filter iterator matching the task/collection runtime path in the topology.    
 
 ### dds-info
+Fixed: SIGSEGV in dds-info. (GH-261)   
 Added: --wait option to wait for the required number of agents online. Must be used together with  --active-count, --idle-count, --executing-count.    
 Added: --active-count, --idle-count, --executing-count option to get the number of active, idle or executing agents respectively. These option can be used together with --wait in order to wait for the required number of agents.    
 Removed: --wait-for-idle-agents, --wait-for-executing-agents are obsolete. Replaced with -idle-count, --executing-count options used toghether with --wait option.    

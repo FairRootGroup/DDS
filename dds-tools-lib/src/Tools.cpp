@@ -72,6 +72,8 @@ CSession::CSession()
 
 CSession::~CSession()
 {
+    lock_guard<mutex> lock(m_mtxRequests);
+    m_impl->m_requests.clear();
 }
 
 boost::uuids::uuid CSession::create()
@@ -256,6 +258,10 @@ void CSession::notify(std::istream& _stream)
         {
             const requestID_t requestID = child.second.get<requestID_t>("requestID");
 
+            // WARNING: The lock will prevent this function to be executed in multiple threads.
+            //           By the current design all user requests are processed sequentially (one thread).
+            // WARNING: A deadlock can occur if a user calls CSession destructor in one of the requests' callback
+            lock_guard<mutex> lock(m_mtxRequests);
             auto it = m_impl->m_requests.find(requestID);
             if (it == m_impl->m_requests.end())
                 continue;
