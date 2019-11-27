@@ -48,47 +48,7 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t _protoc
                 return;
         }
     });
-
-    // Subsribe on lobby member handshake
-    //    registerHandler<EChannelEvents::OnLobbyMemberHandshakeOK>([this](const SSenderInfo& _sender) -> void {
-    //        {
-    //            if (_sender.m_ID == this->m_protocolHeaderID)
-    //                return;
-    //
-    //            SAgentInfo inf = this->getAgentInfo(_sender.m_ID);
-    //
-    //            inf.m_state = EAgentState::idle;
-    //            pushMsg<cmdGET_ID>(_sender.m_ID);
-    //            pushMsg<cmdGET_HOST_INFO>(_sender.m_ID);
-    //
-    //            updateAgentInfo(_sender, inf);
-    //        }
-    //    });
 }
-
-// void CAgentChannel::updateAgentInfo(const SSenderInfo& _sender, const SAgentInfo& _info)
-//{
-//    updateAgentInfo(_sender.m_ID, _info);
-//}
-//
-// void CAgentChannel::updateAgentInfo(uint64_t _protocolHeaderID, const SAgentInfo& _info)
-//{
-//    lock_guard<mutex> lock(m_mtxInfo);
-//    m_info[_protocolHeaderID] = _info;
-//}
-
-// SAgentInfo CAgentChannel::getAgentInfo(uint64_t _protocolHeaderID)
-//{
-//    lock_guard<mutex> lock(m_mtxInfo);
-//    auto it = m_info.find(_protocolHeaderID);
-//    if (it != m_info.end())
-//        return it->second;
-//
-//    LOG(warning) << "Unknown agent info for PHID " << _protocolHeaderID;
-//
-//    // return empty info the requested header ID is not in the list
-//    return SAgentInfo();
-//}
 
 SAgentInfo& CAgentChannel::getAgentInfo()
 {
@@ -100,35 +60,9 @@ uint64_t CAgentChannel::getId() const
     return m_info.m_id;
 }
 
-// LobbyProtocolHeaderIdContainer_t CAgentChannel::getLobbyPHID() const
-//{
-//    //    LobbyProtocolHeaderIdContainer_t ret;
-//    //    for (const auto& v : m_info)
-//    //        ret.push_back(v.first);
-//    //
-//    //    return ret;
-//    return LobbyProtocolHeaderIdContainer_t();
-//}
-
 void CAgentChannel::setId(uint64_t _id)
 {
     m_info.m_id = _id;
-}
-
-uint64_t CAgentChannel::getTaskID(const SSenderInfo& _sender)
-{
-    // SAgentInfo info = getAgentInfo(_sender);
-    // return info.m_taskID;
-    return 0;
-}
-
-void CAgentChannel::setTaskID(const SSenderInfo& _sender, uint64_t _taskID)
-{
-    //    SAgentInfo info = getAgentInfo(_sender);
-    //
-    //    info.m_taskID = _taskID;
-    //
-    //    updateAgentInfo(_sender, info);
 }
 
 SHostInfoCmd CAgentChannel::getRemoteHostInfo(const SSenderInfo& _sender)
@@ -136,31 +70,9 @@ SHostInfoCmd CAgentChannel::getRemoteHostInfo(const SSenderInfo& _sender)
     return m_info.m_remoteHostInfo;
 }
 
-void CAgentChannel::setRemoteHostInfo(const SSenderInfo& _sender, const SHostInfoCmd& _hostInfo)
-{
-    //    SAgentInfo info = getAgentInfo(_sender);
-    //
-    //    info.m_remoteHostInfo = _hostInfo;
-    //
-    //    updateAgentInfo(_sender, info);
-}
-
 chrono::milliseconds CAgentChannel::getStartupTime(const SSenderInfo& _sender)
 {
     return m_info.m_startUpTime;
-}
-
-EAgentState CAgentChannel::getState(const SSenderInfo& _sender)
-{
-    //    SAgentInfo info = getAgentInfo(_sender.m_ID);
-    //    return info.m_state;
-    return EAgentState::unknown;
-}
-
-void CAgentChannel::setState(const SSenderInfo& _sender, EAgentState _state)
-{
-    //    SAgentInfo info = getAgentInfo(_sender.m_ID);
-    //    info.m_state = _state;
 }
 
 string CAgentChannel::_remoteEndIDString()

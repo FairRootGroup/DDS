@@ -33,6 +33,7 @@ namespace dds
             std::string m_taskName;
             pid_t m_pid{ 0 };
         };
+
         class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>
         {
           public:
@@ -58,8 +59,6 @@ namespace dds
                 MESSAGE_HANDLER(cmdADD_SLOT, on_cmdADD_SLOT)
                 MESSAGE_HANDLER(cmdUSER_TASK_DONE, on_cmdUSER_TASK_DONE)
             END_MSG_MAP()
-
-            //   CSMFWChannel::weakConnectionPtr_t getSMFWChannel();
 
           public:
             void stopChannel();

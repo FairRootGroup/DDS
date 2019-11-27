@@ -157,103 +157,13 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
             this->on_cmdSHUTDOWN(_sender, _attachment, m_commanderChannel);
         });
 
-    // Call this callback when a user process is activated
-    m_commanderChannel->registerHandler<EChannelEvents::OnAssignUserTask>([/*this*/](const SSenderInfo& _sender) {
-        //
-    });
-
     // Connect to DDS commander
     m_commanderChannel->connect(endpoint_iterator);
 }
-
-void CAgentConnectionManager::createSMLeaderChannel(uint64_t _protocolHeaderID)
-{
-    // Shared memory channel for communication with user task
-    //    const CUserDefaults& userDefaults = CUserDefaults::instance();
-    //    m_SMLeaderChannel = CSMLeaderChannel::makeNew(m_io_context,
-    //                                                  userDefaults.getSMAgentLeaderOutputName(),
-    //                                                  userDefaults.getSMAgentLeaderOutputName(),
-    //                                                  _protocolHeaderID);
-    //    m_SMLeaderChannel->registerHandler<EChannelEvents::OnLobbyMemberInfo>(
-    //        [this](const SSenderInfo& _sender, const string& _name) {
-    //            try
-    //            {
-    //                // Add output for lobby members, skipping output for itself
-    //                if (_sender.m_ID != m_SMLeaderChannel->getProtocolHeaderID())
-    //                {
-    //                    auto p = m_commanderChannel->getSMFWChannel().lock();
-    //                    p->addOutput(_sender.m_ID, _name);
-    //                }
-    //            }
-    //            catch (exception& _e)
-    //            {
-    //                LOG(MiscCommon::error) << "Failed to open forwarder MQ " << _name << " of the new member "
-    //                                       << _sender.m_ID << " error: " << _e.what();
-    //            }
-    //        });
-    //
-    //    LOG(info) << "SM channel: Leader created";
-}
-
-void CAgentConnectionManager::createSMIntercomChannel(uint64_t _protocolHeaderID)
-{
-    //    // Shared memory channel for communication with user task
-    //    const CUserDefaults& userDefaults = CUserDefaults::instance();
-    //    m_SMIntercomChannel = CSMIntercomChannel::makeNew(
-    //        m_io_context, userDefaults.getSMInputName(), userDefaults.getSMOutputName(), _protocolHeaderID);
-    //
-    //    // TODO: Forwarding of update key commands without decoding using raw message API
-    //    // Forward messages from shared memory to the agent.
-    //    // For the moment we have to replace PHID of the intercom message (which is always 0) with the real PHID of
-    //    the
-    //    // agent.
-    //    m_SMIntercomChannel->registerHandler<cmdCUSTOM_CMD>(
-    //        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-    //            // m_SMCommanderChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment,
-    //            m_SMCommanderChannel->getProtocolHeaderID());
-    //        });
-    //
-    //    m_SMIntercomChannel->registerHandler<cmdUPDATE_KEY>(
-    //        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-    //            // send_cmdUPDATE_KEY(_attachment);
-    //        });
-    //
-    //    LOG(info) << "SM channel: Intercom created";
-}
-
-// void CAgentConnectionManager::createSMCommanderChannel(uint64_t _protocolHeaderID)
-//{
-//    const CUserDefaults& userDefaults = CUserDefaults::instance();
-//    // Create shared memory agent channel
-//    m_SMCommanderChannel = CSMCommanderChannel::makeNew(m_io_context,
-//                                                        userDefaults.getSMAgentInputName(),
-//                                                        userDefaults.getSMAgentOutputName(_protocolHeaderID),
-//                                                        _protocolHeaderID);
-//    m_SMCommanderChannel->addOutput(CSMCommanderChannel::EOutputID::Leader,
-//    userDefaults.getSMAgentLeaderOutputName());
-//
-//    // Subscribe to reply command
-//    m_SMCommanderChannel->registerHandler<cmdREPLY>(
-//        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment) {
-//            if (_attachment->m_srcCommand == cmdLOBBY_MEMBER_HANDSHAKE &&
-//                _attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::ERROR)
-//            {
-//                stop();
-//            }
-//        });
-//
-//    LOG(info) << "SM channel: Agent is created";
-//}
 
 void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
                                              SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
                                              CCommanderChannel::weakConnectionPtr_t _channel)
 {
-    //    // Commander requested to shutdown.
-    //    if (m_SMLeaderChannel != nullptr)
-    //    {
-    //        // LOG(info) << "Sending SHUTDOWN to all lobby members";
-    //        m_SMLeaderChannel->syncSendShutdownAll();
-    //    }
     stop();
 }

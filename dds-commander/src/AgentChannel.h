@@ -74,8 +74,6 @@ namespace dds
             SlotContainer_t m_slots;
         };
 
-        typedef std::vector<uint64_t> LobbyProtocolHeaderIdContainer_t;
-
         class CAgentChannel : public protocol_api::CServerChannelImpl<CAgentChannel>
         {
             CAgentChannel(boost::asio::io_context& _context, uint64_t _protocolHeaderID = 0);
@@ -119,28 +117,9 @@ namespace dds
             void setId(uint64_t _id);
 
             protocol_api::SHostInfoCmd getRemoteHostInfo(const dds::protocol_api::SSenderInfo& _sender);
-            // This function only used in tests
-            void setRemoteHostInfo(const dds::protocol_api::SSenderInfo& _sender,
-                                   const protocol_api::SHostInfoCmd& _hostInfo);
-
             std::chrono::milliseconds getStartupTime(const dds::protocol_api::SSenderInfo& _sender);
 
-            EAgentState getState(const dds::protocol_api::SSenderInfo& _sender);
-            void setState(const dds::protocol_api::SSenderInfo& _sender, EAgentState _state);
-
-            uint64_t getTaskID(const dds::protocol_api::SSenderInfo& _sender);
-            void setTaskID(const dds::protocol_api::SSenderInfo& _sender, uint64_t _taskID);
-
-            // AgentInfo operations
-            /// add new or update existing Agent info
-            //    void updateAgentInfo(const dds::protocol_api::SSenderInfo& _sender, const SAgentInfo& _info);
-            //    void updateAgentInfo(uint64_t _protocolHeaderID, const SAgentInfo& _info);
-            /// Get a copy of the agent info
-            // FIXME: This function makes a copy of the info struct. Find a solution to avoid copy operations. But the
-            // function and the info struct still must be thread safe.
             SAgentInfo& getAgentInfo();
-            //   SAgentInfo getAgentInfo(uint64_t _protocolHeaderID);
-            //            LobbyProtocolHeaderIdContainer_t getLobbyPHID() const;
 
           private:
             // Message Handlers
