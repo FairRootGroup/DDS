@@ -38,7 +38,6 @@ namespace dds
         struct SConfigRecord
         {
             SConfigRecord()
-                : m_nWorkers(0)
             {
             }
             template <class InputIterator>
@@ -71,7 +70,7 @@ namespace dds
                 {
                     std::stringstream ss;
                     ss << *iter;
-                    ss >> m_nWorkers;
+                    ss >> m_nSlots;
                 }
 
                 return 0;
@@ -79,13 +78,13 @@ namespace dds
             bool operator==(const SConfigRecord& _rec) const
             {
                 return (m_id == _rec.m_id && m_addr == _rec.m_addr && m_sshOptions == _rec.m_sshOptions &&
-                        m_wrkDir == _rec.m_wrkDir && m_nWorkers == _rec.m_nWorkers);
+                        m_wrkDir == _rec.m_wrkDir && m_nSlots == _rec.m_nSlots);
             }
             std::string m_id;
             std::string m_addr;
             std::string m_sshOptions;
             std::string m_wrkDir;
-            size_t m_nWorkers;
+            size_t m_nSlots{ 1 };
         };
         //=============================================================================
         typedef boost::shared_ptr<SConfigRecord> configRecord_t;

@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
     rec.m_addr = "\"anar@lxg0527.gsi.de\"";
     rec.m_sshOptions = "-p24";
     rec.m_wrkDir = "/tmp/test";
-    rec.m_nWorkers = 4;
+    rec.m_nSlots = 4;
     BOOST_REQUIRE(*recs[0] == rec);
 
     rec = SConfigRecord();
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
     rec.m_addr = "anar@lxi001.gsi.de";
     rec.m_sshOptions = "";
     rec.m_wrkDir = "/tmp/test/fff fff";
-    rec.m_nWorkers = 2;
+    rec.m_nSlots = 2;
     BOOST_REQUIRE(*recs[1] == rec);
 
     rec = SConfigRecord();
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
     rec.m_addr = "anar@lxg0055.gsi.de";
     rec.m_sshOptions = "-p22";
     rec.m_wrkDir = "/tmp/test";
-    rec.m_nWorkers = 8;
+    rec.m_nSlots = 8;
     BOOST_REQUIRE(*recs[2] == rec);
 }
 BOOST_AUTO_TEST_CASE(test_readconfig_bad)

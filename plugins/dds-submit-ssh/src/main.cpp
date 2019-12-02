@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
                     //     dynWrk = true; // user wants us to dynamicly decide on how many
                     //     job slots to create
 
-                    wrkCount += rec->m_nWorkers;
+                    wrkCount += rec->m_nSlots;
 
                     stringstream ssWorkerInfoMsg;
                     wrk.printInfo(ssWorkerInfoMsg);

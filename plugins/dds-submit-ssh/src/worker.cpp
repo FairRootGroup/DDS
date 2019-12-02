@@ -36,13 +36,8 @@ CWorker::~CWorker()
 //=============================================================================
 void CWorker::printInfo(ostream& _stream) const
 {
-    _stream << "[" << m_rec->m_id << "] with ";
-    if (0 == m_rec->m_nWorkers)
-        _stream << "a dynamic number of";
-    else
-        _stream << m_rec->m_nWorkers;
-
-    _stream << " workers at " << m_rec->m_addr << ":" << m_rec->m_wrkDir;
+    _stream << "[" << m_rec->m_id << "] with " << m_rec->m_nSlots << " slots at " << m_rec->m_addr << ":"
+            << m_rec->m_wrkDir;
 }
 //=============================================================================
 bool CWorker::runTask(ETaskType _param) const
@@ -60,7 +55,7 @@ bool CWorker::runTask(ETaskType _param) const
     {
         case task_submit:
         {
-            ssParams << " -n \"" << m_rec->m_nWorkers << "\"";
+            ssParams << " -n \"" << m_rec->m_nSlots << "\"";
             string cmd(m_path);
             cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);

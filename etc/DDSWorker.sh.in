@@ -6,6 +6,10 @@
 #
 # 1. The script redefines $DDS_LOCATION to WN's working dir.
 #
+# Arguments:
+# $1 - is a number of additional scouts to deploy. If greater than 1, the scout script will execute $1 number of scout scripts.
+# $2 - overwrite the number of task slots for this instance of the scout
+#
 
 # current working dir
 pushd "$(dirname $0)" > /dev/null
@@ -348,7 +352,11 @@ do
    # it is needed in case when several DDS workers are started in the same time on one machine
 
    # _DDS_AGENT_SLOTS_ is replaced (set) by the dds-prep-worker
-   $dds_agent start --slots _DDS_AGENT_SLOTS_&
+   if [ -n "$2" ]; then
+	   $dds_agent start --slots $2&
+   else
+   	   $dds_agent start --slots _DDS_AGENT_SLOTS_&
+   fi
    # wait for dds-agent's process
    DDSAGENT_PID=$!
    wait $DDSAGENT_PID
