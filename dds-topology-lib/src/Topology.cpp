@@ -41,6 +41,11 @@ std::string CTopology::getName() const
     return m_topo->getName();
 }
 
+uint32_t CTopology::getHash() const
+{
+    return m_topo->getHash();
+}
+
 const STopoRuntimeTask& CTopology::getRuntimeTaskById(Id_t _id) const
 {
     return m_topo->getRuntimeTaskById(_id);

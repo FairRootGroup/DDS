@@ -60,6 +60,7 @@ namespace dds
 
             /// Accessors
             std::string getName() const;
+            uint32_t getHash() const;
             CTopoGroup::Ptr_t getMainGroup() const;
             const STopoRuntimeTask& getRuntimeTaskById(Id_t _id) const;
             const STopoRuntimeCollection& getRuntimeCollectionById(Id_t _id) const;
@@ -101,17 +102,19 @@ namespace dds
           private:
             void FillTopoIndexToTopoElementMap(const CTopoElement::Ptr_t& _element);
             void FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element);
+            uint32_t CalculateHash(const std::string& _filename);
 
-            CTopoGroup::Ptr_t m_main; ///< Main task group which we run
+            CTopoGroup::Ptr_t m_main{ nullptr }; ///< Main task group which we run
 
             STopoRuntimeTask::Map_t m_idToRuntimeTaskMap;
             STopoRuntimeCollection::Map_t m_idToRuntimeCollectionMap;
             std::map<std::string, size_t> m_counterMap;
             std::string m_currentCollectionIdPath;
-            Id_t m_currentCollectionId;
+            Id_t m_currentCollectionId{ 0 };
 
-            bool m_bXMLValidationDisabled; ///< if true than XML will not be validated agains XSD
-            std::string m_name;
+            bool m_bXMLValidationDisabled{ false }; ///< if true than XML will not be validated agains XSD
+            std::string m_name;                     ///< Name of the topology
+            uint32_t m_hash{ 0 };                   ///< CRC64 of the topology XML file
         };
     } // namespace topology_api
 } // namespace dds

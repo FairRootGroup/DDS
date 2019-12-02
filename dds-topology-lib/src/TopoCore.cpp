@@ -9,6 +9,7 @@
 #include "TopoUtils.h"
 #include "UserDefaults.h"
 // STD
+#include <fstream>
 #include <string>
 // MiscCommon
 #include "CRC.h"
@@ -24,9 +25,6 @@ using namespace user_defaults_api;
 using namespace boost;
 
 CTopoCore::CTopoCore()
-    : m_main(nullptr)
-    , m_currentCollectionId(0)
-    , m_bXMLValidationDisabled(false)
 {
 }
 
@@ -65,6 +63,10 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
     CTopoParserXML parser;
     m_main = std::make_shared<CTopoGroup>();
     parser.parse(filename, schemaFileName, m_main, m_name);
+
+    // Calculate topology hash
+    // Function throws an exception if it fails to calculate the hash.
+    m_hash = CalculateHash(filename);
 
     m_counterMap.clear();
     m_idToRuntimeTaskMap.clear();
@@ -125,6 +127,15 @@ std::string CTopoCore::getName() const
         throw runtime_error("Topology not initialized. Call init first.");
     }
     return m_name;
+}
+
+uint32_t CTopoCore::getHash() const
+{
+    if (!m_main)
+    {
+        throw runtime_error("Topology not initialized. Call init first.");
+    }
+    return m_hash;
 }
 
 void CTopoCore::setXMLValidationDisabled(bool _val)
@@ -432,6 +443,12 @@ std::string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
     }
 
     return ss.str();
+}
+
+uint32_t CTopoCore::CalculateHash(const string& _filename)
+{
+    std::ifstream file(_filename);
+    return MiscCommon::crc32(file);
 }
 
 string CTopoCore::toString() const

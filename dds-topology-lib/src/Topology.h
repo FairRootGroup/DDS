@@ -42,6 +42,10 @@ namespace dds
             /// \throw runtime_error
             std::string getName() const;
 
+            /// \brief Returns topology hash
+            /// \throw runtime_error
+            uint32_t getHash() const;
+
             /// \brief Returns shared pointer to the main group of the topology
             CTopoGroup::Ptr_t getMainGroup() const;
 
