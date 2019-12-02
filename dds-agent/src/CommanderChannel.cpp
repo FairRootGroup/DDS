@@ -383,6 +383,23 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
 {
     LOG(info) << "Received a user task assignment. " << *_attachment;
 
+    // Check that topology is the same before task assignment
+    try
+    {
+        if (m_topo.getHash() != _attachment->m_topoHash)
+        {
+            stringstream ss;
+            ss << "Topology hash check failed: " << m_topo.getHash() << " (must be " << _attachment->m_topoHash << ")";
+            throw runtime_error(ss.str());
+        }
+    }
+    catch (exception& _e)
+    {
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
+        LOG(error) << "Assign task error: " << _e.what();
+        return true;
+    }
+
     SSlotInfo* slot;
     try
     {
