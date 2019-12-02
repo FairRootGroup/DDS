@@ -11,6 +11,7 @@
 // STD
 #include <iostream>
 #include <string>
+#include <mutex>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/uuid/uuid.hpp>
