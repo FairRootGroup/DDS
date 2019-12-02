@@ -449,7 +449,7 @@ endif()
 #
 # TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
 #
-add_custom_target( wn_bin
+add_custom_target( wn_bin ALL
 	COMMAND -mkdir -p ${WN_PKG_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
