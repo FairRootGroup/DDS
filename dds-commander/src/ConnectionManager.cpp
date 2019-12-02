@@ -377,6 +377,7 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
         cmd->m_groupName = sch.m_taskInfo.m_task->getParentGroupId();
         cmd->m_collectionName = sch.m_taskInfo.m_task->getParentCollectionId();
         cmd->m_taskName = sch.m_taskInfo.m_task->getName();
+        cmd->m_topoHash = m_topo.getHash();
 
         if (sch.m_taskInfo.m_task->isExeReachable())
         {
