@@ -19,6 +19,8 @@ Added: Start/Stop DDS session multiple times within the same process.
 Added: parsing and reporting of the topology name: "dds-info --active-topology", "dds-topology --topology-name <topo.xml>", CTopology::getName().    
 Fixed: activate hangs on xml validation error. (GH-220).    
 Added: get filter iterator matching the task/collection runtime path in the topology.    
+Added: calculation of the topology hash as CRC32.    
+Fixed: check that agent's topology hash is the same as commander's one before task assignment. Fixes GH-265.    
 
 ### dds-info
 Fixed: SIGSEGV in dds-info. (GH-261)   
