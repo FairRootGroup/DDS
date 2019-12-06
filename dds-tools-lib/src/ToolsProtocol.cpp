@@ -63,12 +63,21 @@ bool SProgressResponseData::operator==(const SProgressResponseData& _val) const
             m_errors == _val.m_errors && m_time == _val.m_time);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SProgressResponseData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; completed: " << _data.m_completed << "; total: " << _data.m_total
-               << "; errors: " << _data.m_errors << "; time: " << _data.m_time
-               << "; srcCommand: " << _data.m_srcCommand;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SProgressResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; completed: " << _data.m_completed
+                       << "; total: " << _data.m_total << "; errors: " << _data.m_errors << "; time: " << _data.m_time
+                       << "; srcCommand: " << _data.m_srcCommand;
+        }
+    } // namespace tools_api
+} // namespace dds
 
 ///////////////////////////////////
 // SMessageResponseData
@@ -117,10 +126,19 @@ bool SMessageResponseData::operator==(const SMessageResponseData& _val) const
     return (SBaseData::operator==(_val) && m_msg == _val.m_msg && m_severity == _val.m_severity);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SMessageResponseData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; severity: " << _data.m_severity << "; msg: " << _data.m_msg;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SMessageResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; severity: " << _data.m_severity << "; msg: " << _data.m_msg;
+        }
+    } // namespace tools_api
+} // namespace dds
 
 ///////////////////////////////////
 // SSubmitRequestData
@@ -153,11 +171,21 @@ bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
             m_slots == _val.m_slots && m_config == _val.m_config && m_pluginPath == _val.m_pluginPath);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SSubmitRequestData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; instances: " << _data.m_instances << "; slots: " << _data.m_slots
-               << "; config: " << _data.m_config << "; rms: " << _data.m_rms << "; pluginPath: " << _data.m_pluginPath;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data)
+        {
+            return _os << _data.defaultToString() << "; instances: " << _data.m_instances
+                       << "; slots: " << _data.m_slots << "; config: " << _data.m_config << "; rms: " << _data.m_rms
+                       << "; pluginPath: " << _data.m_pluginPath;
+        }
+    } // namespace tools_api
+} // namespace dds
 
 ///////////////////////////////////
 // STopologyRequestData
@@ -186,11 +214,21 @@ bool STopologyRequestData::operator==(const STopologyRequestData& _val) const
             m_disableValidation == _val.m_disableValidation);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const STopologyRequestData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; updateType: " << static_cast<uint8_t>(_data.m_updateType)
-               << "; topologyFile: " << _data.m_topologyFile << "; disableValidation: " << _data.m_disableValidation;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data)
+        {
+            return _os << _data.defaultToString() << "; updateType: " << static_cast<uint8_t>(_data.m_updateType)
+                       << "; topologyFile: " << _data.m_topologyFile
+                       << "; disableValidation: " << _data.m_disableValidation;
+        }
+    } // namespace tools_api
+} // namespace dds
 
 ///////////////////////////////////
 // SCommanderInfoResponseData
@@ -216,11 +254,20 @@ bool SCommanderInfoResponseData::operator==(const SCommanderInfoResponseData& _v
     return (SBaseData::operator==(_val) && m_pid == _val.m_pid && m_activeTopologyName == _val.m_activeTopologyName);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; pid: " << _data.m_pid
-               << "; activeTopologyName: " << _data.m_activeTopologyName;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; pid: " << _data.m_pid
+                       << "; activeTopologyName: " << _data.m_activeTopologyName;
+        }
+    } // namespace tools_api
+} // namespace dds
 
 ///////////////////////////////////
 // SAgentInfoResponseData
@@ -260,13 +307,22 @@ bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) cons
             m_DDSPath == _val.m_DDSPath && m_agentPid == _val.m_agentPid && m_nSlots == _val.m_nSlots);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; index: " << _data.m_index << "; agentID: " << _data.m_agentID
-               << "; startUpTime: " << _data.m_startUpTime.count() << "; username: " << _data.m_username
-               << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath << "; agentPid: " << _data.m_agentPid
-               << "; nSlots: " << _data.m_nSlots;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; index: " << _data.m_index << "; agentID: " << _data.m_agentID
+                       << "; startUpTime: " << _data.m_startUpTime.count() << "; username: " << _data.m_username
+                       << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath
+                       << "; agentPid: " << _data.m_agentPid << "; nSlots: " << _data.m_nSlots;
+        }
+    } // namespace tools_api
+} // namespace dds
 
 ///////////////////////////////////
 // SAgentCountResponseData
@@ -295,9 +351,18 @@ bool SAgentCountResponseData::operator==(const SAgentCountResponseData& _val) co
             m_idleSlotsCount == _val.m_idleSlotsCount && m_executingSlotsCount == _val.m_executingSlotsCount);
 }
 
-std::ostream& dds::tools_api::operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
 {
-    return _os << _data.defaultToString() << "; activeSlotsCount: " << _data.m_activeSlotsCount
-               << "; idleSlotsCount: " << _data.m_idleSlotsCount
-               << "; executingSlotsCount: " << _data.m_executingSlotsCount;
-}
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SAgentCountResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; activeSlotsCount: " << _data.m_activeSlotsCount
+                       << "; idleSlotsCount: " << _data.m_idleSlotsCount
+                       << "; executingSlotsCount: " << _data.m_executingSlotsCount;
+        }
+    } // namespace tools_api
+} // namespace dds

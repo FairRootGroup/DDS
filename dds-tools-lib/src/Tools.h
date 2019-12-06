@@ -10,8 +10,8 @@
 #include "ToolsProtocol.h"
 // STD
 #include <iostream>
-#include <string>
 #include <mutex>
+#include <string>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 #include <boost/uuid/uuid.hpp>
