@@ -6,7 +6,7 @@ project(dds_intercom_lib)
 configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
 
 set(SOURCE_FILES
-	src/dds_intercom.cpp
+	src/Intercom.cpp
 	src/dds_rms_plugin_protocol.cpp
 	src/IntercomServiceCore.cpp
 	src/SMAgentChannel.cpp
@@ -20,8 +20,8 @@ set(SRC_HDRS_INT
 )
 
 set(SRC_HDRS
-	src/dds_intercom.h
-	src/dds_intercom_error_codes.h
+	src/Intercom.h
+	src/IntercomErrorCodes.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${SRC_HDRS_INT} ${SRC_HDRS})
@@ -50,7 +50,7 @@ install(TARGETS ${PROJECT_NAME}
   EXPORT DDSTargets
   LIBRARY DESTINATION lib
 )
-install(FILES ${SRC_HDRS} DESTINATION "include/DDS")
+install(FILES ${SRC_HDRS} DESTINATION "include/dds")
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} tests - YES")

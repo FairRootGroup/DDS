@@ -11,7 +11,7 @@
 #include <boost/test/unit_test.hpp>
 
 // DDS
-#include "dds_intercom.h"
+#include "Intercom.h"
 
 // BOOST
 #include <boost/property_tree/json_parser.hpp>

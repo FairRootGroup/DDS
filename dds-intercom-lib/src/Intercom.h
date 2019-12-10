@@ -5,7 +5,7 @@
 #ifndef DDS_INTERCOM_H_
 #define DDS_INTERCOM_H_
 // DDS
-#include "dds_intercom_error_codes.h"
+#include "IntercomErrorCodes.h"
 // STD
 #include <ostream>
 #include <string>

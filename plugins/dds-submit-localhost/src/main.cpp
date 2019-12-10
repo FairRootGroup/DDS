@@ -20,11 +20,11 @@
 // DDS
 #include "BOOSTHelper.h"
 #include "BOOST_FILESYSTEM.h"
+#include "Intercom.h"
 #include "Process.h"
 #include "Res.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "dds_intercom.h"
 #include "logEngine.h"
 #include "ncf.h"
 #include "version.h"

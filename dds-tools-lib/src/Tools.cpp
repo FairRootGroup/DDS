@@ -17,10 +17,10 @@
 #include "ConditionEvent.h"
 #include "Process.h"
 // DDS
+#include "Intercom.h"
 #include "IntercomServiceCore.h"
 #include "ToolsProtocol.h"
 #include "UserDefaults.h"
-#include "dds_intercom.h"
 
 using namespace std;
 using namespace dds;

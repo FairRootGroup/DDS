@@ -1,5 +1,5 @@
 // DDS
-#include "dds_intercom.h"
+#include "Intercom.h"
 // STD
 #include <condition_variable>
 #include <exception>

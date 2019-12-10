@@ -19,10 +19,10 @@
 // DDS
 #include "BOOSTHelper.h"
 #include "BOOST_FILESYSTEM.h"
+#include "Intercom.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "dds_intercom.h"
 #include "local_types.h"
 #include "logEngine.h"
 #include "ncf.h"

@@ -6,9 +6,9 @@
 #define DDS_OCTOPUS_TASK_H
 
 // DDS
+#include "Intercom.h"
 #include "OctopusProtocol.h"
 #include "OctopusTestImpl.h"
-#include "dds_intercom.h"
 
 namespace dds
 {

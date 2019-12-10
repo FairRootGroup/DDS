@@ -5,8 +5,8 @@
 
 // DDS
 #include "CommanderChannel.h"
+#include "EnvProp.h"
 #include "UserDefaults.h"
-#include "dds_env_prop.h"
 // BOOST
 #include <boost/filesystem.hpp>
 

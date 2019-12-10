@@ -6,7 +6,7 @@
 #define DDS_OCTOPUS_PROTOCOL_H
 
 // DDS
-#include "dds_intercom.h"
+#include "Intercom.h"
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 

@@ -2,8 +2,8 @@
 //
 //
 // DDS
+#include "Intercom.h"
 #include "IntercomServiceCore.h"
-#include "dds_intercom.h"
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
 // STD

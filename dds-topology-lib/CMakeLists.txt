@@ -70,7 +70,7 @@ install(TARGETS ${PROJECT_NAME}
   EXPORT DDSTargets
   LIBRARY DESTINATION lib
 )
-install(FILES ${HEADER_FILES_EXT} DESTINATION "include/DDS")
+install(FILES ${HEADER_FILES_EXT} DESTINATION "include/dds")
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")

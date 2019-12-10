@@ -6,9 +6,9 @@
 #define DDS_OCTOPUS_TESTIMPL_H
 
 // DDS
+#include "Intercom.h"
 #include "OctopusProtocol.h"
 #include "Options.h"
-#include "dds_intercom.h"
 // STD
 #include <condition_variable>
 #include <iostream>

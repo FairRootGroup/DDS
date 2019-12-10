@@ -1,6 +1,6 @@
 // DDS
-#include "dds_env_prop.h"
-#include "dds_intercom.h"
+#include "EnvProp.h"
+#include "Intercom.h"
 // STD
 #include <exception>
 #include <iostream>

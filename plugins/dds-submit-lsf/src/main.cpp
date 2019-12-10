@@ -18,10 +18,10 @@
 #include <stdexcept>
 #include <thread>
 // DDS
+#include "Intercom.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "dds_intercom.h"
 #include "logEngine.h"
 #include "version.h"
 

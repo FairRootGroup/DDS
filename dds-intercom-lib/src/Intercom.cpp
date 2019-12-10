@@ -2,7 +2,7 @@
 //
 //
 // DDS
-#include "dds_intercom.h"
+#include "Intercom.h"
 #include "IntercomServiceCore.h"
 
 using namespace dds;

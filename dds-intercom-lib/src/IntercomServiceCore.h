@@ -6,8 +6,8 @@
 #define DDS_INTERCOM_SERVICE_CORE_H
 // DDS
 #include "AgentChannel.h"
+#include "IntercomErrorCodes.h"
 #include "SMAgentChannel.h"
-#include "dds_intercom_error_codes.h"
 // STD
 #include <string>
 #include <vector>

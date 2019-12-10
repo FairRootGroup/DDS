@@ -1,8 +1,8 @@
 // DDS
+#include "EnvProp.h"
+#include "Intercom.h"
 #include "Logger.h"
 #include "Topology.h"
-#include "dds_env_prop.h"
-#include "dds_intercom.h"
 // STD
 #include <chrono>
 #include <condition_variable>

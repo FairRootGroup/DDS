@@ -7,9 +7,9 @@
 #include "ConnectionManager.h"
 #include "ChannelId.h"
 #include "CommandAttachmentImpl.h"
+#include "Intercom.h"
 #include "MiscUtils.h"
 #include "TopoCore.h"
-#include "dds_intercom.h"
 #include "ncf.h"
 // BOOST
 #include <boost/filesystem.hpp>

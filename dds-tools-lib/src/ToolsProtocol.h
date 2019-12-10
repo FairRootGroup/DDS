@@ -13,8 +13,8 @@
 //// BOOST
 #include <boost/property_tree/ptree.hpp>
 // DDS
+#include "Intercom.h"
 #include "ToolsProtocolCore.h"
-#include "dds_intercom.h"
 
 namespace dds
 {
