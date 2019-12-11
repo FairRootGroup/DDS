@@ -1,10 +1,25 @@
 # DDS Release Notes
 
-## v2.6 (NOT YET RELEASED)
+# DDS Release Notes
+
+## v3.0 (2019-12-11)
+
+The main highlight of this release is a general overhaul of the core engine of DDS agents.   
+Starting from this release, DDS supports multiple tasks per agent.   
+DDS now requires much less resources at runtime.   
+In compare to previous versions it's also significantly faster when using DDS Key-Value and DDS Custom Commands in user tasks.    
 
 ### DDS common
 Fixed: a race condition in DDS Core in external process handling. (GH-252)    
 Fixed: Support list of values in DDS_LD_LIBRARY_PATH. (GH-262)     
+Modified: API breaking change! Names of all API headers are now streamlined.   
+Modified: DDS SM channels learned to drain their write queue. It helps to reduce CPU usage and handle cases when a user task is finished, but still receiving Intercom messages (such as Custom Commands).   
+Added: More Unit-/Functional-tests.    
+Added: DDS SM now supports multiple input queues.    
+Added: Add timestamp and log delivery time for Custom Commands.    
+
+### dds-user-defaults
+Added: new global option agent.work_dir. Using this setting users can define a working directory of agents.   
 
 ### dds-commander
 Fixed: fix cases when multiple commanders trying to bind the same found free port in the same time. (GH-250)    
@@ -26,7 +41,7 @@ Fixed: check that agent's topology hash is the same as commander's one before ta
 Fixed: SIGSEGV in dds-info. (GH-261)   
 Added: --wait option to wait for the required number of agents online. Must be used together with  --active-count, --idle-count, --executing-count.    
 Added: --active-count, --idle-count, --executing-count option to get the number of active, idle or executing agents respectively. These option can be used together with --wait in order to wait for the required number of agents.    
-Removed: --wait-for-idle-agents, --wait-for-executing-agents are obsolete. Replaced with -idle-count, --executing-count options used toghether with --wait option.    
+Removed: --wait-for-idle-agents, --wait-for-executing-agents are obsolete. Replaced with -idle-count, --executing-count options used toghether with --wait option.  
 
 ## v2.4 (2019-06-18)
 
