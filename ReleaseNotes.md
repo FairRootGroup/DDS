@@ -1,6 +1,5 @@
 # DDS Release Notes
 
-# DDS Release Notes
 
 ## v3.0 (2019-12-11)
 
