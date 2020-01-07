@@ -19,7 +19,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 # take the version string from git and write it to a version file
 # or take it from the version file if git is unavailable (a package distribution)
 # Keep the version file in the source directory to satisfy the source package.
-set( DDS_VERSION_FILE ${CMAKE_CURRENT_BINARY_DIR}/version )
+#
+# Note:
+# The version file is generated in the source dir as it needs to be included into the source package (cpack)
+set( DDS_VERSION_FILE ${CMAKE_SOURCE_DIR}/version )
 if( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
 	# The command produce a verion like "X.Y.Z.gHASH"
