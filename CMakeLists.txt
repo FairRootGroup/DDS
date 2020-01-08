@@ -181,6 +181,7 @@ SET(DDS_BIN_PRIVATE_FILES
 SET(DDS_ETC_FILES
 	${DDS_VERSION_FILE}
 	${CMAKE_SOURCE_DIR}/etc/DDSWorker.sh.in
+	${CMAKE_SOURCE_DIR}/etc/dds_user_task_wrapper.sh.in
 )
 #
 # "share" files

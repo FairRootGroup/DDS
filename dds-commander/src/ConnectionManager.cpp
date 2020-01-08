@@ -397,6 +397,30 @@ void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentCh
             uploadFilenames.push_back(filename);
             uploadAgents.push_back(sch.m_weakChannelInfo);
         }
+
+        // attache the environment script if needed
+        if (!sch.m_taskInfo.m_task->getEnv().empty())
+        {
+            if (sch.m_taskInfo.m_task->isEnvReachable())
+            {
+                cmd->m_sEnvFile = sch.m_taskInfo.m_task->getEnv();
+            }
+            else
+            {
+                string filePath;
+                string filename;
+                string cmdStr;
+                parseExe(sch.m_taskInfo.m_task->getEnv(), "%DDS_DEFAULT_TASK_PATH%", filePath, filename, cmdStr);
+
+                cmd->m_sEnvFile = cmdStr;
+
+                // Upload file only if it's not reachable
+                uploadFilePaths.push_back(filePath);
+                uploadFilenames.push_back(filename);
+                uploadAgents.push_back(sch.m_weakChannelInfo);
+            }
+        }
+
         typename SCommandAttachmentImpl<cmdACTIVATE_USER_TASK>::ptr_t activate_cmd = make_shared<SIDCmd>();
         activate_cmd->m_id = sch.m_weakChannelInfo.m_protocolHeaderID;
 

@@ -1,5 +1,10 @@
 # DDS Release Notes
 
+## v3.2 (NOT YET RELEASED)
+
+### DDS common
+Added: Users now can specify custom environment scripts for each task. (GH-24)    
+Modified: Improved cleaning of child processes of user tasks.     
 
 ## v3.0 (2019-12-11)
 

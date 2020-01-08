@@ -24,6 +24,7 @@ namespace dds
 
             slotId_t m_id{ 0 };
             std::string m_sUsrExe;
+            std::string m_sUsrEnv;
             taskId_t m_taskID{ 0 };
             size_t m_taskIndex{ 0 };
             size_t m_collectionIndex{ 0 };

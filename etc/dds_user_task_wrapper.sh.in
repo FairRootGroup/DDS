@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Copyright 2019 GSI, Inc. All rights reserved.
+#
+#
+
+killtree ()
+{
+	typeset parent=$1
+	typeset child
+	for child in $(pgrep -P $parent)
+	do
+       killtree $child
+	done
+	
+	kill -9 $parent
+}
+
+# Makesure to clean all backgroud processes
+# This helps to clean extra processes, which user tasks migh spawn
+trap "killtree $$" SIGHUP SIGINT SIGTERM
+
+# %DDS_USER_ENVIRONMENT%
+
+# Run user process in background to prevent propogation of the signals
+# Otherwise user task will catch the signals sent to the wrapper
+# %DDS_USER_TASK% &
+
+# Wait for user task to finish
+USERTASK_PID=$!
+wait $USERTASK_PID
+USER_TASK_EXIT_CODE=$?
+
+exit $USER_TASK_EXIT_CODE

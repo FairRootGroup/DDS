@@ -29,6 +29,7 @@ namespace dds
             std::string m_collectionName;
             std::string m_taskName;
             uint32_t m_topoHash;
+            std::string m_sEnvFile;
         };
         std::ostream& operator<<(std::ostream& _stream, const SAssignUserTaskCmd& val);
         bool operator!=(const SAssignUserTaskCmd& lhs, const SAssignUserTaskCmd& rhs);

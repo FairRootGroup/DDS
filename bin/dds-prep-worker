@@ -89,6 +89,7 @@ eval USER_SCRIPT=$(dds-user-defaults --session $DDS_SESSION_ID --user-env-script
 eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --session $DDS_SESSION_ID --wrkscript))/user_worker_env.sh"
 eval SERVER_INFO_FILE=$(dds-user-defaults --session $DDS_SESSION_ID --server-info-file)
 eval DDS_WRK_SCRIPT_IN=$DDS_LOCATION/etc/DDSWorker.sh.in
+eval DDS_TASK_WRAPPER_IN=$DDS_LOCATION/etc/dds_user_task_wrapper.sh.in
 eval DDS_SID_FILE=$(dds-user-defaults --session $DDS_SESSION_ID --session-id-file)
 
 # create a tmp working directory
@@ -106,7 +107,8 @@ mkdir -p "$CACHE_DIR"
 COMPONENTS_ETC=( "$DDS_CFG"
                  "$DDS_LOCATION/etc/version"
                  "$SERVER_INFO_FILE"
-			     "$DDS_SID_FILE" )
+			     "$DDS_SID_FILE" 
+			     "$DDS_TASK_WRAPPER_IN")
 
 COMPONENTS=( "${COMPONENTS_ETC[@]}" )
 #=============================================================================

@@ -413,6 +413,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     }
 
     slot->m_sUsrExe = _attachment->m_sExeFile;
+    slot->m_sUsrEnv = _attachment->m_sEnvFile;
     slot->m_taskID = _attachment->m_taskID;
     slot->m_taskIndex = _attachment->m_taskIndex;
     slot->m_collectionIndex = _attachment->m_collectionIndex;
@@ -436,6 +437,8 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     dir /= to_string(_sender.m_ID);
     dir += fs::path::preferred_separator;
     boost::algorithm::replace_all(slot->m_sUsrExe, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
+    // If the user custom environment was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
+    boost::algorithm::replace_all(slot->m_sUsrEnv, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
 
     try
     {
@@ -550,7 +553,40 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         string sTaskStdOut(ssTaskOutput.str() + "_out.log");
         string sTaskStdErr(ssTaskOutput.str() + "_err.log");
 
-        pidUsrTask = execute(sUsrExe, sTaskStdOut, sTaskStdErr);
+        boost::filesystem::path pathSlotDir(CUserDefaults::instance().getSlotsRootDir());
+        pathSlotDir /= to_string(_sender.m_ID);
+        const boost::filesystem::path pathTaskWrapperIn("dds_user_task_wrapper.sh.in");
+        const boost::filesystem::path pathTaskWrapper(pathSlotDir / "dds_user_task_wrapper.sh");
+
+        // Replace placeholders in the task wrapper
+        fs::ifstream fTaskWrapper(pathTaskWrapperIn.native());
+        if (!fTaskWrapper.is_open())
+            throw runtime_error("Failed to open task wrapper template.");
+        string sTaskWrapperContent((istreambuf_iterator<char>(fTaskWrapper)), istreambuf_iterator<char>());
+        // JOB SCRIPT ---  Custom environment
+        if (!slot.m_sUsrEnv.empty())
+        {
+            boost::replace_all(sTaskWrapperContent, "# %DDS_USER_ENVIRONMENT%", "source " + slot.m_sUsrEnv);
+        }
+        // JOB SCRIPT --- Task Executable
+        boost::replace_all(sTaskWrapperContent, "# %DDS_USER_TASK%", sUsrExe);
+
+        fs::ofstream fTaskWrapperOut(pathTaskWrapper.native());
+        if (!fTaskWrapperOut.is_open())
+            throw runtime_error("Failed to create task wrapper script.");
+
+        fTaskWrapperOut << sTaskWrapperContent;
+        fTaskWrapperOut.flush();
+        fTaskWrapperOut.close();
+
+        // Apply execute access on the wrapper script
+        boost::filesystem::permissions(pathTaskWrapper, boost::filesystem::add_perms | boost::filesystem::owner_all);
+
+        stringstream ssCmd;
+        ssCmd << boost::process::search_path("bash").string();
+        ssCmd << " -c \" " << pathTaskWrapper.native() << " \"";
+
+        pidUsrTask = execute(ssCmd.str(), sTaskStdOut, sTaskStdErr);
     }
     catch (exception& _e)
     {
