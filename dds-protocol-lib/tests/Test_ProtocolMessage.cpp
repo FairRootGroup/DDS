@@ -223,11 +223,13 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdASSIGN_USER_TASK)
     src.m_collectionName = "collection1";
     src.m_taskName = "task1";
     src.m_topoHash = 321;
+    src.m_sEnvFile = "env.sh";
     // expected attachment size
     const unsigned int cmdSize = src.m_sExeFile.size() + sizeof(uint16_t) + sizeof(uint64_t) + sizeof(uint32_t) +
                                  sizeof(uint32_t) + src.m_taskPath.size() + sizeof(uint16_t) + src.m_groupName.size() +
                                  sizeof(uint16_t) + src.m_collectionName.size() + sizeof(uint16_t) +
-                                 src.m_taskName.size() + sizeof(uint16_t) + sizeof(uint32_t);
+                                 src.m_taskName.size() + sizeof(uint16_t) + sizeof(uint32_t) + src.m_sEnvFile.size() +
+                                 sizeof(uint16_t);
 
     TestCommand(src, cmdASSIGN_USER_TASK, cmdSize);
 }
