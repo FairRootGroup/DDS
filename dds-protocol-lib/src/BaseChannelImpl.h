@@ -56,6 +56,7 @@ namespace dds
         using namespace dds::protocol_api;                                                                             \
         CMonitoringThread::instance().updateIdle();                                                                    \
         bool processed = true;                                                                                         \
+        (void)processed;                                                                                               \
         ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);                                      \
         SSenderInfo sender;                                                                                            \
         sender.m_ID = _currentMsg->header().m_ID;                                                                      \
@@ -133,6 +134,7 @@ namespace dds
 #define MESSAGE_HANDLER_DISPATCH(msg)                                                                               \
     case msg:                                                                                                       \
     {                                                                                                               \
+        (void)processed;                                                                                            \
         typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                        \
         attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                           \
         LOG(MiscCommon::debug) << "Dispatching " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
