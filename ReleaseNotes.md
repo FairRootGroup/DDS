@@ -6,6 +6,9 @@
 Added: Users now can specify custom environment scripts for each task. (GH-24)    
 Modified: Improved cleaning of child processes of user tasks.     
 
+### dds-tools-api
+Added: new static API calls CSession::getDefaultSessionIDString and CSession::getDefaultSessionID to get the default session id. (GH-209)    
+
 ## v3.0 (2019-12-11)
 
 The main highlight of this release is a general overhaul of the core engine of DDS agents.   

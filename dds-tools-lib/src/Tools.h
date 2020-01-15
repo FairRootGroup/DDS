@@ -166,6 +166,12 @@ namespace dds
             /// \brief Returns DDS session ID
             /// \return DDS session ID
             boost::uuids::uuid getSessionID() const;
+            /// \brief Returns the default DDS session ID as a string
+            /// \return DDS session ID or an empty if no default session is yet set
+            static std::string getDefaultSessionIDString();
+            /// \brief Returns the default DDS session ID
+            /// \return DDS session ID or nil_uuid if no default session is yet set
+            static boost::uuids::uuid getDefaultSessionID();
             /// \brief blockCurrentThread Blocks current thread.
             ///
             /// The function stops the thread and waits until one of the conditions is applied:

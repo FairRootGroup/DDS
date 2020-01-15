@@ -197,6 +197,27 @@ boost::uuids::uuid CSession::getSessionID() const
     return m_impl->m_sid;
 }
 
+string CSession::getDefaultSessionIDString()
+{
+    return CUserDefaults::instance().getDefaultSID();
+}
+
+boost::uuids::uuid CSession::getDefaultSessionID()
+{
+    try
+    {
+        const string sid = getDefaultSessionIDString();
+        if (sid.empty())
+            return boost::uuids::nil_uuid();
+        else
+            return boost::uuids::string_generator()(sid);
+    }
+    catch (...)
+    {
+        return boost::uuids::nil_uuid();
+    }
+}
+
 void CSession::blockCurrentThread()
 {
     if (m_impl->m_sid.is_nil() || m_impl->m_service == nullptr)
