@@ -21,14 +21,16 @@ namespace fs = boost::filesystem;
 
 const uint16_t g_MaxConnectionAttempts = 5;
 
-CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service, uint64_t _ProtocolHeaderID)
+CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
+                                     uint64_t _ProtocolHeaderID,
+                                     boost::asio::io_context& _intercomService)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT, _ProtocolHeaderID)
     , m_connectionAttempts(1)
 {
     // Create shared memory channel for message forwarding from the network channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
 
-    m_leaderChannel = CSMLeaderChannel::makeNew(_service,
+    m_leaderChannel = CSMLeaderChannel::makeNew(_intercomService,
                                                 userDefaults.getSMLeaderInputNames(),
                                                 userDefaults.getSMLeaderOutputName(_ProtocolHeaderID),
                                                 _ProtocolHeaderID,

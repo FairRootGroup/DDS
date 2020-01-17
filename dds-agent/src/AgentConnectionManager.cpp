@@ -76,7 +76,7 @@ void CAgentConnectionManager::start()
         // Start network channel. This is a blocking function call.
         createCommanderChannel(protocolHeaderID);
 
-        startService(6 + CUserDefaults::getNumLeaderFW());
+        startService(4, 6 + CUserDefaults::getNumLeaderFW());
     }
     catch (exception& e)
     {
@@ -99,6 +99,7 @@ void CAgentConnectionManager::stop()
             m_commanderChannel->stopChannel();
 
         m_io_context.stop();
+        m_io_contextIntercom.stop();
     }
     catch (exception& e)
     {
@@ -107,9 +108,12 @@ void CAgentConnectionManager::stop()
     LOG(info) << "Shutting down DDS transport - DONE";
 }
 
-void CAgentConnectionManager::startService(size_t _numThreads)
+void CAgentConnectionManager::startService(size_t _numThreads, size_t _numIntercomThreads)
 {
-    LOG(MiscCommon::info) << "Starting DDS transport engine using " << _numThreads << " concurrent threads.";
+    LOG(MiscCommon::info) << "Starting DDS transport engine using " << _numThreads + _numIntercomThreads << " ("
+                          << _numIntercomThreads << " for intercom)"
+                          << " concurrent threads.";
+    // Main service threads
     for (int x = 0; x < _numThreads; ++x)
     {
         m_workerThreads.create_thread([this]() {
@@ -119,7 +123,21 @@ void CAgentConnectionManager::startService(size_t _numThreads)
             }
             catch (exception& ex)
             {
-                LOG(MiscCommon::error) << "AgentConnectionManager: " << ex.what();
+                LOG(MiscCommon::error) << "AgentConnectionManager main service: " << ex.what();
+            }
+        });
+    }
+    // Intercom service threads
+    for (int x = 0; x < _numIntercomThreads; ++x)
+    {
+        m_workerThreads.create_thread([this]() {
+            try
+            {
+                m_io_contextIntercom.run();
+            }
+            catch (exception& ex)
+            {
+                LOG(MiscCommon::error) << "AgentConnectionManager intercom service: " << ex.what();
             }
         });
     }
@@ -148,7 +166,7 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
     // Create new agent and push handshake message
-    m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID);
+    m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID, m_io_contextIntercom);
     m_commanderChannel->setNumberOfSlots(m_options.m_slots);
 
     // Subscribe to Shutdown command

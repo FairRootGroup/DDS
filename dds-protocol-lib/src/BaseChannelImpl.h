@@ -278,9 +278,12 @@ namespace dds
                 stop();
             }
 
-            static connectionPtr_t makeNew(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
+            template <class... Args>
+            static connectionPtr_t makeNew(boost::asio::io_context& _service,
+                                           uint64_t _protocolHeaderID,
+                                           Args&(... args))
             {
-                connectionPtr_t newObject(new T(_service, _protocolHeaderID));
+                connectionPtr_t newObject(new T(_service, _protocolHeaderID, args...));
                 return newObject;
             }
 

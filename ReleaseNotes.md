@@ -6,6 +6,9 @@
 Added: Users now can specify custom environment scripts for each task. (GH-24)    
 Modified: Improved cleaning of child processes of user tasks.     
 
+### DDS agent
+Modified: Intercom channel got a dedicated service. Now DDS main transport and Intercom work on different threads.    
+
 ### dds-tools-api
 Added: new static API calls CSession::getDefaultSessionIDString and CSession::getDefaultSessionID to get the default session id. (GH-209)    
 

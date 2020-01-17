@@ -25,7 +25,7 @@ namespace dds
             void stop();
 
           private:
-            void startService(size_t _numThreads);
+            void startService(size_t _numThreads, size_t _numIntercomThreads);
             void createCommanderChannel(uint64_t _protocolHeaderID);
             void doAwaitStop();
             void on_cmdSHUTDOWN(const protocol_api::SSenderInfo& _sender,
@@ -34,6 +34,7 @@ namespace dds
 
           private:
             boost::asio::io_context m_io_context;
+            boost::asio::io_context m_io_contextIntercom;
             boost::thread_group m_workerThreads;
 
             CCommanderChannel::connectionPtr_t m_commanderChannel;
