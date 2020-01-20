@@ -8,7 +8,7 @@
 
 // DDS
 #include "ClientChannelImpl.h"
-#include "SMLeaderChannel.h"
+#include "SMIntercomChannel.h"
 #include "TopoCore.h"
 
 namespace dds
@@ -132,12 +132,12 @@ namespace dds
 
           private:
             uint64_t m_id{ 0 };
-            uint16_t m_connectionAttempts;
+            uint16_t m_connectionAttempts{ 1 };
             std::mutex m_taskIDToSlotIDMapMutex;
             std::map<uint64_t, uint64_t> m_taskIDToSlotIDMap;
             topology_api::CTopoCore m_topo;
 
-            CSMLeaderChannel::connectionPtr_t m_leaderChannel;
+            CSMIntercomChannel::connectionPtr_t m_intercomChannel;
 
             std::mutex m_mutexSlots;
             SSlotInfo::container_t m_slots;

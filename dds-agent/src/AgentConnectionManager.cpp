@@ -4,32 +4,25 @@
 //
 
 // BOOST
-#include <boost/interprocess/sync/named_mutex.hpp>
-#include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 // DDS
 #include "AgentConnectionManager.h"
-#include "CommanderChannel.h"
 #include "Logger.h"
 #include "MonitoringThread.h"
 
 using namespace boost::asio;
-namespace bi = boost::interprocess;
 using namespace std;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
-using namespace dds::topology_api;
 using namespace MiscCommon;
-namespace sp = std::placeholders;
 using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
-    : m_signals(m_io_context)
+    : m_signals(m_context)
     , m_options(_options)
-    , m_bStarted(false)
 {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,
@@ -98,8 +91,8 @@ void CAgentConnectionManager::stop()
         if (m_commanderChannel)
             m_commanderChannel->stopChannel();
 
-        m_io_context.stop();
-        m_io_contextIntercom.stop();
+        m_context.stop();
+        m_intercomContext.stop();
     }
     catch (exception& e)
     {
@@ -119,7 +112,7 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
         m_workerThreads.create_thread([this]() {
             try
             {
-                m_io_context.run();
+                m_context.run();
             }
             catch (exception& ex)
             {
@@ -133,7 +126,7 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
         m_workerThreads.create_thread([this]() {
             try
             {
-                m_io_contextIntercom.run();
+                m_intercomContext.run();
             }
             catch (exception& ex)
             {
@@ -161,12 +154,12 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
     LOG(info) << "Contacting DDS commander on " << sHost << ":" << sPort;
 
     // Resolve endpoint iterator from host and port
-    tcp::resolver resolver(m_io_context);
+    tcp::resolver resolver(m_context);
     tcp::resolver::query query(sHost, sPort);
     tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
     // Create new agent and push handshake message
-    m_commanderChannel = CCommanderChannel::makeNew(m_io_context, _protocolHeaderID, m_io_contextIntercom);
+    m_commanderChannel = CCommanderChannel::makeNew(m_context, _protocolHeaderID, m_intercomContext);
     m_commanderChannel->setNumberOfSlots(m_options.m_slots);
 
     // Subscribe to Shutdown command

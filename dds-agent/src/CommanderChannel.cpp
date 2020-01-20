@@ -25,29 +25,28 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
                                      uint64_t _ProtocolHeaderID,
                                      boost::asio::io_context& _intercomService)
     : CClientChannelImpl<CCommanderChannel>(_service, EChannelType::AGENT, _ProtocolHeaderID)
-    , m_connectionAttempts(1)
 {
     // Create shared memory channel for message forwarding from the network channel
     const CUserDefaults& userDefaults = CUserDefaults::instance();
 
-    m_leaderChannel = CSMLeaderChannel::makeNew(_intercomService,
-                                                userDefaults.getSMLeaderInputNames(),
-                                                userDefaults.getSMLeaderOutputName(_ProtocolHeaderID),
-                                                _ProtocolHeaderID,
-                                                EMQOpenType::OpenOrCreate,
-                                                EMQOpenType::OpenOrCreate);
+    m_intercomChannel = CSMIntercomChannel::makeNew(_intercomService,
+                                                    userDefaults.getSMLeaderInputNames(),
+                                                    userDefaults.getSMLeaderOutputName(_ProtocolHeaderID),
+                                                    _ProtocolHeaderID,
+                                                    EMQOpenType::OpenOrCreate,
+                                                    EMQOpenType::OpenOrCreate);
 
-    m_leaderChannel->registerHandler<cmdCUSTOM_CMD>(
+    m_intercomChannel->registerHandler<cmdCUSTOM_CMD>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
             pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID);
         });
 
-    m_leaderChannel->registerHandler<cmdUPDATE_KEY>(
+    m_intercomChannel->registerHandler<cmdUPDATE_KEY>(
         [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
             send_cmdUPDATE_KEY(_sender, _attachment);
         });
 
-    m_leaderChannel->start();
+    m_intercomChannel->start();
 
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
@@ -155,7 +154,7 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
                 LOG(MiscCommon::error) << _attachment->m_sMsg;
             }
             // Forward message to user task
-            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment, _sender.m_ID, _sender.m_ID);
+            m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment, _sender.m_ID, _sender.m_ID);
             return true;
         }
 
@@ -482,7 +481,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     const SSlotInfo& slot = slot_it->second;
 
     // Revoke drain of the write queue to start accept messages
-    m_leaderChannel->drainWriteQueue(false, slot.m_id);
+    m_intercomChannel->drainWriteQueue(false, slot.m_id);
 
     string sUsrExe(slot.m_sUsrExe);
 
@@ -652,7 +651,7 @@ bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_
     fs::create_directories(dir);
 
     // Add shared memory output for intercom API task
-    m_leaderChannel->addOutput(info.m_id, CUserDefaults::instance().getSMLeaderOutputName(info.m_id));
+    m_intercomChannel->addOutput(info.m_id, CUserDefaults::instance().getSMLeaderOutputName(info.m_id));
 
     {
         std::lock_guard<std::mutex> lock(m_mutexSlots);
@@ -672,7 +671,7 @@ bool CCommanderChannel::on_cmdUPDATE_KEY(SCommandAttachmentImpl<cmdUPDATE_KEY>::
     LOG(debug) << "Received key value update: " << *_attachment;
 
     // Forward message to user task
-    m_leaderChannel->pushMsg<cmdUPDATE_KEY>(*_attachment, _sender.m_ID, _sender.m_ID);
+    m_intercomChannel->pushMsg<cmdUPDATE_KEY>(*_attachment, _sender.m_ID, _sender.m_ID);
 
     return true;
 }
@@ -682,7 +681,7 @@ bool CCommanderChannel::on_cmdCUSTOM_CMD(SCommandAttachmentImpl<cmdCUSTOM_CMD>::
     LOG(debug) << "Received custom command: " << *_attachment;
 
     // Forward message to user task
-    m_leaderChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID, _sender.m_ID);
+    m_intercomChannel->pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID, _sender.m_ID);
 
     return true;
 }
@@ -886,7 +885,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         slot.m_taskID = 0;
 
         // Drainning the Intercom write queue
-        m_leaderChannel->drainWriteQueue(true, _slotID);
+        m_intercomChannel->drainWriteQueue(true, _slotID);
     }
     catch (exception& _e)
     {
@@ -900,8 +899,8 @@ void CCommanderChannel::stopChannel()
     // terminate external children processes (like user tasks, for example)
     terminateChildrenProcesses(0);
 
-    if (m_leaderChannel)
-        m_leaderChannel->stop();
+    if (m_intercomChannel)
+        m_intercomChannel->stop();
 
     // stop channel
     stop();
@@ -925,7 +924,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             stringstream ss;
             ss << "Can't propagate property <" << propertyName << "> that doesn't exist for task <" << task->getName()
                << ">";
-            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(
+            m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(
                 SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
             return;
         }
@@ -935,7 +934,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             stringstream ss;
             ss << "Can't propagate property <" << property->getName() << "> which has a READ access type for task <"
                << task->getName() << ">";
-            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(
+            m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(
                 SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
             return;
         }
@@ -946,7 +945,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             stringstream ss;
             ss << "Can't propagate property <" << property->getName()
                << "> which has a COLLECTION scope type but task <" << task->getName() << "> is not in any collection";
-            m_leaderChannel->pushMsg<cmdSIMPLE_MSG>(
+            m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(
                 SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
             return;
         }
@@ -985,7 +984,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
                 if (localPush)
                 {
                     LOG(debug) << "Push update key via shared memory: cmd=<" << cmd << ">; slotID=" << slotID;
-                    m_leaderChannel->pushMsg<cmdUPDATE_KEY>(cmd, slotID, slotID);
+                    m_intercomChannel->pushMsg<cmdUPDATE_KEY>(cmd, slotID, slotID);
                 }
                 else
                 {
@@ -1022,7 +1021,7 @@ bool CCommanderChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK
 
     for (const auto& i : slotsTmp)
     {
-        m_leaderChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment, i, i);
+        m_intercomChannel->pushMsg<cmdUSER_TASK_DONE>(*_attachment, i, i);
     }
 
     return true;
