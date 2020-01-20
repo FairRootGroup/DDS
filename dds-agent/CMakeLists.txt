@@ -9,14 +9,14 @@ set(SOURCE_FILES
 	src/main.cpp
 	src/CommanderChannel.cpp
 	src/AgentConnectionManager.cpp
-    src/SMLeaderChannel.cpp
+    src/SMIntercomChannel.cpp
 )
 
 set(HEADER_FILES
 	src/Options.h
 	src/CommanderChannel.h
 	src/AgentConnectionManager.h
-    src/SMLeaderChannel.h
+    src/SMIntercomChannel.h
 )
 
 if(APPLE)
@@ -31,10 +31,10 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
   MiscCommon
-	dds_protocol_lib
+  dds_protocol_lib
   dds_topology_lib
-	dds_user_defaults_lib
-	dds_intercom_lib
+  dds_user_defaults_lib
+  dds_intercom_lib
   Boost::boost
   Boost::program_options
   Boost::system

@@ -33,15 +33,15 @@ namespace dds
                                 CCommanderChannel::weakConnectionPtr_t _channel);
 
           private:
-            boost::asio::io_context m_io_context;
-            boost::asio::io_context m_io_contextIntercom;
+            boost::asio::io_context m_context;
+            boost::asio::io_context m_intercomContext;
             boost::thread_group m_workerThreads;
 
             CCommanderChannel::connectionPtr_t m_commanderChannel;
 
             boost::asio::signal_set m_signals;
             SOptions_t m_options;
-            bool m_bStarted;
+            bool m_bStarted{ false };
         };
     } // namespace agent_cmd
 } // namespace dds
