@@ -454,13 +454,13 @@ endif()
 # TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
 #
 add_custom_target( wn_bin
-	COMMAND -mkdir -p ${WN_PKG_DIR}
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${WN_PKG_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -DPREREQ_DESTINATION=${WN_PKG_DIR} -DDDS_AGENT_BIN_PATH=${DDS_AGENT_BIN_PATH}
 		-DPREREQ_DIRS=${PREREQ_DIRS} -DDDS_BOOST_LIB_DIR=${DDS_BOOST_LIB_DIR} -P "${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisites.cmake"
 	COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
-	COMMAND -chmod go+xr ${WN_PKG_NAME_ARCH}
+	COMMAND chmod go+xr ${WN_PKG_NAME_ARCH}
 	COMMENT "Generate WN binary package"
 	VERBATIM )
 
