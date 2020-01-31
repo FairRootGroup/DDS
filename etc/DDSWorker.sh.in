@@ -234,7 +234,7 @@ export DDS_LOCATION=$WD
 
 # default WN locations
 DDS_BINARIES_LOCATION=$DDS_LOCATION/
-DDS_LIBS_LOCATION=$DDS_LOCATION/
+export DDS_LIBS_LOCATION=$DDS_LOCATION/
 
 # getting the version of DDS
 PKG_VERSION=$(cat $WD/version)
