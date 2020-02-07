@@ -670,8 +670,15 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     //        m_taskIDToAgentChannelMap.erase(it);
     //}
 
-    auto task = m_topo.getRuntimeTaskById(_attachment->m_taskID).m_task;
-    LOG(info) << "User task <" << _attachment->m_taskID << "> with path " << task->getPath() << " done";
+    try
+    {
+        auto task = m_topo.getRuntimeTaskById(_attachment->m_taskID).m_task;
+        LOG(info) << "User task <" << _attachment->m_taskID << "> with path " << task->getPath() << " done";
+    }
+    catch (exception& _e)
+    {
+        LOG(info) << "User task <" << _attachment->m_taskID << "> done. Additional info: " << _e.what();
+    }
 }
 
 void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& _sender,
@@ -1230,27 +1237,6 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
 
         sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, ss.str(), EMsgSeverity::info);
 
-        m_topo = topo; // Assign new topology
-        //
-
-        //
-        // Update topology on the agents
-        //
-        if (!topologyFile.empty())
-        {
-            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-                return (!_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
-                        _v.m_channel->started());
-            };
-            CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
-
-            if (allAgents.size() == 0)
-                throw runtime_error("There are no active agents.");
-
-            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
-                allAgents, _channel, "Updating topology for agents...", topologyFile, "topology.xml");
-        }
-
         //
         // Stop removed tasks
         //
@@ -1277,6 +1263,28 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
         }
         //
+
+        // Assign new topology for DDS commander
+        m_topo = topo;
+        //
+
+        //
+        // Update topology on the agents
+        //
+        if (!topologyFile.empty())
+        {
+            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+                return (!_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
+                        _v.m_channel->started());
+            };
+            CConnectionManager::weakChannelInfo_t::container_t allAgents(getChannels(allCondition));
+
+            if (allAgents.size() == 0)
+                throw runtime_error("There are no active agents.");
+
+            broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
+                allAgents, _channel, "Updating topology for agents...", topologyFile, "topology.xml");
+        }
 
         //
         // Activate added tasks

@@ -5,6 +5,7 @@
 ### DDS common
 Added: Users now can specify custom environment scripts for each task. (GH-24)    
 Modified: Improved cleaning of child processes of user tasks.     
+Fixed: If process is killed or crased it can leave opened and locked interprocess mutex. It leads to hanging boost::interprocess::message_queue::timed_send function. The function tries to write to the queue which is locked by the mutex from the killed process. BOOST implements a workaround flag - BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING. It forces the boost::interprocess to use timed mutexes instead of a simple ones.    
 
 ### dds-agent
 Modified: Intercom channel got a dedicated service. Now DDS main transport and Intercom work on different threads. (GH-279)    

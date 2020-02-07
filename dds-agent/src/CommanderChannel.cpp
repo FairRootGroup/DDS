@@ -238,7 +238,8 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             LOG(info) << "Received user executable to execute: " << destFilePath.generic_string();
 
             // Send response back to server
-            pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK));
+            pushMsg<cmdREPLY>(SReplyCmd("File received", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK),
+                              _sender.m_ID);
             return true;
         }
         case cmdUPDATE_TOPOLOGY:
@@ -396,7 +397,8 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     }
     catch (exception& _e)
     {
-        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK),
+                          _sender.m_ID);
         LOG(error) << "Assign task error: " << _e.what();
         return true;
     }
@@ -408,7 +410,8 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     }
     catch (exception& _e)
     {
-        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK),
+                          _sender.m_ID);
         LOG(error) << "Assign task error: " << _e.what();
         return true;
     }
@@ -453,11 +456,13 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     catch (exception& _e)
     {
         LOG(error) << _e.what();
-        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK),
+                          _sender.m_ID);
         return true;
     }
 
-    pushMsg<cmdREPLY>(SReplyCmd("User task assigned", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK));
+    pushMsg<cmdREPLY>(SReplyCmd("User task assigned", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK),
+                      _sender.m_ID);
 
     return true;
 }
@@ -474,7 +479,8 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         pushMsg<cmdREPLY>(SReplyCmd("Received activation command. Wrong slot ID.",
                                     (uint16_t)SReplyCmd::EStatusCode::ERROR,
                                     0,
-                                    cmdACTIVATE_USER_TASK));
+                                    cmdACTIVATE_USER_TASK),
+                          _sender.m_ID);
         return true;
     }
 
@@ -492,7 +498,8 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         pushMsg<cmdREPLY>(SReplyCmd("No task is assigned. Activation is ignored.",
                                     (uint16_t)SReplyCmd::EStatusCode::OK,
                                     0,
-                                    cmdACTIVATE_USER_TASK));
+                                    cmdACTIVATE_USER_TASK),
+                          _sender.m_ID);
         return true;
     }
 
@@ -593,7 +600,8 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     {
         LOG(error) << _e.what();
         // Send response back to server
-        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdACTIVATE_USER_TASK));
+        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdACTIVATE_USER_TASK),
+                          _sender.m_ID);
         return true;
     }
 
@@ -604,7 +612,8 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     onNewUserTask(slot.m_id, pidUsrTask);
 
     // Send response back to server
-    pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdACTIVATE_USER_TASK));
+    pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdACTIVATE_USER_TASK),
+                      _sender.m_ID);
 
     return true;
 }
@@ -616,24 +625,27 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
     {
         auto& slot = getSlotInfoById(_sender.m_ID);
 
-        if (slot.m_pid > 0)
-            terminateChildrenProcesses(slot.m_pid);
-
         if (slot.m_taskID == 0)
         {
             // No running tasks, nothing to stop
             // Send response back to server
-            pushMsg<cmdREPLY>(SReplyCmd(
-                "No tasks is running. Nothing to stop.", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
+            pushMsg<cmdREPLY>(SReplyCmd("No tasks is running. Nothing to stop.",
+                                        (uint16_t)SReplyCmd::EStatusCode::OK,
+                                        0,
+                                        cmdSTOP_USER_TASK),
+                              _sender.m_ID);
             return true;
         }
+
+        if (slot.m_pid > 0)
+            terminateChildrenProcesses(slot.m_pid);
     }
     catch (exception& _e)
     {
         LOG(warning) << "Can't find user task on slot " << _sender.m_ID << ": " << _e.what();
     }
 
-    pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK));
+    pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK), _sender.m_ID);
     return true;
 }
 
@@ -807,7 +819,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
         stringstream ssCmd;
         ssCmd << boost::process::search_path("pgrep").string() << " -P " << mainPid;
         string output;
-        execute(ssCmd.str(), std::chrono::seconds(10), &output);
+        execute(ssCmd.str(), std::chrono::seconds(5), &output);
         boost::split(vecChildren, output, boost::is_any_of(" \n"), boost::token_compress_on);
         vecChildren.erase(
             remove_if(vecChildren.begin(), vecChildren.end(), [](const string& _val) { return _val.empty(); }),
@@ -847,7 +859,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
         }
         // TODO: Needs to be fixed! Implement time-function based timeout measurements
         // instead
-        sleep(1);
+        this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
     // kill all child process of tasks if there are any
