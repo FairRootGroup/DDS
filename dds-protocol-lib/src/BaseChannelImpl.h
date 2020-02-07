@@ -150,15 +150,15 @@ namespace dds
         break;                                                                                                      \
     }
 
-#define END_MSG_MAP()                                                                                         \
-    default:                                                                                                  \
-        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString(); \
-        }                                                                                                     \
-        }                                                                                                     \
-        catch (std::exception & _e)                                                                           \
-        {                                                                                                     \
-            LOG(MiscCommon::error) << "Channel processMessage: " << _e.what();                                \
-        }                                                                                                     \
+#define END_MSG_MAP()                                                                                              \
+    default:                                                                                                       \
+        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString();      \
+        }                                                                                                          \
+        }                                                                                                          \
+        catch (std::exception & _e)                                                                                \
+        {                                                                                                          \
+            LOG(MiscCommon::error) << "Channel processMessage (" << _currentMsg->toString() << "): " << _e.what(); \
+        }                                                                                                          \
         }
 
 // Raw message processing

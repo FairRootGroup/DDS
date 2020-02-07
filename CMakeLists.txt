@@ -129,6 +129,13 @@ set(MiscCommon_LOCATION
 	${MiscCommon_LOCATION}/dds_ncf/src
 )
 #
+# Custom compiler definitions
+#
+# If process is killed or crased it can leave opened and locked interprocess mutex. It leads to hanging boost::interprocess::message_queue::timed_send function. The function tries to write to the queue which is locked by the mutex from the killed process. BOOST implements a workaround flag - BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING. It forces the boost::interprocess to use timed mutexes instead of a simple ones.
+add_compile_definitions(BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING)
+# boost::interprocess mutexes timeout duration.
+add_compile_definitions(BOOST_INTERPROCESS_TIMEOUT_WHEN_LOCKING_DURATION_MS=5000)
+#
 # additional compiler and linker flags for C++11
 #
 if(APPLE)
