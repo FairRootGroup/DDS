@@ -11,6 +11,7 @@ set(DDS_PROTOCOL_VERSION "2")
 # Check if cmake has the required version
 #
 cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
+cmake_policy(VERSION 3.11...3.16)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
