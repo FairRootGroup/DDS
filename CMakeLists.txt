@@ -404,11 +404,6 @@ set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
 set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
 set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
 
-set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
-if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
-	set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
-endif()
-
 if(ENV{DDS_LD_LIBRARY_PATH})
   # because of SIP on macOS we can't use (DY)LD_LIBRARY_PATH.
   # But we need to search also in custom location for libstdc++ in case if user installs a custom version of gcc/clang.
@@ -418,7 +413,7 @@ else()
   file(TO_CMAKE_PATH "$ENV{LD_LIBRARY_PATH}" ENV_LD_LIBRARY_PATH)
 endif()
 
-set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::${DDS_BOOST_LIB_DIR}")
+set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::$<TARGET_FILE_DIR:Boost::log>")
 foreach(p IN LISTS ENV_LD_LIBRARY_PATH)
   set(PREREQ_DIRS "${PREREQ_DIRS}::${p}")
 endforeach()
@@ -466,7 +461,7 @@ add_custom_target( wn_bin
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
 	COMMAND ${CMAKE_COMMAND} -DPREREQ_DESTINATION=${WN_PKG_DIR} -DDDS_AGENT_BIN_PATH=${DDS_AGENT_BIN_PATH}
-		-DPREREQ_DIRS=${PREREQ_DIRS} -DDDS_BOOST_LIB_DIR=${DDS_BOOST_LIB_DIR} -P "${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisites.cmake"
+		-DPREREQ_DIRS=${PREREQ_DIRS} -P "${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisites.cmake"
 	COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
 	COMMAND chmod go+xr ${WN_PKG_NAME_ARCH}
 	COMMENT "Generate WN binary package"

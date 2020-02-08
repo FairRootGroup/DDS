@@ -5,14 +5,13 @@ include(GetPrerequisites)
 
 # WORKAROUND: if "macro" is used it doesn't outoup "message" messages.
 #macro(DDS_CollectPrerequisites)
-	
+
 	###################################################
 	## Collect prerequisites for WN PKG
 	###################################################
-	message( STATUS "Using BOOST Library dir: " ${DDS_BOOST_LIB_DIR})
 	string(REPLACE "::" ";" PREREQ_DIRS_LIST ${PREREQ_DIRS})
 	message( STATUS "prerequisite dirs: " "${PREREQ_DIRS_LIST}")
-	
+
 	# WORKAROUND: the list comes broken into the macro, we need to rebuild it
 	# if we don't do that, the  get_prerequisites doesn't use all avaliable directories.
 	# I didn't find anyother way, but rebuilt the list.
@@ -24,7 +23,7 @@ include(GetPrerequisites)
 
 	get_prerequisites(${DDS_AGENT_BIN_PATH} DEPENDENCIES 1 1 "" "${PREREQ_DIRS_LIST_REBUILT}")
 
-	
+
 	foreach(DEPENDENCY_FILE ${DEPENDENCIES})
 		# get file name to be able to resolve files with @rpath on macOS
 		get_filename_component(PREREQNAME "${DEPENDENCY_FILE}"  NAME)
