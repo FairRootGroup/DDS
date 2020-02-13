@@ -14,7 +14,8 @@
 // MiscCommon
 #include "CRC.h"
 // BOOST
-#include "boost/range/adaptor/map.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/regex.hpp>
 
@@ -59,6 +60,9 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
 
     // Use empty string to disable validation in parser
     string schemaFileName = (m_bXMLValidationDisabled) ? "" : _schemaFileName;
+
+    // Store path to the XML topology file
+    m_filepath = boost::filesystem::canonical(filename).string();
 
     CTopoParserXML parser;
     m_main = std::make_shared<CTopoGroup>();
@@ -127,6 +131,11 @@ std::string CTopoCore::getName() const
         throw runtime_error("Topology not initialized. Call init first.");
     }
     return m_name;
+}
+
+std::string CTopoCore::getFilepath() const
+{
+    return m_filepath;
 }
 
 uint32_t CTopoCore::getHash() const

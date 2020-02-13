@@ -60,6 +60,7 @@ namespace dds
 
             /// Accessors
             std::string getName() const;
+            std::string getFilepath() const;
             uint32_t getHash() const;
             CTopoGroup::Ptr_t getMainGroup() const;
             const STopoRuntimeTask& getRuntimeTaskById(Id_t _id) const;
@@ -115,6 +116,7 @@ namespace dds
             bool m_bXMLValidationDisabled{ false }; ///< if true than XML will not be validated agains XSD
             std::string m_name;                     ///< Name of the topology
             uint32_t m_hash{ 0 };                   ///< CRC64 of the topology XML file
+            std::string m_filepath;                 ///< Path to the XML topology file
         };
     } // namespace topology_api
 } // namespace dds

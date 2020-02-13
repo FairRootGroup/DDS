@@ -41,6 +41,11 @@ std::string CTopology::getName() const
     return m_topo->getName();
 }
 
+std::string CTopology::getFilepath() const
+{
+    return m_topo->getFilepath();
+}
+
 uint32_t CTopology::getHash() const
 {
     return m_topo->getHash();

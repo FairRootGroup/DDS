@@ -24,6 +24,7 @@
 #include "TopoUtils.h"
 #include "UserDefaults.h"
 // BOOST
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 // MiscCommon
@@ -164,6 +165,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     BOOST_CHECK_THROW(topology.getName(), std::runtime_error);
     topology.init("topology_test_1.xml");
     BOOST_CHECK(topology.getName() == "myTopology");
+    BOOST_CHECK(topology.getFilepath() == boost::filesystem::canonical("topology_test_1.xml").string());
     BOOST_CHECK(topology.getHash() == 0xae467638);
     // std::cout << topology.toString();
     CTopoGroup::Ptr_t main = topology.getMainGroup();
