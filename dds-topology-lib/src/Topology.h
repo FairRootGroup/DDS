@@ -42,6 +42,9 @@ namespace dds
             /// \throw runtime_error
             std::string getName() const;
 
+            /// \brief Returns topology filepath or empty string if topology is not initialized
+            std::string getFilepath() const;
+
             /// \brief Returns topology hash
             /// \throw runtime_error
             uint32_t getHash() const;
