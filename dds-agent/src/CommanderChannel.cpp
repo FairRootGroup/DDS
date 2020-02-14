@@ -833,7 +833,17 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
         // Look for child processes of the children
         for (auto& i : tmpContainer)
         {
-            enumChildProcesses(stol(i), _chilren);
+            pid_t pid{ 0 };
+            try
+            {
+                pid = stol(i);
+            }
+            catch (std::invalid_argument& _e)
+            {
+                LOG(error) << "Invalid pid: " << i;
+                continue;
+            }
+            enumChildProcesses(pid, _chilren);
         }
     }
     catch (...)
@@ -861,7 +871,16 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
     pidContainer_t pidChildren;
     for (const auto i : vecChildren)
     {
-        pidChildren.push_back(stol(i));
+        pid_t pid{ 0 };
+        try
+        {
+            pid = stol(i);
+            pidChildren.push_back(pid);
+        }
+        catch (std::invalid_argument& _e)
+        {
+            LOG(error) << "Can't insert pid: " << i;
+        }
 
         if (!sChildren.empty())
             sChildren += ", ";
