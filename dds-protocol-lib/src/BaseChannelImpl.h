@@ -989,9 +989,9 @@ namespace dds
             EChannelType m_channelType;
             std::string m_sessionID;
             uint64_t m_protocolHeaderID;
+            boost::asio::io_context& m_ioContext;
 
           private:
-            boost::asio::io_context& m_ioContext;
             boost::asio::ip::tcp::socket m_socket;
             bool m_started;
             CProtocolMessage::protocolMessagePtr_t m_currentMsg;

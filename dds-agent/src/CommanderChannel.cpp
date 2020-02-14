@@ -638,7 +638,11 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
         }
 
         if (slot.m_pid > 0)
-            terminateChildrenProcesses(slot.m_pid);
+        {
+            // Prevent blocking of the current thread.
+            // The term-kill logic is posted to a different free thread in the queue.
+            m_ioContext.post([this, &slot] { terminateChildrenProcesses(slot.m_pid); });
+        }
     }
     catch (exception& _e)
     {
@@ -805,73 +809,123 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
     LOG(info) << "Watchdog for task on slot " << _slotID << " pid = " << _pid << " has been registered.";
 }
 
-void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
+void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::stringContainer_t& _chilren)
 {
-    // terminate all child processes of the given parent
-    // Either tasks or all processes of the agent.
-    pid_t mainPid((_parentPid > 0) ? _parentPid : getpid());
-
-    LOG(info) << "Getting a list of child processes of the agent with pid " << mainPid;
-    std::vector<std::string> vecChildren;
+    CCommanderChannel::stringContainer_t tmpContainer;
     try
     {
         // a pgrep command is used to find out the list of child processes of the task
         stringstream ssCmd;
-        ssCmd << boost::process::search_path("pgrep").string() << " -P " << mainPid;
+        ssCmd << boost::process::search_path("pgrep").string() << " -P " << _forPid;
         string output;
         execute(ssCmd.str(), std::chrono::seconds(5), &output);
-        boost::split(vecChildren, output, boost::is_any_of(" \n"), boost::token_compress_on);
-        vecChildren.erase(
-            remove_if(vecChildren.begin(), vecChildren.end(), [](const string& _val) { return _val.empty(); }),
-            vecChildren.end());
+        boost::split(tmpContainer, output, boost::is_any_of(" \n"), boost::token_compress_on);
+        tmpContainer.erase(
+            remove_if(tmpContainer.begin(), tmpContainer.end(), [](const string& _val) { return _val.empty(); }),
+            tmpContainer.end());
+
+        if (tmpContainer.empty())
+            return;
+
+        // Add all found children
+        _chilren.insert(_chilren.end(), tmpContainer.begin(), tmpContainer.end());
+
+        // Look for child processes of the children
+        for (auto& i : tmpContainer)
+        {
+            enumChildProcesses(stol(i), _chilren);
+        }
     }
     catch (...)
     {
     }
+}
+
+void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
+{
+    LOG(info) << "Stopping child processes for parent pid " << _parentPid;
+    // terminate all child processes of the given parent
+    // Either tasks or all processes of the agent.
+    pid_t mainPid((_parentPid > 0) ? _parentPid : getpid());
+
+    LOG(info) << "Getting a list of child processes of the " << (_parentPid > 0 ? "task" : "agent") << " with pid "
+              << mainPid;
+    std::vector<std::string> vecChildren;
+
+    enumChildProcesses(mainPid, vecChildren);
+
+    // the mainPid is never included to the list
+    // In case of the agent the reseaon is obviouse.
+    // In case of a task, since it is running via the DDS task wrapper it will exit autoamticlaly once children are out
     string sChildren;
+    pidContainer_t pidChildren;
     for (const auto i : vecChildren)
     {
+        pidChildren.push_back(stol(i));
+
         if (!sChildren.empty())
             sChildren += ", ";
         sChildren += i;
     }
-    LOG(info) << "terminateChildrenProcesses: found " << vecChildren.size() << " child process(es)"
-              << (sChildren.empty() ? "." : " " + sChildren);
+    LOG(info) << "The parent process " << _parentPid << " has " << vecChildren.size()
+              << " children: " << (sChildren.empty() ? "." : " " + sChildren);
 
     LOG(info) << "Sending graceful terminate signal to child processes.";
-    for (const auto i : vecChildren)
+    for (const auto i : pidChildren)
     {
         LOG(info) << "Sending graceful terminate signal to child process " << i;
-        kill(stol(i), SIGTERM);
+        kill(i, SIGTERM);
     }
+    std::chrono::steady_clock::time_point tpWaitUntil(std::chrono::steady_clock::now() +
+                                                      std::chrono::milliseconds(5000));
 
-    LOG(info) << "Wait for tasks to exit...";
+    LOG(info) << "Wait for tasks " << _parentPid << " to exit...";
 
-    // wait 10 seconds
-    for (size_t i = 0; i < 10; ++i)
+    // Prevent blocking of the current thread.
+    // The term-kill logic is posted to a different free thread in the queue.
+    m_ioContext.post([this, pidChildren, tpWaitUntil] { terminateChildrenProcesses(pidChildren, tpWaitUntil); });
+}
+
+void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidContainer_t& _children,
+                                                   const std::chrono::steady_clock::time_point& _wait_until)
+{
+    bool bAllDone(true);
+    for (auto const& pid : _children)
     {
-        for (auto const& pid : vecChildren)
+        if (pid > 0 && IsProcessRunning(pid))
         {
-            long lpid = stol(pid);
-            LOG(info) << "Waiting for pid = " << lpid;
-            if (lpid > 0 && IsProcessRunning(lpid))
-                continue;
+            bAllDone = false;
+            break;
         }
-        // TODO: Needs to be fixed! Implement time-function based timeout measurements
-        // instead
-        this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
-    // kill all child process of tasks if there are any
-    // We do it before terminating tasks to give parenrt task processes a change to read state of children - otherwise
-    // we will get zombies if user tasks don't manage their children properly
-    for (auto const& pid : vecChildren)
-    {
-        if (!IsProcessRunning(stol(pid)))
-            continue;
+    if (bAllDone)
+        return;
 
-        LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
-        kill(stol(pid), SIGKILL);
+    // block this thread for a short time, otherwise it might be spining too fast
+    this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    auto duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(_wait_until - std::chrono::steady_clock::now());
+    if (duration.count() > 0)
+    {
+        // Prevent blocking of the current thread.
+        // The term-kill logic is posted to a different free thread in the queue.
+        m_ioContext.post([this, _children, _wait_until] { terminateChildrenProcesses(_children, _wait_until); });
+    }
+    else
+    {
+        // kill all child process of tasks if there are any
+        // We do it before terminating tasks to give parenrt task processes a change to read state of children -
+        // otherwise we will get zombies if user tasks don't manage their children properly
+        for (auto const& pid : _children)
+        {
+            if (!IsProcessRunning(pid))
+                continue;
+
+            LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
+            kill(pid, SIGKILL);
+        }
     }
 }
 

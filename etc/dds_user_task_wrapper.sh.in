@@ -3,22 +3,6 @@
 #
 #
 
-killtree ()
-{
-	typeset parent=$1
-	typeset child
-	for child in $(pgrep -P $parent)
-	do
-       killtree $child
-	done
-	
-	kill -9 $parent
-}
-
-# Makesure to clean all backgroud processes
-# This helps to clean extra processes, which user tasks migh spawn
-trap "killtree $$" SIGHUP SIGINT SIGTERM
-
 OS=$(uname -s 2>&1)
 if [ "$OS" == "Linux" ]; then
    export LD_LIBRARY_PATH=$DDS_LIBS_LOCATION:$LD_LIBRARY_PATH

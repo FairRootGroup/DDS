@@ -37,6 +37,9 @@ namespace dds
 
         class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>
         {
+            using pidContainer_t = std::vector<pid_t>;
+            using stringContainer_t = std::vector<std::string>;
+
           public:
             CCommanderChannel(boost::asio::io_context& _service,
                               uint64_t _ProtocolHeaderID,
@@ -115,6 +118,9 @@ namespace dds
             void deleteAgentIDFile() const;
             void onNewUserTask(uint64_t _slotID, pid_t _pid);
             void terminateChildrenProcesses(pid_t _parentPid = 0);
+            void terminateChildrenProcesses(const pidContainer_t& _children,
+                                            const std::chrono::steady_clock::time_point& _wait_until);
+            void enumChildProcesses(pid_t _forPid, stringContainer_t& _chilren);
             void taskExited(uint64_t _taskID, int _exitCode);
             SSlotInfo& getSlotInfoById(const slotId_t& _slotID)
             {

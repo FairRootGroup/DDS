@@ -9,6 +9,8 @@ Fixed: If process is killed or crased it can leave opened and locked interproces
 
 ### dds-agent
 Modified: Intercom channel got a dedicated service. Now DDS main transport and Intercom work on different threads. (GH-279)    
+Modified: Significantly improved performance of stopping of user tasks.    
+Modified: Improved the logic of stopping of user tasks. The algorithm now recursively enumerates absoltuyly all child process and send first graceful TERM followed by unconditional TERM after a given timeout.   
 
 ### dds-tools-api
 Added: new static API calls CSession::getDefaultSessionIDString and CSession::getDefaultSessionID to get the default session id. (GH-209)    
