@@ -586,14 +586,28 @@ namespace MiscCommon
                     // prevent leaving a zombie process
                     c.wait();
                     if (asioWorker.joinable())
+                    {
+                        ios.stop();
                         asioWorker.join();
+                    }
                     throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
                 }
             }
             ///// <<<<<<  wait_for WORKAROUND <<<<<<<
 
+            // The process has finished, but the io thread is still running.
+            // Give it a chance to finish, otherwise force stop the service
+            while (asioWorker.joinable())
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                if ((std::chrono::steady_clock::now() - start) > _Timeout)
+                    break;
+            }
             if (asioWorker.joinable())
+            {
+                ios.stop();
                 asioWorker.join();
+            }
 
             if (_output)
                 *_output = out_data.get();
