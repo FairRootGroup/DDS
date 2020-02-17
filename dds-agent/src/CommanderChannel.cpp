@@ -809,7 +809,7 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
     LOG(info) << "Watchdog for task on slot " << _slotID << " pid = " << _pid << " has been registered.";
 }
 
-void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::stringContainer_t& _chilren)
+void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::stringContainer_t& _children)
 {
     CCommanderChannel::stringContainer_t tmpContainer;
     try
@@ -828,10 +828,10 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
             return;
 
         // Add all found children
-        _chilren.insert(_chilren.end(), tmpContainer.begin(), tmpContainer.end());
+        _children.insert(_children.end(), tmpContainer.begin(), tmpContainer.end());
 
         // Look for child processes of the children
-        for (auto& i : tmpContainer)
+        for (const auto& i : tmpContainer)
         {
             pid_t pid{ 0 };
             try
@@ -843,7 +843,7 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
                 LOG(error) << "Invalid pid: " << i;
                 continue;
             }
-            enumChildProcesses(pid, _chilren);
+            enumChildProcesses(pid, _children);
         }
     }
     catch (...)
@@ -853,15 +853,16 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
 
 void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
 {
-    LOG(info) << "Stopping child processes for parent pid " << _parentPid;
     // terminate all child processes of the given parent
     // Either tasks or all processes of the agent.
     pid_t mainPid((_parentPid > 0) ? _parentPid : getpid());
 
+    LOG(info) << "Stopping child processes for parent pid " << _parentPid;
+
     LOG(info) << "Getting a list of child processes of the " << (_parentPid > 0 ? "task" : "agent") << " with pid "
               << mainPid;
-    std::vector<std::string> vecChildren;
 
+    stringContainer_t vecChildren;
     enumChildProcesses(mainPid, vecChildren);
 
     // the mainPid is never included to the list
@@ -869,7 +870,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
     // In case of a task, since it is running via the DDS task wrapper it will exit autoamticlaly once children are out
     string sChildren;
     pidContainer_t pidChildren;
-    for (const auto i : vecChildren)
+    for (const auto& i : vecChildren)
     {
         pid_t pid{ 0 };
         try
@@ -886,7 +887,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
             sChildren += ", ";
         sChildren += i;
     }
-    LOG(info) << "The parent process " << _parentPid << " has " << vecChildren.size()
+    LOG(info) << "The parent process " << mainPid << " has " << vecChildren.size()
               << " children: " << (sChildren.empty() ? "." : " " + sChildren);
 
     LOG(info) << "Sending graceful terminate signal to child processes.";
@@ -898,7 +899,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
     std::chrono::steady_clock::time_point tpWaitUntil(std::chrono::steady_clock::now() +
                                                       std::chrono::milliseconds(5000));
 
-    LOG(info) << "Wait for tasks " << _parentPid << " to exit...";
+    LOG(info) << "Wait for tasks " << mainPid << " to exit...";
 
     // Prevent blocking of the current thread.
     // The term-kill logic is posted to a different free thread in the queue.
