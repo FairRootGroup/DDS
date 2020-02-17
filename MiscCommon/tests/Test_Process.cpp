@@ -165,18 +165,4 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_getprocbyname)
     }
 }
 
-//=============================================================================
-BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_with_delay, *boost::unit_test::timeout(10))
-{
-    // Check stderr
-    stringstream ssCmd;
-    ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f\"";
-    string output;
-    string error;
-    int exitCode(-1);
-
-    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode, std::chrono::seconds(1));
-    BOOST_TEST(!output.empty());
-}
-
 BOOST_AUTO_TEST_SUITE_END();
