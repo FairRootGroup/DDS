@@ -506,10 +506,6 @@ namespace MiscCommon
     {
         try
         {
-            bio::io_context ios;
-            std::future<std::string> out_data;
-            std::future<std::string> err_data;
-
             std::string smartCmd(_Command);
             MiscCommon::smart_path(&smartCmd);
 
@@ -521,6 +517,10 @@ namespace MiscCommon
                 return pid;
             }
 
+            bio::io_context ios;
+            std::future<std::string> out_data;
+            std::future<std::string> err_data;
+
             bp::group g;
             bp::child c(smartCmd, g, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
 
@@ -530,71 +530,34 @@ namespace MiscCommon
             if (_unit_test_Sleep > std::chrono::seconds(0))
                 std::this_thread::sleep_for(_unit_test_Sleep);
 
-            // Need this loop to make sure that the asio thread is started only after the process is up.
-            // This loop  checks two race conditions, that the process is already started and already finished at this
-            // moment.
-            while (c.valid())
-            {
-                int status(0);
-                pid_t pid = c.id();
-                pid_t ret = ::waitpid(pid, &status, WNOHANG | WUNTRACED | WNOWAIT);
-                if (ret < 0 || ret == pid)
-                    break;
-            }
-
-            int status(0);
             bool errorFlag(false);
             // A watchdog thread for this process
-            std::thread watchdogThread{ [&c, &g, &_Timeout, &status, &errorFlag, &ios]() {
-                // TODO: The process library has a bug in BOOST 1.70, it causes to wait infinitly with HIGH CPU
-                // https://github.com/boostorg/process/issues/69
-                // https://github.com/toonetown/km-boost-process/commit/579f5e23a0ffd06f4df94037a56156b1cb60079c
-
-                /* if (!c.wait_for(_Timeout))
-                 {
-                 // Child didn't yet finish. Terminating it...
-                 c.terminate();
-                 // prevent leaving a zombie process
-                 c.wait();
-                 if(asioWorker.joinable())
-                 asioWorker.join();
-                 throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
-                 }*/
-                //>>>>>>>>  wait_for WORKAROUND >>>>>
-                pid_t pid = c.id();
-
-                auto start = std::chrono::steady_clock::now();
-                while (true)
+            std::thread watchdogThread{ [&]() {
+                std::future_status status = out_data.wait_for(_Timeout);
+                if (status == std::future_status::deferred)
                 {
-                    pid_t ret = ::waitpid(pid, &status, WNOHANG | WUNTRACED);
-                    if (ret < 0 || ret == pid)
-                        break;
-
-                    if ((std::chrono::steady_clock::now() - start) > _Timeout)
-                    {
-                        // Child didn't yet finish. Terminating it...
-                        g.terminate();
-                        // prevent leaving a zombie process
-                        c.wait();
-                        ios.stop();
-                        errorFlag = true;
-                        return;
-                    }
+                    throw std::runtime_error("Can't execute the process: future status is deferred.");
                 }
-                ///// <<<<<<  wait_for WORKAROUND <<<<<<<
+                else if (status == std::future_status::ready)
+                {
+                }
+                else if (status == std::future_status::timeout)
+                {
+                    // Child didn't yet finish. Terminating it...
+                    g.terminate();
+                    ios.stop();
+                    errorFlag = true;
+                }
             } };
 
-            try
-            {
-                ios.run();
-                watchdogThread.join();
-                if (errorFlag)
-                    throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
-            }
-            catch (std::exception& _e)
-            {
-                throw _e;
-            }
+            ios.run();
+            watchdogThread.join();
+
+            // prevent leaving a zombie process
+            c.wait();
+
+            if (errorFlag)
+                throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
 
             if (_output)
                 *_output = out_data.get();
@@ -602,16 +565,8 @@ namespace MiscCommon
             if (_errout)
                 *_errout = err_data.get();
 
-            // BOOST process doesn't return all statuses, like whether proc. recieved a signal, for instance.
-            // It returns only the exit code of the process.
-            //
-            // if (_exitCode)
-            //    *_exitCode = c.exit_code();
-
-            //>>>>>>>>  wait_for WORKAROUND >>>>>
             if (_exitCode)
-                *_exitCode = WEXITSTATUS(status);
-            //<<<<<<  wait_for WORKAROUND <<<<<<<
+                *_exitCode = c.exit_code();
 
             return 0;
         }
