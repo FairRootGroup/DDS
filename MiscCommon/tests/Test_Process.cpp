@@ -164,5 +164,19 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_getprocbyname)
         BOOST_CHECK(container.empty());
     }
 }
+//=============================================================================
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_no_stdout_stderr)
+{
+    // Check stderr
+    stringstream ssCmd;
+    ssCmd << boost::process::search_path("bash").string() << " -c \"sleep 1\"";
+    string output;
+    string error;
+    int exitCode(-1);
+
+    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode);
+    BOOST_TEST(output.empty());
+    BOOST_TEST(error.empty());
+}
 
 BOOST_AUTO_TEST_SUITE_END();
