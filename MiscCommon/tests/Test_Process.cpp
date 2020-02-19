@@ -7,6 +7,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_AUTO_TEST_MAIN // Boost 1.33
 #define BOOST_TEST_MAIN
+#include <boost/filesystem.hpp>
 #include <boost/test/auto_unit_test.hpp>
 
 // MiscCommon
@@ -15,8 +16,38 @@
 using namespace MiscCommon;
 using namespace std;
 using boost::unit_test::test_suite;
+namespace fs = boost::filesystem;
 //=============================================================================
-BOOST_AUTO_TEST_SUITE(pod_agent_MiscCommon);
+BOOST_AUTO_TEST_SUITE(test_Process);
+struct STestConfig
+{
+    static STestConfig*& instance()
+    {
+        static STestConfig* inst = nullptr;
+        return inst;
+    }
+
+    STestConfig()
+    {
+        instance() = this;
+
+        m_pathWrkDir = fs::temp_directory_path() / fs::unique_path();
+        fs::create_directories(m_pathWrkDir);
+        BOOST_TEST_MESSAGE("Test WrkDir: " << m_pathWrkDir);
+    }
+    ~STestConfig()
+    {
+        if (fs::exists(m_pathWrkDir))
+        {
+            BOOST_TEST_MESSAGE("Removing Wrk Dir: " << m_pathWrkDir);
+            fs::remove_all(m_pathWrkDir);
+        }
+    }
+
+    fs::path m_pathWrkDir;
+};
+
+BOOST_GLOBAL_FIXTURE(STestConfig);
 //=============================================================================
 #ifndef __APPLE__
 BOOST_AUTO_TEST_CASE(test_MiscCommon_CProcStatus)
@@ -177,6 +208,29 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_no_stdout_stderr)
     execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode);
     BOOST_TEST(output.empty());
     BOOST_TEST(error.empty());
+}
+
+//=============================================================================
+BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_dds_daemonize)
+{
+    auto tmpDir{ STestConfig::instance()->m_pathWrkDir };
+    // Check stderr
+    stringstream ssCmd;
+    ssCmd << boost::process::search_path("dds-daemonize").string() << " \"" << tmpDir.string() << "\" "
+          << boost::process::search_path("hostname").string() << " -f";
+    string output;
+    string error;
+    int exitCode(-1);
+
+    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode);
+
+    // Give a chance to a child to create its log file
+    this_thread::sleep_for(std::chrono::seconds(1));
+
+    fs::path logFile{ tmpDir };
+    logFile /= "hostname.out.log";
+    BOOST_TEST(fs::exists(logFile));
+    BOOST_TEST(fs::file_size(logFile) > 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
