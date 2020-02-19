@@ -20,7 +20,7 @@ using namespace MiscCommon;
 using namespace std;
 
 //=============================================================================
-BOOST_AUTO_TEST_SUITE(pod_agent_ProtocolCommands);
+BOOST_AUTO_TEST_SUITE(test_SysHelper);
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_MiscCommon_smart_path0)
 {

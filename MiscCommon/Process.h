@@ -524,9 +524,7 @@ namespace MiscCommon
 
             boost::asio::deadline_timer watchdog{ ios, boost::posix_time::seconds(_Timeout.count()) };
 
-            bp::group g;
             bp::child c(smartCmd,
-                        g,
                         bp::std_in.close(),
                         bp::std_out > outPipe,
                         bp::std_err > errPipe,
@@ -555,7 +553,7 @@ namespace MiscCommon
                     errPipe.close();
                     ios.stop();
                     // Child didn't yet finish. Terminating it...
-                    g.terminate();
+                    c.terminate();
                 }
             });
 
