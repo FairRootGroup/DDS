@@ -35,6 +35,7 @@
 #include "stlx.h"
 // BOOST
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
 #include <boost/process.hpp>
@@ -496,13 +497,11 @@ namespace MiscCommon
     // TODO: Document me!
     // If _Timeout is 0, then function returns child pid and doesn't wait for the child process to finish. Otherwise
     // return value is 0.
-    inline pid_t execute(
-        const std::string& _Command,
-        const std::chrono::seconds& _Timeout,
-        std::string* _output = nullptr,
-        std::string* _errout = nullptr,
-        int* _exitCode = nullptr,
-        const std::chrono::seconds& _unit_test_Sleep = std::chrono::seconds(0) /*used for unit tests only*/)
+    inline pid_t execute(const std::string& _Command,
+                         const std::chrono::seconds& _Timeout,
+                         std::string* _output = nullptr,
+                         std::string* _errout = nullptr,
+                         int* _exitCode = nullptr)
     {
         try
         {
@@ -517,56 +516,64 @@ namespace MiscCommon
                 return pid;
             }
 
-            bio::io_context ios;
-            std::future<std::string> out_data;
-            std::future<std::string> err_data;
+            boost::asio::io_service ios;
+            bp::async_pipe outPipe(ios);
+            bp::async_pipe errPipe(ios);
+            boost::asio::streambuf outBuf;
+            boost::asio::streambuf errBuf;
+
+            boost::asio::deadline_timer watchdog{ ios, boost::posix_time::seconds(_Timeout.count()) };
 
             bp::group g;
-            bp::child c(smartCmd, g, bp::std_in.close(), bp::std_out > out_data, bp::std_err > err_data, ios);
+            bp::child c(smartCmd,
+                        g,
+                        bp::std_in.close(),
+                        bp::std_out > outPipe,
+                        bp::std_err > errPipe,
+                        ios,
+                        bp::on_exit([&](int exit, const std::error_code& ec_in) {
+                            outPipe.close();
+                            errPipe.close();
+                            watchdog.cancel();
+                            ios.stop();
+                        }));
 
             if (!c.valid())
                 throw std::runtime_error("Can't execute the given process.");
 
-            if (_unit_test_Sleep > std::chrono::seconds(0))
-                std::this_thread::sleep_for(_unit_test_Sleep);
+            boost::asio::async_read(outPipe, outBuf, [](const boost::system::error_code& ec, std::size_t size) {});
+            boost::asio::async_read(errPipe, errBuf, [](const boost::system::error_code& ec, std::size_t size) {});
 
             bool errorFlag(false);
-            // A watchdog thread for this process
-            std::thread watchdogThread{ [&]() {
-                std::future_status status = out_data.wait_for(_Timeout);
-                if (status == std::future_status::deferred)
+            watchdog.async_wait([&](boost::system::error_code ec) {
+                // Workaround we can't use boost::process::child::wait_for because it's buged in Boost 1.70 and not yet
+                // fixed. We therefore use a deadline timer.
+                if (!ec)
                 {
-                    throw std::runtime_error("Can't execute the process: future status is deferred.");
-                }
-                else if (status == std::future_status::ready)
-                {
-                }
-                else if (status == std::future_status::timeout)
-                {
+                    errorFlag = true;
+                    outPipe.close();
+                    errPipe.close();
+                    ios.stop();
                     // Child didn't yet finish. Terminating it...
                     g.terminate();
-                    ios.stop();
-                    errorFlag = true;
                 }
-            } };
+            });
 
             ios.run();
-            watchdogThread.join();
-
             // prevent leaving a zombie process
             c.wait();
 
             if (errorFlag)
                 throw std::runtime_error("Timeout has been reached, command execution will be terminated.");
 
-            if (_output)
-                *_output = out_data.get();
-
-            if (_errout)
-                *_errout = err_data.get();
-
             if (_exitCode)
                 *_exitCode = c.exit_code();
+
+            if (_output)
+                _output->assign(std::istreambuf_iterator<char>(&outBuf), std::istreambuf_iterator<char>());
+
+            if (_errout)
+                _errout->assign(std::istreambuf_iterator<char>(&errBuf), std::istreambuf_iterator<char>());
 
             return 0;
         }
