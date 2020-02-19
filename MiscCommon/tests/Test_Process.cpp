@@ -78,13 +78,13 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_stdout_stderr)
 {
     // Check stderr
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f 1>&2; exit 11;\"";
+    ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f; hostname -f 1>&2; exit 11;\"";
     string output;
     string error;
     int exitCode(-1);
 
-    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode, std::chrono::seconds(5));
-    BOOST_TEST(output.empty());
+    execute(ssCmd.str(), std::chrono::seconds(5), &output, &error, &exitCode);
+    BOOST_TEST(!output.empty());
     BOOST_TEST(!error.empty());
     BOOST_TEST(exitCode == 11);
 }
