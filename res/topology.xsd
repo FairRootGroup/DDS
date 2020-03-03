@@ -84,9 +84,17 @@
   </xs:sequence>
 </xs:complexType>
 
+<xs:complexType name="taskArrayElementType">
+   <xs:simpleContent>
+       <xs:extension base="stringNameType">
+            <xs:attribute name="n" type="sizeType" use="optional"/>
+       </xs:extension>
+   </xs:simpleContent>
+</xs:complexType>
+
 <xs:complexType name="taskArrayType">
   <xs:sequence>
-  	<xs:element name="name" type="stringNameType" maxOccurs="unbounded" minOccurs="1"/>
+  	<xs:element name="name" type="taskArrayElementType" maxOccurs="unbounded" minOccurs="1"/>
   </xs:sequence>
 </xs:complexType>
 

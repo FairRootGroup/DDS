@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_1)
     topology.init("topology_test_1.xml");
     BOOST_CHECK(topology.getName() == "myTopology");
     BOOST_CHECK(topology.getFilepath() == boost::filesystem::canonical("topology_test_1.xml").string());
-    BOOST_CHECK(topology.getHash() == 0xae467638);
+    BOOST_CHECK(topology.getHash() == 3727270847);
     // std::cout << topology.toString();
     CTopoGroup::Ptr_t main = topology.getMainGroup();
 
