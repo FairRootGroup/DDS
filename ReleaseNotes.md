@@ -17,6 +17,7 @@ Added: new static API calls CSession::getDefaultSessionIDString and CSession::ge
 
 ### dds-topology
 Added: getter of the filepath to the XML topology.     
+Added: new optional XML attribute which allows to set number of tasks in the collection.    
 
 ## v3.0 (2019-12-11)
 

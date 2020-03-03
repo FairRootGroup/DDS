@@ -85,10 +85,15 @@ void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt
         {
             for (const auto& task : tasksPT.get())
             {
-                CTopoElement::Ptr_t newElement = make_shared<CTopoTask>();
-                newElement->setParent(this);
-                newElement->initFromPropertyTree(task.second.data(), _pt);
-                addElement(newElement);
+                const size_t n{ task.second.get<size_t>("<xmlattr>.n", 1) };
+                const string data{ task.second.data() };
+                for (size_t i = 0; i < n; i++)
+                {
+                    CTopoElement::Ptr_t newElement = make_shared<CTopoTask>();
+                    newElement->setParent(this);
+                    newElement->initFromPropertyTree(data, _pt);
+                    addElement(newElement);
+                }
             }
         }
     }
