@@ -87,32 +87,29 @@ void checkIdleAgents(CSession& _session, size_t _numAgents)
     BOOST_CHECK_EQUAL(agentCountInfo.m_executingSlotsCount, 0);
 }
 
-void runDDS(CSession& _session)
+void makeRequests(CSession& _session,
+                  const boost::filesystem::path& _topoPath,
+                  STopologyRequest::request_t::EUpdateType _updateType,
+                  const pair<size_t, size_t>& _submitAgents,
+                  const pair<size_t, size_t>& _totalAgents)
 {
-    const string topoFile("property_test.xml");
     const std::chrono::seconds timeout(30);
-    boost::filesystem::path topoPath(boost::filesystem::current_path());
-    topoPath.append(topoFile);
 
-    boost::uuids::uuid sid = _session.create();
-    BOOST_CHECK(!sid.is_nil());
-    BOOST_CHECK(_session.IsRunning());
+    if (_submitAgents.second > 0)
+    {
+        SSubmitRequest::request_t submitInfo;
+        submitInfo.m_rms = "localhost";
+        submitInfo.m_instances = _submitAgents.first;
+        submitInfo.m_slots = _submitAgents.second;
+        BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
+    }
 
-    CTopology topo(topoPath.string());
-    auto numAgents = topo.getRequiredNofAgents(10);
-
-    SSubmitRequest::request_t submitInfo;
-    submitInfo.m_rms = "localhost";
-    submitInfo.m_instances = numAgents.first;
-    submitInfo.m_slots = numAgents.second;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
-
-    size_t numSlots = numAgents.first * numAgents.second;
+    size_t numSlots = _totalAgents.first * _totalAgents.second;
     checkIdleAgents(_session, numSlots);
 
     STopologyRequest::request_t topoInfo;
-    topoInfo.m_topologyFile = topoPath.string();
-    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    topoInfo.m_topologyFile = _topoPath.string();
+    topoInfo.m_updateType = _updateType;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
 
     checkIdleAgents(_session, numSlots);
@@ -120,13 +117,36 @@ void runDDS(CSession& _session)
     SAgentInfoRequest::responseVector_t agentInfo;
     BOOST_CHECK_NO_THROW(
         _session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, timeout, &std::cout));
-    BOOST_CHECK_EQUAL(agentInfo.size(), numAgents.first);
+    BOOST_CHECK_EQUAL(agentInfo.size(), _totalAgents.first);
 
     SCommanderInfoRequest::response_t commanderInfo;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SCommanderInfoRequest>(
         SCommanderInfoRequest::request_t(), commanderInfo, timeout, &std::cout));
 
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
+}
+
+void runDDS(CSession& _session)
+{
+    namespace fs = boost::filesystem;
+    fs::path topoPath(fs::canonical(fs::path("property_test.xml")));
+    fs::path upTopoPath(fs::canonical(fs::path("property_test_up.xml")));
+    fs::path downTopoPath(topoPath);
+
+    boost::uuids::uuid sid = _session.create();
+    BOOST_CHECK(!sid.is_nil());
+    BOOST_CHECK(_session.IsRunning());
+
+    CTopology topo(topoPath.string());
+    auto numAgents = topo.getRequiredNofAgents(10);
+    makeRequests(_session, topoPath, STopologyRequest::request_t::EUpdateType::ACTIVATE, numAgents, numAgents);
+
+    CTopology upTopo(upTopoPath.string());
+    auto upNumAgents = upTopo.getRequiredNofAgents(10);
+    makeRequests(_session, upTopoPath, STopologyRequest::request_t::EUpdateType::UPDATE, numAgents, upNumAgents);
+
+    makeRequests(
+        _session, downTopoPath, STopologyRequest::request_t::EUpdateType::UPDATE, make_pair(0, 0), upNumAgents);
 
     _session.shutdown();
     BOOST_CHECK(_session.getSessionID().is_nil());
