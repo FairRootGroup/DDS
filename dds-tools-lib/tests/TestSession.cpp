@@ -10,10 +10,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/test/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
-
 // DDS
 #include "Tools.h"
 #include "Topology.h"
+// STD
+#include <thread>
 
 using namespace std;
 using namespace dds;
@@ -21,6 +22,8 @@ using namespace dds::tools_api;
 using namespace dds::topology_api;
 
 BOOST_AUTO_TEST_SUITE(test_dds_tools_session)
+
+const size_t kDDSNumTestIterations = 3;
 
 void createDDS(CSession& _session)
 {
@@ -52,7 +55,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_mult)
 {
     // Start and stop DDS session multiple times.
     // Each time create new DDSSession instance.
-    for (size_t i = 0; i < 5; i++)
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         CSession session;
         createDDS(session);
@@ -64,7 +67,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_single)
     // Start and stop DDS session multiple times.
     // Common DDSSession instance.
     CSession session;
-    for (size_t i = 0; i < 5; i++)
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         createDDS(session);
     }
@@ -157,7 +160,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult)
 {
     // Start and stop DDS session multiple times.
     // Each time create new DDSSession instance.
-    for (size_t i = 0; i < 5; i++)
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         CSession session;
         runDDS(session);
@@ -169,9 +172,91 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single)
     // Start and stop DDS session multiple times.
     // Common DDSSession instance.
     CSession session;
-    for (size_t i = 0; i < 5; i++)
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         runDDS(session);
+    }
+}
+
+void runDDSInf(CSession& _session)
+{
+    const std::chrono::seconds timeout(30);
+    const std::chrono::seconds sleepTime(3);
+
+    namespace fs = boost::filesystem;
+    fs::path topoPath(fs::canonical(fs::path("property_test_inf.xml")));
+    fs::path upTopoPath(fs::canonical(fs::path("property_test_inf_up.xml")));
+    fs::path downTopoPath(topoPath);
+
+    boost::uuids::uuid sid = _session.create();
+    BOOST_CHECK(!sid.is_nil());
+    BOOST_CHECK(_session.IsRunning());
+
+    const size_t numSlots(20);
+
+    // Submit enough agent for the upscaled topology
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = numSlots;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
+
+    checkIdleAgents(_session, numSlots);
+
+    // Activate default topology
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = topoPath.string();
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+
+    // Upscale topology
+    STopologyRequest::request_t upTopoInfo;
+    upTopoInfo.m_topologyFile = upTopoPath.string();
+    upTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(upTopoInfo, timeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+
+    // Downscale topology
+    STopologyRequest::request_t downTopoInfo;
+    downTopoInfo.m_topologyFile = downTopoPath.string();
+    downTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(downTopoInfo, timeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+
+    // Stop topology
+    STopologyRequest::request_t stopTopoInfo;
+    stopTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(stopTopoInfo, timeout, &std::cout));
+
+    checkIdleAgents(_session, numSlots);
+
+    _session.shutdown();
+    BOOST_CHECK(_session.getSessionID().is_nil());
+    BOOST_CHECK(!_session.IsRunning());
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult_inf)
+{
+    // Start and stop DDS session multiple times.
+    // Each time create new DDSSession instance.
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        CSession session;
+        runDDSInf(session);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_inf)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    CSession session;
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        runDDSInf(session);
     }
 }
 
