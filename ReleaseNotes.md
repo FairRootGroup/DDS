@@ -19,6 +19,9 @@ Added: new static API calls CSession::getDefaultSessionIDString and CSession::ge
 Added: getter of the filepath to the XML topology.     
 Added: new optional XML attribute which allows to set number of tasks in the collection.    
 
+### dds-submit
+Fixed: a bug, which caused the command to block if an unknown plug-in is requested.     
+
 ### localhost plug-in
 Modified: Requares now the --slots argument.    
 

@@ -1041,9 +1041,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         {
             stringstream ssErrMsg;
             ssErrMsg << "Unknown RMS plug-in requested \"" << _submitInfo.m_rms << "\" (" << ssPluginExe.str() << ")";
-
-            sendToolsAPIMsg(_channel, _submitInfo.m_requestID, ssErrMsg.str(), EMsgSeverity::error);
-            return;
+            throw runtime_error(ssErrMsg.str());
         }
 
         // Create a new submit communication info channel
