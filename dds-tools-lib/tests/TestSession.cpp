@@ -202,36 +202,39 @@ void runDDSInf(CSession& _session)
 
     checkIdleAgents(_session, numSlots);
 
-    // Activate default topology
-    STopologyRequest::request_t topoInfo;
-    topoInfo.m_topologyFile = topoPath.string();
-    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        // Activate default topology
+        STopologyRequest::request_t topoInfo;
+        topoInfo.m_topologyFile = topoPath.string();
+        topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+        BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
 
-    std::this_thread::sleep_for(sleepTime);
+        std::this_thread::sleep_for(sleepTime);
 
-    // Upscale topology
-    STopologyRequest::request_t upTopoInfo;
-    upTopoInfo.m_topologyFile = upTopoPath.string();
-    upTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(upTopoInfo, timeout, &std::cout));
+        // Upscale topology
+        STopologyRequest::request_t upTopoInfo;
+        upTopoInfo.m_topologyFile = upTopoPath.string();
+        upTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
+        BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(upTopoInfo, timeout, &std::cout));
 
-    std::this_thread::sleep_for(sleepTime);
+        std::this_thread::sleep_for(sleepTime);
 
-    // Downscale topology
-    STopologyRequest::request_t downTopoInfo;
-    downTopoInfo.m_topologyFile = downTopoPath.string();
-    downTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(downTopoInfo, timeout, &std::cout));
+        // Downscale topology
+        STopologyRequest::request_t downTopoInfo;
+        downTopoInfo.m_topologyFile = downTopoPath.string();
+        downTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
+        BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(downTopoInfo, timeout, &std::cout));
 
-    std::this_thread::sleep_for(sleepTime);
+        std::this_thread::sleep_for(sleepTime);
 
-    // Stop topology
-    STopologyRequest::request_t stopTopoInfo;
-    stopTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(stopTopoInfo, timeout, &std::cout));
+        // Stop topology
+        STopologyRequest::request_t stopTopoInfo;
+        stopTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
+        BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(stopTopoInfo, timeout, &std::cout));
 
-    checkIdleAgents(_session, numSlots);
+        checkIdleAgents(_session, numSlots);
+    }
 
     _session.shutdown();
     BOOST_CHECK(_session.getSessionID().is_nil());
