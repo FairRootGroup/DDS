@@ -19,6 +19,9 @@ Added: new static API calls CSession::getDefaultSessionIDString and CSession::ge
 Added: getter of the filepath to the XML topology.     
 Added: new optional XML attribute which allows to set number of tasks in the collection.    
 
+### localhost plug-in
+Modified: Requares now the --slots argument.    
+
 ## v3.0 (2019-12-11)
 
 The main highlight of this release is a general overhaul of the core engine of DDS agents.   

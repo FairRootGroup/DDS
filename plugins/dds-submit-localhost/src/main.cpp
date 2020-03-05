@@ -178,6 +178,14 @@ int main(int argc, char* argv[])
                 return;
             }
 
+            if (_submit.m_slots < 1)
+            {
+                proto.sendMessage(EMsgSeverity::error,
+                                  "Please, specify a number of task slots by using the \"--slots arg\" option");
+                proto.stop();
+                return;
+            }
+
             unsigned int nInstances = _submit.m_nInstances;
 
             stringstream ss;
