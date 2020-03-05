@@ -142,6 +142,7 @@ namespace dds
             std::mutex m_taskIDToSlotIDMapMutex;
             std::map<uint64_t, uint64_t> m_taskIDToSlotIDMap;
             topology_api::CTopoCore m_topo;
+            std::mutex m_topoMutex;
 
             CSMIntercomChannel::connectionPtr_t m_intercomChannel;
 
