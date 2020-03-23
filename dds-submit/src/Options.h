@@ -45,7 +45,7 @@ namespace dds
             size_t m_number{ 0 };
             size_t m_slots{ 0 };
             bool m_bListPlugins{ false };
-            boost::uuids::uuid m_sid{ boost::uuids::nil_uuid() };
+            boost::uuids::uuid m_sid = boost::uuids::nil_uuid();
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
