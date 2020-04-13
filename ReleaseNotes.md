@@ -25,6 +25,10 @@ Fixed: a bug, which caused the command to block if an unknown plug-in is request
 ### localhost plug-in
 Modified: Requares now the --slots argument.    
 
+### ssh plug-in
+Modified: Replace custom thread pool with boost asio's thread__pool.    
+Modified: Improve performence and stability.   
+
 ## v3.0 (2019-12-11)
 
 The main highlight of this release is a general overhaul of the core engine of DDS agents.   

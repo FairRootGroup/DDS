@@ -7,7 +7,7 @@ project(dds-submit-ssh-tests)
 
 set(test dds-submit-ssh_test_threadpool)
 
-add_executable(${test} test_threadpool.cpp)
+add_executable(${test} )
 
 target_link_libraries(${test}
   PUBLIC

@@ -21,7 +21,6 @@ CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const str
     : m_rec(_rec)
     , m_options(_options)
     , m_path(_path)
-    , m_mutex(mutexPtr_t(new boost::mutex()))
 {
     // constructing a full path of the worker for this id
     // pattern: <m_wrkDir>/<m_id>
@@ -40,11 +39,8 @@ void CWorker::printInfo(ostream& _stream) const
             << m_rec->m_wrkDir;
 }
 //=============================================================================
-bool CWorker::runTask(ETaskType _param) const
+bool CWorker::run(ETaskType _param)
 {
-    // protection: don't execute different tasks on the same worker in the same time
-    boost::mutex::scoped_lock lck(*m_mutex);
-
     stringstream ssParams;
     ssParams << " -i \"" << m_rec->m_id << "\" -l \"" << m_rec->m_addr << "\" -w \"" << m_rec->m_wrkDir << "\"";
     if (!m_rec->m_sshOptions.empty())
@@ -88,21 +84,22 @@ bool CWorker::exec_command(const string& _cmd) const
 {
     log(_cmd);
     string outPut;
+    int nExitCode(0);
     try
     {
-        execute(_cmd, g_cmdTimeout, &outPut);
+        execute(_cmd, g_cmdTimeout, nullptr, nullptr, &nExitCode);
+
+        LOG(info) << "The command execution for [" << m_rec->m_id << "] finished with code: " << nExitCode;
+
+        if (nExitCode != 0)
+            return false;
     }
     catch (exception& e)
     {
         log(string("Failed to process the task: ") + e.what());
         return false;
     }
-    if (!outPut.empty())
-    {
-        ostringstream ss;
-        ss << "Cmnd Output: " << outPut << "\n";
-        log(ss.str());
-    }
+
     return true;
 }
 //=============================================================================

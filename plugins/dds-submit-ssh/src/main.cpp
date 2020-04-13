@@ -20,6 +20,7 @@
 #include "BOOSTHelper.h"
 #include "BOOST_FILESYSTEM.h"
 #include "Intercom.h"
+#include "Logger.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
@@ -43,8 +44,6 @@ namespace boost_hlp = MiscCommon::BOOSTHelper;
 
 //=============================================================================
 const LPCSTR g_pipeName = ".dds_ssh_pipe";
-typedef list<CWorker> workersList_t;
-typedef CThreadPool<CWorker, ETaskType> threadPool_t;
 //=============================================================================
 // Command line parser
 bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
@@ -83,7 +82,7 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     CRMSPluginProtocol proto(_sessionId);
 
     stringstream ss;
-    ss << "Will use the local host to deply ";
+    ss << "Will use the local host to deploy ";
     if (_nInstances == 0)
         _nInstances = thread::hardware_concurrency();
 
@@ -126,6 +125,8 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
 int main(int argc, char* argv[])
 {
     CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
+
     bpo::variables_map vm;
     try
     {
@@ -144,11 +145,12 @@ int main(int argc, char* argv[])
 
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
+    Logger::instance().reinit();
 
-    CLogEngine slog(true);
+    shared_ptr<CLogEngine> slog = make_shared<CLogEngine>(true);
 
     // Init communication with DDS commander server
-    CRMSPluginProtocol proto(vm["id"].as<string>());
+    shared_ptr<CRMSPluginProtocol> proto = make_shared<CRMSPluginProtocol>(vm["id"].as<string>());
 
     try
     {
@@ -156,35 +158,51 @@ int main(int argc, char* argv[])
         string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
         smart_append(&pipeName, '/');
         pipeName += g_pipeName;
-        slog.start(pipeName, [&proto](const string& _msg) { proto.sendMessage(EMsgSeverity::info, _msg); });
+        slog->start(pipeName, [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
 
         // Subscribe on onSubmit command
-        proto.onSubmit([&proto, &vm](const SSubmit& _submit) {
-            bool needLocalHost = _submit.m_cfgFilePath.empty();
-            string configFile(_submit.m_cfgFilePath);
-            size_t nInstances(_submit.m_nInstances);
-            if (needLocalHost)
-            {
-                configFile = createLocalhostCfg(nInstances, vm["id"].as<string>());
-            }
-
-            if (!file_exists(configFile))
-                throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
-
-            ifstream f(configFile.c_str());
-            if (!f.is_open())
-            {
-                string msg("can't open configuration file \"");
-                msg += configFile;
-                msg += "\"";
-                throw runtime_error(msg);
-            }
-
+        proto->onSubmit([proto, &vm](const SSubmit& _submit) {
             size_t wrkCount(0);
-
-            workersList_t workers;
-            string inlineShellScripCmds;
+            size_t taskCount(0);
+            atomic<size_t> successfulTasks(0);
+            stringstream ssMsg;
+            try
             {
+                // Create a thread pull
+                // may return 0 when not able to detect
+                unsigned int concurrentThreads = thread::hardware_concurrency();
+                // we need at least 4 threads
+                if (concurrentThreads < 4)
+                    concurrentThreads = 4;
+
+                boost::asio::thread_pool pool(concurrentThreads);
+
+                ssMsg << "Starting thread-pool using " << concurrentThreads << " threads.";
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
+                ssMsg.str("");
+
+                bool needLocalHost = _submit.m_cfgFilePath.empty();
+                string configFile(_submit.m_cfgFilePath);
+                size_t nInstances(_submit.m_nInstances);
+                if (needLocalHost)
+                {
+                    configFile = createLocalhostCfg(nInstances, vm["id"].as<string>());
+                }
+
+                if (!file_exists(configFile))
+                    throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
+
+                ifstream f(configFile.c_str());
+                if (!f.is_open())
+                {
+                    string msg("can't open configuration file \"");
+                    msg += configFile;
+                    msg += "\"";
+                    throw runtime_error(msg);
+                }
+
+                string inlineShellScripCmds;
+
                 CNcf config;
                 config.readFrom(f);
                 inlineShellScripCmds = config.getBashEnvCmds();
@@ -194,79 +212,66 @@ int main(int argc, char* argv[])
                 options.m_fastClean = false;
 
                 configRecords_t recs(config.getRecords());
-                configRecords_t::const_iterator iter = recs.begin();
-                configRecords_t::const_iterator iter_end = recs.end();
-                for (; iter != iter_end; ++iter)
+                for (auto& rec : recs)
                 {
-                    configRecord_t rec(*iter);
-                    CWorker wrk(rec, options, vm["path"].as<string>());
-                    workers.push_back(wrk);
-
-                    // if (0 == rec->m_nWorkers)
-                    //     dynWrk = true; // user wants us to dynamicly decide on how many
-                    //     job slots to create
-
-                    wrkCount += rec->m_nSlots;
+                    shared_ptr<CWorker> task = shared_ptr<CWorker>(new CWorker(rec, options, vm["path"].as<string>()));
 
                     stringstream ssWorkerInfoMsg;
-                    wrk.printInfo(ssWorkerInfoMsg);
-                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
+                    task->printInfo(ssWorkerInfoMsg);
+                    proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
+
+                    boost::asio::post(pool, [task, &successfulTasks, proto] {
+                        try
+                        {
+                            if (task && task->run(task_submit))
+                                ++successfulTasks;
+                        }
+                        catch (const exception& _e)
+                        {
+                            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, _e.what());
+                        }
+                    });
+
+                    ++taskCount;
+                    wrkCount += rec->m_nSlots;
                 }
+
+                ssMsg << "Deploying " << wrkCount << " agents...";
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
+                ssMsg.str("");
+
+                pool.join();
             }
-            stringstream ssMsg;
-            ssMsg << "Deploying " << wrkCount << " agents...";
-            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
-            ssMsg.str("");
-
-            // a thread pool for the DDS transport engine
-            // may return 0 when not able to detect
-            unsigned int concurrentThreads = thread::hardware_concurrency();
-            // we need at least 4 threads
-            if (concurrentThreads < 4)
-                concurrentThreads = 4;
-            // we don't need many threads if there are not so many agents to deploy
-            if (concurrentThreads > wrkCount)
-                concurrentThreads = wrkCount;
-
-            ssMsg << "Starting thread pool using " << concurrentThreads << " threads.";
-            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
-            ssMsg.str("");
-
-            // start thread-pool and push tasks into it
-            threadPool_t threadPool(concurrentThreads);
-
-            workersList_t::iterator iter = workers.begin();
-            workersList_t::iterator iter_end = workers.end();
-            for (; iter != iter_end; ++iter)
+            catch (exception& e)
             {
-                // push main tasks
-                threadPool.pushTask(*iter, task_submit);
+                LOG(error) << "Exception: " << e.what();
+                return;
             }
-            threadPool.stop(true);
 
             // Check the status of all tasks Failed
-            size_t badFailedCount = threadPool.tasksCount() - threadPool.successfulTasks();
-            ssMsg << "Successfully processed tasks: " << threadPool.successfulTasks();
-            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
+            size_t badFailedCount = taskCount - successfulTasks;
+            ssMsg << "Successfully processed tasks: " << successfulTasks;
+            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
             ssMsg.str("");
             ssMsg << "Failed tasks: " << badFailedCount;
-            proto.sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
+            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
 
             if (badFailedCount > 0)
-                proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "WARNING: some tasks have failed.");
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::error, "WARNING: some tasks have failed.");
 
-            if (threadPool.successfulTasks() > 0)
-                proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "DDS agents have been submitted.");
+            if (successfulTasks > 0)
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, "DDS agents have been submitted.");
 
-            proto.stop();
+            proto->stop();
         });
 
         // Let DDS know that we are online and start listening waiting for notifications
-        proto.start();
+        proto->start();
     }
     catch (exception& e)
     {
-        proto.sendMessage(dds::intercom_api::EMsgSeverity::error, e.what());
+        proto->sendMessage(dds::intercom_api::EMsgSeverity::error, e.what());
+        LOG(error) << "Exception: " << e.what();
         return 1;
     }
 

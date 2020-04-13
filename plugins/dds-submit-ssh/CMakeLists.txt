@@ -12,7 +12,6 @@ set(SOURCE_FILES
 
 set(SRC_HDRS
 	src/local_types.h
-	src/threadPool.h
 	src/worker.h
 )
 
@@ -42,7 +41,7 @@ install(PROGRAMS src/dds-submit-ssh-worker DESTINATION plugins/${PROJECT_NAME})
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
-  add_subdirectory(tests) 
+#  add_subdirectory(tests) 
 else()
   message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 endif()
