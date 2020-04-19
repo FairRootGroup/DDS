@@ -93,6 +93,7 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    std::atomic<bool> isFailed(false);
     try
     {
         std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
@@ -109,8 +110,6 @@ int main(int argc, char* argv[])
         requestInfo.m_slots = options.m_slots;
         requestInfo.m_pluginPath = options.m_sPath;
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
-
-        std::atomic<bool> isFailed(false);
 
         requestPtr->setMessageCallback([&isFailed](const SMessageResponseData& _message) {
             LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
@@ -145,5 +144,5 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    return EXIT_SUCCESS;
+    return (isFailed ? EXIT_FAILURE : EXIT_SUCCESS);
 }

@@ -23,11 +23,12 @@ Modified: new way of task and collection ID calculation. String which is used fo
 
 ### dds-submit
 Fixed: a bug, which caused the command to block if an unknown plug-in is requested.     
+Fixed: CLI returns 1 if submission failed. (GH-227)    
 
 ### localhost plug-in
 Modified: Requares now the --slots argument.    
 
-### ssh plug-in
+### ssh plug-includes
 Modified: Replace custom thread pool with boost asio's thread__pool.    
 Modified: Improve performence and stability.   
 

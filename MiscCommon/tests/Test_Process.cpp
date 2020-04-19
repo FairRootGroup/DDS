@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_timeout)
     stringstream ssCmd;
     ssCmd << boost::process::search_path("bash").string()
           << " -c \"echo test > /tmp/test.test; sleep 3; echo test2 > /tmp/test.test\"";
-    execute(ssCmd.str(), std::chrono::seconds(5));
+    BOOST_CHECK_NO_THROW(execute(ssCmd.str(), std::chrono::seconds(10)));
 
     ifstream test_file(sFile);
     BOOST_CHECK(test_file.is_open());
@@ -231,6 +231,21 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_dds_daemonize)
     logFile /= "hostname.out.log";
     BOOST_TEST(fs::exists(logFile));
     BOOST_TEST(fs::file_size(logFile) > 0);
+}
+
+//=============================================================================
+BOOST_AUTO_TEST_CASE(test_MiscCommon_excute_in_grandchildren)
+{
+    auto tmpDir{ STestConfig::instance()->m_pathWrkDir };
+    fs::path outputfile(tmpDir);
+    outputfile /= "test_MiscCommon_excute_in_grandchildren";
+
+    execute("MiscCommon_test_ProcessExecutable --wait=2 --output-file=" + outputfile.string());
+
+    // let process finish
+    this_thread::sleep_for(std::chrono::seconds(3));
+    BOOST_TEST(fs::exists(outputfile));
+    BOOST_TEST(fs::file_size(outputfile) > 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

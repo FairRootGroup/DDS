@@ -14,6 +14,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::ssh_cmd;
 using namespace MiscCommon;
+namespace fs = boost::filesystem;
 //=============================================================================
 const std::chrono::seconds g_cmdTimeout = std::chrono::seconds(20);
 //=============================================================================
@@ -46,6 +47,8 @@ bool CWorker::run(ETaskType _param)
     if (!m_rec->m_sshOptions.empty())
         ssParams << " -o \"" << m_rec->m_sshOptions << "\"";
 
+    fs::path bashPath = bp::search_path("bash");
+
     stringstream ssCmd;
     switch (_param)
     {
@@ -55,7 +58,7 @@ bool CWorker::run(ETaskType _param)
             string cmd(m_path);
             cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);
-            ssCmd << cmd << " " << ssParams.str();
+            ssCmd << bashPath << " -c \"" << cmd << " " << ssParams.str() << "\"";
             break;
         }
         case task_clean:
@@ -87,16 +90,26 @@ bool CWorker::exec_command(const string& _cmd) const
     int nExitCode(0);
     try
     {
-        execute(_cmd, g_cmdTimeout, nullptr, nullptr, &nExitCode);
+        string stdout;
+        string stderr;
+        LOG(info) << "Executing task [" << m_rec->m_id << "] " << _cmd;
 
-        LOG(info) << "The command execution for [" << m_rec->m_id << "] finished with code: " << nExitCode;
+        execute(_cmd, g_cmdTimeout, &stdout, &stderr, &nExitCode);
+
+        if (!stdout.empty())
+            LOG(info) << "Task outoput for [" << m_rec->m_id << "] " << stdout;
+
+        if (!stderr.empty())
+            LOG(error) << "Task outoput for [" << m_rec->m_id << "] " << stderr;
+
+        LOG(info) << "Task execution [" << m_rec->m_id << "] finished with code: " << nExitCode;
 
         if (nExitCode != 0)
             return false;
     }
     catch (exception& e)
     {
-        log(string("Failed to process the task: ") + e.what());
+        LOG(error) << "Failed to process the task [" << m_rec->m_id << "]: " << e.what();
         return false;
     }
 

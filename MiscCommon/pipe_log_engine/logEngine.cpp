@@ -160,12 +160,10 @@ void CLogEngine::logMsg(const string& _msg)
     if (sMsg.empty())
         return; // I guess not
 
-    stringstream ss;
-    ss << sMsg;
-    LOG(info) << ss.str();
+    LOG(info) << sMsg;
     // call user's callback if needed
     if (m_callback != nullptr)
-        m_callback(ss.str());
+        m_callback(sMsg);
 }
 //=============================================================================
 void CLogEngine::thread_worker(int _fd, const string& _pipename)

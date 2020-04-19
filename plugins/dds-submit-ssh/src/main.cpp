@@ -147,39 +147,36 @@ int main(int argc, char* argv[])
     CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
     Logger::instance().reinit();
 
-    shared_ptr<CLogEngine> slog = make_shared<CLogEngine>(true);
-
     // Init communication with DDS commander server
     shared_ptr<CRMSPluginProtocol> proto = make_shared<CRMSPluginProtocol>(vm["id"].as<string>());
 
     try
     {
-        // init pipe log engine to get log messages from the child scripts
-        string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
-        smart_append(&pipeName, '/');
-        pipeName += g_pipeName;
-        slog->start(pipeName, [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
+        // Create a thread pull
+        // may return 0 when not able to detect
+        unsigned int concurrentThreads = thread::hardware_concurrency();
+        // we need at least 4 threads
+        if (concurrentThreads < 4)
+            concurrentThreads = 4;
+
+        stringstream ssMsg;
+        ssMsg << "Starting thread-pool using " << concurrentThreads << " threads.";
+        proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
+        boost::asio::thread_pool pool(concurrentThreads);
 
         // Subscribe on onSubmit command
-        proto->onSubmit([proto, &vm](const SSubmit& _submit) {
+        proto->onSubmit([&pool, proto, &vm](const SSubmit& _submit) {
             size_t wrkCount(0);
             size_t taskCount(0);
             atomic<size_t> successfulTasks(0);
-            stringstream ssMsg;
             try
             {
-                // Create a thread pull
-                // may return 0 when not able to detect
-                unsigned int concurrentThreads = thread::hardware_concurrency();
-                // we need at least 4 threads
-                if (concurrentThreads < 4)
-                    concurrentThreads = 4;
-
-                boost::asio::thread_pool pool(concurrentThreads);
-
-                ssMsg << "Starting thread-pool using " << concurrentThreads << " threads.";
-                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
-                ssMsg.str("");
+                // Create the pipe log engine to cartch logs from external commands
+                CLogEngine slog(true);
+                string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
+                smart_append(&pipeName, '/');
+                pipeName += g_pipeName;
+                slog.start(pipeName, [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
 
                 bool needLocalHost = _submit.m_cfgFilePath.empty();
                 string configFile(_submit.m_cfgFilePath);
@@ -212,6 +209,7 @@ int main(int argc, char* argv[])
                 options.m_fastClean = false;
 
                 configRecords_t recs(config.getRecords());
+                taskCount = recs.size();
                 for (auto& rec : recs)
                 {
                     shared_ptr<CWorker> task = shared_ptr<CWorker>(new CWorker(rec, options, vm["path"].as<string>()));
@@ -219,6 +217,8 @@ int main(int argc, char* argv[])
                     stringstream ssWorkerInfoMsg;
                     task->printInfo(ssWorkerInfoMsg);
                     proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
+
+                    wrkCount += rec->m_nSlots;
 
                     boost::asio::post(pool, [task, &successfulTasks, proto] {
                         try
@@ -231,14 +231,11 @@ int main(int argc, char* argv[])
                             proto->sendMessage(dds::intercom_api::EMsgSeverity::info, _e.what());
                         }
                     });
-
-                    ++taskCount;
-                    wrkCount += rec->m_nSlots;
                 }
 
-                ssMsg << "Deploying " << wrkCount << " agents...";
-                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
-                ssMsg.str("");
+                stringstream ss;
+                ss << "Deploying " << wrkCount << " agents...";
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
                 pool.join();
             }
@@ -249,12 +246,13 @@ int main(int argc, char* argv[])
             }
 
             // Check the status of all tasks Failed
+            stringstream ss;
             size_t badFailedCount = taskCount - successfulTasks;
-            ssMsg << "Successfully processed tasks: " << successfulTasks;
-            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
-            ssMsg.str("");
-            ssMsg << "Failed tasks: " << badFailedCount;
-            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssMsg.str());
+            ss << "Successfully processed tasks: " << successfulTasks;
+            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
+            ss.str("");
+            ss << "Failed tasks: " << badFailedCount;
+            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
             if (badFailedCount > 0)
                 proto->sendMessage(dds::intercom_api::EMsgSeverity::error, "WARNING: some tasks have failed.");
@@ -266,7 +264,9 @@ int main(int argc, char* argv[])
         });
 
         // Let DDS know that we are online and start listening waiting for notifications
+        LOG(info) << "Start plug-in protocol";
         proto->start();
+        LOG(info) << "Stop plug-in protocol";
     }
     catch (exception& e)
     {

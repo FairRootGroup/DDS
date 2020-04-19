@@ -1117,7 +1117,8 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 
         try
         {
-            // don't wait for plug-in. Just execute it and expect it to connect.
+            // Execute RMS plug-in and don't wait for it.
+            // Omnce plug-in is up it will connect back to the commander.
             // We will report to user if it won't connect.
             execute(ssCmd.str());
         }

@@ -39,6 +39,22 @@ install(TARGETS ${test} RUNTIME DESTINATION tests)
 
 #=============================================================================
 
+set(test ${prefix}_ProcessExecutable)
+add_executable(${test} Test_ProcessExecutable.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::system
+  Boost::filesystem
+  Boost::program_options
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION tests)
+
+#=============================================================================
+
 set(test ${prefix}_SysHelper)
 add_executable(${test} Test_SysHelper.cpp)
 
