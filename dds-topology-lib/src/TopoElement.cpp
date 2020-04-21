@@ -11,8 +11,8 @@ using namespace std;
 using namespace dds;
 using namespace topology_api;
 
-CTopoElement::CTopoElement()
-    : CTopoBase()
+CTopoElement::CTopoElement(const std::string& _name)
+    : CTopoBase(_name)
     , m_path()
 {
     setType(CTopoBase::EType::TOPO_ELEMENT);

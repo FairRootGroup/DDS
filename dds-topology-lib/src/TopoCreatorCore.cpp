@@ -5,7 +5,6 @@
 
 // DDS
 #include "TopoCreatorCore.h"
-#include "TopoParserXML.h"
 #include "TopoProperty.h"
 #include "TopoRequirement.h"
 #include "TopoTrigger.h"
@@ -21,29 +20,21 @@ using namespace topology_api;
 using namespace user_defaults_api;
 
 CTopoCreatorCore::CTopoCreatorCore()
-    : m_main(nullptr)
 {
+}
+
+CTopoCreatorCore::CTopoCreatorCore(const std::string& _fileName)
+{
+    m_main->initFromXML(_fileName, "");
+}
+
+CTopoCreatorCore::CTopoCreatorCore(const std::string& _fileName, const std::string& _schemaFileName)
+{
+    m_main->initFromXML(_fileName, _schemaFileName);
 }
 
 CTopoCreatorCore::~CTopoCreatorCore()
 {
-}
-
-void CTopoCreatorCore::init()
-{
-    m_main = std::make_shared<CTopoGroup>();
-}
-
-void CTopoCreatorCore::init(const std::string& _fileName)
-{
-    init(_fileName, "");
-}
-
-void CTopoCreatorCore::init(const std::string& _fileName, const std::string& _schemaFileName)
-{
-    CTopoParserXML parser;
-    m_main = std::make_shared<CTopoGroup>();
-    parser.parse(_fileName, _schemaFileName, m_main);
 }
 
 void CTopoCreatorCore::save(std::ostream& _stream)
@@ -66,7 +57,7 @@ void CTopoCreatorCore::save(boost::property_tree::ptree& _pt)
 {
     if (m_main != nullptr)
     {
-        declElementsMap_t declElements;
+        objectMap_t declElements;
 
         auto elements = m_main->getElements();
         for (const auto& element : elements)
@@ -105,7 +96,7 @@ void CTopoCreatorCore::save(boost::property_tree::ptree& _pt)
     }
 }
 
-void CTopoCreatorCore::addDeclElements(CTopoElement::Ptr_t _element, declElementsMap_t& _declElements)
+void CTopoCreatorCore::addDeclElements(CTopoElement::Ptr_t _element, objectMap_t& _declElements)
 {
     switch (_element->getType())
     {
@@ -126,7 +117,7 @@ void CTopoCreatorCore::addDeclElements(CTopoElement::Ptr_t _element, declElement
     }
 }
 
-void CTopoCreatorCore::addDeclElements(CTopoTask::Ptr_t _task, declElementsMap_t& _declElements)
+void CTopoCreatorCore::addDeclElements(CTopoTask::Ptr_t _task, objectMap_t& _declElements)
 {
     _declElements[CTopoBase::EType::TASK][_task->getName()] = static_pointer_cast<CTopoBase>(_task);
 
@@ -151,7 +142,7 @@ void CTopoCreatorCore::addDeclElements(CTopoTask::Ptr_t _task, declElementsMap_t
     }
 }
 
-void CTopoCreatorCore::addDeclElements(CTopoCollection::Ptr_t _collection, declElementsMap_t& _declElements)
+void CTopoCreatorCore::addDeclElements(CTopoCollection::Ptr_t _collection, objectMap_t& _declElements)
 {
     _declElements[CTopoBase::EType::COLLECTION][_collection->getName()] = static_pointer_cast<CTopoBase>(_collection);
 
@@ -172,7 +163,7 @@ void CTopoCreatorCore::addDeclElements(CTopoCollection::Ptr_t _collection, declE
     }
 }
 
-void CTopoCreatorCore::addDeclElements(CTopoGroup::Ptr_t _group, declElementsMap_t& _declElements)
+void CTopoCreatorCore::addDeclElements(CTopoGroup::Ptr_t _group, objectMap_t& _declElements)
 {
     const auto& elements = _group->getElements();
     for (const auto& element : elements)

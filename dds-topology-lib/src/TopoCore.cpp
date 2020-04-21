@@ -64,9 +64,8 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
     // Store path to the XML topology file
     m_filepath = boost::filesystem::canonical(filename).string();
 
-    CTopoParserXML parser;
-    m_main = std::make_shared<CTopoGroup>();
-    parser.parse(filename, schemaFileName, m_main, m_name);
+    m_main = make_shared<CTopoGroup>("main");
+    m_main->initFromXML(filename, schemaFileName, &m_name);
 
     // Calculate topology hash
     // Function throws an exception if it fails to calculate the hash.

@@ -15,10 +15,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoRequirement::CTopoRequirement()
-    : CTopoBase()
-    , m_value()
-    , m_requirementType(CTopoRequirement::EType::HostName)
+CTopoRequirement::CTopoRequirement(const std::string& _name)
+    : CTopoBase(_name)
 {
     setType(CTopoBase::EType::REQUIREMENT);
 }
@@ -47,19 +45,18 @@ void CTopoRequirement::setRequirementType(CTopoRequirement::EType _requirementTy
     m_requirementType = _requirementType;
 }
 
-void CTopoRequirement::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void CTopoRequirement::initFromPropertyTree(const boost::property_tree::ptree& _pt)
 {
     try
     {
         const ptree& requirementPT =
-            FindElementInPropertyTree(CTopoBase::EType::REQUIREMENT, _name, _pt.get_child("topology"));
-        setName(requirementPT.get<string>("<xmlattr>.name"));
+            FindElementInPropertyTree(CTopoBase::EType::REQUIREMENT, getName(), _pt.get_child("topology"));
         setValue(requirementPT.get<std::string>("<xmlattr>.value", ""));
         setRequirementType(TagToRequirementType(requirementPT.get<std::string>("<xmlattr>.type", "")));
     }
     catch (exception& error) // ptree_error, runtime_error
     {
-        throw logic_error("Unable to initialize property " + _name + " error:" + error.what());
+        throw logic_error("Unable to initialize property " + getName() + " error:" + error.what());
     }
 }
 

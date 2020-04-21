@@ -5,7 +5,6 @@
 
 // DDS
 #include "TopoGroup.h"
-#include "TopoFactory.h"
 #include "TopoUtils.h"
 // STD
 #include <memory>
@@ -15,8 +14,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoGroup::CTopoGroup()
-    : CTopoContainer()
+CTopoGroup::CTopoGroup(const std::string& _name)
+    : CTopoContainer(_name)
     , m_n(1)
 {
     setType(CTopoBase::EType::GROUP);
@@ -42,32 +41,29 @@ size_t CTopoGroup::getTotalNofTasks() const
     return counter;
 }
 
-void CTopoGroup::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTopoGroup::initFromPropertyTree(const ptree& _pt)
 {
     try
     {
         const ptree& mainPT = _pt.get_child("topology.main");
         const ptree& groupPT =
-            (_name == "main") ? mainPT : FindElementInPropertyTree(CTopoBase::EType::GROUP, _name, mainPT);
+            (getName() == "main") ? mainPT : FindElementInPropertyTree(CTopoBase::EType::GROUP, getName(), mainPT);
 
-        setName(groupPT.get<string>("<xmlattr>.name"));
         setN(groupPT.get<size_t>("<xmlattr>.n", 1));
 
         for (const auto& element : groupPT)
         {
             if (element.first == "<xmlattr>")
                 continue;
-            CTopoElement::Ptr_t newElement = CreateTopoElement(UseTagToTopoType(element.first));
-            newElement->setParent(this);
-            boost::optional<const ptree&> child = element.second.get_child_optional("<xmlattr>");
-            string name = (child) ? child.get().get<string>("name") : element.second.data();
-            newElement->initFromPropertyTree(name, _pt);
-            addElement(newElement);
+
+            auto child{ element.second.get_child_optional("<xmlattr>") };
+            string name{ (child) ? child.get().get<string>("name") : element.second.data() };
+            addElement(UseTagToTopoType(element.first), name)->initFromPropertyTree(_pt);
         }
     }
     catch (exception& error) // ptree_error, runtime_error
     {
-        throw runtime_error("Unable to initialize task group " + _name + " error: " + error.what());
+        throw runtime_error("Unable to initialize task group " + getName() + " error: " + error.what());
     }
 }
 
@@ -86,45 +82,48 @@ void CTopoGroup::saveToPropertyTree(boost::property_tree::ptree& _pt)
             _pt.put("<xmlattr>.n", getN());
         }
 
-        const auto& elements = getElements();
-        for (const auto& v : elements)
+        // We need to keep the correct order of elements in the output XML file
+        vector<CTopoBase::EType> typeOrder{ CTopoBase::EType::TASK,
+                                            CTopoBase::EType::COLLECTION,
+                                            CTopoBase::EType::GROUP };
+        const auto& elements{ getElements() };
+
+        for (auto type : typeOrder)
         {
-            bool isParentMain = v->getParent() != nullptr && v->getParent()->getType() == CTopoBase::EType::GROUP &&
-                                v->getParent()->getName() == "main";
-            switch (v->getType())
+            for (const auto& v : elements)
             {
-                case CTopoBase::EType::TASK:
-                    if (isParentMain)
-                    {
-                        _pt.add(tag + ".task", v->getName());
-                    }
-                    else
-                    {
-                        _pt.add("task", v->getName());
-                    }
-                    break;
+                if (v->getType() != type)
+                    continue;
 
-                case CTopoBase::EType::COLLECTION:
-                    if (isParentMain)
-                    {
-                        _pt.add(tag + ".collection", v->getName());
-                    }
-                    else
-                    {
-                        _pt.add("collection", v->getName());
-                    }
-                    break;
-
-                case CTopoBase::EType::GROUP:
+                bool isParentMain = v->getParent() != nullptr && v->getParent()->getType() == CTopoBase::EType::GROUP &&
+                                    v->getParent()->getName() == "main";
+                switch (v->getType())
                 {
-                    boost::property_tree::ptree pt;
-                    v->saveToPropertyTree(pt);
-                    _pt.add_child(tag + ".group", pt);
-                }
-                break;
-
-                default:
+                    case CTopoBase::EType::TASK:
+                    {
+                        string s{ isParentMain ? tag + ".task" : "task" };
+                        _pt.add(s, v->getName());
+                    }
                     break;
+
+                    case CTopoBase::EType::COLLECTION:
+                    {
+                        string s{ isParentMain ? tag + ".collection" : "collection" };
+                        _pt.add(s, v->getName());
+                    }
+                    break;
+
+                    case CTopoBase::EType::GROUP:
+                    {
+                        boost::property_tree::ptree pt;
+                        v->saveToPropertyTree(pt);
+                        _pt.add_child(tag + ".group", pt);
+                    }
+                    break;
+
+                    default:
+                        break;
+                }
             }
         }
     }

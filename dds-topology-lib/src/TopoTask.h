@@ -25,12 +25,11 @@ namespace dds
         class CTopoTask : public CTopoElement
         {
           public:
-            typedef std::shared_ptr<CTopoTask> Ptr_t;
-            typedef std::vector<CTopoTask::Ptr_t> PtrVector_t;
+            using Ptr_t = std::shared_ptr<CTopoTask>;
+            using PtrVector_t = std::vector<CTopoTask::Ptr_t>;
 
-          public:
             /// \brief Constructor.
-            CTopoTask();
+            CTopoTask(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoTask();
@@ -54,12 +53,9 @@ namespace dds
             void setEnv(const std::string& _env);
             void setExeReachable(bool _exeReachable);
             void setEnvReachable(bool _envReachable);
-            void setProperties(const CTopoProperty::PtrMap_t& _properties);
-            void addProperty(CTopoProperty::Ptr_t _property);
-            void setRequirements(const CTopoRequirement::PtrVector_t& _requirements);
-            void addRequirement(CTopoRequirement::Ptr_t _requirement);
-            void setTriggers(const CTopoTrigger::PtrVector_t& _triggers);
-            void addTrigger(CTopoTrigger::Ptr_t _trigger);
+            CTopoProperty::Ptr_t addProperty(const std::string& _name);
+            CTopoRequirement::Ptr_t addRequirement(const std::string& _name);
+            CTopoTrigger::Ptr_t addTrigger(const std::string& _name);
 
             // Parent collection and group ID
             std::string getParentCollectionId() const;
@@ -75,7 +71,7 @@ namespace dds
             virtual size_t getTotalNofTasks() const;
 
             /// \brief Inherited from TopoElement.
-            virtual void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            virtual void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoElement.
             virtual void saveToPropertyTree(boost::property_tree::ptree& _pt);
@@ -92,8 +88,8 @@ namespace dds
           private:
             std::string m_exe;                            ///< Path to executable
             std::string m_env;                            ///< Path to environmtnt file
-            bool m_exeReachable;                          ///< If executable is available on the WN
-            bool m_envReachable;                          ///< If environment script is available on the WN
+            bool m_exeReachable{ true };                  ///< If executable is available on the WN
+            bool m_envReachable{ true };                  ///< If environment script is available on the WN
             CTopoProperty::PtrMap_t m_properties;         ///< Properties
             CTopoRequirement::PtrVector_t m_requirements; ///< Array of requirements
             CTopoTrigger::PtrVector_t m_triggers;         ///< Array of triggers

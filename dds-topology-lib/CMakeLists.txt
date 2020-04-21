@@ -9,7 +9,6 @@ set(SOURCE_FILES
 	src/TopoProperty.cpp
 	src/TopoBase.cpp
 	src/TopoUtils.cpp
-	src/TopoFactory.cpp
 	src/TopoCore.cpp
 	src/TopoTask.cpp
 	src/TopoCollection.cpp
@@ -27,7 +26,6 @@ set(SOURCE_FILES
 
 set(HEADER_FILES
 	src/TopoUtils.h
-	src/TopoFactory.h
 	src/TopoCore.h
 	src/TopoParserXML.h
     src/TopoVars.h

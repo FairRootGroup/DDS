@@ -6,8 +6,6 @@
 #ifndef __DDS__TopologyParserXML__
 #define __DDS__TopologyParserXML__
 
-// DDS
-#include "TopoGroup.h"
 // STD
 #include <string>
 // BOOST
@@ -20,37 +18,28 @@ namespace dds
         class CTopoParserXML
         {
           public:
-            /// \brief Constructor.
-            CTopoParserXML();
-
-            /// \brief Destructor.
-            virtual ~CTopoParserXML();
-
-            /// \brief Read topology from specified XML file.
-            /// \param[in] _fileName Name of file with topology.
-            /// \param[out] _main Main task group or nullptr in case of error.
-            /// \param[in] _xmlValidationDisabled If true than XML will not be validated against XSD.
-            void parse(const std::string& _fileName, const std::string& _schemaFileName, CTopoGroup::Ptr_t _main);
-
-            /// \brief Read topology from specified XML file.
-            /// \param[in] _fileName Name of file with topology.
-            /// \param[out] _main Main task group or nullptr in case of error.
-            /// \param[in] _xmlValidationDisabled If true than XML will not be validated against XSD.
-            /// \param[out] _name Topology name.
-            void parse(const std::string& _fileName,
-                       const std::string& _schemaFileName,
-                       CTopoGroup::Ptr_t _main,
-                       std::string& _name);
+            /// \brief Parse  topology from specified XML file.
+            /// \param[out] _pt Output ptoperty tree.
+            /// \param[in] _filepath Path to the topology file.
+            /// \param[in] _schemaFilepath Path to the XSD schema file.
+            /// \throw std::runtime_error.
+            static void parse(boost::property_tree::ptree& _pt,
+                              const std::string& _filepath,
+                              const std::string& _schemaFilepath,
+                              std::string* _topologyName = nullptr);
 
             /// \brief Validate provided XML file against XSD using xmllint.
-            /// \throw runtime_error
-            bool isValid(const std::string& _fileName,
-                         const std::string& _schemaFileName,
-                         std::string* _output = nullptr);
+            /// \param[in] _filepath Path to the topology file.
+            /// \param[in] _schemaFilepath Path to the XSD schema file.
+            /// \return true if file is valid or schema filepath is empty, otherwise return false.
+            /// \throw std::runtime_error
+            static bool isValid(const std::string& _filepath,
+                                const std::string& _schemaFilepath,
+                                std::string* _output = nullptr);
 
           private:
             /// \brief Print recursively property tree to std::cout.
-            void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt) const;
+            static void PrintPropertyTree(const std::string& _path, const boost::property_tree::ptree& _pt);
         };
     } // namespace topology_api
 } // namespace dds

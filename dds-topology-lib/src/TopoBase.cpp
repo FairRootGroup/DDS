@@ -5,6 +5,7 @@
 
 // DDS
 #include "TopoBase.h"
+#include "TopoParserXML.h"
 // STD
 #include <iostream>
 
@@ -13,10 +14,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoBase::CTopoBase()
-    : m_name("")
-    , m_type(CTopoBase::EType::TOPO_BASE)
-    , m_parent(nullptr)
+CTopoBase::CTopoBase(const std::string& _name)
+    : m_name(_name)
 {
 }
 
@@ -39,7 +38,7 @@ void CTopoBase::setParent(CTopoBase* _parent)
     m_parent = _parent;
 }
 
-string CTopoBase::getName() const
+const string& CTopoBase::getName() const
 {
     return m_name;
 }
@@ -64,6 +63,15 @@ string CTopoBase::getPath() const
     {
         return getParent()->getPath() + "/" + getName();
     }
+}
+
+void CTopoBase::initFromXML(const std::string& _filepath,
+                            const std::string& _schemaFilepath,
+                            std::string* _topologyName)
+{
+    boost::property_tree::ptree pt;
+    CTopoParserXML::parse(pt, _filepath, _schemaFilepath, _topologyName);
+    this->initFromPropertyTree(pt);
 }
 
 string CTopoBase::toString() const

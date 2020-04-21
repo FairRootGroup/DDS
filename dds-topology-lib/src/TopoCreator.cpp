@@ -16,28 +16,28 @@ CTopoCreator::CTopoCreator()
 {
 }
 
+CTopoCreator::CTopoCreator(const std::string& _fileName)
+    : m_topoCreator(std::make_shared<CTopoCreatorCore>(_fileName))
+{
+}
+
+CTopoCreator::CTopoCreator(const std::string& _fileName, const std::string& _schemaFileName)
+    : m_topoCreator(std::make_shared<CTopoCreatorCore>(_fileName, _schemaFileName))
+{
+}
+
 CTopoCreator::~CTopoCreator()
 {
-}
-
-void CTopoCreator::init()
-{
-    m_topoCreator->init();
-}
-
-void CTopoCreator::init(const std::string& _fileName)
-{
-    m_topoCreator->init(_fileName);
-}
-
-void CTopoCreator::init(const std::string& _fileName, const std::string& _schemaFileName)
-{
-    m_topoCreator->init(_fileName, _schemaFileName);
 }
 
 void CTopoCreator::save(const std::string& _filename)
 {
     m_topoCreator->save(_filename);
+}
+
+void CTopoCreator::save(std::ostream& _stream)
+{
+    m_topoCreator->save(_stream);
 }
 
 CTopoGroup::Ptr_t CTopoCreator::getMainGroup() const

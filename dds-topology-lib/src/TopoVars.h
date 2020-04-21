@@ -19,19 +19,17 @@ namespace dds
         class CTopoVars : public CTopoBase
         {
           public:
-            typedef std::shared_ptr<CTopoVars> Ptr_t;
-
-          public:
-            typedef std::map<std::string, std::string> varMap_t;
+            using Ptr_t = std::shared_ptr<CTopoVars>;
+            using varMap_t = std::map<std::string, std::string>;
 
             /// \brief Constructor.
-            CTopoVars();
+            CTopoVars(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoVars();
 
             /// \brief Inherited from TopoBase
-            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoBase
             void saveToPropertyTree(boost::property_tree::ptree& _pt);

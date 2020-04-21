@@ -19,12 +19,11 @@ namespace dds
         class CTopoCollection : public CTopoContainer
         {
           public:
-            typedef std::shared_ptr<CTopoCollection> Ptr_t;
-            typedef std::vector<CTopoCollection::Ptr_t> PtrVector_t;
+            using Ptr_t = std::shared_ptr<CTopoCollection>;
+            using PtrVector_t = std::vector<CTopoCollection::Ptr_t>;
 
-          public:
             /// \brief Constructor.
-            CTopoCollection();
+            CTopoCollection(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoCollection();
@@ -36,7 +35,7 @@ namespace dds
             virtual size_t getTotalNofTasks() const;
 
             /// \brief Inherited from TopoElement.
-            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoBase
             void saveToPropertyTree(boost::property_tree::ptree& _pt);
@@ -46,8 +45,7 @@ namespace dds
 
             size_t getNofRequirements() const;
             const CTopoRequirement::PtrVector_t& getRequirements() const;
-            void setRequirement(const CTopoRequirement::PtrVector_t& _requirements);
-            void addRequirement(CTopoRequirement::Ptr_t _requirement);
+            CTopoRequirement::Ptr_t addRequirement(const std::string& _name);
 
           private:
             CTopoRequirement::PtrVector_t m_requirements; ///< Array of requirement

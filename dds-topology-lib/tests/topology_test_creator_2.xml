@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<topology name="topology">
+    <property name="property10" scope="collection"/>
+    <property name="property11" scope="collection"/>
+    <declrequirement name="requirement10" value=".+.gsi.de" type="hostname"/>
+    <decltask name="task10">
+        <exe reachable="true">app10</exe>
+        <env reachable="false">env10</env>
+        <requirements>
+            <name>requirement10</name>
+        </requirements>
+        <properties>
+            <name access="read">property10</name>
+            <name access="write">property11</name>
+        </properties>
+    </decltask>
+    <decltask name="task11">
+        <exe reachable="true">app11</exe>
+        <env reachable="true">env11</env>
+        <requirements>
+            <name>requirement10</name>
+        </requirements>
+        <properties>
+            <name access="read">property10</name>
+            <name access="read">property11</name>
+        </properties>
+    </decltask>
+    <declcollection name="collection10">
+        <tasks>
+            <name n="10">task10</name>
+            <name n="2">task11</name>
+        </tasks>
+    </declcollection>
+    <main name="main">
+    </main>
+</topology>

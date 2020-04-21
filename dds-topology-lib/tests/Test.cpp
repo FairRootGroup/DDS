@@ -14,9 +14,9 @@
 #include "TopoBase.h"
 #include "TopoCollection.h"
 #include "TopoCore.h"
+#include "TopoCreator.h"
 #include "TopoCreatorCore.h"
 #include "TopoElement.h"
-#include "TopoFactory.h"
 #include "TopoGroup.h"
 #include "TopoParserXML.h"
 #include "TopoProperty.h"
@@ -393,32 +393,6 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_parser_xml_validation_wrong)
     BOOST_CHECK(result == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_topo_factory)
-{
-    // DDSCreateTopoBase
-    BOOST_CHECK_THROW(CreateTopoBase(CTopoBase::EType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoBase(CTopoBase::EType::TOPO_ELEMENT), runtime_error);
-    CTopoBase::Ptr_t baseTopoProperty = CreateTopoBase(CTopoBase::EType::TOPO_PROPERTY);
-    BOOST_CHECK(baseTopoProperty != nullptr);
-    CTopoBase::Ptr_t baseTask = CreateTopoBase(CTopoBase::EType::TASK);
-    BOOST_CHECK(baseTask != nullptr);
-    CTopoBase::Ptr_t baseCollection = CreateTopoBase(CTopoBase::EType::COLLECTION);
-    BOOST_CHECK(baseCollection != nullptr);
-    CTopoBase::Ptr_t baseGroup = CreateTopoBase(CTopoBase::EType::GROUP);
-    BOOST_CHECK(baseGroup != nullptr);
-
-    // DDSCreateTopoElement
-    BOOST_CHECK_THROW(CreateTopoElement(CTopoBase::EType::TOPO_BASE), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoElement(CTopoBase::EType::TOPO_ELEMENT), runtime_error);
-    BOOST_CHECK_THROW(CreateTopoElement(CTopoBase::EType::TOPO_PROPERTY), runtime_error);
-    CTopoElement::Ptr_t elementTask = CreateTopoElement(CTopoBase::EType::TASK);
-    BOOST_CHECK(elementTask != nullptr);
-    CTopoElement::Ptr_t elementCollection = CreateTopoElement(CTopoBase::EType::COLLECTION);
-    BOOST_CHECK(elementCollection != nullptr);
-    CTopoElement::Ptr_t elementGroup = CreateTopoElement(CTopoBase::EType::GROUP);
-    BOOST_CHECK(elementGroup != nullptr);
-}
-
 BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
 {
     // TopoTypeToUseTag
@@ -645,12 +619,222 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_property_performance)
 BOOST_AUTO_TEST_CASE(test_dds_topology_save)
 {
     std::string topoFile1("topology_test_creator_1.xml");
-    CTopoCreatorCore topo1;
-    topo1.init(topoFile1, CUserDefaults::getTopologyXSDFilePath());
+    CTopoCreatorCore topo1(topoFile1, CUserDefaults::getTopologyXSDFilePath());
     output_test_stream output1(topoFile1, true);
     topo1.save(output1);
-    // topo1.save("test_topology_test_creator_1.xml");
     BOOST_CHECK(output1.match_pattern());
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_create_from_xml)
+{
+    std::string topoFile("topology_test_creator_1.xml");
+
+    {
+        // TopoProperty
+        vector<string> names{ "property1", "property2", "property3", "property4" };
+        for (const auto& name : names)
+        {
+            auto property = CTopoBase::make<CTopoProperty>(name, topoFile);
+            BOOST_CHECK(property->getType() == CTopoBase::EType::TOPO_PROPERTY);
+            BOOST_CHECK(property->getName() == name);
+            BOOST_CHECK(property->getScopeType() == CTopoProperty::EScopeType::GLOBAL);
+            BOOST_CHECK(property->getParent() == nullptr);
+        }
+        BOOST_CHECK_THROW(CTopoBase::make<CTopoProperty>("property5", topoFile), logic_error);
+    }
+
+    {
+        // TopoRequirement
+        vector<string> names{ "requirement1", "requirement2", "requirement3" };
+        vector<string> values{ ".+.gsi.de", "server1.gsi.de", "node2" };
+        vector<CTopoRequirement::EType> types{ CTopoRequirement::EType::HostName,
+                                               CTopoRequirement::EType::HostName,
+                                               CTopoRequirement::EType::WnName };
+        for (size_t i = 0; i < 3; i++)
+        {
+            auto requirement = CTopoBase::make<CTopoRequirement>(names[i], topoFile);
+            BOOST_CHECK(requirement->getType() == CTopoBase::EType::REQUIREMENT);
+            BOOST_CHECK(requirement->getName() == names[i]);
+            BOOST_CHECK(requirement->getValue() == values[i]);
+            BOOST_CHECK(requirement->getRequirementType() == types[i]);
+            BOOST_CHECK(requirement->getParent() == nullptr);
+        }
+        BOOST_CHECK_THROW(CTopoBase::make<CTopoRequirement>("requirement4", topoFile), logic_error);
+    }
+
+    {
+        // TopoTrigger
+        vector<string> names{ "trigger1", "trigger2" };
+        vector<CTopoTrigger::EActionType> actions{ CTopoTrigger::EActionType::RestartTask,
+                                                   CTopoTrigger::EActionType::RestartTask };
+        vector<CTopoTrigger::EConditionType> conditions{ CTopoTrigger::EConditionType::TaskCrashed,
+                                                         CTopoTrigger::EConditionType::TaskCrashed };
+        vector<string> args{ "5", "10" };
+        for (size_t i = 0; i < 2; i++)
+        {
+            auto trigger = CTopoBase::make<CTopoTrigger>(names[i], topoFile);
+            BOOST_CHECK(trigger->getType() == CTopoBase::EType::TRIGGER);
+            BOOST_CHECK(trigger->getName() == names[i]);
+            BOOST_CHECK(trigger->getAction() == actions[i]);
+            BOOST_CHECK(trigger->getCondition() == conditions[i]);
+            BOOST_CHECK(trigger->getArgument() == args[i]);
+            BOOST_CHECK(trigger->getParent() == nullptr);
+        }
+        BOOST_CHECK_THROW(CTopoBase::make<CTopoTrigger>("trigger3", topoFile), logic_error);
+    }
+
+    {
+        // TopoTasks
+        vector<string> names{ "task1", "task2", "task3", "task4", "task5" };
+        vector<string> execs{ "app1 -l -n", "app2", "app3", "app4", "app5" };
+        vector<bool> execsReachable{ true, true, true, true, false };
+        vector<string> envs{ "env1", "env2", "env3", "env4", "env5" };
+        vector<bool> envsReachable{ false, true, true, true, true };
+        vector<size_t> numProperties{ 2, 2, 2, 2, 1 };
+        vector<size_t> numRequirements{ 2, 2, 0, 0, 0 };
+        vector<size_t> numTriggers{ 3, 0, 1, 0, 0 };
+        vector<string> propNames{ "property1", "property2", "property3", "property4", "property1" };
+        for (size_t i = 0; i < 5; i++)
+        {
+            auto task = CTopoBase::make<CTopoTask>(names[i], topoFile);
+            BOOST_CHECK(task->getType() == CTopoBase::EType::TASK);
+            BOOST_CHECK(task->getName() == names[i]);
+            BOOST_CHECK(task->getExe() == execs[i]);
+            BOOST_CHECK(task->getEnv() == envs[i]);
+            BOOST_CHECK(task->isExeReachable() == execsReachable[i]);
+            BOOST_CHECK(task->isEnvReachable() == envsReachable[i]);
+            BOOST_CHECK(task->getNofProperties() == numProperties[i]);
+            BOOST_CHECK(task->getNofRequirements() == numRequirements[i]);
+            BOOST_CHECK(task->getNofTriggers() == numTriggers[i]);
+            BOOST_CHECK(task->getProperty(propNames[i])->getParent() == task.get());
+            for (const auto& r : task->getRequirements())
+            {
+                BOOST_CHECK(r->getParent() == task.get());
+            }
+            for (const auto& t : task->getTriggers())
+            {
+                BOOST_CHECK(t->getParent() == task.get());
+            }
+            BOOST_CHECK(task->getParent() == nullptr);
+        }
+        BOOST_CHECK_THROW(CTopoBase::make<CTopoTask>("task6", topoFile), logic_error);
+    }
+
+    {
+        // TopoCollections
+        vector<string> names{ "collection1", "collection2" };
+        vector<size_t> numRequirements{ 1, 0 };
+        vector<size_t> numTasks{ 4, 3 };
+        for (size_t i = 0; i < 2; i++)
+        {
+            auto collection = CTopoBase::make<CTopoCollection>(names[i], topoFile);
+            BOOST_CHECK(collection->getType() == CTopoBase::EType::COLLECTION);
+            BOOST_CHECK(collection->getName() == names[i]);
+            BOOST_CHECK(collection->getNofRequirements() == numRequirements[i]);
+            BOOST_CHECK(collection->getNofElements() == numTasks[i]);
+            for (const auto& r : collection->getRequirements())
+            {
+                BOOST_CHECK(r->getParent() == collection.get());
+            }
+            for (const auto& e : collection->getElements())
+            {
+                BOOST_CHECK(e->getParent() == collection.get());
+            }
+            BOOST_CHECK(collection->getParent() == nullptr);
+        }
+        BOOST_CHECK_THROW(CTopoBase::make<CTopoCollection>("collection3", topoFile), runtime_error);
+    }
+
+    {
+        // TopoGroup
+        vector<string> names{ "group1", "group2", "main" };
+        vector<size_t> ns{ 10, 15, 1 };
+        vector<size_t> numElements{ 3, 4, 4 };
+        vector<size_t> numTasks{ 8, 9, 22 };
+        vector<size_t> totalNumTasks{ 80, 135, 220 };
+        for (size_t i = 0; i < 3; i++)
+        {
+            auto group = CTopoBase::make<CTopoGroup>(names[i], topoFile);
+            BOOST_CHECK(group->getType() == CTopoBase::EType::GROUP);
+            BOOST_CHECK(group->getName() == names[i]);
+            BOOST_CHECK(group->getNofElements() == numElements[i]);
+            BOOST_CHECK(group->getNofTasks() == numTasks[i]);
+            BOOST_CHECK(group->getTotalNofTasks() == totalNumTasks[i]);
+            for (const auto& e : group->getElements())
+            {
+                BOOST_CHECK(e->getParent() == group.get());
+            }
+            BOOST_CHECK(group->getParent() == nullptr);
+        }
+        BOOST_CHECK_THROW(CTopoBase::make<CTopoGroup>("group3", topoFile), runtime_error);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_create_1)
+{
+    std::string topoFile("topology_test_creator_1.xml");
+
+    // Initialize topology creator with existing topology
+    CTopoCreator creator(topoFile);
+
+    //
+    // Add new collection programmatically
+    //
+
+    // Add collection directly to the main group
+    CTopoCollection::Ptr_t collection{ creator.getMainGroup()->addElement<CTopoCollection>("collection10") };
+
+    // Add 4 tasks to the collection.
+    // We have to create CTopoTask 4 times for it.
+    for (size_t i = 0; i < 4; i++)
+    {
+        // Add task to the collection
+        auto task{ collection->addElement<CTopoTask>("task10") };
+        task->setExe("task.exe --params");
+        task->setExeReachable(false);
+
+        // Add requirement
+        auto requirement{ task->addRequirement("requirement10") };
+        requirement->setRequirementType(CTopoRequirement::EType::HostName);
+        requirement->setValue("host.gsi.de");
+    }
+
+    // Save the topology
+    creator.save("new_topology_test_creator_1.xml");
+
+    BOOST_CHECK(creator.getMainGroup()->getNofElements() == 5);
+    BOOST_CHECK(creator.getMainGroup()->getNofTasks() == 26);
+    BOOST_CHECK(creator.getMainGroup()->getTotalNofTasks() == 224);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_create_2)
+{
+    std::string topoFile1("topology_test_creator_1.xml");
+    std::string topoFile2("topology_test_creator_2.xml");
+
+    // Initialize empty topology
+    CTopoCreator creator;
+
+    // Create new group which containes both task and collection
+    auto group1{ creator.getMainGroup()->addElement<CTopoGroup>("group1") };
+    group1->setN(10);
+    group1->addElement<CTopoTask>("task1")->initFromXML(topoFile1);
+    group1->addElement<CTopoCollection>("collection1")->initFromXML(topoFile1);
+
+    // Add to the main group
+    creator.getMainGroup()->addElement<CTopoTask>("task10")->initFromXML(topoFile2);
+    creator.getMainGroup()->addElement<CTopoCollection>("collection10")->initFromXML(topoFile2);
+
+    // Save the topology to a stream
+    output_test_stream output("topology_test_creator_3.xml", true);
+    creator.save(output);
+    BOOST_CHECK(output.match_pattern());
+
+    creator.save("new_topology_test_creator_3.xml");
+
+    BOOST_CHECK(creator.getMainGroup()->getNofElements() == 3);
+    BOOST_CHECK(creator.getMainGroup()->getNofTasks() == 18);
+    BOOST_CHECK(creator.getMainGroup()->getTotalNofTasks() == 63);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

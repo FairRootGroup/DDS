@@ -15,12 +15,11 @@ namespace dds
         class CTopoGroup : public CTopoContainer
         {
           public:
-            typedef std::shared_ptr<CTopoGroup> Ptr_t;
-            typedef std::vector<CTopoGroup::Ptr_t> PtrVector_t;
+            using Ptr_t = std::shared_ptr<CTopoGroup>;
+            using PtrVector_t = std::vector<CTopoGroup::Ptr_t>;
 
-          public:
             /// \brief Constructor.
-            CTopoGroup();
+            CTopoGroup(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoGroup();
@@ -32,7 +31,7 @@ namespace dds
             virtual size_t getTotalNofTasks() const;
 
             /// \brief Inherited from TopoBase.
-            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoBase
             void saveToPropertyTree(boost::property_tree::ptree& _pt);

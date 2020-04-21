@@ -74,6 +74,8 @@ install(FILES
   topology_test_property_1.xml
   topology_test_property_2.xml
   topology_test_creator_1.xml
+  topology_test_creator_2.xml
+  topology_test_creator_3.xml
 
   DESTINATION tests
 )

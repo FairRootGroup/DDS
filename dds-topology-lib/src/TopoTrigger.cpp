@@ -15,10 +15,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoTrigger::CTopoTrigger()
-    : CTopoBase()
-    , m_action()
-    , m_condition(EConditionType::None)
+CTopoTrigger::CTopoTrigger(const std::string& _name)
+    : CTopoBase(_name)
 {
     setType(CTopoBase::EType::TRIGGER);
 }
@@ -57,19 +55,19 @@ void CTopoTrigger::setArgument(const std::string& _argument)
     m_argument = _argument;
 }
 
-void CTopoTrigger::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void CTopoTrigger::initFromPropertyTree(const boost::property_tree::ptree& _pt)
 {
     try
     {
-        const ptree& triggerPT = FindElementInPropertyTree(CTopoBase::EType::TRIGGER, _name, _pt.get_child("topology"));
-        setName(triggerPT.get<string>("<xmlattr>.name"));
+        const ptree& triggerPT =
+            FindElementInPropertyTree(CTopoBase::EType::TRIGGER, getName(), _pt.get_child("topology"));
         setAction(TagToActionType(triggerPT.get<std::string>("<xmlattr>.action", "")));
         setCondition(TagToConditionType(triggerPT.get<std::string>("<xmlattr>.condition", "")));
         setArgument(triggerPT.get<std::string>("<xmlattr>.arg", ""));
     }
     catch (exception& error) // ptree_error, runtime_error
     {
-        throw logic_error("Unable to initialize trigger " + _name + " error:" + error.what());
+        throw logic_error("Unable to initialize trigger " + getName() + " error:" + error.what());
     }
 }
 

@@ -18,10 +18,9 @@ namespace dds
         class CTopoElement : public CTopoBase
         {
           public:
-            typedef std::shared_ptr<CTopoElement> Ptr_t;
-            typedef std::vector<CTopoElement::Ptr_t> PtrVector_t;
+            using Ptr_t = std::shared_ptr<CTopoElement>;
+            using PtrVector_t = std::vector<CTopoElement::Ptr_t>;
 
-          public:
             /// \brief Return number of all tasks including daughter elements.
             virtual size_t getNofTasks() const = 0;
 
@@ -30,7 +29,7 @@ namespace dds
 
           protected:
             /// \brief Constructor.
-            CTopoElement();
+            CTopoElement(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoElement();
