@@ -27,18 +27,17 @@ namespace dds
                 Gpu
             };
 
-            typedef std::shared_ptr<CTopoRequirement> Ptr_t;
-            typedef std::vector<CTopoRequirement::Ptr_t> PtrVector_t;
+            using Ptr_t = std::shared_ptr<CTopoRequirement>;
+            using PtrVector_t = std::vector<CTopoRequirement::Ptr_t>;
 
-          public:
             /// \brief Constructor.
-            CTopoRequirement();
+            CTopoRequirement(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoRequirement();
 
             /// \brief Inherited from TopoBase
-            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoBase
             void saveToPropertyTree(boost::property_tree::ptree& _pt);
@@ -59,8 +58,8 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoRequirement& _requirement);
 
           private:
-            std::string m_value;                       ///< Requirement value
-            CTopoRequirement::EType m_requirementType; ///< Requirement type
+            std::string m_value;                                                            ///< Requirement value
+            CTopoRequirement::EType m_requirementType{ CTopoRequirement::EType::HostName }; ///< Requirement type
         };
     } // namespace topology_api
 } // namespace dds

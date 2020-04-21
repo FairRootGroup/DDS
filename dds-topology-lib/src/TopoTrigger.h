@@ -32,18 +32,17 @@ namespace dds
                 RestartTask
             };
 
-            typedef std::shared_ptr<CTopoTrigger> Ptr_t;
-            typedef std::vector<CTopoTrigger::Ptr_t> PtrVector_t;
+            using Ptr_t = std::shared_ptr<CTopoTrigger>;
+            using PtrVector_t = std::vector<CTopoTrigger::Ptr_t>;
 
-          public:
             /// \brief Constructor.
-            CTopoTrigger();
+            CTopoTrigger(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoTrigger();
 
             /// \brief Inherited from TopoBase
-            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoBase
             void saveToPropertyTree(boost::property_tree::ptree& _pt);
@@ -66,9 +65,9 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoTrigger& _trigger);
 
           private:
-            EActionType m_action;       ///< Action to be taken
-            EConditionType m_condition; ///< Condition to fire the trigger
-            std::string m_argument;     ///< Arguments string for action
+            EActionType m_action{ EActionType::None };          ///< Action to be taken
+            EConditionType m_condition{ EConditionType::None }; ///< Condition to fire the trigger
+            std::string m_argument;                             ///< Arguments string for action
         };
     } // namespace topology_api
 } // namespace dds

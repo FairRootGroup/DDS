@@ -5,7 +5,6 @@
 
 // DDS
 #include "TopoCollection.h"
-#include "TopoFactory.h"
 #include "TopoTask.h"
 #include "TopoUtils.h"
 
@@ -14,8 +13,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoCollection::CTopoCollection()
-    : CTopoContainer()
+CTopoCollection::CTopoCollection(const std::string& _name)
+    : CTopoContainer(_name)
 {
     setType(CTopoBase::EType::COLLECTION);
 }
@@ -49,34 +48,27 @@ const CTopoRequirement::PtrVector_t& CTopoCollection::getRequirements() const
     return m_requirements;
 }
 
-void CTopoCollection::setRequirement(const CTopoRequirement::PtrVector_t& _requirements)
+CTopoRequirement::Ptr_t CTopoCollection::addRequirement(const std::string& _name)
 {
-    m_requirements = _requirements;
+    auto requirement{ make_shared<CTopoRequirement>(_name) };
+    requirement->setParent(this);
+    m_requirements.push_back(requirement);
+    return requirement;
 }
 
-void CTopoCollection::addRequirement(CTopoRequirement::Ptr_t _requirement)
-{
-    m_requirements.push_back(_requirement);
-}
-
-void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTopoCollection::initFromPropertyTree(const ptree& _pt)
 {
     try
     {
         const ptree& collectionPT =
-            FindElementInPropertyTree(CTopoBase::EType::COLLECTION, _name, _pt.get_child("topology"));
-
-        setName(collectionPT.get<string>("<xmlattr>.name"));
+            FindElementInPropertyTree(CTopoBase::EType::COLLECTION, getName(), _pt.get_child("topology"));
 
         boost::optional<const ptree&> requirementsPT = collectionPT.get_child_optional("requirements");
         if (requirementsPT)
         {
             for (const auto& requirement : requirementsPT.get())
             {
-                CTopoRequirement::Ptr_t newRequirement = make_shared<CTopoRequirement>();
-                newRequirement->setParent(this);
-                newRequirement->initFromPropertyTree(requirement.second.data(), _pt);
-                addRequirement(newRequirement);
+                addRequirement(requirement.second.data())->initFromPropertyTree(_pt);
             }
         }
 
@@ -89,17 +81,14 @@ void CTopoCollection::initFromPropertyTree(const string& _name, const ptree& _pt
                 const string data{ task.second.data() };
                 for (size_t i = 0; i < n; i++)
                 {
-                    CTopoElement::Ptr_t newElement = make_shared<CTopoTask>();
-                    newElement->setParent(this);
-                    newElement->initFromPropertyTree(data, _pt);
-                    addElement(newElement);
+                    addElement<CTopoTask>(data)->initFromPropertyTree(_pt);
                 }
             }
         }
     }
     catch (exception& error) // ptree_error, runtime_error
     {
-        throw runtime_error("Unable to initialize task collection " + _name + " error: " + error.what());
+        throw runtime_error("Unable to initialize task collection " + getName() + " error: " + error.what());
     }
 }
 

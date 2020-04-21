@@ -35,19 +35,18 @@ namespace dds
                 COLLECTION
             };
 
-            typedef std::shared_ptr<CTopoProperty> Ptr_t;
+            using Ptr_t = std::shared_ptr<CTopoProperty>;
             // Property ID --> Ptr
-            typedef std::map<std::string, CTopoProperty::Ptr_t> PtrMap_t;
+            using PtrMap_t = std::map<std::string, CTopoProperty::Ptr_t>;
 
-          public:
             /// \brief Constructor.
-            CTopoProperty();
+            CTopoProperty(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoProperty();
 
             /// \brief Inherited from TopoBase
-            void initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt);
+            void initFromPropertyTree(const boost::property_tree::ptree& _pt);
 
             /// \brief Inherited from TopoBase
             void saveToPropertyTree(boost::property_tree::ptree& _pt);
@@ -69,9 +68,9 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoProperty& _property);
 
           private:
-            std::string m_value;                     ///< Property value
-            CTopoProperty::EAccessType m_accessType; ///< Property access type
-            CTopoProperty::EScopeType m_scopeType;   ///< Property scope type
+            std::string m_value;                                                              ///< Property value
+            CTopoProperty::EAccessType m_accessType{ CTopoProperty::EAccessType::READWRITE }; ///< Property access type
+            CTopoProperty::EScopeType m_scopeType{ CTopoProperty::EScopeType::GLOBAL };       ///< Property scope type
         };
     } // namespace topology_api
 } // namespace dds

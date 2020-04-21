@@ -19,13 +19,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoTask::CTopoTask()
-    : CTopoElement()
-    , m_exe()
-    , m_env()
-    , m_exeReachable(true)
-    , m_envReachable(true)
-    , m_properties()
+CTopoTask::CTopoTask(const std::string& _name)
+    : CTopoElement(_name)
 {
     setType(CTopoBase::EType::TASK);
 }
@@ -54,34 +49,28 @@ void CTopoTask::setEnvReachable(bool _envReachable)
     m_envReachable = _envReachable;
 }
 
-void CTopoTask::setProperties(const CTopoProperty::PtrMap_t& _properties)
+CTopoProperty::Ptr_t CTopoTask::addProperty(const std::string& _name)
 {
-    m_properties = _properties;
+    auto property{ make_shared<CTopoProperty>(_name) };
+    property->setParent(this);
+    m_properties.insert(make_pair(property->getName(), property));
+    return property;
 }
 
-void CTopoTask::addProperty(CTopoProperty::Ptr_t _property)
+CTopoRequirement::Ptr_t CTopoTask::addRequirement(const std::string& _name)
 {
-    m_properties.insert(make_pair(_property->getName(), _property));
+    auto requirement{ make_shared<CTopoRequirement>(_name) };
+    requirement->setParent(this);
+    m_requirements.push_back(requirement);
+    return requirement;
 }
 
-void CTopoTask::setRequirements(const CTopoRequirement::PtrVector_t& _requirements)
+CTopoTrigger::Ptr_t CTopoTask::addTrigger(const std::string& _name)
 {
-    m_requirements = _requirements;
-}
-
-void CTopoTask::addRequirement(CTopoRequirement::Ptr_t _requirement)
-{
-    m_requirements.push_back(_requirement);
-}
-
-void CTopoTask::setTriggers(const CTopoTrigger::PtrVector_t& _triggers)
-{
-    m_triggers = _triggers;
-}
-
-void CTopoTask::addTrigger(CTopoTrigger::Ptr_t _trigger)
-{
-    m_triggers.push_back(_trigger);
+    auto trigger{ make_shared<CTopoTrigger>(_name) };
+    trigger->setParent(this);
+    m_triggers.push_back(trigger);
+    return trigger;
 }
 
 size_t CTopoTask::getNofTasks() const
@@ -173,13 +162,11 @@ std::string CTopoTask::getParentGroupId() const
     return "";
 }
 
-void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
+void CTopoTask::initFromPropertyTree(const ptree& _pt)
 {
     try
     {
-        const ptree& taskPT = FindElementInPropertyTree(CTopoBase::EType::TASK, _name, _pt.get_child("topology"));
-
-        setName(taskPT.get<string>("<xmlattr>.name"));
+        const ptree& taskPT = FindElementInPropertyTree(CTopoBase::EType::TASK, getName(), _pt.get_child("topology"));
         setExe(taskPT.get<string>("exe"));
         setEnv(taskPT.get<string>("env", ""));
         setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));
@@ -190,10 +177,7 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             for (const auto& requirement : requirementsPT.get())
             {
-                CTopoRequirement::Ptr_t newRequirement = make_shared<CTopoRequirement>();
-                newRequirement->setParent(this);
-                newRequirement->initFromPropertyTree(requirement.second.data(), _pt);
-                addRequirement(newRequirement);
+                addRequirement(requirement.second.data())->initFromPropertyTree(_pt);
             }
         }
 
@@ -202,11 +186,9 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             for (const auto& property : propertiesPT.get())
             {
-                CTopoProperty::Ptr_t newProperty = make_shared<CTopoProperty>();
-                newProperty->setParent(this);
-                newProperty->initFromPropertyTree(property.second.data(), _pt);
+                auto newProperty{ addProperty(property.second.data()) };
+                newProperty->initFromPropertyTree(_pt);
                 newProperty->setAccessType(TagToPropertyAccessType(property.second.get<string>("<xmlattr>.access")));
-                addProperty(newProperty);
             }
         }
 
@@ -215,16 +197,13 @@ void CTopoTask::initFromPropertyTree(const string& _name, const ptree& _pt)
         {
             for (const auto& trigger : triggersPT.get())
             {
-                CTopoTrigger::Ptr_t newTrigger = make_shared<CTopoTrigger>();
-                newTrigger->setParent(this);
-                newTrigger->initFromPropertyTree(trigger.second.data(), _pt);
-                addTrigger(newTrigger);
+                addTrigger(trigger.second.data())->initFromPropertyTree(_pt);
             }
         }
     }
     catch (exception& error) // ptree_error, logic_error
     {
-        throw logic_error("Unable to initialize task " + _name + " error: " + error.what());
+        throw logic_error("Unable to initialize task " + getName() + " error: " + error.what());
     }
 }
 

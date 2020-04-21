@@ -23,23 +23,19 @@ namespace dds
             /// \brief Constructor.
             CTopoCreatorCore();
 
-            /// \brief Destructor.
-            virtual ~CTopoCreatorCore();
-
-            /// \brief Initializes default topology.
-            /// \throw runtime_error
-            void init();
-
-            /// \brief Initializes topology with the specified file without validation.
+            /// \brief Constructs topology with the specified file without validation.
             /// \param[in] _filename Path to the topology file
             /// \throw runtime_error
-            void init(const std::string& _filename);
+            CTopoCreatorCore(const std::string& _filename);
 
-            /// \brief Initializes topology with the specified file and validates against provided schema file.
+            /// \brief Constructs topology with the specified file and validates against provided schema file.
             /// \param[in] _filename Path to the topology file.
             /// \param[in] _schemaFilename Path to the XSD schema file.
             /// \throw runtime_error
-            void init(const std::string& _filename, const std::string& _schemaFilename);
+            CTopoCreatorCore(const std::string& _filename, const std::string& _schemaFilename);
+
+            /// \brief Destructor.
+            virtual ~CTopoCreatorCore();
 
             /// \brief Saves topology to the specified XML file.
             /// \param[in] _filename Path to the topology file.
@@ -53,16 +49,16 @@ namespace dds
             CTopoGroup::Ptr_t getMainGroup() const;
 
           private:
-            typedef std::map<CTopoBase::EType, std::map<std::string, CTopoBase::Ptr_t>> declElementsMap_t;
+            using objectMap_t = std::map<CTopoBase::EType, std::map<std::string, CTopoBase::Ptr_t>>;
 
-            void addDeclElements(CTopoElement::Ptr_t _element, declElementsMap_t& _declElements);
-            void addDeclElements(CTopoTask::Ptr_t _task, declElementsMap_t& _declElements);
-            void addDeclElements(CTopoCollection::Ptr_t _collection, declElementsMap_t& _declElements);
-            void addDeclElements(CTopoGroup::Ptr_t _group, declElementsMap_t& _declElements);
+            void addDeclElements(CTopoElement::Ptr_t _element, objectMap_t& _declElements);
+            void addDeclElements(CTopoTask::Ptr_t _task, objectMap_t& _declElements);
+            void addDeclElements(CTopoCollection::Ptr_t _collection, objectMap_t& _declElements);
+            void addDeclElements(CTopoGroup::Ptr_t _group, objectMap_t& _declElements);
 
             void save(boost::property_tree::ptree& _pt);
 
-            CTopoGroup::Ptr_t m_main; ///< Main group of the topology
+            CTopoGroup::Ptr_t m_main{ std::make_shared<CTopoGroup>("main") }; ///< Main group of the topology
         };
     } // namespace topology_api
 } // namespace dds

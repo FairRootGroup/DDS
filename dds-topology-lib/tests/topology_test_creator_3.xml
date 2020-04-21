@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<topology name="topology">
+    <property name="property1" scope="global"/>
+    <property name="property10" scope="collection"/>
+    <property name="property11" scope="collection"/>
+    <property name="property2" scope="global"/>
+    <property name="property3" scope="global"/>
+    <property name="property4" scope="global"/>
+    <declrequirement name="requirement1" value=".+.gsi.de" type="hostname"/>
+    <declrequirement name="requirement10" value=".+.gsi.de" type="hostname"/>
+    <declrequirement name="requirement2" value="server1.gsi.de" type="hostname"/>
+    <declrequirement name="requirement3" value="node2" type="wnname"/>
+    <decltrigger name="trigger1" action="RestartTask" condition="TaskCrashed" arg="5"/>
+    <decltrigger name="trigger2" action="RestartTask" condition="TaskCrashed" arg="10"/>
+    <decltask name="task1">
+        <exe reachable="true">app1 -l -n</exe>
+        <env reachable="false">env1</env>
+        <requirements>
+            <name>requirement1</name>
+            <name>requirement2</name>
+        </requirements>
+        <properties>
+            <name access="read">property1</name>
+            <name access="write">property4</name>
+        </properties>
+        <triggers>
+            <name>trigger1</name>
+            <name>trigger2</name>
+            <name>trigger1</name>
+        </triggers>
+    </decltask>
+    <decltask name="task10">
+        <exe reachable="true">app10</exe>
+        <env reachable="false">env10</env>
+        <requirements>
+            <name>requirement10</name>
+        </requirements>
+        <properties>
+            <name access="read">property10</name>
+            <name access="write">property11</name>
+        </properties>
+    </decltask>
+    <decltask name="task11">
+        <exe reachable="true">app11</exe>
+        <env reachable="true">env11</env>
+        <requirements>
+            <name>requirement10</name>
+        </requirements>
+        <properties>
+            <name access="read">property10</name>
+            <name access="read">property11</name>
+        </properties>
+    </decltask>
+    <decltask name="task2">
+        <exe reachable="true">app2</exe>
+        <env reachable="true">env2</env>
+        <requirements>
+            <name>requirement3</name>
+            <name>requirement3</name>
+        </requirements>
+        <properties>
+            <name access="read">property1</name>
+            <name access="read">property2</name>
+        </properties>
+    </decltask>
+    <decltask name="task3">
+        <exe reachable="true">app3</exe>
+        <env reachable="true">env3</env>
+        <properties>
+            <name access="read">property2</name>
+            <name access="read">property3</name>
+        </properties>
+        <triggers>
+            <name>trigger1</name>
+        </triggers>
+    </decltask>
+    <declcollection name="collection1">
+        <requirements>
+            <name>requirement1</name>
+        </requirements>
+        <tasks>
+            <name>task1</name>
+            <name>task2</name>
+            <name>task2</name>
+            <name>task3</name>
+        </tasks>
+    </declcollection>
+    <declcollection name="collection10">
+        <tasks>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task10</name>
+            <name>task11</name>
+            <name>task11</name>
+        </tasks>
+    </declcollection>
+    <main name="main">
+        <task>task10</task>
+        <collection>collection10</collection>
+        <group name="group1" n="10">
+            <task>task1</task>
+            <collection>collection1</collection>
+        </group>
+    </main>
+</topology>

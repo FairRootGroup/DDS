@@ -15,9 +15,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoVars::CTopoVars()
-    : CTopoBase()
-    , m_map()
+CTopoVars::CTopoVars(const std::string& _name)
+    : CTopoBase(_name)
 {
     setType(CTopoBase::EType::TOPO_VARS);
 }
@@ -31,7 +30,7 @@ const CTopoVars::varMap_t& CTopoVars::getMap() const
     return m_map;
 }
 
-void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::property_tree::ptree& _pt)
+void CTopoVars::initFromPropertyTree(const boost::property_tree::ptree& _pt)
 {
     try
     {
@@ -48,7 +47,7 @@ void CTopoVars::initFromPropertyTree(const std::string& _name, const boost::prop
     }
     catch (exception& error) // ptree_error, runtime_error
     {
-        throw runtime_error("Unable to initialize task collection " + _name + " error: " + error.what());
+        throw runtime_error("Unable to initialize task collection " + getName() + " error: " + error.what());
     }
 }
 

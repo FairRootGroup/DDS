@@ -20,9 +20,8 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoContainer::CTopoContainer()
-    : CTopoElement()
-    , m_elements()
+CTopoContainer::CTopoContainer(const std::string& _name)
+    : CTopoElement(_name)
 {
 }
 
@@ -47,14 +46,61 @@ const CTopoElement::PtrVector_t& CTopoContainer::getElements() const
     return m_elements;
 }
 
-void CTopoContainer::setElements(const CTopoElement::PtrVector_t& _elements)
+template <>
+CTopoTask::Ptr_t CTopoContainer::addElement<CTopoTask>(const std::string& _name)
 {
-    m_elements = _elements;
+    if (!canAddElement(CTopoBase::EType::TASK))
+        throw runtime_error("Can't add task to TopoContainer");
+    return makeElement<CTopoTask>(_name);
 }
 
-void CTopoContainer::addElement(CTopoElement::Ptr_t _element)
+template <>
+CTopoCollection::Ptr_t CTopoContainer::addElement<CTopoCollection>(const std::string& _name)
 {
-    m_elements.push_back(_element);
+    if (!canAddElement(CTopoBase::EType::COLLECTION))
+        throw runtime_error("Can't add collection to TopoContainer");
+    return makeElement<CTopoCollection>(_name);
+}
+
+template <>
+CTopoGroup::Ptr_t CTopoContainer::addElement<CTopoGroup>(const std::string& _name)
+{
+    if (!canAddElement(CTopoBase::EType::GROUP))
+        throw runtime_error("Can't add group to TopoContainer");
+    return makeElement<CTopoGroup>(_name);
+}
+
+CTopoElement::Ptr_t CTopoContainer::addElement(CTopoBase::EType _type, const std::string& _name)
+{
+    switch (_type)
+    {
+        case CTopoBase::EType::TASK:
+            return addElement<CTopoTask>(_name);
+        case CTopoBase::EType::COLLECTION:
+            return addElement<CTopoCollection>(_name);
+        case CTopoBase::EType::GROUP:
+            return addElement<CTopoGroup>(_name);
+        default:
+            throw runtime_error("Specified type is not a TopoElement.");
+    }
+}
+
+bool CTopoContainer::canAddElement(CTopoBase::EType _type)
+{
+    switch (_type)
+    {
+        case CTopoBase::EType::TASK:
+            return true;
+
+        case CTopoBase::EType::COLLECTION:
+            return getType() == CTopoBase::EType::GROUP;
+
+        case CTopoBase::EType::GROUP:
+            return (getType() == CTopoBase::EType::GROUP && getParent() == nullptr);
+
+        default:
+            return false;
+    }
 }
 
 size_t CTopoContainer::getNofTasksDefault() const
