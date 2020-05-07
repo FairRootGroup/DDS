@@ -19,6 +19,7 @@ Added: new static API calls CSession::getDefaultSessionIDString and CSession::ge
 Added: getter of the filepath to the XML topology.     
 Added: new optional XML attribute which allows to set number of tasks in the collection.    
 Modified: major update of the topology API. Significantly improved topology construction API.    
+Modified: new way of task and collection ID calculation. String which is used for CRC64 based ID calculation now includes path ID and an object hash string. This allows to detect also the content changes of the topology objects. Topology update uses the new feature in order to better detect difference between two topologies.    
 
 ### dds-submit
 Fixed: a bug, which caused the command to block if an unknown plug-in is requested.     

@@ -258,3 +258,23 @@ ostream& operator<<(ostream& _strm, const CTopoTask& _task)
     _strm << _task.toString();
     return _strm;
 }
+
+string CTopoTask::hashString() const
+{
+    stringstream ss;
+    ss << "|Task|" << getName() << "|" << getExe() << "|" << getEnv() << "|" << isExeReachable() << "|"
+       << isEnvReachable();
+    for (const auto& property : getProperties())
+    {
+        ss << property.second->hashString() << "|";
+    }
+    for (const auto& requirement : getRequirements())
+    {
+        ss << requirement->hashString() << "|";
+    }
+    for (const auto& trigger : getTriggers())
+    {
+        ss << trigger->hashString() << "|";
+    }
+    return ss.str();
+}

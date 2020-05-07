@@ -99,3 +99,11 @@ ostream& operator<<(ostream& _strm, const CTopoProperty& _property)
     _strm << _property.toString();
     return _strm;
 }
+
+string CTopoProperty::hashString() const
+{
+    stringstream ss;
+    ss << "|Property|" << getName() << "|" << getValue() << "|" << PropertyAccessTypeToTag(getAccessType()) << "|"
+       << PropertyScopeTypeToTag(getScopeType()) << "|";
+    return ss.str();
+}

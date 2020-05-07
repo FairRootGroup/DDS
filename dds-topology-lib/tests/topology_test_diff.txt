@@ -1,17 +1,33 @@
 ----- Removed tasks -----
-2918554754744556143 main/group2/task1 main/group2/task1_1
-2918554754832448694 main/group2/task1 main/group2/task1_2
-13353197317971689553 main/collection1/task2 main/collection1_0/task2_0
-13353203085682393169 main/collection1/task1 main/collection1_0/task1_0
-15114424565930114011 main/task1 main/task1_0
+4454833187634398688 main/group1/collectionV/taskV main/group1/collectionV_0/taskV_0
+4637801922912057020 main/collection1/task2 main/collection1_0/task2_0
+7580670881225839801 main/group2/task1 main/group2/task1_2
+9004533872436269829 main/taskV main/taskV_0
+10618266544840754070 main/group1/collectionV/taskV main/group1/collectionV_1/taskV_0
+10674641972292662881 main/task1 main/task1_0
+13669790439359244044 main/collection1/task1 main/collection1_0/task1_0
+14435762356918730338 main/collectionV/taskV main/collectionV_0/taskV_0
+17472753258351578381 main/group2/task1 main/group2/task1_1
 ----- Removed collections -----
-8974459996451876769 main/collection1
+7788367811086353238 main/collection1
+10776790225199280724 main/group1/collectionV
+11385852863586532167 main/group1/collectionV
+17655344919694847366 main/collectionV
 ----- Added tasks -----
-2918547599658878936 main/group2/task3 main/group2/task3_0
-2931904200973120393 main/group1/task2 main/group1/task2_2
-2931907219700282249 main/group1/task1 main/group1/task1_2
-5067399077160970761 main/group1/collection1/task1 main/group1/collection1_2/task1_0
-5067404863123188233 main/group1/collection1/task2 main/group1/collection1_2/task2_0
-15114415228590078939 main/task3 main/task3_0
+946525775331261152 main/group1/collectionV/taskV main/group1/collectionV_0/taskV_0
+4896643099580208624 main/group1/collection1/task2 main/group1/collection1_2/task2_0
+5478212071286270981 main/taskV main/taskV_0
+5778276812114619323 main/group1/collectionV/taskV main/group1/collectionV_2/taskV_0
+6251118580218393726 main/group1/task1 main/group1/task1_2
+11793707146236591254 main/group1/collectionV/taskV main/group1/collectionV_1/taskV_0
+12333246697084872142 main/group1/task2 main/group1/task2_2
+13698911340894782528 main/group1/collection1/task1 main/group1/collection1_2/task1_0
+14005188600445175084 main/group2/task3 main/group2/task3_0
+15187243536702720300 main/task3 main/task3_0
+17917045975094362466 main/collectionV/taskV main/collectionV_0/taskV_0
 ----- Added collections -----
-6711833610599116852 main/group1/collection1
+362365336590598166 main/collectionV
+7317745142992658372 main/group1/collectionV
+7926809413501654743 main/group1/collectionV
+8726082328512857329 main/group1/collectionV
+15191567686444771359 main/group1/collection1

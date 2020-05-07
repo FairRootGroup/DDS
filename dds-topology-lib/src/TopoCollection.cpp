@@ -114,3 +114,18 @@ void CTopoCollection::saveToPropertyTree(boost::property_tree::ptree& _pt)
         throw runtime_error("Unable to save task collection" + getName() + " error: " + error.what());
     }
 }
+
+string CTopoCollection::hashString() const
+{
+    stringstream ss;
+    ss << "|Collection|" << getName() << "|";
+    for (const auto& element : getElements())
+    {
+        ss << element->hashString() << "|";
+    }
+    for (const auto& requirement : getRequirements())
+    {
+        ss << requirement->hashString() << "|";
+    }
+    return ss.str();
+}

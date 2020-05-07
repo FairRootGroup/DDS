@@ -6,6 +6,9 @@
 	<decltask name="task2">
 		<exe>task2.exe</exe>
 	</decltask>
+    <decltask name="taskV">
+        <exe>taskV1.exe</exe>
+    </decltask>
 
   <declcollection name="collection1">
 		<tasks>
@@ -13,14 +16,22 @@
 		   <name>task2</name>
 	  </tasks>
   </declcollection>
+  <declcollection name="collectionV">
+        <tasks>
+            <name>taskV</name>
+      </tasks>
+  </declcollection>
 
 	<main name="main">
 	    <task>task1</task>
+        <task>taskV</task>
 	    <collection>collection1</collection>
+        <collection>collectionV</collection>
 		<group name="group1" n="2">
 			<task>task1</task>
 			<task>task2</task>
 			<collection>collection1</collection>
+            <collection>collectionV</collection>
 		</group>
 		<group name="group2" n="3">
 			<task>task1</task>

@@ -37,9 +37,6 @@ namespace dds
             /// \brief If parent is a group than return N, else return 1.
             /// Default implementation for Task::getTotalCounter and TaskCollection::getTotalCounter.
             size_t getTotalCounterDefault() const;
-
-          private:
-            std::string m_path; // Full path to element, including element name
         };
     } // namespace topology_api
 } // namespace dds

@@ -74,6 +74,8 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
     m_counterMap.clear();
     m_idToRuntimeTaskMap.clear();
     m_idToRuntimeCollectionMap.clear();
+    m_taskIdPathToIdMap.clear();
+    m_collectionIdPathToIdMap.clear();
     m_currentCollectionIdPath = "";
     m_currentCollectionId = 0;
 
@@ -184,6 +186,16 @@ const STopoRuntimeCollection::Map_t& CTopoCore::getIdToRuntimeCollectionMap() co
     return m_idToRuntimeCollectionMap;
 }
 
+const CTopoCore::IdPathToIdMap_t& CTopoCore::getTaskIdPathToIdMap() const
+{
+    return m_taskIdPathToIdMap;
+}
+
+const CTopoCore::IdPathToIdMap_t& CTopoCore::getCollectionIdPathToIdMap() const
+{
+    return m_collectionIdPathToIdMap;
+}
+
 const STopoRuntimeTask& CTopoCore::getRuntimeTaskById(Id_t _id) const
 {
     auto it = m_idToRuntimeTaskMap.find(_id);
@@ -202,14 +214,18 @@ const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionById(Id_t _id) cons
 
 const STopoRuntimeTask& CTopoCore::getRuntimeTaskByIdPath(const std::string& _idPath) const
 {
-    Id_t id = MiscCommon::crc64(_idPath);
-    return getRuntimeTaskById(id);
+    auto it = m_taskIdPathToIdMap.find(_idPath);
+    if (it == m_taskIdPathToIdMap.end())
+        throw runtime_error("Can not find task with path ID " + _idPath);
+    return getRuntimeTaskById(it->second);
 }
 
 const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionByIdPath(const std::string& _idPath) const
 {
-    Id_t id = MiscCommon::crc64(_idPath);
-    return getRuntimeCollectionById(id);
+    auto it = m_collectionIdPathToIdMap.find(_idPath);
+    if (it == m_collectionIdPathToIdMap.end())
+        throw runtime_error("Can not find collection with path ID " + _idPath);
+    return getRuntimeCollectionById(it->second);
 }
 
 STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIterator(const STopoRuntimeTask::Map_t& _map,
@@ -335,7 +351,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
         size_t index = counter - 1;
         std::string idPath = path + "_" + to_string(index);
 
-        Id_t crc = MiscCommon::crc64(idPath);
+        Id_t crc{ calculateId(idPath, task->hashString()) };
         if (m_idToRuntimeTaskMap.find(crc) != m_idToRuntimeTaskMap.end())
         {
             throw std::runtime_error("Failed to create unique ID for task with path " + idPath +
@@ -350,6 +366,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
         info.m_taskCollectionId =
             (task->getParent()->getType() == CTopoBase::EType::COLLECTION) ? m_currentCollectionId : 0;
         m_idToRuntimeTaskMap.insert(make_pair(crc, info));
+        m_taskIdPathToIdMap.insert(make_pair(info.m_taskPath, crc));
 
         if (task->getParent()->getType() == CTopoBase::EType::COLLECTION)
         {
@@ -371,7 +388,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
         size_t index = counter - 1;
         m_currentCollectionIdPath = path + "_" + to_string(index);
 
-        Id_t crc = MiscCommon::crc64(m_currentCollectionIdPath);
+        Id_t crc{ calculateId(m_currentCollectionIdPath, collection->hashString()) };
         if (m_idToRuntimeCollectionMap.find(crc) != m_idToRuntimeCollectionMap.end())
         {
             throw std::runtime_error("Failed to create unique ID for collection with path " +
@@ -383,6 +400,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
         info.m_collectionIndex = index;
         info.m_collectionPath = m_currentCollectionIdPath;
         m_idToRuntimeCollectionMap.insert(make_pair(crc, info));
+        m_collectionIdPathToIdMap.insert(make_pair(info.m_collectionPath, crc));
 
         m_currentCollectionId = crc;
 
@@ -405,6 +423,11 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
             }
         }
     }
+}
+
+Id_t CTopoCore::calculateId(const std::string& _idPath, const std::string& _hashString)
+{
+    return MiscCommon::crc64(_idPath + _hashString);
 }
 
 std::string CTopoCore::stringOfTasks(const IdSet_t& _ids) const

@@ -47,6 +47,9 @@ namespace dds
             const CTopoRequirement::PtrVector_t& getRequirements() const;
             CTopoRequirement::Ptr_t addRequirement(const std::string& _name);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
           private:
             CTopoRequirement::PtrVector_t m_requirements; ///< Array of requirement
         };

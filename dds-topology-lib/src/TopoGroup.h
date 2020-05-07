@@ -51,6 +51,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoGroup& _taskContainer);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
           private:
             size_t m_n; ///< Number of times this group has to be executed
         };

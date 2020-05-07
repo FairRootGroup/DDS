@@ -88,3 +88,10 @@ ostream& operator<<(ostream& _strm, const CTopoRequirement& _requirement)
     _strm << _requirement.toString();
     return _strm;
 }
+
+string CTopoRequirement::hashString() const
+{
+    stringstream ss;
+    ss << "|Requirement|" << getName() << "|" << getValue() << "|" << RequirementTypeToTag(getRequirementType()) << "|";
+    return ss.str();
+}

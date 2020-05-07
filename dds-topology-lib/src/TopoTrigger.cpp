@@ -100,3 +100,11 @@ ostream& operator<<(ostream& _strm, const CTopoTrigger& _requirement)
     _strm << _requirement.toString();
     return _strm;
 }
+
+string CTopoTrigger::hashString() const
+{
+    stringstream ss;
+    ss << "|Trigger|" << getName() << "|" << ActionTypeToTag(getAction()) << "|" << ConditionTypeToTag(getCondition())
+       << "|" << getArgument() << "|";
+    return ss.str();
+}

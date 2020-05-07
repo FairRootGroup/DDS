@@ -179,3 +179,14 @@ ostream& operator<<(ostream& _strm, const CTopoGroup& _taskContainer)
     _strm << _taskContainer.toString();
     return _strm;
 }
+
+string CTopoGroup::hashString() const
+{
+    stringstream ss;
+    ss << "|Group|" << getName() << "|" << getN() << "|";
+    for (const auto& element : getElements())
+    {
+        ss << element->hashString() << "|";
+    }
+    return ss.str();
+}

@@ -57,6 +57,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoRequirement& _requirement);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
           private:
             std::string m_value;                                                            ///< Requirement value
             CTopoRequirement::EType m_requirementType{ CTopoRequirement::EType::HostName }; ///< Requirement type

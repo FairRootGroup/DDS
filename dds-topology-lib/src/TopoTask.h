@@ -85,6 +85,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoTask& _task);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
           private:
             std::string m_exe;                            ///< Path to executable
             std::string m_env;                            ///< Path to environmtnt file
