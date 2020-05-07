@@ -13,7 +13,6 @@ using namespace topology_api;
 
 CTopoElement::CTopoElement(const std::string& _name)
     : CTopoBase(_name)
-    , m_path()
 {
     setType(CTopoBase::EType::TOPO_ELEMENT);
 }

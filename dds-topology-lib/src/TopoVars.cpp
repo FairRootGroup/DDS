@@ -96,3 +96,14 @@ ostream& operator<<(ostream& _strm, const CTopoVars& _vars)
     _strm << _vars.toString();
     return _strm;
 }
+
+string CTopoVars::hashString() const
+{
+    stringstream ss;
+    ss << "|Vars|" << getName() << "|";
+    for (const auto& var : getMap())
+    {
+        ss << var.first << "|" << var.second << "|";
+    }
+    return ss.str();
+}

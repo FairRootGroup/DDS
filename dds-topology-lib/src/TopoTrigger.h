@@ -64,6 +64,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoTrigger& _trigger);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
           private:
             EActionType m_action{ EActionType::None };          ///< Action to be taken
             EConditionType m_condition{ EConditionType::None }; ///< Condition to fire the trigger

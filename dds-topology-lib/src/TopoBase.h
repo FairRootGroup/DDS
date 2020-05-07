@@ -105,6 +105,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoBase& _element);
 
+            /// \brief Returns string which is used to calculate CRC checksum of the object
+            virtual std::string hashString() const = 0;
+
           protected:
             /// \brief Constructor.
             CTopoBase(const std::string& _name);

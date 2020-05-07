@@ -43,6 +43,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoVars& _vars);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
             const varMap_t& getMap() const;
 
           private:

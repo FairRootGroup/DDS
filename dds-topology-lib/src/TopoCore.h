@@ -27,7 +27,10 @@ namespace dds
           public:
             /// Note that ID is of type uint_64.
             /// ID is calculated using CRC64 algorithm.
-            typedef std::set<Id_t> IdSet_t;
+            using IdSet_t = std::set<Id_t>;
+
+            /// Task/Collection ID path  to Task/Collection ID map
+            using IdPathToIdMap_t = std::map<std::string, Id_t>;
 
           public:
             /// \brief Constructor.
@@ -87,6 +90,8 @@ namespace dds
             /// Accessors to internal data structures. Used for unit tests.
             const STopoRuntimeTask::Map_t& getIdToRuntimeTaskMap() const;
             const STopoRuntimeCollection::Map_t& getIdToRuntimeCollectionMap() const;
+            const IdPathToIdMap_t& getTaskIdPathToIdMap() const;
+            const IdPathToIdMap_t& getCollectionIdPathToIdMap() const;
 
             std::string stringOfTasks(const IdSet_t& _ids) const;
             std::string stringOfCollections(const IdSet_t& _ids) const;
@@ -104,11 +109,16 @@ namespace dds
             void FillTopoIndexToTopoElementMap(const CTopoElement::Ptr_t& _element);
             void FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element);
             uint32_t CalculateHash(const std::string& _filename);
+            Id_t calculateId(const std::string& _idPath, const std::string& _hashString);
 
             CTopoGroup::Ptr_t m_main{ nullptr }; ///< Main task group which we run
 
-            STopoRuntimeTask::Map_t m_idToRuntimeTaskMap;
-            STopoRuntimeCollection::Map_t m_idToRuntimeCollectionMap;
+            STopoRuntimeTask::Map_t m_idToRuntimeTaskMap; ///< Task ID to runtime task object map
+            STopoRuntimeCollection::Map_t
+                m_idToRuntimeCollectionMap;      ///< Collection ID to runtime collection object map
+            IdPathToIdMap_t m_taskIdPathToIdMap; ///< Task ID path to taskID map. Used for caching and fast search.
+            IdPathToIdMap_t m_collectionIdPathToIdMap; ///< Collection ID path to collection ID map. Used for caching
+                                                       ///< and fast search.
             std::map<std::string, size_t> m_counterMap;
             std::string m_currentCollectionIdPath;
             Id_t m_currentCollectionId{ 0 };

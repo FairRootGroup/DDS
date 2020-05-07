@@ -57,18 +57,18 @@ void check_topology_map_collection(const T& _map, output_test_stream& _output)
     for (const auto& v : _map)
     {
         _output << v.first << " " << v.second.m_collection->getPath() << "\n";
-        // std::cout << v.first << " " << v.second->getPath() << "\n";
+        // std::cout << v.first << " " << v.second.m_collection->getPath() << "\n";
     }
     BOOST_CHECK(_output.match_pattern());
 }
 
 template <class T>
-void check_topology_map(const T& _map, output_test_stream& _output)
+void check_topology_map_idpath(const T& _map, output_test_stream& _output)
 {
     for (const auto& v : _map)
     {
-        _output << v.first << " " << v.second->getPath() << "\n";
-        // std::cout << v.first << " " << v.second->getPath() << "\n";
+        _output << v.first << " " << v.second << "\n";
+        // std::cout << v.first << " " << v.second << "\n";
     }
     BOOST_CHECK(_output.match_pattern());
 }
@@ -82,8 +82,14 @@ void check_topology_maps(const string& _topoName)
     output_test_stream output2(_topoName + "_maps_2.txt", true);
     check_topology_map_task(topology.getIdToRuntimeTaskMap(), output2);
 
+    output_test_stream output4(_topoName + "_maps_4.txt", true);
+    check_topology_map_idpath(topology.getTaskIdPathToIdMap(), output4);
+
     output_test_stream output3(_topoName + "_maps_3.txt", true);
     check_topology_map_collection(topology.getIdToRuntimeCollectionMap(), output3);
+
+    output_test_stream output5(_topoName + "_maps_5.txt", true);
+    check_topology_map_idpath(topology.getCollectionIdPathToIdMap(), output5);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_topology_maps)
@@ -111,7 +117,7 @@ void check_topology_iterator_collection(const T& _iterator, const std::string& _
     for (auto it = _iterator.first; it != _iterator.second; it++)
     {
         output << it->first << " " << it->second.m_collection->getPath() << "\n";
-        // std::cout << it->first << " " << it->second->getPath() << "\n";
+        // std::cout << it->first << " " << it->second.m_collection->getPath() << "\n";
     }
     BOOST_CHECK(output.match_pattern());
 }
@@ -149,7 +155,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
                                        "topology_test_1_iterators_4.txt");
 
     // Task iterators for property
-    check_topology_iterator_task(topology.getRuntimeTaskIteratorForPropertyName("property4", 2918576458378016727),
+    check_topology_iterator_task(topology.getRuntimeTaskIteratorForPropertyName("property4", 56611620276638591),
                                  "topology_test_1_iterators_5.txt");
 }
 
@@ -548,31 +554,39 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
     output_test_stream output1("topology_test_diff.txt", true);
 
     output1 << "----- Removed tasks -----\n";
+    // cout << "----- Removed tasks -----\n";
     for (auto& v : removedTasks)
     {
         const STopoRuntimeTask& info = topo.getRuntimeTaskById(v);
         output1 << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
+        // cout << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
     }
 
     output1 << "----- Removed collections -----\n";
+    // cout << "----- Removed collections -----\n";
     for (auto& v : removedCollections)
     {
         STopoRuntimeCollection collectionInfo = topo.getRuntimeCollectionById(v);
         output1 << v << " " << collectionInfo.m_collection->getPath() << "\n";
+        // cout << v << " " << collectionInfo.m_collection->getPath() << "\n";
     }
 
     output1 << "----- Added tasks -----\n";
+    // cout << "----- Added tasks -----\n";
     for (auto& v : addedTasks)
     {
         const STopoRuntimeTask& info = newTopo.getRuntimeTaskById(v);
         output1 << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
+        // cout << v << " " << info.m_task->getPath() << " " << info.m_taskPath << "\n";
     }
 
     output1 << "----- Added collections -----\n";
+    // cout << "----- Added collections -----\n";
     for (auto& v : addedCollections)
     {
         STopoRuntimeCollection collection = newTopo.getRuntimeCollectionById(v);
         output1 << v << " " << collection.m_collection->getPath() << "\n";
+        // cout << v << " " << collection.m_collection->getPath() << "\n";
     }
 
     BOOST_CHECK(output1.match_pattern());

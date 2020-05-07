@@ -67,6 +67,9 @@ namespace dds
             /// insertion operations.
             friend std::ostream& operator<<(std::ostream& _strm, const CTopoProperty& _property);
 
+            /// \brief Inherited from TopoBase
+            virtual std::string hashString() const;
+
           private:
             std::string m_value;                                                              ///< Property value
             CTopoProperty::EAccessType m_accessType{ CTopoProperty::EAccessType::READWRITE }; ///< Property access type
