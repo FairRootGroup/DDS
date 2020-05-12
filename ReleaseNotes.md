@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v3.2 (NOT YET RELEASED)
+## v3.2 (2020-05-12)
 
 ### DDS common
 Added: Users now can specify custom environment scripts for each task. (GH-24)    
