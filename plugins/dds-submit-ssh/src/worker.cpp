@@ -47,8 +47,6 @@ bool CWorker::run(ETaskType _param)
     if (!m_rec->m_sshOptions.empty())
         ssParams << " -o \"" << m_rec->m_sshOptions << "\"";
 
-    fs::path bashPath = bp::search_path("bash");
-
     stringstream ssCmd;
     switch (_param)
     {
@@ -58,7 +56,7 @@ bool CWorker::run(ETaskType _param)
             string cmd(m_path);
             cmd += "dds-submit-ssh-worker";
             smart_path(&cmd);
-            ssCmd << bashPath << " -c \"" << cmd << " " << ssParams.str() << "\"";
+            ssCmd << cmd << " " << ssParams.str();
             break;
         }
         case task_clean:

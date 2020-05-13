@@ -510,11 +510,11 @@ namespace MiscCommon
         // bosot::process::spawn). Restore default handler. If we don't do so, we might fail to waitpid our
         // children. After we started using boost::process we noticed that ::waitpid fails. boost:process either
         // sets its own handler or there is a call for signal(SIGCHLD, SIG_IGN);
-        std::signal(SIGCHLD, SIG_DFL);
-        sigset_t mask;
-        sigemptyset(&mask);
-        sigaddset(&mask, SIGCHLD);
-        sigprocmask(SIG_UNBLOCK, &mask, NULL);
+        /*std::signal(SIGCHLD, SIG_DFL);
+               sigset_t mask;
+               sigemptyset(&mask);
+               sigaddset(&mask, SIGCHLD);
+               sigprocmask(SIG_UNBLOCK, &mask, NULL);*/
 
         try
         {
