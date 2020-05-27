@@ -506,16 +506,6 @@ namespace MiscCommon
                          std::string* _errout = nullptr,
                          int* _exitCode = nullptr)
     {
-        // FIX: A fix for cases when the parent process sets SIG_IGN (if it was created by
-        // bosot::process::spawn). Restore default handler. If we don't do so, we might fail to waitpid our
-        // children. After we started using boost::process we noticed that ::waitpid fails. boost:process either
-        // sets its own handler or there is a call for signal(SIGCHLD, SIG_IGN);
-        /*std::signal(SIGCHLD, SIG_DFL);
-               sigset_t mask;
-               sigemptyset(&mask);
-               sigaddset(&mask, SIGCHLD);
-               sigprocmask(SIG_UNBLOCK, &mask, NULL);*/
-
         try
         {
             std::string smartCmd(_Command);
