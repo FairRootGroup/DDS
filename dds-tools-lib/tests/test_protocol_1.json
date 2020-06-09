@@ -37,6 +37,7 @@
             {
                 "pid":432,
                 "activeTopologyName": "TopoName",
+				"activeTopologyPath": "/topology/path",
                 "requestID": 435
             },
             "agentInfo":

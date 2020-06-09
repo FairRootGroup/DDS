@@ -181,6 +181,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_pid = 432;
             testData.m_requestID = 435;
             testData.m_activeTopologyName = "TopoName";
+            testData.m_activeTopologyPath = "/topology/path";
 
             SCommanderInfoResponseData data;
             data.fromPT(child.second);

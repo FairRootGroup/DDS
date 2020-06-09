@@ -241,17 +241,20 @@ void SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<pid_t>("pid", m_pid);
     _pt.put<std::string>("activeTopologyName", m_activeTopologyName);
+    _pt.put<std::string>("activeTopologyPath", m_activeTopologyPath);
 }
 
 void SCommanderInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
 {
     m_pid = _pt.get<pid_t>("pid", 0);
     m_activeTopologyName = _pt.get<std::string>("activeTopologyName", std::string());
+    m_activeTopologyPath = _pt.get<std::string>("activeTopologyPath", std::string());
 }
 
 bool SCommanderInfoResponseData::operator==(const SCommanderInfoResponseData& _val) const
 {
-    return (SBaseData::operator==(_val) && m_pid == _val.m_pid && m_activeTopologyName == _val.m_activeTopologyName);
+    return (SBaseData::operator==(_val) && m_pid == _val.m_pid && m_activeTopologyName == _val.m_activeTopologyName &&
+            m_activeTopologyPath == _val.m_activeTopologyPath);
 }
 
 // We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
@@ -264,7 +267,8 @@ namespace dds
         std::ostream& operator<<(std::ostream& _os, const SCommanderInfoResponseData& _data)
         {
             return _os << _data.defaultToString() << "; pid: " << _data.m_pid
-                       << "; activeTopologyName: " << _data.m_activeTopologyName;
+                       << "; activeTopologyName: " << _data.m_activeTopologyName
+                       << "; activeTopologyPath: " << _data.m_activeTopologyPath;
         }
     } // namespace tools_api
 } // namespace dds

@@ -54,7 +54,8 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
             if (_info.m_activeTopologyName.empty())
                 LOG(log_stdout_clean) << "no active topology";
             else
-                LOG(log_stdout_clean) << "active topology: " << _info.m_activeTopologyName;
+                LOG(log_stdout_clean) << "active topology: " << _info.m_activeTopologyName
+                                      << "; path: " << _info.m_activeTopologyPath;
 
             _session.unblockCurrentThread();
         }

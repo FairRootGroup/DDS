@@ -1416,6 +1416,7 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
         try
         {
             info.m_activeTopologyName = m_topo.getName();
+            info.m_activeTopologyPath = m_topo.getFilepath();
         }
         catch (const std::runtime_error& e)
         {
