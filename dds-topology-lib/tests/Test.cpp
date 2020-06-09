@@ -661,9 +661,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_create_from_xml)
         // TopoRequirement
         vector<string> names{ "requirement1", "requirement2", "requirement3" };
         vector<string> values{ ".+.gsi.de", "server1.gsi.de", "node2" };
-        vector<CTopoRequirement::EType> types{
-            CTopoRequirement::EType::HostName, CTopoRequirement::EType::HostName, CTopoRequirement::EType::WnName
-        };
+        vector<CTopoRequirement::EType> types{ CTopoRequirement::EType::HostName,
+                                               CTopoRequirement::EType::HostName,
+                                               CTopoRequirement::EType::WnName };
         for (size_t i = 0; i < 3; i++)
         {
             auto requirement = CTopoBase::make<CTopoRequirement>(names[i], topoFile);
