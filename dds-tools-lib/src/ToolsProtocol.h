@@ -135,6 +135,7 @@ namespace dds
         {
             pid_t m_pid = 0;                  ///< PID of the commander
             std::string m_activeTopologyName; ///< Name of active topology, empty if none is active
+            std::string m_activeTopologyPath; ///< Filepath of active topology, empty if none is active
 
           private:
             friend SBaseData<SCommanderInfoResponseData>;

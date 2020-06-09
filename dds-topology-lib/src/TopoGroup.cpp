@@ -83,9 +83,9 @@ void CTopoGroup::saveToPropertyTree(boost::property_tree::ptree& _pt)
         }
 
         // We need to keep the correct order of elements in the output XML file
-        vector<CTopoBase::EType> typeOrder{
-            CTopoBase::EType::TASK, CTopoBase::EType::COLLECTION, CTopoBase::EType::GROUP
-        };
+        vector<CTopoBase::EType> typeOrder{ CTopoBase::EType::TASK,
+                                            CTopoBase::EType::COLLECTION,
+                                            CTopoBase::EType::GROUP };
         const auto& elements{ getElements() };
 
         for (auto type : typeOrder)
