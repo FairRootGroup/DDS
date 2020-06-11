@@ -5,6 +5,7 @@
 
 #include "Tools.h"
 // STD
+#include <chrono>
 #include <sstream>
 // BOOST
 #include <boost/any.hpp>
@@ -498,10 +499,11 @@ template <CSession::EAgentState _state>
 void CSession::waitForNumAgents(size_t _numAgents,
                                 const std::chrono::seconds& _timeout,
                                 const std::chrono::milliseconds& _requestInterval,
-                                size_t _maxRequests,
                                 ostream* _out)
 {
-    size_t counter = 0;
+    using Time_t = std::chrono::seconds;
+    std::chrono::system_clock::time_point start{ std::chrono::system_clock::now() };
+
     while (true)
     {
         SAgentCountRequest::response_t response;
@@ -512,10 +514,10 @@ void CSession::waitForNumAgents(size_t _numAgents,
             (_state == CSession::EAgentState::idle && (response.m_idleSlotsCount < _numAgents)) ||
             (_state == CSession::EAgentState::executing && (response.m_executingSlotsCount < _numAgents)))
         {
-            if (_maxRequests != 0 && counter > _maxRequests)
+            auto duration{ std::chrono::duration_cast<Time_t>(std::chrono::system_clock::now() - start) };
+            if (_timeout.count() != 0 && duration >= _timeout)
             {
-                throw runtime_error(
-                    "Failed to wait for the required number of agents: exceed maximum number of requests");
+                throw runtime_error("Failed to wait for the required number of agents: exceed timeout");
             }
             this_thread::sleep_for(_requestInterval);
         }
@@ -523,13 +525,18 @@ void CSession::waitForNumAgents(size_t _numAgents,
         {
             return;
         }
-        counter++;
     }
 }
 
-template void CSession::waitForNumAgents<CSession::EAgentState::active>(
-    size_t, const std::chrono::seconds&, const std::chrono::milliseconds&, size_t, ostream*);
-template void CSession::waitForNumAgents<CSession::EAgentState::idle>(
-    size_t, const std::chrono::seconds&, const std::chrono::milliseconds&, size_t, ostream*);
-template void CSession::waitForNumAgents<CSession::EAgentState::executing>(
-    size_t, const std::chrono::seconds&, const std::chrono::milliseconds&, size_t, ostream*);
+template void CSession::waitForNumAgents<CSession::EAgentState::active>(size_t,
+                                                                        const std::chrono::seconds&,
+                                                                        const std::chrono::milliseconds&,
+                                                                        ostream*);
+template void CSession::waitForNumAgents<CSession::EAgentState::idle>(size_t,
+                                                                      const std::chrono::seconds&,
+                                                                      const std::chrono::milliseconds&,
+                                                                      ostream*);
+template void CSession::waitForNumAgents<CSession::EAgentState::executing>(size_t,
+                                                                           const std::chrono::seconds&,
+                                                                           const std::chrono::milliseconds&,
+                                                                           ostream*);

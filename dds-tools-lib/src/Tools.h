@@ -107,7 +107,6 @@ namespace dds
          const string topoFile("property_test.xml");
          const std::chrono::seconds timeout(20);
          const std::chrono::milliseconds requestInterval(500);
-         const size_t maxRequests(10);
 
          CSession session;
          boost::uuids::uuid sid = session.create();
@@ -120,8 +119,7 @@ namespace dds
          submitInfo.m_instances = numAgents;
          session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout);
 
-         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests,
-         &std::cout);
+         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, &std::cout);
 
          STopologyRequest::request_t topoInfo;
          topoInfo.m_topologyFile = topoFile;
@@ -225,17 +223,14 @@ namespace dds
 
             /// \brief Wait for the required number of agents with a certain state.
             /// \param[in] _numAgents Required number of agents. Must be > 0.
-            /// \param[in] _timeout Timeout per each request in seconds. Timeout of 0 means no timeout is applied
-            /// (default).
-            /// \param[in] _requestInterval Interval between SAgentCountRequest requests in milliseconds.
-            /// \param[in] _maxRequests Maximum number of requests. 0 means no limits (default).
-            /// \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
+            /// \param[in] _timeout Timeout per each request and total timeout in seconds. Timeout of 0 means no timeout
+            /// is applied (default). \param[in] _requestInterval Interval between SAgentCountRequest requests in
+            /// milliseconds. \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
             /// \throw std::runtime_error
-            template <EAgentState _state>
+            template <CSession::EAgentState _state>
             void waitForNumAgents(size_t _numAgents,
                                   const std::chrono::seconds& _timeout = std::chrono::seconds(0),
                                   const std::chrono::milliseconds& _requestInterval = std::chrono::milliseconds(500),
-                                  size_t _maxRequests = 0,
                                   std::ostream* _out = nullptr);
 
           private:
