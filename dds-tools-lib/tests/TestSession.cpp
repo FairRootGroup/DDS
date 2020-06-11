@@ -77,10 +77,9 @@ void checkIdleAgents(CSession& _session, size_t _numAgents)
 {
     const std::chrono::seconds timeout(30);
     const std::chrono::milliseconds requestInterval(500);
-    const size_t maxRequests(60);
 
-    BOOST_CHECK_NO_THROW(_session.waitForNumAgents<CSession::EAgentState::idle>(
-        _numAgents, timeout, requestInterval, maxRequests, &std::cout));
+    BOOST_CHECK_NO_THROW(
+        _session.waitForNumAgents<CSession::EAgentState::idle>(_numAgents, timeout, requestInterval, &std::cout));
 
     SAgentCountRequest::response_t agentCountInfo;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SAgentCountRequest>(
