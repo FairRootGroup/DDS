@@ -8,6 +8,7 @@
 #include "EnvProp.h"
 #include "UserDefaults.h"
 // BOOST
+#include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
 
 using namespace MiscCommon;
@@ -18,6 +19,7 @@ using namespace std;
 using namespace user_defaults_api;
 using namespace topology_api;
 namespace fs = boost::filesystem;
+using namespace boost::placeholders;
 
 const uint16_t g_MaxConnectionAttempts = 5;
 
