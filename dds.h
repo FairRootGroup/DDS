@@ -8,6 +8,7 @@
 #include "EnvProp.h"
 #include "Intercom.h"
 #include "Tools.h"
+#include "TopoCreator.h"
 #include "Topology.h"
 
 #endif /*DDS_API_H_*/
