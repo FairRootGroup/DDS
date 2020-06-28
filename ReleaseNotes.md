@@ -5,6 +5,9 @@
 ### dds-tools-api
 Added: active topology filepath in commander info request.    
 
+### dds-topology
+Added: new max instances per host requirement ("maxinstances") for tasks and collections. One can define maximum allowed number of task/ collection instances per host.    
+
 
 ## v3.2 (2020-05-12)
 

@@ -457,12 +457,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(TagToRequirementType("wnname") == CTopoRequirement::EType::WnName);
     BOOST_CHECK(TagToRequirementType("hostname") == CTopoRequirement::EType::HostName);
     BOOST_CHECK(TagToRequirementType("gpu") == CTopoRequirement::EType::Gpu);
+    BOOST_CHECK(TagToRequirementType("maxinstances") == CTopoRequirement::EType::MaxInstancesPerHost);
     BOOST_CHECK_THROW(TagToRequirementType("wn_name"), runtime_error);
 
     // RequirementTypeToTag
     BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::WnName) == "wnname");
     BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::HostName) == "hostname");
     BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::Gpu) == "gpu");
+    BOOST_CHECK(RequirementTypeToTag(CTopoRequirement::EType::MaxInstancesPerHost) == "maxinstances");
 
     // TagToConditionType
     BOOST_CHECK(TagToConditionType("TaskCrashed") == CTopoTrigger::EConditionType::TaskCrashed);
