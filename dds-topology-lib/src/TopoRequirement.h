@@ -24,7 +24,8 @@ namespace dds
             {
                 WnName,
                 HostName,
-                Gpu
+                Gpu,
+                MaxInstancesPerHost
             };
 
             using Ptr_t = std::shared_ptr<CTopoRequirement>;

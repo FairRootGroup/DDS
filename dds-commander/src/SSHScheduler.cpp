@@ -4,6 +4,7 @@
 //
 #include "SSHScheduler.h"
 #include "TimeMeasure.h"
+#include <iomanip>
 #include <set>
 // BOOST
 #include "boost/range/adaptor/map.hpp"
@@ -90,12 +91,26 @@ void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
         collectionMap[it->second.m_idToRuntimeTaskMap.size()].push_back(it->first);
     }
 
+    // Counters of number of instances of tasks/collections on a host.
+    hostCounterMap_t taskHostCounter;
+    hostCounterMap_t collectionHostCounter;
+
     set<uint64_t> scheduledTasks;
 
-    scheduleCollections(_topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, true);
-    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, true, _addedTasks);
-    scheduleCollections(_topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, false);
-    scheduleTasks(_topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, false, _addedTasks);
+    scheduleCollections(
+        _topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, true, collectionHostCounter);
+    scheduleTasks(
+        _topology, _channels, hostToChannelMap, scheduledTasks, tasksInCollections, true, _addedTasks, taskHostCounter);
+    scheduleCollections(
+        _topology, _channels, hostToChannelMap, scheduledTasks, collectionMap, false, collectionHostCounter);
+    scheduleTasks(_topology,
+                  _channels,
+                  hostToChannelMap,
+                  scheduledTasks,
+                  tasksInCollections,
+                  false,
+                  _addedTasks,
+                  taskHostCounter);
 
     size_t totalNofTasks =
         (_addedTasks == nullptr) ? _topology.getMainGroup()->getTotalNofTasks() : _addedTasks->size();
@@ -117,7 +132,8 @@ void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
                                   set<uint64_t>& _scheduledTasks,
                                   const set<uint64_t>& _tasksInCollections,
                                   bool useRequirement,
-                                  const CTopoCore::IdSet_t* _addedTasks)
+                                  const CTopoCore::IdSet_t* _addedTasks,
+                                  hostCounterMap_t& _hostCounterMap)
 {
     STopoRuntimeTask::FilterIteratorPair_t tasks = _topology.getRuntimeTaskIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
@@ -150,16 +166,18 @@ void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
             throw runtime_error(ss.str());
         }
 
-        CTopoRequirement::Ptr_t requirement = (task->getNofRequirements() == 1) ? task->getRequirements()[0] : nullptr;
+        CTopoRequirement::Ptr_t requirement{ (task->getNofRequirements() == 1) ? task->getRequirements()[0] : nullptr };
         if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
             continue;
 
-        bool taskAssigned = false;
+        bool taskAssigned{ false };
 
         for (auto& v : _hostToChannelMap)
         {
-            const bool requirementOk =
-                checkRequirement(requirement, useRequirement, std::get<1>(v.first), std::get<2>(v.first));
+            const string hostName{ std::get<1>(v.first) };
+            const string wnName{ std::get<2>(v.first) };
+            const bool requirementOk{ checkRequirement(
+                requirement, useRequirement, hostName, wnName, task->getName(), _hostCounterMap) };
             if (requirementOk)
             {
                 if (!v.second.empty())
@@ -174,6 +192,9 @@ void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
                     m_schedule.push_back(schedule);
 
                     v.second.pop_back();
+
+                    // Increase counter of task on the host
+                    _hostCounterMap[make_pair(hostName, task->getName())]++;
 
                     taskAssigned = true;
 
@@ -199,42 +220,45 @@ void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
                                         hostToChannelMap_t& _hostToChannelMap,
                                         set<uint64_t>& _scheduledTasks,
                                         const CollectionMap_t& _collectionMap,
-                                        bool useRequirement)
+                                        bool useRequirement,
+                                        hostCounterMap_t& _hostCounterMap)
 {
     for (const auto& it_col : _collectionMap)
     {
         for (auto id : it_col.second)
         {
             const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionById(id);
+            auto collection{ collectionInfo.m_collection };
 
             // First path only for collections with requirements;
             // Second path for collections without requirements.
 
             // SSH scheduler doesn't support multiple requirements
-            if (collectionInfo.m_collection->getNofRequirements() > 1)
+            if (collection->getNofRequirements() > 1)
             {
                 stringstream ss;
-                ss << "Unable to schedule collection <" << id << "> with path "
-                   << collectionInfo.m_collection->getPath()
+                ss << "Unable to schedule collection <" << id << "> with path " << collection->getPath()
                    << ": SSH scheduler doesn't support multiple requirements.";
                 throw runtime_error(ss.str());
             }
 
-            CTopoRequirement::Ptr_t requirement = (collectionInfo.m_collection->getNofRequirements() == 1)
-                                                      ? collectionInfo.m_collection->getRequirements()[0]
-                                                      : nullptr;
+            CTopoRequirement::Ptr_t requirement{ (collection->getNofRequirements() == 1)
+                                                     ? collection->getRequirements()[0]
+                                                     : nullptr };
             if ((useRequirement && requirement == nullptr) || (!useRequirement && requirement != nullptr))
                 continue;
 
-            bool collectionAssigned = false;
+            bool collectionAssigned{ false };
 
             for (auto& v : _hostToChannelMap)
             {
-                const bool requirementOk =
-                    checkRequirement(requirement, useRequirement, std::get<1>(v.first), std::get<2>(v.first));
+                const string hostName{ std::get<1>(v.first) };
+                const string wnName{ std::get<2>(v.first) };
+                const bool requirementOk{ checkRequirement(
+                    requirement, useRequirement, hostName, wnName, collection->getName(), _hostCounterMap) };
                 if ((v.second.size() >= collectionInfo.m_collection->getNofTasks()) && requirementOk)
                 {
-                    const STopoRuntimeCollection& collectionInfo = _topology.getRuntimeCollectionById(id);
+                    const STopoRuntimeCollection& collectionInfo{ _topology.getRuntimeCollectionById(id) };
 
                     for (auto taskIt : collectionInfo.m_idToRuntimeTaskMap)
                     {
@@ -253,6 +277,10 @@ void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
 
                         _scheduledTasks.insert(taskIt.first);
                     }
+
+                    // Increase counter of collection on the host
+                    _hostCounterMap[make_pair(hostName, collection->getName())]++;
+
                     collectionAssigned = true;
                     break;
                 }
@@ -262,8 +290,7 @@ void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
             {
                 LOG(debug) << toString();
                 stringstream ss;
-                ss << "Unable to schedule collection <" << id << "> with path "
-                   << collectionInfo.m_collection->getPath();
+                ss << "Unable to schedule collection <" << id << "> with path " << collection->getPath();
                 throw runtime_error(ss.str());
             }
         }
@@ -273,19 +300,54 @@ void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
 bool CSSHScheduler::checkRequirement(CTopoRequirement::Ptr_t _requirement,
                                      bool _useRequirement,
                                      const string& _hostName,
-                                     const string& _wnName) const
+                                     const string& _wnName,
+                                     const string& _elementName,
+                                     hostCounterMap_t& _hostCounterMap) const
 {
-    if (_useRequirement && (_requirement->getRequirementType() == CTopoRequirement::EType::WnName) && _wnName.empty())
+    if (!_useRequirement)
+        return true;
+
+    using EType = CTopoRequirement::EType;
+    const auto type{ _requirement->getRequirementType() };
+
+    if (type == EType::WnName && _wnName.empty())
     {
         LOG(warning) << "Requirement of type WnName is not supported for this RMS plug-in. Requirement: "
                      << _requirement->toString();
         return true;
     }
-    return !_useRequirement ||
-           (_useRequirement &&
-            CSSHScheduler::hostPatternMatches(
-                _requirement->getValue(),
-                (_requirement->getRequirementType() == CTopoRequirement::EType::HostName) ? _hostName : _wnName));
+
+    if (type == EType::WnName || type == EType::HostName)
+    {
+        return CSSHScheduler::hostPatternMatches(_requirement->getValue(),
+                                                 (type == EType::HostName) ? _hostName : _wnName);
+    }
+    else if (type == EType::MaxInstancesPerHost)
+    {
+        try
+        {
+            size_t value = boost::lexical_cast<size_t>(_requirement->getValue());
+            const auto key{ make_pair(_hostName, _elementName) };
+            auto it = _hostCounterMap.find(key);
+            if (it != _hostCounterMap.end())
+            {
+                return it->second < value;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        catch (boost::bad_lexical_cast&)
+        {
+            stringstream ss;
+            ss << "Unable to satisfy the requirement " << _requirement->getName() << ". Value "
+               << _requirement->getValue() << " must be a positive number.";
+            throw runtime_error(ss.str());
+        }
+    }
+
+    return false;
 }
 
 const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const

@@ -110,6 +110,7 @@
     <xs:enumeration value="wnname"/>
     <xs:enumeration value="hostname"/>
     <xs:enumeration value="gpu"/>
+    <xs:enumeration value="maxinstances"/>
   </xs:restriction>
 </xs:simpleType>
 
