@@ -1,6 +1,9 @@
 # DDS Release Notes
 
-## v3.4 (NOT YET RELEASED)
+## v3.4 (2020-07-01)
+
+### DDS common
+Modified: General improvements and bug fixes.
 
 ### dds-tools-api
 Added: active topology filepath in commander info request.    
