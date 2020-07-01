@@ -214,9 +214,12 @@ void CTopoTask::saveToPropertyTree(ptree& _pt)
         std::string tag("topology.decltask");
         _pt.put(tag + ".<xmlattr>.name", getName());
         _pt.put(tag + ".exe", getExe());
-        _pt.put(tag + ".env", getEnv());
         _pt.put(tag + ".exe.<xmlattr>.reachable", isExeReachable());
-        _pt.put(tag + ".env.<xmlattr>.reachable", isEnvReachable());
+        if (getEnv().length() != 0)
+        {
+            _pt.put(tag + ".env", getEnv());
+            _pt.put(tag + ".env.<xmlattr>.reachable", isEnvReachable());
+        }
 
         for (const auto& v : m_requirements)
         {
