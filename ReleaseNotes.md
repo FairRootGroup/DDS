@@ -1,5 +1,11 @@
 # DDS Release Notes
 
+## v3.6 (NOT YET RELEASED)
+
+### dds-topology
+Added: new std::istream based APIs.    
+
+
 ## v3.4 (2020-07-01)
 
 ### DDS common

@@ -74,6 +74,13 @@ void CTopoBase::initFromXML(const std::string& _filepath,
     this->initFromPropertyTree(pt);
 }
 
+void CTopoBase::initFromXML(std::istream& _stream, const std::string& _schemaFilepath, std::string* _topologyName)
+{
+    boost::property_tree::ptree pt;
+    CTopoParserXML::parse(pt, _stream, _schemaFilepath, _topologyName);
+    this->initFromPropertyTree(pt);
+}
+
 string CTopoBase::toString() const
 {
     stringstream ss;

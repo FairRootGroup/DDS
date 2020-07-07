@@ -28,15 +28,17 @@ namespace dds
             /// \brief Destructor
             ~CTopology();
 
-            /// \brief Constructs and initializes topology with the specified file without validation.
-            /// \param[in] _fileName Path to the topology file
+            /// \brief Constructs a topology with the specified file and validates against a schema file (if not empty).
+            /// \param[in] _fileName Path to the topology file.
+            /// \param[in] _schemaFileName Path to the XSD schema file.
             /// \throw runtime_error
-            CTopology(const std::string& _fileName);
+            CTopology(const std::string& _fileName, const std::string& _schemaFileName = "");
 
-            /// \brief Constructs and initializes topology with the specified file and validates against provided schema
-            /// file. \param[in] _fileName Path to the topology file. \param[in] _schemaFileName Path to the XSD schema
-            /// file. \throw runtime_error
-            CTopology(const std::string& _fileName, const std::string& _schemaFileName);
+            /// \brief Constructs a topology from stream and validates against a schema file (if not empty).
+            /// \param[in] _stream Input stream.
+            /// \param[in] _schemaFileName Path to the XSD schema file.
+            /// \throw runtime_error
+            CTopology(std::istream& _stream, const std::string& _schemaFileName = "");
 
             /// \brief Returns topology name
             /// \throw runtime_error

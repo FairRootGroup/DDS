@@ -15,16 +15,18 @@ CTopology::CTopology()
 {
 }
 
-CTopology::CTopology(const std::string& _fileName)
-    : CTopology(_fileName, "")
-{
-}
-
-CTopology::CTopology(const std::string& _fileName, const std::string& _schemaFileName)
-    : m_topo(std::make_shared<CTopoCore>())
+CTopology::CTopology(const string& _fileName, const string& _schemaFileName)
+    : m_topo(make_shared<CTopoCore>())
 {
     m_topo->setXMLValidationDisabled(_fileName.empty() || _schemaFileName.empty());
     m_topo->init(_fileName, _schemaFileName);
+}
+
+CTopology::CTopology(istream& _stream, const string& _schemaFileName)
+    : m_topo(make_shared<CTopoCore>())
+{
+    m_topo->setXMLValidationDisabled(_schemaFileName.empty());
+    m_topo->init(_stream, _schemaFileName);
 }
 
 CTopology::~CTopology()
@@ -36,12 +38,12 @@ CTopoGroup::Ptr_t CTopology::getMainGroup() const
     return m_topo->getMainGroup();
 }
 
-std::string CTopology::getName() const
+string CTopology::getName() const
 {
     return m_topo->getName();
 }
 
-std::string CTopology::getFilepath() const
+string CTopology::getFilepath() const
 {
     return m_topo->getFilepath();
 }
@@ -61,12 +63,12 @@ const STopoRuntimeCollection& CTopology::getRuntimeCollectionById(Id_t _id) cons
     return m_topo->getRuntimeCollectionById(_id);
 }
 
-const STopoRuntimeTask& CTopology::getRuntimeTaskByIdPath(const std::string& _idPath) const
+const STopoRuntimeTask& CTopology::getRuntimeTaskByIdPath(const string& _idPath) const
 {
     return m_topo->getRuntimeTaskByIdPath(_idPath);
 }
 
-const STopoRuntimeCollection& CTopology::getRuntimeCollectionByIdPath(const std::string& _idPath) const
+const STopoRuntimeCollection& CTopology::getRuntimeCollectionByIdPath(const string& _idPath) const
 {
     return m_topo->getRuntimeCollectionByIdPath(_idPath);
 }
@@ -82,19 +84,18 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIter
     return m_topo->getRuntimeCollectionIterator(_condition);
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorMatchingPath(
-    const std::string& _pathPattern) const
+STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIteratorMatchingPath(const string& _pathPattern) const
 {
     return m_topo->getRuntimeTaskIteratorMatchingPath(_pathPattern);
 }
 
 STopoRuntimeCollection::FilterIteratorPair_t CTopology::getRuntimeCollectionIteratorMatchingPath(
-    const std::string& _pathPattern) const
+    const string& _pathPattern) const
 {
     return m_topo->getRuntimeCollectionIteratorMatchingPath(_pathPattern);
 }
 
-std::pair<size_t, size_t> CTopology::getRequiredNofAgents(size_t _defaultNumSlots) const
+pair<size_t, size_t> CTopology::getRequiredNofAgents(size_t _defaultNumSlots) const
 {
     return m_topo->getRequiredNofAgents(_defaultNumSlots);
 }

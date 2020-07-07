@@ -23,14 +23,14 @@ CTopoCreatorCore::CTopoCreatorCore()
 {
 }
 
-CTopoCreatorCore::CTopoCreatorCore(const std::string& _fileName)
+CTopoCreatorCore::CTopoCreatorCore(const std::string& _fileName, const std::string& _schemaFilename)
 {
-    m_main->initFromXML(_fileName, "");
+    m_main->initFromXML(_fileName, _schemaFilename);
 }
 
-CTopoCreatorCore::CTopoCreatorCore(const std::string& _fileName, const std::string& _schemaFileName)
+CTopoCreatorCore::CTopoCreatorCore(std::istream& _stream, const std::string& _schemaFilename)
 {
-    m_main->initFromXML(_fileName, _schemaFileName);
+    m_main->initFromXML(_stream, _schemaFilename);
 }
 
 CTopoCreatorCore::~CTopoCreatorCore()
