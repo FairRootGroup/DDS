@@ -16,13 +16,13 @@ CTopoCreator::CTopoCreator()
 {
 }
 
-CTopoCreator::CTopoCreator(const std::string& _fileName)
-    : m_topoCreator(std::make_shared<CTopoCreatorCore>(_fileName))
+CTopoCreator::CTopoCreator(const std::string& _fileName, const std::string& _schemaFilename)
+    : m_topoCreator(std::make_shared<CTopoCreatorCore>(_fileName, _schemaFilename))
 {
 }
 
-CTopoCreator::CTopoCreator(const std::string& _fileName, const std::string& _schemaFileName)
-    : m_topoCreator(std::make_shared<CTopoCreatorCore>(_fileName, _schemaFileName))
+CTopoCreator::CTopoCreator(std::istream& _stream, const std::string& _schemaFilename)
+    : m_topoCreator(std::make_shared<CTopoCreatorCore>(_stream, _schemaFilename))
 {
 }
 

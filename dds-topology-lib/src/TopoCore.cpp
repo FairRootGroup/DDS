@@ -53,6 +53,27 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
         filename = CUserDefaults::instance().getDDSPath() + "topology.xml";
     }
 
+    // Store path to the XML topology file
+    m_filepath = boost::filesystem::canonical(filename).string();
+
+    ifstream stream(filename);
+    if (stream.is_open())
+    {
+        init(stream, _schemaFileName);
+    }
+    else
+    {
+        throw runtime_error("Can't open te given topo file: " + filename);
+    }
+}
+
+void CTopoCore::init(std::istream& _stream)
+{
+    init(_stream, CUserDefaults::getTopologyXSDFilePath());
+}
+
+void CTopoCore::init(std::istream& _stream, const std::string& _schemaFileName)
+{
     if (_schemaFileName.empty() && !m_bXMLValidationDisabled)
     {
         throw runtime_error("XSD schema file not provided. Disable validation or provide a valid schema file.");
@@ -61,15 +82,12 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
     // Use empty string to disable validation in parser
     string schemaFileName = (m_bXMLValidationDisabled) ? "" : _schemaFileName;
 
-    // Store path to the XML topology file
-    m_filepath = boost::filesystem::canonical(filename).string();
-
     m_main = make_shared<CTopoGroup>("main");
-    m_main->initFromXML(filename, schemaFileName, &m_name);
+    m_main->initFromXML(_stream, schemaFileName, &m_name);
 
     // Calculate topology hash
     // Function throws an exception if it fails to calculate the hash.
-    m_hash = CalculateHash(filename);
+    m_hash = CalculateHash(_stream);
 
     m_counterMap.clear();
     m_idToRuntimeTaskMap.clear();
@@ -476,10 +494,9 @@ std::string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
     return ss.str();
 }
 
-uint32_t CTopoCore::CalculateHash(const string& _filename)
+uint32_t CTopoCore::CalculateHash(std::istream& _stream)
 {
-    std::ifstream file(_filename);
-    return MiscCommon::crc32(file);
+    return MiscCommon::crc32(_stream);
 }
 
 string CTopoCore::toString() const

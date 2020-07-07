@@ -25,78 +25,74 @@ using namespace topology_api;
 namespace fs = boost::filesystem;
 
 void CTopoParserXML::parse(boost::property_tree::ptree& _pt,
-                           const std::string& _filepath,
-                           const std::string& _schemaFilepath,
-                           std::string* _topologyName)
+                           const string& _filepath,
+                           const string& _schemaFilepath,
+                           string* _topologyName)
 {
     if (_filepath.empty())
-        throw std::runtime_error("topo file is not defined.");
+        throw runtime_error("Topo file is not defined.");
 
     if (!fs::exists(_filepath))
+        throw runtime_error("Can't locate the given topo file: " + _filepath);
+
+    ifstream stream(_filepath);
+    if (stream.is_open())
     {
-        std::stringstream ss;
-        ss << "Cannot locate the given topo file: " << _filepath;
-        throw std::runtime_error(ss.str());
+        parse(_pt, stream, _schemaFilepath, _topologyName);
     }
-
-    try
+    else
     {
-        // First we have to parse topology variables
-        boost::property_tree::ptree varPT;
-        read_xml(_filepath, varPT, boost::property_tree::xml_parser::no_comments);
-
-        CTopoVars::Ptr_t vars{ CTopoBase::make<CTopoVars>("", varPT) };
-
-        // We have to replace all occurencies of topology variables in input XML file.
-        std::stringstream ssPT;
-        write_xml(ssPT, varPT);
-
-        std::string strPT = ssPT.str();
-        const CTopoVars::varMap_t& map = vars->getMap();
-        for (const auto& v : map)
-        {
-            std::string varName = "${" + v.first + "}";
-            boost::algorithm::replace_all(strPT, varName, v.second);
-        }
-
-        fs::path tempDirPath = fs::temp_directory_path();
-        boost::uuids::uuid uuid = boost::uuids::random_generator()();
-        fs::path fsPath(_filepath);
-        std::stringstream ssTmpFileName;
-        ssTmpFileName << fsPath.filename().string() << "_" << uuid << ".xml";
-        std::string tmpFilePath = tempDirPath.append(ssTmpFileName.str()).string();
-
-        {
-            std::ofstream tmpFile(tmpFilePath);
-            tmpFile << strPT;
-            tmpFile.close();
-        }
-
-        // Validate temporary XML file against XSD schema
-        std::string output;
-        if (!isValid(tmpFilePath, _schemaFilepath, &output))
-            throw std::runtime_error(std::string("XML file is not valid. Error details: ") + output);
-
-        read_xml(tmpFilePath, _pt);
-
-        if (_topologyName != nullptr)
-            *_topologyName = _pt.get_child("topology").get<std::string>("<xmlattr>.name");
-
-        // Delete temporary file
-        fs::remove(tmpFilePath);
-    }
-    catch (boost::property_tree::xml_parser_error& error)
-    {
-        throw std::runtime_error(std::string("Reading of input XML file failed with the following error: ") +
-                                 error.what());
-    }
-    catch (std::exception& error) // ptree_error, out_of_range, logic_error
-    {
-        throw std::runtime_error(std::string("XML parsing failed with the following error: ") + error.what());
+        throw runtime_error("Can't open te given topo file: " + _filepath);
     }
 }
 
-bool CTopoParserXML::isValid(const std::string& _filepath, const std::string& _schemaFilepath, std::string* _output)
+void CTopoParserXML::parse(boost::property_tree::ptree& _pt,
+                           istream& _stream,
+                           const string& _schemaFilepath,
+                           string* _topologyName)
+{
+    try
+    {
+        // Parse topology variables
+        boost::property_tree::ptree varPT;
+        read_xml(_stream, varPT, boost::property_tree::xml_parser::no_comments);
+        _stream.seekg(0);
+
+        CTopoVars::Ptr_t vars{ CTopoBase::make<CTopoVars>("", varPT) };
+
+        // Replace all occurencies of topology variables in input XML
+        string strPT(istreambuf_iterator<char>(_stream), {});
+        _stream.seekg(0);
+        const CTopoVars::varMap_t& map{ vars->getMap() };
+        for (const auto& v : map)
+        {
+            string varName{ "${" + v.first + "}" };
+            boost::algorithm::replace_all(strPT, varName, v.second);
+        }
+
+        // Validate final XML against XSD schema
+        istringstream ssPT{ strPT };
+        string output;
+        if (!isValid(ssPT, _schemaFilepath, &output))
+            throw runtime_error(string("XML file is not valid. Error details: ") + output);
+
+        // Read final XML in property tree
+        read_xml(ssPT, _pt, boost::property_tree::xml_parser::no_comments);
+
+        if (_topologyName != nullptr)
+            *_topologyName = _pt.get_child("topology").get<string>("<xmlattr>.name");
+    }
+    catch (boost::property_tree::xml_parser_error& error)
+    {
+        throw runtime_error(string("Reading of input XML file failed with the following error: ") + error.what());
+    }
+    catch (exception& error) // ptree_error, out_of_range, logic_error
+    {
+        throw runtime_error(string("XML parsing failed with the following error: ") + error.what());
+    }
+}
+
+bool CTopoParserXML::isValid(const string& _filepath, const string& _schemaFilepath, string* _output)
 {
     if (_schemaFilepath.empty())
         return true;
@@ -109,13 +105,12 @@ bool CTopoParserXML::isValid(const std::string& _filepath, const std::string& _s
 
     stringstream ssCmd;
     ssCmd << xmllintPath.string() << " --noout --schema "
-          << "\"" << _schemaFilepath << "\""
-          << " \"" << _filepath << "\"";
+          << "\"" << _schemaFilepath << "\" " << _filepath;
 
     string output;
     string errout;
     int exitCode;
-    execute(ssCmd.str(), std::chrono::seconds(60), &output, &errout, &exitCode);
+    execute(ssCmd.str(), chrono::seconds(60), &output, &errout, &exitCode);
 
     if (_output != nullptr)
     {
@@ -124,6 +119,36 @@ bool CTopoParserXML::isValid(const std::string& _filepath, const std::string& _s
     }
 
     return (exitCode == 0);
+}
+
+bool CTopoParserXML::isValid(istream& _stream, const string& _schemaFilepath, string* _output)
+{
+    try
+    {
+        // Serialize stream to a temporary file
+        fs::path tmpFilePath{ fs::temp_directory_path() / fs::unique_path() };
+        ofstream tmpStream(tmpFilePath.string());
+        if (tmpStream.is_open())
+        {
+            tmpStream << _stream.rdbuf();
+            tmpStream.close();
+            _stream.seekg(0);
+        }
+        else
+        {
+            throw runtime_error("Can't open temp file " + tmpFilePath.string() + " for topology validation");
+        }
+
+        bool result{ isValid(tmpFilePath.string(), _schemaFilepath, _output) };
+
+        fs::remove(tmpFilePath);
+
+        return result;
+    }
+    catch (exception& _e)
+    {
+        throw runtime_error(_e.what());
+    }
 }
 
 void CTopoParserXML::PrintPropertyTree(const string& _path, const boost::property_tree::ptree& _pt)

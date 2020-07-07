@@ -47,6 +47,14 @@ namespace dds
             /// \throw runtime_error
             void init(const std::string& _fileName, const std::string& _schemaFileName);
 
+            /// \brief Initializes topology from input stream
+            /// \throw runtime_error
+            void init(std::istream& _stream);
+
+            /// \brief Initializes topology from input stream and validates with provided schema file.
+            /// \throw runtime_error
+            void init(std::istream& _stream, const std::string& _schemaFileName);
+
             /// \brief Get difference between THIS topology and a new one.
             /// \param[in] _topology New topology to calculate the difference with.
             /// \param[out] _removedTasks Tasks which exist in THIS topology and don't exist in new one.
@@ -108,7 +116,7 @@ namespace dds
           private:
             void FillTopoIndexToTopoElementMap(const CTopoElement::Ptr_t& _element);
             void FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element);
-            uint32_t CalculateHash(const std::string& _filename);
+            uint32_t CalculateHash(std::istream& _stream);
             Id_t calculateId(const std::string& _idPath, const std::string& _hashString);
 
             CTopoGroup::Ptr_t m_main{ nullptr }; ///< Main task group which we run

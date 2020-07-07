@@ -60,8 +60,25 @@ namespace dds
                                                  const std::string& _schemaFilepath = "",
                                                  std::string* _topologyName = nullptr)
             {
-                typename Object_t::Ptr_t newObject = std::make_shared<Object_t>(_objectName);
+                typename Object_t::Ptr_t newObject{ std::make_shared<Object_t>(_objectName) };
                 newObject->initFromXML(_filepath, _schemaFilepath, _topologyName);
+                return newObject;
+            }
+
+            /// \brief Convenience API to create topology object from XML file.
+            /// \param[in] _name Name of the object as in input file.
+            /// \param[in] _stream Input stream
+            /// \param[in] _schemaFilepath Path to the XSD schema file.
+            /// \param[out] _topologyName Topology name.
+            /// \throw std::runtime_error.
+            template <class Object_t>
+            static typename Object_t::Ptr_t make(const std::string& _objectName,
+                                                 std::istream& _stream,
+                                                 const std::string& _schemaFilepath = "",
+                                                 std::string* _topologyName = nullptr)
+            {
+                typename Object_t::Ptr_t newObject{ std::make_shared<Object_t>(_objectName) };
+                newObject->initFromXML(_stream, _schemaFilepath, _topologyName);
                 return newObject;
             }
 
@@ -72,18 +89,26 @@ namespace dds
             template <class Object_t>
             static typename Object_t::Ptr_t make(const std::string& _name, const boost::property_tree::ptree& _pt)
             {
-                typename Object_t::Ptr_t newObject = std::make_shared<Object_t>(_name);
+                typename Object_t::Ptr_t newObject{ std::make_shared<Object_t>(_name) };
                 newObject->initFromPropertyTree(_pt);
                 return newObject;
             }
 
             /// \brief Initializes object with data from XML file.
-            /// \param[in] _name Name of the object as in input file.
             /// \param[in] _filepath Path to the topology file.
             /// \param[in] _schemaFilepath Path to the XSD schema file.
             /// \param[out] _topologyName Topology name.
             /// \throw std::runtime_error.
             void initFromXML(const std::string& _filepath,
+                             const std::string& _schemaFilepath = "",
+                             std::string* _topologyName = nullptr);
+
+            /// \brief Initializes object with data from XML input stream.
+            /// \param[in] _stream Input stream.
+            /// \param[in] _schemaFilepath Path to the XSD schema file.
+            /// \param[out] _topologyName Topology name.
+            /// \throw std::runtime_error.
+            void initFromXML(std::istream& _stream,
                              const std::string& _schemaFilepath = "",
                              std::string* _topologyName = nullptr);
 
