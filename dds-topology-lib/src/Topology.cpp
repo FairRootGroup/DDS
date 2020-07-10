@@ -73,6 +73,16 @@ const STopoRuntimeCollection& CTopology::getRuntimeCollectionByIdPath(const stri
     return m_topo->getRuntimeCollectionByIdPath(_idPath);
 }
 
+const STopoRuntimeTask& CTopology::getRuntimeTask(const std::string& _path) const
+{
+    return m_topo->getRuntimeTask(_path);
+}
+
+const STopoRuntimeCollection& CTopology::getRuntimeCollection(const std::string& _path) const
+{
+    return m_topo->getRuntimeCollection(_path);
+}
+
 STopoRuntimeTask::FilterIteratorPair_t CTopology::getRuntimeTaskIterator(STopoRuntimeTask::Condition_t _condition) const
 {
     return m_topo->getRuntimeTaskIterator(_condition);

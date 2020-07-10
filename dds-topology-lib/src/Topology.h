@@ -70,6 +70,14 @@ namespace dds
             /// \param[in] _idPath Runtime collection path in the topology.
             const STopoRuntimeCollection& getRuntimeCollectionByIdPath(const std::string& _idPath) const;
 
+            /// \brief Returns runtime task by either ID or runtime path.
+            /// \param[in] _path Either ID or runtime path.
+            const STopoRuntimeTask& getRuntimeTask(const std::string& _path) const;
+
+            /// \brief Returns runtime collection by either ID or runtime path.
+            /// \param[in] _path Either ID or runtime path.
+            const STopoRuntimeCollection& getRuntimeCollection(const std::string& _path) const;
+
             /// \brief Returns runtime task filter iterator.
             /// \param[in] _condition If provided than iterate over tasks passed the condition.
             STopoRuntimeTask::FilterIteratorPair_t getRuntimeTaskIterator(

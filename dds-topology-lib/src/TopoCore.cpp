@@ -15,6 +15,7 @@
 #include "CRC.h"
 // BOOST
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/regex.hpp>
@@ -244,6 +245,38 @@ const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionByIdPath(const std:
     if (it == m_collectionIdPathToIdMap.end())
         throw runtime_error("Can not find collection with path ID " + _idPath);
     return getRuntimeCollectionById(it->second);
+}
+
+const STopoRuntimeTask& CTopoCore::getRuntimeTask(const std::string& _path) const
+{
+    try
+    {
+        // throws boost::bad_lexical_cast if path is not a number
+        uint64_t taskID{ boost::lexical_cast<uint64_t>(_path) };
+        // throws std::runtime_error if ID not found
+        return getRuntimeTaskById(taskID);
+    }
+    catch (boost::bad_lexical_cast&)
+    {
+        // throws std::runtime_error if path not found
+        return getRuntimeTaskByIdPath(_path);
+    }
+}
+
+const STopoRuntimeCollection& CTopoCore::getRuntimeCollection(const std::string& _path) const
+{
+    try
+    {
+        // throws boost::bad_lexical_cast if path is not a number
+        uint64_t taskID{ boost::lexical_cast<uint64_t>(_path) };
+        // throws std::runtime_error if ID not found
+        return getRuntimeCollectionById(taskID);
+    }
+    catch (boost::bad_lexical_cast&)
+    {
+        // throws std::runtime_error if path not found
+        return getRuntimeCollectionByIdPath(_path);
+    }
 }
 
 STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIterator(const STopoRuntimeTask::Map_t& _map,
