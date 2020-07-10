@@ -74,10 +74,18 @@ namespace dds
             std::string getFilepath() const;
             uint32_t getHash() const;
             CTopoGroup::Ptr_t getMainGroup() const;
+            /// \brief Returns runtime task by ID.
             const STopoRuntimeTask& getRuntimeTaskById(Id_t _id) const;
+            /// \brief Returns runtime collection by ID.
             const STopoRuntimeCollection& getRuntimeCollectionById(Id_t _id) const;
+            /// \brief Returns runtime task by runtime path.
             const STopoRuntimeTask& getRuntimeTaskByIdPath(const std::string& _idPath) const;
+            /// \brief Returns runtime collection by runtime path.
             const STopoRuntimeCollection& getRuntimeCollectionByIdPath(const std::string& _idPath) const;
+            /// \brief Returns runtime task by either ID or runtime path.
+            const STopoRuntimeTask& getRuntimeTask(const std::string& _path) const;
+            /// \brief Returns runtime collection by either ID or runtime path.
+            const STopoRuntimeCollection& getRuntimeCollection(const std::string& _path) const;
             std::pair<size_t, size_t> getRequiredNofAgents(size_t _defaultNumSlots) const;
             size_t getTotalNofTasks() const;
 

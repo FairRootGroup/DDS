@@ -188,6 +188,78 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_iterators)
 }
 
 template <class T>
+void test_topology_runtime(T& _input)
+{
+    CTopoCore topology;
+    topology.init(_input);
+
+    //
+    // Tasks
+    //
+
+    // Check existing paths
+    for (const auto& v : topology.getTaskIdPathToIdMap())
+    {
+        string path{ v.first };
+        Id_t id{ v.second };
+
+        auto task1{ topology.getRuntimeTask(path) };
+        auto task2{ topology.getRuntimeTask(to_string(id)) };
+        auto task3{ topology.getRuntimeTaskById(id) };
+        auto task4{ topology.getRuntimeTaskByIdPath(path) };
+
+        BOOST_CHECK(task1.m_taskPath == path);
+        BOOST_CHECK(task2.m_taskPath == path);
+        BOOST_CHECK(task3.m_taskPath == path);
+        BOOST_CHECK(task4.m_taskPath == path);
+    }
+
+    // Check non existing paths
+    BOOST_CHECK_THROW(topology.getRuntimeTask("main/wrong_0/task_0/path_1"), runtime_error);
+    BOOST_CHECK_THROW(topology.getRuntimeTask("123456"), runtime_error);
+    BOOST_CHECK_THROW(topology.getRuntimeTaskById(123456), runtime_error);
+    BOOST_CHECK_THROW(topology.getRuntimeTaskByIdPath("main/wrong_0/task_0/path_1"), runtime_error);
+
+    //
+    // Collections
+    //
+
+    // Check existing paths
+    for (const auto& v : topology.getCollectionIdPathToIdMap())
+    {
+        string path{ v.first };
+        Id_t id{ v.second };
+
+        auto c1{ topology.getRuntimeCollection(path) };
+        auto c2{ topology.getRuntimeCollection(to_string(id)) };
+        auto c3{ topology.getRuntimeCollectionById(id) };
+        auto c4{ topology.getRuntimeCollectionByIdPath(path) };
+
+        BOOST_CHECK(c1.m_collectionPath == path);
+        BOOST_CHECK(c2.m_collectionPath == path);
+        BOOST_CHECK(c3.m_collectionPath == path);
+        BOOST_CHECK(c4.m_collectionPath == path);
+    }
+
+    // Check non existing paths
+    BOOST_CHECK_THROW(topology.getRuntimeCollection("main/wrong_0/collection_0/path_1"), runtime_error);
+    BOOST_CHECK_THROW(topology.getRuntimeCollection("123456"), runtime_error);
+    BOOST_CHECK_THROW(topology.getRuntimeCollectionById(123456), runtime_error);
+    BOOST_CHECK_THROW(topology.getRuntimeCollectionByIdPath("main/wrong_0/collection_0/path_1"), runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_runtime)
+{
+    // Test file input
+    string topoFile("topology_test_1.xml");
+    test_topology_runtime(topoFile);
+
+    // Test stream input
+    ifstream topoStream(topoFile);
+    test_topology_runtime(topoStream);
+}
+
+template <class T>
 void test_topology_parser_xml(const string& _filename)
 {
     T input(_filename);
