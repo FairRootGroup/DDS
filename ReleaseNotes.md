@@ -5,6 +5,7 @@
 ### dds-topology
 Added: new std::istream based APIs.    
 Added: new CTopology::getRuntimeTask and CTopology::getRuntimeCollection methods which take either ID or runtime path as input.    
+Added:  task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.    
 
 
 ## v3.4 (2020-07-01)

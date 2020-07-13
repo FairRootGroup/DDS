@@ -107,19 +107,12 @@ namespace dds
             typedef std::pair<STopoRuntimeTask::FilterIterator_t, STopoRuntimeTask::FilterIterator_t>
                 FilterIteratorPair_t;
 
-            STopoRuntimeTask()
-                : m_task(nullptr)
-                , m_taskIndex(0)
-                , m_collectionIndex(std::numeric_limits<uint32_t>::max())
-                , m_taskPath()
-                , m_taskCollectionId(0)
-            {
-            }
-            CTopoTask::Ptr_t m_task;
-            size_t m_taskIndex;
-            size_t m_collectionIndex;
+            CTopoTask::Ptr_t m_task{ nullptr };
+            Id_t m_taskId{ 0 };
+            size_t m_taskIndex{ 0 };
+            size_t m_collectionIndex{ std::numeric_limits<uint32_t>::max() };
             std::string m_taskPath;
-            Id_t m_taskCollectionId;
+            Id_t m_taskCollectionId{ 0 };
         };
     } // namespace topology_api
 } // namespace dds
