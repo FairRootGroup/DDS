@@ -64,14 +64,9 @@ namespace dds
             typedef std::pair<STopoRuntimeCollection::FilterIterator_t, STopoRuntimeCollection::FilterIterator_t>
                 FilterIteratorPair_t;
 
-            STopoRuntimeCollection()
-                : m_collection(nullptr)
-                , m_collectionIndex(0)
-                , m_collectionPath()
-            {
-            }
-            CTopoCollection::Ptr_t m_collection;
-            size_t m_collectionIndex;
+            CTopoCollection::Ptr_t m_collection{ nullptr };
+            Id_t m_collectionId{ 0 };
+            size_t m_collectionIndex{ 0 };
             std::string m_collectionPath;
             STopoRuntimeTask::Map_t m_idToRuntimeTaskMap; ///< Map of task ID to STopoRuntimeTask
         };

@@ -411,6 +411,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
 
         STopoRuntimeTask info;
         info.m_task = task;
+        info.m_taskId = crc;
         info.m_taskIndex = index;
         info.m_collectionIndex = collectionCounter;
         info.m_taskPath = idPath;
@@ -448,6 +449,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
 
         STopoRuntimeCollection info;
         info.m_collection = collection;
+        info.m_collectionId = crc;
         info.m_collectionIndex = index;
         info.m_collectionPath = m_currentCollectionIdPath;
         m_idToRuntimeCollectionMap.insert(make_pair(crc, info));
