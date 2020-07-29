@@ -15,6 +15,7 @@
 #include <mutex>
 // BOOST
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/bind.hpp>
 
 #define BEGIN_OCTOPUS_MSG_MAP(name)                                                                   \
     std::string _name() const                                                                         \
