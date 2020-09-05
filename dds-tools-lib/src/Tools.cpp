@@ -542,3 +542,8 @@ template void CSession::waitForNumAgents<CSession::EAgentState::executing>(size_
                                                                            const std::chrono::seconds&,
                                                                            const std::chrono::milliseconds&,
                                                                            ostream*);
+
+std::string CSession::userDefaultsGetValueForKey(const std::string& _key) const noexcept
+{
+    return CUserDefaults::instance().getValueForKey(_key);
+}

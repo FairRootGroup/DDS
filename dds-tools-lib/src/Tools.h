@@ -132,6 +132,26 @@ namespace dds
          session.shutdown();
          * \endcode
          *
+         *
+         * \par Example4: DDS User defaults. Retrieving DDS log directory on the commander server within an active
+         session.
+         * \code
+         *  CSession session;
+         *  boost::uuids::uuid sid = session.create();
+         *  cout << session.userDefaultsGetValueForKey("server.log_dir").empty() << endl;
+         * \endcode
+         * \verbatim
+         * $HOME/.DDS/log/sessions/b383d852-19a7-4ac5-9cbe-dc00d686d36f
+         * \endverbatim
+         *
+         * \par Example5: DDS User defaults. Retrieving DDS log directory  without attaching to a session.
+         * \code
+         *  CSession session;
+         *  cout << session.userDefaultsGetValueForKey("server.log_dir").empty() << endl;
+         * \endcode
+         * \verbatim
+         * $HOME/.DDS/log
+         * \endverbatim
          */
         class CSession
         {
@@ -232,6 +252,15 @@ namespace dds
                                   const std::chrono::seconds& _timeout = std::chrono::seconds(0),
                                   const std::chrono::milliseconds& _requestInterval = std::chrono::milliseconds(500),
                                   std::ostream* _out = nullptr);
+
+            /// \brief This method returns a configuration value for a given configuration key. It uses the DDS
+            /// configuraiton of the current session. \note Please note, if the session is not created/attached then
+            /// keys, whihc depoend on sessions, will return values without session IDs. see. Example4 and Example5
+            /// \param[in] _key  Configuration key. For example, to get the current working directory on the commander
+            /// server use "server.work_dir". Currently support configuration keys can be found in the User's manual
+            /// "Chapter 5. Configuration". \return A string value of the given configuration key or an empty string if
+            /// the key is invalid. \throw Doesn't throw
+            std::string userDefaultsGetValueForKey(const std::string& _key) const noexcept;
 
           private:
             /// \brief Subscribe to custom commands.

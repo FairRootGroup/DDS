@@ -266,4 +266,27 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_inf)
     }
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_user_defaults_with_session)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    CSession session;
+    boost::uuids::uuid sid = session.create();
+    BOOST_CHECK(!sid.is_nil());
+    BOOST_CHECK(!session.userDefaultsGetValueForKey("server.work_dir").empty());
+    BOOST_CHECK(session.userDefaultsGetValueForKey("bad_key").empty());
+    BOOST_CHECK(!session.userDefaultsGetValueForKey("server.log_dir")
+                     .empty()); // expected value: $HOME/.DDS/log/sessions/b383d852-19a7-4ac5-9cbe-dc00d686d36f
+    session.shutdown();
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_user_defaults_without_session)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    CSession session;
+    BOOST_CHECK(!session.userDefaultsGetValueForKey("server.work_dir").empty());
+    BOOST_CHECK(!session.userDefaultsGetValueForKey("server.log_dir").empty()); // expected value: $HOME/.DDS/log
+}
+
 BOOST_AUTO_TEST_SUITE_END()
