@@ -138,7 +138,7 @@ namespace dds
          * \code
          *  CSession session;
          *  boost::uuids::uuid sid = session.create();
-         *  cout << session.userDefaultsGetValueForKey("server.log_dir").empty() << endl;
+         *  cout << session.userDefaultsGetValueForKey("server.log_dir") << endl;
          * \endcode
          * \verbatim
          output> $HOME/.DDS/log/sessions/b383d852-19a7-4ac5-9cbe-dc00d686d36f
@@ -147,7 +147,7 @@ namespace dds
          * \par Example5: DDS User defaults. Retrieving DDS log directory  without attaching to a session.
          * \code
          *  CSession session;
-         *  cout << session.userDefaultsGetValueForKey("server.log_dir").empty() << endl;
+         *  cout << session.userDefaultsGetValueForKey("server.log_dir") << endl;
          * \endcode
          * \verbatim
          output> $HOME/.DDS/log
