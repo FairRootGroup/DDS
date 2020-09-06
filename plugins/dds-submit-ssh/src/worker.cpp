@@ -83,6 +83,9 @@ bool CWorker::run(ETaskType _param)
 //=============================================================================
 bool CWorker::exec_command(const string& _cmd) const
 {
+    if (_cmd.empty())
+        return false;
+
     log(_cmd);
     string outPut;
     int nExitCode(0);
