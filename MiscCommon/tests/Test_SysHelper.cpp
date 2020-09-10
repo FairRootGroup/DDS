@@ -7,6 +7,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_AUTO_TEST_MAIN // Boost 1.33
 #define BOOST_TEST_MAIN
+#include <boost/filesystem.hpp>
 #include <boost/test/auto_unit_test.hpp>
 // STD
 #include <fstream>
@@ -122,7 +123,8 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_smart_path9)
 BOOST_AUTO_TEST_CASE(test_file_size0)
 {
     // Creating test file
-    const string filename("test_file_size.txt");
+    boost::filesystem::path tmpFilename{ boost::filesystem::temp_directory_path() / boost::filesystem::unique_path() };
+    const string filename(tmpFilename.string());
     ofstream f(filename.c_str());
     const off_t size = 1000;
     const string buf(size, 'A');
