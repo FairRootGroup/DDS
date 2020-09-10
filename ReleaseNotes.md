@@ -2,6 +2,9 @@
 
 ## v3.6 (NOT YET RELEASED)
 
+### DDS common
+Removed: obsolete test project. ODC is used as an integration platform for DDS.    
+
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   
 ### dds-topology
