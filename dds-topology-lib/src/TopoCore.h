@@ -32,6 +32,9 @@ namespace dds
             /// Task/Collection ID path  to Task/Collection ID map
             using IdPathToIdMap_t = std::map<std::string, Id_t>;
 
+            /// std::shared_ptr
+            using Ptr_t = std::shared_ptr<CTopoCore>;
+
           public:
             /// \brief Constructor.
             CTopoCore();
