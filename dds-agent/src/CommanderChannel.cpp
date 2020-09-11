@@ -253,10 +253,10 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
 
             // Activating new topology
-            CTopoCore topo;
+            CTopoCore::Ptr_t topo{ make_shared<CTopoCore>() };
             // Topology already validated on the commander, no need to validate it again
-            topo.setXMLValidationDisabled(true);
-            topo.init(destFilePath.string());
+            topo->setXMLValidationDisabled(true);
+            topo->init(destFilePath.string());
             // Assign new topology
             {
                 std::lock_guard<std::mutex> lock(m_topoMutex);
@@ -396,7 +396,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
         uint32_t topoHash{ 0 };
         {
             std::lock_guard<std::mutex> lock(m_topoMutex);
-            topoHash = m_topo.getHash();
+            topoHash = m_topo->getHash();
         }
         if (topoHash != _attachment->m_topoHash)
         {
@@ -1012,10 +1012,19 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
         string propertyName(_attachment->m_propertyName);
         uint64_t taskID(_attachment->m_senderTaskID);
 
+        // Store a local pointer to the topology in order to keep it in memory.
+        // If the global m_topo goes out of scope, for instance, during the topology update, old topology will still be
+        // in memory.
+        CTopoCore::Ptr_t topo{ nullptr };
+        {
+            std::lock_guard<std::mutex> lock(m_topoMutex);
+            topo = m_topo;
+        }
+
         CTopoTask::Ptr_t task;
         {
             std::lock_guard<std::mutex> lock(m_topoMutex);
-            task = m_topo.getRuntimeTaskById(taskID).m_task;
+            task = topo->getRuntimeTaskById(taskID).m_task;
         }
         auto property = task->getProperty(propertyName);
         // Property doesn't exists for task
@@ -1053,7 +1062,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
         STopoRuntimeTask::FilterIteratorPair_t taskIt;
         {
             std::lock_guard<std::mutex> lock(m_topoMutex);
-            taskIt = m_topo.getRuntimeTaskIteratorForPropertyName(propertyName, taskID);
+            taskIt = topo->getRuntimeTaskIteratorForPropertyName(propertyName, taskID);
         }
 
         for (auto it = taskIt.first; it != taskIt.second; ++it)
@@ -1067,7 +1076,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             CTopoTask::Ptr_t task;
             {
                 std::lock_guard<std::mutex> lock(m_topoMutex);
-                task = m_topo.getRuntimeTaskById(receiverTaskID).m_task;
+                task = topo->getRuntimeTaskById(receiverTaskID).m_task;
             }
 
             auto property = task->getProperty(propertyName);
