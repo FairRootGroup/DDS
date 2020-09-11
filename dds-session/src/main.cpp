@@ -125,13 +125,20 @@ int main(int argc, char* argv[])
             CStart start;
             start.start(options.m_bMixed);
 
-            vector<fs::path> session_dirs;
-            StringVector_t sessions;
-            rebuildSessions(session_dirs, sessions);
-            setDefaultSession(sessions, start.getSessionID());
-            LOG(log_stdout_clean) << "Default DDS session is set to " << start.getSessionID();
-            LOG(log_stdout_clean) << "Currently running DDS sessions:";
-            listSessions(session_dirs, SSessionsSorting::sort_running);
+            try
+            {
+                vector<fs::path> session_dirs;
+                StringVector_t sessions;
+                rebuildSessions(session_dirs, sessions);
+                setDefaultSession(sessions, start.getSessionID());
+                LOG(log_stdout_clean) << "Default DDS session is set to " << start.getSessionID();
+                LOG(log_stdout_clean) << "Currently running DDS sessions:";
+                listSessions(session_dirs, SSessionsSorting::sort_running);
+            }
+            catch (exception& e)
+            {
+                LOG(warning) << "Failed to perform checks after commander started: " << e.what();
+            }
 
             return EXIT_SUCCESS;
         }
