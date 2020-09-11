@@ -30,7 +30,7 @@ void createDDS(CSession& _session)
     boost::uuids::uuid sid;
     BOOST_CHECK_NO_THROW(sid = _session.create());
     BOOST_CHECK(!sid.is_nil());
-    BOOST_CHECK(CSession::getDefaultSessionID() == sid);
+    // BOOST_CHECK(CSession::getDefaultSessionID() == sid);
     BOOST_CHECK(_session.IsRunning());
     BOOST_CHECK_THROW(_session.create(), runtime_error);
     BOOST_CHECK_THROW(_session.attach(sid), runtime_error);
