@@ -153,8 +153,12 @@ int main(int argc, char* argv[])
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
-            if (IsProcessRunning(pid_to_kill))
-                LOG(log_stderr) << "FAILED to close the process.";
+            if (MiscCommon::IsProcessRunning(pid_to_kill))
+            {
+                LOG(MiscCommon::error) << "FAILED to close the process.";
+                LOG(MiscCommon::warning) << "Sending unconditional terminate to (" << pid_to_kill << ")...";
+                kill(pid_to_kill, SIGKILL);
+            }
         }
 
         return EXIT_SUCCESS;

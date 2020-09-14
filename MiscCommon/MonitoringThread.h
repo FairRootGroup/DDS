@@ -188,7 +188,11 @@ namespace dds
                     ++iter;
                 }
                 if (MiscCommon::IsProcessRunning(pidToKill))
+                {
                     LOG(MiscCommon::error) << "FAILED to close the process.";
+                    LOG(MiscCommon::warning) << "Sending unconditional terminate to (" << pidToKill << ")...";
+                    kill(pidToKill, SIGKILL);
+                }
             }
         }
 
