@@ -410,11 +410,11 @@ void CIntercomServiceCore::waitCondition()
         LOG(error) << "waitCondition: Agent connection channel is not running.";
         return;
     }
-    unique_lock<mutex> lock(m_waitMutex);
-    m_waitCondition.wait_until(lock, std::chrono::system_clock::now() + std::chrono::minutes(10));
+    m_waitCondition.reset();
+    m_waitCondition.waitUntil(std::chrono::system_clock::now() + std::chrono::minutes(10));
 }
 
 void CIntercomServiceCore::stopCondition()
 {
-    m_waitCondition.notify_all();
+    m_waitCondition.notifyAll();
 }

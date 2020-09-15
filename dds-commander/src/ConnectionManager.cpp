@@ -348,8 +348,8 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     }
 
     // Wait until all replies are received
-    unique_lock<mutex> conditionLock(m_updateTopoMutex);
-    m_updateTopoCondition.wait(conditionLock);
+    m_updateTopoCondition.reset();
+    m_updateTopoCondition.wait();
 }
 
 void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
@@ -523,7 +523,7 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
             }
             if (m_updateTopology.allReceived())
             {
-                m_updateTopoCondition.notify_all();
+                m_updateTopoCondition.notifyAll();
             }
             return;
         }
@@ -549,7 +549,7 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
             }
             if (m_updateTopology.allReceived())
             {
-                m_updateTopoCondition.notify_all();
+                m_updateTopoCondition.notifyAll();
             }
             return;
         }
@@ -577,7 +577,7 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
             }
             if (m_updateTopology.allReceived())
             {
-                m_updateTopoCondition.notify_all();
+                m_updateTopoCondition.notifyAll();
             }
             return;
         }
@@ -594,7 +594,7 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
             }
             if (m_updateTopology.allReceived())
             {
-                m_updateTopoCondition.notify_all();
+                m_updateTopoCondition.notifyAll();
             }
             return;
         }

@@ -6,6 +6,7 @@
 #define __DDS__ConnectionManager__
 // DDS
 #include "AgentChannel.h"
+#include "ConditionEvent.h"
 #include "ConnectionManagerImpl.h"
 #include "Options.h"
 #include "SSHScheduler.h"
@@ -13,7 +14,6 @@
 #include "TopoCore.h"
 #include "UIChannelInfo.h"
 // STD
-#include <condition_variable>
 #include <mutex>
 
 namespace dds
@@ -145,8 +145,7 @@ namespace dds
             TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
             std::mutex m_mapMutex;
 
-            std::mutex m_updateTopoMutex;
-            std::condition_variable m_updateTopoCondition;
+            MiscCommon::CConditionEvent m_updateTopoCondition;
 
             // Statistic on/off flag
             bool m_statEnabled;
