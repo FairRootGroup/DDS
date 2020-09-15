@@ -151,6 +151,7 @@ void CSession::attach(const boost::uuids::uuid& _sid)
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(boost::uuids::to_string(m_impl->m_sid)),
                                      CUserDefaults::instance().currentUDFile());
+    Logger::instance().reinit();
 
     // Subscribe to custom commands after the DDS session has been attached
     subscribe();
