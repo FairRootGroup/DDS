@@ -35,6 +35,13 @@ namespace MiscCommon
             return m_condition.wait_for(lock, _relTime, [&]() { return m_bFlag; });
         }
 
+        template <class Clock, class Duration>
+        bool waitUntil(const std::chrono::time_point<Clock, Duration>& _timeoutTime)
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            return m_condition.wait_until(lock, _timeoutTime, [&]() { return m_bFlag; });
+        }
+
         void notifyAll()
         {
             {

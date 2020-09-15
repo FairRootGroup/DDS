@@ -6,6 +6,7 @@
 #define DDS_INTERCOM_SERVICE_CORE_H
 // DDS
 #include "AgentChannel.h"
+#include "ConditionEvent.h"
 #include "IntercomErrorCodes.h"
 #include "SMAgentChannel.h"
 // STD
@@ -126,8 +127,7 @@ namespace dds
             /// 1) 10 minutes timeout
             /// 2) Failed connection or disconnection
             /// 3) Explicit call to stopCondition
-            std::mutex m_waitMutex;
-            std::condition_variable m_waitCondition;
+            MiscCommon::CConditionEvent m_waitCondition;
         };
     } // namespace internal_api
 } // namespace dds
