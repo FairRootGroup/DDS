@@ -4,7 +4,7 @@
 
 ### DDS common
 Removed: obsolete test project. ODC is used as an integration platform for DDS.    
-Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentaion fault.    
+Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentation fault.    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   
@@ -13,6 +13,9 @@ Added: CSession::userDefaultsGetValueForKey - returns a configuration value for 
 Added: new std::istream based APIs.    
 Added: new CTopology::getRuntimeTask and CTopology::getRuntimeCollection methods which take either ID or runtime path as input.    
 Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.    
+
+### dds-session
+Modified: improved default SID storage and handling. (GH-318)      
 
 ## v3.4 (2020-07-01)
 

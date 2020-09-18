@@ -530,7 +530,7 @@ string CUserDefaults::getSessionsRootDir() const
     return val;
 }
 
-string CUserDefaults::getDefaultSIDFile() const
+string CUserDefaults::getDefaultSIDLinkName() const
 {
     string val(getSessionsRootDir());
     val += "default.sid";
@@ -539,28 +539,62 @@ string CUserDefaults::getDefaultSIDFile() const
 
 string CUserDefaults::getDefaultSID() const
 {
-    // Check whether users have defined DDS_SESSION_ID environment variable
-    // If defined, use it instead of a default one
-    char* pchDDSSessionID;
-    pchDDSSessionID = getenv("DDS_SESSION_ID");
-    if (pchDDSSessionID != NULL && strlen(pchDDSSessionID) > 0)
+    try
     {
-        string sDDSSessionID(pchDDSSessionID);
-        return sDDSSessionID;
+        // Check whether users have defined DDS_SESSION_ID environment variable
+        // If defined, use it instead of a default one
+        char* pchDDSSessionID;
+        pchDDSSessionID = getenv("DDS_SESSION_ID");
+        if (pchDDSSessionID != NULL && strlen(pchDDSSessionID) > 0)
+        {
+            string sDDSSessionID(pchDDSSessionID);
+            return sDDSSessionID;
+        }
+
+        // Get the default SID
+        fs::path defaultSidLink(getDefaultSIDLinkName());
+        if (!fs::exists(defaultSidLink) || !fs::is_symlink(defaultSidLink))
+            return string();
+
+        fs::path linkToPath(fs::read_symlink(defaultSidLink));
+        if (linkToPath.empty())
+            return string();
+
+        boost::uuids::uuid sid = boost::uuids::string_generator()(linkToPath.filename().string());
+
+        if (sid.is_nil())
+            return string();
+
+        return boost::lexical_cast<string>(sid);
     }
-
-    // Get the default SID
-    std::string sidFile = getDefaultSIDFile();
-    if (sidFile.empty())
+    catch (...)
+    {
         return string();
+    }
+}
 
-    if (!boost::filesystem::is_regular_file(sidFile))
-        return string();
-    string sid;
-    ifstream f(sidFile);
-    f >> sid;
+void CUserDefaults::setDefaultSID(const boost::uuids::uuid& _sid) const noexcept
+{
+    if (_sid.is_nil())
+        return;
 
-    return sid;
+    string sessionID = boost::lexical_cast<string>(_sid);
+    try
+    {
+        string sessionDir(getSessionsRootDir());
+        addSessionIDtoPath(sessionDir);
+        fs::path linkTo(sessionDir);
+        fs::path linkFrom(getDefaultSIDLinkName());
+
+        boost::system::error_code ec;
+        // ignore errors during removal
+        fs::remove(linkFrom, ec);
+        // create a new symbolic link to the default SID
+        fs::create_directory_symlink(linkTo, linkFrom);
+    }
+    catch (...)
+    {
+    }
 }
 
 string CUserDefaults::getSessionsHolderDirName() const

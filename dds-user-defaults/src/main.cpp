@@ -182,9 +182,9 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
         return false;
     }
 
-    if (vm.count("default-session-id-file"))
+    if (vm.count("default-session-id-link-name"))
     {
-        cout << CUserDefaults::instance().getDefaultSIDFile() << endl;
+        cout << CUserDefaults::instance().getDefaultSIDLinkName() << endl;
         return false;
     }
 

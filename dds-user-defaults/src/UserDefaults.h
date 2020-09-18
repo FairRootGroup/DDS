@@ -63,8 +63,9 @@ namespace dds
             std::string getSIDFile() const;
             std::string getLockedSID() const;
             std::string getCurrentSID() const;
-            std::string getDefaultSIDFile() const;
+            std::string getDefaultSIDLinkName() const;
             std::string getDefaultSID() const;
+            void setDefaultSID(const boost::uuids::uuid& _sid) const noexcept;
             std::string getSessionsRootDir() const;
             std::string getSessionsHolderDirName() const;
             bool IsSessionRunning() const;

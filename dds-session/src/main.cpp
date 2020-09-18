@@ -40,12 +40,7 @@ void setDefaultSession(const StringVector_t& _sessions, const string& _sessionID
         throw runtime_error(ss.str());
     }
 
-    ofstream f(CUserDefaults::instance().getDefaultSIDFile());
-    if (!f.is_open())
-        throw runtime_error("Failed to set default session.");
-
-    f << _sessionID;
-    f.close();
+    CUserDefaults::instance().setDefaultSID(boost::uuids::string_generator()(_sessionID));
 }
 
 void rebuildSessions(vector<fs::path>& _session_dirs, StringVector_t& _sessions)
