@@ -33,7 +33,12 @@ include(GetPrerequisites)
 		# Skip DDS libs
 		if(NOT ${resolved_file} STREQUAL "@PREREQ_DESTINATION@/${PREREQNAME}")
 			if(${PREREQNAME} MATCHES "^libboost_*")
-				#	file(COPY ${resolved_file} DESTINATION @PREREQ_DESTINATION@)
+				# skip existing files. Fixes GH-323
+				if(EXISTS "@PREREQ_DESTINATION@/${PREREQNAME}")
+					message("DDS Commander prerequisite: creating a symlink: destination exists. SKIPPING: @PREREQ_DESTINATION@/${PREREQNAME}")
+					continue()
+				endif()
+				
 				message("DDS Commander prerequisite: creating a symlink: @PREREQ_DESTINATION@/${PREREQNAME} -> ${resolved_file}")
 				execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${resolved_file} "@PREREQ_DESTINATION@/${PREREQNAME}")
 			else()
