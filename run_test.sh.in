@@ -22,10 +22,17 @@ fi
 
 }
 
-source "$1/DDS_env.sh"
+if [ -z "$1" ]
+then
+   install_dir="@CMAKE_INSTALL_PREFIX@"
+else
+   install_dir="$1"
+fi
+
+source "${install_dir}/DDS_env.sh"
 
 pushd $(pwd)
-cd "$1"/tests
+cd "${install_dir}/tests"
 
 
 echo "Working directory: $(pwd)"
