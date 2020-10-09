@@ -38,12 +38,3 @@ target_link_libraries(${test}
 )
 
 install(TARGETS ${test} DESTINATION tests)
-
-##################################################################
-
-install(FILES
-  topo_test_key-value-1.xml
-  topo_test_key-value-2.xml
-
-  DESTINATION tests
-)
