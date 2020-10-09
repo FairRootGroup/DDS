@@ -29,7 +29,7 @@ namespace bp = boost::process;
 BOOST_AUTO_TEST_SUITE(test_dds_tools_session)
 
 const size_t kDDSNumTestIterations = 3;
-const size_t kDDSNumParallelSessions = 1;
+const size_t kDDSNumParallelSessions = 3;
 
 void createDDS(vector<CSession>& _sessions)
 {

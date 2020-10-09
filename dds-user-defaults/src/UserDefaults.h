@@ -68,9 +68,9 @@ namespace dds
             void setDefaultSID(const boost::uuids::uuid& _sid) const noexcept;
             std::string getSessionsRootDir() const;
             std::string getSessionsHolderDirName() const;
-            bool IsSessionRunning() const;
+            bool IsSessionRunning(const boost::uuids::uuid& _sid = boost::uuids::nil_uuid()) const;
             std::string getCommanderPidFileName() const;
-            std::string getCommanderPidFile() const;
+            std::string getCommanderPidFile(const boost::uuids::uuid& _sid = boost::uuids::nil_uuid()) const;
             std::string getWnBinsDir() const;
             static std::string getTopologyXSDFilePath();
             bool isAgentInstance() const;
@@ -88,6 +88,7 @@ namespace dds
             std::string getUnifiedBoolValueForBoolKey(const std::string& _Key) const;
             std::string getSIDName() const;
             void addSessionIDtoPath(std::string& _path) const;
+            void addSessionIDtoPath(std::string& _path, const boost::uuids::uuid& _sid_) const;
             void setSessionID(const boost::uuids::uuid& _sid);
 
           private:

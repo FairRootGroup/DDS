@@ -15,6 +15,7 @@ namespace dds
         {
             //!< Working folder.
             std::string m_workDir;
+            std::string m_workDir_NoSID; // TODO: remove it once UD supports multiple sessions per instance
             //!< Sandbox folder. The directory is used for worker packages. In case if RMS can't access DDS' working
             // directory
             std::string m_sandboxDir;

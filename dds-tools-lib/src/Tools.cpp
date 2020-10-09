@@ -264,7 +264,10 @@ bool CSession::isDDSAvailable() const
 
 bool CSession::IsRunning() const
 {
-    return CUserDefaults::instance().IsSessionRunning();
+    if (m_impl->m_sid.is_nil())
+        return false;
+
+    return CUserDefaults::instance().IsSessionRunning(m_impl->m_sid);
 }
 
 void CSession::notify(std::istream& _stream)

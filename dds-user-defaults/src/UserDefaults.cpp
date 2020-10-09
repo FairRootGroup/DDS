@@ -122,6 +122,7 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     if (!_get_default)
     {
         // Update paths with sessions ID
+        m_options.m_server.m_workDir_NoSID = m_options.m_server.m_workDir;
         addSessionIDtoPath(m_options.m_server.m_workDir);
         addSessionIDtoPath(m_options.m_server.m_sandboxDir);
         addSessionIDtoPath(m_options.m_server.m_logDir);
@@ -523,6 +524,17 @@ void CUserDefaults::addSessionIDtoPath(std::string& _path) const
     _path = pRet.string();
 }
 
+void CUserDefaults::addSessionIDtoPath(std::string& _path, const boost::uuids::uuid& _sid) const
+{
+    if (_sid.is_nil())
+        return;
+
+    fs::path pRet(_path);
+    pRet /= getSessionsHolderDirName();
+    pRet /= boost::lexical_cast<string>(_sid);
+    _path = pRet.string();
+}
+
 string CUserDefaults::getSessionsRootDir() const
 {
     string val("$HOME/.DDS/");
@@ -607,9 +619,19 @@ string CUserDefaults::getCommanderPidFileName() const
     return "dds-commander.pid";
 }
 
-string CUserDefaults::getCommanderPidFile() const
+string CUserDefaults::getCommanderPidFile(const boost::uuids::uuid& _sid) const
 {
-    string sWorkDir(CUserDefaults::instance().getOptions().m_server.m_workDir);
+    string sWorkDir;
+
+    // TODO: Can be simplified once UD supports multiple sessions per instance
+    if (_sid.is_nil())
+        sWorkDir = CUserDefaults::instance().getOptions().m_server.m_workDir;
+    else
+    {
+        sWorkDir = CUserDefaults::instance().getOptions().m_server.m_workDir_NoSID;
+        addSessionIDtoPath(sWorkDir, _sid);
+    }
+
     smart_path(&sWorkDir);
     fs::path pathPidFile(sWorkDir);
     pathPidFile /= CUserDefaults::instance().getCommanderPidFileName();
@@ -636,11 +658,11 @@ bool CUserDefaults::isAgentInstance() const
     return fs::exists(pathFile);
 }
 
-bool CUserDefaults::IsSessionRunning() const
+bool CUserDefaults::IsSessionRunning(const boost::uuids::uuid& _sid) const
 {
     bool bRunning(false);
 
-    fs::path pathPidFile(CUserDefaults::instance().getCommanderPidFile());
+    fs::path pathPidFile(CUserDefaults::instance().getCommanderPidFile(_sid));
 
     if (!fs::is_regular_file(pathPidFile))
         return bRunning;
