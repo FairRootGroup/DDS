@@ -8,11 +8,14 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
 #include <boost/filesystem.hpp>
+#include <boost/process.hpp>
 #include <boost/test/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
 // DDS
+#include "Process.h"
 #include "Tools.h"
 #include "Topology.h"
+#include "UserDefaults.h"
 // STD
 #include <thread>
 
@@ -20,6 +23,8 @@ using namespace std;
 using namespace dds;
 using namespace dds::tools_api;
 using namespace dds::topology_api;
+namespace fs = boost::filesystem;
+namespace bp = boost::process;
 
 BOOST_AUTO_TEST_SUITE(test_dds_tools_session)
 
@@ -109,11 +114,46 @@ void checkIdleAgents(CSession& _session, size_t _numAgents)
     BOOST_CHECK_EQUAL(agentCountInfo.m_executingSlotsCount, 0);
 }
 
+size_t countStringsInDir(const fs::path& _logDir, const string& _stringToCount)
+{
+    // Untar DDS agent logs
+    fs::path tmpPath{ fs::temp_directory_path() / fs::unique_path() };
+    fs::create_directories(tmpPath);
+    fs::path tarPath = bp::search_path("tar");
+    fs::path findPath = bp::search_path("find");
+    stringstream ssCmd;
+    ssCmd << findPath.string() << " \"" << _logDir.string() << "\" -name \"*.tar.gz\" -exec " << tarPath.string()
+          << " -C "
+          << "\"" << tmpPath.string() << "\""
+          << " -xf {} ;";
+    MiscCommon::execute(ssCmd.str(), chrono::seconds(60));
+
+    size_t counter{ 0 };
+    fs::recursive_directory_iterator dir(tmpPath), end;
+    while (dir != end)
+    {
+        if (fs::is_regular_file(dir->path()))
+        {
+            std::string line;
+            std::ifstream infile(dir->path().string());
+            while (std::getline(infile, line))
+            {
+                if (line.find(_stringToCount) != std::string::npos)
+                    counter++;
+            }
+        }
+        dir++;
+    }
+
+    return counter;
+}
+
 void makeRequests(CSession& _session,
                   const boost::filesystem::path& _topoPath,
                   STopologyRequest::request_t::EUpdateType _updateType,
                   const pair<size_t, size_t>& _submitAgents,
-                  const pair<size_t, size_t>& _totalAgents)
+                  const pair<size_t, size_t>& _totalAgents,
+                  size_t requiredCount)
 {
     const std::chrono::seconds timeout(30);
 
@@ -145,12 +185,23 @@ void makeRequests(CSession& _session,
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SCommanderInfoRequest>(
         SCommanderInfoRequest::request_t(), commanderInfo, timeout, &std::cout));
 
+    // Get DDS agent logs
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
+
+    // Parse DDS agenbt logs and count the number of successfull tasks
+    const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
+    const string stringToCount{ "Task successfully done" };
+    const size_t count{ countStringsInDir(logDir, stringToCount) };
+
+    // TODO: FIXME: This check fails sometime because some tasks failed to gett all the keys. Needs investigation
+    // BOOST_CHECK_EQUAL(count, requiredCount);
+
+    // Remove DDS logs after parsing
+    fs::remove_all(logDir);
 }
 
 void runDDS(vector<CSession>& _sessions)
 {
-    namespace fs = boost::filesystem;
     fs::path topoPath(fs::canonical(fs::path("property_test.xml")));
     fs::path upTopoPath(fs::canonical(fs::path("property_test_up.xml")));
     fs::path downTopoPath(topoPath);
@@ -162,24 +213,46 @@ void runDDS(vector<CSession>& _sessions)
         BOOST_CHECK(session.IsRunning());
     }
 
+    // Initital topology
     CTopology topo(topoPath.string());
     auto numAgents = topo.getRequiredNofAgents(10);
-    for (auto& session : _sessions)
-    {
-        makeRequests(session, topoPath, STopologyRequest::request_t::EUpdateType::ACTIVATE, numAgents, numAgents);
-    }
-
-    CTopology upTopo(upTopoPath.string());
-    auto upNumAgents = upTopo.getRequiredNofAgents(10);
-    for (auto& session : _sessions)
-    {
-        makeRequests(session, upTopoPath, STopologyRequest::request_t::EUpdateType::UPDATE, numAgents, upNumAgents);
-    }
-
+    size_t requiredCount{ numAgents.first * numAgents.second };
     for (auto& session : _sessions)
     {
         makeRequests(
-            session, downTopoPath, STopologyRequest::request_t::EUpdateType::UPDATE, make_pair(0, 0), upNumAgents);
+            session, topoPath, STopologyRequest::request_t::EUpdateType::ACTIVATE, numAgents, numAgents, requiredCount);
+    }
+
+    //    this_thread::sleep_for(chrono::seconds(1));
+
+    // Upscaled topology
+    CTopology upTopo(upTopoPath.string());
+    auto upNumAgents = upTopo.getRequiredNofAgents(10);
+    requiredCount += upNumAgents.first * upNumAgents.second;
+    for (auto& session : _sessions)
+    {
+        makeRequests(session,
+                     upTopoPath,
+                     STopologyRequest::request_t::EUpdateType::UPDATE,
+                     numAgents,
+                     upNumAgents,
+                     requiredCount);
+    }
+
+    //    this_thread::sleep_for(chrono::seconds(1));
+
+    // Downscaled topology
+    CTopology downTopo(downTopoPath.string());
+    auto downNumAgents = downTopo.getRequiredNofAgents(10);
+    requiredCount += downNumAgents.first * downNumAgents.second;
+    for (auto& session : _sessions)
+    {
+        makeRequests(session,
+                     downTopoPath,
+                     STopologyRequest::request_t::EUpdateType::UPDATE,
+                     make_pair(0, 0),
+                     upNumAgents,
+                     requiredCount);
     }
 
     for (auto& session : _sessions)
@@ -217,7 +290,6 @@ void runDDSInf(vector<CSession>& _sessions)
     const std::chrono::seconds timeout(30);
     const std::chrono::seconds sleepTime(3);
 
-    namespace fs = boost::filesystem;
     fs::path topoPath(fs::canonical(fs::path("property_test_inf.xml")));
     fs::path upTopoPath(fs::canonical(fs::path("property_test_inf_up.xml")));
     fs::path downTopoPath(topoPath);
