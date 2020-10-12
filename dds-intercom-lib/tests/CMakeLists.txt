@@ -26,15 +26,24 @@ install(TARGETS ${test} DESTINATION tests)
 # task-test_key_value
 ##################################################################
 
-set(test task-test_key_value)
-
-add_executable(${test} task-test_key_value.cpp)
-
-target_link_libraries(${test}
+add_executable(task-test_key_value task-test_key_value.cpp)
+target_link_libraries(task-test_key_value
   PUBLIC
   dds_intercom_lib
   dds_topology_lib
   Boost::boost
 )
+install(TARGETS task-test_key_value DESTINATION tests)
 
-install(TARGETS ${test} DESTINATION tests)
+##################################################################
+# task-test_custom_cmd
+##################################################################
+
+add_executable(task-test_custom_cmd task-test_custom_cmd.cpp)
+target_link_libraries(task-test_custom_cmd
+  PUBLIC
+  dds_intercom_lib
+  dds_topology_lib
+  Boost::boost
+)
+install(TARGETS task-test_custom_cmd DESTINATION tests)
