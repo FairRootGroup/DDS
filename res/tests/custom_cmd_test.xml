@@ -1,0 +1,15 @@
+<topology name="CustomCmdTest">
+	
+	<var name="nInstances" value="5" />
+	
+  	<decltask name="TaskCustomCmd">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_custom_cmd</exe>
+	</decltask>
+	
+	<main name="main">
+		<group name="GroupCustomCmd" n="${nInstances}">
+			<task>TaskCustomCmd</task>
+		</group>
+	</main>
+	
+</topology>

@@ -23,6 +23,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::tools_api;
 using namespace dds::topology_api;
+using namespace dds::intercom_api;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
 
@@ -390,6 +391,137 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_inf)
     for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         runDDSInf(sessions);
+    }
+}
+
+void runIntercom(vector<CSession>& _sessions, vector<CIntercomService>& _services, vector<CCustomCmd>& _customCmds)
+{
+    // Subscribe on Intercom events
+    for (auto& service : _services)
+    {
+        service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
+            // Any error message fails a test
+            BOOST_CHECK(false);
+        });
+    }
+
+    // Subscribe on custom command events
+    for (auto& customCmd : _customCmds)
+    {
+        customCmd.subscribe([](const string& _command, const string& _condition, uint64_t _senderId) {
+            BOOST_CHECK_EQUAL(_command, "ok");
+        });
+    }
+
+    // Start intercom service
+    size_t count{ 0 };
+    for (auto& service : _services)
+    {
+        string sessionID{ to_string(_sessions[count].getSessionID()) };
+        service.start(sessionID);
+        count++;
+    }
+
+    // Send custom commands to each task and to all DDS sessions
+    const size_t numRequests{ 10 };
+    for (size_t i = 0; i < numRequests; i++)
+    {
+        size_t count{ 0 };
+        for (auto& customCmd : _customCmds)
+        {
+            string sessionID{ to_string(_sessions[count].getSessionID()) };
+            customCmd.send(sessionID, "");
+            count++;
+        }
+    }
+
+    for (auto& customCmd : _customCmds)
+    {
+        customCmd.send("exit", "");
+    }
+}
+
+void runDDSCustomCmd(vector<CSession>& _sessions)
+{
+    const std::chrono::seconds timeout(30);
+
+    fs::path topoPath(fs::canonical(fs::path("custom_cmd_test.xml")));
+
+    for (auto& session : _sessions)
+    {
+        boost::uuids::uuid sid = session.create();
+        BOOST_CHECK(!sid.is_nil());
+        BOOST_CHECK(session.IsRunning());
+    }
+
+    // Submit DDS agents
+    CTopology topo(topoPath.string());
+    auto numAgents = topo.getRequiredNofAgents(5);
+    size_t requiredCount{ numAgents.first * numAgents.second };
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = numAgents.first * numAgents.second;
+    for (auto& session : _sessions)
+    {
+        BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
+    }
+
+    for (auto& session : _sessions)
+    {
+        checkIdleAgents(session, requiredCount);
+    }
+
+    // Activate default topology
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = topoPath.string();
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    for (auto& session : _sessions)
+    {
+        BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
+    }
+
+    // DDS Intercom services and custom commands for communication with tasks
+    vector<CIntercomService> services(_sessions.size());
+    vector<CCustomCmd> customCmds;
+    for (auto& service : services)
+    {
+        customCmds.push_back(CCustomCmd(service));
+    }
+    runIntercom(_sessions, services, customCmds);
+
+    // Wait until all tasks are done
+    for (auto& session : _sessions)
+    {
+        checkIdleAgents(session, requiredCount);
+    }
+
+    for (auto& session : _sessions)
+    {
+        session.shutdown();
+        BOOST_CHECK(session.getSessionID().is_nil());
+        BOOST_CHECK(!session.IsRunning());
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult_cc)
+{
+    // Start and stop DDS session multiple times.
+    // Each time create new DDSSession instance.
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        vector<CSession> sessions(kDDSNumParallelSessions);
+        runDDSCustomCmd(sessions);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_cc)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    vector<CSession> sessions(kDDSNumParallelSessions);
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        runDDSCustomCmd(sessions);
     }
 }
 
