@@ -471,6 +471,9 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
         return true;
     }
 
+    // Revoke drain of the write queue to start accept messages
+    m_intercomChannel->drainWriteQueue(false, slot->m_id);
+
     pushMsg<cmdREPLY>(SReplyCmd("User task assigned", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK),
                       _sender.m_ID);
 
@@ -495,9 +498,6 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     }
 
     const SSlotInfo& slot = slot_it->second;
-
-    // Revoke drain of the write queue to start accept messages
-    m_intercomChannel->drainWriteQueue(false, slot.m_id);
 
     string sUsrExe(slot.m_sUsrExe);
 
