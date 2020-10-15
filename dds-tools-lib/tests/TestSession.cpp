@@ -193,9 +193,7 @@ void makeRequests(CSession& _session,
     const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
     const string stringToCount{ "Task successfully done" };
     const size_t count{ countStringsInDir(logDir, stringToCount) };
-
-    // TODO: FIXME: This check fails sometime because some tasks failed to gett all the keys. Needs investigation
-    // BOOST_CHECK_EQUAL(count, requiredCount);
+    BOOST_CHECK_EQUAL(count, requiredCount);
 
     // Remove DDS logs after parsing
     fs::remove_all(logDir);
