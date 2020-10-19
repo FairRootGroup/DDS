@@ -190,7 +190,16 @@ void makeRequests(CSession& _session,
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
 
     // Parse DDS agenbt logs and count the number of successfull tasks
-    const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
+    // const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
+
+    // TODO: FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS sessions
+    // is required.
+    string logDirStr{ "$HOME/.DDS/sessions/" };
+    logDirStr += to_string(_session.getSessionID());
+    logDirStr += "/log/agents";
+    MiscCommon::smart_path(&logDirStr);
+    fs::path logDir{ logDirStr };
+
     const string stringToCount{ "Task successfully done" };
     const size_t count{ countStringsInDir(logDir, stringToCount) };
     BOOST_CHECK_EQUAL(count, requiredCount);
