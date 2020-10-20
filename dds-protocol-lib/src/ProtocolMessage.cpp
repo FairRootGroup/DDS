@@ -135,7 +135,7 @@ string CProtocolMessage::toString() const
 {
     stringstream ss;
     ss << "[" << g_cmdToString[m_header.m_cmd] << "] "
-       << "data size (header+body): " << length() << "\n";
+       << "ID: " << m_header.m_ID << "; CRC: " << m_header.m_crc << "; data size (header+body): " << length() << "\n";
     static const size_t maxDataSize = 128;
     if (m_data.size() > maxDataSize)
     {
