@@ -967,11 +967,6 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         // Add a new task to the watchdog list
         auto& slot = getSlotInfoById(_slotID);
 
-        SUserTaskDoneCmd cmd;
-        cmd.m_exitCode = _exitCode;
-        cmd.m_taskID = slot.m_taskID;
-        pushMsg<cmdUSER_TASK_DONE>(cmd, _slotID);
-
         {
             lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
             m_taskIDToSlotIDMap.erase(slot.m_taskID);
@@ -982,6 +977,12 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
 
         // Drainning the Intercom write queue
         m_intercomChannel->drainWriteQueue(true, _slotID);
+
+        // Notify DDS commander
+        SUserTaskDoneCmd cmd;
+        cmd.m_exitCode = _exitCode;
+        cmd.m_taskID = slot.m_taskID;
+        pushMsg<cmdUSER_TASK_DONE>(cmd, _slotID);
     }
     catch (exception& _e)
     {
