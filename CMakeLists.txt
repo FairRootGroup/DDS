@@ -166,7 +166,7 @@ set(TOPOLOGY_SCHEMA_PATH "${RESOURCE_DIR}/topology.xsd")
 #
 # "additional" files
 #
-SET(DDS_MISC_FILES
+SET(DDS_DOC_FILES
     ${CMAKE_SOURCE_DIR}/LICENSE
     ${CMAKE_SOURCE_DIR}/ReleaseNotes.md
 )
@@ -349,7 +349,7 @@ endif(BUILD_dds_tools_lib)
 #
 # Install
 #
-install(FILES ${DDS_MISC_FILES} DESTINATION .)
+install(FILES ${DDS_DOC_FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/DDS_env.sh DESTINATION .)
 # install bin files
 install(PROGRAMS ${DDS_BIN_FILES} DESTINATION bin)
