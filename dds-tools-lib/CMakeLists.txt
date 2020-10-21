@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME}
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT DDSTargets
-  LIBRARY DESTINATION lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install(FILES ${HEADER_FILES_EXT} DESTINATION "include/dds")
 

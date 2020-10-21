@@ -12,6 +12,10 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
 
+# Set appropriate defaults for install subdirectories.
+# Especially for correct packaging.
+include(GNUInstallDirs)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 # Version
@@ -149,11 +153,11 @@ endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 endif()
 
 #
@@ -504,7 +508,7 @@ INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OP
 if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# WORKAROUND: create destination "lib" directory.
 	# INSTALL SCRIPT is called before any other lib is installed, therefore we need to create a dest. dir.
-	INSTALL(DIRECTORY DESTINATION lib)
+	INSTALL(DIRECTORY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 	INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
 	if( BUILD_TESTS )
 		INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake)
@@ -552,7 +556,7 @@ include(CPack)
 # Generate and install CMake package
 include(CMakePackageConfigHelpers)
 set(PACKAGE_INSTALL_DESTINATION
-  lib/cmake/${PROJECT_NAME}-${DDS_VERSION}
+  ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${DDS_VERSION}
 )
 install(EXPORT ${PROJECT_NAME}Targets
   NAMESPACE ${PROJECT_NAME}::
