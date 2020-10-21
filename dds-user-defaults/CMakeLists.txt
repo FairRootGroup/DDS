@@ -61,7 +61,7 @@ target_link_libraries(dds_user_defaults_lib
 install(TARGETS ${PROJECT_NAME} dds_user_defaults_lib
   EXPORT DDSTargets
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 if(BUILD_TESTS)
