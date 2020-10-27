@@ -14,6 +14,9 @@ cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version to use (default is 17)")
+message(STATUS "Requiring C++${CMAKE_CXX_STANDARD}")
+
 # Version
 #
 # take the version string from git and write it to a version file
@@ -136,15 +139,15 @@ add_compile_definitions(BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING)
 # boost::interprocess mutexes timeout duration.
 add_compile_definitions(BOOST_INTERPROCESS_TIMEOUT_WHEN_LOCKING_DURATION_MS=5000)
 #
-# additional compiler and linker flags for C++11
+# additional compiler and linker flags
 #
 if(APPLE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wthread-safety")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wthread-safety")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 elseif(UNIX)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
-  set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,--enable-new-dtags")
-  set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-Wl,--enable-new-dtags")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+	set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,--enable-new-dtags")
+	set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-Wl,--enable-new-dtags")
 endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
