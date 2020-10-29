@@ -466,7 +466,6 @@ namespace dds
 
                 SSenderInfo sender;
                 sender.m_ID = m_protocolHeaderID;
-                dispatchHandlers(EChannelEvents::OnSMStart, sender);
             }
 
             void stop()

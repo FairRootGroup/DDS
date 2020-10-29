@@ -543,8 +543,6 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         if (::setenv("DDS_SLOT_ID", to_string(slot.m_id).c_str(), 1) == -1)
             throw MiscCommon::system_error("Failed to set up $DDS_SLOT_ID");
 
-        dispatchHandlers<>(EChannelEvents::OnAssignUserTask, _sender);
-
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
 

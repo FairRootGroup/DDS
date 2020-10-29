@@ -20,10 +20,7 @@ namespace dds
             OnRemoteEndDissconnected,
             OnHandshakeOK,
             OnHandshakeFailed,
-            OnAssignUserTask,
-            OnSMStart, ///< Shared memory channel start
-            OnReplyAddSlot,
-            OnChangeChannelInfo
+            OnReplyAddSlot
         };
 
         class CChannelEventHandlersImpl : private CBaseEventHandlersImpl<EChannelEvents>
@@ -36,10 +33,7 @@ namespace dds
                                        void(const SSenderInfo&))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeOK, void(const SSenderInfo&))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnHandshakeFailed, void(const SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnAssignUserTask, void(const SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnSMStart, void(const SSenderInfo&))
             DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnReplyAddSlot, void(const SSenderInfo&))
-            DDS_REGISTER_EVENT_HANDLER(EChannelEvents, EChannelEvents::OnChangeChannelInfo, void(const SSenderInfo&))
             DDS_END_EVENT_HANDLERS
         };
     } // namespace protocol_api
