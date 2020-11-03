@@ -475,7 +475,7 @@ namespace dds
                     return;
 
                 m_started = false;
-                sendYourselfShutdown();
+                m_isShuttingDown = true;
             }
 
             void removeMessageQueue()
@@ -504,6 +504,12 @@ namespace dds
                 if (!m_started)
                 {
                     LOG(MiscCommon::error) << "Skip pushing message. The channel was not started.";
+                    return;
+                }
+
+                if (m_isShuttingDown)
+                {
+                    LOG(MiscCommon::warning) << "Skip pushing message. The channel is shutting down.";
                     return;
                 }
 
@@ -571,25 +577,6 @@ namespace dds
                 pushMsg<_cmd>(cmd, _protocolHeaderID, _outputID);
             }
 
-            void syncSendShutdownAll()
-            {
-                // Send cmdSHUTDOWN to all connected outputs except yourself
-                {
-                    std::lock_guard<std::mutex> lock(m_mutexTransportOut);
-                    for (auto it : m_outputBuffers)
-                    {
-                        if (it.first == 0 || it.first == m_protocolHeaderID)
-                            continue;
-                        SEmptyCmd cmd;
-                        CProtocolMessage::protocolMessagePtr_t msg =
-                            SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
-                        messageQueuePtr_t mq = it.second->m_info.m_mq;
-                        // TODO: FIXME: Revise the code, use timed_send
-                        mq->send(msg->data(), msg->length(), 1);
-                    }
-                }
-            }
-
             void drainWriteQueue(bool _newVal, uint64_t _outputID)
             {
                 const typename SMessageOutputBuffer::Ptr_t& buffer = getOutputBuffer(_outputID);
@@ -612,34 +599,6 @@ namespace dds
                 return (_protocolHeaderID == 0) ? m_protocolHeaderID : _protocolHeaderID;
             }
 
-            void sendYourselfShutdown()
-            {
-                std::lock_guard<std::mutex> lock(m_mutexTransportIn);
-                // Send cmdSHUTDOWN with higher priority in order to stop read operation.
-                for (auto& info : m_transportIn)
-                {
-                    LOG(MiscCommon::debug) << info.m_name << ": Sends itself a SHUTDOWN msg";
-                    SEmptyCmd cmd;
-                    CProtocolMessage::protocolMessagePtr_t msg =
-                        SCommandAttachmentImpl<cmdSHUTDOWN>::encode(cmd, m_protocolHeaderID);
-                    // m_transportIn.m_mq->send(msg->data(), msg->length(), 1);
-                    while (!info.m_mq->timed_send(
-                        msg->data(),
-                        msg->length(),
-                        0,
-                        boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) +
-                            boost::posix_time::milliseconds(10)))
-                    {
-                        if (m_isShuttingDown)
-                        {
-                            LOG(MiscCommon::debug)
-                                << info.m_name << ": stopping send yourself shutdown while already shutting down";
-                            break;
-                        }
-                    }
-                }
-            }
-
             void readMessage(const SMessageQueueInfo& _info)
             {
                 try
@@ -651,11 +610,25 @@ namespace dds
 
                     // We need to allocate the memory of the size equal to the maximum size of the message
                     currentMsg->resize(_info.m_mq->get_max_msg_size());
-                    _info.m_mq->receive(currentMsg->data(), _info.m_mq->get_max_msg_size(), receivedSize, priority);
+
+                    namespace pt = boost::posix_time;
+                    while (!_info.m_mq->timed_receive(
+                        currentMsg->data(),
+                        _info.m_mq->get_max_msg_size(),
+                        receivedSize,
+                        priority,
+                        pt::ptime(pt::microsec_clock::universal_time()) + pt::milliseconds(500)))
+                    {
+                        if (m_isShuttingDown)
+                        {
+                            LOG(MiscCommon::info) << _info.m_name << ": stopping read operation due to shutdown";
+                            return;
+                        }
+                    }
 
                     if (receivedSize < CProtocolMessage::header_length)
                     {
-                        LOG(MiscCommon::debug)
+                        LOG(MiscCommon::warning)
                             << _info.m_name << ": Received message: " << receivedSize << " bytes, expected at least"
                             << CProtocolMessage::header_length << " bytes";
                     }
@@ -708,26 +681,17 @@ namespace dds
 
                     ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
 
-                    // Do not start readMessage if cmdSHUTDOWN was sent
-                    if (currentCmd != cmdSHUTDOWN)
-                    {
-                        auto self(this->shared_from_this());
-                        m_ioContext.post([this, self, &_info] {
-                            try
-                            {
-                                readMessage(_info);
-                            }
-                            catch (std::exception& ex)
-                            {
-                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                            }
-                        });
-                    }
-                    else
-                    {
-                        m_isShuttingDown = true;
-                        LOG(MiscCommon::debug) << _info.m_name << ": Stopping readMessage thread...";
-                    }
+                    auto self(this->shared_from_this());
+                    m_ioContext.post([this, self, &_info] {
+                        try
+                        {
+                            readMessage(_info);
+                        }
+                        catch (std::exception& ex)
+                        {
+                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                        }
+                    });
                 }
             }
 
@@ -754,16 +718,16 @@ namespace dds
                     {
                         if (_buffer->m_info.m_mq != nullptr)
                         {
+                            namespace pt = boost::posix_time;
                             while (!_buffer->m_info.m_mq->timed_send(
                                 msg.m_msg->data(),
                                 msg.m_msg->length(),
                                 0,
-                                boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) +
-                                    boost::posix_time::milliseconds(10)))
+                                pt::ptime(pt::microsec_clock::universal_time()) + pt::milliseconds(500)))
                             {
                                 if (m_isShuttingDown)
                                 {
-                                    LOG(MiscCommon::debug)
+                                    LOG(MiscCommon::info)
                                         << _buffer->m_info.m_name << ": stopping write operation due to shutdown";
                                     return;
                                 }
@@ -772,7 +736,7 @@ namespace dds
                                 // will block the thread by infinitely retrying to send.
                                 // For such cases there is a drain command. The connection manager can initiate the
                                 // drain, when needed. For example in case when a user task disconnects from the
-                                // Intercom channel a drain will be initiated util we receive a new task assignment
+                                // Intercom channel a drain will be initiated until we receive a new task assignment.
                                 if (_buffer->m_drainWriteQueue)
                                 {
                                     LOG(MiscCommon::warning)
