@@ -122,19 +122,7 @@ namespace dds
                                             const std::chrono::steady_clock::time_point& _wait_until);
             void enumChildProcesses(pid_t _forPid, stringContainer_t& _chilren);
             void taskExited(uint64_t _taskID, int _exitCode);
-            SSlotInfo& getSlotInfoById(const slotId_t& _slotID)
-            {
-                std::lock_guard<std::mutex> lock(m_mutexSlots);
-                auto it = m_slots.find(_slotID);
-                if (it == m_slots.end())
-                {
-                    std::stringstream ss;
-                    ss << "No matching slot for " << _slotID;
-                    throw std::runtime_error(ss.str());
-                }
-
-                return it->second;
-            }
+            SSlotInfo& getSlotInfoById(const slotId_t& _slotID);
 
           private:
             uint64_t m_id{ 0 };
