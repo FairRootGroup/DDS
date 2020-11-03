@@ -5,22 +5,19 @@
 
 // DDS
 #include "AgentConnectionManager.h"
-#include "ErrorCode.h"
 #include "IntercomServiceCore.h"
 #include "Logger.h"
 #include "Options.h"
 #include "SessionIDFile.h"
 #include "UserDefaults.h"
-#include "version.h"
-
-// BOOST
-#include <boost/interprocess/sync/named_mutex.hpp>
 
 using namespace std;
 using namespace MiscCommon;
 using namespace dds;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
+namespace bi = boost::interprocess;
+namespace bf = boost::filesystem;
 
 void clean()
 {
@@ -28,22 +25,22 @@ void clean()
     const CUserDefaults& userDefaults = CUserDefaults::instance();
     for (const auto& inputName : userDefaults.getSMLeaderInputNames())
     {
-        const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
-        LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
+        const bool inputRemoved = bi::message_queue::remove(inputName.c_str());
+        LOG(info) << "Message queue " << inputName << " remove status: " << inputRemoved;
     }
 
-    boost::filesystem::path pathWrkDir(userDefaults.getSlotsRootDir());
-    for (auto& dir : boost::make_iterator_range(boost::filesystem::directory_iterator(pathWrkDir), {}))
+    bf::path pathWrkDir(userDefaults.getSlotsRootDir());
+    for (auto& dir : boost::make_iterator_range(bf::directory_iterator(pathWrkDir), {}))
     {
         try
         {
-            if (boost::filesystem::is_directory(dir.path()))
+            if (bf::is_directory(dir.path()))
             {
-                std::string filename = dir.path().filename().string();
-                uint64_t slotID = std::stoull(filename);
-                const std::string outputName(userDefaults.getSMLeaderOutputName(slotID));
-                const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
-                LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+                string filename = dir.path().filename().string();
+                uint64_t slotID = stoull(filename);
+                const string outputName(userDefaults.getSMLeaderOutputName(slotID));
+                const bool outputRemoved = bi::message_queue::remove(outputName.c_str());
+                LOG(info) << "Message queue " << outputName << " remove status: " << outputRemoved;
             }
         }
         catch (...)
@@ -104,7 +101,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Checking for "Clean" option
+    // Checking for "clean" option
     if (SOptions_t::cmd_clean == options.m_Command)
     {
         try

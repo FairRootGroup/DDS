@@ -10,16 +10,19 @@
 // BOOST
 #include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/process.hpp>
 
+using namespace std;
 using namespace MiscCommon;
 using namespace dds;
 using namespace dds::protocol_api;
 using namespace dds::agent_cmd;
-using namespace std;
 using namespace user_defaults_api;
 using namespace topology_api;
+
 namespace fs = boost::filesystem;
-using namespace boost::placeholders;
+namespace ba = boost::algorithm;
+namespace bp = boost::process;
 
 const uint16_t g_MaxConnectionAttempts = 5;
 
@@ -88,8 +91,7 @@ void CCommanderChannel::setNumberOfSlots(size_t _nSlots)
     m_nSlots = _nSlots;
 }
 
-bool CCommanderChannel::on_cmdREPLY(protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY>::ptr_t _attachment,
-                                    protocol_api::SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, SSenderInfo& _sender)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -172,7 +174,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
                                             SSenderInfo& _sender)
 {
     // pid
-    pid_t pid = getpid();
+    const pid_t pid{ getpid() };
 
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);
@@ -224,17 +226,17 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
         case cmdTRANSPORT_TEST:
         {
             // Remove received file
-            boost::filesystem::remove(_attachment->m_receivedFilePath);
+            fs::remove(_attachment->m_receivedFilePath);
 
             pushMsg<cmdBINARY_ATTACHMENT_RECEIVED>(*_attachment);
             return true;
         }
         case cmdASSIGN_USER_TASK:
         {
-            boost::filesystem::path destFilePath(CUserDefaults::instance().getSlotsRootDir());
+            fs::path destFilePath(CUserDefaults::instance().getSlotsRootDir());
             destFilePath /= to_string(_sender.m_ID);
             destFilePath /= _attachment->m_requestedFileName;
-            boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
+            fs::rename(_attachment->m_receivedFilePath, destFilePath);
             // Add exec permissions for the users' task
             fs::permissions(destFilePath, fs::add_perms | fs::owner_exe);
             LOG(info) << "Received user executable to execute: " << destFilePath.generic_string();
@@ -247,9 +249,9 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
         case cmdUPDATE_TOPOLOGY:
         {
             // Copy topology file
-            boost::filesystem::path destFilePath(CUserDefaults::instance().getDDSPath());
+            fs::path destFilePath(CUserDefaults::instance().getDDSPath());
             destFilePath /= _attachment->m_requestedFileName;
-            boost::filesystem::rename(_attachment->m_receivedFilePath, destFilePath);
+            fs::rename(_attachment->m_receivedFilePath, destFilePath);
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
 
             // Activating new topology
@@ -259,7 +261,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             topo->init(destFilePath.string());
             // Assign new topology
             {
-                std::lock_guard<std::mutex> lock(m_topoMutex);
+                lock_guard<mutex> lock(m_topoMutex);
                 m_topo = topo;
             }
             LOG(info) << "Topology activated";
@@ -306,26 +308,18 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
         string hostname;
         get_hostname(&hostname);
 
-        time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        struct tm* ptm = localtime(&now);
-        char buffer[20];
-        strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
-
+        const time_t now{ chrono::system_clock::to_time_t(chrono::system_clock::now()) };
         stringstream ss;
-        // TODO: change the code below once on gcc5+
-        // We do not use put_time for the moment as gcc4.9 does not support it.
-        // ss << std::put_time(ptm, "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id;
-        ss << buffer << "_" << hostname << "_" << m_id << ".tar.gz";
+        ss << put_time(localtime(&now), "%Y-%m-%d-%H-%M-%S") << "_" << hostname << "_" << m_id << ".tar.gz";
 
-        fs::path fileName(ss.str());
-        fs::path logDir(CUserDefaults::getDDSPath());
-        fs::path filePath(logDir);
-        filePath /= fileName;
+        const fs::path fileName(ss.str());
+        const fs::path logDir(CUserDefaults::getDDSPath());
+        const fs::path filePath(logDir / fileName);
 
         // Find command paths in $PATH
-        fs::path bashPath = bp::search_path("bash");
-        fs::path tarPath = bp::search_path("tar");
-        fs::path findPath = bp::search_path("find");
+        const fs::path bashPath{ bp::search_path("bash") };
+        const fs::path tarPath{ bp::search_path("tar") };
+        const fs::path findPath{ bp::search_path("find") };
 
         stringstream ssCmd;
         ssCmd << bashPath.string() << " -c \"" << findPath.string() << " \\\"" << logDir.string()
@@ -395,7 +389,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     {
         uint32_t topoHash{ 0 };
         {
-            std::lock_guard<std::mutex> lock(m_topoMutex);
+            lock_guard<mutex> lock(m_topoMutex);
             topoHash = m_topo->getHash();
         }
         if (topoHash != _attachment->m_topoHash)
@@ -437,22 +431,22 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     slot->m_taskName = _attachment->m_taskName;
 
     {
-        lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
+        lock_guard<mutex> lock(m_taskIDToSlotIDMapMutex);
         m_taskIDToSlotIDMap.insert(make_pair(slot->m_taskID, slot->m_id));
     }
 
     // Replace all %taskIndex% and %collectionIndex% in executable path with their values.
-    boost::algorithm::replace_all(slot->m_sUsrExe, "%taskIndex%", to_string(slot->m_taskIndex));
+    ba::replace_all(slot->m_sUsrExe, "%taskIndex%", to_string(slot->m_taskIndex));
     if (slot->m_collectionIndex != numeric_limits<uint32_t>::max())
-        boost::algorithm::replace_all(slot->m_sUsrExe, "%collectionIndex%", to_string(slot->m_collectionIndex));
+        ba::replace_all(slot->m_sUsrExe, "%collectionIndex%", to_string(slot->m_collectionIndex));
 
     // If the user task was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
-    boost::filesystem::path dir(CUserDefaults::instance().getSlotsRootDir());
+    fs::path dir(CUserDefaults::instance().getSlotsRootDir());
     dir /= to_string(_sender.m_ID);
     dir += fs::path::preferred_separator;
-    boost::algorithm::replace_all(slot->m_sUsrExe, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
+    ba::replace_all(slot->m_sUsrExe, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
     // If the user custom environment was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
-    boost::algorithm::replace_all(slot->m_sUsrEnv, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
+    ba::replace_all(slot->m_sUsrEnv, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
 
     try
     {
@@ -499,7 +493,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
 
     const SSlotInfo& slot = slot_it->second;
 
-    string sUsrExe(slot.m_sUsrExe);
+    const string sUsrExe(slot.m_sUsrExe);
 
     if (sUsrExe.empty())
     {
@@ -547,32 +541,17 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         LOG(info) << "Executing user task: " << sUsrExe;
 
         // Task output files: <user_task_name>_<datetime>_<task_id>_<out/err>.log
+        const time_t now{ chrono::system_clock::to_time_t(chrono::system_clock::now()) };
         stringstream ssTaskOutput;
-        ssTaskOutput << CUserDefaults::getDDSPath() << slot.m_taskName;
+        ssTaskOutput << CUserDefaults::getDDSPath() << slot.m_taskName << "_"
+                     << put_time(localtime(&now), "%Y-%m-%d-%H-%M-%S") << "_" << slot.m_taskID;
+        const string sTaskStdOut(ssTaskOutput.str() + "_out.log");
+        const string sTaskStdErr(ssTaskOutput.str() + "_err.log");
 
-        // TODO: Change the code below once on gcc5+. GCC 4.9 doesn't support put_time
-        //
-        // current time
-        // auto now = std::chrono::system_clock::now();
-        // auto in_time_t = std::chrono::system_clock::to_time_t(now);
-        // ssTaskOutput << std::put_time(std::localtime(&in_time_t), "_%F_%H-%M-%S");
-
-        time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        struct tm* ptm = localtime(&now);
-        char buffer[20];
-        strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
-        ssTaskOutput << "_" << buffer;
-
-        // task id
-        ssTaskOutput << "_" << slot.m_taskID;
-
-        string sTaskStdOut(ssTaskOutput.str() + "_out.log");
-        string sTaskStdErr(ssTaskOutput.str() + "_err.log");
-
-        boost::filesystem::path pathSlotDir(CUserDefaults::instance().getSlotsRootDir());
+        fs::path pathSlotDir(CUserDefaults::instance().getSlotsRootDir());
         pathSlotDir /= to_string(_sender.m_ID);
-        const boost::filesystem::path pathTaskWrapperIn("dds_user_task_wrapper.sh.in");
-        const boost::filesystem::path pathTaskWrapper(pathSlotDir / "dds_user_task_wrapper.sh");
+        const fs::path pathTaskWrapperIn("dds_user_task_wrapper.sh.in");
+        const fs::path pathTaskWrapper(pathSlotDir / "dds_user_task_wrapper.sh");
 
         // Replace placeholders in the task wrapper
         fs::ifstream fTaskWrapper(pathTaskWrapperIn.native());
@@ -596,10 +575,10 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         fTaskWrapperOut.close();
 
         // Apply execute access on the wrapper script
-        boost::filesystem::permissions(pathTaskWrapper, boost::filesystem::add_perms | boost::filesystem::owner_all);
+        fs::permissions(pathTaskWrapper, fs::add_perms | fs::owner_all);
 
         stringstream ssCmd;
-        ssCmd << boost::process::search_path("bash").string();
+        ssCmd << bp::search_path("bash").string();
         ssCmd << " -c \" " << pathTaskWrapper.native() << " \"";
 
         pidUsrTask = execute(ssCmd.str(), sTaskStdOut, sTaskStdErr);
@@ -678,7 +657,7 @@ bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_
     m_intercomChannel->addOutput(info.m_id, CUserDefaults::instance().getSMLeaderOutputName(info.m_id));
 
     {
-        std::lock_guard<std::mutex> lock(m_mutexSlots);
+        lock_guard<mutex> lock(m_mutexSlots);
         m_slots.insert(make_pair(info.m_id, info));
     }
 
@@ -812,7 +791,7 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
 
             return true;
         },
-        std::chrono::seconds(5));
+        chrono::seconds(5));
 
     LOG(info) << "Watchdog for task on slot " << _slotID << " pid = " << _pid << " has been registered.";
 }
@@ -824,9 +803,9 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
     {
         // a pgrep command is used to find out the list of child processes of the task
         stringstream ssCmd;
-        ssCmd << boost::process::search_path("pgrep").string() << " -P " << _forPid;
+        ssCmd << bp::search_path("pgrep").string() << " -P " << _forPid;
         string output;
-        execute(ssCmd.str(), std::chrono::seconds(5), &output);
+        execute(ssCmd.str(), chrono::seconds(5), &output);
         boost::split(tmpContainer, output, boost::is_any_of(" \n"), boost::token_compress_on);
         tmpContainer.erase(
             remove_if(tmpContainer.begin(), tmpContainer.end(), [](const string& _val) { return _val.empty(); }),
@@ -846,7 +825,7 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
             {
                 pid = stol(i);
             }
-            catch (std::invalid_argument& _e)
+            catch (invalid_argument& _e)
             {
                 LOG(error) << "Invalid pid: " << i;
                 continue;
@@ -886,7 +865,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
             pid = stol(i);
             pidChildren.push_back(pid);
         }
-        catch (std::invalid_argument& _e)
+        catch (invalid_argument& _e)
         {
             LOG(error) << "Can't insert pid: " << i;
         }
@@ -904,8 +883,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
         LOG(info) << "Sending graceful terminate signal to child process " << i;
         kill(i, SIGTERM);
     }
-    std::chrono::steady_clock::time_point tpWaitUntil(std::chrono::steady_clock::now() +
-                                                      std::chrono::milliseconds(5000));
+    chrono::steady_clock::time_point tpWaitUntil(chrono::steady_clock::now() + chrono::milliseconds(5000));
 
     LOG(info) << "Wait for tasks " << mainPid << " to exit...";
 
@@ -915,7 +893,7 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
 }
 
 void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidContainer_t& _children,
-                                                   const std::chrono::steady_clock::time_point& _wait_until)
+                                                   const chrono::steady_clock::time_point& _wait_until)
 {
     bool bAllDone(true);
     for (auto const& pid : _children)
@@ -931,10 +909,9 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
         return;
 
     // block this thread for a short time, otherwise it might be spining too fast
-    this_thread::sleep_for(std::chrono::milliseconds(10));
+    this_thread::sleep_for(chrono::milliseconds(10));
 
-    auto duration =
-        std::chrono::duration_cast<std::chrono::milliseconds>(_wait_until - std::chrono::steady_clock::now());
+    auto duration = chrono::duration_cast<chrono::milliseconds>(_wait_until - chrono::steady_clock::now());
     if (duration.count() > 0)
     {
         // Prevent blocking of the current thread.
@@ -966,7 +943,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         auto& slot = getSlotInfoById(_slotID);
 
         {
-            lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
+            lock_guard<mutex> lock(m_taskIDToSlotIDMapMutex);
             m_taskIDToSlotIDMap.erase(slot.m_taskID);
         }
 
@@ -987,6 +964,20 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         LOG(fatal) << "Failed to remove user task on slot " << _slotID << " from the list of children: " << _e.what();
         LOG(error) << "Can't send TASK_DONE. The coresponding slot is missing";
     }
+}
+
+SSlotInfo& CCommanderChannel::getSlotInfoById(const slotId_t& _slotID)
+{
+    lock_guard<mutex> lock(m_mutexSlots);
+    auto it = m_slots.find(_slotID);
+    if (it == m_slots.end())
+    {
+        stringstream ss;
+        ss << "No matching slot for " << _slotID;
+        throw runtime_error(ss.str());
+    }
+
+    return it->second;
 }
 
 void CCommanderChannel::stopChannel()
@@ -1016,13 +1007,13 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
         // in memory.
         CTopoCore::Ptr_t topo{ nullptr };
         {
-            std::lock_guard<std::mutex> lock(m_topoMutex);
+            lock_guard<mutex> lock(m_topoMutex);
             topo = m_topo;
         }
 
         CTopoTask::Ptr_t task;
         {
-            std::lock_guard<std::mutex> lock(m_topoMutex);
+            lock_guard<mutex> lock(m_topoMutex);
             task = topo->getRuntimeTaskById(taskID).m_task;
         }
         auto property = task->getProperty(propertyName);
@@ -1060,7 +1051,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
 
         STopoRuntimeTask::FilterIteratorPair_t taskIt;
         {
-            std::lock_guard<std::mutex> lock(m_topoMutex);
+            lock_guard<mutex> lock(m_topoMutex);
             taskIt = topo->getRuntimeTaskIteratorForPropertyName(propertyName, taskID);
         }
 
@@ -1074,7 +1065,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
 
             CTopoTask::Ptr_t task;
             {
-                std::lock_guard<std::mutex> lock(m_topoMutex);
+                lock_guard<mutex> lock(m_topoMutex);
                 task = topo->getRuntimeTaskById(receiverTaskID).m_task;
             }
 
@@ -1091,7 +1082,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
                 bool localPush(true);
                 uint64_t slotID(0);
                 {
-                    std::lock_guard<std::mutex> lock(m_taskIDToSlotIDMapMutex);
+                    lock_guard<mutex> lock(m_taskIDToSlotIDMapMutex);
                     auto it = m_taskIDToSlotIDMap.find(receiverTaskID);
                     localPush = (it != m_taskIDToSlotIDMap.end());
                     slotID = it->second;
@@ -1128,11 +1119,11 @@ bool CCommanderChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK
     // WORKAROUND: to prevent locking the container on msg push, we create a tmp container with slot IDs
     vector<slotId_t> slotsTmp;
     {
-        std::lock_guard<std::mutex> lock(m_mutexSlots);
-        std::transform(m_slots.begin(),
-                       m_slots.end(),
-                       back_inserter(slotsTmp),
-                       boost::bind(&SSlotInfo::container_t::value_type::first, _1));
+        lock_guard<mutex> lock(m_mutexSlots);
+        transform(m_slots.begin(),
+                  m_slots.end(),
+                  back_inserter(slotsTmp),
+                  boost::bind(&SSlotInfo::container_t::value_type::first, boost::placeholders::_1));
     }
 
     for (const auto& i : slotsTmp)
