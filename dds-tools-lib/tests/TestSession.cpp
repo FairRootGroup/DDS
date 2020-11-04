@@ -189,7 +189,7 @@ void makeRequests(CSession& _session,
     // Get DDS agent logs
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
 
-    // Parse DDS agenbt logs and count the number of successfull tasks
+    // Parse DDS agent logs and count the number of successfull tasks
     // const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
 
     // TODO: FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS sessions
@@ -529,6 +529,104 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_cc)
     for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         runDDSCustomCmd(sessions);
+    }
+}
+
+void runDDSEnv(vector<CSession>& _sessions)
+{
+    const std::chrono::seconds timeout(30);
+    const fs::path topoPath(fs::canonical(fs::path("env_test.xml")));
+
+    for (auto& session : _sessions)
+    {
+        boost::uuids::uuid sid = session.create();
+        BOOST_CHECK(!sid.is_nil());
+        BOOST_CHECK(session.IsRunning());
+    }
+
+    // Submit DDS agents
+    CTopology topo(topoPath.string());
+    auto numAgents = topo.getRequiredNofAgents(9);
+    size_t requiredCount{ numAgents.first * numAgents.second };
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = numAgents.first * numAgents.second;
+    for (auto& session : _sessions)
+    {
+        BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
+    }
+
+    for (auto& session : _sessions)
+    {
+        checkIdleAgents(session, requiredCount);
+    }
+
+    // Activate default topology
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = topoPath.string();
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    for (auto& session : _sessions)
+    {
+        BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
+    }
+
+    for (auto& session : _sessions)
+    {
+        // Get DDS agent logs
+        BOOST_CHECK_NO_THROW(session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
+
+        // Parse DDS agent logs and count the number of successfull tasks
+        // const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
+
+        // TODO: FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS
+        // sessions is required.
+        string logDirStr{ "$HOME/.DDS/sessions/" };
+        logDirStr += to_string(session.getSessionID());
+        logDirStr += "/log/agents";
+        MiscCommon::smart_path(&logDirStr);
+        fs::path logDir{ logDirStr };
+
+        const string stringToCount{ "Task successfully done" };
+        const size_t count{ countStringsInDir(logDir, stringToCount) };
+        BOOST_CHECK_EQUAL(count, requiredCount);
+
+        // Remove DDS logs after parsing
+        fs::remove_all(logDir);
+    }
+
+    // Wait until all tasks are done
+    for (auto& session : _sessions)
+    {
+        checkIdleAgents(session, requiredCount);
+    }
+
+    for (auto& session : _sessions)
+    {
+        session.shutdown();
+        BOOST_CHECK(session.getSessionID().is_nil());
+        BOOST_CHECK(!session.IsRunning());
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult_env)
+{
+    // Start and stop DDS session multiple times.
+    // Each time create new DDSSession instance.
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        vector<CSession> sessions(kDDSNumParallelSessions);
+        runDDSEnv(sessions);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_env)
+{
+    // Start and stop DDS session multiple times.
+    // Common DDSSession instance.
+    vector<CSession> sessions(kDDSNumParallelSessions);
+    for (size_t i = 0; i < kDDSNumTestIterations; i++)
+    {
+        runDDSEnv(sessions);
     }
 }
 
