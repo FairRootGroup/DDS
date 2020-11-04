@@ -1,7 +1,7 @@
 <topology name="EnvTopology">
 	
   	<decltask name="EnvTask">
-		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_env --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
 	</decltask>
 	
 	<declcollection name="EnvCollection">

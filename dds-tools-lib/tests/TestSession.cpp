@@ -29,99 +29,45 @@ namespace bp = boost::process;
 
 BOOST_AUTO_TEST_SUITE(test_dds_tools_session)
 
-const size_t kDDSNumTestIterations = 3;
-const size_t kDDSNumParallelSessions = 3;
+const size_t kDDSNumTestIterations{ 3 };
+const size_t kDDSNumParallelSessions{ 3 };
+const std::chrono::seconds kTimeout{ 30 };
 
-void createDDS(vector<CSession>& _sessions)
+//
+// Common functions
+//
+
+template <typename F>
+void runTestMultiple(F _f)
 {
-    for (auto& session : _sessions)
-    {
-        boost::uuids::uuid sid;
-        BOOST_CHECK_NO_THROW(sid = session.create());
-        BOOST_CHECK(!sid.is_nil());
-        // BOOST_CHECK(CSession::getDefaultSessionID() == sid);
-        BOOST_CHECK(session.IsRunning());
-        BOOST_CHECK_THROW(session.create(), runtime_error);
-        BOOST_CHECK_THROW(session.attach(sid), runtime_error);
-    }
-
-    vector<CSession> attachedSessions(_sessions.size());
-    size_t index{ 0 };
-    for (auto& session : _sessions)
-    {
-        auto& attachedSession = attachedSessions[index];
-        BOOST_CHECK_NO_THROW(attachedSession.attach(session.getSessionID()));
-        BOOST_CHECK(!attachedSession.getSessionID().is_nil());
-        BOOST_CHECK(attachedSession.IsRunning());
-        index++;
-    }
-
-    for (auto& session : _sessions)
-    {
-        BOOST_CHECK_NO_THROW(session.shutdown());
-        BOOST_CHECK(session.getSessionID().is_nil());
-        BOOST_CHECK(!session.IsRunning());
-        BOOST_CHECK_THROW(session.shutdown(), runtime_error);
-    }
-
-    for (auto& attachedSession : attachedSessions)
-    {
-        BOOST_CHECK(!attachedSession.IsRunning());
-        BOOST_CHECK(!attachedSession.getSessionID().is_nil());
-        BOOST_CHECK_NO_THROW(attachedSession.detach());
-        BOOST_CHECK(attachedSession.getSessionID().is_nil());
-    }
-}
-
-BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_mult)
-{
-    // Start and stop DDS sessions multiple times.
+    // Start and stop DDS session multiple times.
     // Each time create new DDSSession instance.
     for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         vector<CSession> sessions(kDDSNumParallelSessions);
-        createDDS(sessions);
+        _f(sessions);
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_single)
+template <typename F>
+void runTestSingle(F _f)
 {
-    // Start and stop DDS sessions multiple times.
+    // Start and stop DDS session multiple times.
     // Common DDSSession instance.
     vector<CSession> sessions(kDDSNumParallelSessions);
     for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
-        createDDS(sessions);
+        _f(sessions);
     }
-}
-
-void checkIdleAgents(CSession& _session, size_t _numAgents)
-{
-    const std::chrono::seconds timeout(30);
-    const std::chrono::milliseconds requestInterval(500);
-
-    BOOST_CHECK_NO_THROW(
-        _session.waitForNumAgents<CSession::EAgentState::idle>(_numAgents, timeout, requestInterval, &std::cout));
-
-    BOOST_CHECK_THROW(_session.waitForNumAgents<CSession::EAgentState::idle>(
-                          _numAgents + 1, std::chrono::seconds(2), requestInterval, &std::cout),
-                      std::runtime_error);
-
-    SAgentCountRequest::response_t agentCountInfo;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SAgentCountRequest>(
-        SAgentCountRequest::request_t(), agentCountInfo, timeout, &std::cout));
-    BOOST_CHECK_EQUAL(agentCountInfo.m_activeSlotsCount, _numAgents);
-    BOOST_CHECK_EQUAL(agentCountInfo.m_idleSlotsCount, _numAgents);
-    BOOST_CHECK_EQUAL(agentCountInfo.m_executingSlotsCount, 0);
 }
 
 size_t countStringsInDir(const fs::path& _logDir, const string& _stringToCount)
 {
     // Untar DDS agent logs
-    fs::path tmpPath{ fs::temp_directory_path() / fs::unique_path() };
+    const fs::path tmpPath{ fs::temp_directory_path() / fs::unique_path() };
     fs::create_directories(tmpPath);
-    fs::path tarPath = bp::search_path("tar");
-    fs::path findPath = bp::search_path("find");
+    const fs::path tarPath{ bp::search_path("tar") };
+    const fs::path findPath{ bp::search_path("find") };
     stringstream ssCmd;
     ssCmd << findPath.string() << " \"" << _logDir.string() << "\" -name \"*.tar.gz\" -exec " << tarPath.string()
           << " -C "
@@ -149,47 +95,12 @@ size_t countStringsInDir(const fs::path& _logDir, const string& _stringToCount)
     return counter;
 }
 
-void makeRequests(CSession& _session,
-                  const boost::filesystem::path& _topoPath,
-                  STopologyRequest::request_t::EUpdateType _updateType,
-                  const pair<size_t, size_t>& _submitAgents,
-                  const pair<size_t, size_t>& _totalAgents,
-                  size_t requiredCount)
+void parseLogs(CSession& _session, const string& _stringToCount, size_t _requiredCount)
 {
-    const std::chrono::seconds timeout(30);
-
-    if (_submitAgents.second > 0)
-    {
-        SSubmitRequest::request_t submitInfo;
-        submitInfo.m_rms = "localhost";
-        submitInfo.m_instances = _submitAgents.first;
-        submitInfo.m_slots = _submitAgents.second;
-        BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
-    }
-
-    size_t numSlots = _totalAgents.first * _totalAgents.second;
-    checkIdleAgents(_session, numSlots);
-
-    STopologyRequest::request_t topoInfo;
-    topoInfo.m_topologyFile = _topoPath.string();
-    topoInfo.m_updateType = _updateType;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
-
-    checkIdleAgents(_session, numSlots);
-
-    SAgentInfoRequest::responseVector_t agentInfo;
-    BOOST_CHECK_NO_THROW(
-        _session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, timeout, &std::cout));
-    BOOST_CHECK_EQUAL(agentInfo.size(), _totalAgents.first);
-
-    SCommanderInfoRequest::response_t commanderInfo;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SCommanderInfoRequest>(
-        SCommanderInfoRequest::request_t(), commanderInfo, timeout, &std::cout));
-
     // Get DDS agent logs
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), kTimeout, &std::cout));
 
-    // Parse DDS agent logs and count the number of successfull tasks
+    // Parse DDS agent logs and count the number okTimeoutssfull tasks
     // const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
 
     // TODO: FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS sessions
@@ -200,26 +111,186 @@ void makeRequests(CSession& _session,
     MiscCommon::smart_path(&logDirStr);
     fs::path logDir{ logDirStr };
 
-    const string stringToCount{ "Task successfully done" };
-    const size_t count{ countStringsInDir(logDir, stringToCount) };
-    BOOST_CHECK_EQUAL(count, requiredCount);
+    const size_t count{ countStringsInDir(logDir, _stringToCount) };
+    BOOST_CHECK_EQUAL(count, _requiredCount);
 
     // Remove DDS logs after parsing
     fs::remove_all(logDir);
 }
 
-void runDDS(vector<CSession>& _sessions)
+void parseLogs(vector<CSession>& _sessions, const string& _stringToCount, size_t _requiredCount)
 {
-    fs::path topoPath(fs::canonical(fs::path("property_test.xml")));
-    fs::path upTopoPath(fs::canonical(fs::path("property_test_up.xml")));
-    fs::path downTopoPath(topoPath);
-
     for (auto& session : _sessions)
     {
-        boost::uuids::uuid sid = session.create();
+        parseLogs(session, _stringToCount, _requiredCount);
+    }
+}
+
+void createSessions(vector<CSession>& _sessions)
+{
+    for (auto& session : _sessions)
+    {
+        boost::uuids::uuid sid;
+        BOOST_CHECK_NO_THROW(sid = session.create());
         BOOST_CHECK(!sid.is_nil());
         BOOST_CHECK(session.IsRunning());
+        BOOST_CHECK_THROW(session.create(), runtime_error);
+        BOOST_CHECK_THROW(session.attach(sid), runtime_error);
     }
+}
+
+void shutdownSessions(vector<CSession>& _sessions)
+{
+    for (auto& session : _sessions)
+    {
+        BOOST_CHECK_NO_THROW(session.shutdown());
+        BOOST_CHECK(session.getSessionID().is_nil());
+        BOOST_CHECK(!session.IsRunning());
+        BOOST_CHECK_THROW(session.shutdown(), runtime_error);
+    }
+}
+
+void submitAgents(CSession& _session, uint32_t _numSlots = 0, uint32_t _numInstances = 0)
+{
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = _numSlots;
+    submitInfo.m_instances = _numInstances;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SSubmitRequest>(submitInfo, kTimeout, &std::cout));
+}
+
+void submitAgents(vector<CSession>& _sessions, uint32_t _numSlots = 0, uint32_t _numInstances = 0)
+{
+    for (auto& session : _sessions)
+    {
+        submitAgents(session, _numSlots, _numInstances);
+    }
+}
+
+void checkIdleAgents(CSession& _session, size_t _numAgents)
+{
+    const std::chrono::milliseconds requestInterval(500);
+    BOOST_CHECK_NO_THROW(
+        _session.waitForNumAgents<CSession::EAgentState::idle>(_numAgents, kTimeout, requestInterval, &std::cout));
+
+    BOOST_CHECK_THROW(_session.waitForNumAgents<CSession::EAgentState::idle>(
+                          _numAgents + 1, std::chrono::seconds(2), requestInterval, &std::cout),
+                      std::runtime_error);
+
+    SAgentCountRequest::response_t agentCountInfo;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SAgentCountRequest>(
+        SAgentCountRequest::request_t(), agentCountInfo, kTimeout, &std::cout));
+    BOOST_CHECK_EQUAL(agentCountInfo.m_activeSlotsCount, _numAgents);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_idleSlotsCount, _numAgents);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_executingSlotsCount, 0);
+}
+
+void checkIdleAgents(vector<CSession>& _sessions, size_t _numAgents)
+{
+    for (auto& session : _sessions)
+    {
+        checkIdleAgents(session, _numAgents);
+    }
+}
+
+void updateTopology(CSession& _session,
+                    const string& _topologyFile,
+                    STopologyRequest::request_t::EUpdateType _updateType)
+{
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = _topologyFile;
+    topoInfo.m_updateType = _updateType;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+}
+
+void updateTopology(vector<CSession>& _sessions,
+                    const string& _topologyFile,
+                    STopologyRequest::request_t::EUpdateType _updateType)
+{
+    for (auto& session : _sessions)
+    {
+        updateTopology(session, _topologyFile, _updateType);
+    }
+}
+
+//
+// Tests
+//
+
+void createDDS(vector<CSession>& _sessions)
+{
+    createSessions(_sessions);
+
+    vector<CSession> attachedSessions(_sessions.size());
+    size_t index{ 0 };
+    for (auto& session : _sessions)
+    {
+        auto& attachedSession = attachedSessions[index];
+        BOOST_CHECK_NO_THROW(attachedSession.attach(session.getSessionID()));
+        BOOST_CHECK(!attachedSession.getSessionID().is_nil());
+        BOOST_CHECK(attachedSession.IsRunning());
+        index++;
+    }
+
+    shutdownSessions(_sessions);
+
+    for (auto& attachedSession : attachedSessions)
+    {
+        BOOST_CHECK(!attachedSession.IsRunning());
+        BOOST_CHECK(!attachedSession.getSessionID().is_nil());
+        BOOST_CHECK_NO_THROW(attachedSession.detach());
+        BOOST_CHECK(attachedSession.getSessionID().is_nil());
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_mult)
+{
+    runTestMultiple(createDDS);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_session_create_single)
+{
+    runTestSingle(createDDS);
+}
+
+void makeRequests(CSession& _session,
+                  const boost::filesystem::path& _topoPath,
+                  STopologyRequest::request_t::EUpdateType _updateType,
+                  const pair<size_t, size_t>& _submitAgents,
+                  const pair<size_t, size_t>& _totalAgents,
+                  size_t _requiredCount)
+{
+    if (_submitAgents.second > 0)
+    {
+        submitAgents(_session, _submitAgents.second, _submitAgents.first);
+    }
+
+    size_t numSlots = _totalAgents.first * _totalAgents.second;
+    checkIdleAgents(_session, numSlots);
+
+    updateTopology(_session, _topoPath.string(), _updateType);
+
+    checkIdleAgents(_session, numSlots);
+
+    SAgentInfoRequest::responseVector_t agentInfo;
+    BOOST_CHECK_NO_THROW(
+        _session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, kTimeout, &std::cout));
+    BOOST_CHECK_EQUAL(agentInfo.size(), _totalAgents.first);
+
+    SCommanderInfoRequest::response_t commanderInfo;
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<SCommanderInfoRequest>(
+        SCommanderInfoRequest::request_t(), commanderInfo, kTimeout, &std::cout));
+
+    parseLogs(_session, "Task successfully done", _requiredCount);
+}
+
+void runDDS(vector<CSession>& _sessions)
+{
+    const fs::path topoPath(fs::canonical(fs::path("property_test.xml")));
+    const fs::path upTopoPath(fs::canonical(fs::path("property_test_up.xml")));
+    const fs::path downTopoPath(topoPath);
+
+    createSessions(_sessions);
 
     // Initital topology
     CTopology topo(topoPath.string());
@@ -230,8 +301,6 @@ void runDDS(vector<CSession>& _sessions)
         makeRequests(
             session, topoPath, STopologyRequest::request_t::EUpdateType::ACTIVATE, numAgents, numAgents, requiredCount);
     }
-
-    //    this_thread::sleep_for(chrono::seconds(1));
 
     // Upscaled topology
     CTopology upTopo(upTopoPath.string());
@@ -247,8 +316,6 @@ void runDDS(vector<CSession>& _sessions)
                      requiredCount);
     }
 
-    //    this_thread::sleep_for(chrono::seconds(1));
-
     // Downscaled topology
     CTopology downTopo(downTopoPath.string());
     auto downNumAgents = downTopo.getRequiredNofAgents(10);
@@ -263,142 +330,65 @@ void runDDS(vector<CSession>& _sessions)
                      requiredCount);
     }
 
-    for (auto& session : _sessions)
-    {
-        session.shutdown();
-        BOOST_CHECK(session.getSessionID().is_nil());
-        BOOST_CHECK(!session.IsRunning());
-    }
+    shutdownSessions(_sessions);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult)
 {
-    // Start and stop DDS session multiple times.
-    // Each time create new DDSSession instance.
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        vector<CSession> sessions(kDDSNumParallelSessions);
-        runDDS(sessions);
-    }
+    runTestMultiple(runDDS);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single)
 {
-    // Start and stop DDS session multiple times.
-    // Common DDSSession instance.
-    vector<CSession> sessions(kDDSNumParallelSessions);
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        runDDS(sessions);
-    }
+    runTestSingle(runDDS);
 }
 
 void runDDSInf(vector<CSession>& _sessions)
 {
-    const std::chrono::seconds timeout(30);
     const std::chrono::seconds sleepTime(3);
+    const fs::path topoPath(fs::canonical(fs::path("property_test_inf.xml")));
+    const fs::path upTopoPath(fs::canonical(fs::path("property_test_inf_up.xml")));
+    const fs::path downTopoPath(topoPath);
 
-    fs::path topoPath(fs::canonical(fs::path("property_test_inf.xml")));
-    fs::path upTopoPath(fs::canonical(fs::path("property_test_inf_up.xml")));
-    fs::path downTopoPath(topoPath);
-
-    for (auto& session : _sessions)
-    {
-        boost::uuids::uuid sid = session.create();
-        BOOST_CHECK(!sid.is_nil());
-        BOOST_CHECK(session.IsRunning());
-    }
+    createSessions(_sessions);
 
     const size_t numSlots(20);
 
     // Submit enough agent for the upscaled topology
-    SSubmitRequest::request_t submitInfo;
-    submitInfo.m_rms = "localhost";
-    submitInfo.m_slots = numSlots;
-    for (auto& session : _sessions)
-    {
-        BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
-    }
-
-    for (auto& session : _sessions)
-    {
-        checkIdleAgents(session, numSlots);
-    }
+    submitAgents(_sessions, numSlots);
+    checkIdleAgents(_sessions, numSlots);
 
     for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
         // Activate default topology
-        STopologyRequest::request_t topoInfo;
-        topoInfo.m_topologyFile = topoPath.string();
-        topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
-        for (auto& session : _sessions)
-        {
-            BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
-        }
+        updateTopology(_sessions, topoPath.string(), STopologyRequest::request_t::EUpdateType::ACTIVATE);
         std::this_thread::sleep_for(sleepTime);
 
         // Upscale topology
-        STopologyRequest::request_t upTopoInfo;
-        upTopoInfo.m_topologyFile = upTopoPath.string();
-        upTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
-        for (auto& session : _sessions)
-        {
-            BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(upTopoInfo, timeout, &std::cout));
-        }
+        updateTopology(_sessions, upTopoPath.string(), STopologyRequest::request_t::EUpdateType::UPDATE);
         std::this_thread::sleep_for(sleepTime);
 
         // Downscale topology
-        STopologyRequest::request_t downTopoInfo;
-        downTopoInfo.m_topologyFile = downTopoPath.string();
-        downTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::UPDATE;
-        for (auto& session : _sessions)
-        {
-            BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(downTopoInfo, timeout, &std::cout));
-        }
+        updateTopology(_sessions, downTopoPath.string(), STopologyRequest::request_t::EUpdateType::UPDATE);
         std::this_thread::sleep_for(sleepTime);
 
         // Stop topology
-        STopologyRequest::request_t stopTopoInfo;
-        stopTopoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
-        for (auto& session : _sessions)
-        {
-            BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(stopTopoInfo, timeout, &std::cout));
-        }
+        updateTopology(_sessions, "", STopologyRequest::request_t::EUpdateType::STOP);
 
-        for (auto& session : _sessions)
-        {
-            checkIdleAgents(session, numSlots);
-        }
+        checkIdleAgents(_sessions, numSlots);
     }
 
-    for (auto& session : _sessions)
-    {
-        session.shutdown();
-        BOOST_CHECK(session.getSessionID().is_nil());
-        BOOST_CHECK(!session.IsRunning());
-    }
+    shutdownSessions(_sessions);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult_inf)
 {
-    // Start and stop DDS session multiple times.
-    // Each time create new DDSSession instance.
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        vector<CSession> sessions(kDDSNumParallelSessions);
-        runDDSInf(sessions);
-    }
+    runTestMultiple(runDDSInf);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_inf)
 {
-    // Start and stop DDS session multiple times.
-    // Common DDSSession instance.
-    vector<CSession> sessions(kDDSNumParallelSessions);
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        runDDSInf(sessions);
-    }
+    runTestSingle(runDDSInf);
 }
 
 void runIntercom(vector<CSession>& _sessions, vector<CIntercomService>& _services, vector<CCustomCmd>& _customCmds)
@@ -450,42 +440,19 @@ void runIntercom(vector<CSession>& _sessions, vector<CIntercomService>& _service
 
 void runDDSCustomCmd(vector<CSession>& _sessions)
 {
-    const std::chrono::seconds timeout(30);
+    const fs::path topoPath(fs::canonical(fs::path("custom_cmd_test.xml")));
 
-    fs::path topoPath(fs::canonical(fs::path("custom_cmd_test.xml")));
-
-    for (auto& session : _sessions)
-    {
-        boost::uuids::uuid sid = session.create();
-        BOOST_CHECK(!sid.is_nil());
-        BOOST_CHECK(session.IsRunning());
-    }
+    createSessions(_sessions);
 
     // Submit DDS agents
     CTopology topo(topoPath.string());
     auto numAgents = topo.getRequiredNofAgents(5);
     size_t requiredCount{ numAgents.first * numAgents.second };
-    SSubmitRequest::request_t submitInfo;
-    submitInfo.m_rms = "localhost";
-    submitInfo.m_slots = numAgents.first * numAgents.second;
-    for (auto& session : _sessions)
-    {
-        BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
-    }
-
-    for (auto& session : _sessions)
-    {
-        checkIdleAgents(session, requiredCount);
-    }
+    submitAgents(_sessions, requiredCount);
+    checkIdleAgents(_sessions, requiredCount);
 
     // Activate default topology
-    STopologyRequest::request_t topoInfo;
-    topoInfo.m_topologyFile = topoPath.string();
-    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
-    for (auto& session : _sessions)
-    {
-        BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
-    }
+    updateTopology(_sessions, topoPath.string(), STopologyRequest::request_t::EUpdateType::ACTIVATE);
 
     // DDS Intercom services and custom commands for communication with tasks
     vector<CIntercomService> services(_sessions.size());
@@ -497,137 +464,54 @@ void runDDSCustomCmd(vector<CSession>& _sessions)
     runIntercom(_sessions, services, customCmds);
 
     // Wait until all tasks are done
-    for (auto& session : _sessions)
-    {
-        checkIdleAgents(session, requiredCount);
-    }
+    checkIdleAgents(_sessions, requiredCount);
 
-    for (auto& session : _sessions)
-    {
-        session.shutdown();
-        BOOST_CHECK(session.getSessionID().is_nil());
-        BOOST_CHECK(!session.IsRunning());
-    }
+    shutdownSessions(_sessions);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult_cc)
 {
-    // Start and stop DDS session multiple times.
-    // Each time create new DDSSession instance.
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        vector<CSession> sessions(kDDSNumParallelSessions);
-        runDDSCustomCmd(sessions);
-    }
+    runTestMultiple(runDDSCustomCmd);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_cc)
 {
-    // Start and stop DDS session multiple times.
-    // Common DDSSession instance.
-    vector<CSession> sessions(kDDSNumParallelSessions);
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        runDDSCustomCmd(sessions);
-    }
+    runTestSingle(runDDSCustomCmd);
 }
 
 void runDDSEnv(vector<CSession>& _sessions)
 {
-    const std::chrono::seconds timeout(30);
     const fs::path topoPath(fs::canonical(fs::path("env_test.xml")));
 
-    for (auto& session : _sessions)
-    {
-        boost::uuids::uuid sid = session.create();
-        BOOST_CHECK(!sid.is_nil());
-        BOOST_CHECK(session.IsRunning());
-    }
+    createSessions(_sessions);
 
     // Submit DDS agents
     CTopology topo(topoPath.string());
     auto numAgents = topo.getRequiredNofAgents(9);
     size_t requiredCount{ numAgents.first * numAgents.second };
-    SSubmitRequest::request_t submitInfo;
-    submitInfo.m_rms = "localhost";
-    submitInfo.m_slots = numAgents.first * numAgents.second;
-    for (auto& session : _sessions)
-    {
-        BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout));
-    }
-
-    for (auto& session : _sessions)
-    {
-        checkIdleAgents(session, requiredCount);
-    }
+    submitAgents(_sessions, numAgents.first * numAgents.second);
+    checkIdleAgents(_sessions, requiredCount);
 
     // Activate default topology
-    STopologyRequest::request_t topoInfo;
-    topoInfo.m_topologyFile = topoPath.string();
-    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
-    for (auto& session : _sessions)
-    {
-        BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout));
-    }
-
-    for (auto& session : _sessions)
-    {
-        // Get DDS agent logs
-        BOOST_CHECK_NO_THROW(session.syncSendRequest<SGetLogRequest>(SGetLogRequest::request_t(), timeout, &std::cout));
-
-        // Parse DDS agent logs and count the number of successfull tasks
-        // const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
-
-        // TODO: FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS
-        // sessions is required.
-        string logDirStr{ "$HOME/.DDS/sessions/" };
-        logDirStr += to_string(session.getSessionID());
-        logDirStr += "/log/agents";
-        MiscCommon::smart_path(&logDirStr);
-        fs::path logDir{ logDirStr };
-
-        const string stringToCount{ "Task successfully done" };
-        const size_t count{ countStringsInDir(logDir, stringToCount) };
-        BOOST_CHECK_EQUAL(count, requiredCount);
-
-        // Remove DDS logs after parsing
-        fs::remove_all(logDir);
-    }
+    updateTopology(_sessions, topoPath.string(), STopologyRequest::request_t::EUpdateType::ACTIVATE);
 
     // Wait until all tasks are done
-    for (auto& session : _sessions)
-    {
-        checkIdleAgents(session, requiredCount);
-    }
+    checkIdleAgents(_sessions, requiredCount);
 
-    for (auto& session : _sessions)
-    {
-        session.shutdown();
-        BOOST_CHECK(session.getSessionID().is_nil());
-        BOOST_CHECK(!session.IsRunning());
-    }
+    // Parse logs
+    parseLogs(_sessions, "Task successfully done", requiredCount);
+
+    shutdownSessions(_sessions);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_mult_env)
 {
-    // Start and stop DDS session multiple times.
-    // Each time create new DDSSession instance.
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        vector<CSession> sessions(kDDSNumParallelSessions);
-        runDDSEnv(sessions);
-    }
+    runTestMultiple(runDDSEnv);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_run_single_env)
 {
-    // Start and stop DDS session multiple times.
-    // Common DDSSession instance.
-    vector<CSession> sessions(kDDSNumParallelSessions);
-    for (size_t i = 0; i < kDDSNumTestIterations; i++)
-    {
-        runDDSEnv(sessions);
-    }
+    runTestSingle(runDDSEnv);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_tools_session_user_defaults_with_session)
