@@ -26,8 +26,8 @@ namespace dds
             std::string m_sUsrExe;
             std::string m_sUsrEnv;
             taskId_t m_taskID{ 0 };
-            size_t m_taskIndex{ 0 };
-            size_t m_collectionIndex{ 0 };
+            uint32_t m_taskIndex{ 0 };
+            uint32_t m_collectionIndex{ 0 };
             std::string m_taskPath;
             std::string m_groupName;
             std::string m_collectionName;
