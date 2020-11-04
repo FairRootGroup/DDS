@@ -26,12 +26,12 @@ int main(int argc, char* argv[])
         Logger::instance().init(); // Initialize log
 
         size_t optTaskIndex;
-        size_t optCollectionIndex;
+        string optCollectionIndexStr;
 
         // Generic options
         bpo::options_description options("task-test_index options");
         options.add_options()("taskIndex", bpo::value<size_t>(&optTaskIndex), "Task index");
-        options.add_options()("collectionIndex", bpo::value<size_t>(&optCollectionIndex), "Collection index");
+        options.add_options()("collectionIndex", bpo::value<string>(&optCollectionIndexStr), "Collection index");
 
         // Parsing command-line
         bpo::variables_map vm;
@@ -54,10 +54,22 @@ int main(int argc, char* argv[])
         // Basic check of environment variables set by DDS
         //
 
+        // Collection index is not set for tasks outside the collection
+        bool collectionIndexOk{ true };
+        try
+        {
+            size_t optCollectionIndex{ boost::lexical_cast<size_t>(optCollectionIndexStr) };
+            collectionIndexOk = optCollectionIndex == envCollectionIndex;
+        }
+        catch (exception& _e)
+        {
+            collectionIndexOk = optCollectionIndexStr == "%collectionIndex%";
+        }
+
         const bool result{ !boost::uuids::string_generator()(envSessionID).is_nil() &&
                            fs::is_directory(fs::path(envLocation)) && envTaskID > 0 && optTaskIndex == envTaskIndex &&
-                           envTaskName.size() > 0 && envTaskPath.size() > 0 &&
-                           optCollectionIndex == envCollectionIndex && envGroupName.size() > 0 && envSlotID > 0 };
+                           envTaskName.size() > 0 && envTaskPath.size() > 0 && collectionIndexOk &&
+                           envGroupName.size() > 0 && envSlotID > 0 };
 
         if (result)
         {
