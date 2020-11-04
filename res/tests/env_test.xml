@@ -1,0 +1,23 @@
+<topology name="EnvTopology">
+	
+  	<decltask name="EnvTask">
+		<exe reachable="false">$DDS_LOCATION/tests/task-test_index --taskIndex %taskIndex% --collectionIndex %collectionIndex%</exe>
+	</decltask>
+	
+	<declcollection name="EnvCollection">
+		<tasks>
+			<name>EnvTask</name>
+            <name>EnvTask</name>
+		</tasks>
+	</declcollection>
+	
+	<main name="main">
+		<task>EnvTask</task>
+		<collection>EnvCollection</collection>
+		<group name="EnvGroup" n="2">
+            <task>EnvTask</task>
+			<collection>EnvCollection</collection>
+		</group>
+	</main>
+	
+</topology>

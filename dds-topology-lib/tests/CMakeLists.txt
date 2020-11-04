@@ -33,18 +33,16 @@ install(TARGETS
 
 #=============================================================================
 
-add_executable(task-test_index task-test_index.cpp)
+add_executable(task-test_env task-test_env.cpp)
 
-target_link_libraries(task-test_index
-  dds_intercom_lib
+target_link_libraries(task-test_env
+  dds_topology_lib
+  Boost::boost
+  Boost::filesystem
+  Boost::log
 )
 
-target_include_directories(task-test_index
-PRIVATE
-     $<TARGET_PROPERTY:dds_intercom_lib,INTERFACE_INCLUDE_DIRECTORIES>
-)
-
-install(TARGETS task-test_index
+install(TARGETS task-test_env
   RUNTIME DESTINATION tests
 )
 
