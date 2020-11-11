@@ -9,7 +9,7 @@
 #include "ConditionEvent.h"
 #include "ConnectionManagerImpl.h"
 #include "Options.h"
-#include "SSHScheduler.h"
+#include "Scheduler.h"
 #include "ToolsProtocol.h"
 #include "TopoCore.h"
 #include "UIChannelInfo.h"
@@ -109,7 +109,7 @@ namespace dds
                 weakChannelInfo_t _agent,
                 const std::vector<typename protocol_api::SCommandAttachmentImpl<_cmd>::ptr_t>& _attachments);
 
-            void activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel);
+            void activateTasks(const CScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel);
             void enableDisableStatForChannels(bool _enable);
             void _createWnPkg(bool _needInlineBashScript, bool _lightweightPkg, uint32_t _nSlots) const;
             void processToolsAPIRequests(const protocol_api::SCustomCmdCmd& _cmd,

@@ -352,9 +352,9 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     m_updateTopoCondition.wait();
 }
 
-void CConnectionManager::activateTasks(const CSSHScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::activateTasks(const CScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
 {
-    const CSSHScheduler::ScheduleVector_t& schedule = _scheduler.getSchedule();
+    const CScheduler::ScheduleVector_t& schedule = _scheduler.getSchedule();
 
     // Data of user task upload to agents
     weakChannelInfo_t::container_t uploadAgents;
@@ -1310,9 +1310,9 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             }
 
             // Schedule the tasks
-            CSSHScheduler scheduler;
+            CScheduler scheduler;
             scheduler.makeSchedule(m_topo, idleAgents, addedTasks, addedCollections);
-            const CSSHScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
+            const CScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
 
             // Erase removed tasks
             for (auto taskID : removedTasks)

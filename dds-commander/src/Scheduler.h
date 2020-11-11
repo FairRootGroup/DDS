@@ -17,7 +17,7 @@ namespace dds
 {
     namespace commander_cmd
     {
-        class CSSHScheduler
+        class CScheduler
         {
           public:
             struct SSchedule
@@ -43,8 +43,8 @@ namespace dds
             typedef std::map<std::pair<std::string, std::string>, size_t> hostCounterMap_t;
 
           public:
-            CSSHScheduler();
-            ~CSSHScheduler();
+            CScheduler();
+            ~CScheduler();
 
             void makeSchedule(const topology_api::CTopoCore& _topology, const weakChannelInfoVector_t& _channels);
 

@@ -11,7 +11,7 @@ add_executable(${test}
   TestScheduler.cpp
   ${dds-commander_SOURCE_DIR}/src/AgentChannel.cpp
   ${dds-commander_SOURCE_DIR}/src/ChannelId.cpp
-  ${dds-commander_SOURCE_DIR}/src/SSHScheduler.cpp
+  ${dds-commander_SOURCE_DIR}/src/Scheduler.cpp
 )
 
 target_link_libraries(${test}

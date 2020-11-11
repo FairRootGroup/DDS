@@ -10,7 +10,7 @@ set(SOURCE_FILES
 	src/ConnectionManager.cpp
 	src/AgentChannel.cpp
 	src/UIChannelInfo.cpp
-	src/SSHScheduler.cpp
+	src/Scheduler.cpp
 	src/ChannelId.cpp
 )
 
@@ -19,7 +19,7 @@ set(HEADER_FILES
 	src/ConnectionManager.h
 	src/AgentChannel.h
 	src/UIChannelInfo.h
-	src/SSHScheduler.h
+	src/Scheduler.h
 	src/ChannelId.h
 )
 
