@@ -60,7 +60,7 @@
 	<declcollection name="TestCollection3">
 		<requirements>
 			<name>requirement6</name>
-		</requirement>
+		</requirements>
 		<tasks>
 			<name>TestTask1</name>
 		</tasks>
