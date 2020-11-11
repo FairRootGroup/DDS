@@ -13,7 +13,7 @@
 #include "AgentChannel.h"
 #include "ConnectionManager.h"
 #include "HostInfoCmd.h"
-#include "SSHScheduler.h"
+#include "Scheduler.h"
 #include "TopoCore.h"
 // MiscCommon
 #include "TimeMeasure.h"
@@ -209,9 +209,9 @@ BOOST_AUTO_TEST_SUITE(test_dds_scheduler_performance)
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_host_pattern_matches)
 {
-    BOOST_CHECK(CSSHScheduler::hostPatternMatches(".+.gsi.de", "dds.gsi.de") == true);
-    BOOST_CHECK(CSSHScheduler::hostPatternMatches(".+.gsi.de", "gsi.de") == false);
-    BOOST_CHECK(CSSHScheduler::hostPatternMatches(".+.gsi.de", "google.com") == false);
+    BOOST_CHECK(CScheduler::hostPatternMatches(".+.gsi.de", "dds.gsi.de") == true);
+    BOOST_CHECK(CScheduler::hostPatternMatches(".+.gsi.de", "gsi.de") == false);
+    BOOST_CHECK(CScheduler::hostPatternMatches(".+.gsi.de", "google.com") == false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -2,7 +2,7 @@
 //
 //
 //
-#include "SSHScheduler.h"
+#include "Scheduler.h"
 #include "TimeMeasure.h"
 #include <iomanip>
 #include <set>
@@ -18,25 +18,25 @@ using namespace dds::protocol_api;
 using namespace std;
 using namespace MiscCommon;
 
-CSSHScheduler::CSSHScheduler()
+CScheduler::CScheduler()
 {
 }
 
-CSSHScheduler::~CSSHScheduler()
+CScheduler::~CScheduler()
 {
 }
 
-void CSSHScheduler::makeSchedule(const CTopoCore& _topology, const weakChannelInfoVector_t& _channels)
+void CScheduler::makeSchedule(const CTopoCore& _topology, const weakChannelInfoVector_t& _channels)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
         [this, &_topology, &_channels]() { makeScheduleImpl(_topology, _channels, nullptr, nullptr); });
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
-void CSSHScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
-                                 const weakChannelInfoVector_t& _channels,
-                                 const CTopoCore::IdSet_t& _addedTasks,
-                                 const CTopoCore::IdSet_t& _addedCollections)
+void CScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
+                              const weakChannelInfoVector_t& _channels,
+                              const CTopoCore::IdSet_t& _addedTasks,
+                              const CTopoCore::IdSet_t& _addedCollections)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
         [this, &_topology, &_channels, &_addedTasks, &_addedCollections]() {
@@ -45,10 +45,10 @@ void CSSHScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
-void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
-                                     const weakChannelInfoVector_t& _channels,
-                                     const CTopoCore::IdSet_t* _addedTasks,
-                                     const CTopoCore::IdSet_t* _addedCollections)
+void CScheduler::makeScheduleImpl(const CTopoCore& _topology,
+                                  const weakChannelInfoVector_t& _channels,
+                                  const CTopoCore::IdSet_t* _addedTasks,
+                                  const CTopoCore::IdSet_t* _addedCollections)
 {
     m_schedule.clear();
 
@@ -126,14 +126,14 @@ void CSSHScheduler::makeScheduleImpl(const CTopoCore& _topology,
     LOG(debug) << toString();
 }
 
-void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
-                                  const weakChannelInfoVector_t& _channels,
-                                  hostToChannelMap_t& _hostToChannelMap,
-                                  set<uint64_t>& _scheduledTasks,
-                                  const set<uint64_t>& _tasksInCollections,
-                                  bool useRequirement,
-                                  const CTopoCore::IdSet_t* _addedTasks,
-                                  hostCounterMap_t& _hostCounterMap)
+void CScheduler::scheduleTasks(const CTopoCore& _topology,
+                               const weakChannelInfoVector_t& _channels,
+                               hostToChannelMap_t& _hostToChannelMap,
+                               set<uint64_t>& _scheduledTasks,
+                               const set<uint64_t>& _tasksInCollections,
+                               bool useRequirement,
+                               const CTopoCore::IdSet_t* _addedTasks,
+                               hostCounterMap_t& _hostCounterMap)
 {
     STopoRuntimeTask::FilterIteratorPair_t tasks = _topology.getRuntimeTaskIterator();
     for (auto it = tasks.first; it != tasks.second; it++)
@@ -215,13 +215,13 @@ void CSSHScheduler::scheduleTasks(const CTopoCore& _topology,
     }
 }
 
-void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
-                                        const weakChannelInfoVector_t& _channels,
-                                        hostToChannelMap_t& _hostToChannelMap,
-                                        set<uint64_t>& _scheduledTasks,
-                                        const CollectionMap_t& _collectionMap,
-                                        bool useRequirement,
-                                        hostCounterMap_t& _hostCounterMap)
+void CScheduler::scheduleCollections(const CTopoCore& _topology,
+                                     const weakChannelInfoVector_t& _channels,
+                                     hostToChannelMap_t& _hostToChannelMap,
+                                     set<uint64_t>& _scheduledTasks,
+                                     const CollectionMap_t& _collectionMap,
+                                     bool useRequirement,
+                                     hostCounterMap_t& _hostCounterMap)
 {
     for (const auto& it_col : _collectionMap)
     {
@@ -297,12 +297,12 @@ void CSSHScheduler::scheduleCollections(const CTopoCore& _topology,
     }
 }
 
-bool CSSHScheduler::checkRequirement(CTopoRequirement::Ptr_t _requirement,
-                                     bool _useRequirement,
-                                     const string& _hostName,
-                                     const string& _wnName,
-                                     const string& _elementName,
-                                     hostCounterMap_t& _hostCounterMap) const
+bool CScheduler::checkRequirement(CTopoRequirement::Ptr_t _requirement,
+                                  bool _useRequirement,
+                                  const string& _hostName,
+                                  const string& _wnName,
+                                  const string& _elementName,
+                                  hostCounterMap_t& _hostCounterMap) const
 {
     if (!_useRequirement)
         return true;
@@ -319,8 +319,8 @@ bool CSSHScheduler::checkRequirement(CTopoRequirement::Ptr_t _requirement,
 
     if (type == EType::WnName || type == EType::HostName)
     {
-        return CSSHScheduler::hostPatternMatches(_requirement->getValue(),
-                                                 (type == EType::HostName) ? _hostName : _wnName);
+        return CScheduler::hostPatternMatches(_requirement->getValue(),
+                                              (type == EType::HostName) ? _hostName : _wnName);
     }
     else if (type == EType::MaxInstancesPerHost)
     {
@@ -350,12 +350,12 @@ bool CSSHScheduler::checkRequirement(CTopoRequirement::Ptr_t _requirement,
     return false;
 }
 
-const CSSHScheduler::ScheduleVector_t& CSSHScheduler::getSchedule() const
+const CScheduler::ScheduleVector_t& CScheduler::getSchedule() const
 {
     return m_schedule;
 }
 
-bool CSSHScheduler::hostPatternMatches(const string& _hostPattern, const string& _host)
+bool CScheduler::hostPatternMatches(const string& _hostPattern, const string& _host)
 {
     if (_hostPattern.empty())
         return true;
@@ -363,7 +363,7 @@ bool CSSHScheduler::hostPatternMatches(const string& _hostPattern, const string&
     return boost::regex_match(_host, e);
 }
 
-string CSSHScheduler::toString()
+string CScheduler::toString()
 {
     stringstream ss;
     ss << "Scheduled tasks: " << m_schedule.size() << endl;
