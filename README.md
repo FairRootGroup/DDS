@@ -23,7 +23,7 @@ DDS:
 
 ```bash
 ./bootstrap.sh --prefix=[INSTALL DIR] --without-icu
-./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=system threading=multi link=shared,static cxxflags="-std=c++11 -stdlib=libc++ -Wthread-safety" linkflags="-lc++ -stdlib=libc++" install
+./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=system threading=multi link=shared,static cxxstd=17 install
 
 cd [INSTALL_DIR]/lib
 find . -name '*.dylib' -exec bash -c 'nm=$(basename $1);install_name_tool $1 -id [INSTALL_DIR]/lib/$nm' -- {} \;
