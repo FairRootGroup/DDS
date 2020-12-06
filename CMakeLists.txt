@@ -1,4 +1,4 @@
-# Copyright 2014 GSI, Inc. All rights reserved.
+# Copyright 2014-2020 GSI, Inc. All rights reserved.
 #
 #
 project( DDS )
@@ -150,11 +150,11 @@ endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "$${CMAKE_INSTALL_LIBDIR}" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
 endif()
 
 #
@@ -423,8 +423,7 @@ endforeach()
 set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
 set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds-commander>)
 
-set(PREREQ_DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-
+set(PREREQ_DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # WORKAROUND: don't generate helper script when building an xcode project
 # The reason: "Evaluation file to be written multiple times for different configurations or languages with different content"
@@ -565,3 +564,8 @@ install(FILES
 )
 
 install(FILES ${CMAKE_SOURCE_DIR}/dds.h DESTINATION "include/dds")
+
+# Create a symlink to the lib dir if its location is outside of DDS_LOCATION.
+# For example, when "cmake -DCMAKE_INSTALL_LIBDIR=..." is specified then the location of the lib dir can be different.
+# Some DDS modules expects to find libs in $DDS_LOCATION/lib, therefore a link is created to keep backward compatibility.
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_FULL_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib)")
