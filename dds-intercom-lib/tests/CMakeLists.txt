@@ -20,7 +20,7 @@ target_link_libraries(${test}
   Boost::program_options
 )
 
-install(TARGETS ${test} DESTINATION tests)
+install(TARGETS ${test} DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 ##################################################################
 # task-test_key_value
@@ -33,7 +33,7 @@ target_link_libraries(task-test_key_value
   dds_topology_lib
   Boost::boost
 )
-install(TARGETS task-test_key_value DESTINATION tests)
+install(TARGETS task-test_key_value DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 ##################################################################
 # task-test_custom_cmd
@@ -46,4 +46,4 @@ target_link_libraries(task-test_custom_cmd
   dds_topology_lib
   Boost::boost
 )
-install(TARGETS task-test_custom_cmd DESTINATION tests)
+install(TARGETS task-test_custom_cmd DESTINATION "${PROJECT_INSTALL_TESTS}")

@@ -3,4 +3,4 @@
 #
 project(dds-tutorial3)
 
-install(PROGRAMS run_tutorial3.sh DESTINATION tutorials/tutorial3)
+install(PROGRAMS run_tutorial3.sh DESTINATION ${PROJECT_INSTALL_TUTORIALSDIR}/tutorial3)

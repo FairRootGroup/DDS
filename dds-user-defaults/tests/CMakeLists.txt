@@ -16,4 +16,4 @@ target_link_libraries(${test}
   Boost::unit_test_framework
 )
 
-install(TARGETS ${test} DESTINATION tests)
+install(TARGETS ${test} DESTINATION "${PROJECT_INSTALL_TESTS}")

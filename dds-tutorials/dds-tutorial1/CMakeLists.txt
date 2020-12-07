@@ -19,7 +19,7 @@ target_link_libraries(${task}
 )
 
 install(TARGETS ${task}
-  RUNTIME DESTINATION tutorials/tutorial1
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TUTORIALSDIR}/tutorial1"
 )
 
 ##################################################################
@@ -38,7 +38,7 @@ target_link_libraries(${task}
 )
 
 install(TARGETS ${task}
-  RUNTIME DESTINATION tutorials/tutorial1
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TUTORIALSDIR}/tutorial1"
 )
 
 ##################################################################
@@ -47,5 +47,5 @@ install(FILES
   tutorial1_topo.xml
   tutorial1_hosts.cfg
 
-  DESTINATION tutorials/tutorial1
+  DESTINATION "${PROJECT_INSTALL_TUTORIALSDIR}/tutorial1"
 )

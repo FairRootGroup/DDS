@@ -36,8 +36,8 @@ target_include_directories(${PROJECT_NAME}
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR/src}>
 )
 
-install(TARGETS ${PROJECT_NAME}            DESTINATION plugins/${PROJECT_NAME})
-install(PROGRAMS src/dds-submit-ssh-worker DESTINATION plugins/${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME} DESTINATION "${PROJECT_INSTALL_PLUGINSDIR}/${PROJECT_NAME}")
+install(PROGRAMS src/dds-submit-ssh-worker DESTINATION "${PROJECT_INSTALL_PLUGINSDIR}/${PROJECT_NAME}")
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")

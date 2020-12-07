@@ -19,7 +19,7 @@ target_link_libraries(${test}
   Boost::filesystem
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
@@ -35,7 +35,7 @@ target_link_libraries(${test}
   Boost::filesystem
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
@@ -51,7 +51,7 @@ target_link_libraries(${test}
   Boost::program_options
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
@@ -67,7 +67,7 @@ target_link_libraries(${test}
   Boost::filesystem
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
@@ -82,7 +82,7 @@ target_link_libraries(${test}
   Boost::system
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
@@ -96,7 +96,7 @@ target_link_libraries(${test}
   Boost::unit_test_framework
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
@@ -112,4 +112,4 @@ target_link_libraries(${test}
   Boost::filesystem
 )
 
-install(TARGETS ${test} RUNTIME DESTINATION tests)
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")

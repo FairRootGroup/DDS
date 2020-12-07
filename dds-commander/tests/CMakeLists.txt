@@ -34,14 +34,13 @@ target_include_directories(${test}
 )
 
 install(TARGETS ${test}
-  RUNTIME DESTINATION tests
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}"
 )
 
 if(BUILD_TESTS)
   install(FILES
     topology_scheduler_test_1.xml
     topology_scheduler_test_2.xml
-    
-    DESTINATION tests
+    DESTINATION "${PROJECT_INSTALL_TESTS}"
   )
 endif()
