@@ -12,6 +12,8 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
 
+string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version to use (default is 17)")
@@ -60,7 +62,19 @@ endif (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 #
 # Set appropriate defaults for install subdirectories.
 # Especially for correct packaging.
+# Define CMAKE_INSTALL_*DIR and CMAKE_INSTALL_FULL_*DIR variables
 include(GNUInstallDirs)
+
+# Define install dirs
+set(PROJECT_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
+set(PROJECT_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+set(PROJECT_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME_LOWER})
+set(PROJECT_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME_LOWER})
+set(PROJECT_INSTALL_TESTS tests)
+set(PROJECT_INSTALL_DOCDIR ${CMAKE_INSTALL_DATADIR}/doc/${PROJECT_NAME_LOWER})
+set(PROJECT_INSTALL_SYSCONFDIR ${CMAKE_INSTALL_SYSCONFDIR})
+set(PROJECT_INSTALL_PLUGINSDIR plugins)
+set(PROJECT_INSTALL_TUTORIALSDIR tutorials)
 
 #
 # Options
@@ -157,11 +171,11 @@ endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_INSTALL_RPATH "${PROJECT_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_LIBDIR}" isSystemDir)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${PROJECT_INSTALL_LIBDIR}" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
+  set(CMAKE_INSTALL_RPATH "${PROJECT_INSTALL_LIBDIR}")
 endif()
 
 #
@@ -356,13 +370,13 @@ endif(BUILD_dds_tools_lib)
 #
 # Install
 #
-install(FILES ${DDS_DOC_FILES} DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES ${DDS_DOC_FILES} DESTINATION "${PROJECT_INSTALL_DOCDIR}")
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/etc/DDS_env.sh DESTINATION .)
 # install bin files
-install(PROGRAMS ${DDS_BIN_FILES} DESTINATION bin)
-install(PROGRAMS ${DDS_BIN_PRIVATE_FILES} DESTINATION bin/private)
+install(PROGRAMS ${DDS_BIN_FILES} DESTINATION "${PROJECT_INSTALL_BINDIR}")
+install(PROGRAMS ${DDS_BIN_PRIVATE_FILES} DESTINATION "${PROJECT_INSTALL_BINDIR}/private")
 # install etc files
-install(FILES ${DDS_ETC_FILES} DESTINATION etc)
+install(FILES ${DDS_ETC_FILES} DESTINATION "${PROJECT_INSTALL_SYSCONFDIR}")
 # install share files
 install(FILES ${DDS_SHARE_FILES} DESTINATION share)
 # tests runner
@@ -372,7 +386,7 @@ if( BUILD_TESTS )
         set(DDS_VAR_MULTIPLIER ${MULTIPLIER})
         set(DDS_VAR_MAX_VALUE ${MAX_VALUE})
         configure_file(${CMAKE_SOURCE_DIR}/res/tests/property_test.xml.in ${CMAKE_CURRENT_BINARY_DIR}/res/tests/${TOPO_FILE} @ONLY)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/res/tests/${TOPO_FILE} DESTINATION tests)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/res/tests/${TOPO_FILE} DESTINATION "${PROJECT_INSTALL_TESTS}")
     endmacro()
     ddsConfigTopoPropertyTest(1 10 property_test.xml)
     ddsConfigTopoPropertyTest(2 10 property_test_up.xml)
@@ -380,12 +394,12 @@ if( BUILD_TESTS )
     ddsConfigTopoPropertyTest(2 1000000 property_test_inf_up.xml)
     
     configure_file(run_test.sh.in ${CMAKE_CURRENT_BINARY_DIR}/run_test.sh @ONLY)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/run_test.sh DESTINATION tests)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION tests)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_local.sh DESTINATION tests)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_slurm.sh DESTINATION tests)
-    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/env_test.xml DESTINATION tests)
-    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/custom_cmd_test.xml DESTINATION tests)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/run_test.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_local.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_slurm.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/env_test.xml DESTINATION "${PROJECT_INSTALL_TESTS}")
+    install(FILES ${CMAKE_SOURCE_DIR}/res/tests/custom_cmd_test.xml DESTINATION "${PROJECT_INSTALL_TESTS}")
 endif( BUILD_TESTS )
 
 
@@ -490,7 +504,7 @@ add_custom_target( wn_bin_upload
 add_dependencies( wn_bin_upload
 	wn_bin )
 
-INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OPTIONAL)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION "${PROJECT_INSTALL_BINDIR}/wn_bins" OPTIONAL)
 
 
 # WORKAROUND: don't generate helper script when building an xcode project
@@ -498,7 +512,7 @@ INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION bin/wn_bins OP
 if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
 	# WORKAROUND: create destination "lib" directory.
 	# INSTALL SCRIPT is called before any other lib is installed, therefore we need to create a dest. dir.
-	INSTALL(DIRECTORY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+	INSTALL(DIRECTORY DESTINATION "${PROJECT_INSTALL_LIBDIR}")
 	INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
 	if( BUILD_TESTS )
 		INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake)
@@ -570,7 +584,7 @@ install(FILES
   DESTINATION ${PACKAGE_INSTALL_DESTINATION}
 )
 
-install(FILES ${CMAKE_SOURCE_DIR}/dds.h DESTINATION "include/dds")
+install(FILES ${CMAKE_SOURCE_DIR}/dds.h DESTINATION "${PROJECT_INSTALL_INCLUDEDIR}")
 
 # Create a symlink to the lib dir if its location is outside of DDS_LOCATION.
 # For example, when "cmake -DCMAKE_INSTALL_LIBDIR=..." is specified then the location of the lib dir can be different.

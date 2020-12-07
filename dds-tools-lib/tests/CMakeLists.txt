@@ -19,13 +19,13 @@ target_link_libraries(dds_tools_lib-protocol-tests
 install(TARGETS
   dds_tools_lib-protocol-tests
 
-  RUNTIME DESTINATION tests
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}"
 )
 
 install(FILES 
   test_protocol_1.json
 
-  DESTINATION tests
+  DESTINATION "${PROJECT_INSTALL_TESTS}"
 )
 
 
@@ -45,5 +45,5 @@ target_link_libraries(dds_tools_lib-session-tests
 install(TARGETS
   dds_tools_lib-session-tests
 
-  RUNTIME DESTINATION tests
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}"
 )

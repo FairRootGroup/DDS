@@ -27,8 +27,7 @@ target_link_libraries(dds_topology_lib-performance-tests
 install(TARGETS
   dds_topology_lib-tests
   dds_topology_lib-performance-tests
-
-  RUNTIME DESTINATION tests
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}"
 )
 
 #=============================================================================
@@ -43,7 +42,7 @@ target_link_libraries(task-test_env
 )
 
 install(TARGETS task-test_env
-  RUNTIME DESTINATION tests
+  RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}"
 )
 
 #=============================================================================
@@ -78,6 +77,5 @@ install(FILES
   topology_test_creator_1.xml
   topology_test_creator_2.xml
   topology_test_creator_3.xml
-
-  DESTINATION tests
+  DESTINATION "${PROJECT_INSTALL_TESTS}"
 )

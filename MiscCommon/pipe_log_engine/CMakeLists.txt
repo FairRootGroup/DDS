@@ -25,5 +25,5 @@ target_include_directories(pipe_log_engine
 )
 
 install(TARGETS pipe_log_engine
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION "${PROJECT_INSTALL_LIBDIR}"
 )
