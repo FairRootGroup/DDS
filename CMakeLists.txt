@@ -12,10 +12,6 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
 
-# Set appropriate defaults for install subdirectories.
-# Especially for correct packaging.
-include(GNUInstallDirs)
-
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version to use (default is 17)")
@@ -49,6 +45,23 @@ else( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 
 endif( EXISTS "${CMAKE_SOURCE_DIR}/.git" )
 message(STATUS "Building DDS version: ${DDS_VERSION}")
+
+#
+# Install directory
+#
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/DDS/${DDS_VERSION}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+endif (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+#
+# NOTE: the GNUInstallDirs should be included after the CMAKE_INSTALL_PREFIX is set.
+# Otherwise the CMAKE_INSTALL_FULL_* variables will not respect the custom prefix.
+#
+#
+# Set appropriate defaults for install subdirectories.
+# Especially for correct packaging.
+include(GNUInstallDirs)
+
 #
 # Options
 #
@@ -105,12 +118,6 @@ add_custom_target( format-code
        COMMAND ${CMAKE_SOURCE_DIR}/utils/update_format.sh ${CMAKE_SOURCE_DIR}
        COMMENT "Updating source code formatting.")
 
-#
-# Install directory
-#
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/DDS/${DDS_VERSION}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
-endif (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 #
 # This is needed to properly install PoD modules
 #
