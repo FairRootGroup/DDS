@@ -91,7 +91,6 @@ option(BUILD_dds-user-defaults "Build dds-user-defaults" ON)
 option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
 option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
-option(BUILD_dds-test "Build dds-test" ON)
 option(BUILD_dds-tutorials "Build dds-tutorials" ON)
 option(BUILD_dds-stat "Build dds-stat" ON)
 option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
@@ -294,12 +293,6 @@ if(BUILD_dds-agent-cmd)
     message(STATUS "Build dds-agent-cmd - YES")
     add_subdirectory ( dds-agent-cmd )
 endif(BUILD_dds-agent-cmd)
-
-# dds-test
-if(BUILD_dds-test)
-    message(STATUS "Build dds-test - YES")
-    add_subdirectory ( dds-test )
-endif(BUILD_dds-test)
 
 # dds-tutorials
 if(BUILD_dds-tutorials)

@@ -6,7 +6,8 @@
 Removed: obsolete test project. ODC is used as an integration platform for DDS.    
 Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentation fault.   
 Fixed: When creating softlinks to boost prerequisite libs, skip linking if destination file exists. (GH-323)     
-Modified: C++17 is now a required standard.    
+Modified: C++17 is now a required standard.     
+Modified: Remove an obsolet dds-test tool. (GH-341)    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   
