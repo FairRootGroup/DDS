@@ -102,10 +102,6 @@ namespace dds
                 MESSAGE_HANDLER(cmdWATCHDOG_HEARTBEAT, on_cmdWATCHDOG_HEARTBEAT)
                 MESSAGE_HANDLER_DISPATCH(cmdGET_PROP_LIST)
                 MESSAGE_HANDLER_DISPATCH(cmdGET_PROP_VALUES)
-                // Statistics commands
-                MESSAGE_HANDLER_DISPATCH(cmdENABLE_STAT)
-                MESSAGE_HANDLER_DISPATCH(cmdDISABLE_STAT)
-                MESSAGE_HANDLER_DISPATCH(cmdGET_STAT)
                 // custom command
                 MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
                 // TASK SLOTS

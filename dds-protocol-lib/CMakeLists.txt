@@ -23,7 +23,6 @@ set(SOURCE_FILES
 	src/ProgressCmd.cpp
 	src/UserTaskDoneCmd.cpp
 	src/GetPropValuesCmd.cpp
-	src/StatImpl.cpp
     src/CustomCmdCmd.cpp
     src/UpdateTopologyCmd.cpp
     src/ReplyCmd.cpp
@@ -55,7 +54,6 @@ set(SRC_HDRS
 	src/ProgressCmd.h
 	src/UserTaskDoneCmd.h
 	src/GetPropValuesCmd.h
-	src/StatImpl.h
     src/CustomCmdCmd.h
     src/UpdateTopologyCmd.h
     src/BaseEventHandlersImpl.h

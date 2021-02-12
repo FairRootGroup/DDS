@@ -28,7 +28,6 @@
 #include "Logger.h"
 #include "MonitoringThread.h"
 #include "ProtocolDef.h"
-#include "StatImpl.h"
 
 namespace fs = boost::filesystem;
 
@@ -224,8 +223,7 @@ namespace dds
         class CBaseChannelImpl : public boost::noncopyable,
                                  public CChannelEventHandlersImpl,
                                  public CChannelMessageHandlersImpl,
-                                 public std::enable_shared_from_this<T>,
-                                 public CStatImpl
+                                 public std::enable_shared_from_this<T>
         {
             typedef std::deque<CProtocolMessage::protocolMessagePtr_t> protocolMessagePtrQueue_t;
             typedef std::vector<boost::asio::mutable_buffer> protocolMessageBuffer_t;
@@ -246,7 +244,6 @@ namespace dds
             CBaseChannelImpl<T>(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
                 : CChannelEventHandlersImpl()
                 , CChannelMessageHandlersImpl()
-                , CStatImpl(_service)
                 , m_isHandshakeOK(false)
                 , m_channelType(EChannelType::UNKNOWN)
                 , m_protocolHeaderID(_protocolHeaderID)
@@ -827,9 +824,6 @@ namespace dds
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
 
-                    // Log read statistics
-                    this->logReadMessage(m_currentMsg);
-
                     // Read next message
                     m_currentMsg = std::make_shared<CProtocolMessage>();
                     readHeader();
@@ -849,9 +843,6 @@ namespace dds
                             // process received message
                             T* pThis = static_cast<T*>(this);
                             pThis->processMessage(m_currentMsg);
-
-                            // Log read statistics
-                            this->logReadMessage(m_currentMsg);
 
                             // Read next message
                             m_currentMsg = std::make_shared<CProtocolMessage>();
@@ -924,9 +915,6 @@ namespace dds
                                 // lock the modification of the container
                                 {
                                     std::lock_guard<std::mutex> lock(m_mutexWriteBuffer);
-
-                                    // Log write statistics
-                                    this->logWriteMessages(m_writeBufferQueue);
 
                                     m_writeBuffer.clear();
                                     m_writeBufferQueue.clear();

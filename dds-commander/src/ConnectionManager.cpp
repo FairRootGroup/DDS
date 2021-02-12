@@ -33,7 +33,6 @@ namespace fs = boost::filesystem;
 
 CConnectionManager::CConnectionManager(const SOptions_t& _options)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
-    , m_statEnabled(false)
 {
     LOG(info) << "CConnectionManager constructor";
 }
@@ -69,8 +68,6 @@ void CConnectionManager::_stop()
 
 void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newClient)
 {
-    _newClient->setStatEnabled(m_statEnabled);
-
     CAgentChannel::weakConnectionPtr_t weakClient(_newClient);
 
     _newClient->registerHandler<EChannelEvents::OnHandshakeOK>([this, weakClient](const SSenderInfo& _sender) {
@@ -123,21 +120,6 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
     _newClient->registerHandler<cmdREPLY_ID>(
         [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment) {
             this->on_cmdREPLY_ID(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdENABLE_STAT>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment) {
-            this->on_cmdENABLE_STAT(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdDISABLE_STAT>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment) {
-            this->on_cmdDISABLE_STAT(_sender, _attachment, weakClient);
-        });
-
-    _newClient->registerHandler<cmdGET_STAT>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment) {
-            this->on_cmdGET_STAT(_sender, _attachment, weakClient);
         });
 
     _newClient->registerHandler<cmdCUSTOM_CMD>(
@@ -725,95 +707,6 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
     catch (exception& _e)
     {
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdREPLY_ID), _sender.m_ID);
-    }
-}
-
-void CConnectionManager::enableDisableStatForChannels(bool _enable)
-{
-    CConnectionManager::weakChannelInfo_t::container_t channels(getChannels());
-
-    for (const auto& v : channels)
-    {
-        if (v.m_channel.expired())
-            continue;
-        auto ptr = v.m_channel.lock();
-
-        ptr->setStatEnabled(_enable);
-    }
-
-    m_statEnabled = _enable;
-}
-
-void CConnectionManager::on_cmdENABLE_STAT(const SSenderInfo& _sender,
-                                           SCommandAttachmentImpl<cmdENABLE_STAT>::ptr_t _attachment,
-                                           CAgentChannel::weakConnectionPtr_t _channel)
-{
-    auto p = _channel.lock();
-    try
-    {
-        enableDisableStatForChannels(true);
-
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Statistics is enabled on DDS commander server", MiscCommon::info, cmdENABLE_STAT),
-            _sender.m_ID);
-    }
-    catch (exception& _e)
-    {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdENABLE_STAT), _sender.m_ID);
-    }
-}
-
-void CConnectionManager::on_cmdDISABLE_STAT(const SSenderInfo& _sender,
-                                            SCommandAttachmentImpl<cmdDISABLE_STAT>::ptr_t _attachment,
-                                            CAgentChannel::weakConnectionPtr_t _channel)
-{
-    auto p = _channel.lock();
-    try
-    {
-        enableDisableStatForChannels(false);
-
-        p->pushMsg<cmdSIMPLE_MSG>(
-            SSimpleMsgCmd("Statistics is disabled on DDS commander server", MiscCommon::info, cmdDISABLE_STAT),
-            _sender.m_ID);
-    }
-    catch (exception& _e)
-    {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdDISABLE_STAT), _sender.m_ID);
-    }
-}
-
-void CConnectionManager::on_cmdGET_STAT(const SSenderInfo& _sender,
-                                        SCommandAttachmentImpl<cmdGET_STAT>::ptr_t _attachment,
-                                        CAgentChannel::weakConnectionPtr_t _channel)
-{
-    auto p = _channel.lock();
-    try
-    {
-        CConnectionManager::weakChannelInfo_t::container_t channels(getChannels());
-
-        SReadStat readStat;
-        SWriteStat writeStat;
-
-        for (const auto& v : channels)
-        {
-            if (v.m_channel.expired())
-                continue;
-            auto ptr = v.m_channel.lock();
-
-            readStat.addFromStat(ptr->getReadStat());
-            writeStat.addFromStat(ptr->getWriteStat());
-        }
-
-        addDisconnectedChannelsStatToStat(readStat, writeStat);
-
-        stringstream ss;
-        ss << "Number of active channels: " << channels.size() << endl << readStat.toString() << writeStat.toString();
-
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdGET_STAT), _sender.m_ID);
-    }
-    catch (exception& _e)
-    {
-        p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdGET_STAT), _sender.m_ID);
     }
 }
 

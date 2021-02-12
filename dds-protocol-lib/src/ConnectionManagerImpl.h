@@ -11,7 +11,6 @@
 #include "MonitoringThread.h"
 #include "Options.h"
 #include "ProtocolMessage.h"
-#include "StatImpl.h"
 // STD
 #include <mutex>
 // BOOST
@@ -419,16 +418,6 @@ namespace dds
                 return counter;
             }
 
-            void addDisconnectedChannelsStatToStat(SReadStat& _readStat, SWriteStat& _writeStat)
-            {
-                // Add disconnected channels statistics to some external statistics.
-                // This is done in order not to copy self stat structures and return them.
-                // Or not to return reference to self stat together with mutex.
-                std::lock_guard<std::mutex> lock(m_statMutex);
-                _readStat.addFromStat(m_readStatDisconnectedChannels);
-                _writeStat.addFromStat(m_writeStatDisconnectedChannels);
-            }
-
           private:
             void acceptHandler(typename T::connectionPtr_t _client,
                                asioAcceptorPtr_t _acceptor,
@@ -470,15 +459,7 @@ namespace dds
 
                 // Subscribe on dissconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-                    [this, newClient](const SSenderInfo& _sender) -> void {
-                        {
-                            // collect statistics for disconnected channels
-                            std::lock_guard<std::mutex> lock(m_statMutex);
-                            m_readStatDisconnectedChannels.addFromStat(newClient->getReadStat());
-                            m_writeStatDisconnectedChannels.addFromStat(newClient->getWriteStat());
-                        }
-                        this->removeClient(newClient.get());
-                    });
+                    [this, newClient](const SSenderInfo& _sender) -> void { this->removeClient(newClient.get()); });
 
                 _acceptor->async_accept(
                     newClient->socket(),
@@ -570,11 +551,6 @@ namespace dds
             asioAcceptorPtr_t m_acceptorUI;
 
             boost::thread_group m_workerThreads;
-
-            // Statistics of disconnected channels
-            SReadStat m_readStatDisconnectedChannels;
-            SWriteStat m_writeStatDisconnectedChannels;
-            std::mutex m_statMutex;
         };
     } // namespace protocol_api
 } // namespace dds

@@ -57,11 +57,8 @@ namespace dds
             cmdGET_PROP_VALUES,
             cmdPROGRESS, // attachment: SProgressCmd
             cmdWATCHDOG_HEARTBEAT,
-            cmdSET_TOPOLOGY,    // attachment: SSetTopologyCmd
-            cmdUPDATE_TOPOLOGY, // attachment: SUpdateTopologyCmd
-            cmdENABLE_STAT,
-            cmdDISABLE_STAT,
-            cmdGET_STAT,
+            cmdSET_TOPOLOGY,           // attachment: SSetTopologyCmd
+            cmdUPDATE_TOPOLOGY,        // attachment: SUpdateTopologyCmd
             cmdCUSTOM_CMD,             // attachment: SCustomCmdCmd
             cmdLOBBY_MEMBER_INFO,      // attachment: SSimpleMsgCmd
             cmdLOBBY_MEMBER_HANDSHAKE, // attachment: SVersionCmd
@@ -106,9 +103,6 @@ namespace dds
             { cmdWATCHDOG_HEARTBEAT, NAME_TO_STRING(cmdWATCHDOG_HEARTBEAT) },
             { cmdSET_TOPOLOGY, NAME_TO_STRING(cmdSET_TOPOLOGY) },
             { cmdUPDATE_TOPOLOGY, NAME_TO_STRING(cmdUPDATE_TOPOLOGY) },
-            { cmdENABLE_STAT, NAME_TO_STRING(cmdENABLE_STAT) },
-            { cmdDISABLE_STAT, NAME_TO_STRING(cmdDISABLE_STAT) },
-            { cmdGET_STAT, NAME_TO_STRING(cmdGET_STAT) },
             { cmdCUSTOM_CMD, NAME_TO_STRING(cmdCUSTOM_CMD) },
             { cmdLOBBY_MEMBER_INFO, NAME_TO_STRING(cmdLOBBY_MEMBER_INFO) },
             { cmdLOBBY_MEMBER_HANDSHAKE, NAME_TO_STRING(cmdLOBBY_MEMBER_HANDSHAKE) },

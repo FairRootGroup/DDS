@@ -65,17 +65,6 @@ namespace dds
             void on_cmdREPLY_ID(const protocol_api::SSenderInfo& _sender,
                                 protocol_api::SCommandAttachmentImpl<protocol_api::cmdREPLY_ID>::ptr_t _attachment,
                                 CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdENABLE_STAT(
-                const protocol_api::SSenderInfo& _sender,
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdENABLE_STAT>::ptr_t _attachment,
-                CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdDISABLE_STAT(
-                const protocol_api::SSenderInfo& _sender,
-                protocol_api::SCommandAttachmentImpl<protocol_api::cmdDISABLE_STAT>::ptr_t _attachment,
-                CAgentChannel::weakConnectionPtr_t _channel);
-            void on_cmdGET_STAT(const protocol_api::SSenderInfo& _sender,
-                                protocol_api::SCommandAttachmentImpl<protocol_api::cmdGET_STAT>::ptr_t _attachment,
-                                CAgentChannel::weakConnectionPtr_t _channel);
             void on_cmdCUSTOM_CMD(const protocol_api::SSenderInfo& _sender,
                                   protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment,
                                   CAgentChannel::weakConnectionPtr_t _channel);
@@ -110,7 +99,6 @@ namespace dds
                 const std::vector<typename protocol_api::SCommandAttachmentImpl<_cmd>::ptr_t>& _attachments);
 
             void activateTasks(const CScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel);
-            void enableDisableStatForChannels(bool _enable);
             void _createWnPkg(bool _needInlineBashScript, bool _lightweightPkg, uint32_t _nSlots) const;
             void processToolsAPIRequests(const protocol_api::SCustomCmdCmd& _cmd,
                                          CAgentChannel::weakConnectionPtr_t _channel);
@@ -146,9 +134,6 @@ namespace dds
             std::mutex m_mapMutex;
 
             MiscCommon::CConditionEvent m_updateTopoCondition;
-
-            // Statistic on/off flag
-            bool m_statEnabled;
         };
     } // namespace commander_cmd
 } // namespace dds

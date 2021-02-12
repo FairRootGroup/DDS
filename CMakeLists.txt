@@ -92,7 +92,6 @@ option(BUILD_dds-info "Build dds-info" ON)
 option(BUILD_dds-submit "Build dds-submit" ON)
 option(BUILD_dds-agent-cmd "Build dds-agent-cmd" ON)
 option(BUILD_dds-tutorials "Build dds-tutorials" ON)
-option(BUILD_dds-stat "Build dds-stat" ON)
 option(BUILD_dds-custom-cmd "Build dds-custom-cmd" ON)
 option(BUILD_dds_intercom_lib "Build dds_intercom_lib" ON)
 option(BUILD_dds-submit-ssh "Build dds-submit-ssh" ON)
@@ -299,12 +298,6 @@ if(BUILD_dds-tutorials)
     message(STATUS "Build dds-tutorials - YES")
     add_subdirectory ( dds-tutorials )
 endif(BUILD_dds-tutorials)
-
-# dds-stat
-if(BUILD_dds-stat)
-    message(STATUS "Build dds-stat - YES")
-    add_subdirectory ( dds-stat )
-endif(BUILD_dds-stat)
 
 # dds-custom-cmd
 if(BUILD_dds-custom-cmd)
