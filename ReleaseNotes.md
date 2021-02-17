@@ -21,6 +21,9 @@ Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.
 ### dds-session
 Modified: improved default SID storage and handling. (GH-318)      
 
+### dds-slurm-plugin
+Fixed: use `--` option for `sbatch` which is required for contanerized execution.    
+
 ## v3.4 (2020-07-01)
 
 ### DDS common

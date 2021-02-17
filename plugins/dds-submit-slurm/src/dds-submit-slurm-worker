@@ -47,7 +47,7 @@ if [ "$RMS_SANDBOX" != "$WORK_DIR" ]; then
 fi
 
 logMsg "Submitting DDS Job on the SLURM cluster..."
-JOB_ID=$(sbatch --job-name dds_agent_  $RMS_SANDBOX/job.slurm)
+JOB_ID=$(sbatch --job-name dds_agent_ -- $RMS_SANDBOX/job.slurm)
 if (( $? != 0 )) ; then
 	logMsg "Error: Failed to submit SLURM job ($?)"
 	exit $?
