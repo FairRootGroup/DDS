@@ -22,7 +22,7 @@ Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.
 Modified: improved default SID storage and handling. (GH-318)      
 
 ### dds-slurm-plugin
-Fixed: use `--` option for `sbatch` which is required for contanerized execution.    
+Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.    
 
 ## v3.4 (2020-07-01)
 
