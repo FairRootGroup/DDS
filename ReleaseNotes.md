@@ -23,6 +23,7 @@ Modified: improved default SID storage and handling. (GH-318)
 
 ### dds-slurm-plugin
 Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.    
+Fixed: fixed path to demonised log file. This log is created if plug-in failed to start.   
 
 ## v3.4 (2020-07-01)
 

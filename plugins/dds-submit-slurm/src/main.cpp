@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
                 fs::path pathSLURMScript(pathPluginDir);
                 pathSLURMScript /= "dds-submit-slurm-worker";
                 stringstream cmd;
-                cmd << "$DDS_LOCATION/bin/dds-daemonize " << pathPluginDir.string() << " /bin/bash -c \""
+                cmd << "$DDS_LOCATION/bin/dds-daemonize " << sSandboxDir << " /bin/bash -c \""
                     << pathSLURMScript.string() << "\"";
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
                 pid_t exitCode = execute(cmd.str(), chrono::seconds(30), &output);
 
                 // In case of error there can be a bash.out.log created, let's check it's content
-                fs::path pathBashlog(pathPluginDir);
+                fs::path pathBashlog(sSandboxDir);
                 pathBashlog /= "bash.out.log";
 
                 if (exitCode == 0)
