@@ -122,7 +122,7 @@ fi
 
 # send a worker package and worker's script
 # use rsync since it can automatically create a remote working dir
-rsync -aq -e "ssh $SSH_OPT_INT $SSHOPT" $WRK_S_L $SSH_CON_STR:$RDIR/ 2>&1 | logMsgPipe
+rsync -aq --rsync-path="mkdir -p $RDIR && rsync"  -e "ssh $SSH_OPT_INT $SSHOPT" $WRK_S_L $SSH_CON_STR:$RDIR/ 2>&1 | logMsgPipe
 if (( ${PIPESTATUS[0]} != 0 )); then
     logMsg "$TOOL_NAME error: failed to send worker's package"
     exit 1

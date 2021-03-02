@@ -175,8 +175,8 @@ int main(int argc, char* argv[])
                 fs::path pathlsfScript(pathPluginDir);
                 pathlsfScript /= "dds-submit-lsf-worker";
                 stringstream cmd;
-                cmd << "$DDS_LOCATION/bin/dds-daemonize " << sSandboxDir << " /bin/bash -c \""
-                    << pathlsfScript.string() << "\"";
+                cmd << "$DDS_LOCATION/bin/dds-daemonize " << sSandboxDir << " /bin/bash -c \"" << pathlsfScript.string()
+                    << "\"";
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;

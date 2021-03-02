@@ -14,6 +14,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::ssh_cmd;
 using namespace MiscCommon;
+using namespace dds::user_defaults_api;
 namespace fs = boost::filesystem;
 //=============================================================================
 const std::chrono::seconds g_cmdTimeout = std::chrono::seconds(20);
@@ -24,10 +25,13 @@ CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const str
     , m_path(_path)
 {
     // constructing a full path of the worker for this id
-    // pattern: <m_wrkDir>/<m_id>
-    smart_append(&m_rec->m_wrkDir, '/');
+    // pattern: <m_wrkDir>/<sessionID>/<m_id>
     smart_path(&m_rec->m_wrkDir);
-    m_rec->m_wrkDir += m_rec->m_id;
+    fs::path pathWrk(m_rec->m_wrkDir);
+    pathWrk /= CUserDefaults::instance().getCurrentSID();
+    pathWrk /= m_rec->m_id;
+
+    m_rec->m_wrkDir = pathWrk.string();
 }
 //=============================================================================
 CWorker::~CWorker()

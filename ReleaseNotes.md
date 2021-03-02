@@ -25,6 +25,11 @@ Modified: improved default SID storage and handling. (GH-318)
 Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.    
 Fixed: fixed path to demonised log file. This log is created if plug-in failed to start.   
 
+
+### dds-ssh-plugin
+Modified: Remote destination directories are no longer required and will be created automatically at runtime. (GH-349)    
+Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. direcrtory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)    
+
 ## v3.4 (2020-07-01)
 
 ### DDS common
