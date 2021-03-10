@@ -24,7 +24,7 @@ Modified: improved default SID storage and handling. (GH-318)
 ### dds-slurm-plugin
 Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.    
 Fixed: fixed path to demonised log file. This log is created if plug-in failed to start.   
-
+Modified: DDS Session ID is added to the root path of job's wrk dir and the slurm sandbox wrk dir. (GH-349)   
 
 ### dds-ssh-plugin
 Modified: Remote destination directories are no longer required and will be created automatically at runtime. (GH-349)    
