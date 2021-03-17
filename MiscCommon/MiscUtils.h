@@ -297,8 +297,9 @@ namespace MiscCommon
                 _cmdStr = (_exePrefix.empty()) ? _filePath : (_exePrefix + _filename);
                 for (size_t i = 1; i < result.we_wordc; ++i)
                 {
-                    _cmdStr += " ";
+                    _cmdStr += " \"";
                     _cmdStr += result.we_wordv[i];
+                    _cmdStr += "\"";
                 }
 
                 wordfree(&result);

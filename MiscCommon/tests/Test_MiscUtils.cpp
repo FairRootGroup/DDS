@@ -135,17 +135,20 @@ BOOST_AUTO_TEST_CASE(Test_MiscCommon_parseExe)
                  "${DDS_LOCATION}/",
                  "/my_location/test_exe",
                  "test_exe",
-                 "${DDS_LOCATION}/test_exe --arg1 arg1 --arg2 arg2 --arg3");
+                 "${DDS_LOCATION}/test_exe \"--arg1\" \"arg1\" \"--arg2\" \"arg2\" \"--arg3\"");
 
     const string bashPath = boost::process::search_path("bash").string();
-    testParseExe(
-        "bash --arg1 arg1 --arg2 arg2 --arg3", "", bashPath, "bash", bashPath + " --arg1 arg1 --arg2 arg2 --arg3");
+    testParseExe("bash --arg1 arg1 --arg2 arg2 --arg3",
+                 "",
+                 bashPath,
+                 "bash",
+                 bashPath + " \"--arg1\" \"arg1\" \"--arg2\" \"arg2\" \"--arg3\"");
 
     testParseExe("bash --arg1 arg1 --arg2 arg2 --arg3",
                  "${DDS_LOCATION}/",
                  bashPath,
                  "bash",
-                 "${DDS_LOCATION}/bash --arg1 arg1 --arg2 arg2 --arg3");
+                 "${DDS_LOCATION}/bash \"--arg1\" \"arg1\" \"--arg2\" \"arg2\" \"--arg3\"");
 
     BOOST_CHECK_THROW(testParseExe("my_location/test_exe --arg1 arg1", "", "", "", ""), std::runtime_error);
 
@@ -163,7 +166,8 @@ BOOST_AUTO_TEST_CASE(Test_MiscCommon_parseExe)
                  "dds_2019-06-14-12-09-43-343/wn_4/task-test_key_value",
                  "task-test_key_value",
                  "/private/var/folders/rl/5yb4plyn19xfhy2clkzs4whm0000gn/T/377770e4-10f7-499a-ac24-38d8191f5f8f/"
-                 "dds_2019-06-14-12-09-43-343/wn_4/task-test_key_value -i 5 --max-value 10 -t 1 --test-errors");
+                 "dds_2019-06-14-12-09-43-343/wn_4/task-test_key_value \"-i\" \"5\" \"--max-value\" \"10\" \"-t\" "
+                 "\"1\" \"--test-errors\"");
     signal(SIGCHLD, old_sig);
 }
 //=============================================================================
