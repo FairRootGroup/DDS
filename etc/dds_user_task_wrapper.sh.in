@@ -3,6 +3,10 @@
 #
 #
 
+# ignore signals
+# continue waiting for child processes by any means
+trap -- '' SIGINT SIGTERM
+
 OS=$(uname -s 2>&1)
 if [ "$OS" == "Linux" ]; then
    export LD_LIBRARY_PATH=$DDS_LIBS_LOCATION:$LD_LIBRARY_PATH

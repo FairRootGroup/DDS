@@ -628,7 +628,7 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
         {
             // Prevent blocking of the current thread.
             // The term-kill logic is posted to a different free thread in the queue.
-            m_ioContext.post([this, &slot] { terminateChildrenProcesses(slot.m_pid); });
+            m_ioContext.post([this, &slot] { terminateChildrenProcesses(slot.m_pid, false); });
         }
     }
     catch (exception& _e)
@@ -838,13 +838,13 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
     }
 }
 
-void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
+void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid, bool _block)
 {
     // terminate all child processes of the given parent
     // Either tasks or all processes of the agent.
     pid_t mainPid((_parentPid > 0) ? _parentPid : getpid());
 
-    LOG(info) << "Stopping child processes for parent pid " << _parentPid;
+    LOG(info) << "Stopping child processes for parent pid " << mainPid;
 
     LOG(info) << "Getting a list of child processes of the " << (_parentPid > 0 ? "task" : "agent") << " with pid "
               << mainPid;
@@ -883,17 +883,26 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid)
         LOG(info) << "Sending graceful terminate signal to child process " << i;
         kill(i, SIGTERM);
     }
+    // 5 seconds timeout until sending the final sigkill
     chrono::steady_clock::time_point tpWaitUntil(chrono::steady_clock::now() + chrono::milliseconds(5000));
 
-    LOG(info) << "Wait for tasks " << mainPid << " to exit...";
+    LOG(info) << "Wait for children of " << mainPid << " to exit...";
 
-    // Prevent blocking of the current thread.
-    // The term-kill logic is posted to a different free thread in the queue.
-    m_ioContext.post([this, pidChildren, tpWaitUntil] { terminateChildrenProcesses(pidChildren, tpWaitUntil); });
+    if (_block)
+    {
+        terminateChildrenProcesses(pidChildren, tpWaitUntil, true);
+    }
+    else
+    {
+        // Prevent blocking of the current thread.
+        // The term-kill logic is posted to a different free thread in the queue.
+        m_ioContext.post([this, pidChildren, tpWaitUntil] { terminateChildrenProcesses(pidChildren, tpWaitUntil); });
+    }
 }
 
 void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidContainer_t& _children,
-                                                   const chrono::steady_clock::time_point& _wait_until)
+                                                   const chrono::steady_clock::time_point& _wait_until,
+                                                   bool _block)
 {
     bool bAllDone(true);
     for (auto const& pid : _children)
@@ -906,7 +915,10 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
     }
 
     if (bAllDone)
+    {
+        LOG(info) << "All child processes have exited.";
         return;
+    }
 
     // block this thread for a short time, otherwise it might be spining too fast
     this_thread::sleep_for(chrono::milliseconds(10));
@@ -914,6 +926,11 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
     auto duration = chrono::duration_cast<chrono::milliseconds>(_wait_until - chrono::steady_clock::now());
     if (duration.count() > 0)
     {
+        if (_block)
+        {
+            terminateChildrenProcesses(_children, _wait_until, true);
+            return;
+        }
         // Prevent blocking of the current thread.
         // The term-kill logic is posted to a different free thread in the queue.
         m_ioContext.post([this, _children, _wait_until] { terminateChildrenProcesses(_children, _wait_until); });
@@ -923,6 +940,7 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
         // kill all child process of tasks if there are any
         // We do it before terminating tasks to give parenrt task processes a change to read state of children -
         // otherwise we will get zombies if user tasks don't manage their children properly
+        LOG(info) << "Timeout is reached. Sending unconditional kill signal to all existing child processes...";
         for (auto const& pid : _children)
         {
             if (!IsProcessRunning(pid))
@@ -983,7 +1001,7 @@ SSlotInfo& CCommanderChannel::getSlotInfoById(const slotId_t& _slotID)
 void CCommanderChannel::stopChannel()
 {
     // terminate external children processes (like user tasks, for example)
-    terminateChildrenProcesses(0);
+    terminateChildrenProcesses(0, true);
 
     if (m_intercomChannel)
         m_intercomChannel->stop();

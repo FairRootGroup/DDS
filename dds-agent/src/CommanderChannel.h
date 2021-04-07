@@ -117,9 +117,15 @@ namespace dds
             void createAgentIDFile() const;
             void deleteAgentIDFile() const;
             void onNewUserTask(uint64_t _slotID, pid_t _pid);
-            void terminateChildrenProcesses(pid_t _parentPid = 0);
+            /// Terminate child and grandchild process of the given parent pid.
+            /// The function first sends a graceful SIGTERM to all children. After a defined timeout (5 sec) an
+            /// unconditional SIGKILL is sent. param _parentPid The pid of the parent process, which children needs to
+            /// be killed. if 0, then the pid of the current process is used. param _block If true it blocks the current
+            /// thread until all children are killed. Otherwise the call is executed asynchronously.
+            void terminateChildrenProcesses(pid_t _parentPid, bool _block);
             void terminateChildrenProcesses(const pidContainer_t& _children,
-                                            const std::chrono::steady_clock::time_point& _wait_until);
+                                            const std::chrono::steady_clock::time_point& _wait_until,
+                                            bool _block = false);
             void enumChildProcesses(pid_t _forPid, stringContainer_t& _chilren);
             void taskExited(uint64_t _taskID, int _exitCode);
             SSlotInfo& getSlotInfoById(const slotId_t& _slotID);
