@@ -62,7 +62,6 @@ exec_all()
    exec_test "MiscCommon_test_SysHelper"
    #exec_test "MiscCommon_test_FindCfgFile"
    exec_test "MiscCommon_test_Logger"
-   exec_test "MiscCommon_test_wordexp"
 
    echo "----------------------"
    echo "dds-topology UNIT-TESTs"

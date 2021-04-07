@@ -115,18 +115,3 @@ target_link_libraries(${test}
 
 install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
-#=============================================================================
-
-set(test ${prefix}_wordexp)
-add_executable(${test} Test_wordexp.cpp)
-
-target_link_libraries(${test}
-  PUBLIC
-  MiscCommon
-  Boost::boost
-  Boost::unit_test_framework
-  Boost::system
-  Boost::filesystem
-)
-
-install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
