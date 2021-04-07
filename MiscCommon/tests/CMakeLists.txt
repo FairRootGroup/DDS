@@ -23,6 +23,23 @@ install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
 
 #=============================================================================
 
+set(test ${prefix}_MiscCli)
+add_executable(${test} Test_MiscCli.cpp)
+
+target_link_libraries(${test}
+  PUBLIC
+  MiscCommon
+  Boost::boost
+  Boost::unit_test_framework
+  Boost::system
+  Boost::filesystem
+  Boost::program_options
+)
+
+install(TARGETS ${test} RUNTIME DESTINATION "${PROJECT_INSTALL_TESTS}")
+
+#=============================================================================
+
 set(test ${prefix}_Process)
 add_executable(${test} Test_Process.cpp)
 

@@ -6,6 +6,7 @@
 // DDS
 #include "CommanderChannel.h"
 #include "EnvProp.h"
+#include "MiscCli.h"
 #include "UserDefaults.h"
 // BOOST
 #include <boost/bind/bind.hpp>
