@@ -10,6 +10,7 @@ Fixed: a bug, which prevented to kill user task processes if they ignore SIGTERM
 Modified: C++17 is now a required standard.     
 Modified: Remove an obsolet dds-test tool. (GH-341)    
 Modified: Remove obsolet internal statistics of channels. (GH-341)   
+Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   
