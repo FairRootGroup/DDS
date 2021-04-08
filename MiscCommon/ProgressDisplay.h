@@ -1,9 +1,9 @@
 // Copyright 2014 GSI, Inc. All rights reserved.
 //
-// This file contains a number of helpers to calculate execution time of a function.
 //
-#ifndef TIMEMEASURE_H_
-#define TIMEMEASURE_H_
+//
+#ifndef PROGRESSDISPLAY_H_
+#define PROGRESSDISPLAY_H_
 
 #include <chrono>
 
@@ -34,4 +34,4 @@ namespace MiscCommon
     }
 } // namespace MiscCommon
 
-#endif /*TIMEMEASURE_H_*/
+#endif /*PROGRESSDISPLAY_H_*/
