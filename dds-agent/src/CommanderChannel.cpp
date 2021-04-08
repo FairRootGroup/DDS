@@ -6,7 +6,6 @@
 // DDS
 #include "CommanderChannel.h"
 #include "EnvProp.h"
-#include "MiscCli.h"
 #include "UserDefaults.h"
 // BOOST
 #include <boost/bind/bind.hpp>
@@ -448,23 +447,6 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     ba::replace_all(slot->m_sUsrExe, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
     // If the user custom environment was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
     ba::replace_all(slot->m_sUsrEnv, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
-
-    try
-    {
-        string filePath;
-        string filename;
-        string cmdStr;
-        smart_path(&slot->m_sUsrExe);
-        parseExe(slot->m_sUsrExe, "", filePath, filename, cmdStr);
-        slot->m_sUsrExe = cmdStr;
-    }
-    catch (exception& _e)
-    {
-        LOG(error) << _e.what();
-        pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK),
-                          _sender.m_ID);
-        return true;
-    }
 
     // Revoke drain of the write queue to start accept messages
     m_intercomChannel->drainWriteQueue(false, slot->m_id);
