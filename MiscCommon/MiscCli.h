@@ -10,6 +10,8 @@
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/program_options/parsers.hpp>
+// STD
+#include <iomanip>
 
 namespace MiscCommon
 {
