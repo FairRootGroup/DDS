@@ -7,7 +7,7 @@
 // Defines test_main function to link with actual unit test code.
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MAIN
-#include <boost/test/output_test_stream.hpp>
+#include <boost/test/tools/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
 
 // DDS

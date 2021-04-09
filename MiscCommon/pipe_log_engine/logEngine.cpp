@@ -6,7 +6,7 @@
 #include "logEngine.h"
 // BOOST
 #include <boost/algorithm/string.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 // MiscCommon
 #include "Logger.h"
 #include "SysHelper.h"

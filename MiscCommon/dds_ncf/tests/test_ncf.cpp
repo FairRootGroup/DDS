@@ -19,7 +19,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_AUTO_TEST_MAIN // Boost 1.33
 #define BOOST_TEST_MAIN
-#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 // pod-ssh
 //#include "version.h"
 #include "ncf.h"
