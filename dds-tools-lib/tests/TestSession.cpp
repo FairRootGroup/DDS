@@ -9,7 +9,7 @@
 #define BOOST_TEST_MAIN
 #include <boost/filesystem.hpp>
 #include <boost/process.hpp>
-#include <boost/test/output_test_stream.hpp>
+#include <boost/test/tools/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
 // DDS
 #include "Process.h"

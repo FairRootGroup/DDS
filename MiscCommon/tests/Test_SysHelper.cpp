@@ -8,7 +8,7 @@
 #define BOOST_AUTO_TEST_MAIN // Boost 1.33
 #define BOOST_TEST_MAIN
 #include <boost/filesystem.hpp>
-#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 // STD
 #include <fstream>
 #include <string>
