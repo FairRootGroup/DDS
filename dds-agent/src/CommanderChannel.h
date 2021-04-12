@@ -39,6 +39,8 @@ namespace dds
         {
             using pidContainer_t = std::vector<pid_t>;
             using stringContainer_t = std::vector<std::string>;
+            using timer_t = boost::asio::system_timer;
+            using systemTimerPtr_t = std::unique_ptr<timer_t>;
             using terminateChildrenOnComplete_t = std::function<const void()>;
 
           public:
@@ -125,7 +127,8 @@ namespace dds
             /// \param[in] _onCompleteSlot is a callback fucntion. It's called when termination of all child process is
             /// finished.
             void terminateChildrenProcesses(pid_t _parentPid, const terminateChildrenOnComplete_t& _onCompleteSlot);
-            void terminateChildrenProcesses(const pidContainer_t& _children,
+            void terminateChildrenProcesses(systemTimerPtr_t& _timer,
+                                            const pidContainer_t& _children,
                                             const std::chrono::steady_clock::time_point& _wait_until,
                                             const terminateChildrenOnComplete_t& _onCompleteSlot);
             void enumChildProcesses(pid_t _forPid, stringContainer_t& _chilren);

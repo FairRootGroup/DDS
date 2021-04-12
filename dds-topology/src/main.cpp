@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
                 return EXIT_FAILURE;
         }
 
-        LOG(MiscCommon::log_stdout) << "Requesting server to " << action << " a topology...";
+        LOG(MiscCommon::log_stdout) << "Requesting server to " << action << " the topology...";
 
         STopologyRequest::request_t topoInfo;
 

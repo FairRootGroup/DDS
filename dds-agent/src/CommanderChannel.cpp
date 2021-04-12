@@ -878,14 +878,20 @@ void CCommanderChannel::terminateChildrenProcesses(
 
     LOG(info) << "Wait for children of " << mainPid << " to exit...";
 
+    // create async timer
+    systemTimerPtr_t timer = make_unique<timer_t>(m_ioContext, chrono::milliseconds(100));
+
     // Prevent blocking of the current thread.
     // The term-kill logic is posted to a different free thread in the queue.
-    m_ioContext.post([this, pidChildren, tpWaitUntil, _onCompleteSlot] {
-        terminateChildrenProcesses(pidChildren, tpWaitUntil, _onCompleteSlot);
+    // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
+    timer->async_wait([this, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ move(timer) }](
+                          const boost::system::error_code& _error) mutable {
+        terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot);
     });
 }
 
 void CCommanderChannel::terminateChildrenProcesses(
+    CCommanderChannel::systemTimerPtr_t& _timer,
     const CCommanderChannel::pidContainer_t& _children,
     const chrono::steady_clock::time_point& _wait_until,
     const CCommanderChannel::terminateChildrenOnComplete_t& _onCompleteSlot)
@@ -909,16 +915,15 @@ void CCommanderChannel::terminateChildrenProcesses(
         return;
     }
 
-    // block this thread for a short time, otherwise it might be spining too fast
-    this_thread::sleep_for(chrono::milliseconds(10));
-
     auto duration = chrono::duration_cast<chrono::milliseconds>(_wait_until - chrono::steady_clock::now());
     if (duration.count() > 0)
     {
         // Prevent blocking of the current thread.
         // The term-kill logic is posted to a different free thread in the queue.
-        m_ioContext.post([this, _children, _wait_until, _onCompleteSlot] {
-            terminateChildrenProcesses(_children, _wait_until, _onCompleteSlot);
+        // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
+        _timer->async_wait([this, _children, _wait_until, _onCompleteSlot, timer{ move(_timer) }](
+                               const boost::system::error_code& _error) mutable {
+            terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot);
         });
     }
     else

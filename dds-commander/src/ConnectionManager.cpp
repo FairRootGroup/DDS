@@ -1042,7 +1042,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestData& _topologyInfo,
                                         CAgentChannel::weakConnectionPtr_t _channel)
 {
-    LOG(info) << "UI channel requested to update/activate/stop a topology.";
+    LOG(info) << "UI channel requested to update/activate/stop the topology.";
 
     // Only a single topology update/activate/stop can be active at a time
     lock_guard<mutex> lock(m_updateTopology.m_mutexStart);
