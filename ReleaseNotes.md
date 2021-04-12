@@ -7,10 +7,10 @@ Removed: obsolete test project. ODC is used as an integration platform for DDS.
 Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentation fault.   
 Fixed: When creating softlinks to boost prerequisite libs, skip linking if destination file exists. (GH-323)    
 Fixed: a bug, which prevented to kill user task processes if they ignore SIGTERM. (GH-359)      
+Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)   
 Modified: C++17 is now a required standard.     
 Modified: Remove an obsolet dds-test tool. (GH-341)    
-Modified: Remove obsolet internal statistics of channels. (GH-341)   
-Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)    
+Modified: Remove obsolet internal statistics of channels. (GH-341)    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   
@@ -19,6 +19,7 @@ Added: CSession::userDefaultsGetValueForKey - returns a configuration value for 
 Added: new std::istream based APIs.    
 Added: new CTopology::getRuntimeTask and CTopology::getRuntimeCollection methods which take either ID or runtime path as input.    
 Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.    
+Added: On topology upodate/stop a task done event is now only sent when all processes of the given task are actually exited or killed. (GH-360)    
 
 ### dds-session
 Modified: improved default SID storage and handling. (GH-318)      
