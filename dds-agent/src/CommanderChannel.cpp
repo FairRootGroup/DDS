@@ -5,6 +5,7 @@
 
 // DDS
 #include "CommanderChannel.h"
+#include "ConditionEvent.h"
 #include "EnvProp.h"
 #include "UserDefaults.h"
 // BOOST
@@ -611,7 +612,13 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
         {
             // Prevent blocking of the current thread.
             // The term-kill logic is posted to a different free thread in the queue.
-            m_ioContext.post([this, &slot] { terminateChildrenProcesses(slot.m_pid, false); });
+            m_ioContext.post([this, &slot, id = _sender.m_ID] {
+                terminateChildrenProcesses(slot.m_pid, [this, id]() {
+                    // Once child termionation is finished, send User task "Done" to the commander
+                    pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK),
+                                      id);
+                });
+            });
         }
     }
     catch (exception& _e)
@@ -619,7 +626,6 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
         LOG(warning) << "Can't find user task on slot " << _sender.m_ID << ": " << _e.what();
     }
 
-    pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK), _sender.m_ID);
     return true;
 }
 
@@ -821,7 +827,8 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
     }
 }
 
-void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid, bool _block)
+void CCommanderChannel::terminateChildrenProcesses(
+    pid_t _parentPid, const CCommanderChannel::terminateChildrenOnComplete_t& _onCompleteSlot)
 {
     // terminate all child processes of the given parent
     // Either tasks or all processes of the agent.
@@ -871,21 +878,17 @@ void CCommanderChannel::terminateChildrenProcesses(pid_t _parentPid, bool _block
 
     LOG(info) << "Wait for children of " << mainPid << " to exit...";
 
-    if (_block)
-    {
-        terminateChildrenProcesses(pidChildren, tpWaitUntil, true);
-    }
-    else
-    {
-        // Prevent blocking of the current thread.
-        // The term-kill logic is posted to a different free thread in the queue.
-        m_ioContext.post([this, pidChildren, tpWaitUntil] { terminateChildrenProcesses(pidChildren, tpWaitUntil); });
-    }
+    // Prevent blocking of the current thread.
+    // The term-kill logic is posted to a different free thread in the queue.
+    m_ioContext.post([this, pidChildren, tpWaitUntil, _onCompleteSlot] {
+        terminateChildrenProcesses(pidChildren, tpWaitUntil, _onCompleteSlot);
+    });
 }
 
-void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidContainer_t& _children,
-                                                   const chrono::steady_clock::time_point& _wait_until,
-                                                   bool _block)
+void CCommanderChannel::terminateChildrenProcesses(
+    const CCommanderChannel::pidContainer_t& _children,
+    const chrono::steady_clock::time_point& _wait_until,
+    const CCommanderChannel::terminateChildrenOnComplete_t& _onCompleteSlot)
 {
     bool bAllDone(true);
     for (auto const& pid : _children)
@@ -900,6 +903,9 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
     if (bAllDone)
     {
         LOG(info) << "All child processes have exited.";
+        // Report back to the user of the API that termination is completed
+        if (_onCompleteSlot != nullptr)
+            _onCompleteSlot();
         return;
     }
 
@@ -909,14 +915,11 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
     auto duration = chrono::duration_cast<chrono::milliseconds>(_wait_until - chrono::steady_clock::now());
     if (duration.count() > 0)
     {
-        if (_block)
-        {
-            terminateChildrenProcesses(_children, _wait_until, true);
-            return;
-        }
         // Prevent blocking of the current thread.
         // The term-kill logic is posted to a different free thread in the queue.
-        m_ioContext.post([this, _children, _wait_until] { terminateChildrenProcesses(_children, _wait_until); });
+        m_ioContext.post([this, _children, _wait_until, _onCompleteSlot] {
+            terminateChildrenProcesses(_children, _wait_until, _onCompleteSlot);
+        });
     }
     else
     {
@@ -932,6 +935,10 @@ void CCommanderChannel::terminateChildrenProcesses(const CCommanderChannel::pidC
             LOG(info) << "Child process with pid = " << pid << " will be forced to exit...";
             kill(pid, SIGKILL);
         }
+
+        // Report back to the user of the API that termination is completed
+        if (_onCompleteSlot != nullptr)
+            _onCompleteSlot();
     }
 }
 
@@ -983,8 +990,13 @@ SSlotInfo& CCommanderChannel::getSlotInfoById(const slotId_t& _slotID)
 
 void CCommanderChannel::stopChannel()
 {
+    CConditionEvent waitCondition;
     // terminate external children processes (like user tasks, for example)
-    terminateChildrenProcesses(0, true);
+    terminateChildrenProcesses(0, [&waitCondition]() { waitCondition.notifyAll(); });
+
+    // wait for termination to finish
+    // either it is finsihed or we procceed in 30 sec in anyway
+    waitCondition.waitUntil(std::chrono::system_clock::now() + std::chrono::seconds(30));
 
     if (m_intercomChannel)
         m_intercomChannel->stop();
