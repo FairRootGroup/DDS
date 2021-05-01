@@ -3,6 +3,9 @@
 #
 include(GetPrerequisites)
 
+
+cmake_policy(PUSH)
+cmake_policy(SET CMP0012 NEW) # if() recognizes numbers and booleans
 # WORKAROUND: if "macro" is used it doesn't outoup "message" messages.
 #macro(DDS_CollectPrerequisites)
 	
@@ -32,8 +35,9 @@ include(GetPrerequisites)
 		# link only third-party libs
 		# Skip DDS libs
 		if(NOT ${resolved_file} STREQUAL "@PREREQ_DESTINATION@/${PREREQNAME}")
-			if(${PREREQNAME} MATCHES "^libboost_*")
-				# skip existing files. Fixes GH-323
+			if(@CREATE_BOOST_SYMLINKS@ AND (${PREREQNAME} MATCHES "^libboost_*"))
+				
+					# skip existing files. Fixes GH-323
 				if(EXISTS "@PREREQ_DESTINATION@/${PREREQNAME}")
 					message("DDS Commander prerequisite: creating a symlink: destination exists. SKIPPING: @PREREQ_DESTINATION@/${PREREQNAME}")
 					continue()
@@ -47,5 +51,7 @@ include(GetPrerequisites)
 		endif()
 	endforeach()
 	###################################################
+
+cmake_policy(POP)
 
 #endmacro(DDS_CollectPrerequisites)

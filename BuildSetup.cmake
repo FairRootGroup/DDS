@@ -36,6 +36,11 @@ set(Boost_NO_BOOST_CMAKE TRUE CACHE BOOL "" FORCE)
 
 
 #
+# Create boost (libboost_*) symlinks in DDS_LOCATION/lib/
+#
+set( CREATE_BOOST_SYMLINKS FALSE CACHE BOOL "Create boost (libboost_*) symlinks in DDS_LOCATION/lib/" FORCE )
+
+#
 # Documentation
 #
 # set( BUILD_DOCUMENTATION ON CACHE BOOL "Build source code documentation" FORCE )
