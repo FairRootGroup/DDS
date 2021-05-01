@@ -8,6 +8,7 @@ Fixed: in some edge cases a topology update, performed during an intensive key-v
 Fixed: When creating softlinks to boost prerequisite libs, skip linking if destination file exists. (GH-323)    
 Fixed: a bug, which prevented to kill user task processes if they ignore SIGTERM. (GH-359)      
 Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)   
+Fixed: Clang 9 warning/error. (GH-249)   
 Modified: C++17 is now a required standard.     
 Modified: Remove an obsolet dds-test tool. (GH-341)    
 Modified: Remove obsolet internal statistics of channels. (GH-341)    

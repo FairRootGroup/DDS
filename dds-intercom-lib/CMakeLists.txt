@@ -31,12 +31,13 @@ target_link_libraries(${PROJECT_NAME}
   MiscCommon
 	dds_user_defaults_lib
 	dds_protocol_lib
-  Boost::boost
-  Boost::system
-  Boost::filesystem
-  Boost::log
-  Boost::log_setup
-  Boost::thread
+	Boost::boost
+	Boost::system
+	Boost::filesystem
+	Boost::log
+	Boost::log_setup
+	Boost::thread
+	$<$<PLATFORM_ID:Linux>:rt> # Clang 9 warning/error GH-249
 )
 
 target_include_directories(${PROJECT_NAME}

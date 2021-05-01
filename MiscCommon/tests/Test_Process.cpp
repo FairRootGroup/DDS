@@ -1,6 +1,8 @@
 // Copyright 2014 GSI, Inc. All rights reserved.
 //
 // Unit tests
+// STD
+#include <thread>
 //
 // BOOST: tests
 // Defines test_main function to link with actual unit test code.

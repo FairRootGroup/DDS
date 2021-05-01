@@ -11,6 +11,8 @@
 #include "SysHelper.h"
 #include "Tools.h"
 #include "UserDefaults.h"
+// STD
+#include <thread>
 
 using namespace std;
 using namespace MiscCommon;
