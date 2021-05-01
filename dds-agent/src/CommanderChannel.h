@@ -41,7 +41,7 @@ namespace dds
             using stringContainer_t = std::vector<std::string>;
             using timer_t = boost::asio::system_timer;
             using systemTimerPtr_t = std::unique_ptr<timer_t>;
-            using terminateChildrenOnComplete_t = std::function<const void()>;
+            using terminateChildrenOnComplete_t = std::function<void()>;
 
           public:
             CCommanderChannel(boost::asio::io_context& _service,

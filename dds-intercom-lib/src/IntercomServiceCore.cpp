@@ -169,7 +169,7 @@ void CIntercomServiceCore::setupChannel(const std::string& _sessionID)
 
     // Subscribe for cmdSHUTDOWN from TCP channel
     m_channel->registerHandler<cmdSHUTDOWN>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) { stop(); });
+        [this](const SSenderInfo& /*_sender*/, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/) { stop(); });
     //
 
     // Subscribe for cmdCUSTOM_CMD from TCP channel
@@ -186,12 +186,12 @@ void CIntercomServiceCore::setupChannel(const std::string& _sessionID)
         });
     //
 
-    m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
+    m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& /*_sender*/) {
         execUserSignal(m_errorSignal, intercom_api::EErrorCode::RemoteEndDisconnected, "Remote end disconnected");
         stopCondition();
     });
 
-    m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& _sender) {
+    m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& /*_sender*/) {
         m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
             execUserSignal(m_errorSignal, intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
             stopCondition();
@@ -269,7 +269,7 @@ void CIntercomServiceCore::disconnectKeyValue()
 
 // Messages from TCP and shared memory
 void CIntercomServiceCore::on_cmdUPDATE_KEY_SM(
-    const protocol_api::SSenderInfo& _sender,
+    const protocol_api::SSenderInfo& /*_sender*/,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUPDATE_KEY>::ptr_t _attachment)
 {
     execUserSignal(
@@ -277,14 +277,14 @@ void CIntercomServiceCore::on_cmdUPDATE_KEY_SM(
 }
 
 void CIntercomServiceCore::on_cmdUSER_TASK_DONE_SM(
-    const protocol_api::SSenderInfo& _sender,
+    const protocol_api::SSenderInfo& /*_sender*/,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdUSER_TASK_DONE>::ptr_t _attachment)
 {
     execUserSignal(m_keyValueTaskDoneSignal, _attachment->m_taskID, _attachment->m_exitCode);
 }
 
 void CIntercomServiceCore::on_cmdCUSTOM_CMD_SM(
-    const protocol_api::SSenderInfo& _sender,
+    const protocol_api::SSenderInfo& /*_sender*/,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdCUSTOM_CMD>::ptr_t _attachment)
 {
     auto timestamp =
@@ -296,7 +296,7 @@ void CIntercomServiceCore::on_cmdCUSTOM_CMD_SM(
 }
 
 void CIntercomServiceCore::on_cmdSIMPLE_MSG_SM(
-    const protocol_api::SSenderInfo& _sender,
+    const protocol_api::SSenderInfo& /*_sender*/,
     protocol_api::SCommandAttachmentImpl<protocol_api::cmdSIMPLE_MSG>::ptr_t _attachment)
 {
     switch (_attachment->m_srcCommand)

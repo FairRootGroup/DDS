@@ -396,7 +396,7 @@ void runIntercom(vector<CSession>& _sessions, vector<CIntercomService>& _service
     // Subscribe on Intercom events
     for (auto& service : _services)
     {
-        service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
+        service.subscribeOnError([](const EErrorCode /*_errorCode*/, const string& /*_errorMsg*/) {
             // Any error message fails a test
             BOOST_CHECK(false);
         });
@@ -405,7 +405,7 @@ void runIntercom(vector<CSession>& _sessions, vector<CIntercomService>& _service
     // Subscribe on custom command events
     for (auto& customCmd : _customCmds)
     {
-        customCmd.subscribe([](const string& _command, const string& _condition, uint64_t _senderId) {
+        customCmd.subscribe([](const string& _command, const string& /*_condition*/, uint64_t /*_senderId*/) {
             BOOST_CHECK_EQUAL(_command, "ok");
         });
     }

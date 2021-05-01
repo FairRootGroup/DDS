@@ -107,7 +107,7 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
                           << _numIntercomThreads << " for intercom)"
                           << " concurrent threads.";
     // Main service threads
-    for (int x = 0; x < _numThreads; ++x)
+    for (size_t x = 0; x < _numThreads; ++x)
     {
         m_workerThreads.create_thread([this]() {
             try
@@ -121,7 +121,7 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
         });
     }
     // Intercom service threads
-    for (int x = 0; x < _numIntercomThreads; ++x)
+    for (size_t x = 0; x < _numIntercomThreads; ++x)
     {
         m_workerThreads.create_thread([this]() {
             try
@@ -172,9 +172,9 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
     m_commanderChannel->connect(endpoint_iterator);
 }
 
-void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& _sender,
-                                             SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment,
-                                             CCommanderChannel::weakConnectionPtr_t _channel)
+void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& /*_sender*/,
+                                             SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/,
+                                             CCommanderChannel::weakConnectionPtr_t /*_channel*/)
 {
     stop();
 }

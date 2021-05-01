@@ -128,7 +128,7 @@ namespace dds
                 return true;
             }
 
-            void handshakeFailed(const std::string& _reason, bool _lobbyLeader, uint64_t _senderID)
+            void handshakeFailed(const std::string& _reason, bool /*_lobbyLeader*/, uint64_t _senderID)
             {
                 this->m_isHandshakeOK = false;
                 this->m_channelType = EChannelType::UNKNOWN;

@@ -31,7 +31,7 @@ using namespace std;
 using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
-CConnectionManager::CConnectionManager(const SOptions_t& _options)
+CConnectionManager::CConnectionManager(const SOptions_t& /*_options*/)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
 {
     LOG(info) << "CConnectionManager constructor";
@@ -70,7 +70,7 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 {
     CAgentChannel::weakConnectionPtr_t weakClient(_newClient);
 
-    _newClient->registerHandler<EChannelEvents::OnHandshakeOK>([this, weakClient](const SSenderInfo& _sender) {
+    _newClient->registerHandler<EChannelEvents::OnHandshakeOK>([this, weakClient](const SSenderInfo& /*_sender*/) {
         if (auto p = weakClient.lock())
             if (p->getChannelType() == EChannelType::UI)
             {
@@ -256,14 +256,14 @@ void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
 }
 
 template <protocol_api::ECmdType _cmd>
-void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index, weakChannelInfo_t _agent)
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t /*_index*/, weakChannelInfo_t _agent)
 {
     auto p = _agent.m_channel.lock();
     p->pushMsg<_cmd>(_agent.m_protocolHeaderID);
 }
 
 template <protocol_api::ECmdType _cmd>
-void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t /*_index*/,
                                                              weakChannelInfo_t _agent,
                                                              typename SCommandAttachmentImpl<_cmd>::ptr_t _attachment)
 {
@@ -280,7 +280,7 @@ void CConnectionManager::broadcastUpdateTopologyAndWait_impl(
 }
 
 template <protocol_api::ECmdType _cmd>
-void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t /*_index*/,
                                                              weakChannelInfo_t _agent,
                                                              const std::string& _filePath,
                                                              const std::string& _filename)
@@ -290,14 +290,14 @@ void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
 }
 
 template <protocol_api::ECmdType _cmd>
-void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t index,
+void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t _index,
                                                              weakChannelInfo_t _agent,
                                                              const std::vector<std::string>& _filePaths,
                                                              const std::vector<std::string>& _filenames)
 {
     auto p = _agent.m_channel.lock();
-    string filePath = _filePaths[index];
-    string filename = _filenames[index];
+    string filePath = _filePaths[_index];
+    string filename = _filenames[_index];
     p->pushBinaryAttachmentCmd(filePath, filename, _cmd, _agent.m_protocolHeaderID);
 }
 
@@ -439,7 +439,7 @@ void CConnectionManager::activateTasks(const CScheduler& _scheduler, CAgentChann
 }
 
 void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
-                                              SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment,
+                                              SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t /*_attachment*/,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     lock_guard<mutex> lock(m_transportTest.m_mutexStart);
@@ -601,9 +601,9 @@ void CConnectionManager::on_cmdREPLY(const SSenderInfo& _sender,
     }
 }
 
-void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& _sender,
+void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& /*_sender*/,
                                           SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment,
-                                          CAgentChannel::weakConnectionPtr_t _channel)
+                                          CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
     // Commander forwards cmdUPDATE_KEY to the proper channel
     auto channel = m_taskIDToAgentChannelMap.find(_attachment->m_receiverTaskID);
@@ -663,16 +663,16 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     }
 }
 
-void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& _sender,
-                                             SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment,
-                                             CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& /*_sender*/,
+                                             SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t /*_attachment*/,
+                                             CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
     // TODO: FIXME: This command desn't work without CKeyValueManager
 }
 
-void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& _sender,
-                                               SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment,
-                                               CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& /*_sender*/,
+                                               SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t /*_attachment*/,
+                                               CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
     // TODO: FIXME: This command desn't work without CKeyValueManager
 }

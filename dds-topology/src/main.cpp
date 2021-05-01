@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
             if (options.m_verbose)
                 return;
 
-            int completed = _progress.m_completed + _progress.m_errors;
+            uint32_t completed = _progress.m_completed + _progress.m_errors;
             if (completed < _progress.m_total)
             {
                 cout << getProgressDisplayString(completed, _progress.m_total);

@@ -255,7 +255,7 @@ namespace dds
                 m_srcCommand = protocol_api::cmdGET_LOG;
             }
 
-            std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
+            std::string getMessage(const dds::protocol_api::SSenderInfo& /*_sender*/,
                                    const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
@@ -266,7 +266,7 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& /*_sender*/,
                                         const protocol_api::SReplyCmd& _cmd,
                                         CAgentChannel::weakConnectionPtr_t _channel) const
             {
@@ -296,7 +296,7 @@ namespace dds
                 m_srcCommand = protocol_api::cmdTRANSPORT_TEST;
             }
 
-            std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
+            std::string getMessage(const dds::protocol_api::SSenderInfo& /*_sender*/,
                                    const protocol_api::SBinaryAttachmentReceivedCmd& _cmd,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
@@ -309,7 +309,7 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& /*_sender*/,
                                         const protocol_api::SReplyCmd& _cmd,
                                         CAgentChannel::weakConnectionPtr_t _channel) const
             {
@@ -344,8 +344,8 @@ namespace dds
                 m_srcCommand = protocol_api::cmdACTIVATE_USER_TASK;
             }
 
-            std::string getMessage(const dds::protocol_api::SSenderInfo& _sender,
-                                   const protocol_api::SReplyCmd& _cmd,
+            std::string getMessage(const dds::protocol_api::SSenderInfo& /*_sender*/,
+                                   const protocol_api::SReplyCmd& /*_cmd*/,
                                    CAgentChannel::weakConnectionPtr_t _channel) const
             {
                 std::stringstream ss;
@@ -361,7 +361,7 @@ namespace dds
                 return ss.str();
             }
 
-            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& _sender,
+            std::string getErrorMessage(const dds::protocol_api::SSenderInfo& /*_sender*/,
                                         const protocol_api::SReplyCmd& _cmd,
                                         CAgentChannel::weakConnectionPtr_t _channel) const
             {

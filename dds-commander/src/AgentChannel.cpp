@@ -17,11 +17,11 @@ using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
 
-CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t _protocolHeaderID)
+CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t /*_protocolHeaderID*/)
     : CServerChannelImpl<CAgentChannel>(_context, { EChannelType::AGENT, EChannelType::UI })
 {
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-        [](const SSenderInfo& _sender) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
+        [](const SSenderInfo& /*_sender*/) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
 
     registerHandler<EChannelEvents::OnHandshakeOK>([this](const SSenderInfo& _sender) {
         switch (getChannelType())
@@ -65,12 +65,12 @@ void CAgentChannel::setId(uint64_t _id)
     m_info.m_id = _id;
 }
 
-SHostInfoCmd CAgentChannel::getRemoteHostInfo(const SSenderInfo& _sender)
+SHostInfoCmd CAgentChannel::getRemoteHostInfo(const SSenderInfo& /*_sender*/)
 {
     return m_info.m_remoteHostInfo;
 }
 
-chrono::milliseconds CAgentChannel::getStartupTime(const SSenderInfo& _sender)
+chrono::milliseconds CAgentChannel::getStartupTime(const SSenderInfo& /*_sender*/)
 {
     return m_info.m_startUpTime;
 }
@@ -101,7 +101,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
 }
 
 bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_INFO>::ptr_t _attachment,
-                                          const SSenderInfo& _sender)
+                                          const SSenderInfo& /*_sender*/)
 {
     m_info.m_remoteHostInfo = *_attachment;
     LOG(debug) << "cmdREPLY_HOST_INFO attachment [" << m_info.m_remoteHostInfo
@@ -130,7 +130,7 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
 }
 
 bool CAgentChannel::on_cmdREPLY_ADD_SLOT(SCommandAttachmentImpl<protocol_api::cmdREPLY_ADD_SLOT>::ptr_t _attachment,
-                                         const SSenderInfo& _sender)
+                                         const SSenderInfo& /*_sender*/)
 {
     // Create a new tasks slot
     SSlotInfo slot;
@@ -146,7 +146,7 @@ bool CAgentChannel::on_cmdREPLY_ADD_SLOT(SCommandAttachmentImpl<protocol_api::cm
 }
 
 bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
-    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, const SSenderInfo& _sender)
+    SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment, const SSenderInfo& /*_sender*/)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -177,7 +177,7 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     return true;
 }
 
-bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, const SSenderInfo& _sender)
+bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, const SSenderInfo& /*_sender*/)
 {
     LOG(debug) << "on_cmdREPLY attachment [" << *_attachment << "] command from " << remoteEndIDString();
 
@@ -207,8 +207,8 @@ bool CAgentChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachm
     }
 }
 
-bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t _attachment,
-                                             const SSenderInfo& _sender)
+bool CAgentChannel::on_cmdWATCHDOG_HEARTBEAT(SCommandAttachmentImpl<cmdWATCHDOG_HEARTBEAT>::ptr_t /*_attachment*/,
+                                             const SSenderInfo& /*_sender*/)
 {
     // The main reason for this message is to tell commander that agents are note idle (see. GH-54)
     LOG(debug) << "Received Watchdog heartbeat from agent " << m_info.m_id; //<< " running task = " << m_info.m_taskID;

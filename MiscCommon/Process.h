@@ -532,7 +532,7 @@ namespace MiscCommon
                         bp::std_out > outPipe,
                         bp::std_err > errPipe,
                         ios,
-                        bp::on_exit([&](int exit, const std::error_code& ec_in) {
+                        bp::on_exit([&](int /*_exit*/, const std::error_code& /*_ec_in*/) {
                             outPipe.close();
                             errPipe.close();
                             watchdog.cancel();
@@ -542,8 +542,10 @@ namespace MiscCommon
             if (!c.valid())
                 throw std::runtime_error("Can't execute the given process.");
 
-            boost::asio::async_read(outPipe, outBuf, [](const boost::system::error_code& ec, std::size_t size) {});
-            boost::asio::async_read(errPipe, errBuf, [](const boost::system::error_code& ec, std::size_t size) {});
+            boost::asio::async_read(
+                outPipe, outBuf, [](const boost::system::error_code& /*_ec*/, std::size_t /*_size*/) {});
+            boost::asio::async_read(
+                errPipe, errBuf, [](const boost::system::error_code& /*_ec*/, std::size_t /*_size*/) {});
 
             bool errorFlag(false);
             watchdog.async_wait([&](boost::system::error_code ec) {

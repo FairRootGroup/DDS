@@ -51,7 +51,7 @@ namespace dds
             bool m_bNeedActiveCount;
             bool m_bNeedIdleCount;
             bool m_bNeedExecutingCount;
-            int m_nWaitCount;
+            uint32_t m_nWaitCount;
         } SOptions_t;
         //=============================================================================
         inline void PrintVersion()
@@ -99,7 +99,7 @@ namespace dds
                                   bpo::bool_switch(&_options->m_bNeedExecutingCount),
                                   "Returns a number of executing agents.");
             options.add_options()("wait",
-                                  bpo::value<int>(&_options->m_nWaitCount),
+                                  bpo::value<uint32_t>(&_options->m_nWaitCount),
                                   "The command will block infinitely until a required number of agents are available. "
                                   "Must be used together with --active-count, --idle-count or --executing-count");
             options.add_options()("active-topology",

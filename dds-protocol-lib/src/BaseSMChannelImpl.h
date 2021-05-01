@@ -679,8 +679,6 @@ namespace dds
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(_currentMsg);
 
-                    ECmdType currentCmd = static_cast<ECmdType>(_currentMsg->header().m_cmd);
-
                     auto self(this->shared_from_this());
                     m_ioContext.post([this, self, &_info] {
                         try

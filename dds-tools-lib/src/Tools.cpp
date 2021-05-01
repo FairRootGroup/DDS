@@ -244,10 +244,11 @@ void CSession::subscribe()
     m_impl->m_service = make_shared<dds::intercom_api::CIntercomService>();
     m_impl->m_customCmd = make_shared<dds::intercom_api::CCustomCmd>(*m_impl->m_service);
 
-    m_impl->m_customCmd->subscribe([this](const string& _command, const string& _condition, uint64_t _senderId) {
-        istringstream ss(_command);
-        notify(ss);
-    });
+    m_impl->m_customCmd->subscribe(
+        [this](const string& _command, const string& /*_condition*/, uint64_t /*_senderId*/) {
+            istringstream ss(_command);
+            notify(ss);
+        });
 
     m_impl->m_service->start();
 }

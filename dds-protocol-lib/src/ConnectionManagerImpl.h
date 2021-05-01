@@ -114,7 +114,7 @@ namespace dds
                         concurrentThreads = 2;
                     LOG(MiscCommon::info)
                         << "Starting DDS transport engine using " << concurrentThreads << " concurrent threads.";
-                    for (int x = 0; x < concurrentThreads; ++x)
+                    for (unsigned int x = 0; x < concurrentThreads; ++x)
                     {
                         m_workerThreads.create_thread(
                             [this]() { runService(10, m_acceptor->get_executor().context()); });
@@ -126,7 +126,7 @@ namespace dds
                         const unsigned int concurrentThreads = 2;
                         LOG(MiscCommon::info)
                             << "Starting DDS UI transport engine using " << concurrentThreads << " concurrent threads.";
-                        for (int x = 0; x < concurrentThreads; ++x)
+                        for (unsigned int x = 0; x < concurrentThreads; ++x)
                         {
                             m_workerThreads.create_thread(
                                 [this]() { runService(10, m_acceptorUI->get_executor().context()); });
@@ -459,7 +459,7 @@ namespace dds
 
                 // Subscribe on dissconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-                    [this, newClient](const SSenderInfo& _sender) -> void { this->removeClient(newClient.get()); });
+                    [this, newClient](const SSenderInfo& /*_sender*/) -> void { this->removeClient(newClient.get()); });
 
                 _acceptor->async_accept(
                     newClient->socket(),

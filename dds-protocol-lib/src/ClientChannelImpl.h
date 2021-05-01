@@ -32,7 +32,7 @@ namespace dds
                 // Register handshake OK callback
                 this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(
                     [this](const SSenderInfo& _sender,
-                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t _attachment) {
+                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/) {
                         LOG(MiscCommon::info) << "Successfull handshake";
 
                         this->m_isHandshakeOK = true;

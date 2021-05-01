@@ -430,7 +430,7 @@ namespace dds
                 accumulativePushMsg<_cmd>(cmd, _protocolHeaderID);
             }
 
-            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t _protocolHeaderID = 0)
+            void pushMsg(CProtocolMessage::protocolMessagePtr_t _msg, ECmdType _cmd, uint64_t /*_protocolHeaderID*/ = 0)
             {
                 try
                 {
@@ -565,7 +565,7 @@ namespace dds
                 start_cmd.m_fileCrc32 = fileCrc32.checksum();
                 pushMsg<cmdBINARY_ATTACHMENT_START>(start_cmd, _protocolHeaderID);
 
-                for (size_t i = 0; i < nofParts; ++i)
+                for (int i = 0; i < nofParts; ++i)
                 {
                     SBinaryAttachmentCmd cmd;
                     cmd.m_fileId = fileId;
@@ -589,7 +589,7 @@ namespace dds
                 }
             }
 
-            void processBinaryAttachmentStartCmd(const SSenderInfo& _sender,
+            void processBinaryAttachmentStartCmd(const SSenderInfo& /*_sender*/,
                                                  SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_START>::ptr_t _attachment)
             {
                 boost::uuids::uuid fileId = _attachment->m_fileId;

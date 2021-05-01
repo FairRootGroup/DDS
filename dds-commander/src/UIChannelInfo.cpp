@@ -47,7 +47,7 @@ string CSubmitAgentsChannelInfo::getAllReceivedMessage() const
 }
 
 bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& _cmd,
-                                                           CAgentChannel::weakConnectionPtr_t _channel)
+                                                           CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
     LOG(MiscCommon::info) << "Processing RMS plug-in message: " << _cmd.m_sCmd;
     boost::property_tree::ptree pt;
@@ -93,13 +93,14 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
             if (tag == "init")
             {
                 // Subscribe on plug-in disconnect
-                pPlugin->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
-                    LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
-                    // the plug-in is done and went offline, let's close UI
-                    // connection as well.
-                    m_channelSubmitPlugin.reset();
-                    shutdown();
-                });
+                pPlugin->registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
+                    [this](const SSenderInfo& /*_sender*/) {
+                        LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
+                        // the plug-in is done and went offline, let's close UI
+                        // connection as well.
+                        m_channelSubmitPlugin.reset();
+                        shutdown();
+                    });
 
                 auto now = chrono::system_clock::now().time_since_epoch();
                 auto diff = now - m_PluginStartTime;

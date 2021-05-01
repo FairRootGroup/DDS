@@ -73,11 +73,12 @@ void STestCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
         .put(m_string4);
 }
 
-inline std::ostream& operator<<(std::ostream& _stream, const STestCmd& val)
+inline std::ostream& operator<<(std::ostream& _stream, const STestCmd& /*_val*/)
 {
     return _stream << "TestCmd";
 }
-inline bool operator!=(const STestCmd& lhs, const STestCmd& rhs)
+
+inline bool operator!=(const STestCmd& _lhs, const STestCmd& _rhs)
 {
-    return !(lhs == rhs);
+    return !(_lhs == _rhs);
 }

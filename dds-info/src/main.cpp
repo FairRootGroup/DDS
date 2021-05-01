@@ -66,7 +66,7 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
     _session.sendRequest<SCommanderInfoRequest>(requestPtr);
 }
 
-void requestAgentInfo(CSession& _session, const SOptions_t& _options)
+void requestAgentInfo(CSession& _session, const SOptions_t& /*_options*/)
 {
     SAgentInfoRequest::request_t requestInfo;
     SAgentInfoRequest::ptr_t requestPtr = SAgentInfoRequest::makeRequest(requestInfo);

@@ -166,7 +166,7 @@ void CLogEngine::logMsg(const string& _msg)
         m_callback(sMsg);
 }
 //=============================================================================
-void CLogEngine::thread_worker(int _fd, const string& _pipename)
+void CLogEngine::thread_worker(int _fd, const string& /*_pipename*/)
 {
     while (_fd > 0 && !m_stopLogEngine)
     {

@@ -37,28 +37,28 @@ namespace dds
 
         /// \brief Helper function calculating size of uint8_t
         template <>
-        inline size_t dsize<uint8_t>(const uint8_t& _value)
+        inline size_t dsize<uint8_t>(const uint8_t& /*_value*/)
         {
             return sizeof(uint8_t);
         }
 
         /// \brief Helper function calculating size of uint16_t
         template <>
-        inline size_t dsize<uint16_t>(const uint16_t& _value)
+        inline size_t dsize<uint16_t>(const uint16_t& /*_value*/)
         {
             return sizeof(uint16_t);
         }
 
         /// \brief Helper function calculating size of uint32_t
         template <>
-        inline size_t dsize<uint32_t>(const uint32_t& _value)
+        inline size_t dsize<uint32_t>(const uint32_t& /*_value*/)
         {
             return sizeof(uint32_t);
         }
 
         /// \brief Helper function calculating size of uint64_t
         template <>
-        inline size_t dsize<uint64_t>(const uint64_t& _value)
+        inline size_t dsize<uint64_t>(const uint64_t& /*_value*/)
         {
             return sizeof(uint64_t);
         }
@@ -110,7 +110,7 @@ namespace dds
 
         /// \brief Helper function calculating size of the boost::uuids::uuid
         template <>
-        inline size_t dsize<boost::uuids::uuid>(const boost::uuids::uuid& _value)
+        inline size_t dsize<boost::uuids::uuid>(const boost::uuids::uuid& /*_value*/)
         {
             return boost::uuids::uuid::static_size();
         }

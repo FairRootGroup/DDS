@@ -89,10 +89,10 @@
       private:                                                       \
         friend SBaseData<theClass>;                                  \
         friend theBaseClass<theClass>;                               \
-        void _fromPT(const boost::property_tree::ptree& _pt)         \
+        void _fromPT(const boost::property_tree::ptree& /*_pt*/)     \
         {                                                            \
         }                                                            \
-        void _toPT(boost::property_tree::ptree& _pt) const           \
+        void _toPT(boost::property_tree::ptree& /*_pt*/) const       \
         {                                                            \
         }                                                            \
         static constexpr const char* _protocolTag = theTag;          \
@@ -193,12 +193,12 @@ namespace dds
         {
           private:
             friend SBaseResponseData<SEmptyResponseData>;
-            void _fromPT(const boost::property_tree::ptree& _pt)
+            void _fromPT(const boost::property_tree::ptree& /*_pt*/)
             {
                 throw std::runtime_error("DDS Tools API: bad usage of SEmptyResponseData");
             }
 
-            void _toPT(boost::property_tree::ptree& _pt) const
+            void _toPT(boost::property_tree::ptree& /*_pt*/) const
             {
                 throw std::runtime_error("DDS Tools API: bad usage of SEmptyResponseData");
             }
@@ -209,7 +209,7 @@ namespace dds
 
           public:
             /// \brief Equality operator.
-            bool operator==(const SEmptyResponseData& _val) const
+            bool operator==(const SEmptyResponseData& /*_val*/) const
             {
                 throw std::runtime_error("DDS Tools API: bad usage of SEmptyRequestData");
             }

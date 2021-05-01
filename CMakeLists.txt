@@ -157,6 +157,9 @@ set(MiscCommon_LOCATION
 add_compile_definitions(BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING)
 # boost::interprocess mutexes timeout duration.
 add_compile_definitions(BOOST_INTERPROCESS_TIMEOUT_WHEN_LOCKING_DURATION_MS=5000)
+# lots of warnings and all warnings as errors
+add_compile_options(-Wall -Wextra)
+
 #
 # additional compiler and linker flags
 #

@@ -63,7 +63,7 @@ namespace dds
         {
             typedef std::shared_ptr<SEmptyCmd> ptr_t;
 
-            static ptr_t decode(CProtocolMessage::protocolMessagePtr_t _msg)
+            static ptr_t decode(CProtocolMessage::protocolMessagePtr_t /*_msg*/)
             {
                 return ptr_t();
             }

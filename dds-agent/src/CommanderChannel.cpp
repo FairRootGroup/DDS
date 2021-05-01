@@ -54,7 +54,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
 
     m_intercomChannel->start();
 
-    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& _sender) {
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& /*_sender*/) {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
         {
             LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
@@ -70,7 +70,7 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
         }
     });
 
-    registerHandler<EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& _sender) {
+    registerHandler<EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& /*_sender*/) {
         if (m_connectionAttempts <= g_MaxConnectionAttempts)
         {
             LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt " << m_connectionAttempts
@@ -92,7 +92,7 @@ void CCommanderChannel::setNumberOfSlots(size_t _nSlots)
     m_nSlots = _nSlots;
 }
 
-bool CCommanderChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, SSenderInfo& /*_sender*/)
 {
     switch (_attachment->m_srcCommand)
     {
@@ -171,8 +171,8 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t _attachment,
-                                            SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_INFO>::ptr_t /*_attachment*/,
+                                            SSenderInfo& /*_sender*/)
 {
     // pid
     const pid_t pid{ getpid() };
@@ -209,7 +209,8 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     return true;
 }
 
-bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment, SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t /*_attachment*/,
+                                       SSenderInfo& /*_sender*/)
 {
     deleteAgentIDFile();
     LOG(info) << "The Agent [" << m_id << "] received cmdSHUTDOWN.";
@@ -280,7 +281,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _attachment, SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t /*_attachment*/, SSenderInfo& /*_sender*/)
 {
     LOG(info) << "cmdGET_ID received from DDS Server";
 
@@ -291,7 +292,7 @@ bool CCommanderChannel::on_cmdGET_ID(SCommandAttachmentImpl<cmdGET_ID>::ptr_t _a
     return true;
 }
 
-bool CCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment, SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _attachment, SSenderInfo& /*_sender*/)
 {
     LOG(info) << "cmdSET_ID attachment [" << *_attachment << "] from DDS Server";
 
@@ -302,7 +303,7 @@ bool CCommanderChannel::on_cmdSET_ID(SCommandAttachmentImpl<cmdSET_ID>::ptr_t _a
     return true;
 }
 
-bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t _attachment, SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t /*_attachment*/, SSenderInfo& _sender)
 {
     try
     {
@@ -589,7 +590,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     return true;
 }
 
-bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t _attachment,
+bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER_TASK>::ptr_t /*_attachment*/,
                                              SSenderInfo& _sender)
 {
     try
@@ -629,7 +630,7 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
     return true;
 }
 
-bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_t _attachment, SSenderInfo& _sender)
+bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_t _attachment, SSenderInfo& /*_sender*/)
 {
     LOG(info) << "Received a ADD SLOT request, id = " << _attachment->m_id;
 
@@ -885,7 +886,7 @@ void CCommanderChannel::terminateChildrenProcesses(
     // The term-kill logic is posted to a different free thread in the queue.
     // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
     timer->async_wait([this, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ move(timer) }](
-                          const boost::system::error_code& _error) mutable {
+                          const boost::system::error_code& /*_error*/) mutable {
         terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot);
     });
 }
@@ -922,7 +923,7 @@ void CCommanderChannel::terminateChildrenProcesses(
         // The term-kill logic is posted to a different free thread in the queue.
         // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
         _timer->async_wait([this, _children, _wait_until, _onCompleteSlot, timer{ move(_timer) }](
-                               const boost::system::error_code& _error) mutable {
+                               const boost::system::error_code& /*_error*/) mutable {
             terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot);
         });
     }
@@ -1129,7 +1130,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
 }
 
 bool CCommanderChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment,
-                                             SSenderInfo& _sender)
+                                             SSenderInfo& /*_sender*/)
 {
     LOG(debug) << "Received user task done: " << *_attachment;
 
