@@ -197,6 +197,7 @@ CRMSPluginProtocol::CRMSPluginProtocol(const std::string& _id)
 CRMSPluginProtocol::~CRMSPluginProtocol()
 {
     unsubscribe();
+    stop();
 }
 
 void CRMSPluginProtocol::onSubmit(signalSubmit_t::slot_function_type _subscriber)

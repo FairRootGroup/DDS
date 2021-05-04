@@ -249,10 +249,10 @@ int main(int argc, char* argv[])
 
                 pool.join();
             }
-            catch (exception& e)
+            catch (exception& _e)
             {
-                LOG(error) << "Exception: " << e.what();
-                return;
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::error, _e.what());
+                LOG(error) << "Exception: " << _e.what();
             }
 
             // Check the status of all tasks Failed

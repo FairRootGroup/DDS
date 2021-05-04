@@ -34,6 +34,7 @@ Modified: DDS Session ID is added to the root path of job's wrk dir and the slur
 ### dds-ssh-plugin
 Modified: Remote destination directories are no longer required and will be created automatically at runtime. (GH-349)    
 Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. direcrtory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)    
+Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)    
 
 ## v3.4 (2020-07-01)
 
