@@ -3,8 +3,6 @@
 #
 project(dds-submit-ssh)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY)
-
 set(SOURCE_FILES
 	src/main.cpp
 	src/worker.cpp

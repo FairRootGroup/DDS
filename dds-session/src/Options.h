@@ -10,9 +10,8 @@
 #include <boost/program_options/parsers.hpp>
 // DDS
 #include "BOOSTHelper.h"
-#include "Res.h"
 #include "SysHelper.h"
-#include "version.h"
+#include "Version.h"
 
 namespace bpo = boost::program_options;
 
@@ -105,15 +104,7 @@ namespace dds
             std::string m_sSessionID;
             bool m_bMixed;
         } SOptions_t;
-        //=============================================================================
-        inline void PrintVersion()
-        {
-            LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
-                                        << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-                                        << MiscCommon::g_cszReportBugsAddr;
-        }
-        //=============================================================================
+
         // Command line parser
         inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options)
         {
@@ -121,7 +112,7 @@ namespace dds
                 throw std::runtime_error("Internal error: options' container is empty.");
 
             // Generic options
-            bpo::options_description options("dds-submit options");
+            bpo::options_description options("dds-session options");
             options.add_options()("help,h", "Produce help message");
             options.add_options()("version,v", "Version information");
             options.add_options()(
@@ -170,6 +161,17 @@ namespace dds
                     return (!_v.second.defaulted());
                 });
 
+            if (vm.count("help") || vm.end() == found)
+            {
+                LOG(MiscCommon::log_stdout) << options;
+                return false;
+            }
+            if (vm.count("version"))
+            {
+                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                return false;
+            }
+
             // Command
             if (vm.count("command"))
             {
@@ -215,17 +217,6 @@ namespace dds
             else
             {
                 LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
-                return false;
-            }
-
-            if (vm.count("help") || vm.end() == found)
-            {
-                LOG(MiscCommon::log_stdout) << options;
-                return false;
-            }
-            if (vm.count("version"))
-            {
-                PrintVersion();
                 return false;
             }
 

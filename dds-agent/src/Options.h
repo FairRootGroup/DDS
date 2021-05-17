@@ -13,9 +13,7 @@
 #include <boost/program_options/parsers.hpp>
 // DDS
 #include "Logger.h"
-#include "Res.h"
 #include "UserDefaults.h"
-#include "version.h"
 //=============================================================================
 namespace bpo = boost::program_options;
 //=============================================================================
@@ -49,15 +47,7 @@ namespace dds
             ECommands m_Command{ cmd_start };
             size_t m_slots{ 0 };
         } SOptions_t;
-        //=============================================================================
-        inline void PrintVersion()
-        {
-            LOG(MiscCommon::log_stdout) << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
-                                        << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-                                        << MiscCommon::g_cszReportBugsAddr;
-        }
-        //=============================================================================
+
         // Command line parser
         inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options)
         {
@@ -96,7 +86,7 @@ namespace dds
             }
             if (vm.count("version"))
             {
-                PrintVersion();
+                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
                 return false;
             }
 
@@ -106,14 +96,14 @@ namespace dds
                 if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
                 {
                     LOG(MiscCommon::log_stderr)
-                        << PROJECT_NAME << " error: unknown command: " << vm["command"].as<std::string>() << "\n\n"
+                        << "DDS error: unknown command: " << vm["command"].as<std::string>() << "\n\n"
                         << options;
                     return false;
                 }
             }
             else
             {
-                LOG(MiscCommon::log_stderr) << PROJECT_NAME << ": Nothing to do\n\n" << options;
+                LOG(MiscCommon::log_stderr) << "DDS: Nothing to do\n\n" << options;
                 return false;
             }
 

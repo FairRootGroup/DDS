@@ -8,7 +8,7 @@
 #include "Process.h"
 #include "Tools.h"
 #include "UserDefaults.h"
-#include "version.h"
+#include "Version.h"
 // STD
 #include <array>
 #include <chrono>
@@ -104,7 +104,7 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
     {
         LOG(log_stdout_clean) << "Checking precompiled binaries for the local system only:";
         stringstream ssName;
-        ssName << sBaseName << "-" << PROJECT_VERSION_STRING << "-" << sOS << "-"
+        ssName << sBaseName << "-" << DDS_VERSION_STRING << "-" << sOS << "-"
                << (sOS == sOSXArch ? "universal" : sArch) << sBaseSufix;
         // Check availability
         fs::path pathBin(pathWnBins);
@@ -123,7 +123,7 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
         for (const auto& j : sListArch)
         {
             stringstream ssName;
-            ssName << sBaseName << "-" << PROJECT_VERSION_STRING << "-" << i << "-" << (i == sOSXArch ? "universal" : j)
+            ssName << sBaseName << "-" << DDS_VERSION_STRING << "-" << i << "-" << (i == sOSXArch ? "universal" : j)
                    << sBaseSufix;
 
             // Check availability
@@ -194,7 +194,7 @@ void CStart::getPrecompiledWNBins(StringVector_t& _list)
     // Trying to dowlond bins
     stringstream ssURL;
     ssURL << " http://dds.gsi.de/releases/add"
-          << "/" << PROJECT_VERSION_STRING << "/";
+          << "/" << DDS_VERSION_STRING << "/";
     for (const auto& i : _list)
     {
         string sUrl(ssURL.str());

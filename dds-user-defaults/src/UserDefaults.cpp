@@ -13,8 +13,6 @@
 #include "FindCfgFile.h"
 #include "Process.h"
 #include "SessionIDFile.h"
-// DDS
-#include "version.h"
 
 using namespace std;
 using namespace dds;

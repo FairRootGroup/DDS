@@ -4,7 +4,7 @@
 //
 #ifndef DDSOPTIONS_H
 #define DDSOPTIONS_H
-//=============================================================================
+
 // BOOST
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -13,11 +13,10 @@
 // DDS
 #include "BOOSTHelper.h"
 #include "ProtocolCommands.h"
-#include "Res.h"
-#include "version.h"
-//=============================================================================
+#include "Version.h"
+
 namespace bpo = boost::program_options;
-//=============================================================================
+
 namespace dds
 {
     namespace topology_cmd
@@ -50,15 +49,7 @@ namespace dds
             bool m_bDisableValidation;
             boost::uuids::uuid m_sid;
         } SOptions_t;
-        //=============================================================================
-        inline void PrintVersion()
-        {
-            LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
-                                        << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-                                        << MiscCommon::g_cszReportBugsAddr;
-        }
-        //=============================================================================
+
         // Command line parser
         inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options)
         {
@@ -106,7 +97,7 @@ namespace dds
             }
             if (vm.count("version"))
             {
-                PrintVersion();
+                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
                 return false;
             }
             if (vm.count("session"))

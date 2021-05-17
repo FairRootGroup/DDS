@@ -459,7 +459,9 @@ namespace dds
 
                 // Subscribe on dissconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-                    [this, newClient](const SSenderInfo& /*_sender*/) -> void { this->removeClient(newClient.get()); });
+                    [this, newClient](const SSenderInfo & /*_sender*/) -> void {
+                        this->removeClient(newClient.get());
+                    });
 
                 _acceptor->async_accept(
                     newClient->socket(),

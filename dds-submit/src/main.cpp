@@ -7,6 +7,7 @@
 #include "ErrorCode.h"
 #include "Options.h"
 #include "Tools.h"
+#include "Res.h"
 // BOOST
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>

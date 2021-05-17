@@ -27,7 +27,6 @@
 #include "local_types.h"
 #include "logEngine.h"
 #include "ncf.h"
-#include "version.h"
 #include "worker.h"
 
 using namespace std;

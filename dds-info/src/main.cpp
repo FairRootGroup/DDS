@@ -11,6 +11,7 @@
 #include "SysHelper.h"
 #include "Tools.h"
 #include "UserDefaults.h"
+#include "Res.h"
 // STD
 #include <thread>
 

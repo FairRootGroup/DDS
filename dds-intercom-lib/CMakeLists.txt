@@ -3,8 +3,6 @@
 #
 project(dds_intercom_lib)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
-
 set(SOURCE_FILES
 	src/Intercom.cpp
 	src/dds_rms_plugin_protocol.cpp
@@ -45,6 +43,7 @@ target_include_directories(${PROJECT_NAME}
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
 
 install(TARGETS ${PROJECT_NAME}

@@ -35,4 +35,9 @@ else()
   message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 endif()
 
-install(FILES EnvProp.h DESTINATION "include/dds")
+install(FILES EnvProp.h DESTINATION "${PROJECT_INSTALL_INCLUDEDIR}")
+
+set(VersionHeader ${CMAKE_BINARY_DIR}/Version.h)
+configure_file(Version.h.in ${VersionHeader})
+install(FILES ${VersionHeader} DESTINATION "${PROJECT_INSTALL_INCLUDEDIR}")
+

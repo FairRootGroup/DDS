@@ -13,6 +13,8 @@ Modified: C++17 is now a required standard.
 Modified: Remove an obsolet dds-test tool. (GH-341)    
 Modified: Remove obsolet internal statistics of channels. (GH-341)    
 Added: A cmake option "CREATE_BOOST_SYMLINKS", which enables creation of boost (libboost_*) symlinks in $DDS_LOCATION/lib/. Default is OFF. (GH-199, GH-357)    
+Modified: Refactor internal version implementation. Use a single `Version.h.in` confiuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)    
+Fixed: `--version` option for `dds-session`.    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   
