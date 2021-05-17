@@ -3,8 +3,6 @@
 #
 project(dds-submit-lsf)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/src/version.h @ONLY)
-
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME}

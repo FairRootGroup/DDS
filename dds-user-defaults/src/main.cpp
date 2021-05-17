@@ -4,7 +4,6 @@
 //
 // DDS
 #include "UserDefaults.h"
-#include "version.h"
 // BOOST
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -15,8 +14,8 @@
 #include <string>
 // MiscCommon
 #include "BOOSTHelper.h"
-#include "Res.h"
 #include "SysHelper.h"
+#include "Version.h"
 
 using namespace dds;
 using namespace dds::user_defaults_api;
@@ -24,14 +23,6 @@ using namespace MiscCommon;
 using namespace std;
 namespace bpo = boost::program_options;
 namespace boost_hlp = MiscCommon::BOOSTHelper;
-
-void printVersion()
-{
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
-         << "DDS configuration"
-         << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-         << g_cszReportBugsAddr << endl;
-}
 
 // Command line parser
 bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
@@ -80,7 +71,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
     }
     if (vm.count("version"))
     {
-        printVersion();
+        cout << DDSVersionInfoString();
         return false;
     }
     if (vm.count("verbose"))
@@ -125,7 +116,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
         }
 
         f << "# DDS user defaults\n"
-          << "# version: " << USER_DEFAULTS_CFG_VERSION << "\n"
+          << "# version: " << DDS_USER_DEFAULTS_CFG_VERSION_STRING << "\n"
           << "#\n"
           << "# Please use DDS User's Manual to find out more details on\n"
           << "# keys and values of this configuration file.\n"

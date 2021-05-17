@@ -3,8 +3,6 @@
 #
 project(dds_topology_lib)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
-
 set(SOURCE_FILES
 	src/TopoProperty.cpp
 	src/TopoBase.cpp

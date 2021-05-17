@@ -8,7 +8,7 @@
 
 // DDS
 #include "BaseChannelImpl.h"
-#include "version.h"
+#include "Version.h"
 // STD
 #include <functional>
 

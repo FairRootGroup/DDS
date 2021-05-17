@@ -3,8 +3,6 @@
 #
 project(dds_protocol_lib)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
-
 set(SOURCE_FILES
 	src/ProtocolCommands.cpp
 	src/ProtocolMessage.cpp
@@ -78,6 +76,7 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
 
 install(TARGETS ${PROJECT_NAME}

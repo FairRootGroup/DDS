@@ -9,6 +9,7 @@
 #include "Tools.h"
 #include "TopoCore.h"
 #include "UserDefaults.h"
+#include "Res.h"
 
 using namespace std;
 using namespace MiscCommon;

@@ -8,6 +8,7 @@
 #include "ProgressDisplay.h"
 #include "Tools.h"
 #include "UserDefaults.h"
+#include "Res.h"
 
 using namespace std;
 using namespace MiscCommon;

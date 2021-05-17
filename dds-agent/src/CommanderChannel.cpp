@@ -8,6 +8,7 @@
 #include "ConditionEvent.h"
 #include "EnvProp.h"
 #include "UserDefaults.h"
+#include "Version.h"
 // BOOST
 #include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -180,7 +181,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     SHostInfoCmd cmd;
     get_cuser_name(&cmd.m_username);
     get_hostname(&cmd.m_host);
-    cmd.m_version = PROJECT_VERSION_STRING;
+    cmd.m_version = DDS_VERSION_STRING;
     cmd.m_DDSPath = CUserDefaults::getDDSPath();
     cmd.m_agentPid = pid;
     cmd.m_slots = m_nSlots;

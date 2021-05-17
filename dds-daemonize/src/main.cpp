@@ -12,23 +12,13 @@
 #include <iostream>
 #include <string>
 // DDS
-#include "Res.h"
 #include "SysHelper.h"
-#include "version.h"
 // BOOST
 #include <boost/filesystem/path.hpp>
 
 using namespace std;
 using namespace MiscCommon;
 using namespace boost::filesystem;
-
-void printVersion()
-{
-    cout << PROJECT_NAME << " v" << PROJECT_VERSION_STRING << "\n"
-         << "DDS configuration"
-         << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-         << g_cszReportBugsAddr << endl;
-}
 
 int main(int argc, char* argv[])
 {

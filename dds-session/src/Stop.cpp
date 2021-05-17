@@ -7,7 +7,6 @@
 #include "DDSHelper.h"
 #include "Process.h"
 #include "UserDefaults.h"
-#include "version.h"
 // STD
 #include <chrono>
 // BOOST

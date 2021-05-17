@@ -10,8 +10,7 @@
 #include <boost/program_options/parsers.hpp>
 // DDS
 #include "ProtocolCommands.h"
-#include "Res.h"
-#include "version.h"
+#include "Version.h"
 // STD
 #include <string>
 //=============================================================================
@@ -33,15 +32,7 @@ namespace dds
             std::string m_sCmd;
             std::string m_sCondition;
         } SOptions_t;
-        //=============================================================================
-        inline void PrintVersion()
-        {
-            LOG(MiscCommon::log_stdout) << " v" << PROJECT_VERSION_STRING << "\n"
-                                        << "DDS configuration"
-                                        << " v" << USER_DEFAULTS_CFG_VERSION << "\n"
-                                        << MiscCommon::g_cszReportBugsAddr;
-        }
-        //=============================================================================
+
         // Command line parser
         inline bool ParseCmdLine(int _argc, char* _argv[], SOptions* _options)
         {
@@ -68,7 +59,7 @@ namespace dds
             }
             if (vm.count("version"))
             {
-                PrintVersion();
+                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
                 return false;
             }
 

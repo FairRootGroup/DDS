@@ -3,10 +3,6 @@
 #
 project(dds-daemonize)
 
-set(USER_DEFAULTS_CFG_VERSION "0.1")
-
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY )
-
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME}

@@ -21,7 +21,6 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 // pod-ssh
-//#include "version.h"
 #include "ncf.h"
 //=============================================================================
 using namespace std;

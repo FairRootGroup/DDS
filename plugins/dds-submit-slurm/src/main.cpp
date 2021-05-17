@@ -23,7 +23,6 @@
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "logEngine.h"
-#include "version.h"
 
 using namespace std;
 using namespace dds;

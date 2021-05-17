@@ -3,8 +3,6 @@
 #
 project(dds-user-defaults)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
-
 set(LIB_SOURCE_FILES
   src/UserDefaults.cpp
 )
@@ -24,6 +22,7 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
 
 target_link_libraries(${PROJECT_NAME}

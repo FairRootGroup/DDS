@@ -3,8 +3,6 @@
 #
 project(dds-commander)
 
-configure_file(src/version.h.in ${PROJECT_BINARY_DIR}/version.h @ONLY)
-
 set(SOURCE_FILES
 	src/main.cpp
 	src/ConnectionManager.cpp
