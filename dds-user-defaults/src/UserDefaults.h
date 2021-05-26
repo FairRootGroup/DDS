@@ -23,6 +23,10 @@ namespace dds
           private:
             CUserDefaults(const boost::uuids::uuid& _sid);
             ~CUserDefaults();
+            CUserDefaults(const CUserDefaults&) = delete;
+            CUserDefaults(CUserDefaults&&) = delete;
+            CUserDefaults& operator=(const CUserDefaults&) = delete;
+            CUserDefaults& operator=(CUserDefaults&&) = delete;
 
           public:
             /// \brief Return singleton instance
@@ -35,6 +39,7 @@ namespace dds
           private:
             void init(bool _get_default = false);
             void init(const std::string& _cfgFileName, bool _get_default = false);
+            void makeDefaultDirs();
 
           public:
             std::string getValueForKey(const std::string& _key) const;

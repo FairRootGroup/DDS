@@ -3,15 +3,6 @@
 #
 #
 #=============================================================================
-# ***** create_dir  *****
-#=============================================================================
-create_dir()
-{
-   if [ ! -d "$1" ]; then
-      mkdir -p "$1"
-   fi
-}
-#=============================================================================
 # ***** MAIN  *****
 #=============================================================================
 # DDS Variables
@@ -41,17 +32,4 @@ if [ -z "${DYLD_LIBRARY_PATH}" ]; then
    DYLD_LIBRARY_PATH=$DDS_LOCATION/lib; export DYLD_LIBRARY_PATH   # Mac OS X
 else
    DYLD_LIBRARY_PATH=$DDS_LOCATION/lib:$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
-fi
-
-
-# local folder
-eval LOCAL_DDS="$HOME/.DDS"
-
-# create local DDS directories
-create_dir "$LOCAL_DDS"
-
-## create a default configuration file if needed
-DDS_CFG=$(dds-user-defaults --ignore-default-sid -p)
-if [ -z "$DDS_CFG" ]; then
-   dds-user-defaults --ignore-default-sid -d -c "$LOCAL_DDS/DDS.cfg"
 fi
