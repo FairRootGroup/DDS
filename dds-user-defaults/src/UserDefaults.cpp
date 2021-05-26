@@ -13,6 +13,7 @@
 #include "FindCfgFile.h"
 #include "Process.h"
 #include "SessionIDFile.h"
+#include "Version.h"
 
 using namespace std;
 using namespace dds;
@@ -22,8 +23,8 @@ namespace fs = boost::filesystem;
 
 CUserDefaults::CUserDefaults(const boost::uuids::uuid& _sid)
 {
+    makeDefaultDirs();
     setSessionID(_sid);
-
     init();
 }
 
@@ -45,7 +46,6 @@ boost::uuids::uuid CUserDefaults::getInitialSID()
 void CUserDefaults::reinit(const boost::uuids::uuid& _sid, const string& _cfgFileName, bool _get_default)
 {
     setSessionID(_sid);
-
     init(_cfgFileName, _get_default);
 }
 
@@ -132,6 +132,42 @@ void CUserDefaults::init(bool _get_default)
     // Use the default look up algorithm
     string sDDSCfgFileName(currentUDFile());
     init(sDDSCfgFileName, _get_default);
+}
+
+void CUserDefaults::makeDefaultDirs()
+{
+    if (fs::exists(CUserDefaults::currentUDFile()))
+        return;
+
+    string localDir{ "$HOME/.DDS" };
+    smart_path(&localDir);
+    if (!fs::create_directories(fs::path(localDir)))
+    {
+        stringstream ss;
+        ss << "Failed to create a default directory " << quoted(localDir) << " for user defaults";
+        throw runtime_error(ss.str());
+    }
+
+    string cfgFilepath{ localDir + "/DDS.cfg" };
+    smart_path(&cfgFilepath);
+    cout << "Generating a default DDS configuration file..." << endl;
+    ofstream f(cfgFilepath.c_str());
+    if (!f.is_open())
+    {
+        stringstream ss;
+        ss << "Failed to open a default configuration file " << quoted(cfgFilepath) << " for writing";
+        throw runtime_error(ss.str());
+    }
+
+    f << "# DDS user defaults\n"
+      << "# version: " << DDS_USER_DEFAULTS_CFG_VERSION_STRING << "\n"
+      << "#\n"
+      << "# Please use DDS User's Manual to find out more details on\n"
+      << "# keys and values of this configuration file.\n"
+      << "# DDS User's Manual can be found in $DDS_LOCATION/doc folder or\n"
+      << "# by the following address: http://dds.gsi.de/documentation.html\n";
+    CUserDefaults::printDefaults(f);
+    cout << "Generating a default DDS configuration file - DONE." << endl;
 }
 
 void CUserDefaults::setSessionID(const boost::uuids::uuid& _sid)
