@@ -57,9 +57,6 @@ void make_agent(boost::asio::io_context& _io_context,
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 {
-    CUserDefaults::instance(); // Initialize user defaults
-    Logger::instance().init(); // Initialize log
-
     boost::asio::io_context io_context;
 
     CTopoCore topology;
@@ -111,9 +108,6 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 {
-    CUserDefaults::instance(); // Initialize user defaults
-    Logger::instance().init(); // Initialize log
-
     boost::asio::io_context io_context;
 
     CTopoCore topology;
@@ -153,9 +147,6 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
 
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
 {
-    CUserDefaults::instance(); // Initialize user defaults
-    Logger::instance().init(); // Initialize log
-
     boost::asio::io_context io_context;
 
     CConnectionManager::channelInfo_t::container_t agents;

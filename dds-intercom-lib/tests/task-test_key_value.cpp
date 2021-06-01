@@ -1,7 +1,6 @@
 // DDS
 #include "EnvProp.h"
 #include "Intercom.h"
-#include "Logger.h"
 #include "Topology.h"
 // STD
 #include <chrono>
@@ -9,8 +8,7 @@
 #include <exception>
 #include <iostream>
 #include <sstream>
-#include <thread>
-#include <vector>
+#include <map>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -19,10 +17,8 @@
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
-using namespace dds::user_defaults_api;
 using namespace dds::topology_api;
 namespace bpo = boost::program_options;
-using namespace MiscCommon;
 
 const size_t g_maxValue = 1000;
 const size_t g_timeout = 10; // in seconds
@@ -43,9 +39,6 @@ int main(int argc, char* argv[])
     try
     {
         chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
-
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
 
         size_t nInstances(0);
         size_t nMaxValue(g_maxValue);
@@ -80,7 +73,7 @@ int main(int argc, char* argv[])
 
         testErrors = vm.count("test-errors");
 
-        LOG(info) << "Start task with type " << type;
+        cout << "Start task with type " << type << endl;
 
         // Get list of READ and WRITE properties from topology
         CTopology topo;
@@ -119,14 +112,14 @@ int main(int argc, char* argv[])
 
         // Subscribe on error events
         service.subscribeOnError([/*&keyCondition*/](EErrorCode _errorCode, const string& _msg) {
-            LOG(error) << "Key-value error code: " << _errorCode << ", message: " << _msg;
+            cerr << "Key-value error code: " << _errorCode << ", message: " << _msg << endl;
         });
 
         // Subscribe on task done notifications
         service.subscribeOnTaskDone(
             [&numTaskDone, nInstances, &onTaskDoneCondition](uint64_t _taskID, uint32_t _exitCode) {
                 ++numTaskDone;
-                LOG(info) << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode;
+                cout << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode << endl;
                 // TODO: In order to properly account finished tasks, use taskID to get task's name
                 if (numTaskDone >= nInstances)
                     onTaskDoneCondition.notify_all();
@@ -163,12 +156,12 @@ int main(int argc, char* argv[])
 
         for (size_t i = 0; i < nMaxValue; ++i)
         {
-            LOG(info) << "Start iteration " << i << ". Current value: " << currentIteration;
+            cout << "Start iteration " << i << ". Current value: " << currentIteration << endl;
 
             // For tasks with type 0 we start with writing the properties.
             if ((i % 2 == 0 && type == 0) || (i % 2 == 1 && type == 1))
             {
-                LOG(info) << "Iteration " << i << " start sending values.";
+                cout << "Iteration " << i << " start sending values." << endl;
 
                 string writePropValue = to_string(i);
                 for (const auto& prop : writePropertyNames)
@@ -176,12 +169,12 @@ int main(int argc, char* argv[])
                     keyValue.putValue(prop, writePropValue);
                 }
 
-                LOG(info) << "Iteration " << i << " all values have been sent.";
+                cout << "Iteration " << i << " all values have been sent." << endl;
 
                 // Writing non existing and readonly properties to test the errors
                 if (testErrors)
                 {
-                    LOG(info) << "Iteration " << i << " sending wrong properties.";
+                    cout << "Iteration " << i << " sending wrong properties." << endl;
                     keyValue.putValue("non_existing_property", "non_existing_property_name");
                     for (const auto& prop : readPropertyNames)
                     {
@@ -192,7 +185,7 @@ int main(int argc, char* argv[])
             // For tasks with type 1 we start with subscribtion to properties.
             else if ((i % 2 == 0 && type == 1) || (i % 2 == 1 && type == 0))
             {
-                LOG(info) << "Iteration " << i << " subscribe on property updates. Current value: " << currentIteration;
+                cout << "Iteration " << i << " subscribe on property updates. Current value: " << currentIteration << endl;
 
                 unique_lock<mutex> lock(keyMutex);
                 bool waitStatus = keyCondition.wait_for(
@@ -201,24 +194,23 @@ int main(int argc, char* argv[])
                 // Timeout waiting for property updates
                 if (waitStatus == false)
                 {
-                    LOG(error) << "Iteration " << i << " timed out waiting for property updates.";
-                    LOG(error) << "Number of key-value update calls: " << numUpdateKeyValueCalls
-                               << "; currentIteration: " << currentIteration << "; numWaits: " << numWaits;
-
-                    LOG(error) << "Key value cache.\n" << map_to_string(keyValueCache);
+                    cerr << "Iteration " << i << " timed out waiting for property updates." << endl
+                         << "Number of key-value update calls: " << numUpdateKeyValueCalls
+                         << "; currentIteration: " << currentIteration << "; numWaits: " << numWaits  << endl
+                         << "Key value cache.\n" << map_to_string(keyValueCache);
 
                     if (currentIteration == nMaxValue - 1)
                     {
-                        LOG(warning) << "Some properties of the LAST iteration are missing.";
+                        cerr << "Some properties of the LAST iteration are missing." << endl;
                     }
                     else
                     {
-                        LOG(fatal) << "Task failed: timeout wait for property updates.";
+                        cerr << "Task failed: timeout wait for property updates." << endl;
                         return EXIT_FAILURE;
                     }
                 }
 
-                LOG(info) << "Iteration " << i << " got all properties. Current value: " << currentIteration;
+                cout << "Iteration " << i << " got all properties. Current value: " << currentIteration << endl;
             }
         }
 
@@ -229,22 +221,22 @@ int main(int argc, char* argv[])
                 lock, chrono::seconds(timeout), [&numTaskDone, &nInstances] { return numTaskDone >= nInstances; });
             if (waitStatus == false)
             {
-                LOG(error) << "Task failed: Timed out on waiting Task Done.";
-                LOG(error) << "Finished tasks: " << numTaskDone << " expected: " << nInstances;
+                cerr << "Task failed: Timed out on waiting Task Done." << endl
+                     << "Finished tasks: " << numTaskDone << " expected: " << nInstances;
                 return EXIT_FAILURE;
             }
         }
 
-        LOG(info) << "Key value cache.\n" << map_to_string(keyValueCache);
-        LOG(info) << "Task successfully done";
+        cout << "Key value cache.\n" << map_to_string(keyValueCache) << endl;
+        cout << "Task successfully done" << endl;
 
         chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
-        LOG(info) << "Calculation time: " << duration << " seconds";
+        cout << "Calculation time: " << duration << " seconds" << endl;
     }
     catch (exception& _e)
     {
-        LOG(fatal) << "USER TASK Error: " << _e.what() << endl;
+        cerr << "USER TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
 

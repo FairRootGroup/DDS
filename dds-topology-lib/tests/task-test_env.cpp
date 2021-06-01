@@ -1,8 +1,8 @@
 // DDS
 #include "EnvProp.h"
-#include "Logger.h"
 // STD
 #include <exception>
+#include <iostream>
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -13,8 +13,6 @@
 
 using namespace std;
 using namespace dds;
-using namespace dds::user_defaults_api;
-using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -22,9 +20,6 @@ int main(int argc, char* argv[])
 {
     try
     {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-
         size_t optTaskIndex;
         string optCollectionIndexStr;
 
@@ -73,12 +68,12 @@ int main(int argc, char* argv[])
 
         if (result)
         {
-            LOG(info) << "Task successfully done";
+            cout << "Task successfully done" << endl;
             return EXIT_SUCCESS;
         }
         else
         {
-            LOG(error) << "Task failed";
+            cerr << "Task failed" << endl;
             return EXIT_FAILURE;
         }
     }

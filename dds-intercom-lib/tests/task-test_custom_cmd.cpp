@@ -1,10 +1,10 @@
 // DDS
 #include "EnvProp.h"
 #include "Intercom.h"
-#include "Logger.h"
 // STD
 #include <chrono>
 #include <condition_variable>
+#include <iostream>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -13,18 +13,13 @@
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
-using namespace dds::user_defaults_api;
 namespace bpo = boost::program_options;
-using namespace MiscCommon;
 
 int main(int argc, char* argv[])
 {
     try
     {
         chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
-
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
 
         // Generic options
         bpo::options_description options("task-test_custom_cmd options");
@@ -37,7 +32,7 @@ int main(int argc, char* argv[])
 
         if (vm.count("help"))
         {
-            LOG(info) << options;
+            cout << options << endl;
             return 0;
         }
 
@@ -53,14 +48,14 @@ int main(int argc, char* argv[])
 
         // Subscribe on errors
         service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
-            LOG(error) << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg;
+            cerr << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
         });
 
         // Subscribe on custom commands
         customCmd.subscribe([&customCmd, &waitCondition, &ddsSessionId](
                                 const string& _command, const string& _condition, uint64_t _senderId) {
-            LOG(info) << "Received custom command: " << _command << " condition: " << _condition
-                      << " senderId: " << _senderId;
+            cerr << "Received custom command: " << _command << " condition: " << _condition
+                      << " senderId: " << _senderId << endl;
 
             if (_command == "exit")
             {
@@ -75,7 +70,7 @@ int main(int argc, char* argv[])
         });
 
         // Subscribe on reply from DDS commander server
-        customCmd.subscribeOnReply([](const string& _msg) { LOG(info) << "Received reply message: " << _msg; });
+        customCmd.subscribeOnReply([](const string& _msg) { cout << "Received reply message: " << _msg; });
 
         service.start();
 
@@ -83,15 +78,15 @@ int main(int argc, char* argv[])
         std::unique_lock<std::mutex> lk(waitMutex);
         waitCondition.wait(lk);
 
-        LOG(info) << "Task successfully done";
+        cout << "Task successfully done" << endl;
 
         chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::seconds>(t2 - t1).count();
-        LOG(info) << "Calculation time: " << duration << " seconds";
+        cout << "Calculation time: " << duration << " seconds" << endl;
     }
     catch (exception& _e)
     {
-        LOG(fatal) << "USER TASK Error: " << _e.what() << endl;
+        cerr << "USER TASK Error: " << _e.what() << endl;
         return EXIT_FAILURE;
     }
 
