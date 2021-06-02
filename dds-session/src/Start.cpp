@@ -104,8 +104,8 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
     {
         LOG(log_stdout_clean) << "Checking precompiled binaries for the local system only:";
         stringstream ssName;
-        ssName << sBaseName << "-" << DDS_VERSION_STRING << "-" << sOS << "-"
-               << (sOS == sOSXArch ? "universal" : sArch) << sBaseSufix;
+        ssName << sBaseName << "-" << DDS_VERSION_STRING << "-" << sOS << "-" << (sOS == sOSXArch ? "universal" : sArch)
+               << sBaseSufix;
         // Check availability
         fs::path pathBin(pathWnBins);
         pathBin /= ssName.str();

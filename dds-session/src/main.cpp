@@ -5,11 +5,11 @@
 // DDS
 #include "DDSHelper.h"
 #include "ErrorCode.h"
+#include "MiscSetup.h"
 #include "Options.h"
 #include "Process.h"
 #include "Start.h"
 #include "Stop.h"
-#include "MiscSetup.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     SOptions_t options;
     if (dds::misc::defaultExecSetup<SOptions_t>(argc, argv, &options, &ParseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
-    
+
     try
     {
         // ++++++++++++++++++

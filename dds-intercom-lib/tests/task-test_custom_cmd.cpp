@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
         customCmd.subscribe([&customCmd, &waitCondition, &ddsSessionId](
                                 const string& _command, const string& _condition, uint64_t _senderId) {
             cerr << "Received custom command: " << _command << " condition: " << _condition
-                      << " senderId: " << _senderId << endl;
+                 << " senderId: " << _senderId << endl;
 
             if (_command == "exit")
             {

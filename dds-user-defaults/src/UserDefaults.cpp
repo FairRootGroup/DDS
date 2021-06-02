@@ -390,7 +390,7 @@ string CUserDefaults::getLogFile() const
 
     if (sLogDir.empty())
         throw runtime_error("Can't init Log engine. Log location is not specified. Make sure DDS environment is "
-                            "properly initialised (by using DDS_env.sh).");
+                            "properly initialised (echo $DDS_LOCATION).");
 
     smart_append<string>(&sLogDir, '/');
     string sLogFile(sLogDir);

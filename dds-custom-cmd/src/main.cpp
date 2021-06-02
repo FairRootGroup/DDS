@@ -5,9 +5,9 @@
 // DDS
 #include "Intercom.h"
 #include "Logger.h"
+#include "MiscSetup.h"
 #include "Options.h"
 #include "UserDefaults.h"
-#include "MiscSetup.h"
 // STD
 #include <condition_variable>
 #include <mutex>
@@ -22,7 +22,8 @@ using namespace dds::user_defaults_api;
 int main(int argc, char* argv[])
 {
     dds::custom_cmd::SOptions_t options;
-    if (dds::misc::defaultExecSetup<dds::custom_cmd::SOptions_t>(argc, argv, &options, &dds::custom_cmd::ParseCmdLine) == EXIT_FAILURE)
+    if (dds::misc::defaultExecSetup<dds::custom_cmd::SOptions_t>(
+            argc, argv, &options, &dds::custom_cmd::ParseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
     try

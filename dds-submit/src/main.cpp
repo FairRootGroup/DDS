@@ -5,10 +5,10 @@
 // DDS
 #include "DDSHelper.h"
 #include "ErrorCode.h"
-#include "Options.h"
-#include "Tools.h"
-#include "Res.h"
 #include "MiscSetup.h"
+#include "Options.h"
+#include "Res.h"
+#include "Tools.h"
 // BOOST
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>

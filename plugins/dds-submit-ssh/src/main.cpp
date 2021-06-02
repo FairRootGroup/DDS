@@ -21,6 +21,7 @@
 #include "BOOST_FILESYSTEM.h"
 #include "Intercom.h"
 #include "Logger.h"
+#include "MiscSetup.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
@@ -28,7 +29,6 @@
 #include "logEngine.h"
 #include "ncf.h"
 #include "worker.h"
-#include "MiscSetup.h"
 
 using namespace std;
 using namespace dds;
@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
     boost::uuids::uuid sid(boost::uuids::nil_uuid());
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
-    
+
     if (dds::misc::defaultExecReinit(sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 

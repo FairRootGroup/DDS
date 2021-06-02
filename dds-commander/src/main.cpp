@@ -5,9 +5,9 @@
 // DDS
 #include "ConnectionManager.h"
 #include "ErrorCode.h"
+#include "MiscSetup.h"
 #include "SessionIDFile.h"
 #include "SysHelper.h"
-#include "MiscSetup.h"
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

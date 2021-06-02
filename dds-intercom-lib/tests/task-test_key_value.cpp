@@ -7,8 +7,8 @@
 #include <condition_variable>
 #include <exception>
 #include <iostream>
-#include <sstream>
 #include <map>
+#include <sstream>
 // BOOST
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -116,14 +116,14 @@ int main(int argc, char* argv[])
         });
 
         // Subscribe on task done notifications
-        service.subscribeOnTaskDone(
-            [&numTaskDone, nInstances, &onTaskDoneCondition](uint64_t _taskID, uint32_t _exitCode) {
-                ++numTaskDone;
-                cout << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode << endl;
-                // TODO: In order to properly account finished tasks, use taskID to get task's name
-                if (numTaskDone >= nInstances)
-                    onTaskDoneCondition.notify_all();
-            });
+        service.subscribeOnTaskDone([&numTaskDone, nInstances, &onTaskDoneCondition](uint64_t _taskID,
+                                                                                     uint32_t _exitCode) {
+            ++numTaskDone;
+            cout << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode << endl;
+            // TODO: In order to properly account finished tasks, use taskID to get task's name
+            if (numTaskDone >= nInstances)
+                onTaskDoneCondition.notify_all();
+        });
 
         // Subscribe on key update events
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
@@ -185,7 +185,8 @@ int main(int argc, char* argv[])
             // For tasks with type 1 we start with subscribtion to properties.
             else if ((i % 2 == 0 && type == 1) || (i % 2 == 1 && type == 0))
             {
-                cout << "Iteration " << i << " subscribe on property updates. Current value: " << currentIteration << endl;
+                cout << "Iteration " << i << " subscribe on property updates. Current value: " << currentIteration
+                     << endl;
 
                 unique_lock<mutex> lock(keyMutex);
                 bool waitStatus = keyCondition.wait_for(
@@ -196,8 +197,9 @@ int main(int argc, char* argv[])
                 {
                     cerr << "Iteration " << i << " timed out waiting for property updates." << endl
                          << "Number of key-value update calls: " << numUpdateKeyValueCalls
-                         << "; currentIteration: " << currentIteration << "; numWaits: " << numWaits  << endl
-                         << "Key value cache.\n" << map_to_string(keyValueCache);
+                         << "; currentIteration: " << currentIteration << "; numWaits: " << numWaits << endl
+                         << "Key value cache.\n"
+                         << map_to_string(keyValueCache);
 
                     if (currentIteration == nMaxValue - 1)
                     {
