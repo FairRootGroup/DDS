@@ -6,4 +6,4 @@ if ! which clang-format; then
 fi
 
 
-find $1 -name \*.h -print -o -name \*.cpp -o -name \*.cpp.in -print -o -name \*.h.in -print | xargs clang-format -i
+find $1 -name \*.h -print -o -name \*.cpp -print -o -name \*.cpp.in -print -o -name \*.h.in -print | xargs clang-format -i
