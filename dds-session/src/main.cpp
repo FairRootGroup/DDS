@@ -9,7 +9,7 @@
 #include "Process.h"
 #include "Start.h"
 #include "Stop.h"
-#include "Environment.h"
+#include "MiscSetup.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -98,22 +98,12 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    // Command line parser
     SOptions_t options;
+    if (dds::misc::defaultExecSetup<SOptions_t>(argc, argv, &options, &ParseCmdLine) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+    
     try
     {
-        Logger::instance().init(); // Initialize log
-        CUserDefaults::instance(); // Initialize user defaults
-        dds::misc::setupEnv(); // Setup environment
-
-        vector<std::string> arguments(argv + 1, argv + argc);
-        ostringstream ss;
-        copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-        LOG(info) << "Starting with arguments: " << ss.str();
-
-        if (!ParseCmdLine(argc, argv, &options))
-            return EXIT_SUCCESS;
-
         // ++++++++++++++++++
         // Start NEW session
         // ++++++++++++++++++

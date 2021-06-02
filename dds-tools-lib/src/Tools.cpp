@@ -45,9 +45,7 @@ struct CSession::SImpl
         , m_service(nullptr)
         , m_customCmd(nullptr)
     {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-        dds::misc::setupEnv();
+        CSession::setup();
     }
 
     ~SImpl()

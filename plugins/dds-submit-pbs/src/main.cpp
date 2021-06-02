@@ -23,7 +23,7 @@
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "logEngine.h"
-#include "Environment.h"
+#include "MiscSetup.h"
 #include "Logger.h"
 
 using namespace std;
@@ -77,28 +77,16 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
 int main(int argc, char* argv[])
 {
     bpo::variables_map vm;
-    try
-    {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-        dds::misc::setupEnv(); // Setup environment
-        
-        if (!parseCmdLine(argc, argv, &vm))
-            return 1;
-    }
-    catch (exception& e)
-    {
-        return 1;
-    }
+    if (dds::misc::defaultExecSetup<bpo::variables_map>(argc, argv, &vm, &parseCmdLine) == EXIT_FAILURE)
+        return EXIT_FAILURE;
 
     // Session ID
     boost::uuids::uuid sid(boost::uuids::nil_uuid());
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
-    // Reinit UserDefaults and Log with new session ID
-    CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
-    Logger::instance().reinit();
+    if (dds::misc::defaultExecReinit(sid) == EXIT_FAILURE)
+        return EXIT_FAILURE;
 
     // Init communication with DDS commander server
     CRMSPluginProtocol proto(vm["id"].as<string>());

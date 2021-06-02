@@ -28,7 +28,7 @@
 #include "logEngine.h"
 #include "ncf.h"
 #include "worker.h"
-#include "Environment.h"
+#include "MiscSetup.h"
 
 using namespace std;
 using namespace dds;
@@ -135,28 +135,16 @@ int main(int argc, char* argv[])
     sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
     bpo::variables_map vm;
-    try
-    {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-        dds::misc::setupEnv(); // Setup environment
-        
-        if (!parseCmdLine(argc, argv, &vm))
-            return 1;
-    }
-    catch (exception& e)
-    {
-        return 1;
-    }
+    if (dds::misc::defaultExecSetup<bpo::variables_map>(argc, argv, &vm, &parseCmdLine) == EXIT_FAILURE)
+        return EXIT_FAILURE;
 
     // Session ID
     boost::uuids::uuid sid(boost::uuids::nil_uuid());
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
-
-    // Reinit UserDefaults and Log with new session ID
-    CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
-    Logger::instance().reinit();
+    
+    if (dds::misc::defaultExecReinit(sid) == EXIT_FAILURE)
+        return EXIT_FAILURE;
 
     // Init communication with DDS commander server
     shared_ptr<CRMSPluginProtocol> proto = make_shared<CRMSPluginProtocol>(vm["id"].as<string>());
