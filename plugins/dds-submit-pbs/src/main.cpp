@@ -23,6 +23,8 @@
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "logEngine.h"
+#include "Environment.h"
+#include "Logger.h"
 
 using namespace std;
 using namespace dds;
@@ -32,6 +34,7 @@ using namespace dds::pipe_log_engine;
 using namespace MiscCommon;
 namespace bpo = boost::program_options;
 namespace fs = boost::filesystem;
+namespace bp = boost::process;
 
 //=============================================================================
 // file is located in the DDS server working dir
@@ -73,10 +76,13 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    CUserDefaults::instance(); // Initialize user defaults
     bpo::variables_map vm;
     try
     {
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
+        
         if (!parseCmdLine(argc, argv, &vm))
             return 1;
     }
@@ -92,6 +98,7 @@ int main(int argc, char* argv[])
 
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
+    Logger::instance().reinit();
 
     // Init communication with DDS commander server
     CRMSPluginProtocol proto(vm["id"].as<string>());
@@ -170,8 +177,7 @@ int main(int argc, char* argv[])
                 fs::path pathPBSScript(pathPluginDir);
                 pathPBSScript /= "dds-submit-pbs-worker";
                 stringstream cmd;
-                cmd << "$DDS_LOCATION/bin/dds-daemonize " << sSandboxDir << " /bin/bash -c \"" << pathPBSScript.string()
-                    << "\"";
+                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " " << bp::search_path("bash").string() << " -c " << quoted(pathPBSScript.string());
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;

@@ -28,6 +28,7 @@
 #include "logEngine.h"
 #include "ncf.h"
 #include "worker.h"
+#include "Environment.h"
 
 using namespace std;
 using namespace dds;
@@ -133,12 +134,13 @@ int main(int argc, char* argv[])
     sigaddset(&mask, SIGCHLD);
     sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
-    CUserDefaults::instance(); // Initialize user defaults
-    Logger::instance().init(); // Initialize log
-
     bpo::variables_map vm;
     try
     {
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
+        
         if (!parseCmdLine(argc, argv, &vm))
             return 1;
     }

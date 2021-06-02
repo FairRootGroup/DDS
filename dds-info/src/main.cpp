@@ -12,6 +12,7 @@
 #include "Tools.h"
 #include "UserDefaults.h"
 #include "Res.h"
+#include "Environment.h"
 // STD
 #include <thread>
 
@@ -151,6 +152,7 @@ int main(int argc, char* argv[])
     {
         CUserDefaults::instance(); // Initialize user defaults
         Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;

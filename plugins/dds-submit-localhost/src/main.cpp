@@ -24,15 +24,15 @@
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "logEngine.h"
 #include "ncf.h"
+#include "Logger.h"
+#include "Environment.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::ncf;
 using namespace dds::user_defaults_api;
-using namespace dds::pipe_log_engine;
 using namespace MiscCommon;
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
@@ -136,11 +136,13 @@ bool checkAgentStatus(const bfs::path _wrkDirPath,
 
 int main(int argc, char* argv[])
 {
-    CUserDefaults::instance(); // Initialize user defaults
-
     bpo::variables_map vm;
     try
     {
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
+        
         if (!parseCmdLine(argc, argv, &vm))
             return 1;
     }
@@ -156,6 +158,7 @@ int main(int argc, char* argv[])
 
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
+    Logger::instance().reinit();
 
     // Init communication with DDS commander server
     CRMSPluginProtocol proto(vm["id"].as<string>());

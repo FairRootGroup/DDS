@@ -9,6 +9,7 @@
 #include "Process.h"
 #include "Start.h"
 #include "Stop.h"
+#include "Environment.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -103,6 +104,7 @@ int main(int argc, char* argv[])
     {
         Logger::instance().init(); // Initialize log
         CUserDefaults::instance(); // Initialize user defaults
+        dds::misc::setupEnv(); // Setup environment
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;

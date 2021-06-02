@@ -1,0 +1,17 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+
+#ifndef __DDS__BuildConstants__
+#define __DDS__BuildConstants__
+
+#include <string>
+
+namespace dds::misc
+{
+    const std::string kDDSInstallPrefix = "@DDS_INSTALL_PREFIX@";
+    const std::string kDDSBinaryDir = "@DDS_BINDIR@";
+    const std::string kDDSLibraryDir = "@DDS_LIBDIR@";
+} // namespace dds::misc
+
+#endif /*__DDS__BuildConstants__*/

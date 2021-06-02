@@ -8,6 +8,7 @@
 #include "Options.h"
 #include "Tools.h"
 #include "Res.h"
+#include "Environment.h"
 // BOOST
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -28,6 +29,7 @@ int main(int argc, char* argv[])
     {
         CUserDefaults::instance(); // Initialize user defaults
         Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;

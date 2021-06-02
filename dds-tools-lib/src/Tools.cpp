@@ -22,6 +22,7 @@
 #include "IntercomServiceCore.h"
 #include "ToolsProtocol.h"
 #include "UserDefaults.h"
+#include "Environment.h"
 
 using namespace std;
 using namespace dds;
@@ -44,6 +45,9 @@ struct CSession::SImpl
         , m_service(nullptr)
         , m_customCmd(nullptr)
     {
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv();
     }
 
     ~SImpl()
@@ -251,6 +255,13 @@ void CSession::subscribe()
         });
 
     m_impl->m_service->start();
+}
+
+void CSession::setup()
+{
+    CUserDefaults::instance(); // Initialize user defaults
+    Logger::instance().init(); // Initialize log
+    dds::misc::setupEnv();
 }
 
 bool CSession::isDDSAvailable() const
