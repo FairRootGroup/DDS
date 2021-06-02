@@ -18,11 +18,11 @@
 #include "ConditionEvent.h"
 #include "Process.h"
 // DDS
+#include "Environment.h"
 #include "Intercom.h"
 #include "IntercomServiceCore.h"
 #include "ToolsProtocol.h"
 #include "UserDefaults.h"
-#include "Environment.h"
 
 using namespace std;
 using namespace dds;
@@ -82,8 +82,8 @@ CSession::~CSession()
 boost::uuids::uuid CSession::create()
 {
     if (!isDDSAvailable())
-        throw runtime_error(
-            "ToolsAPI: Missing DDS environment. Make sure to init DDS env using DDS_env.sh before using this API");
+        throw runtime_error("ToolsAPI: Missing DDS environment. Make sure DDS env is properly initialized (echo "
+                            "$DDS_LOCATION) before using this API");
 
     if (!m_impl->m_sid.is_nil())
         throw runtime_error("ToolsAPI: DDS session is already running.");
@@ -142,8 +142,8 @@ void CSession::attach(const std::string& _sid)
 void CSession::attach(const boost::uuids::uuid& _sid)
 {
     if (!isDDSAvailable())
-        throw runtime_error(
-            "ToolsAPI: Missing DDS environment. Make sure to init DDS env using DDS_env.sh before using this API");
+        throw runtime_error("ToolsAPI: Missing DDS environment. Make sure DDS env is properly initialized (echo "
+                            "$DDS_LOCATION) before using this API");
 
     if (!m_impl->m_sid.is_nil())
         throw runtime_error("ToolsAPI: DDS session is already running.");
@@ -162,8 +162,8 @@ void CSession::attach(const boost::uuids::uuid& _sid)
 void CSession::shutdown()
 {
     if (!isDDSAvailable())
-        throw runtime_error(
-            "ToolsAPI: Missing DDS environment. Make sure to init DDS env using DDS_env.sh before using this API");
+        throw runtime_error("ToolsAPI: Missing DDS environment. Make sure DDS env is properly initialized (echo "
+                            "$DDS_LOCATION) before using this API");
 
     if (m_impl->m_sid.is_nil())
         throw runtime_error("ToolsAPI: DDS session is not running.");

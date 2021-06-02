@@ -6,13 +6,13 @@
 #include "BOOSTHelper.h"
 #include "DDSHelper.h"
 #include "ErrorCode.h"
+#include "MiscSetup.h"
 #include "Options.h"
 #include "Process.h"
+#include "Res.h"
 #include "SysHelper.h"
 #include "Tools.h"
 #include "UserDefaults.h"
-#include "Res.h"
-#include "MiscSetup.h"
 // STD
 #include <thread>
 

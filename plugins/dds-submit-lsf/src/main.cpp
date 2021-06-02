@@ -19,12 +19,12 @@
 #include <thread>
 // DDS
 #include "Intercom.h"
+#include "Logger.h"
+#include "MiscSetup.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "logEngine.h"
-#include "Logger.h"
-#include "MiscSetup.h"
 
 using namespace std;
 using namespace dds;
@@ -168,7 +168,8 @@ int main(int argc, char* argv[])
                 fs::path pathlsfScript(pathPluginDir);
                 pathlsfScript /= "dds-submit-lsf-worker";
                 stringstream cmd;
-                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " " << bp::search_path("bash").string() << " -c " << quoted(pathlsfScript.string());
+                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " "
+                    << bp::search_path("bash").string() << " -c " << quoted(pathlsfScript.string());
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;

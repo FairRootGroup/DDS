@@ -21,12 +21,12 @@
 #include "BOOSTHelper.h"
 #include "BOOST_FILESYSTEM.h"
 #include "Intercom.h"
+#include "Logger.h"
+#include "MiscSetup.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "ncf.h"
-#include "Logger.h"
-#include "MiscSetup.h"
 
 using namespace std;
 using namespace dds;

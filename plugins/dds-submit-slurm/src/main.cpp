@@ -19,12 +19,12 @@
 #include <thread>
 // DDS
 #include "Intercom.h"
+#include "Logger.h"
+#include "MiscSetup.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "logEngine.h"
-#include "MiscSetup.h"
-#include "Logger.h"
 
 using namespace std;
 using namespace dds;
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     boost::uuids::uuid sid(boost::uuids::nil_uuid());
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
-    
+
     if (dds::misc::defaultExecReinit(sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
@@ -180,11 +180,12 @@ int main(int argc, char* argv[])
                 fs::path pathSLURMScript(pathPluginDir);
                 pathSLURMScript /= "dds-submit-slurm-worker";
                 stringstream cmd;
-                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " " << bp::search_path("bash").string() << " -c " << quoted(pathSLURMScript.string());
+                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " "
+                    << bp::search_path("bash").string() << " -c " << quoted(pathSLURMScript.string());
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;
-                pid_t exitCode { execute(cmd.str(), chrono::seconds(30), &output) };
+                pid_t exitCode{ execute(cmd.str(), chrono::seconds(30), &output) };
 
                 // In case of error there can be a bash.out.log created, let's check it's content
                 fs::path pathBashlog(sSandboxDir);

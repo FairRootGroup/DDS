@@ -4,13 +4,13 @@
 //
 // DDS
 #include "DDSHelper.h"
+#include "MiscSetup.h"
 #include "Options.h"
 #include "ProgressDisplay.h"
+#include "Res.h"
 #include "Tools.h"
 #include "TopoCore.h"
 #include "UserDefaults.h"
-#include "Res.h"
-#include "MiscSetup.h"
 
 using namespace std;
 using namespace MiscCommon;
