@@ -23,6 +23,8 @@
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "logEngine.h"
+#include "Logger.h"
+#include "Environment.h"
 
 using namespace std;
 using namespace dds;
@@ -73,10 +75,13 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    CUserDefaults::instance(); // Initialize user defaults
     bpo::variables_map vm;
     try
     {
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
+        
         if (!parseCmdLine(argc, argv, &vm))
             return 1;
     }
@@ -92,6 +97,7 @@ int main(int argc, char* argv[])
 
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(sid, CUserDefaults::instance().currentUDFile());
+    Logger::instance().reinit();
 
     // Init communication with DDS commander server
     CRMSPluginProtocol proto(vm["id"].as<string>());
@@ -174,8 +180,7 @@ int main(int argc, char* argv[])
                 fs::path pathlsfScript(pathPluginDir);
                 pathlsfScript /= "dds-submit-lsf-worker";
                 stringstream cmd;
-                cmd << "$DDS_LOCATION/bin/dds-daemonize " << sSandboxDir << " /bin/bash -c \"" << pathlsfScript.string()
-                    << "\"";
+                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " " << bp::search_path("bash").string() << " -c " << quoted(pathlsfScript.string());
 
                 proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
                 string output;

@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include "Options.h"
 #include "UserDefaults.h"
+#include "Environment.h"
 // STD
 #include <condition_variable>
 #include <mutex>
@@ -27,6 +28,7 @@ int main(int argc, char* argv[])
     {
         CUserDefaults::instance(); // Initialize user defaults
         Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
 
         vector<std::string> arguments(argv + 1, argv + argc);
         ostringstream ss;

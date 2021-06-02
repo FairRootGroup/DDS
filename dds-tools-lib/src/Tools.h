@@ -190,6 +190,9 @@ namespace dds
             /// \brief Returns the default DDS session ID
             /// \return DDS session ID or nil_uuid if no default session is yet set
             static boost::uuids::uuid getDefaultSessionID();
+            /// \brief Setups DDS environment
+            static void setup();
+
             /// \brief blockCurrentThread Blocks current thread.
             ///
             /// The function stops the thread and waits until one of the conditions is applied:

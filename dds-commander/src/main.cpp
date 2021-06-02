@@ -7,6 +7,7 @@
 #include "ErrorCode.h"
 #include "SessionIDFile.h"
 #include "SysHelper.h"
+#include "Environment.h"
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -61,8 +62,17 @@ int createDirectories(const boost::uuids::uuid& _sid)
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    CUserDefaults::instance(); // Initialize user defaults
-    Logger::instance().init(); // Initialize log
+    try
+    {
+        CUserDefaults::instance(); // Initialize user defaults
+        Logger::instance().init(); // Initialize log
+        dds::misc::setupEnv(); // Setup environment
+    }
+    catch (exception& e)
+    {
+        LOG(fatal) << e.what();
+        return EXIT_FAILURE;
+    }
 
     vector<string> arguments(argv + 1, argv + argc);
     ostringstream ss;

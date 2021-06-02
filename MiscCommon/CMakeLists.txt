@@ -37,6 +37,13 @@ endif()
 
 install(FILES EnvProp.h DESTINATION "${PROJECT_INSTALL_INCLUDEDIR}")
 
+# BuildConstants header
+set(DDS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+set(DDS_BINDIR "${CMAKE_INSTALL_PREFIX}/${PROJECT_INSTALL_BINDIR}")
+set(DDS_LIBDIR "${CMAKE_INSTALL_PREFIX}/${PROJECT_INSTALL_LIBDIR}")
+configure_file(BuildConstants.h.in ${CMAKE_BINARY_DIR}/BuildConstants.h @ONLY)
+
+# Version header
 set(VersionHeader ${CMAKE_BINARY_DIR}/Version.h)
 configure_file(Version.h.in ${VersionHeader})
 install(FILES ${VersionHeader} DESTINATION "${PROJECT_INSTALL_INCLUDEDIR}")
