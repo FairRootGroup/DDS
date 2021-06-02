@@ -141,11 +141,6 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightwei
         stringstream ssSubmitTime;
         ssSubmitTime << " -s " << chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 
-        // invoking a new bash process can in some case overwrite env. vars
-        // To be sure that our env is there, we call DDS_env.sh
-        string cmd_env("$DDS_LOCATION/DDS_env.sh");
-        smart_path(&cmd_env);
-
         string cmd("$DDS_LOCATION/bin/dds-prep-worker");
         smart_path(&cmd);
         cmd += ssSubmitTime.str();
@@ -161,13 +156,8 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightwei
         if (_lightweightPkg)
             cmd += " -l ";
 
-        string arg("source ");
-        arg += cmd_env;
-        arg += " ; ";
-        arg += cmd;
-
         stringstream ssCmd;
-        ssCmd << "/bin/bash -c \"" << arg << "\"";
+        ssCmd << "/bin/bash -c \"" << cmd << "\"";
 
         LOG(debug) << "Preparing WN package: " << ssCmd.str();
 
