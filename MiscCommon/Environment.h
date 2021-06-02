@@ -45,10 +45,21 @@ namespace dds::misc
                 LOG(MiscCommon::info) << "Set $" << _varName << " to " << std::quoted(path);
             }
         }
+
+        inline void setupLocale()
+        {
+            // Setup locale.
+            // Some Boost libraries throw an exception if the locale is not set.
+            // export LC_ALL=C; unset LANGUAGE
+            setenv("LC_ALL", "C", 1);
+            unsetenv("LANGUAGE");
+        }
     } // namespace impl
 
     inline void setupEnv()
     {
+        impl::setupLocale();
+
         std::string location{ impl::getEnv("DDS_LOCATION") };
 
         // Setup $DDS_LOCATION
