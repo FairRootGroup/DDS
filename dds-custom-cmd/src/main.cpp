@@ -7,7 +7,7 @@
 #include "Logger.h"
 #include "Options.h"
 #include "UserDefaults.h"
-#include "Environment.h"
+#include "MiscSetup.h"
 // STD
 #include <condition_variable>
 #include <mutex>
@@ -21,28 +21,9 @@ using namespace dds::user_defaults_api;
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    // Command line parser
     dds::custom_cmd::SOptions_t options;
-
-    try
-    {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-        dds::misc::setupEnv(); // Setup environment
-
-        vector<std::string> arguments(argv + 1, argv + argc);
-        ostringstream ss;
-        copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-        LOG(info) << "Starting with arguments: " << ss.str();
-
-        if (!ParseCmdLine(argc, argv, &options))
-            return EXIT_SUCCESS;
-    }
-    catch (exception& e)
-    {
-        LOG(log_stderr) << e.what();
+    if (dds::misc::defaultExecSetup<dds::custom_cmd::SOptions_t>(argc, argv, &options, &dds::custom_cmd::ParseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
-    }
 
     try
     {

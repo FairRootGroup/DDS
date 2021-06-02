@@ -12,7 +12,7 @@
 #include "Tools.h"
 #include "UserDefaults.h"
 #include "Res.h"
-#include "Environment.h"
+#include "MiscSetup.h"
 // STD
 #include <thread>
 
@@ -144,33 +144,11 @@ void requestAgentCount(CSession& _session, const SOptions_t& _options)
 //=============================================================================
 int main(int argc, char* argv[])
 {
-
-    // Command line parser
     SOptions_t options;
-
-    try
-    {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-        dds::misc::setupEnv(); // Setup environment
-
-        vector<std::string> arguments(argv + 1, argv + argc);
-        ostringstream ss;
-        copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-        LOG(info) << "Starting with arguments: " << ss.str();
-
-        if (!ParseCmdLine(argc, argv, &options))
-            return EXIT_SUCCESS;
-
-        // Reinit UserDefaults and Log with new session ID
-        CUserDefaults::instance().reinit(options.m_sid, CUserDefaults::instance().currentUDFile());
-        Logger::instance().reinit();
-    }
-    catch (exception& e)
-    {
-        LOG(log_stderr) << e.what();
+    if (dds::misc::defaultExecSetup<SOptions_t>(argc, argv, &options, &ParseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
-    }
+    if (dds::misc::defaultExecReinit(options.m_sid) == EXIT_FAILURE)
+        return EXIT_FAILURE;
 
     string sid;
     try

@@ -7,7 +7,7 @@
 #include "ErrorCode.h"
 #include "SessionIDFile.h"
 #include "SysHelper.h"
-#include "Environment.h"
+#include "MiscSetup.h"
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -62,35 +62,9 @@ int createDirectories(const boost::uuids::uuid& _sid)
 //=============================================================================
 int main(int argc, char* argv[])
 {
-    try
-    {
-        CUserDefaults::instance(); // Initialize user defaults
-        Logger::instance().init(); // Initialize log
-        dds::misc::setupEnv(); // Setup environment
-    }
-    catch (exception& e)
-    {
-        LOG(fatal) << e.what();
-        return EXIT_FAILURE;
-    }
-
-    vector<string> arguments(argv + 1, argv + argc);
-    ostringstream ss;
-    copy(arguments.begin(), arguments.end(), ostream_iterator<string>(ss, " "));
-    LOG(info) << "Starting with arguments: " << ss.str();
-
-    // Command line parser
     SOptions_t options;
-    try
-    {
-        if (!ParseCmdLine(argc, argv, &options))
-            return EXIT_SUCCESS;
-    }
-    catch (exception& e)
-    {
-        LOG(log_stderr) << e.what();
+    if (dds::misc::defaultExecSetup<SOptions_t>(argc, argv, &options, &ParseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
-    }
 
     // Checking for "prep-session" option
     if (SOptions_t::cmd_prep_session == options.m_Command)
@@ -129,9 +103,8 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    // Reinit UserDefaults and Log with new session ID
-    CUserDefaults::instance().reinit(options.m_sid, CUserDefaults::instance().currentUDFile());
-    Logger::instance().reinit();
+    if (dds::misc::defaultExecReinit(options.m_sid) == EXIT_FAILURE)
+        return EXIT_FAILURE;
 
     // pidfile name
     const string pidfile_name(CUserDefaults::instance().getCommanderPidFile());
