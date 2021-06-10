@@ -10,15 +10,15 @@
 #define BOOST_LOG_DYN_LINK
 #endif
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/support/date_time.hpp>
 #include <boost/log/attributes/current_process_id.hpp>
 #include <boost/log/attributes/current_process_name.hpp>
 #include <boost/log/attributes/current_thread_id.hpp>
+#include <boost/log/expressions.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
@@ -31,17 +31,7 @@
 #include "UserDefaults.h"
 #include "def.h"
 
-// Main macro to be used for logging in DDS
-// Example: LOG(info) << "My message";
-//
-// WORKAROUND:  a bug in 1.59 version
-// https://svn.boost.org/trac/boost/ticket/11549
-//
-#if BOOST_VERSION == 105900
-#define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity) << ""
-#else
 #define LOG(severity) BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), severity)
-#endif
 
 // Convenience functions
 #define P_H BOOST_LOG_SEV(MiscCommon::Logger::instance().logger(), MiscCommon::proto_high)
