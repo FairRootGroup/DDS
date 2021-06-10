@@ -21,11 +21,8 @@
 #include "MiscUtils.h"
 #include "def.h"
 // BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#pragma clang diagnostic pop
 
 /// this macro indicates an invalid status of the socket
 #define INVALID_SOCKET -1

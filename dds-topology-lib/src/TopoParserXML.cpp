@@ -12,11 +12,8 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#pragma clang diagnostic pop
 
 using namespace std;
 using namespace dds;

@@ -5,11 +5,8 @@
 #include "ChannelId.h"
 #include "CRC.h"
 // BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#pragma clang diagnostic pop
 // STD
 #include <mutex>
 #include <set>

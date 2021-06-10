@@ -11,11 +11,7 @@
 
 // BOOST
 #include <boost/property_tree/ptree.hpp>
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/property_tree/ini_parser.hpp>
-#pragma clang diagnostic pop
 
 namespace MiscCommon
 {
