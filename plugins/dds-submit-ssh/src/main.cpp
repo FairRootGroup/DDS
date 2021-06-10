@@ -3,12 +3,9 @@
 //
 //
 // BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#include <boost/program_options/parsers.hpp>
-#pragma clang diagnostic pop
 #include <boost/filesystem/operations.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 // STD
 #include <chrono>

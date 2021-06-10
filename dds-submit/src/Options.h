@@ -6,22 +6,12 @@
 #define DDSOPTIONS_H
 //=============================================================================
 // BOOST
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/property_tree/ptree.hpp>
-
-// silence "Unused typedef" warning using clang 3.7+ and boost < 1.59
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#endif
-#include <boost/property_tree/ini_parser.hpp>
-#if BOOST_VERSION < 105900
-#pragma clang diagnostic pop
-#endif
-
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 // DDS
 #include "BOOSTHelper.h"
 #include "ProtocolCommands.h"

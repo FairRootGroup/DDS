@@ -10,18 +10,8 @@
 #define BOOST_LOG_DYN_LINK
 #endif
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-
-#if BOOST_VERSION < 105700
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#endif
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
-#pragma clang diagnostic pop
-
 #include <boost/log/attributes/current_process_id.hpp>
 #include <boost/log/attributes/current_process_name.hpp>
 #include <boost/log/attributes/current_thread_id.hpp>
@@ -32,9 +22,6 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
-#if BOOST_VERSION < 105700
-#pragma clang diagnostic pop
-#endif
 // STD
 #include <fstream>
 #include <ostream>

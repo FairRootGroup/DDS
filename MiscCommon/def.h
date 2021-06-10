@@ -13,10 +13,7 @@
 #include <string>
 #include <vector>
 // BOOST
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/algorithm/string/case_conv.hpp>
-#pragma clang diagnostic pop
 #include <boost/program_options/errors.hpp>
 
 namespace MiscCommon

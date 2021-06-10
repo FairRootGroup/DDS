@@ -36,10 +36,10 @@
 // BOOST
 #include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
 #include <boost/process.hpp>
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 namespace bp = boost::process;
 namespace bio = boost::asio;
