@@ -14,6 +14,8 @@
 #include "Process.h"
 #include "SessionIDFile.h"
 #include "Version.h"
+// STD
+#include <iomanip>
 
 using namespace std;
 using namespace dds;
