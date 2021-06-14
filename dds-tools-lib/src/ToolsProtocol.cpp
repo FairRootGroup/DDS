@@ -370,3 +370,45 @@ namespace dds
         }
     } // namespace tools_api
 } // namespace dds
+
+///////////////////////////////////
+// SOnTaskDoneResponseData
+///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SOnTaskDoneResponseData::_protocolTag;
+
+void SOnTaskDoneResponseData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    _pt.put<uint64_t>("taskID", m_taskID);
+    _pt.put<uint32_t>("exitCode", m_exitCode);
+    _pt.put<uint32_t>("signal", m_signal);
+}
+
+void SOnTaskDoneResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_taskID = _pt.get<uint64_t>("taskID", 0);
+    m_exitCode = _pt.get<uint32_t>("exitCode", 0);
+    m_signal = _pt.get<uint32_t>("signal", 0);
+}
+
+bool SOnTaskDoneResponseData::operator==(const SOnTaskDoneResponseData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_taskID == _val.m_taskID && m_exitCode == _val.m_exitCode &&
+            m_signal == _val.m_signal);
+}
+
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
+{
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SOnTaskDoneResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; taskID: " << _data.m_taskID
+                       << "; exitCode: " << _data.m_exitCode << "; signal: " << _data.m_signal;
+        }
+    } // namespace tools_api
+} // namespace dds

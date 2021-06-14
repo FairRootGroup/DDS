@@ -16,6 +16,7 @@ Added: A cmake option "CREATE_BOOST_SYMLINKS", which enables creation of boost (
 Modified: Refactor internal version implementation. Use a single `Version.h.in` confiuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)    
 Fixed: `--version` option for `dds-session`.    
 Added: setup DDS environment and create default config file in code. No need to exec DDS_env.sh script anymore. (GH-350)    
+Added: Add a onTaskDone event to ToolsAPI. Using ToolsAPI users are able now to subscribe and receive onTaskDone events whenever a user tasks exists.(GH-370)    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   

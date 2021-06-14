@@ -152,6 +152,28 @@ namespace dds
          * \verbatim
          output> $HOME/.DDS/log
          \endverbatim
+         *
+         *
+         * \par Example5: Subscribe on TaskDone events
+         * \code
+         *  ...
+         * // create a session
+         * SOnTaskDoneRequest::request_t request;
+         * SOnTaskDoneRequest::ptr_t requestPtr = SOnTaskDoneRequest::makeRequest(request);
+         * int nTaskDoneCount{ 0 };
+         * requestPtr->setResponseCallback(
+         *               [&nTaskDoneCount](const SOnTaskDoneResponseData& _info)
+         *               {
+         *                 ++nTaskDoneCount;
+         *                 cout << "Recieved onTaskDone event. TaskID: " << _info.m_taskID
+         *                      << " ; ExitCode: " << _info.m_exitCode
+         *                      << " ; Signal: " << _info.m_signal;
+         *               });
+         * session.sendRequest<SOnTaskDoneRequest>(requestPtr);
+         *  ...
+         * \endcode
+         *
+         *
          */
         class CSession
         {

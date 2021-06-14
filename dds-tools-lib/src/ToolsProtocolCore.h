@@ -78,6 +78,17 @@
                 "executingSlotsCount": 345,
                 "requestID": 123
             },
+            "subscribeOnTaskDone":
+            {
+                "requestID": 123
+            },
+            "taskDone":
+            {
+                "requestID": 123,
+                "taskID": 123,
+                "exitCode": 123,
+                "signal": 123
+            }
         }
     }
 }

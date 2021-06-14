@@ -434,7 +434,7 @@ std::string CUserDefaults::getSMLeaderOutputName(uint64_t _protocolHeaderID) con
 std::string CUserDefaults::getSMLeaderInputName(uint64_t _protocolHeaderID) const
 {
     // Shared memory addressed to lobby leader
-    // TODO: FIXME: maximum length of the SM name
+    // FIXME: maximum length of the SM name
     string smName("DDSAI-");
     smName += to_string(getScoutPid());
     smName += "-";

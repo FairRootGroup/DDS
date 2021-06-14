@@ -348,6 +348,17 @@ void CSession::notify(std::istream& _stream)
                                                        _request->execResponseCallback(data);
                                                    });
             }
+            else if (it->second.type() == typeid(SOnTaskDoneRequest::ptr_t))
+            {
+                processRequest<SOnTaskDoneRequest>(it->second,
+                                                   child,
+                                                   [&child](SOnTaskDoneRequest::ptr_t _request)
+                                                   {
+                                                       SOnTaskDoneResponseData data;
+                                                       data.fromPT(child.second);
+                                                       _request->execResponseCallback(data);
+                                                   });
+            }
         }
     }
     catch (exception& error)
@@ -415,6 +426,7 @@ template void CSession::sendRequest<SGetLogRequest>(SGetLogRequest::ptr_t);
 template void CSession::sendRequest<SCommanderInfoRequest>(SCommanderInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentInfoRequest>(SAgentInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentCountRequest>(SAgentCountRequest::ptr_t);
+template void CSession::sendRequest<SOnTaskDoneRequest>(SOnTaskDoneRequest::ptr_t);
 
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
@@ -463,7 +475,7 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
                                const std::chrono::seconds& _timeout,
                                std::ostream* _out)
 {
-    // TODO: FIXME: Dublicate output to DDS log?
+    // FIXME: Dublicate output to DDS log?
 
     if (getSessionID().is_nil() || !IsRunning())
         throw runtime_error("Failed to send request: DDS session is not running");

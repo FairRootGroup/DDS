@@ -103,7 +103,7 @@ void parseLogs(CSession& _session, const string& _stringToCount, size_t _require
     // Parse DDS agent logs and count the number okTimeoutssfull tasks
     // const fs::path logDir{ dds::user_defaults_api::CUserDefaults::instance().getAgentLogStorageDir() };
 
-    // TODO: FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS sessions
+    // FIXME: workaround for CUserDefaults::instance().getAgentLogStorageDir(). Support of multiple DDS sessions
     // is required.
     string logDirStr{ "$HOME/.DDS/sessions/" };
     logDirStr += to_string(_session.getSessionID());
@@ -536,6 +536,59 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_session_user_defaults_without_session)
     CSession session;
     BOOST_CHECK(!session.userDefaultsGetValueForKey("server.work_dir").empty());
     BOOST_CHECK(!session.userDefaultsGetValueForKey("server.log_dir").empty()); // expected value: $HOME/.DDS/log
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_onTaskDone)
+{
+    const std::chrono::seconds sleepTime(3);
+    const int tasksCount{ 9 };
+
+    CSession session;
+    boost::uuids::uuid sid = session.create();
+    BOOST_CHECK(!sid.is_nil());
+
+    // test onTaskDone events
+    // Subscrube on events
+    SOnTaskDoneRequest::request_t request;
+    SOnTaskDoneRequest::ptr_t requestPtr = SOnTaskDoneRequest::makeRequest(request);
+    int nTaskDoneCount{ 0 };
+    requestPtr->setResponseCallback(
+        [&nTaskDoneCount](const SOnTaskDoneResponseData& _info)
+        {
+            ++nTaskDoneCount;
+            BOOST_TEST_MESSAGE("Recieved onTaskDone event. TaskID: " << _info.m_taskID
+                                                                     << " ; ExitCode: " << _info.m_exitCode
+                                                                     << " ; Signal: " << _info.m_signal);
+        });
+    BOOST_CHECK_NO_THROW(session.sendRequest<SOnTaskDoneRequest>(requestPtr));
+
+    // Submit DDS agents
+    const fs::path topoPath(fs::canonical(fs::path("sleep_test.xml")));
+    CTopology topo(topoPath.string());
+    auto numAgents = topo.getRequiredNofAgents(tasksCount);
+    size_t requiredCount{ numAgents.first * numAgents.second };
+
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = requiredCount;
+    submitInfo.m_instances = 0;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = topoPath.string();
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    topoInfo.m_topologyFile = "";
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime * 2);
+    BOOST_CHECK(nTaskDoneCount == tasksCount);
+
+    session.shutdown();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

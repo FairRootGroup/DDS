@@ -763,9 +763,26 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
                 else if (ret == _pid)
                 {
                     if (WIFEXITED(status))
-                        LOG(info) << "User task on slot " << _slotID << " exited"
-                                  << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
-                                  << WEXITSTATUS(status);
+                    {
+                        // NOTE: We are using a bash wrapper script for user tasks.
+                        // According to bash, the exist status of child processes can be interpreted in the folloiwing
+                        // way:
+                        // - For the shell’s purposes, a command which exits with a zero exit status has succeeded.
+                        // - A non-zero exit status indicates failure.
+                        //   This seemingly counter-intuitive scheme is used so there is one well-defined way to
+                        //   indicate success and a variety of ways to indicate various failure modes. When a command
+                        //   terminates on a fatal signal whose number is N, Bash uses the value 128+N as the exit
+                        //   status.
+                        // - If a command is not found, the child process created to execute it returns a status of 127.
+                        // - If a command is found but is not executable, the return status is 126.
+                        if (WEXITSTATUS(status) <= 128)
+                            LOG(info) << "User task on slot " << _slotID << " exited"
+                                      << (WCOREDUMP(status) ? " and dumped core" : "") << " with status "
+                                      << WEXITSTATUS(status);
+                        else
+                            LOG(info) << "User task on slot " << _slotID << " killed by signal "
+                                      << (WEXITSTATUS(status) - 128);
+                    }
                     else if (WIFSTOPPED(status))
                         LOG(info) << "User task on slot " << _slotID << " stopped by signal " << WSTOPSIG(status);
                     else if (WIFSIGNALED(status))
@@ -776,6 +793,7 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
 
                     LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
 
+                    // Note: The value from WEXITSTATUS(status) is valid only if WIFEXITED returned true.
                     LOG(info) << "slot = " << _slotID << " pid = " << _pid
                               << " - done; exit status = " << WEXITSTATUS(status);
 
@@ -968,6 +986,12 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
             m_taskIDToSlotIDMap.erase(slot.m_taskID);
         }
 
+        // Save values before we reset them
+        SUserTaskDoneCmd cmd;
+        cmd.m_exitCode = _exitCode;
+        cmd.m_taskID = slot.m_taskID;
+
+        // reset slot info
         slot.m_pid = 0;
         slot.m_taskID = 0;
 
@@ -975,9 +999,6 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         m_intercomChannel->drainWriteQueue(true, _slotID);
 
         // Notify DDS commander
-        SUserTaskDoneCmd cmd;
-        cmd.m_exitCode = _exitCode;
-        cmd.m_taskID = slot.m_taskID;
         pushMsg<cmdUSER_TASK_DONE>(cmd, _slotID);
     }
     catch (exception& _e)
