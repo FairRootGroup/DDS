@@ -247,7 +247,8 @@ void CSession::subscribe()
     m_impl->m_customCmd = make_shared<dds::intercom_api::CCustomCmd>(*m_impl->m_service);
 
     m_impl->m_customCmd->subscribe(
-        [this](const string& _command, const string& /*_condition*/, uint64_t /*_senderId*/) {
+        [this](const string& _command, const string& /*_condition*/, uint64_t /*_senderId*/)
+        {
             istringstream ss(_command);
             notify(ss);
         });
@@ -316,28 +317,36 @@ void CSession::notify(std::istream& _stream)
             }
             else if (it->second.type() == typeid(SCommanderInfoRequest::ptr_t))
             {
-                processRequest<SCommanderInfoRequest>(
-                    it->second, child, [&child](SCommanderInfoRequest::ptr_t _request) {
-                        SCommanderInfoResponseData data;
-                        data.fromPT(child.second);
-                        _request->execResponseCallback(data);
-                    });
+                processRequest<SCommanderInfoRequest>(it->second,
+                                                      child,
+                                                      [&child](SCommanderInfoRequest::ptr_t _request)
+                                                      {
+                                                          SCommanderInfoResponseData data;
+                                                          data.fromPT(child.second);
+                                                          _request->execResponseCallback(data);
+                                                      });
             }
             else if (it->second.type() == typeid(SAgentInfoRequest::ptr_t))
             {
-                processRequest<SAgentInfoRequest>(it->second, child, [&child](SAgentInfoRequest::ptr_t _request) {
-                    SAgentInfoResponseData data;
-                    data.fromPT(child.second);
-                    _request->execResponseCallback(data);
-                });
+                processRequest<SAgentInfoRequest>(it->second,
+                                                  child,
+                                                  [&child](SAgentInfoRequest::ptr_t _request)
+                                                  {
+                                                      SAgentInfoResponseData data;
+                                                      data.fromPT(child.second);
+                                                      _request->execResponseCallback(data);
+                                                  });
             }
             else if (it->second.type() == typeid(SAgentCountRequest::ptr_t))
             {
-                processRequest<SAgentCountRequest>(it->second, child, [&child](SAgentCountRequest::ptr_t _request) {
-                    SAgentCountResponseData data;
-                    data.fromPT(child.second);
-                    _request->execResponseCallback(data);
-                });
+                processRequest<SAgentCountRequest>(it->second,
+                                                   child,
+                                                   [&child](SAgentCountRequest::ptr_t _request)
+                                                   {
+                                                       SAgentCountResponseData data;
+                                                       data.fromPT(child.second);
+                                                       _request->execResponseCallback(data);
+                                                   });
             }
         }
     }
@@ -463,24 +472,26 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
 
     typename Request_t::ptr_t requestPtr = Request_t::makeRequest(_requestData);
 
-    requestPtr->setResponseCallback(
-        [&_responseDataVector](const typename Request_t::response_t& _data) { _responseDataVector.push_back(_data); });
+    requestPtr->setResponseCallback([&_responseDataVector](const typename Request_t::response_t& _data)
+                                    { _responseDataVector.push_back(_data); });
 
     //    requestPtr->setProgressCallback([](const SProgressResponseData&) {
     //        // No progress reporting for sync version
     //    });
 
-    requestPtr->setMessageCallback([&_out](const SMessageResponseData& _message) {
-        if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+    requestPtr->setMessageCallback(
+        [&_out](const SMessageResponseData& _message)
         {
-            throw runtime_error("Failed to submit agents: server reports error: " + _message.m_msg);
-        }
-        else
-        {
-            if (_out != nullptr)
-                *_out << "Server reports: " << _message.m_msg << endl;
-        }
-    });
+            if (_message.m_severity == dds::intercom_api::EMsgSeverity::error)
+            {
+                throw runtime_error("Failed to submit agents: server reports error: " + _message.m_msg);
+            }
+            else
+            {
+                if (_out != nullptr)
+                    *_out << "Server reports: " << _message.m_msg << endl;
+            }
+        });
 
     CConditionEvent cv;
 

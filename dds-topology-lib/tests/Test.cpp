@@ -146,8 +146,9 @@ void test_topology_iterators(T& _input)
 
     // Task iterators
     output_test_stream output1("topology_test_1_iterators_1.txt", true);
-    STopoRuntimeTask::FilterIteratorPair_t taskIt1 =
-        topology.getRuntimeTaskIterator([](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
+    STopoRuntimeTask::FilterIteratorPair_t taskIt1 = topology.getRuntimeTaskIterator(
+        [](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool
+        {
             CTopoTask::Ptr_t task = value.second.m_task;
             return (task->getName() == "task1");
         });
@@ -160,7 +161,8 @@ void test_topology_iterators(T& _input)
 
     // Task collection iterators
     STopoRuntimeCollection::FilterIteratorPair_t tcIt1 = topology.getRuntimeCollectionIterator(
-        [](const STopoRuntimeCollection::FilterIterator_t::value_type& value) -> bool {
+        [](const STopoRuntimeCollection::FilterIterator_t::value_type& value) -> bool
+        {
             CTopoCollection::Ptr_t tc = value.second.m_collection;
             return (tc->getName() == "collection1");
         });
@@ -681,24 +683,26 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
 
 long long test_property(const CTopoCore& _topology)
 {
-    auto execTime = STimeMeasure<>::execution([&_topology]() {
-        for (size_t i = 0; i < 1000; i++)
+    auto execTime = STimeMeasure<>::execution(
+        [&_topology]()
         {
-            const STopoRuntimeTask::Map_t& taskMap = _topology.getIdToRuntimeTaskMap();
-
-            for (const auto& v : taskMap)
+            for (size_t i = 0; i < 1000; i++)
             {
-                uint64_t taskID = v.first;
-                const STopoRuntimeTask& taskInfo = v.second;
+                const STopoRuntimeTask::Map_t& taskMap = _topology.getIdToRuntimeTaskMap();
 
-                const CTopoProperty::PtrMap_t& properties = taskInfo.m_task->getProperties();
-                for (const auto& property : properties)
+                for (const auto& v : taskMap)
                 {
-                    _topology.getRuntimeTaskIteratorForPropertyName(property.first, taskID);
+                    uint64_t taskID = v.first;
+                    const STopoRuntimeTask& taskInfo = v.second;
+
+                    const CTopoProperty::PtrMap_t& properties = taskInfo.m_task->getProperties();
+                    for (const auto& property : properties)
+                    {
+                        _topology.getRuntimeTaskIteratorForPropertyName(property.first, taskID);
+                    }
                 }
             }
-        }
-    });
+        });
     return execTime;
 }
 

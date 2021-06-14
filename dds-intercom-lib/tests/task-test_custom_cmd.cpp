@@ -47,27 +47,29 @@ int main(int argc, char* argv[])
         const string ddsSessionId{ env_prop<EEnvProp::dds_session_id>() };
 
         // Subscribe on errors
-        service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
-            cerr << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
-        });
+        service.subscribeOnError(
+            [](const EErrorCode _errorCode, const string& _errorMsg)
+            { cerr << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl; });
 
         // Subscribe on custom commands
-        customCmd.subscribe([&customCmd, &waitCondition, &ddsSessionId](
-                                const string& _command, const string& _condition, uint64_t _senderId) {
-            cerr << "Received custom command: " << _command << " condition: " << _condition
-                 << " senderId: " << _senderId << endl;
+        customCmd.subscribe(
+            [&customCmd, &waitCondition, &ddsSessionId](
+                const string& _command, const string& _condition, uint64_t _senderId)
+            {
+                cerr << "Received custom command: " << _command << " condition: " << _condition
+                     << " senderId: " << _senderId << endl;
 
-            if (_command == "exit")
-            {
-                waitCondition.notify_all();
-            }
-            else
-            {
-                // Check if DDS session ID is correct
-                string reply{ (ddsSessionId == _command) ? "ok" : "error" };
-                customCmd.send(reply, to_string(_senderId));
-            }
-        });
+                if (_command == "exit")
+                {
+                    waitCondition.notify_all();
+                }
+                else
+                {
+                    // Check if DDS session ID is correct
+                    string reply{ (ddsSessionId == _command) ? "ok" : "error" };
+                    customCmd.send(reply, to_string(_senderId));
+                }
+            });
 
         // Subscribe on reply from DDS commander server
         customCmd.subscribeOnReply([](const string& _msg) { cout << "Received reply message: " << _msg; });

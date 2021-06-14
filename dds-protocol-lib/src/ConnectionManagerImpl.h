@@ -60,15 +60,17 @@ namespace dds
                 m_signals->add(SIGQUIT);
 #endif // defined(SIGQUIT)
 
-                m_signals->async_wait([this](boost::system::error_code /*ec*/, int signo) {
-                    // The server is stopped by cancelling all outstanding asynchronous
-                    // operations. Once all operations have finished the io_context::run()
-                    // call will exit.
-                    LOG(MiscCommon::info) << "Received a signal: " << signo;
-                    LOG(MiscCommon::info) << "Stopping DDS transport server";
+                m_signals->async_wait(
+                    [this](boost::system::error_code /*ec*/, int signo)
+                    {
+                        // The server is stopped by cancelling all outstanding asynchronous
+                        // operations. Once all operations have finished the io_context::run()
+                        // call will exit.
+                        LOG(MiscCommon::info) << "Received a signal: " << signo;
+                        LOG(MiscCommon::info) << "Stopping DDS transport server";
 
-                    stop();
-                });
+                        stop();
+                    });
             }
 
             ~CConnectionManagerImpl()
@@ -116,8 +118,8 @@ namespace dds
                         << "Starting DDS transport engine using " << concurrentThreads << " concurrent threads.";
                     for (unsigned int x = 0; x < concurrentThreads; ++x)
                     {
-                        m_workerThreads.create_thread(
-                            [this]() { runService(10, m_acceptor->get_executor().context()); });
+                        m_workerThreads.create_thread([this]()
+                                                      { runService(10, m_acceptor->get_executor().context()); });
                     }
 
                     // Starting service for UI transport engine
@@ -128,8 +130,8 @@ namespace dds
                             << "Starting DDS UI transport engine using " << concurrentThreads << " concurrent threads.";
                         for (unsigned int x = 0; x < concurrentThreads; ++x)
                         {
-                            m_workerThreads.create_thread(
-                                [this]() { runService(10, m_acceptorUI->get_executor().context()); });
+                            m_workerThreads.create_thread([this]()
+                                                          { runService(10, m_acceptorUI->get_executor().context()); });
                         }
                     }
 
@@ -447,7 +449,8 @@ namespace dds
 
                 // Subsribe on lobby member handshake
                 newClient->template registerHandler<EChannelEvents::OnReplyAddSlot>(
-                    [this, newClient](const SSenderInfo& _sender) -> void {
+                    [this, newClient](const SSenderInfo& _sender) -> void
+                    {
                         {
                             std::lock_guard<std::mutex> lock(m_mutex);
                             m_channels.push_back(channelInfo_t(newClient, _sender.m_ID, true));
@@ -459,9 +462,7 @@ namespace dds
 
                 // Subscribe on dissconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-                    [this, newClient](const SSenderInfo & /*_sender*/) -> void {
-                        this->removeClient(newClient.get());
-                    });
+                    [this, newClient](const SSenderInfo& /*_sender*/) -> void { this->removeClient(newClient.get()); });
 
                 _acceptor->async_accept(
                     newClient->socket(),

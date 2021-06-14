@@ -47,7 +47,8 @@ void CConnectionManager::_start()
 
     // Check RMS plug-in activity
     CMonitoringThread::instance().registerCallbackFunction(
-        [this, self]() -> bool {
+        [this, self]() -> bool
+        {
             try
             {
                 m_SubmitAgents.checkPluginFailedToStart();
@@ -70,62 +71,55 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 {
     CAgentChannel::weakConnectionPtr_t weakClient(_newClient);
 
-    _newClient->registerHandler<EChannelEvents::OnHandshakeOK>([this, weakClient](const SSenderInfo& /*_sender*/) {
-        if (auto p = weakClient.lock())
-            if (p->getChannelType() == EChannelType::UI)
-            {
-                LOG(info) << "Updating UI channel ID to " << p->getId();
-                CConnectionManagerImpl::weakChannelInfo_t inf(weakClient, p->getId(), false);
-                updateChannelProtocolHeaderID(inf);
-            }
-    });
+    _newClient->registerHandler<EChannelEvents::OnHandshakeOK>(
+        [this, weakClient](const SSenderInfo& /*_sender*/)
+        {
+            if (auto p = weakClient.lock())
+                if (p->getChannelType() == EChannelType::UI)
+                {
+                    LOG(info) << "Updating UI channel ID to " << p->getId();
+                    CConnectionManagerImpl::weakChannelInfo_t inf(weakClient, p->getId(), false);
+                    updateChannelProtocolHeaderID(inf);
+                }
+        });
 
     // Subscribe on protocol messages
     _newClient->registerHandler<cmdBINARY_ATTACHMENT_RECEIVED>(
         [this, weakClient](const SSenderInfo& _sender,
-                           SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment) {
-            this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, weakClient);
-        });
+                           SCommandAttachmentImpl<cmdBINARY_ATTACHMENT_RECEIVED>::ptr_t _attachment)
+        { this->on_cmdBINARY_ATTACHMENT_RECEIVED(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdTRANSPORT_TEST>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment) {
-            this->on_cmdTRANSPORT_TEST(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdTRANSPORT_TEST>::ptr_t _attachment)
+        { this->on_cmdTRANSPORT_TEST(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdREPLY>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment) {
-            this->on_cmdREPLY(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment)
+        { this->on_cmdREPLY(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdUPDATE_KEY>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+        { this->on_cmdUPDATE_KEY(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdUSER_TASK_DONE>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
-            this->on_cmdUSER_TASK_DONE(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment)
+        { this->on_cmdUSER_TASK_DONE(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdGET_PROP_LIST>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment) {
-            this->on_cmdGET_PROP_LIST(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t _attachment)
+        { this->on_cmdGET_PROP_LIST(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdGET_PROP_VALUES>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment) {
-            this->on_cmdGET_PROP_VALUES(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t _attachment)
+        { this->on_cmdGET_PROP_VALUES(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdREPLY_ID>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment) {
-            this->on_cmdREPLY_ID(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdREPLY_ID>::ptr_t _attachment)
+        { this->on_cmdREPLY_ID(_sender, _attachment, weakClient); });
 
     _newClient->registerHandler<cmdCUSTOM_CMD>(
-        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD(_sender, _attachment, weakClient);
-        });
+        [this, weakClient](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+        { this->on_cmdCUSTOM_CMD(_sender, _attachment, weakClient); });
 }
 
 //=============================================================================
@@ -447,7 +441,8 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
     m_transportTest.m_shutdownOnComplete = true;
     m_transportTest.zeroCounters();
 
-    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+    {
         return (_v.m_channel != nullptr && _v.m_channel->getChannelType() == EChannelType::AGENT &&
                 _v.m_channel->started());
     };
@@ -618,9 +613,8 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
                                               CAgentChannel::weakConnectionPtr_t _channel)
 {
     // Send a broad cast message to all agents
-    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
-    };
+    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+    { return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started()); };
     broadcastMsg<cmdUSER_TASK_DONE>(*_attachment, condition);
 
     if (!_channel.expired())
@@ -785,35 +779,37 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             {
             }
 
-            channels = getChannels([this, taskFound, &_attachment, &thisTaskID, pathRegex](
-                                       const CConnectionManager::channelInfo_t& _v, bool& _stop) {
-                if (!_v.m_isSlot)
-                    return false;
+            channels = getChannels(
+                [this, taskFound, &_attachment, &thisTaskID, pathRegex](const CConnectionManager::channelInfo_t& _v,
+                                                                        bool& _stop)
+                {
+                    if (!_v.m_isSlot)
+                        return false;
 
-                SAgentInfo& inf = _v.m_channel->getAgentInfo();
-                SSlotInfo& slotInf = inf.getSlotByID(_v.m_protocolHeaderID);
+                    SAgentInfo& inf = _v.m_channel->getAgentInfo();
+                    SSlotInfo& slotInf = inf.getSlotByID(_v.m_protocolHeaderID);
 
-                // Only for Agents which are started already and executing task
-                if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
-                    slotInf.m_state != EAgentState::executing)
-                    return false;
+                    // Only for Agents which are started already and executing task
+                    if (_v.m_channel->getChannelType() != EChannelType::AGENT || !_v.m_channel->started() ||
+                        slotInf.m_state != EAgentState::executing)
+                        return false;
 
-                // Do not send command to self
-                if (thisTaskID > 0 && slotInf.m_taskID == thisTaskID)
-                    return false;
+                    // Do not send command to self
+                    if (thisTaskID > 0 && slotInf.m_taskID == thisTaskID)
+                        return false;
 
-                // If condition is empty we broadcast command to all agents
-                if (_attachment->m_sCondition.empty())
-                    return true;
+                    // If condition is empty we broadcast command to all agents
+                    if (_attachment->m_sCondition.empty())
+                        return true;
 
-                const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(slotInf.m_taskID);
-                bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
-                                          : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
+                    const STopoRuntimeTask& taskInfo = m_topo.getRuntimeTaskById(slotInf.m_taskID);
+                    bool result = (taskFound) ? taskInfo.m_taskPath == _attachment->m_sCondition
+                                              : boost::regex_match(taskInfo.m_task->getPath(), *pathRegex);
 
-                _stop = (taskFound && result);
+                    _stop = (taskFound && result);
 
-                return result;
-            });
+                    return result;
+                });
         }
 
         for (const auto& v : channels)
@@ -1068,8 +1064,9 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         // Check if topology is currently active, i.e. there are executing tasks
         //
-        CConnectionManager::weakChannelInfo_t::container_t channels(
-            getChannels([](const CConnectionManager::channelInfo_t& _v, bool& _stop) {
+        CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
+            [](const CConnectionManager::channelInfo_t& _v, bool& _stop)
+            {
                 if (!_v.m_isSlot)
                     return false;
 
@@ -1173,7 +1170,8 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         if (addedTasks.size() > 0)
         {
-            auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+            {
                 return (_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
                         _v.m_channel->started() &&
                         _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID).m_state == EAgentState::idle);
@@ -1269,9 +1267,8 @@ void CConnectionManager::getLog(const dds::tools_api::SGetLogRequestData& _getLo
         return;
     }
 
-    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
-    };
+    auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+    { return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started()); };
 
     m_getLog.m_nofRequests = countNofChannels(condition);
 
@@ -1314,8 +1311,8 @@ void CConnectionManager::sendUICommanderInfo(const dds::tools_api::SCommanderInf
 void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequestData& _info,
                                          CAgentChannel::weakConnectionPtr_t _channel)
 {
-    CConnectionManager::weakChannelInfo_t::container_t channels(
-        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+    CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
             return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
         }));
 
@@ -1358,8 +1355,9 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
 void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountRequestData& _info,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    CConnectionManager::weakChannelInfo_t::container_t channels(
-        getChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+    CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+        {
             if (!_v.m_isSlot)
                 return false;
 
@@ -1379,22 +1377,26 @@ void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountReque
     }
 
     size_t activeCounter = channels.size();
-    size_t idleCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        if (!_v.m_isSlot)
-            return false;
+    size_t idleCounter = countNofChannels(
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+        {
+            if (!_v.m_isSlot)
+                return false;
 
-        const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                slot.m_taskID == 0 && slot.m_state == EAgentState::idle);
-    });
-    size_t executingCounter = countNofChannels([](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
-        if (!_v.m_isSlot)
-            return false;
+            const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                    slot.m_taskID == 0 && slot.m_state == EAgentState::idle);
+        });
+    size_t executingCounter = countNofChannels(
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+        {
+            if (!_v.m_isSlot)
+                return false;
 
-        const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() && slot.m_taskID > 0 &&
-                slot.m_state == EAgentState::executing);
-    });
+            const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
+                    slot.m_taskID > 0 && slot.m_state == EAgentState::executing);
+        });
 
     SAgentCountResponseData info;
     info.m_requestID = _info.m_requestID;

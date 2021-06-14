@@ -161,103 +161,108 @@ int main(int argc, char* argv[])
         boost::asio::thread_pool pool(concurrentThreads);
 
         // Subscribe on onSubmit command
-        proto->onSubmit([&pool, proto, &vm](const SSubmit& _submit) {
-            size_t wrkCount(0);
-            size_t taskCount(0);
-            atomic<size_t> successfulTasks(0);
-            try
+        proto->onSubmit(
+            [&pool, proto, &vm](const SSubmit& _submit)
             {
-                // Create the pipe log engine to cartch logs from external commands
-                CLogEngine slog(true);
-                string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
-                smart_append(&pipeName, '/');
-                pipeName += g_pipeName;
-                slog.start(pipeName, [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
-
-                bool needLocalHost = _submit.m_cfgFilePath.empty();
-                string configFile(_submit.m_cfgFilePath);
-                size_t nInstances(_submit.m_nInstances);
-                if (needLocalHost)
+                size_t wrkCount(0);
+                size_t taskCount(0);
+                atomic<size_t> successfulTasks(0);
+                try
                 {
-                    configFile = createLocalhostCfg(nInstances, vm["id"].as<string>());
+                    // Create the pipe log engine to cartch logs from external commands
+                    CLogEngine slog(true);
+                    string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
+                    smart_append(&pipeName, '/');
+                    pipeName += g_pipeName;
+                    slog.start(pipeName, [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
+
+                    bool needLocalHost = _submit.m_cfgFilePath.empty();
+                    string configFile(_submit.m_cfgFilePath);
+                    size_t nInstances(_submit.m_nInstances);
+                    if (needLocalHost)
+                    {
+                        configFile = createLocalhostCfg(nInstances, vm["id"].as<string>());
+                    }
+
+                    if (!file_exists(configFile))
+                        throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
+
+                    ifstream f(configFile.c_str());
+                    if (!f.is_open())
+                    {
+                        string msg("can't open configuration file \"");
+                        msg += configFile;
+                        msg += "\"";
+                        throw runtime_error(msg);
+                    }
+
+                    string inlineShellScripCmds;
+
+                    CNcf config;
+                    config.readFrom(f);
+                    inlineShellScripCmds = config.getBashEnvCmds();
+
+                    SWNOptions options;
+                    options.m_logs = false;
+                    options.m_fastClean = false;
+
+                    configRecords_t recs(config.getRecords());
+                    taskCount = recs.size();
+                    for (auto& rec : recs)
+                    {
+                        shared_ptr<CWorker> task =
+                            shared_ptr<CWorker>(new CWorker(rec, options, vm["path"].as<string>()));
+
+                        stringstream ssWorkerInfoMsg;
+                        task->printInfo(ssWorkerInfoMsg);
+                        proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
+
+                        wrkCount += rec->m_nSlots;
+
+                        boost::asio::post(pool,
+                                          [task, &successfulTasks, proto]
+                                          {
+                                              try
+                                              {
+                                                  if (task && task->run(task_submit))
+                                                      ++successfulTasks;
+                                              }
+                                              catch (const exception& _e)
+                                              {
+                                                  proto->sendMessage(dds::intercom_api::EMsgSeverity::info, _e.what());
+                                              }
+                                          });
+                    }
+
+                    stringstream ss;
+                    ss << "Deploying " << wrkCount << " agents...";
+                    proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
+
+                    pool.join();
+                }
+                catch (exception& _e)
+                {
+                    proto->sendMessage(dds::intercom_api::EMsgSeverity::error, _e.what());
+                    LOG(error) << "Exception: " << _e.what();
                 }
 
-                if (!file_exists(configFile))
-                    throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
-
-                ifstream f(configFile.c_str());
-                if (!f.is_open())
-                {
-                    string msg("can't open configuration file \"");
-                    msg += configFile;
-                    msg += "\"";
-                    throw runtime_error(msg);
-                }
-
-                string inlineShellScripCmds;
-
-                CNcf config;
-                config.readFrom(f);
-                inlineShellScripCmds = config.getBashEnvCmds();
-
-                SWNOptions options;
-                options.m_logs = false;
-                options.m_fastClean = false;
-
-                configRecords_t recs(config.getRecords());
-                taskCount = recs.size();
-                for (auto& rec : recs)
-                {
-                    shared_ptr<CWorker> task = shared_ptr<CWorker>(new CWorker(rec, options, vm["path"].as<string>()));
-
-                    stringstream ssWorkerInfoMsg;
-                    task->printInfo(ssWorkerInfoMsg);
-                    proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
-
-                    wrkCount += rec->m_nSlots;
-
-                    boost::asio::post(pool, [task, &successfulTasks, proto] {
-                        try
-                        {
-                            if (task && task->run(task_submit))
-                                ++successfulTasks;
-                        }
-                        catch (const exception& _e)
-                        {
-                            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, _e.what());
-                        }
-                    });
-                }
-
+                // Check the status of all tasks Failed
                 stringstream ss;
-                ss << "Deploying " << wrkCount << " agents...";
+                size_t badFailedCount = taskCount - successfulTasks;
+                ss << "Successfully processed tasks: " << successfulTasks;
+                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
+                ss.str("");
+                ss << "Failed tasks: " << badFailedCount;
                 proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
-                pool.join();
-            }
-            catch (exception& _e)
-            {
-                proto->sendMessage(dds::intercom_api::EMsgSeverity::error, _e.what());
-                LOG(error) << "Exception: " << _e.what();
-            }
+                if (badFailedCount > 0)
+                    proto->sendMessage(dds::intercom_api::EMsgSeverity::error, "WARNING: some tasks have failed.");
 
-            // Check the status of all tasks Failed
-            stringstream ss;
-            size_t badFailedCount = taskCount - successfulTasks;
-            ss << "Successfully processed tasks: " << successfulTasks;
-            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
-            ss.str("");
-            ss << "Failed tasks: " << badFailedCount;
-            proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
+                if (successfulTasks > 0)
+                    proto->sendMessage(dds::intercom_api::EMsgSeverity::info, "DDS agents have been submitted.");
 
-            if (badFailedCount > 0)
-                proto->sendMessage(dds::intercom_api::EMsgSeverity::error, "WARNING: some tasks have failed.");
-
-            if (successfulTasks > 0)
-                proto->sendMessage(dds::intercom_api::EMsgSeverity::info, "DDS agents have been submitted.");
-
-            proto->stop();
-        });
+                proto->stop();
+            });
 
         // Let DDS know that we are online and start listening waiting for notifications
         LOG(info) << "Start plug-in protocol";

@@ -150,104 +150,106 @@ int main(int argc, char* argv[])
     try
     {
         // Subscribe on onSubmit command
-        proto.onSubmit([&proto](const SSubmit& _submit) {
-            // Stop submission, if the number of instances is more than 1
-            // localhost needs only 1 agent to work
-            if (_submit.m_nInstances > 1)
+        proto.onSubmit(
+            [&proto](const SSubmit& _submit)
             {
-                proto.sendMessage(
-                    EMsgSeverity::error,
-                    "Submitting more than one agent on localhost is an overkill. Please omit -n [ --number ] option, "
-                    "or call dds-submit multiple times if you really need multiple agents.");
-                proto.stop();
-                return;
-            }
-
-            if (_submit.m_slots < 1)
-            {
-                proto.sendMessage(EMsgSeverity::error,
-                                  "Please, specify a number of task slots by using the \"--slots arg\" option");
-                proto.stop();
-                return;
-            }
-
-            unsigned int nInstances = _submit.m_nInstances;
-
-            stringstream ss;
-            ss << "Will use the local host to deploy " << nInstances << " agents";
-            proto.sendMessage(EMsgSeverity::info, ss.str());
-            ss.str("");
-
-            // Create temp directory for DDS agents
-            bfs::path tempDirPath = bfs::temp_directory_path();
-            bfs::path wrkDirPath(tempDirPath);
-            string tmpDir = BOOSTHelper::get_temp_dir("dds");
-            wrkDirPath /= CUserDefaults::instance().getLockedSID();
-            wrkDirPath /= tmpDir;
-            wrkDirPath /= "wn";
-
-            if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
-            {
-                ss << "Can't create working directory: " << wrkDirPath.string();
-                proto.sendMessage(EMsgSeverity::error, ss.str());
-                ss.str("");
-                proto.stop();
-                return;
-            }
-
-            ss << "Using \'" << wrkDirPath.parent_path().string() << "\' to spawn agents";
-            proto.sendMessage(EMsgSeverity::info, ss.str());
-            ss.str("");
-
-            ss << "Starting DDSScout in \'" << wrkDirPath.string() << "\'";
-            proto.sendMessage(EMsgSeverity::info, ss.str());
-            ss.str("");
-
-            // Copy worker script to temp directory
-            bfs::path wrkScriptPath(CUserDefaults::instance().getWrkScriptPath());
-            bfs::path dstWrkScriptPath(wrkDirPath);
-            dstWrkScriptPath /= wrkScriptPath.filename();
-            bfs::copy_file(wrkScriptPath, dstWrkScriptPath, bfs::copy_option::overwrite_if_exists);
-
-            bfs::path bashPath = bp::search_path("bash");
-            bfs::path logPath(wrkDirPath);
-            logPath /= "scout.log";
-            stringstream cmd;
-
-            cmd << bashPath.string() << " -c \"" << dstWrkScriptPath.string() << " " << nInstances << " &> " << logPath
-                << "\"";
-
-            try
-            {
-                execute(cmd.str());
-
-                proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
-
-                proto.sendMessage(EMsgSeverity::info, "Checking status of agents...");
-
-                bool statusLock = checkAgentStatus(
-                    wrkDirPath, "DDSWorker.lock", nInstances, proto, "All agents have been started successfully");
-
-                if (statusLock)
+                // Stop submission, if the number of instances is more than 1
+                // localhost needs only 1 agent to work
+                if (_submit.m_nInstances > 1)
                 {
-                    proto.sendMessage(EMsgSeverity::info, "Validating...");
-
-                    checkAgentStatus(wrkDirPath,
-                                     CUserDefaults::getAgentIDFileName(),
-                                     nInstances,
-                                     proto,
-                                     "All agents have been validated successfully");
+                    proto.sendMessage(EMsgSeverity::error,
+                                      "Submitting more than one agent on localhost is an overkill. Please omit -n [ "
+                                      "--number ] option, "
+                                      "or call dds-submit multiple times if you really need multiple agents.");
+                    proto.stop();
+                    return;
                 }
-            }
-            catch (exception& e)
-            {
-                ss << "Failed to submit agents: " << e.what();
-                proto.sendMessage(EMsgSeverity::error, ss.str());
-                ss.str("");
-            }
 
-            proto.stop();
-        });
+                if (_submit.m_slots < 1)
+                {
+                    proto.sendMessage(EMsgSeverity::error,
+                                      "Please, specify a number of task slots by using the \"--slots arg\" option");
+                    proto.stop();
+                    return;
+                }
+
+                unsigned int nInstances = _submit.m_nInstances;
+
+                stringstream ss;
+                ss << "Will use the local host to deploy " << nInstances << " agents";
+                proto.sendMessage(EMsgSeverity::info, ss.str());
+                ss.str("");
+
+                // Create temp directory for DDS agents
+                bfs::path tempDirPath = bfs::temp_directory_path();
+                bfs::path wrkDirPath(tempDirPath);
+                string tmpDir = BOOSTHelper::get_temp_dir("dds");
+                wrkDirPath /= CUserDefaults::instance().getLockedSID();
+                wrkDirPath /= tmpDir;
+                wrkDirPath /= "wn";
+
+                if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
+                {
+                    ss << "Can't create working directory: " << wrkDirPath.string();
+                    proto.sendMessage(EMsgSeverity::error, ss.str());
+                    ss.str("");
+                    proto.stop();
+                    return;
+                }
+
+                ss << "Using \'" << wrkDirPath.parent_path().string() << "\' to spawn agents";
+                proto.sendMessage(EMsgSeverity::info, ss.str());
+                ss.str("");
+
+                ss << "Starting DDSScout in \'" << wrkDirPath.string() << "\'";
+                proto.sendMessage(EMsgSeverity::info, ss.str());
+                ss.str("");
+
+                // Copy worker script to temp directory
+                bfs::path wrkScriptPath(CUserDefaults::instance().getWrkScriptPath());
+                bfs::path dstWrkScriptPath(wrkDirPath);
+                dstWrkScriptPath /= wrkScriptPath.filename();
+                bfs::copy_file(wrkScriptPath, dstWrkScriptPath, bfs::copy_option::overwrite_if_exists);
+
+                bfs::path bashPath = bp::search_path("bash");
+                bfs::path logPath(wrkDirPath);
+                logPath /= "scout.log";
+                stringstream cmd;
+
+                cmd << bashPath.string() << " -c \"" << dstWrkScriptPath.string() << " " << nInstances << " &> "
+                    << logPath << "\"";
+
+                try
+                {
+                    execute(cmd.str());
+
+                    proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
+
+                    proto.sendMessage(EMsgSeverity::info, "Checking status of agents...");
+
+                    bool statusLock = checkAgentStatus(
+                        wrkDirPath, "DDSWorker.lock", nInstances, proto, "All agents have been started successfully");
+
+                    if (statusLock)
+                    {
+                        proto.sendMessage(EMsgSeverity::info, "Validating...");
+
+                        checkAgentStatus(wrkDirPath,
+                                         CUserDefaults::getAgentIDFileName(),
+                                         nInstances,
+                                         proto,
+                                         "All agents have been validated successfully");
+                    }
+                }
+                catch (exception& e)
+                {
+                    ss << "Failed to submit agents: " << e.what();
+                    proto.sendMessage(EMsgSeverity::error, ss.str());
+                    ss.str("");
+                }
+
+                proto.stop();
+            });
 
         // Let DDS know that we are online and start listening waiting for notifications
         proto.start();

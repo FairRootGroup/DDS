@@ -24,12 +24,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_performance_1)
 {
     CTopoCore topology;
 
-    auto execTime = STimeMeasure<>::execution([&topology]() {
-        for (size_t i = 0; i < 3; i++)
+    auto execTime = STimeMeasure<>::execution(
+        [&topology]()
         {
-            topology.init("topology_test_8.xml");
-        }
-    });
+            for (size_t i = 0; i < 3; i++)
+            {
+                topology.init("topology_test_8.xml");
+            }
+        });
 
     std::cout << "test_dds_topology_performance_1 execution time: " << execTime << " msec\n";
 }

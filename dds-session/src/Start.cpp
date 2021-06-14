@@ -281,19 +281,23 @@ void CStart::checkCommanderStatus()
         SCommanderInfoRequest::request_t requestInfo;
         SCommanderInfoRequest::ptr_t requestPtr = SCommanderInfoRequest::makeRequest(requestInfo);
 
-        requestPtr->setMessageCallback([](const SMessageResponseData& _message) {
-            LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
-                << "Server reports: " << _message.m_msg;
-        });
+        requestPtr->setMessageCallback(
+            [](const SMessageResponseData& _message)
+            {
+                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                    << "Server reports: " << _message.m_msg;
+            });
 
         requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
-        requestPtr->setResponseCallback([](const SCommanderInfoResponseData& _info) {
-            LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
-            LOG(log_stdout_clean) << "------------------------";
-            LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
-            LOG(log_stdout_clean) << "------------------------";
-        });
+        requestPtr->setResponseCallback(
+            [](const SCommanderInfoResponseData& _info)
+            {
+                LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
+                LOG(log_stdout_clean) << "------------------------";
+                LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
+                LOG(log_stdout_clean) << "------------------------";
+            });
 
         session.sendRequest<SCommanderInfoRequest>(requestPtr);
         session.blockCurrentThread();

@@ -32,7 +32,8 @@ namespace dds
                 // Register handshake OK callback
                 this->template registerHandler<cmdREPLY_HANDSHAKE_OK>(
                     [this](const SSenderInfo& _sender,
-                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/) {
+                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/)
+                    {
                         LOG(MiscCommon::info) << "Successfull handshake";
 
                         this->m_isHandshakeOK = true;
@@ -47,7 +48,8 @@ namespace dds
                 // Register handshake ERROR callback
                 this->template registerHandler<cmdREPLY_HANDSHAKE_ERR>(
                     [this](const SSenderInfo& _sender,
-                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment) {
+                           SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment)
+                    {
                         LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
                         this->m_isHandshakeOK = false;
@@ -77,7 +79,8 @@ namespace dds
                 boost::asio::async_connect(
                     this->socket(),
                     _endpoint_iterator,
-                    [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator) {
+                    [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
+                    {
                         if (!ec)
                         {
                             LOG(MiscCommon::debug) << "Client channel connected.";

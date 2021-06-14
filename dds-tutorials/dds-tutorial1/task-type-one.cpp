@@ -52,16 +52,17 @@ int main(int argc, char* argv[])
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        service.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
-            cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg;
-        });
+        service.subscribeOnError([](EErrorCode _errorCode, const string& _msg)
+                                 { cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg; });
 
         // Subscribe on key update events
-        keyValue.subscribe([&keyCondition](const string& _propertyName, const string& _value, uint64_t _senderTaskID) {
-            cout << "Received key-value update: propertyName=" << _propertyName << " value=" << _value
-                 << " senderTaskId=" << _senderTaskID << std::endl;
-            keyCondition.notify_all();
-        });
+        keyValue.subscribe(
+            [&keyCondition](const string& _propertyName, const string& _value, uint64_t _senderTaskID)
+            {
+                cout << "Received key-value update: propertyName=" << _propertyName << " value=" << _value
+                     << " senderTaskId=" << _senderTaskID << std::endl;
+                keyCondition.notify_all();
+            });
 
         // Start listening to key-value updates
         service.start();

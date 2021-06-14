@@ -157,9 +157,9 @@ namespace dds
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
-                find_if(vm.begin(), vm.end(), [](const bpo::variables_map::value_type& _v) {
-                    return (!_v.second.defaulted());
-                });
+                find_if(vm.begin(),
+                        vm.end(),
+                        [](const bpo::variables_map::value_type& _v) { return (!_v.second.defaulted()); });
 
             if (vm.count("help") || vm.end() == found)
             {

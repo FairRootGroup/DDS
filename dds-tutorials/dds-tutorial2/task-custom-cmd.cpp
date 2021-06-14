@@ -34,17 +34,19 @@ int main(int argc, char* argv[])
 
         // Best practice is to subscribe on errors first, before doing any other function calls.
         // Otherwise there is a chance to miss some of the error messages from DDS.
-        service.subscribeOnError([](const EErrorCode _errorCode, const string& _errorMsg) {
-            cout << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl;
-        });
+        service.subscribeOnError(
+            [](const EErrorCode _errorCode, const string& _errorMsg)
+            { cout << "Error received: error code: " << _errorCode << ", error message: " << _errorMsg << endl; });
 
         // Subscribe on custom commands
-        customCmd.subscribe([&customCmd](const string& _command, const string& _condition, uint64_t _senderId) {
-            cout << "Received custom command: " << _command << " condition: " << _condition
-                 << " senderId: " << _senderId << endl;
-            string senderIdStr = to_string(_senderId);
-            customCmd.send("reply_" + senderIdStr, senderIdStr);
-        });
+        customCmd.subscribe(
+            [&customCmd](const string& _command, const string& _condition, uint64_t _senderId)
+            {
+                cout << "Received custom command: " << _command << " condition: " << _condition
+                     << " senderId: " << _senderId << endl;
+                string senderIdStr = to_string(_senderId);
+                customCmd.send("reply_" + senderIdStr, senderIdStr);
+            });
 
         // Subscribe on reply from DDS commander server
         customCmd.subscribeOnReply([](const string& _msg) { cout << "Received reply message: " << _msg << endl; });

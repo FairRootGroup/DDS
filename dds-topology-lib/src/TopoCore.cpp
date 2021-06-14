@@ -328,7 +328,8 @@ STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPrope
     {
         case CTopoProperty::EScopeType::GLOBAL:
             return getRuntimeTaskIterator(
-                [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
+                [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool
+                {
                     CTopoTask::Ptr_t task = value.second.m_task;
                     CTopoProperty::Ptr_t property = task->getProperty(_propertyName);
                     return property != nullptr;
@@ -349,7 +350,8 @@ STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPrope
 
             return getRuntimeTaskIterator(
                 collectionInfo.m_idToRuntimeTaskMap,
-                [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool {
+                [&_propertyName](const STopoRuntimeTask::FilterIterator_t::value_type& value) -> bool
+                {
                     CTopoTask::Ptr_t task = value.second.m_task;
                     CTopoProperty::Ptr_t property = task->getProperty(_propertyName);
                     return property != nullptr;
@@ -364,9 +366,8 @@ STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorMatching
 {
     // std::shared_ptr is needed to keep the object alive when the object is used in lambda
     std::shared_ptr<boost::regex> pathRegex = std::make_shared<boost::regex>(_pathPattern);
-    return getRuntimeTaskIterator([pathRegex](const STopoRuntimeTask::FilterIterator_t::value_type& _value) -> bool {
-        return boost::regex_match(_value.second.m_taskPath, *pathRegex);
-    });
+    return getRuntimeTaskIterator([pathRegex](const STopoRuntimeTask::FilterIterator_t::value_type& _value) -> bool
+                                  { return boost::regex_match(_value.second.m_taskPath, *pathRegex); });
 }
 
 STopoRuntimeCollection::FilterIteratorPair_t CTopoCore::getRuntimeCollectionIteratorMatchingPath(
@@ -375,9 +376,8 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopoCore::getRuntimeCollectionIter
     // std::shared_ptr is needed to keep the object alive when the object is used in lambda
     std::shared_ptr<boost::regex> pathRegex = std::make_shared<boost::regex>(_pathPattern);
     return getRuntimeCollectionIterator(
-        [pathRegex](const STopoRuntimeCollection::FilterIterator_t::value_type& _value) -> bool {
-            return boost::regex_match(_value.second.m_collectionPath, *pathRegex);
-        });
+        [pathRegex](const STopoRuntimeCollection::FilterIterator_t::value_type& _value) -> bool
+        { return boost::regex_match(_value.second.m_collectionPath, *pathRegex); });
 }
 
 void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)

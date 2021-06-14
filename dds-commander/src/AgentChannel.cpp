@@ -23,31 +23,33 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t /*_prot
     registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
         [](const SSenderInfo& /*_sender*/) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
 
-    registerHandler<EChannelEvents::OnHandshakeOK>([this](const SSenderInfo& _sender) {
-        switch (getChannelType())
+    registerHandler<EChannelEvents::OnHandshakeOK>(
+        [this](const SSenderInfo& _sender)
         {
-            case EChannelType::AGENT:
+            switch (getChannelType())
             {
-                pushMsg<cmdGET_ID>(_sender.m_ID);
-                pushMsg<cmdGET_HOST_INFO>(_sender.m_ID);
-            }
-            break;
-            case EChannelType::UI:
-            {
-                LOG(MiscCommon::info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
-                                      << "] has successfully connected.";
+                case EChannelType::AGENT:
+                {
+                    pushMsg<cmdGET_ID>(_sender.m_ID);
+                    pushMsg<cmdGET_HOST_INFO>(_sender.m_ID);
+                }
+                break;
+                case EChannelType::UI:
+                {
+                    LOG(MiscCommon::info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
+                                          << "] has successfully connected.";
 
-                // All UI channels get unique IDs, so that user tasks and agents can send
-                // back the
-                // information to a particular UI channel.
-                m_info.m_id = DDSChannelId::getChannelId();
+                    // All UI channels get unique IDs, so that user tasks and agents can send
+                    // back the
+                    // information to a particular UI channel.
+                    m_info.m_id = DDSChannelId::getChannelId();
+                }
+                break;
+                default:
+                    // TODO: log unknown connection attempt
+                    return;
             }
-            break;
-            default:
-                // TODO: log unknown connection attempt
-                return;
-        }
-    });
+        });
 }
 
 SAgentInfo& CAgentChannel::getAgentInfo()

@@ -18,17 +18,20 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _service, uint64_t _protoc
     : CClientChannelImpl<CAgentChannel>(_service, EChannelType::UNKNOWN, _protocolHeaderID)
     , m_connectionAttempts(1)
 {
-    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& /*_sender*/) {
-        LOG(info) << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
-        this->sendYourself<cmdSHUTDOWN>();
-    });
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
+        [this](const SSenderInfo& /*_sender*/)
+        {
+            LOG(info)
+                << "DDS commander server has suddenly dropped the connection. Sending yourself a shutdown signal...";
+            this->sendYourself<cmdSHUTDOWN>();
+        });
 
     registerHandler<protocol_api::EChannelEvents::OnConnected>(
         [](const SSenderInfo& /*_sender*/) { LOG(MiscCommon::info) << "Connected to the commander server"; });
 
-    registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([](const SSenderInfo& /*_sender*/) {
-        LOG(MiscCommon::log_stderr) << "Failed to connect to commander server.";
-    });
+    registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(
+        [](const SSenderInfo& /*_sender*/)
+        { LOG(MiscCommon::log_stderr) << "Failed to connect to commander server."; });
 }
 
 void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const string&)>& callback)

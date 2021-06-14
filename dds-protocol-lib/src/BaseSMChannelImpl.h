@@ -449,16 +449,18 @@ namespace dds
                 auto self(this->shared_from_this());
                 for (const auto& v : m_transportIn)
                 {
-                    m_ioContext.post([this, self, &v] {
-                        try
+                    m_ioContext.post(
+                        [this, self, &v]
                         {
-                            readMessage(v);
-                        }
-                        catch (std::exception& ex)
-                        {
-                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                        }
-                    });
+                            try
+                            {
+                                readMessage(v);
+                            }
+                            catch (std::exception& ex)
+                            {
+                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                            }
+                        });
                 }
 
                 SSenderInfo sender;
@@ -534,16 +536,18 @@ namespace dds
 
                     // process standard async writing
                     auto self(this->shared_from_this());
-                    m_ioContext.post([this, self, &buffer] {
-                        try
+                    m_ioContext.post(
+                        [this, self, &buffer]
                         {
-                            writeMessage(buffer);
-                        }
-                        catch (std::exception& ex)
-                        {
-                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't write message: " << ex.what();
-                        }
-                    });
+                            try
+                            {
+                                writeMessage(buffer);
+                            }
+                            catch (std::exception& ex)
+                            {
+                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't write message: " << ex.what();
+                            }
+                        });
                 }
                 catch (std::exception& ex)
                 {
@@ -677,16 +681,18 @@ namespace dds
                     pThis->processMessage(_currentMsg);
 
                     auto self(this->shared_from_this());
-                    m_ioContext.post([this, self, &_info] {
-                        try
+                    m_ioContext.post(
+                        [this, self, &_info]
                         {
-                            readMessage(_info);
-                        }
-                        catch (std::exception& ex)
-                        {
-                            LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                        }
-                    });
+                            try
+                            {
+                                readMessage(_info);
+                            }
+                            catch (std::exception& ex)
+                            {
+                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                            }
+                        });
                 }
             }
 

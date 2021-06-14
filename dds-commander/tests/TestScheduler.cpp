@@ -97,9 +97,9 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     {
         agent.m_channel->getAgentInfo().m_remoteHostInfo.m_host = "nohost";
     }
-    auto execFailTime = STimeMeasure<std::chrono::microseconds>::execution([&scheduler, &topology, &weakAgents]() {
-        BOOST_CHECK_THROW(scheduler.makeSchedule(topology, weakAgents), runtime_error);
-    });
+    auto execFailTime = STimeMeasure<std::chrono::microseconds>::execution(
+        [&scheduler, &topology, &weakAgents]()
+        { BOOST_CHECK_THROW(scheduler.makeSchedule(topology, weakAgents), runtime_error); });
     double execFailTimeSeconds = execFailTime * 1e-6;
 
     BOOST_CHECK(execFailTimeSeconds < 0.1);

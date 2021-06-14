@@ -33,10 +33,12 @@ int main(int argc, char* argv[])
         mutex replyMutex;
         condition_variable replyCondition;
 
-        customCmd.subscribeOnReply([&replyCondition](const string& _msg) {
-            cout << "Received reply message: " << _msg << endl;
-            replyCondition.notify_all();
-        });
+        customCmd.subscribeOnReply(
+            [&replyCondition](const string& _msg)
+            {
+                cout << "Received reply message: " << _msg << endl;
+                replyCondition.notify_all();
+            });
 
         customCmd.send(options.m_sCmd, options.m_sCondition);
 

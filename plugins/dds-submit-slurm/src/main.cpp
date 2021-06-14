@@ -102,152 +102,155 @@ int main(int argc, char* argv[])
         slog.start(pipeName, [&proto](const string& _msg) { proto.sendMessage(EMsgSeverity::info, _msg); });
 
         // Subscribe on onSubmit command
-        proto.onSubmit([&proto, &vm](const SSubmit& _submit) {
-            try
+        proto.onSubmit(
+            [&proto, &vm](const SSubmit& _submit)
             {
-                // location of the plug-in files
-                fs::path pathPluginDir(vm["path"].as<string>());
-                // Generate SLURM job script
-                fs::path pathJobScriptSourceFilepath(pathPluginDir);
-                pathJobScriptSourceFilepath /= "job.slurm.in";
-                // Checxk that the source of the script exists
-                if (!fs::exists(pathJobScriptSourceFilepath))
-                    throw runtime_error("Can't find source of the job script. Plug-in's installation is inconsistent.");
-
-                fs::ifstream f_src(pathJobScriptSourceFilepath);
-                stringstream ssSrcScript;
-                ssSrcScript << f_src.rdbuf();
-                string sSrcScript(ssSrcScript.str());
-
-                proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Generating SLURM Job script...");
-                // Replace #DDS_NEED_ARRAY
-                if (_submit.m_nInstances > 0)
-                    boost::replace_all(
-                        sSrcScript, "#DDS_NEED_ARRAY", "#SBATCH --array=1-" + to_string(_submit.m_nInstances));
-
-                // Replace #DDS_CPU_PER_AGENT
-                if (_submit.m_slots > 0)
-                    boost::replace_all(
-                        sSrcScript, "#DDS_CPU_PER_AGENT", "#SBATCH --cpus-per-task " + to_string(_submit.m_slots));
-
-                // Replace %DDS_JOB_ROOT_WRK_DIR%
-                std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-                struct std::tm* ptm = std::localtime(&now);
-                char buffer[20];
-                std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
-                string sSandboxDir(smart_path(CUserDefaults::instance().getValueForKey("server.sandbox_dir")));
-                fs::path pathJobWrkDir(sSandboxDir);
-                pathJobWrkDir /= CUserDefaults::instance().getCurrentSID();
-                pathJobWrkDir /= buffer;
-                boost::replace_all(sSrcScript, "%DDS_JOB_ROOT_WRK_DIR%", pathJobWrkDir.string());
-                // create ROOT wrk dir for jobs
-                fs::create_directories(pathJobWrkDir);
-
-                string sAgentWrkDir(CUserDefaults::instance().getValueForKey("agent.work_dir"));
-                // Uses AgentWrkDir as the agent's wrk dir, if not empty
-                fs::path pathAgentWrkDir(sAgentWrkDir.empty() ? sSandboxDir : sAgentWrkDir);
-                pathAgentWrkDir /= CUserDefaults::instance().getCurrentSID();
-                pathAgentWrkDir /= buffer;
-                // Non need to create the pathAgentWrkDir directory as the job script will do that
-                boost::replace_all(sSrcScript, "%DDS_AGENT_ROOT_WRK_DIR%", pathAgentWrkDir.string());
-
-                // Replace #DDS_USER_OPTIONS
-                fs::path pathUserOptions(_submit.m_cfgFilePath);
-                if (fs::exists(pathUserOptions))
+                try
                 {
-                    fs::ifstream f_userOptions(pathUserOptions);
-                    string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
-                    boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
-                }
+                    // location of the plug-in files
+                    fs::path pathPluginDir(vm["path"].as<string>());
+                    // Generate SLURM job script
+                    fs::path pathJobScriptSourceFilepath(pathPluginDir);
+                    pathJobScriptSourceFilepath /= "job.slurm.in";
+                    // Checxk that the source of the script exists
+                    if (!fs::exists(pathJobScriptSourceFilepath))
+                        throw runtime_error(
+                            "Can't find source of the job script. Plug-in's installation is inconsistent.");
 
-                // Replace %DDS_SCOUT%
-                string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath());
-                boost::replace_all(sSrcScript, "%DDS_SCOUT%", sScoutScriptPath);
+                    fs::ifstream f_src(pathJobScriptSourceFilepath);
+                    stringstream ssSrcScript;
+                    ssSrcScript << f_src.rdbuf();
+                    string sSrcScript(ssSrcScript.str());
 
-                // Generate new job script
-                // It is going to be saved in the sandbox dir
-                fs::path pathJobScriptFilepath(sSandboxDir);
-                pathJobScriptFilepath /= "job.slurm";
-                fs::ofstream f_dest(pathJobScriptFilepath);
-                f_dest << sSrcScript;
-                f_dest.flush();
-                f_dest.close();
+                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Generating SLURM Job script...");
+                    // Replace #DDS_NEED_ARRAY
+                    if (_submit.m_nInstances > 0)
+                        boost::replace_all(
+                            sSrcScript, "#DDS_NEED_ARRAY", "#SBATCH --array=1-" + to_string(_submit.m_nInstances));
 
-                // Execute the submitter script
-                fs::path pathSLURMScript(pathPluginDir);
-                pathSLURMScript /= "dds-submit-slurm-worker";
-                stringstream cmd;
-                cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " "
-                    << bp::search_path("bash").string() << " -c " << quoted(pathSLURMScript.string());
+                    // Replace #DDS_CPU_PER_AGENT
+                    if (_submit.m_slots > 0)
+                        boost::replace_all(
+                            sSrcScript, "#DDS_CPU_PER_AGENT", "#SBATCH --cpus-per-task " + to_string(_submit.m_slots));
 
-                proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
-                string output;
-                pid_t exitCode{ execute(cmd.str(), chrono::seconds(30), &output) };
+                    // Replace %DDS_JOB_ROOT_WRK_DIR%
+                    std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+                    struct std::tm* ptm = std::localtime(&now);
+                    char buffer[20];
+                    std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
+                    string sSandboxDir(smart_path(CUserDefaults::instance().getValueForKey("server.sandbox_dir")));
+                    fs::path pathJobWrkDir(sSandboxDir);
+                    pathJobWrkDir /= CUserDefaults::instance().getCurrentSID();
+                    pathJobWrkDir /= buffer;
+                    boost::replace_all(sSrcScript, "%DDS_JOB_ROOT_WRK_DIR%", pathJobWrkDir.string());
+                    // create ROOT wrk dir for jobs
+                    fs::create_directories(pathJobWrkDir);
 
-                // In case of error there can be a bash.out.log created, let's check it's content
-                fs::path pathBashlog(sSandboxDir);
-                pathBashlog /= "bash.out.log";
+                    string sAgentWrkDir(CUserDefaults::instance().getValueForKey("agent.work_dir"));
+                    // Uses AgentWrkDir as the agent's wrk dir, if not empty
+                    fs::path pathAgentWrkDir(sAgentWrkDir.empty() ? sSandboxDir : sAgentWrkDir);
+                    pathAgentWrkDir /= CUserDefaults::instance().getCurrentSID();
+                    pathAgentWrkDir /= buffer;
+                    // Non need to create the pathAgentWrkDir directory as the job script will do that
+                    boost::replace_all(sSrcScript, "%DDS_AGENT_ROOT_WRK_DIR%", pathAgentWrkDir.string());
 
-                if (exitCode == 0)
-                {
-                    bool started(false);
-                    fs::path pathJobIDFile(smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
-                    pathJobIDFile /= g_jobIDFile;
-
-                    // Give the job 2 minutes to submit
-                    for (int t = 0; t < 240; ++t)
+                    // Replace #DDS_USER_OPTIONS
+                    fs::path pathUserOptions(_submit.m_cfgFilePath);
+                    if (fs::exists(pathUserOptions))
                     {
-                        if (fs::exists(pathJobIDFile))
+                        fs::ifstream f_userOptions(pathUserOptions);
+                        string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
+                        boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
+                    }
+
+                    // Replace %DDS_SCOUT%
+                    string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath());
+                    boost::replace_all(sSrcScript, "%DDS_SCOUT%", sScoutScriptPath);
+
+                    // Generate new job script
+                    // It is going to be saved in the sandbox dir
+                    fs::path pathJobScriptFilepath(sSandboxDir);
+                    pathJobScriptFilepath /= "job.slurm";
+                    fs::ofstream f_dest(pathJobScriptFilepath);
+                    f_dest << sSrcScript;
+                    f_dest.flush();
+                    f_dest.close();
+
+                    // Execute the submitter script
+                    fs::path pathSLURMScript(pathPluginDir);
+                    pathSLURMScript /= "dds-submit-slurm-worker";
+                    stringstream cmd;
+                    cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " "
+                        << bp::search_path("bash").string() << " -c " << quoted(pathSLURMScript.string());
+
+                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
+                    string output;
+                    pid_t exitCode{ execute(cmd.str(), chrono::seconds(30), &output) };
+
+                    // In case of error there can be a bash.out.log created, let's check it's content
+                    fs::path pathBashlog(sSandboxDir);
+                    pathBashlog /= "bash.out.log";
+
+                    if (exitCode == 0)
+                    {
+                        bool started(false);
+                        fs::path pathJobIDFile(smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
+                        pathJobIDFile /= g_jobIDFile;
+
+                        // Give the job 2 minutes to submit
+                        for (int t = 0; t < 240; ++t)
                         {
-                            started = true;
-                            proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
-                            // remove jobid file
-                            fs::remove(pathJobIDFile);
-                            break;
+                            if (fs::exists(pathJobIDFile))
+                            {
+                                started = true;
+                                proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
+                                // remove jobid file
+                                fs::remove(pathJobIDFile);
+                                break;
+                            }
+                            // give bash 20 sec to write the log file if it fails to start our script
+                            else if (t > 40 && fs::exists(pathBashlog))
+                            {
+                                // if bash log exists, then we have a problem starting the submit script
+                                started = false;
+                                break;
+                            }
+                            else
+                            {
+                                this_thread::sleep_for(chrono::milliseconds(500));
+                            }
                         }
-                        // give bash 20 sec to write the log file if it fails to start our script
-                        else if (t > 40 && fs::exists(pathBashlog))
+                        if (!started)
                         {
-                            // if bash log exists, then we have a problem starting the submit script
-                            started = false;
-                            break;
-                        }
-                        else
-                        {
-                            this_thread::sleep_for(chrono::milliseconds(500));
+                            if (fs::exists(pathBashlog))
+                            {
+                                // read the file
+                                fs::ifstream f_bashlog(pathBashlog);
+                                stringstream ssErrLog;
+                                ssErrLog << f_bashlog.rdbuf();
+                                string sErrLog(ssErrLog.str());
+
+                                // we don't need it anymore, remove the file
+                                fs::remove(pathBashlog);
+
+                                proto.sendMessage(EMsgSeverity::info, sErrLog);
+                            }
+
+                            proto.sendMessage(EMsgSeverity::error, "Failed to deploy agents");
                         }
                     }
-                    if (!started)
+                    else
                     {
-                        if (fs::exists(pathBashlog))
-                        {
-                            // read the file
-                            fs::ifstream f_bashlog(pathBashlog);
-                            stringstream ssErrLog;
-                            ssErrLog << f_bashlog.rdbuf();
-                            string sErrLog(ssErrLog.str());
-
-                            // we don't need it anymore, remove the file
-                            fs::remove(pathBashlog);
-
-                            proto.sendMessage(EMsgSeverity::info, sErrLog);
-                        }
-
-                        proto.sendMessage(EMsgSeverity::error, "Failed to deploy agents");
+                        proto.sendMessage(EMsgSeverity::error, "Failed to deploy agents: can't start worker script");
                     }
-                }
-                else
-                {
-                    proto.sendMessage(EMsgSeverity::error, "Failed to deploy agents: can't start worker script");
-                }
 
-                proto.stop();
-            }
-            catch (exception& e)
-            {
-                proto.sendMessage(dds::intercom_api::EMsgSeverity::error, e.what());
-            }
-        });
+                    proto.stop();
+                }
+                catch (exception& e)
+                {
+                    proto.sendMessage(dds::intercom_api::EMsgSeverity::error, e.what());
+                }
+            });
 
         // Let DDS commander know that we are online and start listening for notifications.
         proto.start();

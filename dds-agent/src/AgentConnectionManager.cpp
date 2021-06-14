@@ -43,10 +43,12 @@ CAgentConnectionManager::~CAgentConnectionManager()
 
 void CAgentConnectionManager::doAwaitStop()
 {
-    m_signals.async_wait([this](boost::system::error_code /*ec*/, int /*signo*/) {
-        // Stop transport engine
-        stop();
-    });
+    m_signals.async_wait(
+        [this](boost::system::error_code /*ec*/, int /*signo*/)
+        {
+            // Stop transport engine
+            stop();
+        });
 }
 
 void CAgentConnectionManager::start()
@@ -109,30 +111,34 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
     // Main service threads
     for (size_t x = 0; x < _numThreads; ++x)
     {
-        m_workerThreads.create_thread([this]() {
-            try
+        m_workerThreads.create_thread(
+            [this]()
             {
-                m_context.run();
-            }
-            catch (exception& ex)
-            {
-                LOG(MiscCommon::error) << "AgentConnectionManager main service: " << ex.what();
-            }
-        });
+                try
+                {
+                    m_context.run();
+                }
+                catch (exception& ex)
+                {
+                    LOG(MiscCommon::error) << "AgentConnectionManager main service: " << ex.what();
+                }
+            });
     }
     // Intercom service threads
     for (size_t x = 0; x < _numIntercomThreads; ++x)
     {
-        m_workerThreads.create_thread([this]() {
-            try
+        m_workerThreads.create_thread(
+            [this]()
             {
-                m_intercomContext.run();
-            }
-            catch (exception& ex)
-            {
-                LOG(MiscCommon::error) << "AgentConnectionManager intercom service: " << ex.what();
-            }
-        });
+                try
+                {
+                    m_intercomContext.run();
+                }
+                catch (exception& ex)
+                {
+                    LOG(MiscCommon::error) << "AgentConnectionManager intercom service: " << ex.what();
+                }
+            });
     }
 
     m_workerThreads.join_all();
@@ -164,9 +170,8 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
 
     // Subscribe to Shutdown command
     m_commanderChannel->registerHandler<cmdSHUTDOWN>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment) {
-            this->on_cmdSHUTDOWN(_sender, _attachment, m_commanderChannel);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_t _attachment)
+        { this->on_cmdSHUTDOWN(_sender, _attachment, m_commanderChannel); });
 
     // Connect to DDS commander
     m_commanderChannel->connect(endpoint_iterator);

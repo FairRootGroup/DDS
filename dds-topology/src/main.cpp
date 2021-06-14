@@ -141,65 +141,70 @@ int main(int argc, char* argv[])
 
         STopologyRequest::ptr_t requestPtr = STopologyRequest::makeRequest(topoInfo);
 
-        requestPtr->setMessageCallback([&options](const SMessageResponseData& _message) {
-            if (options.m_verbose || _message.m_severity == dds::intercom_api::EMsgSeverity::error)
+        requestPtr->setMessageCallback(
+            [&options](const SMessageResponseData& _message)
             {
-                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
-                    << "Server reports: " << _message.m_msg;
-            }
-            else
-            {
-                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? error : info) << _message.m_msg;
-            }
-        });
-
-        requestPtr->setProgressCallback([&options](const SProgressResponseData& _progress) {
-            if (options.m_verbose)
-                return;
-
-            uint32_t completed = _progress.m_completed + _progress.m_errors;
-            if (completed < _progress.m_total)
-            {
-                cout << getProgressDisplayString(completed, _progress.m_total);
-                cout.flush();
-            }
-            else
-            {
-                cout << getProgressDisplayString(completed, _progress.m_total) << endl;
-
-                std::chrono::milliseconds timeToActivate(_progress.m_time);
-
-                switch (_progress.m_srcCommand)
+                if (options.m_verbose || _message.m_severity == dds::intercom_api::EMsgSeverity::error)
                 {
-                    case cmdACTIVATE_USER_TASK:
-                        cout << "Activated tasks: " << _progress.m_completed << "\nErrors: " << _progress.m_errors
-                             << "\nTotal: " << _progress.m_total
-                             << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count() << " s"
-                             << endl;
-                        break;
-                    case cmdASSIGN_USER_TASK:
-                        cout << "Assigned/Uploaded tasks: " << _progress.m_completed
-                             << "\nErrors: " << _progress.m_errors << "\nTotal: " << _progress.m_total
-                             << "\nTime to assign/upload: " << std::chrono::duration<double>(timeToActivate).count()
-                             << " s" << endl;
-                        break;
-                    case cmdSTOP_USER_TASK:
-                        cout << "Stopped tasks: " << _progress.m_completed << "\nErrors: " << _progress.m_errors
-                             << "\nTotal: " << _progress.m_total
-                             << "\nTime to Stop: " << std::chrono::duration<double>(timeToActivate).count() << " s"
-                             << endl;
-                        break;
-                    case cmdUPDATE_TOPOLOGY:
-                        cout << "Updated agent topologies: " << _progress.m_completed
-                             << "\nErrors: " << _progress.m_errors << "\nTotal: " << _progress.m_total
-                             << "\nTime to update agent topologies: "
-                             << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
-                        break;
-                    default:;
+                    LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                        << "Server reports: " << _message.m_msg;
                 }
-            }
-            return;
-        });
+                else
+                {
+                    LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? error : info)
+                        << _message.m_msg;
+                }
+            });
+
+        requestPtr->setProgressCallback(
+            [&options](const SProgressResponseData& _progress)
+            {
+                if (options.m_verbose)
+                    return;
+
+                uint32_t completed = _progress.m_completed + _progress.m_errors;
+                if (completed < _progress.m_total)
+                {
+                    cout << getProgressDisplayString(completed, _progress.m_total);
+                    cout.flush();
+                }
+                else
+                {
+                    cout << getProgressDisplayString(completed, _progress.m_total) << endl;
+
+                    std::chrono::milliseconds timeToActivate(_progress.m_time);
+
+                    switch (_progress.m_srcCommand)
+                    {
+                        case cmdACTIVATE_USER_TASK:
+                            cout << "Activated tasks: " << _progress.m_completed << "\nErrors: " << _progress.m_errors
+                                 << "\nTotal: " << _progress.m_total
+                                 << "\nTime to Activate: " << std::chrono::duration<double>(timeToActivate).count()
+                                 << " s" << endl;
+                            break;
+                        case cmdASSIGN_USER_TASK:
+                            cout << "Assigned/Uploaded tasks: " << _progress.m_completed
+                                 << "\nErrors: " << _progress.m_errors << "\nTotal: " << _progress.m_total
+                                 << "\nTime to assign/upload: " << std::chrono::duration<double>(timeToActivate).count()
+                                 << " s" << endl;
+                            break;
+                        case cmdSTOP_USER_TASK:
+                            cout << "Stopped tasks: " << _progress.m_completed << "\nErrors: " << _progress.m_errors
+                                 << "\nTotal: " << _progress.m_total
+                                 << "\nTime to Stop: " << std::chrono::duration<double>(timeToActivate).count() << " s"
+                                 << endl;
+                            break;
+                        case cmdUPDATE_TOPOLOGY:
+                            cout << "Updated agent topologies: " << _progress.m_completed
+                                 << "\nErrors: " << _progress.m_errors << "\nTotal: " << _progress.m_total
+                                 << "\nTime to update agent topologies: "
+                                 << std::chrono::duration<double>(timeToActivate).count() << " s" << endl;
+                            break;
+                        default:;
+                    }
+                }
+                return;
+            });
 
         requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 

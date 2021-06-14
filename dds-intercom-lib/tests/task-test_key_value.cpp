@@ -111,45 +111,48 @@ int main(int argc, char* argv[])
         size_t numTaskDone = 0;
 
         // Subscribe on error events
-        service.subscribeOnError([/*&keyCondition*/](EErrorCode _errorCode, const string& _msg) {
-            cerr << "Key-value error code: " << _errorCode << ", message: " << _msg << endl;
-        });
+        service.subscribeOnError([/*&keyCondition*/](EErrorCode _errorCode, const string& _msg)
+                                 { cerr << "Key-value error code: " << _errorCode << ", message: " << _msg << endl; });
 
         // Subscribe on task done notifications
-        service.subscribeOnTaskDone([&numTaskDone, nInstances, &onTaskDoneCondition](uint64_t _taskID,
-                                                                                     uint32_t _exitCode) {
-            ++numTaskDone;
-            cout << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode << endl;
-            // TODO: In order to properly account finished tasks, use taskID to get task's name
-            if (numTaskDone >= nInstances)
-                onTaskDoneCondition.notify_all();
-        });
+        service.subscribeOnTaskDone(
+            [&numTaskDone, nInstances, &onTaskDoneCondition](uint64_t _taskID, uint32_t _exitCode)
+            {
+                ++numTaskDone;
+                cout << "Task Done notification received for task " << _taskID << " with exit code " << _exitCode
+                     << endl;
+                // TODO: In order to properly account finished tasks, use taskID to get task's name
+                if (numTaskDone >= nInstances)
+                    onTaskDoneCondition.notify_all();
+            });
 
         // Subscribe on key update events
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
         // It is safe to update global data without locks inside the callback.
-        keyValue.subscribe([&keyCondition, &currentIteration, &keyValueCache, &nInstances, &numUpdateKeyValueCalls](
-                               const string& _propertyName, const string& _value, uint64_t _senderTaskID) {
-            numUpdateKeyValueCalls++;
-
-            string key = _propertyName + "." + to_string(_senderTaskID);
-            keyValueCache[key] = _value;
-
-            // Check that all values in the key-value cache have a correct value
-            size_t counter = 0;
-            string currentValue = to_string(currentIteration);
-            for (const auto& v : keyValueCache)
+        keyValue.subscribe(
+            [&keyCondition, &currentIteration, &keyValueCache, &nInstances, &numUpdateKeyValueCalls](
+                const string& _propertyName, const string& _value, uint64_t _senderTaskID)
             {
-                if (v.second == currentValue)
-                    counter++;
-            }
+                numUpdateKeyValueCalls++;
 
-            if (counter == nInstances * 5)
-            {
-                currentIteration += 2;
-                keyCondition.notify_all();
-            }
-        });
+                string key = _propertyName + "." + to_string(_senderTaskID);
+                keyValueCache[key] = _value;
+
+                // Check that all values in the key-value cache have a correct value
+                size_t counter = 0;
+                string currentValue = to_string(currentIteration);
+                for (const auto& v : keyValueCache)
+                {
+                    if (v.second == currentValue)
+                        counter++;
+                }
+
+                if (counter == nInstances * 5)
+                {
+                    currentIteration += 2;
+                    keyCondition.notify_all();
+                }
+            });
 
         // Start listening to events we have subscribed on
         service.start();

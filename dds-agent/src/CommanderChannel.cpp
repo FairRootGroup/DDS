@@ -44,48 +44,50 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
                                                     EMQOpenType::OpenOrCreate);
 
     m_intercomChannel->registerHandler<cmdCUSTOM_CMD>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+        { pushMsg<cmdCUSTOM_CMD>(*_attachment, _sender.m_ID); });
 
     m_intercomChannel->registerHandler<cmdUPDATE_KEY>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            send_cmdUPDATE_KEY(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+        { send_cmdUPDATE_KEY(_sender, _attachment); });
 
     m_intercomChannel->start();
 
-    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& /*_sender*/) {
-        if (m_connectionAttempts <= g_MaxConnectionAttempts)
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
+        [this](const SSenderInfo& /*_sender*/)
         {
-            LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
-                      << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
-            this_thread::sleep_for(chrono::seconds(5));
-            reconnect();
-            ++m_connectionAttempts;
-        }
-        else
-        {
-            LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
-            this->sendYourself<cmdSHUTDOWN>();
-        }
-    });
+            if (m_connectionAttempts <= g_MaxConnectionAttempts)
+            {
+                LOG(info) << "Commander server has dropped the connection. Trying to reconnect. Attempt "
+                          << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                this_thread::sleep_for(chrono::seconds(5));
+                reconnect();
+                ++m_connectionAttempts;
+            }
+            else
+            {
+                LOG(info) << "Commander server has disconnected. Sending yourself a shutdown command.";
+                this->sendYourself<cmdSHUTDOWN>();
+            }
+        });
 
-    registerHandler<EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& /*_sender*/) {
-        if (m_connectionAttempts <= g_MaxConnectionAttempts)
+    registerHandler<EChannelEvents::OnFailedToConnect>(
+        [this](const SSenderInfo& /*_sender*/)
         {
-            LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt " << m_connectionAttempts
-                      << " out of " << g_MaxConnectionAttempts;
-            this_thread::sleep_for(chrono::seconds(5));
-            reconnect();
-            ++m_connectionAttempts;
-        }
-        else
-        {
-            LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
-            this->sendYourself<cmdSHUTDOWN>();
-        }
-    });
+            if (m_connectionAttempts <= g_MaxConnectionAttempts)
+            {
+                LOG(info) << "Failed to connect to commander server. Trying to reconnect. Attempt "
+                          << m_connectionAttempts << " out of " << g_MaxConnectionAttempts;
+                this_thread::sleep_for(chrono::seconds(5));
+                reconnect();
+                ++m_connectionAttempts;
+            }
+            else
+            {
+                LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
+                this->sendYourself<cmdSHUTDOWN>();
+            }
+        });
 }
 
 void CCommanderChannel::setNumberOfSlots(size_t _nSlots)
@@ -614,13 +616,18 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
         {
             // Prevent blocking of the current thread.
             // The term-kill logic is posted to a different free thread in the queue.
-            m_ioContext.post([this, &slot, id = _sender.m_ID] {
-                terminateChildrenProcesses(slot.m_pid, [this, id]() {
-                    // Once child termionation is finished, send User task "Done" to the commander
-                    pushMsg<cmdREPLY>(SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK),
-                                      id);
+            m_ioContext.post(
+                [this, &slot, id = _sender.m_ID]
+                {
+                    terminateChildrenProcesses(
+                        slot.m_pid,
+                        [this, id]()
+                        {
+                            // Once child termionation is finished, send User task "Done" to the commander
+                            pushMsg<cmdREPLY>(
+                                SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK), id);
+                        });
                 });
-            });
         }
     }
     catch (exception& _e)
@@ -701,7 +708,8 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
 
     auto self(shared_from_this());
     CMonitoringThread::instance().registerCallbackFunction(
-        [this, self, _slotID, _pid]() -> bool {
+        [this, self, _slotID, _pid]() -> bool
+        {
             // Send commander server the watchdog heartbeat.
             // It indicates that the agent is executing a task and is not idle
             pushMsg<cmdWATCHDOG_HEARTBEAT>();
@@ -887,9 +895,8 @@ void CCommanderChannel::terminateChildrenProcesses(
     // The term-kill logic is posted to a different free thread in the queue.
     // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
     timer->async_wait([this, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ move(timer) }](
-                          const boost::system::error_code& /*_error*/) mutable {
-        terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot);
-    });
+                          const boost::system::error_code& /*_error*/) mutable
+                      { terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot); });
 }
 
 void CCommanderChannel::terminateChildrenProcesses(
@@ -924,9 +931,8 @@ void CCommanderChannel::terminateChildrenProcesses(
         // The term-kill logic is posted to a different free thread in the queue.
         // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
         _timer->async_wait([this, _children, _wait_until, _onCompleteSlot, timer{ move(_timer) }](
-                               const boost::system::error_code& /*_error*/) mutable {
-            terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot);
-        });
+                               const boost::system::error_code& /*_error*/) mutable
+                           { terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot); });
     }
     else
     {

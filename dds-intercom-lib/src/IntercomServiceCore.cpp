@@ -91,28 +91,24 @@ void CIntercomServiceCore::setupSMChannel()
 
     // Subscribe for cmdUPDATE_KEY from SM channel
     m_SMChannel->registerHandler<cmdUPDATE_KEY>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment) {
-            this->on_cmdUPDATE_KEY_SM(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUPDATE_KEY>::ptr_t _attachment)
+        { this->on_cmdUPDATE_KEY_SM(_sender, _attachment); });
 
     // Subscribe for cmdUSER_TASK_DONE from SM channel
     m_SMChannel->registerHandler<cmdUSER_TASK_DONE>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment) {
-            this->on_cmdUSER_TASK_DONE_SM(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdUSER_TASK_DONE>::ptr_t _attachment)
+        { this->on_cmdUSER_TASK_DONE_SM(_sender, _attachment); });
 
     // Subscribe for cmdCUSTOM_CMD from SM channel
     m_SMChannel->registerHandler<cmdCUSTOM_CMD>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD_SM(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+        { this->on_cmdCUSTOM_CMD_SM(_sender, _attachment); });
     //
 
     // Subscribe for cmdSIMPLE_MSG from SM channel
     m_SMChannel->registerHandler<cmdSIMPLE_MSG>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG_SM(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+        { this->on_cmdSIMPLE_MSG_SM(_sender, _attachment); });
     //
 
     m_SMChannel->start();
@@ -174,29 +170,33 @@ void CIntercomServiceCore::setupChannel(const std::string& _sessionID)
 
     // Subscribe for cmdCUSTOM_CMD from TCP channel
     m_channel->registerHandler<cmdCUSTOM_CMD>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment) {
-            this->on_cmdCUSTOM_CMD_SM(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdCUSTOM_CMD>::ptr_t _attachment)
+        { this->on_cmdCUSTOM_CMD_SM(_sender, _attachment); });
     //
 
     // Subscribe for cmdSIMPLE_MSG from TCP channel
     m_channel->registerHandler<cmdSIMPLE_MSG>(
-        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment) {
-            this->on_cmdSIMPLE_MSG_SM(_sender, _attachment);
-        });
+        [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdSIMPLE_MSG>::ptr_t _attachment)
+        { this->on_cmdSIMPLE_MSG_SM(_sender, _attachment); });
     //
 
-    m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>([this](const SSenderInfo& /*_sender*/) {
-        execUserSignal(m_errorSignal, intercom_api::EErrorCode::RemoteEndDisconnected, "Remote end disconnected");
-        stopCondition();
-    });
-
-    m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>([this](const SSenderInfo& /*_sender*/) {
-        m_channel->reconnectAgentWithErrorHandler([this](const string& _errorMsg) {
-            execUserSignal(m_errorSignal, intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
+    m_channel->registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
+        [this](const SSenderInfo& /*_sender*/)
+        {
+            execUserSignal(m_errorSignal, intercom_api::EErrorCode::RemoteEndDisconnected, "Remote end disconnected");
             stopCondition();
         });
-    });
+
+    m_channel->registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(
+        [this](const SSenderInfo& /*_sender*/)
+        {
+            m_channel->reconnectAgentWithErrorHandler(
+                [this](const string& _errorMsg)
+                {
+                    execUserSignal(m_errorSignal, intercom_api::EErrorCode::ConnectionFailed, _errorMsg);
+                    stopCondition();
+                });
+        });
 
     m_channel->connect(endpoint_iterator);
 }

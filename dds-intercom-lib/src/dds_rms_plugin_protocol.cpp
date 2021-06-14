@@ -186,10 +186,12 @@ CRMSPluginProtocol::CRMSPluginProtocol(const std::string& _id)
     , m_service()
     , m_customCmd(m_service)
 {
-    m_customCmd.subscribe([this](const string& _command, const string& /*_condition*/, uint64_t /*_senderId*/) {
-        istringstream ss(_command);
-        notify(ss);
-    });
+    m_customCmd.subscribe(
+        [this](const string& _command, const string& /*_condition*/, uint64_t /*_senderId*/)
+        {
+            istringstream ss(_command);
+            notify(ss);
+        });
 
     m_service.start();
 }

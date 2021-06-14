@@ -57,37 +57,42 @@ int main(int argc, char* argv[])
         SGetLogRequest::request_t requestInfo;
         SGetLogRequest::ptr_t requestPtr = SGetLogRequest::makeRequest(requestInfo);
 
-        requestPtr->setMessageCallback([&options](const SMessageResponseData& _message) {
-            if (options.m_verbose || _message.m_severity == dds::intercom_api::EMsgSeverity::error)
+        requestPtr->setMessageCallback(
+            [&options](const SMessageResponseData& _message)
             {
-                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
-                    << "Server reports: " << _message.m_msg;
-            }
-            else
-            {
-                LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? error : info) << _message.m_msg;
-            }
-        });
+                if (options.m_verbose || _message.m_severity == dds::intercom_api::EMsgSeverity::error)
+                {
+                    LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                        << "Server reports: " << _message.m_msg;
+                }
+                else
+                {
+                    LOG((_message.m_severity == dds::intercom_api::EMsgSeverity::error) ? error : info)
+                        << _message.m_msg;
+                }
+            });
 
         requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
-        requestPtr->setProgressCallback([&options](const SProgressResponseData& _progress) {
-            if (options.m_verbose)
-                return;
+        requestPtr->setProgressCallback(
+            [&options](const SProgressResponseData& _progress)
+            {
+                if (options.m_verbose)
+                    return;
 
-            uint32_t completed = _progress.m_completed + _progress.m_errors;
-            if (completed < _progress.m_total)
-            {
-                cout << getProgressDisplayString(completed, _progress.m_total);
-                cout.flush();
-            }
-            else
-            {
-                cout << getProgressDisplayString(completed, _progress.m_total) << endl;
-                cout << "Received: " << _progress.m_completed << " errors: " << _progress.m_errors
-                     << " total: " << _progress.m_total << endl;
-            }
-        });
+                uint32_t completed = _progress.m_completed + _progress.m_errors;
+                if (completed < _progress.m_total)
+                {
+                    cout << getProgressDisplayString(completed, _progress.m_total);
+                    cout.flush();
+                }
+                else
+                {
+                    cout << getProgressDisplayString(completed, _progress.m_total) << endl;
+                    cout << "Received: " << _progress.m_completed << " errors: " << _progress.m_errors
+                         << " total: " << _progress.m_total << endl;
+                }
+            });
 
         session.sendRequest<SGetLogRequest>(requestPtr);
 

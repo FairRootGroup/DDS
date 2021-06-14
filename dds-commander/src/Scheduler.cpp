@@ -39,9 +39,8 @@ void CScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
                               const CTopoCore::IdSet_t& _addedCollections)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
-        [this, &_topology, &_channels, &_addedTasks, &_addedCollections]() {
-            makeScheduleImpl(_topology, _channels, &_addedTasks, &_addedCollections);
-        });
+        [this, &_topology, &_channels, &_addedTasks, &_addedCollections]()
+        { makeScheduleImpl(_topology, _channels, &_addedTasks, &_addedCollections); });
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 

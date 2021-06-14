@@ -24,7 +24,8 @@ namespace dds
             {
                 // Register handshake callback
                 this->template registerHandler<cmdHANDSHAKE>(
-                    [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment) {
+                    [this](const SSenderInfo& _sender, SCommandAttachmentImpl<cmdHANDSHAKE>::ptr_t _attachment)
+                    {
                         if (!processHandshake_channelTypeSupported(
                                 static_cast<EChannelType>(_attachment->m_channelType), true, _sender.m_ID))
                             return;

@@ -53,24 +53,26 @@ int main(int argc, char* argv[])
 
         // Subscribe to DDS key-value error events.
         // Whenever an error occurs lambda will be called.
-        service.subscribeOnError([](EErrorCode _errorCode, const string& _msg) {
-            cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg << endl;
-        });
+        service.subscribeOnError(
+            [](EErrorCode _errorCode, const string& _msg)
+            { cerr << "DDS key-value error code: " << _errorCode << ", message: " << _msg << endl; });
 
         // Subscribe on key update events
         // DDS garantees that this callback function will not be called in parallel from multiple threads.
         // It is safe to update global data without locks inside the callback.
-        keyValue.subscribe([&keyCondition, &nInstances, &keyValueCache](
-                               const string& _propertyName, const string& _value, uint64_t _senderTaskID) {
-            cout << "Received key-value update: propertyName=" << _propertyName << " value=" << _value
-                 << " senderTaskID=" << _senderTaskID << std::endl;
-            string key = _propertyName + "." + to_string(_senderTaskID);
-            keyValueCache[key] = _value;
-            if (keyValueCache.size() == nInstances)
+        keyValue.subscribe(
+            [&keyCondition, &nInstances, &keyValueCache](
+                const string& _propertyName, const string& _value, uint64_t _senderTaskID)
             {
-                keyCondition.notify_all();
-            }
-        });
+                cout << "Received key-value update: propertyName=" << _propertyName << " value=" << _value
+                     << " senderTaskID=" << _senderTaskID << std::endl;
+                string key = _propertyName + "." + to_string(_senderTaskID);
+                keyValueCache[key] = _value;
+                if (keyValueCache.size() == nInstances)
+                {
+                    keyCondition.notify_all();
+                }
+            });
 
         service.start();
 
