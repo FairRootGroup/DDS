@@ -134,6 +134,13 @@ namespace dds
             std::mutex m_mapMutex;
 
             MiscCommon::CConditionEvent m_updateTopoCondition;
+
+            // ToolsAPI's onTaskDone subscribers
+            typedef std::pair<CAgentChannel::weakConnectionPtr_t, dds::tools_api::SOnTaskDoneRequestData>
+                onTaskDoneSubscriberInfo_t;
+            typedef std::list<onTaskDoneSubscriberInfo_t> weakConnectionPtrList_t;
+            weakConnectionPtrList_t m_onTaskDoneSubscribers;
+            std::mutex m_mtxOnTaskDoneSubscribers;
         };
     } // namespace commander_cmd
 } // namespace dds

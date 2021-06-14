@@ -391,6 +391,7 @@ if( BUILD_TESTS )
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_local.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property_slurm.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
     install(FILES ${CMAKE_SOURCE_DIR}/res/tests/env_test.xml DESTINATION "${PROJECT_INSTALL_TESTS}")
+	install(FILES ${CMAKE_SOURCE_DIR}/res/tests/sleep_test.xml DESTINATION "${PROJECT_INSTALL_TESTS}")
     install(FILES ${CMAKE_SOURCE_DIR}/res/tests/custom_cmd_test.xml DESTINATION "${PROJECT_INSTALL_TESTS}")
 endif( BUILD_TESTS )
 

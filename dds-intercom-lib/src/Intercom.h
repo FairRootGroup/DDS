@@ -53,7 +53,7 @@ namespace dds
             /// \brief Start DDS service, i.e. receiving and sending messages.
             void start(const std::string& _sessionID = "");
 
-            // TODO: FIXME: workaround for old functionality. This functions will be removed in the future releases.
+            // FIXME: workaround for old functionality. This functions will be removed in the future releases.
             void waitCondition();
             void stopCondition();
 

@@ -496,7 +496,7 @@ namespace dds
                 LOG(MiscCommon::debug) << "Removing " /*<< _client->getTypeName()*/
                                        << " client from the list of active";
                 std::lock_guard<std::mutex> lock(m_mutex);
-                // TODO: FIXME: Delete all connections of the channel if the primary protocol header ID is deleted
+                // FIXME: Delete all connections of the channel if the primary protocol header ID is deleted
                 m_channels.erase(remove_if(m_channels.begin(),
                                            m_channels.end(),
                                            [&](const channelInfo_t& i) { return (i.m_channel.get() == _client); }),

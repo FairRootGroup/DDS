@@ -1,0 +1,23 @@
+<topology name="SleepTopology">
+	
+  	<decltask name="SleepTask">
+		<exe reachable="true">sleep 100</exe>
+	</decltask>
+	
+	<declcollection name="SleepCollection">
+		<tasks>
+			<name>SleepTask</name>
+            <name>SleepTask</name>
+		</tasks>
+	</declcollection>
+	
+	<main name="main">
+		<task>SleepTask</task>
+		<collection>SleepCollection</collection>
+		<group name="SleepGroup" n="2">
+            <task>SleepTask</task>
+			<collection>SleepCollection</collection>
+		</group>
+	</main>
+	
+</topology>

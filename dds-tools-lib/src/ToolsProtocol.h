@@ -216,6 +216,32 @@ namespace dds
         /// \brief Request class of agentCount.
         using SAgentCountRequest = SBaseRequestImpl<SAgentCountRequestData, SAgentCountResponseData>;
 
+        /// \brief Structure holds information of onTaskDone response.
+        struct SOnTaskDoneResponseData : SBaseResponseData<SOnTaskDoneResponseData>
+        {
+            uint64_t m_taskID = 0;   ///<  Task ID
+            uint32_t m_exitCode = 0; ///< Exit code
+            uint32_t m_signal = 0;   ///<  A signal number if the process is killed by/stopped by a signal
+
+          private:
+            friend SBaseData<SOnTaskDoneResponseData>;
+            friend SBaseResponseData<SOnTaskDoneResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "onTaskDone";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SOnTaskDoneResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SOnTaskDoneResponseData& _data);
+        };
+
+        /// \brief Structure holds information of onTaskDone response.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SOnTaskDoneRequestData, "onTaskDone")
+
+        /// \brief Request class of onTaskDone.
+        using SOnTaskDoneRequest = SBaseRequestImpl<SOnTaskDoneRequestData, SOnTaskDoneResponseData>;
     } // namespace tools_api
 } // namespace dds
 

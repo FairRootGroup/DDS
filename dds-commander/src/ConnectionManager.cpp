@@ -645,20 +645,54 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     {
         LOG(info) << "User task <" << _attachment->m_taskID << "> done. Additional info: " << _e.what();
     }
+
+    // MARK: ToolsAPI - onTaskDone
+    // send task done ToolsAPI event to registred channels. A channel, whcih is expired of filed should be removed from
+    // the list.
+    lock_guard<mutex> lock(m_mtxOnTaskDoneSubscribers);
+    // The loop always recalclates the end() iterator since we might delete expired elelemts from the list
+    for (auto iter = m_onTaskDoneSubscribers.begin(); iter != m_onTaskDoneSubscribers.end(); ++iter)
+    {
+        if (auto ch = iter->first.lock())
+        {
+            SOnTaskDoneResponseData response;
+            response.m_requestID = iter->second.m_requestID;
+            response.m_taskID = _attachment->m_taskID;
+            response.m_exitCode = (WIFEXITED(_attachment->m_exitCode) ? WEXITSTATUS(_attachment->m_exitCode) : 0);
+            // NOTE: We are using a bash wrapper script for user tasks.
+            // According to bash, the exist status of child processes can be interpreted in the folloiwing way:
+            // - For the shell’s purposes, a command which exits with a zero exit status has succeeded.
+            // - A non-zero exit status indicates failure.
+            //   This seemingly counter-intuitive scheme is used so there is one well-defined way to indicate success
+            //   and a variety of ways to indicate various failure modes. When a command terminates on a fatal signal
+            //   whose number is N, Bash uses the value 128+N as the exit status.
+            // - If a command is not found, the child process created to execute it returns a status of 127.
+            // - If a command is found but is not executable, the return status is 126.
+            response.m_signal =
+                (WEXITSTATUS(_attachment->m_exitCode) > 128 ? (WEXITSTATUS(_attachment->m_exitCode) - 128) : 0);
+
+            sendCustomCommandResponse(ch, response.toJSON());
+        }
+        else
+        {
+            // channel is expiored - removing it from the list
+            m_onTaskDoneSubscribers.erase(iter);
+        }
+    }
 }
 
 void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& /*_sender*/,
                                              SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t /*_attachment*/,
                                              CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
-    // TODO: FIXME: This command desn't work without CKeyValueManager
+    // FIXME: This command desn't work without CKeyValueManager
 }
 
 void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& /*_sender*/,
                                                SCommandAttachmentImpl<cmdGET_PROP_VALUES>::ptr_t /*_attachment*/,
                                                CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
-    // TODO: FIXME: This command desn't work without CKeyValueManager
+    // FIXME: This command doesn't work without CKeyValueManager
 }
 
 void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
@@ -744,7 +778,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
                 m_SubmitAgents.processCustomCommandMessage(*_attachment, _channel);
                 return;
             }
-            // Tools API request
+            // MARK: ToolsAPI request
             else if (_attachment->m_sCondition == g_sToolsAPISign)
             {
                 LOG(info) << "Received a message from TOOLS API.";
@@ -834,6 +868,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
     }
 }
 
+// MARK: ToolsAPI - processToolsAPIRequests
 void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
 {
     LOG(MiscCommon::info) << "Processing Tools API message: " << _cmd.m_sCmd;
@@ -893,6 +928,15 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
                 agentCount.fromPT(child.second);
 
                 sendUIAgentCount(agentCount, _channel);
+            }
+            else if (tag == "onTaskDone")
+            {
+                dds::tools_api::SOnTaskDoneRequestData onTaskDoneSubscriberInfo;
+                onTaskDoneSubscriberInfo.fromPT(child.second);
+
+                // add the given channel (_channel) to the list, which will be allerted whenever a task is exited
+                lock_guard<mutex> lock(m_mtxOnTaskDoneSubscribers);
+                m_onTaskDoneSubscribers.push_back({ _channel, onTaskDoneSubscriberInfo });
             }
         }
     }
@@ -1128,13 +1172,13 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
                 agents.push_back(agentChannel);
             }
 
-            // TODO: FIXME: Needs to be reviewed for the current architecture
+            // FIXME: Needs to be reviewed for the current architecture
             //            for (const auto& v : agents)
             //            {
             //                if (v.m_channel.expired())
             //                    continue;
             //                auto ptr = v.m_channel.lock();
-            //                // TODO: FIXME: Do we need to deque messages in new decentralized concept?
+            //                // FIXME: Do we need to deque messages in new decentralized concept?
             //                // dequeue important (or expensive) messages
             //                ptr->dequeueMsg<cmdUPDATE_KEY>();
             //            }
