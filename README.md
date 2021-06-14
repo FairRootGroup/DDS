@@ -38,7 +38,7 @@ find . -name '*.dylib' -exec bash -c 'nm=$(basename $1);install_name_tool $1 -id
 
 ### clang-format on macOS
 
-[LLVM binary builds](http://releases.llvm.org/download.html) An LLVM version 11.0.0 should be used.
+[LLVM binary builds](http://releases.llvm.org/download.html) An LLVM version 12.0.0 should be used: https://github.com/llvm/llvm-project/releases/tag/llvmorg-12.0.0
 
 ### devtools-3 on CentOS
 
