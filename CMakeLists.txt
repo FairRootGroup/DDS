@@ -10,7 +10,8 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.16.0 FATAL_ERROR )
+cmake_policy(VERSION 3.16)
 
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
@@ -415,68 +416,31 @@ set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
 set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
 set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
 
-set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
-if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
-	set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
+# top-level executables to package in wn pkg
+list(APPEND WN_PKG_EXECUTABLES
+  $<TARGET_FILE:dds-agent>
+  $<TARGET_FILE:dds-user-defaults> )
+if(BUILD_TESTS)
+  list(APPEND $<TARGET_FILE:dds_topology_lib-tests>)
 endif()
+separate_arguments(CLI_WN_PKG_EXECUTABLES
+  UNIX_COMMAND "${WN_PKG_EXECUTABLES}" )
 
-if(ENV{DDS_LD_LIBRARY_PATH})
-  # because of SIP on macOS we can't use (DY)LD_LIBRARY_PATH.
-  # But we need to search also in custom location for libstdc++ in case if user installs a custom version of gcc/clang.
-  # WORKAROUND: We therefore introduce DDS_LD_LIBRARY_PATH, which user can use to specify custom library path(s)
-  file(TO_CMAKE_PATH "$ENV{DDS_LD_LIBRARY_PATH}" ENV_LD_LIBRARY_PATH)
-else()
-  file(TO_CMAKE_PATH "$ENV{LD_LIBRARY_PATH}" ENV_LD_LIBRARY_PATH)
-endif()
+# Generate a list of what CMake considers to be system prefixes
+list(APPEND WN_PKG_EXCLUDED_SYSTEM_PREFIXES
+  ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}
+  ${CMAKE_INSTALL_LIBDIR} )
+list(REMOVE_DUPLICATES WN_PKG_EXCLUDED_SYSTEM_PREFIXES)
+separate_arguments(CLI_WN_PKG_EXCLUDED_SYSTEM_PREFIXES
+  UNIX_COMMAND "${WN_PKG_EXCLUDED_SYSTEM_PREFIXES}" )
 
-set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::${DDS_BOOST_LIB_DIR}")
-foreach(p IN LISTS ENV_LD_LIBRARY_PATH)
-  set(PREREQ_DIRS "${PREREQ_DIRS}::${p}")
-endforeach()
-
-set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
-set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds-commander>)
-
-set(PREREQ_DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}")
-
-# WORKAROUND: don't generate helper script when building an xcode project
-# The reason: "Evaluation file to be written multiple times for different configurations or languages with different content"
-if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
-	#
-	# WORKAROUND: the issue is configure_file currently does not appear to honor generator expressions,
-	# but it is still needed to configure @...@ expressions.
-	# We therefore use two-step procedure to configure a file.
-	#
-	# 1. Deal with @...@ configurable items:
-	configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured @ONLY)
-	# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
-	FILE(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake
-			  INPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.configured CONDITION 1)
-
-	if( BUILD_TESTS )
-		set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds_topology_lib-tests>)
-		#
-		# WORKAROUND: the issue is configure_file currently does not appear to honor generator expressions,
-		# but it is still needed to configure @...@ expressions.
-		# We therefore use two-step procedure to configure a file.
-		#
-		# 1. Deal with @...@ configurable items:
-		configure_file(${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured @ONLY)
-		# 2. Deal with items configured with generator expressions (variables like "$<TARGET_FILE_DIR:" evaluted on this stage):
-		FILE(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake
-			  	INPUT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake.configured CONDITION 1)
-	endif( BUILD_TESTS )
-endif()
-
-#
-# TODO: replace DDS_CollectPrerequisites.cmake by DDS_CollectPrerequisitesGen.cmake and make the script more generic
-#
 add_custom_target( wn_bin
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${WN_PKG_DIR}
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-agent> "${WN_PKG_DIR}"
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:dds-user-defaults> "${WN_PKG_DIR}"
-	COMMAND ${CMAKE_COMMAND} -DPREREQ_DESTINATION=${WN_PKG_DIR} -DDDS_AGENT_BIN_PATH=${DDS_AGENT_BIN_PATH}
-		-DPREREQ_DIRS=${PREREQ_DIRS} -DDDS_BOOST_LIB_DIR=${DDS_BOOST_LIB_DIR} -P "${CMAKE_SOURCE_DIR}/cmake/modules/DDS_CollectPrerequisites.cmake"
+  COMMAND ${CMAKE_COMMAND}
+    -DEXECUTABLES=${CLI_WN_PKG_EXECUTABLES}
+    -DDESTINATION=${WN_PKG_DIR}
+    -DEXCLUDED_SYSTEM_PREFIXES=${CLI_WN_PKG_EXCLUDED_SYSTEM_PREFIXES}
+    -P "${CMAKE_SOURCE_DIR}/cmake/DDSCollectWNPkgFiles.cmake"
 	COMMAND ${CMAKE_COMMAND} -E tar czf ${WN_PKG_NAME_ARCH} "${WN_PKG_DIR}"
 	COMMAND chmod go+xr ${WN_PKG_NAME_ARCH}
 	COMMENT "Generate WN binary package"
@@ -498,19 +462,6 @@ add_dependencies( wn_bin_upload
 	wn_bin )
 
 INSTALL(FILES ${CMAKE_BINARY_DIR}/${WN_PKG_NAME_ARCH} DESTINATION "${PROJECT_INSTALL_BINDIR}/wn_bins" OPTIONAL)
-
-
-# WORKAROUND: don't generate helper script when building an xcode project
-# The reason: "Evaluation file to be written multiple times for different configurations or languages with different content"
-if (NOT CMAKE_GENERATOR STREQUAL "Xcode")
-	# WORKAROUND: create destination "lib" directory.
-	# INSTALL SCRIPT is called before any other lib is installed, therefore we need to create a dest. dir.
-	INSTALL(DIRECTORY DESTINATION "${PROJECT_INSTALL_LIBDIR}")
-	INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen.cmake)
-	if( BUILD_TESTS )
-		INSTALL(SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/cmake/modules/DDS_CollectPrerequisitesGen_Tests.cmake)
-	endif( BUILD_TESTS )
-endif()
 
 #
 # Package
