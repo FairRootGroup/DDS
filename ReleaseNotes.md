@@ -18,6 +18,7 @@ Fixed: `--version` option for `dds-session`.
 Added: setup DDS environment and create default config file in code. No need to exec DDS_env.sh script anymore. (GH-350)    
 Added: Add a onTaskDone event to ToolsAPI. Using ToolsAPI users are able now to subscribe and receive onTaskDone events whenever a user tasks exists.(GH-370)    
 Modified: Refactor `MiscCommon`.    
+Added: Refactor and open DDS SSH config API to the users. Rename `ncf` to `SSHConfigFile`. (GH-340)    
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.   

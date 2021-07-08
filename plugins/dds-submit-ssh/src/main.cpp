@@ -19,10 +19,10 @@
 #include "Logger.h"
 #include "MiscSetup.h"
 #include "PipeLogEngine.h"
+#include "SSHConfigFile.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "local_types.h"
-#include "ncf.h"
 #include "worker.h"
 
 using namespace std;
@@ -183,20 +183,8 @@ int main(int argc, char* argv[])
                     if (!file_exists(configFile))
                         throw runtime_error("DDS SSH config file doesn't exist: " + configFile);
 
-                    ifstream f(configFile.c_str());
-                    if (!f.is_open())
-                    {
-                        string msg("can't open configuration file \"");
-                        msg += configFile;
-                        msg += "\"";
-                        throw runtime_error(msg);
-                    }
-
-                    string inlineShellScripCmds;
-
-                    CNcf config;
-                    config.readFrom(f);
-                    inlineShellScripCmds = config.getBashEnvCmds();
+                    CSSHConfigFile config(configFile);
+                    string inlineShellScripCmds{ config.getBash() };
 
                     SWNOptions options;
                     options.m_logs = false;

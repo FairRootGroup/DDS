@@ -21,7 +21,6 @@
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "ncf.h"
 
 using namespace std;
 using namespace dds;

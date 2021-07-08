@@ -10,8 +10,8 @@
 // MiscCommon
 #include "def.h"
 // pod-ssh
+#include "SSHConfigFile.h"
 #include "local_types.h"
-#include "ncf.h"
 //=============================================================================
 namespace dds
 {
@@ -28,7 +28,7 @@ namespace dds
         class CWorker
         {
           public:
-            CWorker(misc::configRecord_t _rec, const SWNOptions& _options, const std::string& _path);
+            CWorker(dds::configRecord_t _rec, const SWNOptions& _options, const std::string& _path);
             ~CWorker();
 
             void printInfo(std::ostream& _stream) const;
@@ -43,7 +43,7 @@ namespace dds
             void log(const std::string& _msg) const;
 
           private:
-            misc::configRecord_t m_rec;
+            dds::configRecord_t m_rec;
             SWNOptions m_options;
             std::string m_path;
         };

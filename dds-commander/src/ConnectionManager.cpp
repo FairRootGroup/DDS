@@ -9,8 +9,8 @@
 #include "CommandAttachmentImpl.h"
 #include "Intercom.h"
 #include "MiscCli.h"
+#include "SSHConfigFile.h"
 #include "TopoCore.h"
-#include "ncf.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -976,17 +976,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         string inlineShellScripCmds;
         if (!_submitInfo.m_config.empty())
         {
-            ifstream f(_submitInfo.m_config);
-            if (!f.is_open())
-            {
-                string msg("can't open configuration file \"");
-                msg += _submitInfo.m_config;
-                msg += "\"";
-                throw runtime_error(msg);
-            }
-            CNcf config;
-            config.readFrom(f, true); // Read only bash commands if any
-            inlineShellScripCmds = config.getBashEnvCmds();
+            inlineShellScripCmds = CSSHConfigFile(_submitInfo.m_config).getBash();
             LOG(info)
                 << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
 
