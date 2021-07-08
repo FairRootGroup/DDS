@@ -14,8 +14,7 @@
 #include <stdexcept>
 #include <thread>
 // DDS
-#include "BOOSTHelper.h"
-#include "BOOST_FILESYSTEM.h"
+#include "BoostHelper.h"
 #include "Intercom.h"
 #include "Logger.h"
 #include "MiscSetup.h"
@@ -27,12 +26,10 @@
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
-using namespace dds::ncf;
 using namespace dds::user_defaults_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 namespace bfs = boost::filesystem;
 namespace bpo = boost::program_options;
-namespace boost_hlp = MiscCommon::BOOSTHelper;
 
 // Command line parser
 bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
@@ -183,7 +180,7 @@ int main(int argc, char* argv[])
                 // Create temp directory for DDS agents
                 bfs::path tempDirPath = bfs::temp_directory_path();
                 bfs::path wrkDirPath(tempDirPath);
-                string tmpDir = BOOSTHelper::get_temp_dir("dds");
+                string tmpDir = get_temp_dir("dds");
                 wrkDirPath /= CUserDefaults::instance().getLockedSID();
                 wrkDirPath /= tmpDir;
                 wrkDirPath /= "wn";

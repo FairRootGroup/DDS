@@ -15,8 +15,8 @@ namespace dds
         {
             SCustomCmdCmd();
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SCustomCmdCmd& val) const;
 
             uint64_t m_timestamp;

@@ -8,6 +8,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SCustomCmdCmd::SCustomCmdCmd()
     : m_timestamp(0)
@@ -26,12 +27,12 @@ bool SCustomCmdCmd::operator==(const SCustomCmdCmd& val) const
             m_sCondition == val.m_sCondition);
 }
 
-void SCustomCmdCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SCustomCmdCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_timestamp).get(m_senderId).get(m_sCmd).get(m_sCondition);
 }
 
-void SCustomCmdCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SCustomCmdCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_timestamp).put(m_senderId).put(m_sCmd).put(m_sCondition);
 }

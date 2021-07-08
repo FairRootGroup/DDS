@@ -11,6 +11,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SProgressCmd::SProgressCmd()
     : m_completed(0)
@@ -41,12 +42,12 @@ bool SProgressCmd::operator==(const SProgressCmd& val) const
             m_time == val.m_time && m_srcCommand == val.m_srcCommand);
 }
 
-void SProgressCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SProgressCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_completed).get(m_total).get(m_errors).get(m_time).get(m_srcCommand);
 }
 
-void SProgressCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SProgressCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_completed).put(m_total).put(m_errors).put(m_time).put(m_srcCommand);
 }

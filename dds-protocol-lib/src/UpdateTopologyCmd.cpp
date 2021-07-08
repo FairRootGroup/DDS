@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SUpdateTopologyCmd::SUpdateTopologyCmd()
     : m_nDisableValidation(0)
@@ -26,12 +27,12 @@ bool SUpdateTopologyCmd::operator==(const SUpdateTopologyCmd& val) const
             m_updateType == val.m_updateType);
 }
 
-void SUpdateTopologyCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SUpdateTopologyCmd::_convertFromData(const dds::misc::BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_nDisableValidation).get(m_sTopologyFile).get(m_updateType);
 }
 
-void SUpdateTopologyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SUpdateTopologyCmd::_convertToData(dds::misc::BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_nDisableValidation).put(m_sTopologyFile).put(m_updateType);
 }

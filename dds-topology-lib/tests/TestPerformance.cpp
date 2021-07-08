@@ -16,7 +16,7 @@
 
 using namespace dds;
 using namespace dds::topology_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology_performance)
 

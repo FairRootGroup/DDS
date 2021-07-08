@@ -11,7 +11,7 @@
 #include <boost/filesystem.hpp>
 
 using namespace std;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
@@ -20,8 +20,8 @@ using namespace dds::protocol_api;
 CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t /*_protocolHeaderID*/)
     : CServerChannelImpl<CAgentChannel>(_context, { EChannelType::AGENT, EChannelType::UI })
 {
-    registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
-        [](const SSenderInfo& /*_sender*/) { LOG(MiscCommon::info) << "The Agent has closed the connection."; });
+    registerHandler<EChannelEvents::OnRemoteEndDissconnected>([](const SSenderInfo& /*_sender*/)
+                                                              { LOG(info) << "The Agent has closed the connection."; });
 
     registerHandler<EChannelEvents::OnHandshakeOK>(
         [this](const SSenderInfo& _sender)
@@ -36,8 +36,8 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _context, uint64_t /*_prot
                 break;
                 case EChannelType::UI:
                 {
-                    LOG(MiscCommon::info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
-                                          << "] has successfully connected.";
+                    LOG(info) << "The UI agent [" << socket().remote_endpoint().address().to_string()
+                              << "] has successfully connected.";
 
                     // All UI channels get unique IDs, so that user tasks and agents can send
                     // back the
@@ -94,7 +94,7 @@ bool CAgentChannel::on_cmdSUBMIT(SCommandAttachmentImpl<cmdSUBMIT>::ptr_t _attac
     }
     catch (exception& e)
     {
-        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), MiscCommon::fatal, cmdSUBMIT), _sender.m_ID);
+        pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(e.what(), fatal, cmdSUBMIT), _sender.m_ID);
         return true;
     }
 

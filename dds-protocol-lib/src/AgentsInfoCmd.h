@@ -16,8 +16,8 @@ namespace dds
         {
             SAgentsInfoCmd();
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SAgentsInfoCmd& _val) const;
 
             uint32_t m_nActiveAgents; /// the number of online agents

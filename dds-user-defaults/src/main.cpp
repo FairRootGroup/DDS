@@ -13,16 +13,15 @@
 #include <iostream>
 #include <string>
 // MiscCommon
-#include "BOOSTHelper.h"
+#include "BoostHelper.h"
 #include "SysHelper.h"
 #include "Version.h"
 
 using namespace dds;
 using namespace dds::user_defaults_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace std;
 namespace bpo = boost::program_options;
-namespace boost_hlp = MiscCommon::BOOSTHelper;
 
 // Command line parser
 bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
@@ -100,7 +99,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
     {
         cout << "Generating a default DDS configuration file..." << endl;
 
-        if (MiscCommon::file_exists(sCfgFileName) && !vm.count("force"))
+        if (dds::misc::file_exists(sCfgFileName) && !vm.count("force"))
             throw runtime_error("Error: Destination file exists. Please use -f options to overwrite it.");
 
         if (sCfgFileName.empty())
@@ -186,9 +185,9 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
 
     *_verbose = vm.count("verbose");
 
-    boost_hlp::option_dependency(vm, "default", "config");
-    boost_hlp::conflicting_options(vm, "default", "key");
-    boost_hlp::conflicting_options(vm, "force", "key");
+    option_dependency(vm, "default", "config");
+    conflicting_options(vm, "default", "key");
+    conflicting_options(vm, "force", "key");
 
     return true;
 }

@@ -17,11 +17,11 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SRC_HDRS})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  MiscCommon
-	dds_user_defaults_lib
+  dds_misc_lib
+  dds_user_defaults_lib
   dds_intercom_lib
-	dds_ncf
-	pipe_log_engine
+  dds_misc_lib
+  dds_pipe_log_engine_lib
   Boost::boost
   Boost::program_options
   Boost::log

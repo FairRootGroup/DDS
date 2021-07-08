@@ -15,8 +15,8 @@ using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::topology_api;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 using namespace std;
-using namespace MiscCommon;
 
 CScheduler::CScheduler()
 {

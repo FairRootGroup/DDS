@@ -13,6 +13,7 @@
 #include <sstream>
 
 using namespace dds;
+using namespace dds::misc;
 using namespace commander_cmd;
 using namespace std;
 
@@ -30,7 +31,7 @@ uint64_t DDSChannelId::getChannelId()
         boost::uuids::uuid id = boost::uuids::random_generator()();
         stringstream strid;
         strid << id;
-        uint64_t crc = MiscCommon::crc64(strid.str());
+        uint64_t crc = crc64(strid.str());
 
         {
             lock_guard<mutex> lock(m_agentIdSetMutex);

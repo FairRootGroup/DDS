@@ -34,7 +34,7 @@ namespace dds
                     [this](const SSenderInfo& _sender,
                            SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/)
                     {
-                        LOG(MiscCommon::info) << "Successfull handshake";
+                        LOG(dds::misc::info) << "Successfull handshake";
 
                         this->m_isHandshakeOK = true;
 
@@ -50,7 +50,7 @@ namespace dds
                     [this](const SSenderInfo& _sender,
                            SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_ERR>::ptr_t _attachment)
                     {
-                        LOG(MiscCommon::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
+                        LOG(dds::misc::info) << "Handshake failed with the following error: " << _attachment->m_sMsg;
 
                         this->m_isHandshakeOK = false;
                         this->m_channelType = EChannelType::UNKNOWN;
@@ -83,7 +83,7 @@ namespace dds
                     {
                         if (!ec)
                         {
-                            LOG(MiscCommon::debug) << "Client channel connected.";
+                            LOG(dds::misc::debug) << "Client channel connected.";
                             // notify all subscribers about the event
                             this->dispatchHandlers(EChannelEvents::OnConnected, SSenderInfo());
 
@@ -99,7 +99,7 @@ namespace dds
                         }
                         else
                         {
-                            LOG(MiscCommon::error) << "Failed to connect to remote end.";
+                            LOG(dds::misc::error) << "Failed to connect to remote end.";
                             // notify all subscribers about the event
                             this->dispatchHandlers(EChannelEvents::OnFailedToConnect, SSenderInfo());
                         }

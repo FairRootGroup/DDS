@@ -16,8 +16,8 @@ namespace dds
         {
             SBinaryAttachmentReceivedCmd();
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SBinaryAttachmentReceivedCmd& _val) const;
 
             std::string m_receivedFilePath;  ///< Path to the received file

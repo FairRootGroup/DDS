@@ -7,7 +7,6 @@
 #include "ErrorCode.h"
 #include "MiscSetup.h"
 #include "Options.h"
-#include "Process.h"
 #include "Start.h"
 #include "Stop.h"
 // BOOST
@@ -15,7 +14,7 @@
 #include <boost/range/iterator_range.hpp>
 
 using namespace std;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds;
 using namespace dds::session_cmd;
 using namespace dds::user_defaults_api;

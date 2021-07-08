@@ -24,11 +24,10 @@ using namespace dds::commander_cmd;
 using namespace dds::topology_api;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
-using namespace dds::ncf;
 using namespace dds::intercom_api;
 using namespace dds::tools_api;
+using namespace dds::misc;
 using namespace std;
-using namespace MiscCommon;
 namespace fs = boost::filesystem;
 
 CConnectionManager::CConnectionManager(const SOptions_t& /*_options*/)
@@ -172,7 +171,7 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightwei
 void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
 {
     const string sSrvCfg(CUserDefaults::instance().getServerInfoFileLocationSrv());
-    LOG(MiscCommon::info) << "Creating the server info file: " << sSrvCfg;
+    LOG(info) << "Creating the server info file: " << sSrvCfg;
     ofstream f(sSrvCfg.c_str());
     if (!f.is_open() || !f.good())
     {
@@ -182,9 +181,9 @@ void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
     }
 
     string srvHost;
-    MiscCommon::get_hostname(&srvHost);
+    get_hostname(&srvHost);
     string srvUser;
-    MiscCommon::get_cuser_name(&srvUser);
+    get_cuser_name(&srvUser);
 
     if (_ports.size() > 0)
     {
@@ -453,7 +452,7 @@ void CConnectionManager::on_cmdTRANSPORT_TEST(const SSenderInfo& _sender,
 
     for (size_t size : binarySizes)
     {
-        MiscCommon::BYTEVector_t data;
+        BYTEVector_t data;
         for (size_t i = 0; i < size; ++i)
         {
             char c = rand() % 256;
@@ -859,7 +858,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
         /*  stringstream ss;
           ss << "Send custom command to " << channels.size() << " channels." << endl;
 
-          p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::info, cmdCUSTOM_CMD), _sender.m_ID);*/
+          p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), dds::misc::info, cmdCUSTOM_CMD), _sender.m_ID);*/
     }
     catch (exception& _e)
     {
@@ -871,7 +870,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
 // MARK: ToolsAPI - processToolsAPIRequests
 void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
 {
-    LOG(MiscCommon::info) << "Processing Tools API message: " << _cmd.m_sCmd;
+    LOG(info) << "Processing Tools API message: " << _cmd.m_sCmd;
     boost::property_tree::ptree pt;
 
     try
@@ -944,11 +943,11 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
     {
         string msg("Failed to process Tools API message: ");
         msg += _e.what();
-        LOG(MiscCommon::error) << msg;
+        LOG(error) << msg;
     }
     catch (const exception& _e)
     {
-        LOG(MiscCommon::error) << "CConnectionManager::processToolsAPIRequests: ";
+        LOG(error) << "CConnectionManager::processToolsAPIRequests: ";
     }
 }
 
@@ -1081,7 +1080,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
 
     // Resolve environment variables
     std::string topologyFile = _topologyInfo.m_topologyFile;
-    MiscCommon::smart_path(&topologyFile);
+    smart_path(&topologyFile);
 
     try
     {

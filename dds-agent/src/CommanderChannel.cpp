@@ -15,7 +15,7 @@
 #include <boost/process.hpp>
 
 using namespace std;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds;
 using namespace dds::protocol_api;
 using namespace dds::agent_cmd;
@@ -157,9 +157,9 @@ bool CCommanderChannel::on_cmdSIMPLE_MSG(SCommandAttachmentImpl<cmdSIMPLE_MSG>::
         case cmdUPDATE_KEY:
         case cmdCUSTOM_CMD:
         {
-            if (_attachment->m_msgSeverity == MiscCommon::error)
+            if (_attachment->m_msgSeverity == error)
             {
-                LOG(MiscCommon::error) << _attachment->m_sMsg;
+                LOG(error) << _attachment->m_sMsg;
             }
             // Forward message to user task
             m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(*_attachment, _sender.m_ID, _sender.m_ID);
@@ -508,22 +508,22 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
                   << " DDS_TASK_NAME:" << slot.m_taskName << " DDS_SLOT_ID:" << slot.m_id
                   << " DDS_SESSION_ID: " << dds::env_prop<dds::EEnvProp::dds_session_id>();
         if (::setenv("DDS_TASK_ID", to_string(slot.m_taskID).c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_TASK_ID");
+            throw dds::misc::system_error("Failed to set up $DDS_TASK_ID");
         if (::setenv("DDS_TASK_INDEX", to_string(slot.m_taskIndex).c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_TASK_INDEX");
+            throw dds::misc::system_error("Failed to set up $DDS_TASK_INDEX");
         if (slot.m_collectionIndex != numeric_limits<uint32_t>::max())
             if (::setenv("DDS_COLLECTION_INDEX", to_string(slot.m_collectionIndex).c_str(), 1) == -1)
-                throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_INDEX");
+                throw dds::misc::system_error("Failed to set up $DDS_COLLECTION_INDEX");
         if (::setenv("DDS_TASK_PATH", slot.m_taskPath.c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_TASK_PATH");
+            throw dds::misc::system_error("Failed to set up $DDS_TASK_PATH");
         if (::setenv("DDS_GROUP_NAME", slot.m_groupName.c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_GROUP_NAME");
+            throw dds::misc::system_error("Failed to set up $DDS_GROUP_NAME");
         if (::setenv("DDS_COLLECTION_NAME", slot.m_collectionName.c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_COLLECTION_NAME");
+            throw dds::misc::system_error("Failed to set up $DDS_COLLECTION_NAME");
         if (::setenv("DDS_TASK_NAME", slot.m_taskName.c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_TASK_NAME");
+            throw dds::misc::system_error("Failed to set up $DDS_TASK_NAME");
         if (::setenv("DDS_SLOT_ID", to_string(slot.m_id).c_str(), 1) == -1)
-            throw MiscCommon::system_error("Failed to set up $DDS_SLOT_ID");
+            throw dds::misc::system_error("Failed to set up $DDS_SLOT_ID");
 
         // execute the task
         LOG(info) << "Executing user task: " << sUsrExe;
@@ -731,25 +731,25 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
                     switch (errno)
                     {
                         case ECHILD:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID
-                                                   << ": The process or process group specified by pid "
-                                                      "does not exist or is not a child of the calling process.";
+                            LOG(error) << "Watchdog " << _slotID
+                                       << ": The process or process group specified by pid "
+                                          "does not exist or is not a child of the calling process.";
                             break;
                         case EFAULT:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": stat_loc is not a writable address.";
+                            LOG(error) << "Watchdog " << _slotID << ": stat_loc is not a writable address.";
                             break;
                         case EINTR:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID
-                                                   << ": The function was interrupted by a signal. The "
-                                                      "value of the location pointed to by stat_loc is undefined.";
+                            LOG(error) << "Watchdog " << _slotID
+                                       << ": The function was interrupted by a signal. The "
+                                          "value of the location pointed to by stat_loc is undefined.";
                             break;
                         case EINVAL:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID << ": The options argument is not valid.";
+                            LOG(error) << "Watchdog " << _slotID << ": The options argument is not valid.";
                             break;
                         case ENOSYS:
-                            LOG(MiscCommon::error) << "Watchdog " << _slotID
-                                                   << ": pid specifies a process group (0 or less than "
-                                                      "-1), which is not currently supported.";
+                            LOG(error) << "Watchdog " << _slotID
+                                       << ": pid specifies a process group (0 or less than "
+                                          "-1), which is not currently supported.";
                             break;
                     }
                     LOG(info) << "User Tasks on slot " << _slotID
@@ -1071,7 +1071,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             ss << "Can't propagate property <" << propertyName << "> that doesn't exist for task <" << task->getName()
                << ">";
             m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(
-                SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
+                SSimpleMsgCmd(ss.str(), error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
             return;
         }
         // Cant' propagate property with read access type
@@ -1081,7 +1081,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             ss << "Can't propagate property <" << property->getName() << "> which has a READ access type for task <"
                << task->getName() << ">";
             m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(
-                SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
+                SSimpleMsgCmd(ss.str(), error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
             return;
         }
         // Can't send property with a collection scope if a task is outside a collection
@@ -1092,7 +1092,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
             ss << "Can't propagate property <" << property->getName()
                << "> which has a COLLECTION scope type but task <" << task->getName() << "> is not in any collection";
             m_intercomChannel->pushMsg<cmdSIMPLE_MSG>(
-                SSimpleMsgCmd(ss.str(), MiscCommon::error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
+                SSimpleMsgCmd(ss.str(), error, cmdUPDATE_KEY), _sender.m_ID, _sender.m_ID);
             return;
         }
 

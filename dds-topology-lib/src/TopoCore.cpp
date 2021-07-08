@@ -480,7 +480,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
 
 Id_t CTopoCore::calculateId(const std::string& _idPath, const std::string& _hashString)
 {
-    return MiscCommon::crc64(_idPath + _hashString);
+    return dds::misc::crc64(_idPath + _hashString);
 }
 
 std::string CTopoCore::stringOfTasks(const IdSet_t& _ids) const
@@ -531,7 +531,7 @@ std::string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
 
 uint32_t CTopoCore::CalculateHash(std::istream& _stream)
 {
-    return MiscCommon::crc32(_stream);
+    return dds::misc::crc32(_stream);
 }
 
 string CTopoCore::toString() const

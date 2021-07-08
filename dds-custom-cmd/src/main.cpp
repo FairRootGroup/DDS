@@ -13,17 +13,17 @@
 #include <mutex>
 
 using namespace std;
-using namespace MiscCommon;
 using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::user_defaults_api;
+using namespace dds::misc;
 
 //=============================================================================
 int main(int argc, char* argv[])
 {
     dds::custom_cmd::SOptions_t options;
-    if (dds::misc::defaultExecSetup<dds::custom_cmd::SOptions_t>(
-            argc, argv, &options, &dds::custom_cmd::ParseCmdLine) == EXIT_FAILURE)
+    if (defaultExecSetup<dds::custom_cmd::SOptions_t>(argc, argv, &options, &dds::custom_cmd::ParseCmdLine) ==
+        EXIT_FAILURE)
         return EXIT_FAILURE;
 
     try

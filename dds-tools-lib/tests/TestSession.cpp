@@ -24,6 +24,7 @@ using namespace dds;
 using namespace dds::tools_api;
 using namespace dds::topology_api;
 using namespace dds::intercom_api;
+using namespace dds::misc;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
 
@@ -73,7 +74,7 @@ size_t countStringsInDir(const fs::path& _logDir, const string& _stringToCount)
           << " -C "
           << "\"" << tmpPath.string() << "\""
           << " -xf {} ;";
-    MiscCommon::execute(ssCmd.str(), chrono::seconds(60));
+    execute(ssCmd.str(), chrono::seconds(60));
 
     size_t counter{ 0 };
     fs::recursive_directory_iterator dir(tmpPath), end;
@@ -108,7 +109,7 @@ void parseLogs(CSession& _session, const string& _stringToCount, size_t _require
     string logDirStr{ "$HOME/.DDS/sessions/" };
     logDirStr += to_string(_session.getSessionID());
     logDirStr += "/log/agents";
-    MiscCommon::smart_path(&logDirStr);
+    smart_path(&logDirStr);
     fs::path logDir{ logDirStr };
 
     const size_t count{ countStringsInDir(logDir, _stringToCount) };

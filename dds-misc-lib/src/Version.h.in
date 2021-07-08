@@ -1,0 +1,30 @@
+// Copyright 2014 GSI, Inc. All rights reserved.
+//
+//
+//
+#ifndef _DDS_Version_
+#define _DDS_Version_
+
+#include <sstream>
+#include <string>
+
+#define DDS_VERSION_STRING "@DDS_VERSION@"
+#define DDS_USER_DEFAULTS_CFG_VERSION_STRING "@DDS_USER_DEFAULTS_CFG_VERSION@"
+// clang-format off
+#define DDS_PROTOCOL_VERSION @DDS_PROTOCOL_VERSION@
+// clang-format on
+
+namespace dds::misc
+{
+    inline std::string DDSVersionInfoString()
+    {
+        std::stringstream ss;
+        ss << "DDS v" << DDS_VERSION_STRING << std::endl
+           << "DDS configuration v" << DDS_USER_DEFAULTS_CFG_VERSION_STRING << std::endl
+           << "DDS protocol v" << DDS_PROTOCOL_VERSION << std::endl
+           << "Report bugs or comments to fairroot@gsi.de";
+        return ss.str();
+    }
+} // namespace dds::misc
+
+#endif // _DDS_Version_

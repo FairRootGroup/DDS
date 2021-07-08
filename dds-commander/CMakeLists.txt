@@ -4,44 +4,44 @@
 project(dds-commander)
 
 set(SOURCE_FILES
-	src/main.cpp
-	src/ConnectionManager.cpp
-	src/AgentChannel.cpp
-	src/UIChannelInfo.cpp
-	src/Scheduler.cpp
-	src/ChannelId.cpp
+  src/main.cpp
+  src/ConnectionManager.cpp
+  src/AgentChannel.cpp
+  src/UIChannelInfo.cpp
+  src/Scheduler.cpp
+  src/ChannelId.cpp
 )
 
 set(HEADER_FILES
-	src/Options.h
-	src/ConnectionManager.h
-	src/AgentChannel.h
-	src/UIChannelInfo.h
-	src/Scheduler.h
-	src/ChannelId.h
+  src/Options.h
+  src/ConnectionManager.h
+  src/AgentChannel.h
+  src/UIChannelInfo.h
+  src/Scheduler.h
+  src/ChannelId.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
-  MiscCommon
-	dds_user_defaults_lib
-	dds_topology_lib
-	dds_protocol_lib
-	dds_ncf
-	dds_intercom_lib
-	dds_tools_lib
-	Boost::boost
-	Boost::program_options
-	Boost::system
-	Boost::log
-	Boost::log_setup
-	Boost::thread
-	Boost::filesystem
+  dds_misc_lib
+  dds_user_defaults_lib
+  dds_topology_lib
+  dds_protocol_lib
+  dds_misc_lib
+  dds_intercom_lib
+  dds_tools_lib
+  Boost::boost
+  Boost::program_options
+  Boost::system
+  Boost::log
+  Boost::log_setup
+  Boost::thread
+  Boost::filesystem
 )
 
 target_include_directories(${PROJECT_NAME}
-	PUBLIC
+  PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 

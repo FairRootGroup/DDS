@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SUserTaskDoneCmd::SUserTaskDoneCmd()
     : m_exitCode(0)
@@ -24,12 +25,12 @@ bool SUserTaskDoneCmd::operator==(const SUserTaskDoneCmd& val) const
     return (m_exitCode == val.m_exitCode) && (m_taskID == val.m_taskID);
 }
 
-void SUserTaskDoneCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SUserTaskDoneCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_exitCode).get(m_taskID);
 }
 
-void SUserTaskDoneCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SUserTaskDoneCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_exitCode).put(m_taskID);
 }

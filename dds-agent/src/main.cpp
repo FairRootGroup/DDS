@@ -12,10 +12,10 @@
 #include "UserDefaults.h"
 
 using namespace std;
-using namespace MiscCommon;
 using namespace dds;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
+using namespace dds::misc;
 namespace bi = boost::interprocess;
 namespace bf = boost::filesystem;
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 
             // Export DDS session ID
             if (::setenv("DDS_SESSION_ID", sid.getLockedSID().c_str(), 1) == -1)
-                throw MiscCommon::system_error("Failed to set up $DDS_SESSION_ID");
+                throw dds::misc::system_error("Failed to set up $DDS_SESSION_ID");
 
             shared_ptr<CAgentConnectionManager> agentptr = make_shared<CAgentConnectionManager>(options);
             agentptr->start();

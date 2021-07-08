@@ -13,7 +13,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 using namespace std;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
@@ -136,10 +136,10 @@ int main(int argc, char* argv[])
                 sleep(1); // sleeping for 1 second
                 ++iter;
             }
-            if (MiscCommon::IsProcessRunning(pid_to_kill))
+            if (IsProcessRunning(pid_to_kill))
             {
-                LOG(MiscCommon::error) << "FAILED to close the process.";
-                LOG(MiscCommon::warning) << "Sending unconditional terminate to (" << pid_to_kill << ")...";
+                LOG(error) << "FAILED to close the process.";
+                LOG(warning) << "Sending unconditional terminate to (" << pid_to_kill << ")...";
                 kill(pid_to_kill, SIGKILL);
             }
         }
