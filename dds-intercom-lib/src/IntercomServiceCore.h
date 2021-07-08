@@ -104,7 +104,7 @@ namespace dds
                     {
                         execUserSignal(m_errorSignal, intercom_api::EErrorCode::UserCodeException, msg);
                     }
-                    LOG(MiscCommon::error) << msg;
+                    LOG(dds::misc::error) << msg;
                 }
             }
 
@@ -127,7 +127,7 @@ namespace dds
             /// 1) 10 minutes timeout
             /// 2) Failed connection or disconnection
             /// 3) Explicit call to stopCondition
-            MiscCommon::CConditionEvent m_waitCondition;
+            dds::misc::CConditionEvent m_waitCondition;
         };
     } // namespace internal_api
 } // namespace dds

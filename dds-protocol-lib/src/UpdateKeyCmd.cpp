@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SUpdateKeyCmd::SUpdateKeyCmd()
     : m_senderTaskID(0)
@@ -25,12 +26,12 @@ bool SUpdateKeyCmd::operator==(const SUpdateKeyCmd& val) const
             m_receiverTaskID == val.m_receiverTaskID);
 }
 
-void SUpdateKeyCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SUpdateKeyCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_propertyName).get(m_value).get(m_senderTaskID).get(m_receiverTaskID);
 }
 
-void SUpdateKeyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SUpdateKeyCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_propertyName).put(m_value).put(m_senderTaskID).put(m_receiverTaskID);
 }

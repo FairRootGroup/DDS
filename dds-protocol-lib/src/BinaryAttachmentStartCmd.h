@@ -19,8 +19,8 @@ namespace dds
         {
             SBinaryAttachmentStartCmd();
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SBinaryAttachmentStartCmd& _val) const;
 
             boost::uuids::uuid m_fileId; ///< Unique ID of the file

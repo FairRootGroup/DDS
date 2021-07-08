@@ -54,18 +54,18 @@ namespace dds
 
             if (vm.count("help") || vm.empty())
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
 
             if (!vm.count("cmd"))
             {
-                LOG(MiscCommon::log_stdout) << "Option cmd must be provided.";
+                LOG(dds::misc::log_stdout) << "Option cmd must be provided.";
                 return false;
             }
 

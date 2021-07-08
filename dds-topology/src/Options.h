@@ -11,7 +11,7 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "BOOSTHelper.h"
+#include "BoostHelper.h"
 #include "ProtocolCommands.h"
 #include "Version.h"
 
@@ -86,18 +86,18 @@ namespace dds
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
 
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "activate", "stop");
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "stop");
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "update", "activate");
+            dds::misc::conflicting_options(vm, "activate", "stop");
+            dds::misc::conflicting_options(vm, "update", "stop");
+            dds::misc::conflicting_options(vm, "update", "activate");
 
             if (vm.count("help") || vm.empty())
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
             if (vm.count("session"))
@@ -170,7 +170,7 @@ namespace dds
             }
             else
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
 

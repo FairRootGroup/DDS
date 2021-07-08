@@ -14,30 +14,26 @@
 #include <stdexcept>
 #include <thread>
 // DDS
-#include "BOOSTHelper.h"
-#include "BOOST_FILESYSTEM.h"
+#include "BoostHelper.h"
 #include "Intercom.h"
 #include "Logger.h"
 #include "MiscSetup.h"
-#include "Process.h"
+#include "PipeLogEngine.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
 #include "local_types.h"
-#include "logEngine.h"
 #include "ncf.h"
 #include "worker.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
-using namespace dds::ncf;
 using namespace dds::ssh_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
-using namespace MiscCommon;
+using namespace dds::misc;
 namespace bpo = boost::program_options;
 namespace bfs = boost::filesystem;
-namespace boost_hlp = MiscCommon::BOOSTHelper;
 
 //=============================================================================
 const LPCSTR g_pipeName = ".dds_ssh_pipe";
@@ -90,7 +86,7 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     // Create temporary ssh configuration
     bfs::path tempDirPath = bfs::temp_directory_path();
     bfs::path wrkDirPath(tempDirPath);
-    string tmpDir = BOOSTHelper::get_temp_dir("dds");
+    string tmpDir = get_temp_dir("dds");
     wrkDirPath /= tmpDir;
 
     if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
@@ -109,7 +105,7 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     ofstream f(tmpfileName.string());
 
     string userName;
-    MiscCommon::get_cuser_name(&userName);
+    get_cuser_name(&userName);
 
     stringstream ssCfg;
     ssCfg << "wn, " << userName << "@localhost, ," << wrkDirPath.string() << ", " << _nInstances;

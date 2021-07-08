@@ -6,6 +6,7 @@
 
 using namespace std;
 using namespace dds;
+using namespace dds::misc;
 using namespace dds::protocol_api;
 
 SBinaryAttachmentReceivedCmd::SBinaryAttachmentReceivedCmd()
@@ -29,7 +30,7 @@ bool SBinaryAttachmentReceivedCmd::operator==(const SBinaryAttachmentReceivedCmd
             m_downloadTime == _val.m_downloadTime);
 }
 
-void SBinaryAttachmentReceivedCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SBinaryAttachmentReceivedCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data)
         .get(m_srcCommand)
@@ -39,7 +40,7 @@ void SBinaryAttachmentReceivedCmd::_convertFromData(const MiscCommon::BYTEVector
         .get(m_receivedFilePath);
 }
 
-void SBinaryAttachmentReceivedCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SBinaryAttachmentReceivedCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data)
         .put(m_srcCommand)

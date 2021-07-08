@@ -17,7 +17,7 @@ using namespace std;
 using namespace dds::agent_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::protocol_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 using boost::asio::ip::tcp;
 
 CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
@@ -105,9 +105,9 @@ void CAgentConnectionManager::stop()
 
 void CAgentConnectionManager::startService(size_t _numThreads, size_t _numIntercomThreads)
 {
-    LOG(MiscCommon::info) << "Starting DDS transport engine using " << _numThreads + _numIntercomThreads << " ("
-                          << _numIntercomThreads << " for intercom)"
-                          << " concurrent threads.";
+    LOG(info) << "Starting DDS transport engine using " << _numThreads + _numIntercomThreads << " ("
+              << _numIntercomThreads << " for intercom)"
+              << " concurrent threads.";
     // Main service threads
     for (size_t x = 0; x < _numThreads; ++x)
     {
@@ -120,7 +120,7 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
                 }
                 catch (exception& ex)
                 {
-                    LOG(MiscCommon::error) << "AgentConnectionManager main service: " << ex.what();
+                    LOG(dds::misc::error) << "AgentConnectionManager main service: " << ex.what();
                 }
             });
     }
@@ -136,7 +136,7 @@ void CAgentConnectionManager::startService(size_t _numThreads, size_t _numInterc
                 }
                 catch (exception& ex)
                 {
-                    LOG(MiscCommon::error) << "AgentConnectionManager intercom service: " << ex.what();
+                    LOG(dds::misc::error) << "AgentConnectionManager intercom service: " << ex.what();
                 }
             });
     }

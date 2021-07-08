@@ -9,7 +9,7 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "BOOSTHelper.h"
+#include "BoostHelper.h"
 #include "SysHelper.h"
 #include "Version.h"
 
@@ -163,12 +163,12 @@ namespace dds
 
             if (vm.count("help") || vm.end() == found)
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
 
@@ -179,7 +179,7 @@ namespace dds
                 _options->m_Command = SOptions::getCommandByName(commands[0]);
                 if (SOptions::cmd_unknown == _options->m_Command)
                 {
-                    LOG(MiscCommon::log_stderr) << "unknown command: " << commands[0] << "\n\n" << options;
+                    LOG(dds::misc::log_stderr) << "unknown command: " << commands[0] << "\n\n" << options;
                     return false;
                 }
 
@@ -192,7 +192,7 @@ namespace dds
                 {
                     if (commands.size() < 2)
                     {
-                        LOG(MiscCommon::log_stderr)
+                        LOG(dds::misc::log_stderr)
                             << "Missing argument. The set-default command requares a sessions ID\n\n";
                         return false;
                     }
@@ -202,13 +202,13 @@ namespace dds
                 {
                     if (commands.size() < 2)
                     {
-                        LOG(MiscCommon::log_stderr) << "Missing argument. Specify type of sorting.\n\n";
+                        LOG(dds::misc::log_stderr) << "Missing argument. Specify type of sorting.\n\n";
                         return false;
                     }
                     SSessionsSorting sortType(commands[1]);
                     if (SSessionsSorting::sort_none == sortType.m_typedValue)
                     {
-                        LOG(MiscCommon::log_stderr) << "Bad argument. Unknown type of sorting.\n\n";
+                        LOG(dds::misc::log_stderr) << "Bad argument. Unknown type of sorting.\n\n";
                         return false;
                     }
                     _options->m_ListSessions = sortType;
@@ -216,13 +216,13 @@ namespace dds
             }
             else
             {
-                LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
+                LOG(dds::misc::log_stderr) << "Nothing to do\n\n" << options;
                 return false;
             }
 
             if (SOptions_t::cmd_set_default == _options->m_Command && _options->m_sSessionID.empty())
             {
-                LOG(MiscCommon::log_stderr) << "Session ID argument is missing or empty";
+                LOG(dds::misc::log_stderr) << "Session ID argument is missing or empty";
                 return false;
             }
 

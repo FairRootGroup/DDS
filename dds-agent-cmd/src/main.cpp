@@ -12,11 +12,11 @@
 #include "UserDefaults.h"
 
 using namespace std;
-using namespace MiscCommon;
 using namespace dds;
 using namespace dds::agent_cmd_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
+using namespace dds::misc;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -43,14 +43,14 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        LOG(MiscCommon::log_stdout) << "Connection established.";
+        LOG(log_stdout) << "Connection established.";
         switch (options.m_agentCmd)
         {
             case EAgentCmdType::GETLOG:
-                LOG(MiscCommon::log_stdout) << "Requesting log files from agents...";
+                LOG(log_stdout) << "Requesting log files from agents...";
                 break;
             default:
-                LOG(MiscCommon::log_stderr) << "Uknown command.";
+                LOG(log_stderr) << "Uknown command.";
                 return EXIT_FAILURE;
         }
 

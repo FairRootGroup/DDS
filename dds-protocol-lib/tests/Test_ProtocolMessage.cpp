@@ -22,7 +22,7 @@
 #include "def.h"
 
 using boost::unit_test::test_suite;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_SUITE(Test_ProtocolMessage);
 template <typename T>
 void TestCommand(const T& _srcCmd, uint16_t _srcCmdID, size_t _expectedCmdSize)
 {
-    MiscCommon::BYTEVector_t data;
+    BYTEVector_t data;
     _srcCmd.convertToData(&data);
     CProtocolMessage srcMsg;
     srcMsg.encode(_srcCmdID, data, 0);
@@ -105,8 +105,8 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdBINARY_ATTACHMENT)
 {
-    const MiscCommon::BYTEVector_t data{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                                         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+    const BYTEVector_t data{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
     boost::crc_32_type crc32;
     crc32.process_bytes(&data[0], data.size());
     const uint32_t offset = 12345;
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSIMPLE_MSG)
 
     SSimpleMsgCmd cmd;
     cmd.m_srcCommand = cmdSIMPLE_MSG;
-    cmd.m_msgSeverity = MiscCommon::error;
+    cmd.m_msgSeverity = error;
     cmd.m_sMsg = "Test Message";
 
     TestCommand(cmd, cmdSIMPLE_MSG, cmdSize);
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HANDSHAKE_ERR)
 
     SSimpleMsgCmd cmd;
     cmd.m_srcCommand = cmdREPLY_HANDSHAKE_ERR;
-    cmd.m_msgSeverity = MiscCommon::error;
+    cmd.m_msgSeverity = error;
     cmd.m_sMsg = "Handshake error";
 
     TestCommand(cmd, cmdSIMPLE_MSG, cmdSize);
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_PID)
 
     SSimpleMsgCmd cmd;
     cmd.m_srcCommand = cmdREPLY_PID;
-    cmd.m_msgSeverity = MiscCommon::info;
+    cmd.m_msgSeverity = info;
     cmd.m_sMsg = "12345";
 
     TestCommand(cmd, cmdSIMPLE_MSG, cmdSize);

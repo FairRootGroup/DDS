@@ -42,8 +42,8 @@ namespace dds
                         this->template pushMsg<cmdUNKNOWN>();
 
                         // everything is OK, we can work with this agent
-                        LOG(MiscCommon::info) << "[" << this->socket().remote_endpoint().address().to_string()
-                                              << "] has successfully connected.";
+                        LOG(dds::misc::info) << "[" << this->socket().remote_endpoint().address().to_string()
+                                             << "] has successfully connected.";
 
                         this->template pushMsg<cmdREPLY_HANDSHAKE_OK>(_sender.m_ID);
 
@@ -67,7 +67,7 @@ namespace dds
                 //                            return;
                 //
                 //                        // everything is OK, we can work with this agent
-                //                        LOG(MiscCommon::info)
+                //                        LOG(dds::misc::info)
                 //                            << "New lobby member [" << _sender.m_ID << "] has successfully
                 //                            connected.";
                 //
@@ -133,9 +133,9 @@ namespace dds
             {
                 this->m_isHandshakeOK = false;
                 this->m_channelType = EChannelType::UNKNOWN;
-                LOG(MiscCommon::warning) << _reason << "; Client: " << this->remoteEndIDString();
+                LOG(dds::misc::warning) << _reason << "; Client: " << this->remoteEndIDString();
 
-                this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(_reason, MiscCommon::fatal), _senderID);
+                this->template pushMsg<cmdREPLY_HANDSHAKE_ERR>(SSimpleMsgCmd(_reason, dds::misc::fatal), _senderID);
                 // notify all subscribers about the event
                 this->dispatchHandlers(EChannelEvents::OnHandshakeFailed, SSenderInfo());
             }

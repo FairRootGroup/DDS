@@ -76,7 +76,7 @@ namespace dds
         class CProtocolMessage
         {
           public:
-            typedef MiscCommon::BYTEVector_t dataContainer_t;
+            typedef dds::misc::BYTEVector_t dataContainer_t;
             typedef dataContainer_t::value_type data_t;
             typedef std::shared_ptr<CProtocolMessage> protocolMessagePtr_t;
 
@@ -96,10 +96,10 @@ namespace dds
           public:
             CProtocolMessage();
 
-            CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data, uint64_t _ID);
+            CProtocolMessage(uint16_t _cmd, const dds::misc::BYTEVector_t& _data, uint64_t _ID);
 
           public:
-            void encode(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data, uint64_t _ID)
+            void encode(uint16_t _cmd, const dds::misc::BYTEVector_t& _data, uint64_t _ID)
             {
                 _encode_message(_cmd, _data, _ID);
             }

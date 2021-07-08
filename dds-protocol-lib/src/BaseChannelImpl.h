@@ -104,82 +104,82 @@ namespace dds
                     return;                                                                                            \
                 }
 
-#define MESSAGE_HANDLER(msg, func)                                                                                 \
+#define MESSAGE_HANDLER(msg, func)                                                                                \
+    case msg:                                                                                                     \
+    {                                                                                                             \
+        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                      \
+        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                         \
+        LOG(dds::misc::debug) << "Processing " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
+        processed = func(attachmentPtr, sender);                                                                  \
+        if (!processed)                                                                                           \
+        {                                                                                                         \
+            if (!handlerExists(msg))                                                                              \
+            {                                                                                                     \
+                LOG(dds::misc::error) << "The received message was not processed and has no registered handler: " \
+                                      << _currentMsg->toString();                                                 \
+            }                                                                                                     \
+            else                                                                                                  \
+            {                                                                                                     \
+                dispatchHandlers<>(msg, sender, attachmentPtr);                                                   \
+            }                                                                                                     \
+        }                                                                                                         \
+        break;                                                                                                    \
+    }
+
+#define MESSAGE_HANDLER_DISPATCH(msg)                                                                              \
     case msg:                                                                                                      \
     {                                                                                                              \
+        (void)processed;                                                                                           \
         typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                       \
         attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                          \
-        LOG(MiscCommon::debug) << "Processing " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
-        processed = func(attachmentPtr, sender);                                                                   \
-        if (!processed)                                                                                            \
+        LOG(dds::misc::debug) << "Dispatching " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
+        if (!handlerExists(msg))                                                                                   \
         {                                                                                                          \
-            if (!handlerExists(msg))                                                                               \
-            {                                                                                                      \
-                LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
-                                       << _currentMsg->toString();                                                 \
-            }                                                                                                      \
-            else                                                                                                   \
-            {                                                                                                      \
-                dispatchHandlers<>(msg, sender, attachmentPtr);                                                    \
-            }                                                                                                      \
+            LOG(dds::misc::error) << "The received message can't be dispatched, it has no registered handler: "    \
+                                  << _currentMsg->toString();                                                      \
+        }                                                                                                          \
+        else                                                                                                       \
+        {                                                                                                          \
+            dispatchHandlers<>(msg, sender, attachmentPtr);                                                        \
         }                                                                                                          \
         break;                                                                                                     \
     }
 
-#define MESSAGE_HANDLER_DISPATCH(msg)                                                                               \
-    case msg:                                                                                                       \
-    {                                                                                                               \
-        (void)processed;                                                                                            \
-        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                        \
-        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                           \
-        LOG(MiscCommon::debug) << "Dispatching " << g_cmdToString[msg] << " received from " << remoteEndIDString(); \
-        if (!handlerExists(msg))                                                                                    \
-        {                                                                                                           \
-            LOG(MiscCommon::error) << "The received message can't be dispatched, it has no registered handler: "    \
-                                   << _currentMsg->toString();                                                      \
-        }                                                                                                           \
-        else                                                                                                        \
-        {                                                                                                           \
-            dispatchHandlers<>(msg, sender, attachmentPtr);                                                         \
-        }                                                                                                           \
-        break;                                                                                                      \
-    }
-
-#define END_MSG_MAP()                                                                                              \
-    default:                                                                                                       \
-        LOG(MiscCommon::error) << "The received message doesn't have a handler: " << _currentMsg->toString();      \
-        }                                                                                                          \
-        }                                                                                                          \
-        catch (std::exception & _e)                                                                                \
-        {                                                                                                          \
-            LOG(MiscCommon::error) << "Channel processMessage (" << _currentMsg->toString() << "): " << _e.what(); \
-        }                                                                                                          \
+#define END_MSG_MAP()                                                                                             \
+    default:                                                                                                      \
+        LOG(dds::misc::error) << "The received message doesn't have a handler: " << _currentMsg->toString();      \
+        }                                                                                                         \
+        }                                                                                                         \
+        catch (std::exception & _e)                                                                               \
+        {                                                                                                         \
+            LOG(dds::misc::error) << "Channel processMessage (" << _currentMsg->toString() << "): " << _e.what(); \
+        }                                                                                                         \
         }
 
 // Raw message processing
-#define RAW_MESSAGE_HANDLER(theClass, func)                                                                    \
-    BEGIN_MSG_MAP(theClass)                                                                                    \
-        default:                                                                                               \
-            break;                                                                                             \
-    }                                                                                                          \
-    processed = func(_currentMsg);                                                                             \
-    if (!processed)                                                                                            \
-    {                                                                                                          \
-        if (!handlerExists(ECmdType::cmdRAW_MSG))                                                              \
-        {                                                                                                      \
-            LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
-                                   << _currentMsg->toString();                                                 \
-        }                                                                                                      \
-        else                                                                                                   \
-        {                                                                                                      \
-            dispatchHandlers(ECmdType::cmdRAW_MSG, sender, _currentMsg);                                       \
-        }                                                                                                      \
-    }                                                                                                          \
-    }                                                                                                          \
-    catch (std::exception & _e)                                                                                \
-    {                                                                                                          \
-        LOG(MiscCommon::error) << "Channel processMessage: " << _e.what();                                     \
-    }                                                                                                          \
+#define RAW_MESSAGE_HANDLER(theClass, func)                                                                   \
+    BEGIN_MSG_MAP(theClass)                                                                                   \
+        default:                                                                                              \
+            break;                                                                                            \
+    }                                                                                                         \
+    processed = func(_currentMsg);                                                                            \
+    if (!processed)                                                                                           \
+    {                                                                                                         \
+        if (!handlerExists(ECmdType::cmdRAW_MSG))                                                             \
+        {                                                                                                     \
+            LOG(dds::misc::error) << "The received message was not processed and has no registered handler: " \
+                                  << _currentMsg->toString();                                                 \
+        }                                                                                                     \
+        else                                                                                                  \
+        {                                                                                                     \
+            dispatchHandlers(ECmdType::cmdRAW_MSG, sender, _currentMsg);                                      \
+        }                                                                                                     \
+    }                                                                                                         \
+    }                                                                                                         \
+    catch (std::exception & _e)                                                                               \
+    {                                                                                                         \
+        LOG(dds::misc::error) << "Channel processMessage: " << _e.what();                                     \
+    }                                                                                                         \
     }
 
 #define REGISTER_DEFAULT_REMOTE_ID_STRING \
@@ -203,7 +203,7 @@ namespace dds
             {
             }
 
-            MiscCommon::BYTEVector_t m_data;
+            dds::misc::BYTEVector_t m_data;
             uint32_t m_bytesReceived;
             std::string m_fileName;
             uint32_t m_fileCrc32;
@@ -256,18 +256,18 @@ namespace dds
                 try
                 {
                     m_sessionID = dds::user_defaults_api::CUserDefaults::instance().getLockedSID();
-                    LOG(MiscCommon::debug) << "SID: " << m_sessionID;
+                    LOG(dds::misc::debug) << "SID: " << m_sessionID;
                 }
                 catch (std::runtime_error& _error)
                 {
-                    LOG(MiscCommon::fatal) << _error.what();
+                    LOG(dds::misc::fatal) << _error.what();
                 }
             }
 
           public:
             ~CBaseChannelImpl<T>()
             {
-                LOG(MiscCommon::info) << "Channel " << gChannelTypeName[m_channelType] << " destructor is called";
+                LOG(dds::misc::info) << "Channel " << gChannelTypeName[m_channelType] << " destructor is called";
                 stop();
             }
 
@@ -349,7 +349,7 @@ namespace dds
                         copyMessages = m_accumulativeWriteQueue.size() > maxAccumulativeWriteQueueSize;
                         if (copyMessages)
                         {
-                            LOG(MiscCommon::debug)
+                            LOG(dds::misc::debug)
                                 << "copy accumulated queue to write queue "
                                    "m_accumulativeWriteQueue.size="
                                 << m_accumulativeWriteQueue.size() << " m_writeQueue.size=" << m_writeQueue.size();
@@ -374,7 +374,7 @@ namespace dds
                                         // copy queue to main queue
                                         if (copyMessages)
                                         {
-                                            LOG(MiscCommon::debug)
+                                            LOG(dds::misc::debug)
                                                 << "deadline_timer called: copy accumulated queue to write queue "
                                                    "m_accumulativeWriteQueue.size="
                                                 << m_accumulativeWriteQueue.size()
@@ -391,17 +391,17 @@ namespace dds
                                 }
                             });
 
-                        LOG(MiscCommon::debug) << "accumulativePushMsg: WriteQueue size = " << m_writeQueue.size()
-                                               << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size()
-                                               << " accumulativeWriteQueue size = " << m_accumulativeWriteQueue.size()
-                                               << " msg = " << _msg->toString();
+                        LOG(dds::misc::debug) << "accumulativePushMsg: WriteQueue size = " << m_writeQueue.size()
+                                              << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size()
+                                              << " accumulativeWriteQueue size = " << m_accumulativeWriteQueue.size()
+                                              << " msg = " << _msg->toString();
                     }
                     if (copyMessages)
                         pushMsg<cmdUNKNOWN>();
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseChannelImpl can't push accumulative message: " << ex.what();
+                    LOG(dds::misc::error) << "BaseChannelImpl can't push accumulative message: " << ex.what();
                 }
             }
 
@@ -416,7 +416,7 @@ namespace dds
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseChannelImpl can't push accumulative message: " << ex.what();
+                    LOG(dds::misc::error) << "BaseChannelImpl can't push accumulative message: " << ex.what();
                 }
             }
 
@@ -455,12 +455,12 @@ namespace dds
                             m_writeQueue.push_back(_msg);
                     }
 
-                    LOG(MiscCommon::debug) << "pushMsg: WriteQueue size = " << m_writeQueue.size()
-                                           << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size();
+                    LOG(dds::misc::debug) << "pushMsg: WriteQueue size = " << m_writeQueue.size()
+                                          << " WriteQueueBeforeHandShake = " << m_writeQueueBeforeHandShake.size();
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseChannelImpl can't push message: " << ex.what();
+                    LOG(dds::misc::error) << "BaseChannelImpl can't push message: " << ex.what();
                 }
 
                 // process standard async writing
@@ -474,7 +474,7 @@ namespace dds
                         }
                         catch (std::exception& ex)
                         {
-                            LOG(MiscCommon::error) << "BaseChannelImpl can't write message: " << ex.what();
+                            LOG(dds::misc::error) << "BaseChannelImpl can't write message: " << ex.what();
                         }
                     });
             }
@@ -490,7 +490,7 @@ namespace dds
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseChannelImpl can't push message: " << ex.what();
+                    LOG(dds::misc::error) << "BaseChannelImpl can't push message: " << ex.what();
                 }
             }
 
@@ -523,11 +523,11 @@ namespace dds
                                          uint16_t _cmdSource,
                                          uint64_t _protocolHeaderID)
             {
-                MiscCommon::BYTEVector_t data;
+                dds::misc::BYTEVector_t data;
 
                 std::string srcFilePath(_srcFilePath);
                 // Resolve environment variables
-                MiscCommon::smart_path(&srcFilePath);
+                dds::misc::smart_path(&srcFilePath);
 
                 std::ifstream f(srcFilePath);
                 if (!f.is_open() || !f.good())
@@ -542,7 +542,7 @@ namespace dds
                 pushBinaryAttachmentCmd(data, _fileName, _cmdSource, _protocolHeaderID);
             }
 
-            void pushBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
+            void pushBinaryAttachmentCmd(const dds::misc::BYTEVector_t& _data,
                                          const std::string& _fileName,
                                          uint16_t _cmdSource,
                                          uint64_t _protocolHeaderID)
@@ -630,7 +630,7 @@ namespace dds
 
                     if (!exists)
                     {
-                        LOG(MiscCommon::error)
+                        LOG(dds::misc::error)
                             << "Received binary attachment [" << fileId << "] which does not exist. Skip this message.";
                         return;
                     }
@@ -652,8 +652,8 @@ namespace dds
                     ss << "Received binary attachment [" << fileId << "] has wrong CRC32 checksum: " << crc32.checksum()
                        << " instead of " << _attachment->m_crc32 << "offset=" << _attachment->m_offset
                        << " size=" << _attachment->m_size;
-                    LOG(MiscCommon::error) << ss.str();
-                    sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand),
+                    LOG(dds::misc::error) << ss.str();
+                    sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), dds::misc::error, info->m_srcCommand),
                                                 _sender.m_ID);
                     return;
                 }
@@ -688,8 +688,8 @@ namespace dds
                             ss << "Received binary file [" << fileId
                                << "] has wrong CRC32 checksum: " << crc32.checksum() << " instead of "
                                << _attachment->m_crc32;
-                            LOG(MiscCommon::error) << ss.str();
-                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand),
+                            LOG(dds::misc::error) << ss.str();
+                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), dds::misc::error, info->m_srcCommand),
                                                         _sender.m_ID);
                             return;
                         }
@@ -707,8 +707,8 @@ namespace dds
                             }
                             std::stringstream ss;
                             ss << "Could not open file: " << filePath;
-                            LOG(MiscCommon::error) << ss.str();
-                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), MiscCommon::error, info->m_srcCommand),
+                            LOG(dds::misc::error) << ss.str();
+                            sendYourself<cmdSIMPLE_MSG>(SSimpleMsgCmd(ss.str(), dds::misc::error, info->m_srcCommand),
                                                         _sender.m_ID);
                             return;
                         }
@@ -786,8 +786,8 @@ namespace dds
                     {
                         if (!ec)
                         {
-                            LOG(MiscCommon::debug) << "Received message HEADER from " << remoteEndIDString() << ": "
-                                                   << length << " bytes, expected " << CProtocolMessage::header_length;
+                            LOG(dds::misc::debug) << "Received message HEADER from " << remoteEndIDString() << ": "
+                                                  << length << " bytes, expected " << CProtocolMessage::header_length;
                         }
                         if (!ec && m_currentMsg->decode_header())
                         {
@@ -796,18 +796,18 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                         {
-                            LOG(MiscCommon::debug)
+                            LOG(dds::misc::debug)
                                 << "Disconnect is detected while on read msg header: " << ec.message();
                             onDissconnect();
                         }
                         else
                         {
                             if (m_started)
-                                LOG(MiscCommon::error) << "Error reading message header: " << ec.message();
+                                LOG(dds::misc::error) << "Error reading message header: " << ec.message();
                             else
-                                LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: "
-                                                      << ec.message();
+                                LOG(dds::misc::info) << "The stop signal is received, aborting current operation and "
+                                                        "closing the connection: "
+                                                     << ec.message();
 
                             stop();
                         }
@@ -818,8 +818,8 @@ namespace dds
             {
                 if (m_currentMsg->body_length() == 0)
                 {
-                    LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString()
-                                           << ": no attachment: " << m_currentMsg->toString();
+                    LOG(dds::misc::debug) << "Received message BODY from " << remoteEndIDString()
+                                          << ": no attachment: " << m_currentMsg->toString();
                     // process received message
                     T* pThis = static_cast<T*>(this);
                     pThis->processMessage(m_currentMsg);
@@ -838,8 +838,8 @@ namespace dds
                     {
                         if (!ec)
                         {
-                            LOG(MiscCommon::debug) << "Received message BODY from " << remoteEndIDString() << " ("
-                                                   << length << " bytes): " << m_currentMsg->toString();
+                            LOG(dds::misc::debug) << "Received message BODY from " << remoteEndIDString() << " ("
+                                                  << length << " bytes): " << m_currentMsg->toString();
 
                             // process received message
                             T* pThis = static_cast<T*>(this);
@@ -851,18 +851,18 @@ namespace dds
                         }
                         else if ((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec))
                         {
-                            LOG(MiscCommon::debug) << "Disconnect is detected while on read msg body: " << ec.message();
+                            LOG(dds::misc::debug) << "Disconnect is detected while on read msg body: " << ec.message();
                             onDissconnect();
                         }
                         else
                         {
                             // don't show error if service is closed
                             if (m_started)
-                                LOG(MiscCommon::error) << "Error reading message body: " << ec.message();
+                                LOG(dds::misc::error) << "Error reading message body: " << ec.message();
                             else
-                                LOG(MiscCommon::info) << "The stop signal is received, aborting current operation and "
-                                                         "closing the connection: "
-                                                      << ec.message();
+                                LOG(dds::misc::info) << "The stop signal is received, aborting current operation and "
+                                                        "closing the connection: "
+                                                     << ec.message();
                             stop();
                         }
                     });
@@ -884,7 +884,7 @@ namespace dds
 
                     for (auto i : m_writeQueue)
                     {
-                        LOG(MiscCommon::debug)
+                        LOG(dds::misc::debug)
                             << "Sending to " << remoteEndIDString() << " a message: " << i->toString();
                         if (cmdSHUTDOWN == i->header().m_cmd)
                             m_isShuttingDown = true;
@@ -904,12 +904,12 @@ namespace dds
                         {
                             if (!_ec)
                             {
-                                LOG(MiscCommon::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
-                                                       << _bytesTransferred << " bytes)";
+                                LOG(dds::misc::debug) << "Message successfully sent to " << remoteEndIDString() << " ("
+                                                      << _bytesTransferred << " bytes)";
 
                                 if (m_isShuttingDown)
                                 {
-                                    LOG(MiscCommon::info)
+                                    LOG(dds::misc::info)
                                         << "Shutdown signal has been successfully sent to " << remoteEndIDString();
                                     stop();
                                 }
@@ -926,7 +926,7 @@ namespace dds
                             }
                             else if ((boost::asio::error::eof == _ec) || (boost::asio::error::connection_reset == _ec))
                             {
-                                LOG(MiscCommon::debug)
+                                LOG(dds::misc::debug)
                                     << "Disconnect is detected while on write message: " << _ec.message();
                                 onDissconnect();
                             }
@@ -934,10 +934,10 @@ namespace dds
                             {
                                 // don't show error if service is closed
                                 if (m_started)
-                                    LOG(MiscCommon::error)
+                                    LOG(dds::misc::error)
                                         << "Error sending to " << remoteEndIDString() << ": " << _ec.message();
                                 else
-                                    LOG(MiscCommon::info)
+                                    LOG(dds::misc::info)
                                         << "The stop signal is received, aborting current operation and "
                                            "closing the connection: "
                                         << _ec.message();
@@ -946,14 +946,14 @@ namespace dds
                         }
                         catch (std::exception& ex)
                         {
-                            LOG(MiscCommon::error) << "BaseChannelImpl can't write message (callback): " << ex.what();
+                            LOG(dds::misc::error) << "BaseChannelImpl can't write message (callback): " << ex.what();
                         }
                     });
             }
 
             void onDissconnect()
             {
-                LOG(MiscCommon::debug) << "The session was disconnected by the remote end: " << remoteEndIDString();
+                LOG(dds::misc::debug) << "The session was disconnected by the remote end: " << remoteEndIDString();
                 // stopping the channel
                 stop();
 

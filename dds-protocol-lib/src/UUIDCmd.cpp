@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SIDCmd::SIDCmd()
     : m_id()
@@ -23,12 +24,12 @@ bool SIDCmd::operator==(const SIDCmd& _val) const
     return (m_id == _val.m_id);
 }
 
-void SIDCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SIDCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_id);
 }
 
-void SIDCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SIDCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_id);
 }

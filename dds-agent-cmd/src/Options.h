@@ -9,7 +9,7 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 // DDS
-#include "BOOSTHelper.h"
+#include "BoostHelper.h"
 #include "ProtocolCommands.h"
 #include "Version.h"
 //=============================================================================
@@ -98,12 +98,12 @@ namespace dds
 
             if (vm.count("help") || vm.empty())
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
             if (vm.count("verbose"))
@@ -112,9 +112,9 @@ namespace dds
             }
             if (!vm.count("command") || _options->m_agentCmd == EAgentCmdType::UNKNOWN)
             {
-                LOG(MiscCommon::log_stderr) << "Nothing to do. Please, specify a command"
-                                            << "\n\n"
-                                            << options;
+                LOG(dds::misc::log_stderr) << "Nothing to do. Please, specify a command"
+                                           << "\n\n"
+                                           << options;
                 return false;
             }
             if (vm.count("all"))

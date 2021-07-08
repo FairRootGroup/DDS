@@ -28,7 +28,7 @@ namespace dds
         class CWorker
         {
           public:
-            CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const std::string& _path);
+            CWorker(misc::configRecord_t _rec, const SWNOptions& _options, const std::string& _path);
             ~CWorker();
 
             void printInfo(std::ostream& _stream) const;
@@ -43,7 +43,7 @@ namespace dds
             void log(const std::string& _msg) const;
 
           private:
-            ncf::configRecord_t m_rec;
+            misc::configRecord_t m_rec;
             SWNOptions m_options;
             std::string m_path;
         };

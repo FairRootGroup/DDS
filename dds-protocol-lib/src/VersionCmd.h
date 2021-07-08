@@ -18,8 +18,8 @@ namespace dds
         {
             SVersionCmd();
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SVersionCmd& val) const;
 
             std::string m_sSID; /// Session ID

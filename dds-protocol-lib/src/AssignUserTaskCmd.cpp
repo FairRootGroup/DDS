@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SAssignUserTaskCmd::SAssignUserTaskCmd()
     : m_taskID(0)
@@ -30,7 +31,7 @@ bool SAssignUserTaskCmd::operator==(const SAssignUserTaskCmd& val) const
             m_taskName == val.m_taskName && m_topoHash == val.m_topoHash && m_sEnvFile == val.m_sEnvFile);
 }
 
-void SAssignUserTaskCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SAssignUserTaskCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data)
         .get(m_taskIndex)
@@ -45,7 +46,7 @@ void SAssignUserTaskCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         .get(m_sEnvFile);
 }
 
-void SAssignUserTaskCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SAssignUserTaskCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data)
         .put(m_taskIndex)

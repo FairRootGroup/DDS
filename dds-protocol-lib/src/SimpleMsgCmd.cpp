@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SSimpleMsgCmd::SSimpleMsgCmd()
     : m_msgSeverity(0)
@@ -32,12 +33,12 @@ bool SSimpleMsgCmd::operator==(const SSimpleMsgCmd& val) const
     return (m_sMsg == val.m_sMsg && m_msgSeverity == val.m_msgSeverity && m_srcCommand == val.m_srcCommand);
 }
 
-void SSimpleMsgCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SSimpleMsgCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_msgSeverity).get(m_srcCommand).get(m_sMsg);
 }
 
-void SSimpleMsgCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SSimpleMsgCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_msgSeverity).put(m_srcCommand).put(m_sMsg);
 }

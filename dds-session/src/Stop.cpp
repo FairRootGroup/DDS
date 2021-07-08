@@ -15,7 +15,7 @@
 using namespace std;
 using namespace dds::session_cmd;
 using namespace dds::user_defaults_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 namespace fs = boost::filesystem;
 
 void CStop::stop(const std::string& _sessionID)
@@ -37,7 +37,7 @@ void CStop::stop(const std::string& _sessionID)
     fPid >> pidCommander;
     fPid.close();
 
-    if (!MiscCommon::IsProcessRunning(pidCommander))
+    if (!IsProcessRunning(pidCommander))
     {
         LOG(log_stdout_clean) << "Can't find commander with pid: " << pidCommander;
         return;
@@ -61,17 +61,17 @@ void CStop::stop(const std::string& _sessionID)
         LOG(log_stderr) << _e.what();
     }
 
-    if (MiscCommon::IsProcessRunning(pidCommander))
+    if (IsProcessRunning(pidCommander))
     {
         LOG(log_stdout_clean) << "Commander is still running. I have no choice but to kill it...";
         // Manually killing the process
-        if (MiscCommon::IsProcessRunning(pidCommander))
+        if (IsProcessRunning(pidCommander))
         {
             if (::kill(pidCommander, SIGKILL))
             {
                 string err;
                 errno2str(&err);
-                LOG(MiscCommon::error) << "Failed to kill commander: " << err;
+                LOG(error) << "Failed to kill commander: " << err;
             }
         }
     }

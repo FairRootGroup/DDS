@@ -20,7 +20,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::user_defaults_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 namespace fs = boost::filesystem;
 
 CUserDefaults::CUserDefaults(const boost::uuids::uuid& _sid)
@@ -69,8 +69,7 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         "");
     config_file_options.add_options()(
         "server.log_severity_level",
-        boost::program_options::value<MiscCommon::ELogSeverityLevel>(&m_options.m_server.m_logSeverityLevel)
-            ->default_value(MiscCommon::info));
+        boost::program_options::value<ELogSeverityLevel>(&m_options.m_server.m_logSeverityLevel)->default_value(info));
     config_file_options.add_options()(
         "server.log_rotation_size",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_logRotationSize)->default_value(10));
@@ -536,7 +535,7 @@ string CUserDefaults::getLockedSID() const
     }
     else
     {
-        MiscCommon::CSessionIDFile sid(sidFile);
+        CSessionIDFile sid(sidFile);
         sessionID = sid.getLockedSID();
         if (sessionID.empty())
             throw runtime_error("Avaliable SID is empty");

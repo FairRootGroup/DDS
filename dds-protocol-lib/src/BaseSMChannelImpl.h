@@ -44,89 +44,89 @@
             switch (currentCmd)                                                           \
             {
 
-#define SM_MESSAGE_HANDLER(msg, func)                                                                              \
-    case msg:                                                                                                      \
-    {                                                                                                              \
-        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                       \
-        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                          \
-        bool processed = func(attachmentPtr, sender);                                                              \
-        if (!processed)                                                                                            \
-        {                                                                                                          \
-            if (!handlerExists(msg))                                                                               \
-            {                                                                                                      \
-                LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
-                                       << _currentMsg->toString();                                                 \
-            }                                                                                                      \
-            else                                                                                                   \
-            {                                                                                                      \
-                dispatchHandlers(msg, sender, attachmentPtr);                                                      \
-            }                                                                                                      \
-        }                                                                                                          \
-        break;                                                                                                     \
+#define SM_MESSAGE_HANDLER(msg, func)                                                                             \
+    case msg:                                                                                                     \
+    {                                                                                                             \
+        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                      \
+        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                         \
+        bool processed = func(attachmentPtr, sender);                                                             \
+        if (!processed)                                                                                           \
+        {                                                                                                         \
+            if (!handlerExists(msg))                                                                              \
+            {                                                                                                     \
+                LOG(dds::misc::error) << "The received message was not processed and has no registered handler: " \
+                                      << _currentMsg->toString();                                                 \
+            }                                                                                                     \
+            else                                                                                                  \
+            {                                                                                                     \
+                dispatchHandlers(msg, sender, attachmentPtr);                                                     \
+            }                                                                                                     \
+        }                                                                                                         \
+        break;                                                                                                    \
     }
 
-#define SM_MESSAGE_HANDLER_DISPATCH(msg)                                                                         \
-    case msg:                                                                                                    \
-    {                                                                                                            \
-        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                     \
-        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                        \
-        LOG(MiscCommon::debug) << "Dispatching " << g_cmdToString[msg];                                          \
-        if (!handlerExists(msg))                                                                                 \
-        {                                                                                                        \
-            LOG(MiscCommon::error) << "The received message can't be dispatched, it has no registered handler: " \
-                                   << _currentMsg->toString();                                                   \
-        }                                                                                                        \
-        else                                                                                                     \
-        {                                                                                                        \
-            dispatchHandlers<>(msg, sender, attachmentPtr);                                                      \
-        }                                                                                                        \
-        break;                                                                                                   \
+#define SM_MESSAGE_HANDLER_DISPATCH(msg)                                                                        \
+    case msg:                                                                                                   \
+    {                                                                                                           \
+        typedef typename SCommandAttachmentImpl<msg>::ptr_t attahcmentPtr_t;                                    \
+        attahcmentPtr_t attachmentPtr = SCommandAttachmentImpl<msg>::decode(_currentMsg);                       \
+        LOG(dds::misc::debug) << "Dispatching " << g_cmdToString[msg];                                          \
+        if (!handlerExists(msg))                                                                                \
+        {                                                                                                       \
+            LOG(dds::misc::error) << "The received message can't be dispatched, it has no registered handler: " \
+                                  << _currentMsg->toString();                                                   \
+        }                                                                                                       \
+        else                                                                                                    \
+        {                                                                                                       \
+            dispatchHandlers<>(msg, sender, attachmentPtr);                                                     \
+        }                                                                                                       \
+        break;                                                                                                  \
     }
 
-#define END_SM_MSG_MAP()                                                                                         \
-    default:                                                                                                     \
-        LOG(MiscCommon::error) << "The received SM message doesn't have a handler: " << _currentMsg->toString(); \
-        }                                                                                                        \
-        }                                                                                                        \
-        catch (std::exception & _e)                                                                              \
-        {                                                                                                        \
-            LOG(MiscCommon::error) << "SMChannel processMessage: " << _e.what();                                 \
-        }                                                                                                        \
+#define END_SM_MSG_MAP()                                                                                        \
+    default:                                                                                                    \
+        LOG(dds::misc::error) << "The received SM message doesn't have a handler: " << _currentMsg->toString(); \
+        }                                                                                                       \
+        }                                                                                                       \
+        catch (std::exception & _e)                                                                             \
+        {                                                                                                       \
+            LOG(dds::misc::error) << "SMChannel processMessage: " << _e.what();                                 \
+        }                                                                                                       \
         }
 
 // Raw message processing
-#define SM_RAW_MESSAGE_HANDLER(theClass, func)                                                                         \
-  public:                                                                                                              \
-    friend protocol_api::CBaseSMChannelImpl<theClass>;                                                                 \
-    void processMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg)                              \
-    {                                                                                                                  \
-        if (!m_started)                                                                                                \
-            return;                                                                                                    \
-                                                                                                                       \
-        using namespace dds;                                                                                           \
-        using namespace dds::protocol_api;                                                                             \
-        SSenderInfo sender;                                                                                            \
-        sender.m_ID = _currentMsg->header().m_ID;                                                                      \
-        try                                                                                                            \
-        {                                                                                                              \
-            bool processed = func(_currentMsg, sender);                                                                \
-            if (!processed)                                                                                            \
-            {                                                                                                          \
-                if (!handlerExists(ECmdType::cmdRAW_MSG))                                                              \
-                {                                                                                                      \
-                    LOG(MiscCommon::error) << "The received message was not processed and has no registered handler: " \
-                                           << _currentMsg->toString();                                                 \
-                }                                                                                                      \
-                else                                                                                                   \
-                {                                                                                                      \
-                    dispatchHandlers(ECmdType::cmdRAW_MSG, sender, _currentMsg);                                       \
-                }                                                                                                      \
-            }                                                                                                          \
-        }                                                                                                              \
-        catch (std::exception & _e)                                                                                    \
-        {                                                                                                              \
-            LOG(MiscCommon::error) << "SMChannel processMessage: " << _e.what();                                       \
-        }                                                                                                              \
+#define SM_RAW_MESSAGE_HANDLER(theClass, func)                                                                        \
+  public:                                                                                                             \
+    friend protocol_api::CBaseSMChannelImpl<theClass>;                                                                \
+    void processMessage(protocol_api::CProtocolMessage::protocolMessagePtr_t _currentMsg)                             \
+    {                                                                                                                 \
+        if (!m_started)                                                                                               \
+            return;                                                                                                   \
+                                                                                                                      \
+        using namespace dds;                                                                                          \
+        using namespace dds::protocol_api;                                                                            \
+        SSenderInfo sender;                                                                                           \
+        sender.m_ID = _currentMsg->header().m_ID;                                                                     \
+        try                                                                                                           \
+        {                                                                                                             \
+            bool processed = func(_currentMsg, sender);                                                               \
+            if (!processed)                                                                                           \
+            {                                                                                                         \
+                if (!handlerExists(ECmdType::cmdRAW_MSG))                                                             \
+                {                                                                                                     \
+                    LOG(dds::misc::error) << "The received message was not processed and has no registered handler: " \
+                                          << _currentMsg->toString();                                                 \
+                }                                                                                                     \
+                else                                                                                                  \
+                {                                                                                                     \
+                    dispatchHandlers(ECmdType::cmdRAW_MSG, sender, _currentMsg);                                      \
+                }                                                                                                     \
+            }                                                                                                         \
+        }                                                                                                             \
+        catch (std::exception & _e)                                                                                   \
+        {                                                                                                             \
+            LOG(dds::misc::error) << "SMChannel processMessage: " << _e.what();                                       \
+        }                                                                                                             \
     }
 
 namespace dds
@@ -245,14 +245,14 @@ namespace dds
 
                 createMessageQueue();
 
-                LOG(MiscCommon::info) << "SM: New channel: inputName=" << m_transportIn.front().m_name
-                                      << " outputName=" << _outputName << " protocolHeaderID=" << m_protocolHeaderID;
+                LOG(dds::misc::info) << "SM: New channel: inputName=" << m_transportIn.front().m_name
+                                     << " outputName=" << _outputName << " protocolHeaderID=" << m_protocolHeaderID;
             }
 
           public:
             ~CBaseSMChannelImpl<T>()
             {
-                LOG(MiscCommon::info) << "SM: channel destructor is called. MQ: " << getName();
+                LOG(dds::misc::info) << "SM: channel destructor is called. MQ: " << getName();
                 stop();
             }
 
@@ -287,7 +287,7 @@ namespace dds
                     std::lock_guard<std::mutex> lock(m_mutexTransportIn);
                     for (auto& info : m_transportIn)
                     {
-                        LOG(MiscCommon::info) << "SM: Initializing input message queue: " << info.m_name;
+                        LOG(dds::misc::info) << "SM: Initializing input message queue: " << info.m_name;
                         info.m_mq.reset();
                         info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
                     }
@@ -298,7 +298,7 @@ namespace dds
                     for (auto& v : m_outputBuffers)
                     {
                         SMessageQueueInfo& info = v.second->m_info;
-                        LOG(MiscCommon::info) << "SM: Initializing output message queue: " << info.m_name;
+                        LOG(dds::misc::info) << "SM: Initializing output message queue: " << info.m_name;
                         info.m_mq.reset();
                         info.m_mq = createMessageQueue(info.m_name.c_str(), info.m_openType);
                     }
@@ -329,7 +329,7 @@ namespace dds
                             return std::make_shared<boost::interprocess::message_queue>(boost::interprocess::open_only,
                                                                                         _name.c_str());
                         default:
-                            LOG(MiscCommon::error)
+                            LOG(dds::misc::error)
                                 << "Can't initialize shared memory transport with name " << _name << ": "
                                 << "Unknown EMQOpenType given: " << static_cast<int>(_openType);
                             return nullptr;
@@ -337,7 +337,7 @@ namespace dds
                 }
                 catch (boost::interprocess::interprocess_exception& _e)
                 {
-                    LOG(MiscCommon::error)
+                    LOG(dds::misc::error)
                         << "Can't initialize shared memory transport with name " << _name << ": " << _e.what();
                     return nullptr;
                 }
@@ -393,7 +393,7 @@ namespace dds
                     }
                     else
                     {
-                        LOG(MiscCommon::info)
+                        LOG(dds::misc::info)
                             << "Added shared memory channel output with ID: " << _outputID << " name: " << _name;
                     }
                 }
@@ -436,7 +436,7 @@ namespace dds
                 }
                 if (!queuesCreated)
                 {
-                    LOG(MiscCommon::error)
+                    LOG(dds::misc::error)
                         << "Can't start shared memory channel because there was a problem creating message queues";
                     m_started = false;
                     return;
@@ -458,7 +458,7 @@ namespace dds
                             }
                             catch (std::exception& ex)
                             {
-                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                                LOG(dds::misc::error) << "BaseSMChannelImpl can't read message: " << ex.what();
                             }
                         });
                 }
@@ -469,7 +469,7 @@ namespace dds
 
             void stop()
             {
-                LOG(MiscCommon::info) << "SM: channel STOP is called. MQ: " << getName();
+                LOG(dds::misc::info) << "SM: channel STOP is called. MQ: " << getName();
                 if (!m_started)
                     return;
 
@@ -484,7 +484,7 @@ namespace dds
                     for (const auto& v : m_transportIn)
                     {
                         const bool status = boost::interprocess::message_queue::remove(v.m_name.c_str());
-                        LOG(MiscCommon::info) << "Message queue " << v.m_name << " remove status: " << status;
+                        LOG(dds::misc::info) << "Message queue " << v.m_name << " remove status: " << status;
                     }
                 }
                 {
@@ -493,7 +493,7 @@ namespace dds
                     {
                         const SMessageQueueInfo& info = v.second->m_info;
                         const bool status = boost::interprocess::message_queue::remove(info.m_name.c_str());
-                        LOG(MiscCommon::info) << "Message queue " << info.m_name << " remove status: " << status;
+                        LOG(dds::misc::info) << "Message queue " << info.m_name << " remove status: " << status;
                     }
                 }
             }
@@ -502,13 +502,13 @@ namespace dds
             {
                 if (!m_started)
                 {
-                    LOG(MiscCommon::error) << "Skip pushing message. The channel was not started.";
+                    LOG(dds::misc::error) << "Skip pushing message. The channel was not started.";
                     return;
                 }
 
                 if (m_isShuttingDown)
                 {
-                    LOG(MiscCommon::warning) << "Skip pushing message. The channel is shutting down.";
+                    LOG(dds::misc::warning) << "Skip pushing message. The channel is shutting down.";
                     return;
                 }
 
@@ -530,7 +530,7 @@ namespace dds
                     if (cmdUNKNOWN != _cmd)
                         buffer->m_writeQueue.push_back(SProtocolMessageInfo(_outputID, _msg));
 
-                    LOG(MiscCommon::debug)
+                    LOG(dds::misc::debug)
                         << getName()
                         << ": BaseSMChannelImpl pushMsg: WriteQueue size = " << buffer->m_writeQueue.size();
 
@@ -545,13 +545,13 @@ namespace dds
                             }
                             catch (std::exception& ex)
                             {
-                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't write message: " << ex.what();
+                                LOG(dds::misc::error) << "BaseSMChannelImpl can't write message: " << ex.what();
                             }
                         });
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << getName() << ":  BaseSMChannelImpl can't push message: " << ex.what();
+                    LOG(dds::misc::error) << getName() << ":  BaseSMChannelImpl can't push message: " << ex.what();
                 }
             }
 
@@ -567,7 +567,7 @@ namespace dds
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseSMChannelImpl can't push message: " << ex.what();
+                    LOG(dds::misc::error) << "BaseSMChannelImpl can't push message: " << ex.what();
                 }
             }
 
@@ -622,14 +622,14 @@ namespace dds
                     {
                         if (m_isShuttingDown)
                         {
-                            LOG(MiscCommon::info) << _info.m_name << ": stopping read operation due to shutdown";
+                            LOG(dds::misc::info) << _info.m_name << ": stopping read operation due to shutdown";
                             return;
                         }
                     }
 
                     if (receivedSize < CProtocolMessage::header_length)
                     {
-                        LOG(MiscCommon::warning)
+                        LOG(dds::misc::warning)
                             << _info.m_name << ": Received message: " << receivedSize << " bytes, expected at least"
                             << CProtocolMessage::header_length << " bytes";
                     }
@@ -644,13 +644,13 @@ namespace dds
                         }
                         else
                         {
-                            LOG(MiscCommon::error) << "BaseSMChannelImpl: error reading message header";
+                            LOG(dds::misc::error) << "BaseSMChannelImpl: error reading message header";
                         }
                     }
                 }
                 catch (boost::interprocess::interprocess_exception& ex)
                 {
-                    LOG(MiscCommon::error) << "BaseSMChannelImpl: error receiving message: " << ex.what() << "\n";
+                    LOG(dds::misc::error) << "BaseSMChannelImpl: error receiving message: " << ex.what() << "\n";
                 }
             }
 
@@ -660,20 +660,20 @@ namespace dds
             {
                 if (_bodySize != _currentMsg->body_length())
                 {
-                    LOG(MiscCommon::error) << _info.m_name << ": Received message BODY: " << _bodySize
-                                           << " bytes, expected " << _currentMsg->body_length();
+                    LOG(dds::misc::error) << _info.m_name << ": Received message BODY: " << _bodySize
+                                          << " bytes, expected " << _currentMsg->body_length();
                 }
                 else
                 {
                     if (_currentMsg->body_length() == 0)
                     {
-                        LOG(MiscCommon::debug)
+                        LOG(dds::misc::debug)
                             << _info.m_name << ": Received message BODY no attachment: " << _currentMsg->toString();
                     }
                     else
                     {
-                        LOG(MiscCommon::debug) << _info.m_name << ": Received message BODY (" << _bodySize
-                                               << " bytes): " << _currentMsg->toString();
+                        LOG(dds::misc::debug) << _info.m_name << ": Received message BODY (" << _bodySize
+                                              << " bytes): " << _currentMsg->toString();
                     }
 
                     // process received message
@@ -690,7 +690,7 @@ namespace dds
                             }
                             catch (std::exception& ex)
                             {
-                                LOG(MiscCommon::error) << "BaseSMChannelImpl can't read message: " << ex.what();
+                                LOG(dds::misc::error) << "BaseSMChannelImpl can't read message: " << ex.what();
                             }
                         });
                 }
@@ -728,7 +728,7 @@ namespace dds
                             {
                                 if (m_isShuttingDown)
                                 {
-                                    LOG(MiscCommon::info)
+                                    LOG(dds::misc::info)
                                         << _buffer->m_info.m_name << ": stopping write operation due to shutdown";
                                     return;
                                 }
@@ -740,7 +740,7 @@ namespace dds
                                 // Intercom channel a drain will be initiated until we receive a new task assignment.
                                 if (_buffer->m_drainWriteQueue)
                                 {
-                                    LOG(MiscCommon::warning)
+                                    LOG(dds::misc::warning)
                                         << _buffer->m_info.m_name
                                         << ": Draining write queue, while there is a message pending: "
                                         << g_cmdToString[msg.m_msg->header().m_cmd];
@@ -750,7 +750,7 @@ namespace dds
                         }
                         else
                         {
-                            LOG(MiscCommon::error)
+                            LOG(dds::misc::error)
                                 << _buffer->m_info.m_name << ": Can't find output transport with output ID "
                                 << msg.m_outputID
                                 << ". Write message failed. Command: " << g_cmdToString[msg.m_msg->header().m_cmd];
@@ -759,7 +759,7 @@ namespace dds
                 }
                 catch (boost::interprocess::interprocess_exception& ex)
                 {
-                    LOG(MiscCommon::error)
+                    LOG(dds::misc::error)
                         << _buffer->m_info.m_name << ": BaseSMChannelImpl: error sending message: " << ex.what();
                 }
 

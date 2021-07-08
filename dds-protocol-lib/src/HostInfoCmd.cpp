@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SHostInfoCmd::SHostInfoCmd()
     : m_agentPid(0)
@@ -33,7 +34,7 @@ bool SHostInfoCmd::operator==(const SHostInfoCmd& val) const
             m_submitTime == val.m_submitTime && m_submitTime == val.m_submitTime && m_workerId == val.m_workerId);
 }
 
-void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SHostInfoCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data)
         .get(m_agentPid)
@@ -46,7 +47,7 @@ void SHostInfoCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         .get(m_workerId);
 }
 
-void SHostInfoCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SHostInfoCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data)
         .put(m_agentPid)

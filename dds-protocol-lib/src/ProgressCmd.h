@@ -21,8 +21,8 @@ namespace dds
             SProgressCmd();
             SProgressCmd(uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0);
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SProgressCmd& val) const;
 
             uint32_t m_completed;

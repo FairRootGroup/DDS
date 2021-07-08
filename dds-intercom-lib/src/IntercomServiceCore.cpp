@@ -15,7 +15,7 @@ using namespace dds;
 using namespace dds::user_defaults_api;
 using namespace dds::internal_api;
 using namespace dds::protocol_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 
 CIntercomServiceCore::CIntercomServiceCore()
     : m_started(false)
@@ -72,7 +72,7 @@ void CIntercomServiceCore::start(const std::string& _sessionID)
 
     // Don't block main thread, start transport service on a thread-pool
     const int nConcurrentThreads(3);
-    LOG(MiscCommon::info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
+    LOG(info) << "Starting DDS transport engine using " << nConcurrentThreads << " concurrent threads.";
     for (int x = 0; x < nConcurrentThreads; ++x)
     {
         m_workerThreads.create_thread(boost::bind(&boost::asio::io_context::run, &(m_io_context)));
@@ -308,7 +308,7 @@ void CIntercomServiceCore::on_cmdSIMPLE_MSG_SM(
 
         case cmdUPDATE_KEY:
             LOG(static_cast<ELogSeverityLevel>(_attachment->m_msgSeverity)) << _attachment->m_sMsg;
-            if (_attachment->m_msgSeverity == MiscCommon::error)
+            if (_attachment->m_msgSeverity == error)
             {
                 execUserSignal(m_errorSignal, intercom_api::EErrorCode::UpdateKeyValueFailed, _attachment->m_sMsg);
             }
@@ -399,8 +399,8 @@ void CIntercomServiceCore::clean()
     std::string outputName = CUserDefaults::instance().getSMLeaderOutputName(slotID);
     const bool inputRemoved = boost::interprocess::message_queue::remove(inputName.c_str());
     const bool outputRemoved = boost::interprocess::message_queue::remove(outputName.c_str());
-    LOG(MiscCommon::info) << "Message queue " << inputName << " remove status: " << inputRemoved;
-    LOG(MiscCommon::info) << "Message queue " << outputName << " remove status: " << outputRemoved;
+    LOG(info) << "Message queue " << inputName << " remove status: " << inputRemoved;
+    LOG(info) << "Message queue " << outputName << " remove status: " << outputRemoved;
 }
 
 void CIntercomServiceCore::waitCondition()

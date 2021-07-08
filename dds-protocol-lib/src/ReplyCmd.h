@@ -23,8 +23,8 @@ namespace dds
             SReplyCmd();
             SReplyCmd(const std::string& _msg, uint16_t _statusCode, uint16_t _returnCode, uint16_t _srcCommand);
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SReplyCmd& val) const;
 
             uint16_t m_statusCode;

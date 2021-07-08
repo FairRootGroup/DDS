@@ -110,17 +110,17 @@ namespace dds
 
             if (vm.count("help") || vm.end() == found)
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
             if (vm.count("prop-name") && !_options->m_bNeedPropValues)
             {
-                LOG(MiscCommon::log_stdout) << "Option prop-id has to be used together with prop-values.";
+                LOG(dds::misc::log_stdout) << "Option prop-id has to be used together with prop-values.";
                 return false;
             }
 
@@ -131,8 +131,7 @@ namespace dds
                 _options->m_bNeedActiveCount + _options->m_bNeedIdleCount + _options->m_bNeedExecutingCount;
             if (numCounters > 1)
             {
-                LOG(MiscCommon::log_stderr)
-                    << "--active-count, --idle-count, --executing-count can't be used together.";
+                LOG(dds::misc::log_stderr) << "--active-count, --idle-count, --executing-count can't be used together.";
                 return false;
             }
 
@@ -140,14 +139,14 @@ namespace dds
                 _options->m_bNeedActiveCount || _options->m_bNeedIdleCount || _options->m_bNeedExecutingCount;
             if (vm.count("wait") && !needCount)
             {
-                LOG(MiscCommon::log_stderr)
+                LOG(dds::misc::log_stderr)
                     << "Option --wait must be used together with --active-count, --idle-count or --executing-count.";
                 return false;
             }
 
             if (vm.count("wait") && _options->m_nWaitCount <= 0)
             {
-                LOG(MiscCommon::log_stderr) << "A number of agents to wait must be higher than 0.";
+                LOG(dds::misc::log_stderr) << "A number of agents to wait must be higher than 0.";
                 return false;
             }
 
