@@ -12,7 +12,7 @@
 #include "MiscUtils.h"
 #include "def.h"
 // dds-ssh
-#include "ncf.h"
+#include "SSHConfigFile.h"
 //=============================================================================
 using namespace std;
 using namespace dds;
@@ -24,7 +24,29 @@ const string g_bashscript_end = "@bash_end@";
 //=============================================================================
 typedef boost::tokenizer<boost::escaped_list_separator<char>> Tok;
 //=============================================================================
-void CNcf::readFrom(istream& _stream, bool _readBashOnly)
+
+struct CSSHConfigFile::SImpl
+{
+    void read(const string& _filepath, bool _readBashOnly = false);
+    void read(istream& _stream, bool _readBashOnly = false);
+
+    configRecords_t m_records;
+    std::string m_bash;
+};
+
+void CSSHConfigFile::SImpl::read(const string& _filepath, bool _readBashOnly)
+{
+    ifstream f(_filepath);
+    if (!f.is_open())
+    {
+        stringstream ss;
+        ss << "Failed to open dds-ssh configuration file " << std::quoted(_filepath);
+        throw runtime_error(ss.str());
+    }
+    read(f, _readBashOnly);
+}
+
+void CSSHConfigFile::SImpl::read(istream& _stream, bool _readBashOnly)
 {
     // get lines from the configuration
     StringVector_t lines;
@@ -56,7 +78,7 @@ void CNcf::readFrom(istream& _stream, bool _readBashOnly)
         {
             bCollectScript = true;
             sLine.erase(0, g_bashscript_start.size());
-            m_bashEnvCmds = "#! /usr/bin/env bash\n";
+            m_bash = "#! /usr/bin/env bash\n";
             continue;
         }
         else if (sLine.find(g_bashscript_end, 0) != StringVector_t::value_type::npos)
@@ -68,8 +90,8 @@ void CNcf::readFrom(istream& _stream, bool _readBashOnly)
         // Continue collecting the script
         if (bCollectScript)
         {
-            m_bashEnvCmds += sLine;
-            m_bashEnvCmds += "\n";
+            m_bash += sLine;
+            m_bash += "\n";
             continue;
         }
 
@@ -78,8 +100,8 @@ void CNcf::readFrom(istream& _stream, bool _readBashOnly)
             Tok t(sLine);
             // create config. records here. But this class is not deleting them.
             // Each CWorker is responsible to delete it's config record info.
-            configRecord_t rec = configRecord_t(new SConfigRecord());
-            int res = rec->assignValues(t.begin(), t.end());
+            configRecord_t rec{ make_shared<SConfigRecord>() };
+            int res = rec->assign(t.begin(), t.end());
             if (res)
             {
                 stringstream ss;
@@ -105,8 +127,71 @@ void CNcf::readFrom(istream& _stream, bool _readBashOnly)
         throw runtime_error("dds-ssh configuration: syntax error. "
                             "There is a defined inline script, but the closing tag is missing.");
 }
+
 //=============================================================================
-configRecords_t CNcf::getRecords()
+
+template <class InputIterator>
+int SConfigRecord::assign(const InputIterator& _begin, const InputIterator& _end)
 {
-    return m_records;
+    InputIterator iter = _begin;
+    if (iter == _end)
+        return 1;
+    m_id = *iter;
+    trim(&m_id, ' ');
+
+    if (++iter == _end)
+        return 2;
+    m_addr = *iter;
+    trim(&m_addr, ' ');
+
+    if (++iter == _end)
+        return 3;
+    m_sshOptions = *iter;
+    trim(&m_sshOptions, ' ');
+
+    if (++iter == _end)
+        return 4;
+    m_wrkDir = *iter;
+    trim(&m_wrkDir, ' ');
+
+    if (++iter == _end)
+        return 5;
+    if (!iter->empty())
+    {
+        std::stringstream ss;
+        ss << *iter;
+        ss >> m_nSlots;
+    }
+
+    return 0;
+}
+
+bool SConfigRecord::operator==(const SConfigRecord& _rec) const
+{
+    return (m_id == _rec.m_id && m_addr == _rec.m_addr && m_sshOptions == _rec.m_sshOptions &&
+            m_wrkDir == _rec.m_wrkDir && m_nSlots == _rec.m_nSlots);
+}
+
+//=============================================================================
+
+CSSHConfigFile::CSSHConfigFile(const std::string& _filepath)
+    : m_impl(make_shared<CSSHConfigFile::SImpl>())
+{
+    m_impl->read(_filepath);
+}
+
+CSSHConfigFile::CSSHConfigFile(std::istream& _stream)
+    : m_impl(make_shared<CSSHConfigFile::SImpl>())
+{
+    m_impl->read(_stream);
+}
+
+const configRecords_t& CSSHConfigFile::getRecords()
+{
+    return m_impl->m_records;
+}
+
+const string& CSSHConfigFile::getBash()
+{
+    return m_impl->m_bash;
 }

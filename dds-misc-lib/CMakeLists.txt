@@ -15,12 +15,11 @@ set(VersionHeader ${PROJECT_BINARY_DIR}/Version.h)
 configure_file(src/Version.h.in ${VersionHeader})
 
 set(SOURCE_FILES
-  src/ncf.cpp
+  src/SSHConfigFile.cpp
 )
 
 set(HEADER_FILES
   ${BuildConstantsHeader}
-  src/ncf.h
   src/CustomIterator.h
   src/MiscUtils.h
   src/def.h
@@ -46,9 +45,10 @@ set(HEADER_FILES
   src/stlx.h
 )
 
-set(HEADER_FILES_EXT'
+set(HEADER_FILES_EXT
    src/EnvProp.h
    ${VersionHeader}
+   src/SSHConfigFile.h
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})

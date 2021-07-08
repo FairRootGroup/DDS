@@ -21,11 +21,10 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 // pod-ssh
-#include "ncf.h"
+#include "SSHConfigFile.h"
 //=============================================================================
 using namespace std;
 using namespace dds;
-using namespace dds::misc;
 using boost::unit_test::test_suite;
 
 BOOST_AUTO_TEST_SUITE(pod_ssh_config);
@@ -34,14 +33,12 @@ BOOST_AUTO_TEST_SUITE(pod_ssh_config);
 //=============================================================================
 BOOST_AUTO_TEST_CASE(test_readconfig)
 {
-    CNcf config;
-
     stringstream ss;
     ss << "r1, \\\"anar@lxg0527.gsi.de\\\", -p24, /tmp/test,4\n"
        << "r2, anar@lxi001.gsi.de,, /tmp/test/fff fff, 2\n"
        << "125, anar@lxg0055.gsi.de, -p22, /tmp/test, 8\n";
 
-    config.readFrom(ss);
+    CSSHConfigFile config(ss);
 
     configRecords_t recs(config.getRecords());
     BOOST_REQUIRE(!recs.empty());
@@ -73,25 +70,21 @@ BOOST_AUTO_TEST_CASE(test_readconfig)
 }
 BOOST_AUTO_TEST_CASE(test_readconfig_bad)
 {
-    CNcf config;
-
     stringstream ss;
     ss << "r1, \\\"anar@lxg0527.gsi.de\\\", -p24, /tmp/test,4\n"
        << "r2, anar@lxi001.gsi.de,/tmp/test,2\n"
        << "125, anar@lxg0055.gsi.de, -p22, /tmp/test,8\n";
 
-    BOOST_REQUIRE_THROW(config.readFrom(ss), runtime_error);
+    BOOST_REQUIRE_THROW(CSSHConfigFile config(ss), runtime_error);
 }
 BOOST_AUTO_TEST_CASE(test_duplicate_id)
 {
-    CNcf config;
-
     stringstream ss;
     ss << "r1, \\\"anar@lxg0527.gsi.de\\\", -p24, /tmp/test,4\n"
        << "r2, anar@lxi001.gsi.de,,/tmp/test,2\n"
        << "r1, anar@lxg0055.gsi.de, -p22, /tmp/test,8\n";
 
-    BOOST_REQUIRE_THROW(config.readFrom(ss), runtime_error);
+    BOOST_REQUIRE_THROW(CSSHConfigFile config(ss), runtime_error);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
