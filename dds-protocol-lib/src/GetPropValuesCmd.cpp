@@ -9,6 +9,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SGetPropValuesCmd::SGetPropValuesCmd()
     : m_sPropertyName()
@@ -24,12 +25,12 @@ bool SGetPropValuesCmd::operator==(const SGetPropValuesCmd& val) const
     return (m_sPropertyName == val.m_sPropertyName);
 }
 
-void SGetPropValuesCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SGetPropValuesCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_sPropertyName);
 }
 
-void SGetPropValuesCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SGetPropValuesCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_sPropertyName);
 }

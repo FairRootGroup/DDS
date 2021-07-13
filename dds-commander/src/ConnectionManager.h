@@ -133,7 +133,7 @@ namespace dds
             TaskIDToAgentChannelMap_t m_taskIDToAgentChannelMap;
             std::mutex m_mapMutex;
 
-            MiscCommon::CConditionEvent m_updateTopoCondition;
+            dds::misc::CConditionEvent m_updateTopoCondition;
 
             // ToolsAPI's onTaskDone subscribers
             typedef std::pair<CAgentChannel::weakConnectionPtr_t, dds::tools_api::SOnTaskDoneRequestData>

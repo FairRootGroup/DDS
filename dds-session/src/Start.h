@@ -26,7 +26,7 @@ namespace dds
             void getNewSessionID();
             /// returns false if there is a missing prec. binary.
             bool checkPrecompiledWNBins(bool _onlyLocalSys);
-            void getPrecompiledWNBins(MiscCommon::StringVector_t& _list);
+            void getPrecompiledWNBins(dds::misc::StringVector_t& _list);
             void spawnDDSCommander();
             void checkCommanderStatus();
             void printHint();

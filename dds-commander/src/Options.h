@@ -88,12 +88,12 @@ namespace dds
 
             if (vm.count("help") || vm.empty())
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
 
@@ -102,14 +102,14 @@ namespace dds
             {
                 if (SOptions::cmd_unknown == SOptions::getCommandByName(vm["command"].as<std::string>()))
                 {
-                    LOG(MiscCommon::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n"
-                                                << options;
+                    LOG(dds::misc::log_stderr) << "unknown command: " << vm["command"].as<std::string>() << "\n\n"
+                                               << options;
                     return false;
                 }
             }
             else
             {
-                LOG(MiscCommon::log_stderr) << "Nothing to do\n\n" << options;
+                LOG(dds::misc::log_stderr) << "Nothing to do\n\n" << options;
                 return false;
             }
 

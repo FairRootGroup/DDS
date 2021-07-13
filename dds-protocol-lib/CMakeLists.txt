@@ -64,7 +64,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${SRC_HDRS})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  MiscCommon
+  dds_misc_lib
   dds_user_defaults_lib
   Boost::boost
   Boost::system
@@ -76,7 +76,6 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
 
 install(TARGETS ${PROJECT_NAME}

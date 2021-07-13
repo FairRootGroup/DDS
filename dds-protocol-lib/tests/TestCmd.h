@@ -14,8 +14,8 @@ namespace dds
     {
         STestCmd();
         size_t size() const;
-        void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-        void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+        void _convertFromData(const dds::misc::BYTEVector_t& _data);
+        void _convertToData(dds::misc::BYTEVector_t* _data) const;
         bool operator==(const STestCmd& val) const;
 
         uint16_t m_uint16;

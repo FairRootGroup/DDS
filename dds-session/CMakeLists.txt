@@ -4,35 +4,35 @@
 project(dds-session)
 
 set(SOURCE_FILES
-	src/main.cpp
-	src/Start.cpp
-	src/Stop.cpp
+  src/main.cpp
+  src/Start.cpp
+  src/Stop.cpp
 )
 
 set(HEADER_FILES
-	src/Options.h
-	src/Start.h
-	src/Stop.h
+  src/Options.h
+  src/Start.h
+  src/Stop.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  MiscCommon
-	dds_user_defaults_lib
-	dds_protocol_lib
-	dds_tools_lib
-	Boost::boost
-	Boost::program_options
-	Boost::log
-	Boost::log_setup
-	Boost::thread
-	Boost::filesystem
+  dds_misc_lib
+  dds_user_defaults_lib
+  dds_protocol_lib
+  dds_tools_lib
+  Boost::boost
+  Boost::program_options
+  Boost::log
+  Boost::log_setup
+  Boost::thread
+  Boost::filesystem
 )
 
 target_include_directories(${PROJECT_NAME}
-	PUBLIC
+  PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 

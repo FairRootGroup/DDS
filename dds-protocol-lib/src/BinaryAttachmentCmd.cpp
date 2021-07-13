@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SBinaryAttachmentCmd::SBinaryAttachmentCmd()
     : m_fileId()
@@ -33,12 +34,12 @@ bool SBinaryAttachmentCmd::operator==(const SBinaryAttachmentCmd& _val) const
     return (m_fileId == _val.m_fileId && m_offset == _val.m_offset && m_size == _val.m_size && m_crc32 == _val.m_crc32);
 }
 
-void SBinaryAttachmentCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SBinaryAttachmentCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_fileId).get(m_offset).get(m_size).get(m_crc32).get(m_data);
 }
 
-void SBinaryAttachmentCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SBinaryAttachmentCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_fileId).put(m_offset).put(m_size).put(m_crc32).put(m_data);
 }

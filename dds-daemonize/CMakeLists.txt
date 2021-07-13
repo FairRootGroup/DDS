@@ -7,9 +7,9 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  MiscCommon
+  dds_misc_lib
   Boost::boost
-	Boost::program_options
+  Boost::program_options
   Boost::system
   Boost::filesystem
 )

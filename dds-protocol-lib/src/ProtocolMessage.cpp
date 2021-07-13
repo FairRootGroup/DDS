@@ -10,15 +10,15 @@
 using namespace dds;
 using namespace dds::protocol_api;
 using namespace std;
-using namespace MiscCommon;
-using namespace MiscCommon::INet;
+using namespace dds::misc;
+using namespace dds::misc::INet;
 
 CProtocolMessage::CProtocolMessage()
     : m_data(header_length)
 {
 }
 
-CProtocolMessage::CProtocolMessage(uint16_t _cmd, const MiscCommon::BYTEVector_t& _data, uint64_t _ID)
+CProtocolMessage::CProtocolMessage(uint16_t _cmd, const BYTEVector_t& _data, uint64_t _ID)
     : m_data(header_length)
 {
     encode(_cmd, _data, _ID);

@@ -53,15 +53,17 @@ echo
 exec_all()
 {
    echo "----------------------"
-   echo "MiscCommon UNIT-TESTs"
+   echo "dds_misc_lib UNIT-TESTs"
    echo "----------------------"
-   exec_test "MiscCommon_test_MiscUtils"
-   exec_test "MiscCommon_test_MiscCli"
+   exec_test "dds_misc_MiscUtils-tests"
+   exec_test "dds_misc_MiscCli-tests"
    #  we use --catch_system_errors=no here to prevent BOOST catching SIGCHLD
-   #exec_test "MiscCommon_test_Process" "--catch_system_errors=no"
-   exec_test "MiscCommon_test_SysHelper"
-   #exec_test "MiscCommon_test_FindCfgFile"
-   exec_test "MiscCommon_test_Logger"
+   #exec_test "dds_misc_Process-tests" "--catch_system_errors=no"
+   exec_test "dds_misc_ProcessExecutable-tests"
+   exec_test "dds_misc_SysHelper-tests"
+   #exec_test "dds_misc_FindCfgFile-tests"
+   exec_test "dds_misc_Logger-tests"
+   exec_test "dds_misc_Ncf-tests"
 
    echo "----------------------"
    echo "dds-topology UNIT-TESTs"

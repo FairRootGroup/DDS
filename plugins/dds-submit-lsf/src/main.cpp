@@ -18,17 +18,18 @@
 #include "Intercom.h"
 #include "Logger.h"
 #include "MiscSetup.h"
+#include "PipeLogEngine.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "logEngine.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
-using namespace MiscCommon;
+using namespace dds::misc;
+;
 namespace bpo = boost::program_options;
 namespace fs = boost::filesystem;
 

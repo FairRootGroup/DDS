@@ -14,11 +14,11 @@
 #include <boost/algorithm/string/split.hpp>
 
 using namespace std;
-using namespace MiscCommon;
 using namespace dds;
 using namespace dds::submit_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
+using namespace dds::misc;
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        LOG(MiscCommon::log_stdout) << "Connection established.";
-        LOG(MiscCommon::log_stdout) << "Requesting server to process job submission...";
+        LOG(log_stdout) << "Connection established.";
+        LOG(log_stdout) << "Requesting server to process job submission...";
 
         SSubmitRequest::request_t requestInfo;
         requestInfo.m_config = options.m_sCfgFile;
@@ -109,13 +109,13 @@ int main(int argc, char* argv[])
             {
                 if (isFailed)
                 {
-                    LOG(MiscCommon::log_stderr) << "Submission has Failed";
+                    LOG(log_stderr) << "Submission has Failed";
                 }
                 else
                 {
                     auto end = chrono::high_resolution_clock::now();
                     chrono::duration<double, std::milli> elapsed = end - start;
-                    LOG(MiscCommon::log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
+                    LOG(log_stdout) << "Submission took: " << elapsed.count() << " ms\n";
                 }
 
                 session.unblockCurrentThread();

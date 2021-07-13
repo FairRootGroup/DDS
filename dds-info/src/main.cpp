@@ -3,12 +3,11 @@
 //
 //
 // DDS
-#include "BOOSTHelper.h"
+#include "BoostHelper.h"
 #include "DDSHelper.h"
 #include "ErrorCode.h"
 #include "MiscSetup.h"
 #include "Options.h"
-#include "Process.h"
 #include "Res.h"
 #include "SysHelper.h"
 #include "Tools.h"
@@ -17,11 +16,11 @@
 #include <thread>
 
 using namespace std;
-using namespace MiscCommon;
 using namespace dds;
 using namespace dds::info_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
+using namespace dds::misc;
 
 //=============================================================================
 void requestCommanderInfo(CSession& _session, const SOptions_t& _options)

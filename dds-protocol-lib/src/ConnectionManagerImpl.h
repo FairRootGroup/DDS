@@ -66,8 +66,8 @@ namespace dds
                         // The server is stopped by cancelling all outstanding asynchronous
                         // operations. Once all operations have finished the io_context::run()
                         // call will exit.
-                        LOG(MiscCommon::info) << "Received a signal: " << signo;
-                        LOG(MiscCommon::info) << "Stopping DDS transport server";
+                        LOG(dds::misc::info) << "Received a signal: " << signo;
+                        LOG(dds::misc::info) << "Stopping DDS transport server";
 
                         stop();
                     });
@@ -92,7 +92,7 @@ namespace dds
                         user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
                     CMonitoringThread::instance().start(maxIdleTime,
-                                                        []() { LOG(MiscCommon::info) << "Idle callback called."; });
+                                                        []() { LOG(dds::misc::info) << "Idle callback called."; });
 
                     bindPortAndListen(m_acceptor);
                     createClientAndStartAccept(m_acceptor);
@@ -114,8 +114,8 @@ namespace dds
                     // we need at least 2 threads
                     if (concurrentThreads < 2)
                         concurrentThreads = 2;
-                    LOG(MiscCommon::info)
-                        << "Starting DDS transport engine using " << concurrentThreads << " concurrent threads.";
+                    LOG(dds::misc::info) << "Starting DDS transport engine using " << concurrentThreads
+                                         << " concurrent threads.";
                     for (unsigned int x = 0; x < concurrentThreads; ++x)
                     {
                         m_workerThreads.create_thread([this]()
@@ -126,7 +126,7 @@ namespace dds
                     if (m_acceptorUI != nullptr)
                     {
                         const unsigned int concurrentThreads = 2;
-                        LOG(MiscCommon::info)
+                        LOG(dds::misc::info)
                             << "Starting DDS UI transport engine using " << concurrentThreads << " concurrent threads.";
                         for (unsigned int x = 0; x < concurrentThreads; ++x)
                         {
@@ -140,7 +140,7 @@ namespace dds
                 }
                 catch (std::exception& e)
                 {
-                    LOG(MiscCommon::fatal) << e.what();
+                    LOG(dds::misc::fatal) << e.what();
                 }
             }
 
@@ -148,7 +148,7 @@ namespace dds
             {
                 if (_counter <= 0)
                 {
-                    LOG(MiscCommon::error) << "CConnectionManagerImpl: can't start another io_context.";
+                    LOG(dds::misc::error) << "CConnectionManagerImpl: can't start another io_context.";
                 }
                 try
                 {
@@ -156,8 +156,8 @@ namespace dds
                 }
                 catch (std::exception& ex)
                 {
-                    LOG(MiscCommon::error) << "CConnectionManagerImpl exception: " << ex.what();
-                    LOG(MiscCommon::info) << "CConnectionManagerImpl restarting io_context";
+                    LOG(dds::misc::error) << "CConnectionManagerImpl exception: " << ex.what();
+                    LOG(dds::misc::info) << "CConnectionManagerImpl restarting io_context";
                     runService(--_counter, _io_context);
                 }
             }
@@ -192,7 +192,7 @@ namespace dds
                             break;
                         if (counter > 300)
                         {
-                            LOG(MiscCommon::warning) << "Some channels were not shut down properly. Exiting in anyway.";
+                            LOG(dds::misc::warning) << "Some channels were not shut down properly. Exiting in anyway.";
                             break;
                         }
                     }
@@ -223,7 +223,7 @@ namespace dds
                 }
                 catch (std::exception& e)
                 {
-                    LOG(MiscCommon::fatal) << e.what();
+                    LOG(dds::misc::fatal) << e.what();
                 }
             }
 
@@ -244,8 +244,8 @@ namespace dds
                         return;
                     }
                 }
-                LOG(MiscCommon::error) << "Failed to update protocol channel header ID <"
-                                       << _channelInfo.m_protocolHeaderID << "> . Channel is not registered";
+                LOG(dds::misc::error) << "Failed to update protocol channel header ID <"
+                                      << _channelInfo.m_protocolHeaderID << "> . Channel is not registered";
             }
 
             weakChannelInfo_t getChannelByID(uint64_t _protocolHeaderID)
@@ -358,11 +358,11 @@ namespace dds
                                               uint16_t _cmdSource,
                                               conditionFunction_t _condition = nullptr)
             {
-                MiscCommon::BYTEVector_t data;
+                dds::misc::BYTEVector_t data;
 
                 std::string srcFilePath(_srcFilePath);
                 // Resolve environment variables
-                MiscCommon::smart_path(&srcFilePath);
+                dds::misc::smart_path(&srcFilePath);
 
                 std::ifstream f(srcFilePath);
                 if (!f.is_open() || !f.good())
@@ -377,7 +377,7 @@ namespace dds
                 broadcastBinaryAttachmentCmd(data, _fileName, _cmdSource, _condition);
             }
 
-            void broadcastBinaryAttachmentCmd(const MiscCommon::BYTEVector_t& _data,
+            void broadcastBinaryAttachmentCmd(const dds::misc::BYTEVector_t& _data,
                                               const std::string& _fileName,
                                               uint16_t _cmdSource,
                                               conditionFunction_t _condition = nullptr)
@@ -436,7 +436,7 @@ namespace dds
                 }
                 else
                 {
-                    LOG(MiscCommon::error) << "Can't accept new connection: " << _ec.message();
+                    LOG(dds::misc::error) << "Can't accept new connection: " << _ec.message();
                 }
             }
 
@@ -456,7 +456,7 @@ namespace dds
                             m_channels.push_back(channelInfo_t(newClient, _sender.m_ID, true));
                         }
 
-                        LOG(MiscCommon::info)
+                        LOG(dds::misc::info)
                             << "Adding new slot to " << newClient->getId() << " with id " << _sender.m_ID;
                     });
 
@@ -493,8 +493,8 @@ namespace dds
             void removeClient(T* _client)
             {
                 // TODO: fix getTypeName call
-                LOG(MiscCommon::debug) << "Removing " /*<< _client->getTypeName()*/
-                                       << " client from the list of active";
+                LOG(dds::misc::debug) << "Removing " /*<< _client->getTypeName()*/
+                                      << " client from the list of active";
                 std::lock_guard<std::mutex> lock(m_mutex);
                 // FIXME: Delete all connections of the channel if the primary protocol header ID is deleted
                 m_channels.erase(remove_if(m_channels.begin(),
@@ -511,7 +511,7 @@ namespace dds
                 while (true)
                 {
                     int nSrvPort =
-                        (m_minPort == 0 && m_maxPort == 0) ? 0 : MiscCommon::INet::get_free_port(m_minPort, m_maxPort);
+                        (m_minPort == 0 && m_maxPort == 0) ? 0 : dds::misc::INet::get_free_port(m_minPort, m_maxPort);
                     try
                     {
                         _acceptor = std::make_shared<asioAcceptor_t>(
@@ -524,7 +524,7 @@ namespace dds
                         if (++nCount >= nMaxCount)
                             throw _e;
 
-                        LOG(MiscCommon::info) << "Can't bind port " << nSrvPort << ". Will try another port.";
+                        LOG(dds::misc::info) << "Can't bind port " << nSrvPort << ". Will try another port.";
                         // If multiple commanders are started in the same time, then let's give them a chnce to find
                         // a free port.
                         std::this_thread::sleep_for(std::chrono::milliseconds(200));

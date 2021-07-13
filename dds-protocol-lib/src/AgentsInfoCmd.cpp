@@ -6,7 +6,7 @@
 
 using namespace std;
 using namespace dds;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds::protocol_api;
 
 SAgentsInfoCmd::SAgentsInfoCmd()

@@ -13,7 +13,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 // DDS
-#include "BOOSTHelper.h"
+#include "BoostHelper.h"
 #include "ProtocolCommands.h"
 #include "SubmitCmd.h"
 #include "SysHelper.h"
@@ -80,9 +80,9 @@ namespace dds
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
             bpo::notify(vm);
 
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "rms");
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "config");
-            MiscCommon::BOOSTHelper::conflicting_options(vm, "list", "slots");
+            dds::misc::conflicting_options(vm, "list", "rms");
+            dds::misc::conflicting_options(vm, "list", "config");
+            dds::misc::conflicting_options(vm, "list", "slots");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
@@ -92,19 +92,19 @@ namespace dds
 
             if (vm.count("help") || vm.end() == found)
             {
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             // "rms" requires either "config" or "number"
             if (vm.count("rms") && !vm.count("config") && !vm.count("number") && !vm.count("slots"))
             {
-                LOG(MiscCommon::log_stderr) << "--rms options requires either --config, --number, or --slots";
-                LOG(MiscCommon::log_stdout) << options;
+                LOG(dds::misc::log_stderr) << "--rms options requires either --config, --number, or --slots";
+                LOG(dds::misc::log_stdout) << options;
                 return false;
             }
             if (vm.count("version"))
             {
-                LOG(MiscCommon::log_stdout) << MiscCommon::DDSVersionInfoString();
+                LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
 

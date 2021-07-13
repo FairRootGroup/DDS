@@ -21,7 +21,7 @@ using namespace std;
 using namespace dds::session_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 namespace fs = boost::filesystem;
 
 void CStart::start(bool _Mixed)

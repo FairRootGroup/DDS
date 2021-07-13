@@ -5,7 +5,7 @@
 #ifndef __DDS__BasicCmd__
 #define __DDS__BasicCmd__
 
-// MiscCommon
+// dds::misc
 #include "INet.h"
 #include "def.h"
 // STD
@@ -15,7 +15,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-namespace inet = MiscCommon::INet;
+namespace inet = dds::misc::INet;
 
 namespace dds
 {
@@ -116,10 +116,10 @@ namespace dds
         /// \brief Helper template function reading data from byte array.
         ///
         template <typename T>
-        void readData(T* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos);
+        void readData(T* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos);
 
         template <>
-        inline void readData<uint8_t>(uint8_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        inline void readData<uint8_t>(uint8_t* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
@@ -130,7 +130,7 @@ namespace dds
         }
 
         template <>
-        inline void readData<uint16_t>(uint16_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        inline void readData<uint16_t>(uint16_t* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
@@ -144,7 +144,7 @@ namespace dds
         }
 
         template <>
-        inline void readData<uint32_t>(uint32_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        inline void readData<uint32_t>(uint32_t* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
@@ -160,7 +160,7 @@ namespace dds
         }
 
         template <>
-        inline void readData<uint64_t>(uint64_t* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        inline void readData<uint64_t>(uint64_t* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
@@ -180,7 +180,7 @@ namespace dds
         }
 
         template <>
-        inline void readData<std::string>(std::string* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        inline void readData<std::string>(std::string* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
@@ -193,9 +193,9 @@ namespace dds
             uint16_t n = 0;
             readData(&n, _data, _nPos);
 
-            MiscCommon::BYTEVector_t::const_iterator iter = _data->begin();
+            dds::misc::BYTEVector_t::const_iterator iter = _data->begin();
             std::advance(iter, *_nPos);
-            MiscCommon::BYTEVector_t::const_iterator iter_end = _data->begin();
+            dds::misc::BYTEVector_t::const_iterator iter_end = _data->begin();
             std::advance(iter_end, (*_nPos + n));
             std::copy(iter, iter_end, back_inserter(*_value));
 
@@ -204,22 +204,22 @@ namespace dds
 
         template <>
         inline void readData<boost::uuids::uuid>(boost::uuids::uuid* _value,
-                                                 const MiscCommon::BYTEVector_t* _data,
+                                                 const dds::misc::BYTEVector_t* _data,
                                                  size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
 
-            MiscCommon::BYTEVector_t::const_iterator iter = _data->begin();
+            dds::misc::BYTEVector_t::const_iterator iter = _data->begin();
             std::advance(iter, *_nPos);
-            MiscCommon::BYTEVector_t::const_iterator iter_end = _data->begin();
+            dds::misc::BYTEVector_t::const_iterator iter_end = _data->begin();
             std::advance(iter_end, (*_nPos + boost::uuids::uuid::static_size()));
             copy(iter, iter_end, _value->begin());
             (*_nPos) += boost::uuids::uuid::static_size();
         }
 
         template <typename T>
-        inline void readDataVector(std::vector<T>* _value, const MiscCommon::BYTEVector_t* _data, size_t* _nPos)
+        inline void readDataVector(std::vector<T>* _value, const dds::misc::BYTEVector_t* _data, size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
                 throw std::invalid_argument("readDataFromContainer");
@@ -243,7 +243,7 @@ namespace dds
 
         template <>
         inline void readData<std::vector<uint8_t>>(std::vector<uint8_t>* _value,
-                                                   const MiscCommon::BYTEVector_t* _data,
+                                                   const dds::misc::BYTEVector_t* _data,
                                                    size_t* _nPos)
         {
             if (_data == nullptr || _nPos == nullptr || _value == nullptr)
@@ -256,9 +256,9 @@ namespace dds
             uint32_t n = 0;
             readData(&n, _data, _nPos);
 
-            MiscCommon::BYTEVector_t::const_iterator iter = _data->begin();
+            dds::misc::BYTEVector_t::const_iterator iter = _data->begin();
             std::advance(iter, *_nPos);
-            MiscCommon::BYTEVector_t::const_iterator iter_end = _data->begin();
+            dds::misc::BYTEVector_t::const_iterator iter_end = _data->begin();
             std::advance(iter_end, (*_nPos + n));
             std::copy(iter, iter_end, back_inserter(*_value));
 
@@ -267,7 +267,7 @@ namespace dds
 
         template <>
         inline void readData<std::vector<uint16_t>>(std::vector<uint16_t>* _value,
-                                                    const MiscCommon::BYTEVector_t* _data,
+                                                    const dds::misc::BYTEVector_t* _data,
                                                     size_t* _nPos)
         {
             readDataVector<uint16_t>(_value, _data, _nPos);
@@ -275,7 +275,7 @@ namespace dds
 
         template <>
         inline void readData<std::vector<uint32_t>>(std::vector<uint32_t>* _value,
-                                                    const MiscCommon::BYTEVector_t* _data,
+                                                    const dds::misc::BYTEVector_t* _data,
                                                     size_t* _nPos)
         {
             readDataVector<uint32_t>(_value, _data, _nPos);
@@ -283,7 +283,7 @@ namespace dds
 
         template <>
         inline void readData<std::vector<uint64_t>>(std::vector<uint64_t>* _value,
-                                                    const MiscCommon::BYTEVector_t* _data,
+                                                    const dds::misc::BYTEVector_t* _data,
                                                     size_t* _nPos)
         {
             readDataVector<uint64_t>(_value, _data, _nPos);
@@ -291,7 +291,7 @@ namespace dds
 
         template <>
         inline void readData<std::vector<std::string>>(std::vector<std::string>* _value,
-                                                       const MiscCommon::BYTEVector_t* _data,
+                                                       const dds::misc::BYTEVector_t* _data,
                                                        size_t* _nPos)
         {
             readDataVector<std::string>(_value, _data, _nPos);
@@ -302,10 +302,10 @@ namespace dds
         /// \brief Helper template function pushing data to byte array.
         ///
         template <typename T>
-        void pushData(const T& _value, MiscCommon::BYTEVector_t* _data);
+        void pushData(const T& _value, dds::misc::BYTEVector_t* _data);
 
         template <>
-        inline void pushData<uint8_t>(const uint8_t& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<uint8_t>(const uint8_t& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -314,7 +314,7 @@ namespace dds
         }
 
         template <>
-        inline void pushData<uint16_t>(const uint16_t& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<uint16_t>(const uint16_t& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -325,7 +325,7 @@ namespace dds
         }
 
         template <>
-        inline void pushData<uint32_t>(const uint32_t& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<uint32_t>(const uint32_t& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -338,7 +338,7 @@ namespace dds
         }
 
         template <>
-        inline void pushData<uint64_t>(const uint64_t& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<uint64_t>(const uint64_t& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -355,7 +355,7 @@ namespace dds
         }
 
         template <>
-        inline void pushData<std::string>(const std::string& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<std::string>(const std::string& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -370,7 +370,7 @@ namespace dds
         }
 
         template <>
-        inline void pushData<boost::uuids::uuid>(const boost::uuids::uuid& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<boost::uuids::uuid>(const boost::uuids::uuid& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -379,7 +379,7 @@ namespace dds
         }
 
         template <typename T>
-        inline void pushDataVector(const std::vector<T>& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushDataVector(const std::vector<T>& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -399,7 +399,7 @@ namespace dds
         }
 
         template <>
-        inline void pushData<std::vector<uint8_t>>(const std::vector<uint8_t>& _value, MiscCommon::BYTEVector_t* _data)
+        inline void pushData<std::vector<uint8_t>>(const std::vector<uint8_t>& _value, dds::misc::BYTEVector_t* _data)
         {
             if (_data == nullptr)
                 throw std::invalid_argument("pushDataFromContainer");
@@ -414,43 +414,40 @@ namespace dds
         }
 
         template <>
-        inline void pushData<std::vector<uint16_t>>(const std::vector<uint16_t>& _value,
-                                                    MiscCommon::BYTEVector_t* _data)
+        inline void pushData<std::vector<uint16_t>>(const std::vector<uint16_t>& _value, dds::misc::BYTEVector_t* _data)
         {
             pushDataVector<uint16_t>(_value, _data);
         }
 
         template <>
-        inline void pushData<std::vector<uint32_t>>(const std::vector<uint32_t>& _value,
-                                                    MiscCommon::BYTEVector_t* _data)
+        inline void pushData<std::vector<uint32_t>>(const std::vector<uint32_t>& _value, dds::misc::BYTEVector_t* _data)
         {
             pushDataVector<uint32_t>(_value, _data);
         }
 
         template <>
-        inline void pushData<std::vector<uint64_t>>(const std::vector<uint64_t>& _value,
-                                                    MiscCommon::BYTEVector_t* _data)
+        inline void pushData<std::vector<uint64_t>>(const std::vector<uint64_t>& _value, dds::misc::BYTEVector_t* _data)
         {
             pushDataVector<uint64_t>(_value, _data);
         }
 
         template <>
         inline void pushData<std::vector<std::string>>(const std::vector<std::string>& _value,
-                                                       MiscCommon::BYTEVector_t* _data)
+                                                       dds::misc::BYTEVector_t* _data)
         {
             pushDataVector<std::string>(_value, _data);
         }
 
         struct SAttachmentDataProvider
         {
-            SAttachmentDataProvider(MiscCommon::BYTEVector_t* _data)
+            SAttachmentDataProvider(dds::misc::BYTEVector_t* _data)
                 : m_data(_data)
                 , m_pos(0)
             {
             }
 
-            SAttachmentDataProvider(const MiscCommon::BYTEVector_t& _data)
-                : m_data(const_cast<MiscCommon::BYTEVector_t*>(&_data))
+            SAttachmentDataProvider(const dds::misc::BYTEVector_t& _data)
+                : m_data(const_cast<dds::misc::BYTEVector_t*>(&_data))
                 , m_pos(0)
             {
             }
@@ -470,14 +467,14 @@ namespace dds
             }
 
           private:
-            MiscCommon::BYTEVector_t* m_data;
+            dds::misc::BYTEVector_t* m_data;
             size_t m_pos;
         };
 
         template <class _Owner>
         struct SBasicCmd
         {
-            void convertFromData(const MiscCommon::BYTEVector_t& _data)
+            void convertFromData(const dds::misc::BYTEVector_t& _data)
             {
                 _Owner* p = reinterpret_cast<_Owner*>(this);
                 if (_data.size() < p->size())
@@ -488,7 +485,7 @@ namespace dds
                 }
                 p->_convertFromData(_data);
             }
-            void convertToData(MiscCommon::BYTEVector_t* _data) const
+            void convertToData(dds::misc::BYTEVector_t* _data) const
             {
                 const _Owner* p = reinterpret_cast<const _Owner*>(this);
                 p->_convertToData(_data);

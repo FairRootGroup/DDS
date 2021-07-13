@@ -17,7 +17,7 @@
 #include <boost/filesystem/path.hpp>
 
 using namespace std;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace boost::filesystem;
 
 int main(int argc, char* argv[])

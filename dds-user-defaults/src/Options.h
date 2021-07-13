@@ -26,7 +26,7 @@ namespace dds
             //!< Logging directory.
             std::string m_logDir;
             //!< Log severity level
-            MiscCommon::ELogSeverityLevel m_logSeverityLevel;
+            dds::misc::ELogSeverityLevel m_logSeverityLevel;
             //!< Log rotation size in MB
             unsigned int m_logRotationSize;
             //!< True if output log also to console

@@ -16,10 +16,10 @@ namespace dds
         struct SSimpleMsgCmd : public SBasicCmd<SSimpleMsgCmd>
         {
             SSimpleMsgCmd();
-            SSimpleMsgCmd(const std::string& _msg, uint16_t _severity = MiscCommon::info, uint16_t _command = 0);
+            SSimpleMsgCmd(const std::string& _msg, uint16_t _severity = dds::misc::info, uint16_t _command = 0);
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SSimpleMsgCmd& val) const;
 
             uint16_t m_msgSeverity;

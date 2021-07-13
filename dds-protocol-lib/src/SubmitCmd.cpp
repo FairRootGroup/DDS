@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SSubmitCmd::SSubmitCmd()
     : m_nNumberOfAgents(0)
@@ -24,12 +25,12 @@ bool SSubmitCmd::operator==(const SSubmitCmd& val) const
             m_nNumberOfAgents == val.m_nNumberOfAgents);
 }
 
-void SSubmitCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SSubmitCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_sRMSType).get(m_sCfgFile).get(m_sPath).get(m_nNumberOfAgents);
 }
 
-void SSubmitCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SSubmitCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_sRMSType).put(m_sCfgFile).put(m_sPath).put(m_nNumberOfAgents);
 }

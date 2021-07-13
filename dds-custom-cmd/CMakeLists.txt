@@ -15,8 +15,8 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  MiscCommon
-	dds_intercom_lib
+  dds_misc_lib
+  dds_intercom_lib
   dds_user_defaults_lib
   Boost::boost
   Boost::program_options

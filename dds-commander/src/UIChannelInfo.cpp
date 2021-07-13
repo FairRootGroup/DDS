@@ -10,6 +10,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::commander_cmd;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 CSubmitAgentsChannelInfo::CSubmitAgentsChannelInfo()
     : CUIChannelInfo<CSubmitAgentsChannelInfo>()
@@ -49,7 +50,7 @@ string CSubmitAgentsChannelInfo::getAllReceivedMessage() const
 bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& _cmd,
                                                            CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
-    LOG(MiscCommon::info) << "Processing RMS plug-in message: " << _cmd.m_sCmd;
+    LOG(info) << "Processing RMS plug-in message: " << _cmd.m_sCmd;
     boost::property_tree::ptree pt;
 
     try
@@ -58,12 +59,12 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
 
         if (m_channel.expired())
         {
-            LOG(MiscCommon::fatal) << "Can't process RMS plug-in messages. UI channel expired";
+            LOG(fatal) << "Can't process RMS plug-in messages. UI channel expired";
             return true;
         }
         if (m_channelSubmitPlugin.expired())
         {
-            LOG(MiscCommon::fatal) << "Can't process RMS plug-in messages. Plug-in channel expired";
+            LOG(fatal) << "Can't process RMS plug-in messages. Plug-in channel expired";
             return true;
         }
 
@@ -71,14 +72,14 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
         auto pUI = m_channel.lock();
         if (!pUI)
         {
-            LOG(MiscCommon::fatal) << "Can't process RMS plug-in messages. UI channel can't be locked";
+            LOG(fatal) << "Can't process RMS plug-in messages. UI channel can't be locked";
             return true;
         }
         // lock Plug-in channel
         auto pPlugin = m_channelSubmitPlugin.lock();
         if (!pPlugin)
         {
-            LOG(MiscCommon::fatal) << "Can't process RMS plug-in messages. Plug-in channel can't be locked";
+            LOG(fatal) << "Can't process RMS plug-in messages. Plug-in channel can't be locked";
             return true;
         }
 
@@ -96,7 +97,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
                 pPlugin->registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
                     [this](const SSenderInfo& /*_sender*/)
                     {
-                        LOG(MiscCommon::info) << "Plug-in disconnect subscription called";
+                        LOG(info) << "Plug-in disconnect subscription called";
                         // the plug-in is done and went offline, let's close UI
                         // connection as well.
                         m_channelSubmitPlugin.reset();
@@ -108,7 +109,7 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
                 stringstream ssMsg;
                 ssMsg << "RMS plug-in is online. Startup time: "
                       << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms.";
-                LOG(MiscCommon::info) << ssMsg.str();
+                LOG(info) << ssMsg.str();
                 sendUIMessage(ssMsg.str());
 
                 intercom_api::SInit init;
@@ -145,14 +146,14 @@ bool CSubmitAgentsChannelInfo::processCustomCommandMessage(const SCustomCmdCmd& 
     {
         string msg("Failed to process RMS plug-in message: ");
         msg += _e.what();
-        LOG(MiscCommon::error) << msg;
+        LOG(error) << msg;
 
         sendUIMessage(msg, dds::intercom_api::EMsgSeverity::error);
         shutdown();
     }
     catch (const exception& _e)
     {
-        LOG(MiscCommon::error) << "CSubmitAgentsChannelInfo::processCustomCommandMessage: ";
+        LOG(error) << "CSubmitAgentsChannelInfo::processCustomCommandMessage: ";
         shutdown();
     }
     return true;

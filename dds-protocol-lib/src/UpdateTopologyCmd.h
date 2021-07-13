@@ -23,8 +23,8 @@ namespace dds
 
             SUpdateTopologyCmd();
             size_t size() const;
-            void _convertFromData(const MiscCommon::BYTEVector_t& _data);
-            void _convertToData(MiscCommon::BYTEVector_t* _data) const;
+            void _convertFromData(const dds::misc::BYTEVector_t& _data);
+            void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SUpdateTopologyCmd& val) const;
 
             // when 0 - valiadate, any other value - don't validate

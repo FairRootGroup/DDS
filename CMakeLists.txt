@@ -103,6 +103,7 @@ option(BUILD_dds-submit-pbs "Build dds-submit-pbs" ON)
 option(BUILD_dds-submit-lsf "Build dds-submit-lsf" ON)
 option(BUILD_dds-session "Build dds-session" ON)
 option(BUILD_dds_tools_lib "Build dds-tools-lib" ON)
+option(BUILD_dds_pipe_log_engine_lib "Build dds-pipe-log-engine-lib" ON)
 #
 # Custom targets
 #
@@ -147,8 +148,6 @@ set(MiscCommon_LOCATION ${CMAKE_SOURCE_DIR}/MiscCommon)
 set(MiscCommon_LOCATION
     ${MiscCommon_LOCATION}
     ${MiscCommon_LOCATION}/pipe_log_engine
-    ${MiscCommon_LOCATION}/dds_sys_files
-	${MiscCommon_LOCATION}/dds_ncf/src
 )
 #
 # Custom compiler definitions
@@ -240,8 +239,8 @@ if(Boost_FOUND)
 endif(Boost_FOUND)
 
 # DDS Misc Common
-message(STATUS "Build MiscCommon - YES")
-add_subdirectory ( MiscCommon )
+message(STATUS "Build dds_misc_lib - YES")
+add_subdirectory ( dds-misc-lib )
 
 # DDS Protocol lib
 message(STATUS "Build dds_protocol_lib - YES")
@@ -359,6 +358,12 @@ if(BUILD_dds_tools_lib)
     add_subdirectory ( dds-tools-lib )
 endif(BUILD_dds_tools_lib)
 
+# dds-pipe-log-engine-lib
+if(BUILD_dds_pipe_log_engine_lib)
+    message(STATUS "Build dds_pipe_log_engine_lib - YES")
+    add_subdirectory ( dds-pipe-log-engine-lib )
+endif(BUILD_dds_pipe_log_engine_lib)
+
 #
 # Install
 #
@@ -429,7 +434,7 @@ else()
   file(TO_CMAKE_PATH "$ENV{LD_LIBRARY_PATH}" ENV_LD_LIBRARY_PATH)
 endif()
 
-set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_ncf>::${DDS_BOOST_LIB_DIR}")
+set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_protocol_lib>::$<TARGET_FILE_DIR:dds_intercom_lib>::$<TARGET_FILE_DIR:dds_topology_lib>::$<TARGET_FILE_DIR:dds_misc_lib>::${DDS_BOOST_LIB_DIR}")
 foreach(p IN LISTS ENV_LD_LIBRARY_PATH)
   set(PREREQ_DIRS "${PREREQ_DIRS}::${p}")
 endforeach()

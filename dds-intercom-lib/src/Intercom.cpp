@@ -9,7 +9,7 @@ using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::internal_api;
 using namespace dds::protocol_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace std;
 
 CIntercomService::CIntercomService()

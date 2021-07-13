@@ -22,12 +22,11 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 )
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  MiscCommon
+  dds_misc_lib
   Boost::boost
   Boost::program_options
   Boost::system
@@ -45,13 +44,12 @@ target_include_directories(dds_user_defaults_lib
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(dds_user_defaults_lib
   PUBLIC
-  MiscCommon
+  dds_misc_lib
   Boost::boost
   Boost::program_options
   Boost::system

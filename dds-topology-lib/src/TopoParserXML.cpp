@@ -17,7 +17,7 @@
 
 using namespace std;
 using namespace dds;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace topology_api;
 namespace fs = boost::filesystem;
 

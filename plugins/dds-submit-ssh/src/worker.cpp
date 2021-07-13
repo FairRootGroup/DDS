@@ -13,13 +13,14 @@
 using namespace std;
 using namespace dds;
 using namespace dds::ssh_cmd;
-using namespace MiscCommon;
+using namespace dds::misc;
+;
 using namespace dds::user_defaults_api;
 namespace fs = boost::filesystem;
 //=============================================================================
 const std::chrono::seconds g_cmdTimeout = std::chrono::seconds(20);
 //=============================================================================
-CWorker::CWorker(ncf::configRecord_t _rec, const SWNOptions& _options, const string& _path)
+CWorker::CWorker(configRecord_t _rec, const SWNOptions& _options, const string& _path)
     : m_rec(_rec)
     , m_options(_options)
     , m_path(_path)

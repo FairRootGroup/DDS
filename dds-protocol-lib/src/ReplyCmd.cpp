@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SReplyCmd::SReplyCmd()
     : m_statusCode(0)
@@ -35,12 +36,12 @@ bool SReplyCmd::operator==(const SReplyCmd& val) const
             m_srcCommand == val.m_srcCommand);
 }
 
-void SReplyCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SReplyCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_statusCode).get(m_returnCode).get(m_srcCommand).get(m_sMsg);
 }
 
-void SReplyCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SReplyCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_statusCode).put(m_returnCode).put(m_srcCommand).put(m_sMsg);
 }

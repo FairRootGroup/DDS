@@ -9,6 +9,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 SVersionCmd::SVersionCmd()
     : m_version(g_protocolCommandsVersion)
@@ -26,12 +27,12 @@ bool SVersionCmd::operator==(const SVersionCmd& val) const
     return (m_sSID == val.m_sSID) && (m_version == val.m_version) && (m_channelType == val.m_channelType);
 }
 
-void SVersionCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void SVersionCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data).get(m_sSID).get(m_version).get(m_channelType);
 }
 
-void SVersionCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void SVersionCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data).put(m_sSID).put(m_version).put(m_channelType);
 }

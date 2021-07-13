@@ -28,7 +28,7 @@ using namespace std;
 using namespace dds;
 using namespace dds::tools_api;
 using namespace dds::user_defaults_api;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds::intercom_api;
 using namespace boost::property_tree;
 namespace fs = boost::filesystem;

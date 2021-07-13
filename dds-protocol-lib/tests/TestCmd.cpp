@@ -7,6 +7,7 @@
 using namespace std;
 using namespace dds;
 using namespace dds::protocol_api;
+using namespace dds::misc;
 
 STestCmd::STestCmd()
     : m_uint16(0)
@@ -39,7 +40,7 @@ bool STestCmd::operator==(const STestCmd& val) const
             m_vuint64 == val.m_vuint64 && m_vstring1 == val.m_vstring1 && m_vstring2 == val.m_vstring2);
 }
 
-void STestCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
+void STestCmd::_convertFromData(const BYTEVector_t& _data)
 {
     SAttachmentDataProvider(_data)
         .get(m_uint16)
@@ -56,7 +57,7 @@ void STestCmd::_convertFromData(const MiscCommon::BYTEVector_t& _data)
         .get(m_string4);
 }
 
-void STestCmd::_convertToData(MiscCommon::BYTEVector_t* _data) const
+void STestCmd::_convertToData(BYTEVector_t* _data) const
 {
     SAttachmentDataProvider(_data)
         .put(m_uint16)

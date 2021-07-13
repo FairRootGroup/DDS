@@ -6,7 +6,7 @@
 // DDS
 #include "AgentChannel.h"
 
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds;
 using namespace dds::internal_api;
 using namespace dds::protocol_api;
@@ -26,12 +26,11 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _service, uint64_t _protoc
             this->sendYourself<cmdSHUTDOWN>();
         });
 
-    registerHandler<protocol_api::EChannelEvents::OnConnected>(
-        [](const SSenderInfo& /*_sender*/) { LOG(MiscCommon::info) << "Connected to the commander server"; });
+    registerHandler<protocol_api::EChannelEvents::OnConnected>([](const SSenderInfo& /*_sender*/)
+                                                               { LOG(info) << "Connected to the commander server"; });
 
     registerHandler<protocol_api::EChannelEvents::OnFailedToConnect>(
-        [](const SSenderInfo& /*_sender*/)
-        { LOG(MiscCommon::log_stderr) << "Failed to connect to commander server."; });
+        [](const SSenderInfo& /*_sender*/) { LOG(log_stderr) << "Failed to connect to commander server."; });
 }
 
 void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const string&)>& callback)

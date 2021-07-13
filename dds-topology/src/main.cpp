@@ -13,7 +13,7 @@
 #include "UserDefaults.h"
 
 using namespace std;
-using namespace MiscCommon;
+using namespace dds::misc;
 using namespace dds;
 using namespace dds::topology_cmd;
 using namespace dds::topology_api;
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        LOG(MiscCommon::log_stdout) << "Connection established.";
+        LOG(log_stdout) << "Connection established.";
 
         string action;
         switch (options.m_topologyCmd)
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
                 return EXIT_FAILURE;
         }
 
-        LOG(MiscCommon::log_stdout) << "Requesting server to " << action << " the topology...";
+        LOG(log_stdout) << "Requesting server to " << action << " the topology...";
 
         STopologyRequest::request_t topoInfo;
 

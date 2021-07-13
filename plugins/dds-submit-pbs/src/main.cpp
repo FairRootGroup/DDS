@@ -18,17 +18,17 @@
 #include "Intercom.h"
 #include "Logger.h"
 #include "MiscSetup.h"
+#include "PipeLogEngine.h"
 #include "Process.h"
 #include "SysHelper.h"
 #include "UserDefaults.h"
-#include "logEngine.h"
 
 using namespace std;
 using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
-using namespace MiscCommon;
+using namespace dds::misc;
 namespace bpo = boost::program_options;
 namespace fs = boost::filesystem;
 namespace bp = boost::process;
@@ -74,7 +74,7 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
 int main(int argc, char* argv[])
 {
     bpo::variables_map vm;
-    if (dds::misc::defaultExecSetup<bpo::variables_map>(argc, argv, &vm, &parseCmdLine) == EXIT_FAILURE)
+    if (defaultExecSetup<bpo::variables_map>(argc, argv, &vm, &parseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
     // Session ID
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
-    if (dds::misc::defaultExecReinit(sid) == EXIT_FAILURE)
+    if (defaultExecReinit(sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
     // Init communication with DDS commander server

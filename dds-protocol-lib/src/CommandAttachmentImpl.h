@@ -40,7 +40,7 @@
                                                                                                       \
         static CProtocolMessage::protocolMessagePtr_t encode(const _class& _attachment, uint64_t _ID) \
         {                                                                                             \
-            MiscCommon::BYTEVector_t data;                                                            \
+            dds::misc::BYTEVector_t data;                                                             \
             _attachment.convertToData(&data);                                                         \
             return std::make_shared<CProtocolMessage>(_cmd, data, _ID);                               \
         }                                                                                             \
@@ -70,7 +70,7 @@ namespace dds
 
             static CProtocolMessage::protocolMessagePtr_t encode(const SEmptyCmd& /*_attachment*/, uint64_t _ID)
             {
-                MiscCommon::BYTEVector_t data;
+                dds::misc::BYTEVector_t data;
                 return std::make_shared<CProtocolMessage>(_cmd, data, _ID);
             }
         };
