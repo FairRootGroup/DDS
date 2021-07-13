@@ -51,6 +51,21 @@ namespace dds
         CSSHConfigFile(const std::string& _filepath);
         CSSHConfigFile(std::istream& _stream);
 
+        static void make(const std::string& _filepath, const configRecords_t& _records, const std::string& _bash = "");
+        static void make(std::ostream& _stream, const configRecords_t& _records, const std::string& _bash = "");
+        static void make(const std::string& _filepath,
+                         const std::vector<std::string>& _hosts,
+                         const std::string& _sshOptions = "",
+                         const std::string& _wrkDir = "/tmp/wn_dds",
+                         size_t _numSlots = 1,
+                         const std::string& _bash = "");
+        static void make(std::ostream& _stream,
+                         const std::vector<std::string>& _hosts,
+                         const std::string& _sshOptions = "",
+                         const std::string& _wrkDir = "/tmp/wn_dds",
+                         size_t _numSlots = 1,
+                         const std::string& _bash = "");
+
         const configRecords_t& getRecords();
         const std::string& getBash();
 

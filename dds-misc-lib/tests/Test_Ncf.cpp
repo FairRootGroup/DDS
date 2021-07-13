@@ -87,4 +87,37 @@ BOOST_AUTO_TEST_CASE(test_duplicate_id)
     BOOST_REQUIRE_THROW(CSSHConfigFile config(ss), runtime_error);
 }
 
+void test_make(const string& _result,
+               const vector<string>& _hosts,
+               const std::string& _sshOptions = "",
+               const std::string& _wrkDir = "/tmp/wn_dds",
+               size_t _numSlots = 1,
+               const string& _bash = "")
+{
+    stringstream ss1;
+    CSSHConfigFile::make(ss1, _hosts, _sshOptions, _wrkDir, _numSlots, _bash);
+    const string bash1{ _bash.empty() ? string() : string("@bash_begin@\n") + _bash + "\n@bash_end@\n\n" };
+    BOOST_CHECK(ss1.str() == (bash1 + _result));
+
+    auto f{ CSSHConfigFile(ss1) };
+
+    stringstream ss2;
+    CSSHConfigFile::make(ss2, f.getRecords(), f.getBash());
+    const string bash2{ _bash.empty() ? string() : string("@bash_begin@\n") + f.getBash() + "\n@bash_end@\n\n" };
+    BOOST_CHECK(ss2.str() == (bash2 + _result));
+}
+
+BOOST_AUTO_TEST_CASE(test_make_1)
+{
+    const string result1{ "wn_user@host1.gsi.de, user@host1.gsi.de, , /tmp/wn_dds, 1\nwn_user@host2.gsi.de, "
+                          "user@host2.gsi.de, , /tmp/wn_dds, 1\n" };
+    const vector<string> hosts1{ "user@host1.gsi.de", "user@host2.gsi.de" };
+    test_make(result1, hosts1);
+
+    const string result2{ "wn_user@host1.gsi.de, user@host1.gsi.de, -p1234, "
+                          "~/tmp/, 10\nwn_user@host2.gsi.de, user@host2.gsi.de, -p1234, ~/tmp/, 10\n" };
+    const vector<string> hosts2{ "user@host1.gsi.de", "user@host2.gsi.de" };
+    test_make(result2, hosts2, "-p1234", "~/tmp/", 10, "source env.sh");
+}
+
 BOOST_AUTO_TEST_SUITE_END();

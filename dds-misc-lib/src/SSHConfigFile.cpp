@@ -30,6 +30,21 @@ struct CSSHConfigFile::SImpl
     void read(const string& _filepath, bool _readBashOnly = false);
     void read(istream& _stream, bool _readBashOnly = false);
 
+    static void make(const std::string& _filepath, const configRecords_t& _records, const std::string& _bash);
+    static void make(std::ostream& _stream, const configRecords_t& _records, const std::string& _bash);
+    static void make(const std::string& _filepath,
+                     const std::vector<std::string>& _hosts,
+                     const std::string& _sshOPtions,
+                     const std::string& _wrkDir,
+                     size_t _numSlots,
+                     const std::string& _bash);
+    static void make(std::ostream& _stream,
+                     const std::vector<std::string>& _hosts,
+                     const std::string& _sshOPtions,
+                     const std::string& _wrkDir,
+                     size_t _numSlots,
+                     const std::string& _bash);
+
     configRecords_t m_records;
     std::string m_bash;
 };
@@ -128,6 +143,67 @@ void CSSHConfigFile::SImpl::read(istream& _stream, bool _readBashOnly)
                             "There is a defined inline script, but the closing tag is missing.");
 }
 
+void CSSHConfigFile::SImpl::make(const std::string& _filepath,
+                                 const configRecords_t& _records,
+                                 const std::string& _bash)
+{
+    ofstream f(_filepath);
+    if (!f.is_open())
+    {
+        stringstream ss;
+        ss << "Failed to create dds-ssh configuration file " << std::quoted(_filepath);
+        throw runtime_error(ss.str());
+    }
+    make(f, _records, _bash);
+}
+
+void CSSHConfigFile::SImpl::make(std::ostream& _stream, const configRecords_t& _records, const std::string& _bash)
+{
+    if (!_bash.empty())
+    {
+        _stream << g_bashscript_start << endl << _bash << endl << g_bashscript_end << endl << endl;
+    }
+    for (const auto& r : _records)
+    {
+        _stream << r->m_id << ", " << r->m_addr << ", " << r->m_sshOptions << ", " << r->m_wrkDir << ", " << r->m_nSlots
+                << endl;
+    }
+}
+
+void CSSHConfigFile::SImpl::make(const std::string& _filepath,
+                                 const std::vector<std::string>& _hosts,
+                                 const std::string& _sshOptions,
+                                 const std::string& _wrkDir,
+                                 size_t _numSlots,
+                                 const std::string& _bash)
+{
+    ofstream f(_filepath);
+    if (!f.is_open())
+    {
+        stringstream ss;
+        ss << "Failed to create dds-ssh configuration file " << std::quoted(_filepath);
+        throw runtime_error(ss.str());
+    }
+    make(f, _hosts, _sshOptions, _wrkDir, _numSlots, _bash);
+}
+
+void CSSHConfigFile::SImpl::make(std::ostream& _stream,
+                                 const std::vector<std::string>& _hosts,
+                                 const std::string& _sshOPtions,
+                                 const std::string& _wrkDir,
+                                 size_t _numSlots,
+                                 const std::string& _bash)
+{
+    if (!_bash.empty())
+    {
+        _stream << g_bashscript_start << endl << _bash << endl << g_bashscript_end << endl << endl;
+    }
+    for (const auto& host : _hosts)
+    {
+        _stream << "wn_" << host << ", " << host << ", " << _sshOPtions << ", " << _wrkDir << ", " << _numSlots << endl;
+    }
+}
+
 //=============================================================================
 
 template <class InputIterator>
@@ -184,6 +260,36 @@ CSSHConfigFile::CSSHConfigFile(std::istream& _stream)
     : m_impl(make_shared<CSSHConfigFile::SImpl>())
 {
     m_impl->read(_stream);
+}
+
+void CSSHConfigFile::make(const std::string& _filepath, const configRecords_t& _records, const std::string& _bash)
+{
+    SImpl::make(_filepath, _records, _bash);
+}
+
+void CSSHConfigFile::make(std::ostream& _stream, const configRecords_t& _records, const std::string& _bash)
+{
+    SImpl::make(_stream, _records, _bash);
+}
+
+void CSSHConfigFile::make(const std::string& _filepath,
+                          const std::vector<std::string>& _hosts,
+                          const std::string& _sshOPtions,
+                          const std::string& _wrkDir,
+                          size_t _numSlots,
+                          const std::string& _bash)
+{
+    SImpl::make(_filepath, _hosts, _sshOPtions, _wrkDir, _numSlots, _bash);
+}
+
+void CSSHConfigFile::CSSHConfigFile::make(std::ostream& _stream,
+                                          const std::vector<std::string>& _hosts,
+                                          const std::string& _sshOPtions,
+                                          const std::string& _wrkDir,
+                                          size_t _numSlots,
+                                          const std::string& _bash)
+{
+    SImpl::make(_stream, _hosts, _sshOPtions, _wrkDir, _numSlots, _bash);
 }
 
 const configRecords_t& CSSHConfigFile::getRecords()
