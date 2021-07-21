@@ -2,10 +2,10 @@
 //
 // STL extensions
 //
-#ifndef STLX_H_
-#define STLX_H_
+#ifndef _DDS_STLX_H_
+#define _DDS_STLX_H_
 
-namespace MiscCommon
+namespace dds::misc
 {
     /**
      *
@@ -91,5 +91,5 @@ namespace MiscCommon
             }
         };
     }; // namespace stlx
-};     // namespace MiscCommon
-#endif /*STLX_H_*/
+};     // namespace dds::misc
+#endif /*_DDS_STLX_H_*/
