@@ -616,6 +616,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     { return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started()); };
     broadcastMsg<cmdUSER_TASK_DONE>(*_attachment, condition);
 
+    SHostInfoCmd hostInfo;
     if (!_channel.expired())
     {
         auto channelPtr = _channel.lock();
@@ -623,6 +624,9 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
         SSlotInfo& thisSlotInf = thisInf.getSlotByID(_sender.m_ID);
         thisSlotInf.m_state = EAgentState::idle;
         thisSlotInf.m_taskID = 0;
+
+        // Collect additional response info
+        hostInfo = thisInf.m_remoteHostInfo;
     }
 
     // remove task ID from the map
@@ -669,6 +673,8 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
             // - If a command is found but is not executable, the return status is 126.
             response.m_signal =
                 (WEXITSTATUS(_attachment->m_exitCode) > 128 ? (WEXITSTATUS(_attachment->m_exitCode) - 128) : 0);
+            response.m_host = hostInfo.m_host;
+            response.m_wrkDir = hostInfo.m_DDSPath;
 
             sendCustomCommandResponse(ch, response.toJSON());
         }
