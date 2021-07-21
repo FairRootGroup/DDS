@@ -222,6 +222,8 @@ namespace dds
             uint64_t m_taskID = 0;   ///<  Task ID
             uint32_t m_exitCode = 0; ///< Exit code
             uint32_t m_signal = 0;   ///<  A signal number if the process is killed by/stopped by a signal
+            std::string m_host;      ///<  Hostname
+            std::string m_wrkDir;    ///< Working directory
 
           private:
             friend SBaseData<SOnTaskDoneResponseData>;

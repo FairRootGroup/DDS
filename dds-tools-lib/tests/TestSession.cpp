@@ -557,9 +557,9 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_onTaskDone)
         [&nTaskDoneCount](const SOnTaskDoneResponseData& _info)
         {
             ++nTaskDoneCount;
-            BOOST_TEST_MESSAGE("Recieved onTaskDone event. TaskID: " << _info.m_taskID
-                                                                     << " ; ExitCode: " << _info.m_exitCode
-                                                                     << " ; Signal: " << _info.m_signal);
+            BOOST_TEST_MESSAGE("Recieved onTaskDone event. TaskID: "
+                               << _info.m_taskID << " ; ExitCode: " << _info.m_exitCode << " ; Signal: "
+                               << _info.m_signal << " ; Host: " << _info.m_host << " ; WrkDir: " << _info.m_wrkDir);
         });
     BOOST_CHECK_NO_THROW(session.sendRequest<SOnTaskDoneRequest>(requestPtr));
 
