@@ -8,6 +8,7 @@
 // API
 #include <dirent.h>
 #include <fcntl.h>
+#include <regex.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -26,6 +27,7 @@
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/process.hpp>
 // DDS
+#include "CustomIterator.h"
 #include "ErrorCode.h"
 #include "MiscUtils.h"
 #include "SysHelper.h"

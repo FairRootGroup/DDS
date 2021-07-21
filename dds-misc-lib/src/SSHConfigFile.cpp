@@ -4,6 +4,7 @@
 //
 //=============================================================================
 // std
+#include <iomanip>
 #include <iostream>
 // boost
 #include <boost/tokenizer.hpp>
