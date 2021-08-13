@@ -556,7 +556,11 @@ void CSession::waitForNumAgents(size_t _numAgents,
                                                           _requestInterval);
             if (_timeout.count() != 0 && remained.count() <= 0)
             {
-                throw runtime_error("Failed to wait for the required number of agents: exceed timeout");
+                stringstream ss;
+                ss << "Failed to wait for the required number of agents (" << _numAgents << ") / active ("
+                   << response.m_activeSlotsCount << ") idle (" << response.m_idleSlotsCount << " executing ("
+                   << response.m_executingSlotsCount << ") /: exceed timeout (" << _timeout.count() << " s)";
+                throw runtime_error(ss.str());
             }
             this_thread::sleep_for(_requestInterval);
         }
