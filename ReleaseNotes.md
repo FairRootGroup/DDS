@@ -31,6 +31,7 @@ Added: On topology upodate/stop a task done event is now only sent when all proc
 
 ### dds-session
 Modified: improved default SID storage and handling. (GH-318)      
+Fixed: silence the error "dds-session: error: Sessions holder dir doesn't exists". (GH-376)   
 
 ### dds-slurm-plugin
 Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.    
