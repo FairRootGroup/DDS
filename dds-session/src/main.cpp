@@ -52,7 +52,7 @@ void rebuildSessions(vector<fs::path>& _session_dirs, StringVector_t& _sessions)
     pathSessions /= CUserDefaults::instance().getSessionsHolderDirName();
 
     if (!fs::is_directory(pathSessions))
-        return; // Sessions holder dir doesn't exists
+        return; // Sessions holder dir doesn't exist
 
     for (auto& dir : boost::make_iterator_range(fs::directory_iterator(pathSessions), {}))
     {

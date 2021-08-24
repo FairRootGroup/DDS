@@ -24,7 +24,7 @@ using namespace std;
 namespace bpo = boost::program_options;
 
 // Command line parser
-bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
+bool parseCmdLine(int _Argc, char* _Argv[])
 {
     bool ignoreDefaultSID(false);
     // Generic options
@@ -32,9 +32,8 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
     // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce ureadable output
     visible.add_options()("help,h", "Produce help message");
     visible.add_options()("version,v", "Version information");
-    visible.add_options()("verbose,V", "Cause dds-user-defaults to be verbose in case of an error");
     visible.add_options()("path,p", "Show DDS user defaults config file path");
-    visible.add_options()("default,d", "Generate a default DDS configuration file");
+    visible.add_options()("default,d", "Generate the default DDS configuration file");
     visible.add_options()("config,c", bpo::value<string>(), "DDS user defaults configuration file");
     visible.add_options()("session,s", bpo::value<string>(), "DDS Session ID");
     visible.add_options()("ignore-default-sid", bpo::bool_switch(&ignoreDefaultSID), "Ignore default DDS Session ID");
@@ -58,6 +57,9 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
     visible.add_options()("default-session-id", "Show the current default session ID.");
     visible.add_options()("default-session-id-file", "Show the full path of the default session ID file.");
 
+    // Init UserDefaults
+    CUserDefaults& userDefaults = CUserDefaults::instance();
+
     // Parsing command-line
     bpo::variables_map vm;
     bpo::store(bpo::command_line_parser(_Argc, _Argv).options(visible).run(), vm);
@@ -73,10 +75,10 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
         cout << DDSVersionInfoString();
         return false;
     }
-    if (vm.count("verbose"))
-    {
-        *_verbose = true;
-    }
+
+    conflicting_options(vm, "default", "key");
+    conflicting_options(vm, "force", "key");
+
     if (vm.count("path"))
     {
         cout << CUserDefaults::currentUDFile() << endl;
@@ -85,8 +87,13 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
 
     string sCfgFileName;
     if (vm.count("config"))
+    {
         sCfgFileName = vm["config"].as<string>();
-    smart_path(&sCfgFileName);
+        smart_path(&sCfgFileName);
+    }
+
+    if (sCfgFileName.empty())
+        sCfgFileName = CUserDefaults::currentUDFile();
 
     boost::uuids::uuid sid(ignoreDefaultSID ? CUserDefaults::getInitialSID() : boost::uuids::nil_uuid());
     if (vm.count("session"))
@@ -97,7 +104,7 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
 
     if (vm.count("default"))
     {
-        cout << "Generating a default DDS configuration file..." << endl;
+        cout << "Generating the default DDS configuration file..." << endl;
 
         if (dds::misc::file_exists(sCfgFileName) && !vm.count("force"))
             throw runtime_error("Error: Destination file exists. Please use -f options to overwrite it.");
@@ -122,13 +129,9 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
           << "# DDS User's Manual can be found in $DDS_LOCATION/doc folder or\n"
           << "# by the following address: http://dds.gsi.de/documentation.html\n";
         CUserDefaults::printDefaults(f);
-        cout << "Generating a default DDS configuration file - DONE." << endl;
+        cout << "Generating the default DDS configuration file - DONE." << endl;
         return false;
     }
-
-    CUserDefaults& userDefaults = CUserDefaults::instance();
-    if (sCfgFileName.empty())
-        sCfgFileName = CUserDefaults::currentUDFile();
 
     userDefaults.reinit(sid, sCfgFileName);
 
@@ -183,28 +186,20 @@ bool parseCmdLine(int _Argc, char* _Argv[], bool* _verbose)
         cout << userDefaults.getValueForKey(vm["key"].as<string>()) << endl;
     }
 
-    *_verbose = vm.count("verbose");
-
-    option_dependency(vm, "default", "config");
-    conflicting_options(vm, "default", "key");
-    conflicting_options(vm, "force", "key");
-
     return true;
 }
 
 int main(int argc, char* argv[])
 {
     // Command line parser
-    bool verbose(false);
     try
     {
-        if (!parseCmdLine(argc, argv, &verbose))
+        if (!parseCmdLine(argc, argv))
             return 0;
     }
     catch (exception& e)
     {
-        if (verbose)
-            cerr << e.what() << endl;
+        cerr << e.what() << endl;
         return 1;
     }
 

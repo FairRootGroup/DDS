@@ -43,6 +43,10 @@ Modified: Remote destination directories are no longer required and will be crea
 Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. direcrtory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)    
 Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)    
 
+### dds-user-defaults
+Modified: remove the "-V/--verbose" command line options. (GH-376)   
+Modified: a default cfg file creation workflow has been revised. (GH-376)    
+
 ## v3.4 (2020-07-01)
 
 ### DDS common
