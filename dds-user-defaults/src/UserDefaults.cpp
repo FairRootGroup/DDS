@@ -229,7 +229,7 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "work_dir=" << ud.getValueForKey("agent.work_dir") << "\n"
             << "#\n"
             << "# This option forces the given file mode on agent side files.\n"
-            << "# At the moment the access permissions are only applied to user task log files (stdout and stderr).\n"
+            << "# At the moment the access permissions are applied only on user task log files (stdout and stderr).\n"
             << "# Mode can be specified with octal numbers.\n"
             << "# 0400 - Read by owner\n"
             << "# 0040 - Read by group\n"
