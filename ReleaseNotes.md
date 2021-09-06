@@ -46,6 +46,7 @@ Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)
 ### dds-user-defaults
 Modified: remove the "-V/--verbose" command line options. (GH-376)   
 Modified: a default cfg file creation workflow has been revised. (GH-376)    
+Added: dds-user-defaults learned a new global option "agent.access_permissions". This option forces the given file mode on agent side files. At the moment it's only applied to user task log files (stdout and stderr). (GH-389)    
 
 ## v3.4 (2020-07-01)
 

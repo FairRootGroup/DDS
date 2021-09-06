@@ -91,6 +91,11 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(1800));
     config_file_options.add_options()(
         "agent.work_dir", boost::program_options::value<string>(&m_options.m_agent.m_workDir)->default_value(""), "");
+    // default is "-rw-rw----", i.e. 0660
+    config_file_options.add_options()(
+        "agent.access_permissions",
+        boost::program_options::value<string>(&m_options.m_agent.m_accessPermissions)->default_value("0660"),
+        "");
 
     if (!_get_default)
     {
@@ -142,10 +147,10 @@ void CUserDefaults::makeDefaultDirs()
 
     string localDir{ "$HOME/.DDS" };
     smart_path(&localDir);
-    if (!fs::create_directories(fs::path(localDir)))
+    if (!fs::exists(fs::path(localDir)) && !fs::create_directories(fs::path(localDir)))
     {
         stringstream ss;
-        ss << "Failed to create a default directory " << quoted(localDir) << " for user defaults";
+        ss << "Failed to create the default directory " << quoted(localDir) << " for user defaults";
         throw runtime_error(ss.str());
     }
 
@@ -216,12 +221,30 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
             << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
             << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n"
-            << "[agent]\n"
+            << "\n\n[agent]\n"
             << "# This option can help to relocate the work directory of agents.\n"
             << "# The option is ignored by the localhost and ssh plug-ins.\n"
             << "# By default the wrk dir is placed inside the path specified by server.sandbox_dir.\n"
             << "# It's recommended to keep this option empty.\n"
-            << "work_dir=" << ud.getValueForKey("agent.work_dir") << "\n";
+            << "work_dir=" << ud.getValueForKey("agent.work_dir") << "\n"
+            << "#\n"
+            << "# This option forces the given file mode on agent side files.\n"
+            << "# At the moment the access permissions are only applied to user task log files (stdout and stderr).\n"
+            << "# Mode can be specified with octal numbers.\n"
+            << "# 0400 - Read by owner\n"
+            << "# 0040 - Read by group\n"
+            << "# 0004 - Read by world\n"
+            << "# 0200 - Write by owner\n"
+            << "# 0020 - Write by group\n"
+            << "# 0002 - Write by world\n"
+            << "# 0100 - execute by owner\n"
+            << "# 0010 - execute by group\n"
+            << "# 0001 - execute by world\n"
+            << "# To combine these, just add the numbers together:\n"
+            << "# 0444 - Allow read permission to owner and group and world\n"
+            << "# 0777 - Allow everyone to read, write, and execute file\n"
+            << "#\n"
+            << "access_permissions=" << ud.getValueForKey("agent.access_permissions") << "\n";
 }
 
 string CUserDefaults::convertAnyToString(const boost::any& _any) const

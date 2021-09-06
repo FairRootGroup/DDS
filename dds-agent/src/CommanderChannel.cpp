@@ -569,7 +569,12 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         ssCmd << bp::search_path("bash").string();
         ssCmd << " -c \" " << pathTaskWrapper.native() << " \"";
 
-        pidUsrTask = execute(ssCmd.str(), sTaskStdOut, sTaskStdErr);
+        // retrieve the user defined access permissions
+        string sAccessPermissions = CUserDefaults::instance().getValueForKey("agent.access_permissions");
+        if (!sAccessPermissions.empty())
+            LOG(info) << "Using user defined access permissions on output files. Mode: " << sAccessPermissions;
+
+        pidUsrTask = execute(ssCmd.str(), sTaskStdOut, sTaskStdErr, &sAccessPermissions);
     }
     catch (exception& _e)
     {

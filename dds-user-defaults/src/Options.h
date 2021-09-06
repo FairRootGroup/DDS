@@ -40,6 +40,10 @@ namespace dds
         {
             //!< Working folder.
             std::string m_workDir;
+            // !< This options forces the given file mode on the agent side files.
+            // At the moment the access permissions are only applied to user task log files (stdout and stderr)
+            // Mode can be specified with octal numbers.
+            std::string m_accessPermissions;
         } SDDSAgentOptions_t;
 
         typedef struct SDDSUserDefaultOptions

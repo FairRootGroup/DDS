@@ -25,6 +25,7 @@
 // BOOST
 #include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/process.hpp>
 // DDS
 #include "CustomIterator.h"
@@ -35,6 +36,7 @@
 
 namespace bp = boost::process;
 namespace bio = boost::asio;
+namespace fs = boost::filesystem;
 
 namespace dds::misc
 {
@@ -448,7 +450,8 @@ namespace dds::misc
      */
     inline pid_t execute(const std::string& _Command,
                          const std::string& _stdoutFileName,
-                         const std::string& _stderrFileName)
+                         const std::string& _stderrFileName,
+                         std::string* _outputFilesAccessPermissions = nullptr)
     {
         try
         {
@@ -465,6 +468,16 @@ namespace dds::misc
             bp::child c(smartCmd, bp::std_out > _stdoutFileName, bp::std_err > _stderrFileName);
             pid_t pid = c.id();
             c.detach();
+
+            // Change permissions of the log files (GH-389)
+            if (_outputFilesAccessPermissions && !_outputFilesAccessPermissions->empty())
+            {
+                const int perm = std::stoi(*_outputFilesAccessPermissions, 0, 8);
+                if (fs::exists(_stdoutFileName))
+                    fs::permissions(_stdoutFileName, fs::perms(perm));
+                if (fs::exists(_stderrFileName))
+                    fs::permissions(_stderrFileName, fs::perms(perm));
+            }
 
             return pid;
         }
