@@ -947,13 +947,11 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
     }
     catch (const boost::property_tree::ptree_error& _e)
     {
-        string msg("Failed to process Tools API message: ");
-        msg += _e.what();
-        LOG(error) << msg;
+        LOG(error) << "Failed to process Tools API message: " << _e.what();
     }
     catch (const exception& _e)
     {
-        LOG(error) << "CConnectionManager::processToolsAPIRequests: ";
+        LOG(error) << "Failed to process Tools API request: " << _e.what();
     }
 }
 
@@ -1394,54 +1392,40 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
 void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountRequestData& _info,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
-        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
-        {
-            if (!_v.m_isSlot)
-                return false;
-
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
-        }));
-
-    // No active agents
-    if (channels.empty())
+    auto isStartedAgent = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
     {
-        SAgentCountResponseData info;
-        info.m_requestID = _info.m_requestID;
-
-        sendCustomCommandResponse(_channel, info.toJSON());
-        sendDoneResponse(_channel, _info.m_requestID);
-
-        return;
-    }
-
-    size_t activeCounter = channels.size();
-    size_t idleCounter = countNofChannels(
-        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
-        {
-            if (!_v.m_isSlot)
-                return false;
-
-            const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                    slot.m_taskID == 0 && slot.m_state == EAgentState::idle);
-        });
-    size_t executingCounter = countNofChannels(
-        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
-        {
-            if (!_v.m_isSlot)
-                return false;
-
-            const SSlotInfo& slot = _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID);
-            return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started() &&
-                    slot.m_taskID > 0 && slot.m_state == EAgentState::executing);
-        });
+        if (!_v.m_isSlot)
+            return false;
+        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
+    };
+    auto channels(getChannels(isStartedAgent));
 
     SAgentCountResponseData info;
     info.m_requestID = _info.m_requestID;
-    info.m_activeSlotsCount = activeCounter;
-    info.m_idleSlotsCount = idleCounter;
-    info.m_executingSlotsCount = executingCounter;
+
+    if (!channels.empty())
+    {
+        size_t activeCounter = channels.size();
+        size_t idleCounter = countNofChannels(
+            [&isStartedAgent](const CConnectionManager::channelInfo_t& _v, bool& _stop)
+            {
+                if (!isStartedAgent(_v, _stop))
+                    return false;
+                auto slot{ _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID) };
+                return slot.m_taskID == 0 && slot.m_state == EAgentState::idle;
+            });
+        size_t executingCounter = countNofChannels(
+            [&isStartedAgent](const CConnectionManager::channelInfo_t& _v, bool& _stop)
+            {
+                if (!isStartedAgent(_v, _stop))
+                    return false;
+                auto slot{ _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID) };
+                return slot.m_taskID > 0 && slot.m_state == EAgentState::executing;
+            });
+        info.m_activeSlotsCount = activeCounter;
+        info.m_idleSlotsCount = idleCounter;
+        info.m_executingSlotsCount = executingCounter;
+    }
 
     sendCustomCommandResponse(_channel, info.toJSON());
     sendDoneResponse(_channel, _info.m_requestID);
