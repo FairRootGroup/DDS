@@ -148,6 +148,8 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_agentPid = 34;
             testData.m_requestID = 123;
             testData.m_nSlots = 10;
+            testData.m_nIdleSlots = 3;
+            testData.m_nExecutingSlots = 7;
 
             SAgentInfoResponseData data;
             data.fromPT(child.second);

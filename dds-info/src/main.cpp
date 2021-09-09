@@ -88,12 +88,12 @@ void requestAgentInfo(CSession& _session, const SOptions_t& /*_options*/)
     requestPtr->setResponseCallback(
         [](const SAgentInfoResponseData& _info)
         {
-            LOG(log_stdout_clean) << " -------------->>> " << _info.m_agentID << "\nHost Info: " << _info.m_username
-                                  << "@" << _info.m_host << ":" << _info.m_DDSPath
-                                  << "\nAgent pid: " << _info.m_agentPid
-                                  << "\nAgent startup time: " << chrono::duration<double>(_info.m_startUpTime).count()
-                                  << " s"
-                                  << "\nSlots: " << _info.m_nSlots << "\n";
+            LOG(log_stdout_clean) << ">>> Agent: id (" << _info.m_agentID << "), pid (" << _info.m_agentPid << "),"
+                                  << " startup time (" << chrono::duration<double>(_info.m_startUpTime).count()
+                                  << "s), slots total/executing/idle (" << _info.m_nSlots << "/"
+                                  << _info.m_nExecutingSlots << "/" << _info.m_nIdleSlots << ")"
+                                  << "\n    Host: " << _info.m_username << "@" << _info.m_host << ":"
+                                  << _info.m_DDSPath;
         });
 
     _session.sendRequest<SAgentInfoRequest>(requestPtr);
