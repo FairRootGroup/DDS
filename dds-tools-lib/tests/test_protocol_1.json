@@ -53,6 +53,8 @@
                 "DDSPath": "/path/to/dds",
                 "agentPid": 34,
                 "slots" : 10,
+                "idleSlots" : 3,
+                "executingSlots" : 7,
                 "requestID": 123
             },
             "agentCount":

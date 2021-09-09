@@ -168,6 +168,8 @@ namespace dds
             std::string m_DDSPath;                                                   ///< DDS path
             uint32_t m_agentPid{ 0 };                                                ///< Agent's process ID
             uint32_t m_nSlots{ 0 };                                                  ///< Number of task slots
+            uint32_t m_nIdleSlots{ 0 };                                              ///< Number of idle slots
+            uint32_t m_nExecutingSlots{ 0 };                                         ///< Number of executing slots
 
           private:
             friend SBaseData<SAgentInfoResponseData>;

@@ -1357,23 +1357,14 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
     size_t i = 0;
     for (const auto& v : channels)
     {
-        SAgentInfoResponseData info;
-        info.m_requestID = _info.m_requestID;
-
         if (v.m_channel.expired())
             continue;
-        auto ptr = v.m_channel.lock();
+        auto ptr{ v.m_channel.lock() };
 
-        SAgentInfo& inf = ptr->getAgentInfo();
+        SAgentInfo& inf{ ptr->getAgentInfo() };
 
-        string sTaskName("no task is assigned");
-        //        if (inf.m_taskID > 0 && inf.m_state == EAgentState::executing)
-        //        {
-        //            stringstream ssTaskString;
-        //            ssTaskString << inf.m_taskID << " (" << inf.m_id << ")";
-        //            sTaskName = ssTaskString.str();
-        //        }
-
+        SAgentInfoResponseData info;
+        info.m_requestID = _info.m_requestID;
         info.m_index = i++;
         info.m_agentID = inf.m_id;
         info.m_startUpTime = inf.m_startUpTime;
@@ -1381,11 +1372,18 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
         info.m_host = inf.m_remoteHostInfo.m_host;
         info.m_DDSPath = inf.m_remoteHostInfo.m_DDSPath;
         info.m_agentPid = inf.m_remoteHostInfo.m_agentPid;
-        info.m_nSlots = inf.getSlots().size();
-
+        auto slots{ inf.getSlots() };
+        info.m_nSlots = slots.size();
+        for (const auto& v : slots)
+        {
+            auto state{ v.second.m_state };
+            if (state == EAgentState::idle)
+                info.m_nIdleSlots++;
+            if (state == EAgentState::executing)
+                info.m_nExecutingSlots = 0;
+        }
         sendCustomCommandResponse(_channel, info.toJSON());
     }
-
     sendDoneResponse(_channel, _info.m_requestID);
 }
 
