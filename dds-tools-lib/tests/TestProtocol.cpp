@@ -53,8 +53,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_severity = dds::intercom_api::EMsgSeverity::info;
             testData.m_requestID = 123;
 
-            SMessageResponseData data;
-            data.fromPT(child.second);
+            SMessageResponseData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -67,8 +66,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SDoneResponseData testData;
             testData.m_requestID = 435;
 
-            SDoneResponseData data;
-            data.fromPT(child.second);
+            SDoneResponseData data(child.second);
 
             BOOST_CHECK(data == testData);
         }
@@ -81,8 +79,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_time = 123;
             testData.m_srcCommand = 123;
 
-            SProgressResponseData data;
-            data.fromPT(child.second);
+            SProgressResponseData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -100,8 +97,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_pluginPath = "string";
             testData.m_requestID = 123;
 
-            SSubmitRequestData data;
-            data.fromPT(child.second);
+            SSubmitRequestData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -117,8 +113,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_disableValidation = false;
             testData.m_requestID = 123;
 
-            STopologyRequestData data;
-            data.fromPT(child.second);
+            STopologyRequestData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -131,8 +126,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             SGetLogRequestData testData;
             testData.m_requestID = 123;
 
-            SGetLogRequestData data;
-            data.fromPT(child.second);
+            SGetLogRequestData data(child.second);
 
             BOOST_CHECK(data == testData);
         }
@@ -151,8 +145,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_nIdleSlots = 3;
             testData.m_nExecutingSlots = 7;
 
-            SAgentInfoResponseData data;
-            data.fromPT(child.second);
+            SAgentInfoResponseData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -172,8 +165,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_wrkDir = "/path/to/dds";
             testData.m_requestID = 123;
 
-            SSlotInfoResponseData data;
-            data.fromPT(child.second);
+            SSlotInfoResponseData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -189,8 +181,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_executingSlotsCount = 345;
             testData.m_requestID = 123;
 
-            SAgentCountResponseData data;
-            data.fromPT(child.second);
+            SAgentCountResponseData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -206,8 +197,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_activeTopologyName = "TopoName";
             testData.m_activeTopologyPath = "/topology/path";
 
-            SCommanderInfoResponseData data;
-            data.fromPT(child.second);
+            SCommanderInfoResponseData data(child.second);
 
             // Test availability of the stream insertion
             stringstream ss;
@@ -230,8 +220,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_toJSON)
     read_json(strBuf, pt);
     const ptree& childPT = pt.get_child("dds.tools-api.commanderInfo");
 
-    SCommanderInfoResponseData dataCommanderInfo;
-    dataCommanderInfo.fromPT(childPT);
+    SCommanderInfoResponseData dataCommanderInfo(childPT);
 
     BOOST_CHECK(dataCommanderInfo == dataCommanderInfoTest);
 }

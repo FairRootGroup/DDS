@@ -30,6 +30,11 @@ SProgressResponseData::SProgressResponseData()
 {
 }
 
+SProgressResponseData::SProgressResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
 SProgressResponseData::SProgressResponseData(
     uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time)
     : m_completed(_completed)
@@ -110,6 +115,15 @@ EMsgSeverity TagToSeverity(const std::string& _tag)
         throw runtime_error("Message severity for tag " + _tag + " does not exist.");
 }
 
+SMessageResponseData::SMessageResponseData()
+{
+}
+
+SMessageResponseData::SMessageResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
 void SMessageResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<string>("msg", m_msg);
@@ -147,6 +161,15 @@ namespace dds
 
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* SSubmitRequestData::_protocolTag;
+
+SSubmitRequestData::SSubmitRequestData()
+{
+}
+
+SSubmitRequestData::SSubmitRequestData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
 
 void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
@@ -195,6 +218,15 @@ namespace dds
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* STopologyRequestData::_protocolTag;
 
+STopologyRequestData::STopologyRequestData()
+{
+}
+
+STopologyRequestData::STopologyRequestData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
 void STopologyRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint8_t>("updateType", static_cast<uint8_t>(m_updateType));
@@ -238,6 +270,15 @@ namespace dds
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* SCommanderInfoResponseData::_protocolTag;
 
+SCommanderInfoResponseData::SCommanderInfoResponseData()
+{
+}
+
+SCommanderInfoResponseData::SCommanderInfoResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
 void SCommanderInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<pid_t>("pid", m_pid);
@@ -280,6 +321,15 @@ namespace dds
 
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* SAgentInfoResponseData::_protocolTag;
+
+SAgentInfoResponseData::SAgentInfoResponseData()
+{
+}
+
+SAgentInfoResponseData::SAgentInfoResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
 
 void SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
@@ -342,6 +392,15 @@ namespace dds
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* SSlotInfoResponseData::_protocolTag;
 
+SSlotInfoResponseData::SSlotInfoResponseData()
+{
+}
+
+SSlotInfoResponseData::SSlotInfoResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
 void SSlotInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("index", m_index);
@@ -394,6 +453,15 @@ namespace dds
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* SAgentCountResponseData::_protocolTag;
 
+SAgentCountResponseData::SAgentCountResponseData()
+{
+}
+
+SAgentCountResponseData::SAgentCountResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
 void SAgentCountResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {
     _pt.put<uint32_t>("activeSlotsCount", m_activeSlotsCount);
@@ -436,6 +504,15 @@ namespace dds
 
 // this declaration is important to help older compilers to eat this static constexpr
 constexpr const char* SOnTaskDoneResponseData::_protocolTag;
+
+SOnTaskDoneResponseData::SOnTaskDoneResponseData()
+{
+}
+
+SOnTaskDoneResponseData::SOnTaskDoneResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
 
 void SOnTaskDoneResponseData::_toPT(boost::property_tree::ptree& _pt) const
 {

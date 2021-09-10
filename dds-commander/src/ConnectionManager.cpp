@@ -876,6 +876,8 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
 // MARK: ToolsAPI - processToolsAPIRequests
 void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAgentChannel::weakConnectionPtr_t _channel)
 {
+    using namespace dds::tools_api;
+
     LOG(info) << "Processing Tools API message: " << _cmd.m_sCmd;
     boost::property_tree::ptree pt;
 
@@ -883,71 +885,49 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
     {
         istringstream ss(_cmd.m_sCmd);
         boost::property_tree::read_json(ss, pt);
-
-        const boost::property_tree::ptree& childPT = pt.get_child("dds.tools-api");
+        auto childPT{ pt.get_child("dds.tools-api") };
 
         for (const auto& child : childPT)
         {
-            const string& tag = child.first;
+            auto tag{ child.first };
+            auto data{ child.second };
             if (tag == "submit")
             {
-                dds::tools_api::SSubmitRequestData submitInfo;
-                submitInfo.fromPT(child.second);
-
-                submitAgents(submitInfo, _channel);
+                submitAgents(SSubmitRequestData(data), _channel);
             }
             else if (tag == "topology")
             {
-                dds::tools_api::STopologyRequestData topoInfo;
-                topoInfo.fromPT(child.second);
-
-                updateTopology(topoInfo, _channel);
+                updateTopology(STopologyRequestData(data), _channel);
             }
             else if (tag == "message")
             {
             }
             else if (tag == "getlog")
             {
-                dds::tools_api::SGetLogRequestData getlog;
-                getlog.fromPT(child.second);
-
-                getLog(getlog, _channel);
+                getLog(SGetLogRequestData(data), _channel);
             }
             else if (tag == "commanderInfo")
             {
-                dds::tools_api::SCommanderInfoRequestData commanderInfo;
-                commanderInfo.fromPT(child.second);
-                LOG(info) << "ToolsAPI: processing commanderInfo with requestID = " << commanderInfo.m_requestID;
-                sendUICommanderInfo(commanderInfo, _channel);
+                sendUICommanderInfo(SCommanderInfoRequestData(data), _channel);
             }
             else if (tag == "agentInfo")
             {
-                dds::tools_api::SAgentInfoRequestData agentInfo;
-                agentInfo.fromPT(child.second);
-
-                sendUIAgentInfo(agentInfo, _channel);
+                sendUIAgentInfo(SAgentInfoRequestData(data), _channel);
             }
             else if (tag == "slotInfo")
             {
-                dds::tools_api::SSlotInfoRequestData agentInfo;
-                agentInfo.fromPT(child.second);
-                sendUISlotInfo(agentInfo, _channel);
+                sendUISlotInfo(SSlotInfoRequestData(data), _channel);
             }
             else if (tag == "agentCount")
             {
-                dds::tools_api::SAgentCountRequestData agentCount;
-                agentCount.fromPT(child.second);
-
-                sendUIAgentCount(agentCount, _channel);
+                sendUIAgentCount(SAgentCountRequestData(data), _channel);
             }
             else if (tag == "onTaskDone")
             {
-                dds::tools_api::SOnTaskDoneRequestData onTaskDoneSubscriberInfo;
-                onTaskDoneSubscriberInfo.fromPT(child.second);
-
+                SOnTaskDoneRequestData info(data);
                 // add the given channel (_channel) to the list, which will be allerted whenever a task is exited
                 lock_guard<mutex> lock(m_mtxOnTaskDoneSubscribers);
-                m_onTaskDoneSubscribers.push_back({ _channel, onTaskDoneSubscriberInfo });
+                m_onTaskDoneSubscribers.push_back({ _channel, info });
             }
         }
     }

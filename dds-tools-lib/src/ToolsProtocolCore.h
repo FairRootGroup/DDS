@@ -97,6 +97,14 @@
 #define DDS_TOOLS_DECLARE_DATA_CLASS(theBaseClass, theClass, theTag) \
     struct theClass : theBaseClass<theClass>                         \
     {                                                                \
+        theClass()                                                   \
+        {                                                            \
+        }                                                            \
+        theClass(const boost::property_tree::ptree& _pt)             \
+        {                                                            \
+            fromPT(_pt);                                             \
+        }                                                            \
+                                                                     \
       private:                                                       \
         friend SBaseData<theClass>;                                  \
         friend theBaseClass<theClass>;                               \
@@ -149,22 +157,18 @@ namespace dds
             /// \param[out] _pt Property tree with structure details.
             void toPT(boost::property_tree::ptree& _pt) const
             {
-                auto parentPtr = static_cast<const T*>(this);
-
+                auto parentPtr{ static_cast<const T*>(this) };
                 _pt.put<requestID_t>("requestID", m_requestID);
-
-                return parentPtr->_toPT(_pt);
+                parentPtr->_toPT(_pt);
             }
 
             /// \brief Init structure from boost's property tree.
             /// \param[in] _pt Property tree with structure details.
             void fromPT(const boost::property_tree::ptree& _pt)
             {
-                auto parentPtr = static_cast<T*>(this);
-
+                auto parentPtr{ static_cast<T*>(this) };
                 m_requestID = _pt.get<uint64_t>("requestID", 0);
-
-                return parentPtr->_fromPT(_pt);
+                parentPtr->_fromPT(_pt);
             }
 
             /// \brief Equality operator.
