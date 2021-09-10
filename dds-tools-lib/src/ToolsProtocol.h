@@ -26,6 +26,9 @@ namespace dds
         /// \brief Structure holds information of a message response.
         struct SMessageResponseData : SBaseResponseData<SMessageResponseData>
         {
+            SMessageResponseData();
+            SMessageResponseData(const boost::property_tree::ptree& _pt);
+
             std::string m_msg;                                                                  ///< Message text.
             dds::intercom_api::EMsgSeverity m_severity = dds::intercom_api::EMsgSeverity::info; ///< Message severity.
 
@@ -46,15 +49,16 @@ namespace dds
         /// \brief Structure holds information of a progress response.
         struct SProgressResponseData : SBaseResponseData<SProgressResponseData>
         {
+            SProgressResponseData();
+            SProgressResponseData(const boost::property_tree::ptree& _pt);
+            SProgressResponseData(
+                uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0);
+
             uint32_t m_completed = 0;
             uint32_t m_total = 0;
             uint32_t m_errors = 0;
             uint32_t m_time = 0;
             uint16_t m_srcCommand = 0; ///< Reserved for internal use
-
-            SProgressResponseData();
-            SProgressResponseData(
-                uint16_t _srcCmd, uint32_t _completed, uint32_t _total, uint32_t _errors, uint32_t _time = 0);
 
           private:
             friend SBaseData<SProgressResponseData>;
@@ -73,6 +77,9 @@ namespace dds
         /// \brief Structure holds information of a submit request.
         struct SSubmitRequestData : SBaseRequestData<SSubmitRequestData>
         {
+            SSubmitRequestData();
+            SSubmitRequestData(const boost::property_tree::ptree& _pt);
+
             std::string m_rms;        ///< RMS.
             uint32_t m_instances = 0; ///< Number of instances.
             uint32_t m_slots = 0;     /// < Number of task slots.
@@ -96,8 +103,11 @@ namespace dds
         using SSubmitRequest = SBaseRequestImpl<SSubmitRequestData, SEmptyResponseData>;
 
         /// \brief Structure holds information of topology request.
-        struct STopologyRequestData : SBaseResponseData<STopologyRequestData>
+        struct STopologyRequestData : SBaseRequestData<STopologyRequestData>
         {
+            STopologyRequestData();
+            STopologyRequestData(const boost::property_tree::ptree& _pt);
+
             enum class EUpdateType : uint8_t
             {
                 UPDATE = 0,
@@ -133,6 +143,9 @@ namespace dds
         /// \brief Structure holds information of commanderInfo response.
         struct SCommanderInfoResponseData : SBaseResponseData<SCommanderInfoResponseData>
         {
+            SCommanderInfoResponseData();
+            SCommanderInfoResponseData(const boost::property_tree::ptree& _pt);
+
             pid_t m_pid = 0;                  ///< PID of the commander
             std::string m_activeTopologyName; ///< Name of active topology, empty if none is active
             std::string m_activeTopologyPath; ///< Filepath of active topology, empty if none is active
@@ -160,6 +173,9 @@ namespace dds
         /// \brief Structure holds information of agentInfo response.
         struct SAgentInfoResponseData : SBaseResponseData<SAgentInfoResponseData>
         {
+            SAgentInfoResponseData();
+            SAgentInfoResponseData(const boost::property_tree::ptree& _pt);
+
             uint32_t m_index{ 0 };                                                   ///< Index of the current agent
             uint64_t m_agentID{ 0 };                                                 ///< Agent ID
             std::chrono::milliseconds m_startUpTime{ std::chrono::milliseconds(0) }; ///< Agent's startup time
@@ -194,6 +210,9 @@ namespace dds
         /// \brief Structure holds information of slot info response.
         struct SSlotInfoResponseData : SBaseResponseData<SSlotInfoResponseData>
         {
+            SSlotInfoResponseData();
+            SSlotInfoResponseData(const boost::property_tree::ptree& _pt);
+
             uint32_t m_index{ 0 };   ///< Index of the current slot
             uint64_t m_agentID{ 0 }; ///< Agent ID
             uint64_t m_slotID{ 0 };  ///< Agent ID
@@ -225,6 +244,9 @@ namespace dds
         /// \brief Structure holds information of agentCount response.
         struct SAgentCountResponseData : SBaseResponseData<SAgentCountResponseData>
         {
+            SAgentCountResponseData();
+            SAgentCountResponseData(const boost::property_tree::ptree& _pt);
+
             uint32_t m_activeSlotsCount = 0;    ///< The number of online slots
             uint32_t m_idleSlotsCount = 0;      ///< The count of idle slots
             uint32_t m_executingSlotsCount = 0; ///< The count of executing slots
@@ -252,6 +274,9 @@ namespace dds
         /// \brief Structure holds information of onTaskDone response.
         struct SOnTaskDoneResponseData : SBaseResponseData<SOnTaskDoneResponseData>
         {
+            SOnTaskDoneResponseData();
+            SOnTaskDoneResponseData(const boost::property_tree::ptree& _pt);
+
             uint64_t m_taskID = 0;   ///<  Task ID
             uint32_t m_exitCode = 0; ///< Exit code
             uint32_t m_signal = 0;   ///<  A signal number if the process is killed by/stopped by a signal
