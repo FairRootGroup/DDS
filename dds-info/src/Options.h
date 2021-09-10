@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef DDSOPTIONS_H
-#define DDSOPTIONS_H
+#ifndef _DDS_OPTIONS_H_
+#define _DDS_OPTIONS_H_
 //=============================================================================
 // BOOST
 #include <boost/program_options/options_description.hpp>
@@ -20,39 +20,19 @@ namespace dds
 {
     namespace info_cmd
     {
-        /// \brief dds-commander's container of options
+        /// \brief `dds-info` command line options
         typedef struct SOptions
         {
-            SOptions()
-                : m_bNeedCommanderPid(false)
-                , m_bNeedDDSStatus(false)
-                , m_bNeedAgentsList(false)
-                , m_bNeedSlotList(false)
-                , m_bNeedPropList(false)
-                , m_bNeedPropValues(false)
-                , m_bNeedActiveTopology(false)
-                , m_propertyName()
-                , m_sid(boost::uuids::nil_uuid())
-                , m_bNeedActiveCount(false)
-                , m_bNeedIdleCount(false)
-                , m_bNeedExecutingCount(false)
-                , m_nWaitCount(0)
-            {
-            }
-
-            bool m_bNeedCommanderPid;
-            bool m_bNeedDDSStatus;
-            bool m_bNeedAgentsList;
-            bool m_bNeedSlotList;
-            bool m_bNeedPropList;
-            bool m_bNeedPropValues;
-            bool m_bNeedActiveTopology;
-            std::string m_propertyName;
-            boost::uuids::uuid m_sid;
-            bool m_bNeedActiveCount;
-            bool m_bNeedIdleCount;
-            bool m_bNeedExecutingCount;
-            uint32_t m_nWaitCount;
+            bool m_bNeedCommanderPid{ false };
+            bool m_bNeedStatus{ false };
+            bool m_bNeedAgentList{ false };
+            bool m_bNeedSlotList{ false };
+            bool m_bNeedActiveTopology{ false };
+            bool m_bNeedActiveCount{ false };
+            bool m_bNeedIdleCount{ false };
+            bool m_bNeedExecutingCount{ false };
+            uint32_t m_nWaitCount{ 0 };
+            boost::uuids::uuid m_sid{ boost::uuids::nil_uuid() };
         } SOptions_t;
 
         // Command line parser
@@ -69,22 +49,13 @@ namespace dds
             options.add_options()("commander-pid",
                                   bpo::bool_switch(&_options->m_bNeedCommanderPid),
                                   "Return the pid of the commander server");
-            options.add_options()("status",
-                                  bpo::bool_switch(&_options->m_bNeedDDSStatus),
-                                  "Query current status of DDS commander server");
-            options.add_options()("agents-list,l",
-                                  bpo::bool_switch(&_options->m_bNeedAgentsList),
+            options.add_options()(
+                "status", bpo::bool_switch(&_options->m_bNeedStatus), "Query current status of DDS commander server");
+            options.add_options()("agent-list,l",
+                                  bpo::bool_switch(&_options->m_bNeedAgentList),
                                   "Show detailed info about all online agents");
             options.add_options()(
                 "slot-list", bpo::bool_switch(&_options->m_bNeedSlotList), "Show detailed info about all online slots");
-            options.add_options()(
-                "prop-list", bpo::bool_switch(&_options->m_bNeedPropList), "Returns a property list from all agents.");
-            options.add_options()("prop-values",
-                                  bpo::bool_switch(&_options->m_bNeedPropValues),
-                                  "Returns a key-value pairs from all agents.");
-            options.add_options()("prop-name",
-                                  bpo::value<std::string>(&_options->m_propertyName),
-                                  "Specify property names that have to be returned.");
             options.add_options()("active-count,n",
                                   bpo::bool_switch(&_options->m_bNeedActiveCount),
                                   "Returns a number of online agents.");
@@ -107,10 +78,9 @@ namespace dds
             bpo::notify(vm);
 
             // check for non-defaulted arguments
-            bpo::variables_map::const_iterator found =
-                find_if(vm.begin(),
-                        vm.end(),
-                        [](const bpo::variables_map::value_type& _v) { return (!_v.second.defaulted()); });
+            auto found{ find_if(vm.begin(),
+                                vm.end(),
+                                [](const bpo::variables_map::value_type& _v) { return (!_v.second.defaulted()); }) };
 
             if (vm.count("help") || vm.end() == found)
             {
@@ -122,25 +92,19 @@ namespace dds
                 LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return false;
             }
-            if (vm.count("prop-name") && !_options->m_bNeedPropValues)
-            {
-                LOG(dds::misc::log_stdout) << "Option prop-id has to be used together with prop-values.";
-                return false;
-            }
-
             if (vm.count("session"))
                 _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
-            size_t numCounters =
-                _options->m_bNeedActiveCount + _options->m_bNeedIdleCount + _options->m_bNeedExecutingCount;
+            int numCounters{ _options->m_bNeedActiveCount + _options->m_bNeedIdleCount +
+                             _options->m_bNeedExecutingCount };
             if (numCounters > 1)
             {
                 LOG(dds::misc::log_stderr) << "--active-count, --idle-count, --executing-count can't be used together.";
                 return false;
             }
 
-            bool needCount =
-                _options->m_bNeedActiveCount || _options->m_bNeedIdleCount || _options->m_bNeedExecutingCount;
+            bool needCount{ _options->m_bNeedActiveCount || _options->m_bNeedIdleCount ||
+                            _options->m_bNeedExecutingCount };
             if (vm.count("wait") && !needCount)
             {
                 LOG(dds::misc::log_stderr)
@@ -158,4 +122,4 @@ namespace dds
         }
     } // namespace info_cmd
 } // namespace dds
-#endif
+#endif // _DDS_OPTIONS_H_
