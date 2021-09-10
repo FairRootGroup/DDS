@@ -46,7 +46,7 @@ void requestCommanderInfo(CSession& _session, const SOptions_t& _options)
                 _session.unblockCurrentThread();
             }
             // Checking for "status" option
-            if (_options.m_bNeedDDSStatus)
+            if (_options.m_bNeedStatus)
             {
                 if (_info.m_pid > 0)
                     LOG(log_stdout_clean) << "DDS commander server process (" << _info.m_pid << ") is running...";
@@ -88,13 +88,13 @@ void requestAgentInfo(CSession& _session, const SOptions_t& /*_options*/)
     requestPtr->setResponseCallback(
         [](const SAgentInfoResponseData& _info)
         {
-            LOG(log_stdout_clean) << ">>> Agent " << _info.m_index << ": id (" << _info.m_agentID << "), pid ("
+            LOG(log_stdout_clean) << "Agent " << _info.m_index << ": id (" << _info.m_agentID << "), pid ("
                                   << _info.m_agentPid << "),"
                                   << " startup time (" << chrono::duration<double>(_info.m_startUpTime).count()
                                   << "s), slots total/executing/idle (" << _info.m_nSlots << "/"
-                                  << _info.m_nExecutingSlots << "/" << _info.m_nIdleSlots << ")"
-                                  << "\n    Host: " << _info.m_username << "@" << _info.m_host << ":"
-                                  << _info.m_DDSPath;
+                                  << _info.m_nExecutingSlots << "/" << _info.m_nIdleSlots << "), host ("
+                                  << _info.m_username << "@" << _info.m_host << "), wrkDir (" << quoted(_info.m_DDSPath)
+                                  << ")";
         });
 
     _session.sendRequest<SAgentInfoRequest>(requestPtr);
@@ -206,11 +206,11 @@ int main(int argc, char* argv[])
         CSession session;
         session.attach(sid);
 
-        if (options.m_bNeedCommanderPid || options.m_bNeedDDSStatus || options.m_bNeedActiveTopology)
+        if (options.m_bNeedCommanderPid || options.m_bNeedStatus || options.m_bNeedActiveTopology)
         {
             requestCommanderInfo(session, options);
         }
-        else if (options.m_bNeedAgentsList)
+        else if (options.m_bNeedAgentList)
         {
             requestAgentInfo(session, options);
         }
@@ -221,20 +221,6 @@ int main(int argc, char* argv[])
         else if (options.m_bNeedActiveCount || options.m_bNeedIdleCount || options.m_bNeedExecutingCount)
         {
             requestAgentCount(session, options);
-        }
-        else if (options.m_bNeedPropList)
-        {
-            // TODO: NOT Implemented
-            LOG(log_stderr) << "The feature is disiabled for this version";
-            // pushMsg<protocol_api::cmdGET_PROP_LIST>();
-        }
-        else if (options.m_bNeedPropValues)
-        {
-            // TODO: NOT Implemented
-            LOG(log_stderr) << "The feature is disiabled for this version";
-            // protocol_api::SGetPropValuesCmd cmd;
-            // cmd.m_sPropertyName = m_options.m_propertyName;
-            // pushMsg<protocol_api::cmdGET_PROP_VALUES>(cmd);
         }
 
         session.blockCurrentThread();
