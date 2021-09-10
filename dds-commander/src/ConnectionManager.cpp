@@ -1411,13 +1411,9 @@ void CConnectionManager::sendUISlotInfo(const dds::tools_api::SSlotInfoRequestDa
 void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountRequestData& _info,
                                           CAgentChannel::weakConnectionPtr_t _channel)
 {
-    auto isStartedAgent = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
-    {
-        if (!_v.m_isSlot)
-            return false;
-        return (_v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started());
-    };
-    auto channels(getChannels(isStartedAgent));
+    auto isStartedSlot = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+    { return _v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT && _v.m_channel->started(); };
+    auto channels(getChannels(isStartedSlot));
 
     SAgentCountResponseData info;
     info.m_requestID = _info.m_requestID;
@@ -1426,17 +1422,17 @@ void CConnectionManager::sendUIAgentCount(const dds::tools_api::SAgentCountReque
     {
         size_t activeCounter = channels.size();
         size_t idleCounter = countNofChannels(
-            [&isStartedAgent](const CConnectionManager::channelInfo_t& _v, bool& _stop)
+            [&isStartedSlot](const CConnectionManager::channelInfo_t& _v, bool& _stop)
             {
-                if (!isStartedAgent(_v, _stop))
+                if (!isStartedSlot(_v, _stop))
                     return false;
                 auto slot{ _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID) };
                 return slot.m_taskID == 0 && slot.m_state == EAgentState::idle;
             });
         size_t executingCounter = countNofChannels(
-            [&isStartedAgent](const CConnectionManager::channelInfo_t& _v, bool& _stop)
+            [&isStartedSlot](const CConnectionManager::channelInfo_t& _v, bool& _stop)
             {
-                if (!isStartedAgent(_v, _stop))
+                if (!isStartedSlot(_v, _stop))
                     return false;
                 auto slot{ _v.m_channel->getAgentInfo().getSlotByID(_v.m_protocolHeaderID) };
                 return slot.m_taskID > 0 && slot.m_state == EAgentState::executing;
