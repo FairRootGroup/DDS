@@ -160,6 +160,27 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 
             BOOST_CHECK(data == testData);
         }
+        else if (tag == "slotInfo")
+        {
+            SSlotInfoResponseData testData;
+            testData.m_index = 123;
+            testData.m_agentID = 3456;
+            testData.m_slotID = 1234;
+            testData.m_taskID = 5678;
+            testData.m_state = 1;
+            testData.m_host = "host1";
+            testData.m_wrkDir = "/path/to/dds";
+            testData.m_requestID = 123;
+
+            SSlotInfoResponseData data;
+            data.fromPT(child.second);
+
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
+            BOOST_CHECK(data == testData);
+        }
         else if (tag == "agentCount")
         {
             SAgentCountResponseData testData;

@@ -88,7 +88,8 @@ void requestAgentInfo(CSession& _session, const SOptions_t& /*_options*/)
     requestPtr->setResponseCallback(
         [](const SAgentInfoResponseData& _info)
         {
-            LOG(log_stdout_clean) << ">>> Agent: id (" << _info.m_agentID << "), pid (" << _info.m_agentPid << "),"
+            LOG(log_stdout_clean) << ">>> Agent " << _info.m_index << ": id (" << _info.m_agentID << "), pid ("
+                                  << _info.m_agentPid << "),"
                                   << " startup time (" << chrono::duration<double>(_info.m_startUpTime).count()
                                   << "s), slots total/executing/idle (" << _info.m_nSlots << "/"
                                   << _info.m_nExecutingSlots << "/" << _info.m_nIdleSlots << ")"
@@ -97,6 +98,31 @@ void requestAgentInfo(CSession& _session, const SOptions_t& /*_options*/)
         });
 
     _session.sendRequest<SAgentInfoRequest>(requestPtr);
+}
+
+void requestSlotInfo(CSession& _session, const SOptions_t& /*_options*/)
+{
+    SSlotInfoRequest::request_t requestInfo;
+    SSlotInfoRequest::ptr_t requestPtr{ SSlotInfoRequest::makeRequest(requestInfo) };
+
+    requestPtr->setMessageCallback(
+        [](const SMessageResponseData& message)
+        {
+            LOG((message.m_severity == dds::intercom_api::EMsgSeverity::error) ? log_stderr : log_stdout)
+                << "Server reports: " << message.m_msg;
+        });
+
+    requestPtr->setDoneCallback([&_session]() { _session.unblockCurrentThread(); });
+
+    requestPtr->setResponseCallback(
+        [](const SSlotInfoResponseData& _info)
+        {
+            LOG(log_stdout_clean) << "Slot " << _info.m_index << ": agentID (" << _info.m_agentID << "), slotID ("
+                                  << _info.m_slotID << "), taskID (" << _info.m_taskID << "), state (" << _info.m_state
+                                  << "), host (" << _info.m_host << "), wrkDir (" << quoted(_info.m_wrkDir) << ")";
+        });
+
+    _session.sendRequest<SSlotInfoRequest>(requestPtr);
 }
 
 void requestAgentCount(CSession& _session, const SOptions_t& _options)
@@ -187,6 +213,10 @@ int main(int argc, char* argv[])
         else if (options.m_bNeedAgentsList)
         {
             requestAgentInfo(session, options);
+        }
+        else if (options.m_bNeedSlotList)
+        {
+            requestSlotInfo(session, options);
         }
         else if (options.m_bNeedActiveCount || options.m_bNeedIdleCount || options.m_bNeedExecutingCount)
         {

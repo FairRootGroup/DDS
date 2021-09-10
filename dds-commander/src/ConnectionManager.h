@@ -115,6 +115,8 @@ namespace dds
                                      CAgentChannel::weakConnectionPtr_t _channel);
             void sendUIAgentInfo(const dds::tools_api::SAgentInfoRequestData& _info,
                                  CAgentChannel::weakConnectionPtr_t _channel);
+            void sendUISlotInfo(const dds::tools_api::SSlotInfoRequestData& _info,
+                                CAgentChannel::weakConnectionPtr_t _channel);
             void sendUIAgentCount(const dds::tools_api::SAgentCountRequestData& _info,
                                   CAgentChannel::weakConnectionPtr_t _channel);
 

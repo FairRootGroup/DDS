@@ -191,6 +191,37 @@ namespace dds
         /// \brief Request class of agentInfo.
         using SAgentInfoRequest = SBaseRequestImpl<SAgentInfoRequestData, SAgentInfoResponseData>;
 
+        /// \brief Structure holds information of slot info response.
+        struct SSlotInfoResponseData : SBaseResponseData<SSlotInfoResponseData>
+        {
+            uint32_t m_index{ 0 };   ///< Index of the current slot
+            uint64_t m_agentID{ 0 }; ///< Agent ID
+            uint64_t m_slotID{ 0 };  ///< Agent ID
+            uint64_t m_taskID{ 0 };  ///< Task ID, 0 if not assigned
+            uint32_t m_state{ 0 };   ///< Slot state
+            std::string m_host;      ///< Hostname
+            std::string m_wrkDir;    ///< Wrk directory
+
+          private:
+            friend SBaseData<SSlotInfoResponseData>;
+            friend SBaseResponseData<SSlotInfoResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "slotInfo";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SSlotInfoResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SSlotInfoResponseData& _data);
+        };
+
+        /// \brief Structure holds information of slottInfo request.
+        DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SSlotInfoRequestData, "slotInfo")
+
+        /// \brief Request class of agentInfo.
+        using SSlotInfoRequest = SBaseRequestImpl<SSlotInfoRequestData, SSlotInfoResponseData>;
+
         /// \brief Structure holds information of agentCount response.
         struct SAgentCountResponseData : SBaseResponseData<SAgentCountResponseData>
         {

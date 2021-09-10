@@ -927,6 +927,12 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
 
                 sendUIAgentInfo(agentInfo, _channel);
             }
+            else if (tag == "slotInfo")
+            {
+                dds::tools_api::SSlotInfoRequestData agentInfo;
+                agentInfo.fromPT(child.second);
+                sendUISlotInfo(agentInfo, _channel);
+            }
             else if (tag == "agentCount")
             {
                 dds::tools_api::SAgentCountRequestData agentCount;
@@ -945,6 +951,7 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
             }
         }
     }
+    // TODO: send back error in case of exception, otherwise UI hangs
     catch (const boost::property_tree::ptree_error& _e)
     {
         LOG(error) << "Failed to process Tools API message: " << _e.what();
@@ -1354,7 +1361,7 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
         }));
 
     // Enumerate all agents
-    size_t i = 0;
+    size_t count{ 0 };
     for (const auto& v : channels)
     {
         if (v.m_channel.expired())
@@ -1365,7 +1372,7 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
 
         SAgentInfoResponseData info;
         info.m_requestID = _info.m_requestID;
-        info.m_index = i++;
+        info.m_index = count++;
         info.m_agentID = inf.m_id;
         info.m_startUpTime = inf.m_startUpTime;
         info.m_username = inf.m_remoteHostInfo.m_username;
@@ -1383,6 +1390,40 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
                 info.m_nExecutingSlots = 0;
         }
         sendCustomCommandResponse(_channel, info.toJSON());
+    }
+    sendDoneResponse(_channel, _info.m_requestID);
+}
+
+void CConnectionManager::sendUISlotInfo(const dds::tools_api::SSlotInfoRequestData& _info,
+                                        CAgentChannel::weakConnectionPtr_t _channel)
+{
+    CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+        { return _v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started(); }));
+
+    size_t count{ 0 };
+    for (const auto& v : channels)
+    {
+        if (v.m_channel.expired())
+            continue;
+
+        auto ptr{ v.m_channel.lock() };
+        SAgentInfo& inf{ ptr->getAgentInfo() };
+        auto slots{ inf.getSlots() };
+
+        for (const auto& v : slots)
+        {
+            SSlotInfoResponseData info;
+            info.m_requestID = _info.m_requestID;
+            info.m_index = count++;
+            info.m_agentID = inf.m_id;
+            info.m_slotID = v.second.m_id;
+            info.m_taskID = v.second.m_taskID;
+            info.m_state = v.second.m_state;
+            info.m_host = inf.m_remoteHostInfo.m_host;
+            info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
+            sendCustomCommandResponse(_channel, info.toJSON());
+        }
     }
     sendDoneResponse(_channel, _info.m_requestID);
 }
