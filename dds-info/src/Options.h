@@ -27,6 +27,7 @@ namespace dds
                 : m_bNeedCommanderPid(false)
                 , m_bNeedDDSStatus(false)
                 , m_bNeedAgentsList(false)
+                , m_bNeedSlotList(false)
                 , m_bNeedPropList(false)
                 , m_bNeedPropValues(false)
                 , m_bNeedActiveTopology(false)
@@ -42,6 +43,7 @@ namespace dds
             bool m_bNeedCommanderPid;
             bool m_bNeedDDSStatus;
             bool m_bNeedAgentsList;
+            bool m_bNeedSlotList;
             bool m_bNeedPropList;
             bool m_bNeedPropValues;
             bool m_bNeedActiveTopology;
@@ -73,6 +75,8 @@ namespace dds
             options.add_options()("agents-list,l",
                                   bpo::bool_switch(&_options->m_bNeedAgentsList),
                                   "Show detailed info about all online agents");
+            options.add_options()(
+                "slot-list", bpo::bool_switch(&_options->m_bNeedSlotList), "Show detailed info about all online slots");
             options.add_options()(
                 "prop-list", bpo::bool_switch(&_options->m_bNeedPropList), "Returns a property list from all agents.");
             options.add_options()("prop-values",

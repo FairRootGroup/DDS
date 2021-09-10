@@ -57,6 +57,17 @@
                 "executingSlots" : 7,
                 "requestID": 123
             },
+            "slotInfo":
+            {
+                "index": 123,
+                "agentID": 3456,
+                "slotID" : 1234,
+                "taskID": 5678,
+                "state": 1,
+                "host": "host1",
+                "wrkDir": "/path/to/dds",
+                "requestID": 123
+            },
             "agentCount":
             {
                 "activeSlotsCount": 123,

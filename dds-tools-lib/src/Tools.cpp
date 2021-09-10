@@ -337,6 +337,17 @@ void CSession::notify(std::istream& _stream)
                                                       _request->execResponseCallback(data);
                                                   });
             }
+            else if (it->second.type() == typeid(SSlotInfoRequest::ptr_t))
+            {
+                processRequest<SSlotInfoRequest>(it->second,
+                                                 child,
+                                                 [&child](SSlotInfoRequest::ptr_t _request)
+                                                 {
+                                                     SSlotInfoResponseData data;
+                                                     data.fromPT(child.second);
+                                                     _request->execResponseCallback(data);
+                                                 });
+            }
             else if (it->second.type() == typeid(SAgentCountRequest::ptr_t))
             {
                 processRequest<SAgentCountRequest>(it->second,
@@ -425,6 +436,7 @@ template void CSession::sendRequest<STopologyRequest>(STopologyRequest::ptr_t);
 template void CSession::sendRequest<SGetLogRequest>(SGetLogRequest::ptr_t);
 template void CSession::sendRequest<SCommanderInfoRequest>(SCommanderInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentInfoRequest>(SAgentInfoRequest::ptr_t);
+template void CSession::sendRequest<SSlotInfoRequest>(SSlotInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentCountRequest>(SAgentCountRequest::ptr_t);
 template void CSession::sendRequest<SOnTaskDoneRequest>(SOnTaskDoneRequest::ptr_t);
 
