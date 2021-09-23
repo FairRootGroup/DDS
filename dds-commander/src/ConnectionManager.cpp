@@ -639,10 +639,12 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     //        m_taskIDToAgentChannelMap.erase(it);
     //}
 
+    string path;
     try
     {
         auto task = m_topo.getRuntimeTaskById(_attachment->m_taskID).m_task;
-        LOG(info) << "User task <" << _attachment->m_taskID << "> with path " << task->getPath() << " done";
+        path = task->getPath();
+        LOG(info) << "User task <" << _attachment->m_taskID << "> with path " << path << " done";
     }
     catch (exception& _e)
     {
@@ -675,6 +677,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
                 (WEXITSTATUS(_attachment->m_exitCode) > 128 ? (WEXITSTATUS(_attachment->m_exitCode) - 128) : 0);
             response.m_host = hostInfo.m_host;
             response.m_wrkDir = hostInfo.m_DDSPath;
+            response.m_taskPath = path;
 
             sendCustomCommandResponse(ch, response.toJSON());
         }

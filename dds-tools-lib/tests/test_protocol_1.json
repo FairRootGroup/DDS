@@ -74,6 +74,16 @@
                 "idleSlotsCount" : 234,
                 "executingSlotsCount": 345,
                 "requestID": 123
+            },
+            "onTaksDone":
+            {
+                "requestID": 543,
+                "taskID": 678,
+                "exitCode": 23,
+                "signal": 56,
+                "host": "dds.gsi.de",
+                "wrkDir": "/tmp/wn_dds",
+                "taskPath": "/main/task"
             }
         }
     }

@@ -24,6 +24,7 @@ Added: new command line option `--slot-list` of  `dds-info` performing `SSlotInf
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.    
 Added: new `SSlotInfoRequest` returning a list of details of all active slots (GH-374).    
+Added: task path to `OnTaskDone` reply.    
 
 ### dds-topology
 Added: new std::istream based APIs.    
