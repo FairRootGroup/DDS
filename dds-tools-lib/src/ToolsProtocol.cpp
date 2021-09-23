@@ -521,6 +521,7 @@ void SOnTaskDoneResponseData::_toPT(boost::property_tree::ptree& _pt) const
     _pt.put<uint32_t>("signal", m_signal);
     _pt.put<string>("host", m_host);
     _pt.put<string>("wrkDir", m_wrkDir);
+    _pt.put<string>("taskPath", m_taskPath);
 }
 
 void SOnTaskDoneResponseData::_fromPT(const boost::property_tree::ptree& _pt)
@@ -530,12 +531,14 @@ void SOnTaskDoneResponseData::_fromPT(const boost::property_tree::ptree& _pt)
     m_signal = _pt.get<uint32_t>("signal", 0);
     m_host = _pt.get<string>("host", string());
     m_wrkDir = _pt.get<string>("wrkDir", string());
+    m_taskPath = _pt.get<string>("taskPath", string());
 }
 
 bool SOnTaskDoneResponseData::operator==(const SOnTaskDoneResponseData& _val) const
 {
     return (SBaseData::operator==(_val) && m_taskID == _val.m_taskID && m_exitCode == _val.m_exitCode &&
-            m_signal == _val.m_signal && m_host == _val.m_host && m_wrkDir == _val.m_wrkDir);
+            m_signal == _val.m_signal && m_host == _val.m_host && m_wrkDir == _val.m_wrkDir &&
+            m_taskPath == _val.m_taskPath);
 }
 
 // We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
@@ -549,7 +552,8 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; taskID: " << _data.m_taskID
                        << "; exitCode: " << _data.m_exitCode << "; signal: " << _data.m_signal
-                       << "; host: " << _data.m_host << "; wrkDir: " << _data.m_wrkDir;
+                       << "; host: " << _data.m_host << "; wrkDir: " << _data.m_wrkDir
+                       << "; taskPath: " << _data.m_taskPath;
         }
     } // namespace tools_api
 } // namespace dds

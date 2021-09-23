@@ -205,6 +205,25 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 
             BOOST_CHECK(data == testData);
         }
+        else if (tag == "onTaskDone")
+        {
+            SOnTaskDoneResponseData testData;
+            testData.m_requestID = 543;
+            testData.m_taskID = 678;
+            testData.m_exitCode = 23;
+            testData.m_signal = 56;
+            testData.m_host = "dds.gsi.de";
+            testData.m_wrkDir = "/tmp/wn_dds";
+            testData.m_taskPath = "/main/task";
+
+            SOnTaskDoneResponseData data(child.second);
+
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
+            BOOST_CHECK(data == testData);
+        }
     }
 }
 
