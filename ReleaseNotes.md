@@ -19,7 +19,8 @@ Added: setup DDS environment and create default config file in code. No need to 
 Added: Add a onTaskDone event to ToolsAPI. Using ToolsAPI users are able now to subscribe and receive onTaskDone events whenever a user tasks exists.(GH-370)    
 Modified: Refactor `MiscCommon`.    
 Added: Refactor and open DDS SSH config API to the users. Rename `ncf` to `SSHConfigFile`. (GH-340)    
-Added: new command line option `--slot-list` of  `dds-info` performing `SSlotInfoRequest` (GH-374).    
+Added: new command line option `--slot-list` of  `dds-info` performing `SSlotInfoRequest`. (GH-374)    
+Added: DDS agent monitors available disk space and if the (configurable) threshold is reached, it will trigger a self-shutdown. (GH-392)     
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.    
@@ -51,6 +52,7 @@ Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)
 Modified: remove the "-V/--verbose" command line options. (GH-376)   
 Modified: a default cfg file creation workflow has been revised. (GH-376)    
 Added: dds-user-defaults learned a new global option "agent.access_permissions". This option forces the given file mode on agent side files. At the moment it's only applied to user task log files (stdout and stderr). (GH-389)    
+Added: dds-user-defaults learned a new global option "agent.disk_space_threshold". The agent will trigger a self-shutdown if the free disk space is below this threshold. (GH-392)   
 
 ## v3.4 (2020-07-01)
 

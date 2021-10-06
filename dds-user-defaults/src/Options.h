@@ -44,6 +44,9 @@ namespace dds
             // At the moment the access permissions are only applied to user task log files (stdout and stderr)
             // Mode can be specified with octal numbers.
             std::string m_accessPermissions;
+            // !< The minimum disk space.
+            // The agent will trigger a self-shutdown if the free disk space is below this threshold.
+            unsigned int m_diskSpaceThreshold;
         } SDDSAgentOptions_t;
 
         typedef struct SDDSUserDefaultOptions

@@ -39,8 +39,8 @@ namespace dds
         {
             using pidContainer_t = std::vector<pid_t>;
             using stringContainer_t = std::vector<std::string>;
-            using timer_t = boost::asio::system_timer;
-            using systemTimerPtr_t = std::unique_ptr<timer_t>;
+            using timer_t = boost::asio::steady_timer;
+            using timerPtr_t = std::unique_ptr<timer_t>;
             using terminateChildrenOnComplete_t = std::function<void()>;
 
           public:
@@ -127,13 +127,15 @@ namespace dds
             /// \param[in] _onCompleteSlot is a callback fucntion. It's called when termination of all child process is
             /// finished.
             void terminateChildrenProcesses(pid_t _parentPid, const terminateChildrenOnComplete_t& _onCompleteSlot);
-            void terminateChildrenProcesses(systemTimerPtr_t& _timer,
+            void terminateChildrenProcesses(timerPtr_t& _timer,
                                             const pidContainer_t& _children,
                                             const std::chrono::steady_clock::time_point& _wait_until,
                                             const terminateChildrenOnComplete_t& _onCompleteSlot);
             void enumChildProcesses(pid_t _forPid, stringContainer_t& _chilren);
             void taskExited(uint64_t _taskID, int _exitCode);
             SSlotInfo& getSlotInfoById(const slotId_t& _slotID);
+            bool isLowDiskSpace(uintmax_t* _available = nullptr);
+            void startResourceMonitor(boost::asio::io_context& _service, const std::chrono::seconds& _interval);
 
           private:
             uint64_t m_id{ 0 };
@@ -148,6 +150,7 @@ namespace dds
             std::mutex m_mutexSlots;
             SSlotInfo::container_t m_slots;
             size_t m_nSlots{ 0 };
+            timerPtr_t m_resourceMonitorTimer;
         };
     } // namespace agent_cmd
 } // namespace dds

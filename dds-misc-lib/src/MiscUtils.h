@@ -251,5 +251,23 @@ namespace dds::misc
         std::transform(_str.begin(), _str.end(), _str.begin(), ToLower());
         return _str;
     }
+
+    struct HumanReadable
+    {
+        std::uintmax_t size{};
+
+      private:
+        friend std::ostream& operator<<(std::ostream& os, HumanReadable hr)
+        {
+            int i{};
+            double mantissa = hr.size;
+            for (; mantissa >= 1024.; mantissa /= 1024., ++i)
+            {
+            }
+            mantissa = std::ceil(mantissa * 10.) / 10.;
+            os << mantissa << "BKMGTPE"[i];
+            return i == 0 ? os : os << "B (" << hr.size << ')';
+        }
+    };
 };     // namespace dds::misc
 #endif // _DDS_MISCUTILS_H_

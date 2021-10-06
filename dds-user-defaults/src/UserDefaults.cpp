@@ -96,6 +96,10 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         "agent.access_permissions",
         boost::program_options::value<string>(&m_options.m_agent.m_accessPermissions)->default_value("0660"),
         "");
+    config_file_options.add_options()(
+        "agent.disk_space_threshold",
+        boost::program_options::value<unsigned int>(&m_options.m_agent.m_diskSpaceThreshold)->default_value(500),
+        "");
 
     if (!_get_default)
     {
@@ -244,7 +248,12 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "# 0444 - Allow read permission to owner and group and world\n"
             << "# 0777 - Allow everyone to read, write, and execute file\n"
             << "#\n"
-            << "access_permissions=" << ud.getValueForKey("agent.access_permissions") << "\n";
+            << "access_permissions=" << ud.getValueForKey("agent.access_permissions") << "\n"
+            << "# The agent will trigger a self-shutdown if the free disk space is below this threshold.\n"
+            << "# The value in MB. Default is 500 MB.\n"
+            << "# Set it to 0 to disiable.\n"
+            << "#\n"
+            << "disk_space_threshold=" << ud.getValueForKey("agent.disk_space_threshold") << "\n";
 }
 
 string CUserDefaults::convertAnyToString(const boost::any& _any) const
