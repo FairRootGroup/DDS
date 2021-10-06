@@ -27,6 +27,8 @@ namespace ba = boost::algorithm;
 namespace bp = boost::process;
 
 const uint16_t g_MaxConnectionAttempts = 5;
+// 1MB = 1048576 Bytes
+const uint g_bytesInMB{ 1048576 };
 
 CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
                                      uint64_t _ProtocolHeaderID,
@@ -87,6 +89,38 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
                 LOG(info) << "Failed to connect to commander server. Sending yourself a shutdown command.";
                 this->sendYourself<cmdSHUTDOWN>();
             }
+        });
+
+    // Check free disk space (GH-392)
+    // Report avaliable disk space at start
+    uintmax_t nAvailable{ 0 };
+    isLowDiskSpace(&nAvailable);
+    LOG(info) << "Avaliable disk space: " << dds::misc::HumanReadable{ nAvailable };
+    // create async timer
+    m_resourceMonitorTimer = make_unique<timer_t>(_service);
+    startResourceMonitor(_service, chrono::seconds(30));
+}
+
+void CCommanderChannel::startResourceMonitor(boost::asio::io_context& _service, const chrono::seconds& _interval)
+{
+    m_resourceMonitorTimer->expires_after(_interval);
+    // Check free disk space (GH-392)
+    m_resourceMonitorTimer->async_wait(
+        [this, &_service, _interval](const boost::system::error_code& /*_error*/) mutable
+        {
+            uintmax_t nAvailable{ 0 };
+            if (isLowDiskSpace(&nAvailable))
+            {
+                unsigned long nLimit = stoul(CUserDefaults::instance().getValueForKey("agent.disk_space_threshold"));
+                LOG(fatal) << "Triggering a shutdown due to low disk space. Required: "
+                           << dds::misc::HumanReadable{ nLimit * g_bytesInMB }
+                           << " Available: " << dds::misc::HumanReadable{ nAvailable };
+                this->sendYourself<cmdSHUTDOWN>();
+                return;
+            }
+
+            // reschedule
+            startResourceMonitor(_service, _interval);
         });
 }
 
@@ -912,7 +946,7 @@ void CCommanderChannel::terminateChildrenProcesses(
     LOG(info) << "Wait for children of " << mainPid << " to exit...";
 
     // create async timer
-    systemTimerPtr_t timer = make_unique<timer_t>(m_ioContext, chrono::milliseconds(100));
+    timerPtr_t timer = make_unique<timer_t>(m_ioContext, chrono::milliseconds(100));
 
     // Prevent blocking of the current thread.
     // The term-kill logic is posted to a different free thread in the queue.
@@ -923,7 +957,7 @@ void CCommanderChannel::terminateChildrenProcesses(
 }
 
 void CCommanderChannel::terminateChildrenProcesses(
-    CCommanderChannel::systemTimerPtr_t& _timer,
+    CCommanderChannel::timerPtr_t& _timer,
     const CCommanderChannel::pidContainer_t& _children,
     const chrono::steady_clock::time_point& _wait_until,
     const CCommanderChannel::terminateChildrenOnComplete_t& _onCompleteSlot)
@@ -1039,6 +1073,9 @@ void CCommanderChannel::stopChannel()
 
     if (m_intercomChannel)
         m_intercomChannel->stop();
+
+    // Stop Resource monitor
+    m_resourceMonitorTimer->cancel();
 
     // stop channel
     stop();
@@ -1184,4 +1221,28 @@ bool CCommanderChannel::on_cmdUSER_TASK_DONE(SCommandAttachmentImpl<cmdUSER_TASK
     }
 
     return true;
+}
+
+bool CCommanderChannel::isLowDiskSpace(uintmax_t* _available)
+{
+    try
+    {
+        fs::space_info diskSpaceInfo = fs::space(fs::path(CUserDefaults::getDDSPath()));
+
+        if (_available != nullptr)
+            *_available = diskSpaceInfo.available;
+
+        // In MB
+        unsigned long nLimit = stoul(CUserDefaults::instance().getValueForKey("agent.disk_space_threshold"));
+        // Ignore the filter when threshold = 0
+        if (nLimit == 0)
+            return false;
+
+        return ((diskSpaceInfo.available / g_bytesInMB) < nLimit);
+    }
+    catch (exception& _e)
+    {
+        LOG(error) << "Failed getting avaliable disk space: " << _e.what();
+    }
+    return false;
 }
