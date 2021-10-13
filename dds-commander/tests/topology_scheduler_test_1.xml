@@ -5,11 +5,14 @@
 	<declrequirement name="requirement2" type="hostname" value="host2_([0-9]|[0-9][0-9])"/>
 
 	<declrequirement name="requirement3" type="hostname" value="host3_([0-9]|[0-9][0-9])"/>
+    
+    <declrequirement name="requirementi" value="100" type="maxinstances"/>
 
   	<decltask name="TestTask1">
 		<exe reachable="false">test_task.exe</exe>
 		<requirements>
 			<name>requirement1</name>
+            <name>requirementi</name>
 		</requirements>
 	</decltask>
 
@@ -17,6 +20,7 @@
 		<exe reachable="false">test_task.exe</exe>
 		<requirements>
 			<name>requirement2</name>
+            <name>requirementi</name>
 		</requirements>
 	</decltask>
 
@@ -24,6 +28,7 @@
 		<exe reachable="false">test_task.exe</exe>
 		<requirements>
 			<name>requirement3</name>
+            <name>requirementi</name>
 		</requirements>
 	</decltask>
 

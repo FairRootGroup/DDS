@@ -31,6 +31,7 @@ Added: new std::istream based APIs.
 Added: new CTopology::getRuntimeTask and CTopology::getRuntimeCollection methods which take either ID or runtime path as input.    
 Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.    
 Added: On topology upodate/stop a task done event is now only sent when all processes of the given task are actually exited or killed. (GH-360)    
+Added: scheduler supports multiple requirements for task or collection. (GH-395)    
 
 ### dds-session
 Modified: improved default SID storage and handling. (GH-318)      
