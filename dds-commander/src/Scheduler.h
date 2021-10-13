@@ -32,15 +32,15 @@ namespace dds
                 dds::protocol_api::SWeakChannelInfo<CAgentChannel> m_weakChannelInfo;
             };
 
-            typedef std::vector<SSchedule> ScheduleVector_t;
-            typedef std::map<size_t, std::vector<uint64_t>, std::greater<size_t>> CollectionMap_t;
-            typedef std::vector<dds::protocol_api::SWeakChannelInfo<CAgentChannel>> weakChannelInfoVector_t;
+            using ScheduleVector_t = std::vector<SSchedule>;
+            using CollectionMap_t = std::map<size_t, std::vector<uint64_t>, std::greater<size_t>>;
+            using weakChannelInfoVector_t = std::vector<dds::protocol_api::SWeakChannelInfo<CAgentChannel>>;
 
           private:
             // Map tuple<agent ID, host name, worker id> to vector of channel indeces.
-            typedef std::map<std::tuple<uint64_t, std::string, std::string>, std::vector<size_t>> hostToChannelMap_t;
+            using hostToChannelMap_t = std::map<std::tuple<uint64_t, std::string, std::string>, std::vector<size_t>>;
             // Map pair<host name, task/collection name> to counter.
-            typedef std::map<std::pair<std::string, std::string>, size_t> hostCounterMap_t;
+            using hostCounterMap_t = std::map<std::pair<std::string, std::string>, size_t>;
 
           public:
             CScheduler();
@@ -70,7 +70,7 @@ namespace dds
                                      hostToChannelMap_t& _hostToChannelMap,
                                      std::set<uint64_t>& _scheduledTasks,
                                      const CollectionMap_t& _collectionMap,
-                                     bool useRequirement,
+                                     size_t _numRequirements,
                                      hostCounterMap_t& _hostCounterMap);
 
             void scheduleTasks(const topology_api::CTopoCore& _topology,
@@ -78,16 +78,15 @@ namespace dds
                                hostToChannelMap_t& _hostToChannelMap,
                                std::set<uint64_t>& _scheduledTasks,
                                const std::set<uint64_t>& _tasksInCollections,
-                               bool useRequirement,
+                               size_t _numRequirements,
                                const topology_api::CTopoCore::IdSet_t* _addedTasks,
                                hostCounterMap_t& _hostCounterMap);
 
-            bool checkRequirement(topology_api::CTopoRequirement::Ptr_t _requirement,
-                                  bool _useRequirement,
-                                  const std::string& _hostName,
-                                  const std::string& _wnName,
-                                  const std::string& _elementName,
-                                  hostCounterMap_t& _hostCounterMap) const;
+            bool checkRequirements(const topology_api::CTopoRequirement::PtrVector_t& _requirements,
+                                   const std::string& _hostName,
+                                   const std::string& _wnName,
+                                   const std::string& _elementName,
+                                   hostCounterMap_t& _hostCounterMap) const;
 
           private:
             ScheduleVector_t m_schedule;

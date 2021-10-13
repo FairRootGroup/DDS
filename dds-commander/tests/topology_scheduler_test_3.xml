@@ -1,0 +1,56 @@
+<topology name="myTopology">
+
+	<declrequirement name="CalibHostRequirement" type="hostname" value="host_calib_.*"/>
+    <declrequirement name="RecoHostRequirement" type="hostname" value="host_reco_.*"/>
+    <declrequirement name="RecoInstanceRequirement" value="1" type="maxinstances"/>
+
+    <decltask name="CalibTask1">
+      <exe reachable="false">test_task.exe</exe>
+    </decltask>
+
+    <decltask name="CalibTask2">
+      <exe reachable="false">test_task.exe</exe>
+    </decltask>
+    
+  	<decltask name="RecoTask1">
+		<exe reachable="false">test_task.exe</exe>
+	</decltask>
+
+  	<decltask name="RecoTask2">
+		<exe reachable="false">test_task.exe</exe>
+	</decltask>
+
+  	<decltask name="RecoTask3">
+		<exe reachable="false">test_task.exe</exe>
+	</decltask>
+    
+    <declcollection name="CalibCollection">
+        <requirements>
+            <name>CalibHostRequirement</name>
+        </requirements>
+        <tasks>
+            <name n="5">CalibTask1</name>
+            <name n="5">CalibTask2</name>
+        </tasks>
+    </declcollection>
+    
+    <declcollection name="RecoCollection">
+        <requirements>
+            <name>RecoHostRequirement</name>
+            <name>RecoInstanceRequirement</name>
+        </requirements>
+        <tasks>
+            <name n="10">RecoTask1</name>
+            <name n="10">RecoTask2</name>
+            <name n="10">RecoTask3</name>
+        </tasks>
+    </declcollection>
+
+    <main name="main">
+        <collection>CalibCollection</collection>
+        <group name="RecoGroup" n="10">
+            <collection>RecoCollection</collection>
+        </group>
+    </main>
+
+</topology>

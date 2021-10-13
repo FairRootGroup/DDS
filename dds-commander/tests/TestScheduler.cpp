@@ -185,6 +185,39 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     cout << scheduler.toString();
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_scheduler_3)
+{
+    boost::asio::io_context io_context;
+
+    CTopoCore topology;
+    topology.init("topology_scheduler_test_3.xml");
+
+    CConnectionManager::channelInfo_t::container_t agents;
+
+    // Calibration node
+    make_agent(io_context, agents, "host_calib_0", "", 123456, 10);
+
+    // Reco nodes
+    const size_t numAgents{ 10 };
+    const size_t numSlotsPerAgent{ 30 };
+    for (size_t ia = 0; ia < numAgents; ++ia)
+    {
+        const string host{ "host_reco_" + to_string(ia) };
+        const uint64_t agentID{ ia + 1 };
+        make_agent(io_context, agents, host, "", agentID, numSlotsPerAgent);
+    }
+
+    using weak_t = CConnectionManager::weakChannelInfo_t;
+    weak_t::container_t weakAgents;
+    std::transform(
+        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto {
+            return weak_t(_v.m_channel, _v.m_protocolHeaderID, _v.m_isSlot);
+        });
+
+    CScheduler scheduler;
+    BOOST_CHECK_NO_THROW(scheduler.makeSchedule(topology, weakAgents));
+}
+
 BOOST_AUTO_TEST_CASE(test_dds_scheduler_host_pattern_matches)
 {
     BOOST_CHECK(CScheduler::hostPatternMatches(".+.gsi.de", "dds.gsi.de") == true);

@@ -41,6 +41,7 @@ if(BUILD_TESTS)
   install(FILES
     topology_scheduler_test_1.xml
     topology_scheduler_test_2.xml
+    topology_scheduler_test_3.xml
     DESTINATION "${PROJECT_INSTALL_TESTS}"
   )
 endif()
