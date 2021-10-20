@@ -427,7 +427,9 @@ void CConnectionManager::activateTasks(const dds::tools_api::STopologyRequestDat
             info.m_agentID = inf.m_id;
             info.m_slotID = slot.m_id;
             info.m_taskID = sch.m_taskID;
-            info.m_path = m_topo.getRuntimeTaskById(sch.m_taskID).m_taskPath;
+            auto task{ m_topo.getRuntimeTaskById(sch.m_taskID) };
+            info.m_collectionID = task.m_taskCollectionId;
+            info.m_path = task.m_taskPath;
             info.m_host = inf.m_remoteHostInfo.m_host;
             info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
             sendCustomCommandResponse(_channel, info.toJSON());
@@ -1205,7 +1207,9 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
                     info.m_slotID = 0; // TODO: we don't set slot ID for the moment.
                                        // Setting it will require locking and looping over the container of slots.
                     info.m_taskID = taskID;
-                    info.m_path = m_topo.getRuntimeTaskById(taskID).m_taskPath;
+                    auto task{ m_topo.getRuntimeTaskById(taskID) };
+                    info.m_collectionID = task.m_taskCollectionId;
+                    info.m_path = task.m_taskPath;
                     info.m_host = inf.m_remoteHostInfo.m_host;
                     info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
                     sendCustomCommandResponse(_channel, info.toJSON());
