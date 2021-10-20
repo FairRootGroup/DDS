@@ -137,13 +137,14 @@ namespace dds
             STopologyResponseData();
             STopologyResponseData(const boost::property_tree::ptree& _pt);
 
-            bool m_activated{ true }; ///< True if task was activated, otherwise it's stopped
-            uint64_t m_agentID{ 0 };  ///< Agent ID
-            uint64_t m_slotID{ 0 };   ///< Slot ID
-            uint64_t m_taskID{ 0 };   ///< Task ID, 0 if not assigned
-            std::string m_path;       ///< Path in the topology
-            std::string m_host;       ///< Hostname
-            std::string m_wrkDir;     ///< Wrk directory
+            bool m_activated{ true };     ///< True if task was activated, otherwise it's stopped
+            uint64_t m_agentID{ 0 };      ///< Agent ID
+            uint64_t m_slotID{ 0 };       ///< Slot ID
+            uint64_t m_taskID{ 0 };       ///< Task ID, 0 if not assigned
+            uint64_t m_collectionID{ 0 }; ///< Collection ID, 0 if not in a collection
+            std::string m_path;           ///< Path in the topology
+            std::string m_host;           ///< Hostname
+            std::string m_wrkDir;         ///< Wrk directory
 
           private:
             friend SBaseData<STopologyResponseData>;
