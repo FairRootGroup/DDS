@@ -309,7 +309,11 @@ void CSession::notify(std::istream& _stream)
             }
             else if (it->second.type() == typeid(STopologyRequest::ptr_t))
             {
-                processRequest<STopologyRequest>(it->second, child, nullptr);
+                processRequest<STopologyRequest>(
+                    it->second,
+                    child,
+                    [&child](STopologyRequest::ptr_t _request)
+                    { _request->execResponseCallback(STopologyResponseData(child.second)); });
             }
             else if (it->second.type() == typeid(SGetLogRequest::ptr_t))
             {

@@ -131,8 +131,36 @@ namespace dds
             friend std::ostream& operator<<(std::ostream& _os, const STopologyRequestData& _data);
         };
 
+        /// \brief Structure holds information of topology response - activated and stopped tasks.
+        struct STopologyResponseData : SBaseResponseData<STopologyResponseData>
+        {
+            STopologyResponseData();
+            STopologyResponseData(const boost::property_tree::ptree& _pt);
+
+            bool m_activated{ true }; ///< True if task was activated, otherwise it's stopped
+            uint64_t m_agentID{ 0 };  ///< Agent ID
+            uint64_t m_slotID{ 0 };   ///< Slot ID
+            uint64_t m_taskID{ 0 };   ///< Task ID, 0 if not assigned
+            std::string m_path;       ///< Path in the topology
+            std::string m_host;       ///< Hostname
+            std::string m_wrkDir;     ///< Wrk directory
+
+          private:
+            friend SBaseData<STopologyResponseData>;
+            friend SBaseResponseData<STopologyResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "topology";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const STopologyResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const STopologyResponseData& _data);
+        };
+
         /// \brief Request class of topology.
-        using STopologyRequest = SBaseRequestImpl<STopologyRequestData, SEmptyResponseData>;
+        using STopologyRequest = SBaseRequestImpl<STopologyRequestData, STopologyResponseData>;
 
         /// \brief Structure holds information of a getlog request.
         DDS_TOOLS_DECLARE_DATA_CLASS(SBaseRequestData, SGetLogRequestData, "getlog")

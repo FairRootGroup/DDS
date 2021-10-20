@@ -206,6 +206,9 @@ int main(int argc, char* argv[])
                 return;
             });
 
+        requestPtr->setResponseCallback([](const STopologyResponseData& _info)
+                                        { LOG(info) << "Topology response: " << _info; });
+
         requestPtr->setDoneCallback([&session]() { session.unblockCurrentThread(); });
 
         session.sendRequest<STopologyRequest>(requestPtr);

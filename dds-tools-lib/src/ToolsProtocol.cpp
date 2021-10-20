@@ -264,6 +264,68 @@ namespace dds
 } // namespace dds
 
 ///////////////////////////////////
+// STopologyResponseData
+///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* STopologyResponseData::_protocolTag;
+
+STopologyResponseData::STopologyResponseData()
+{
+}
+
+STopologyResponseData::STopologyResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
+void STopologyResponseData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    _pt.put<bool>("activated", m_activated);
+    _pt.put<uint64_t>("agentID", m_agentID);
+    _pt.put<uint64_t>("slotID", m_slotID);
+    _pt.put<uint64_t>("taskID", m_taskID);
+    _pt.put<string>("path", m_path);
+    _pt.put<string>("host", m_host);
+    _pt.put<string>("wrkDir", m_wrkDir);
+}
+
+void STopologyResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_activated = _pt.get<bool>("activated", true);
+    m_agentID = _pt.get<uint64_t>("agentID", 0);
+    m_slotID = _pt.get<uint64_t>("slotID", 0);
+    m_taskID = _pt.get<uint64_t>("taskID", 0);
+    m_path = _pt.get<string>("path", "");
+    m_host = _pt.get<string>("host", "");
+    m_wrkDir = _pt.get<string>("wrkDir", "");
+}
+
+bool STopologyResponseData::operator==(const STopologyResponseData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_activated == _val.m_activated && m_agentID == _val.m_agentID &&
+            m_slotID == _val.m_slotID && m_taskID == _val.m_taskID && m_path == _val.m_path && m_host == _val.m_host &&
+            m_wrkDir == _val.m_wrkDir);
+}
+
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
+{
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const STopologyResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; activated: " << _data.m_activated
+                       << "; agentID: " << _data.m_agentID << "; slotID: " << _data.m_slotID
+                       << "; taskID: " << _data.m_taskID << "; path: " << quoted(_data.m_path)
+                       << "; host: " << _data.m_host << "; wrkDir: " << quoted(_data.m_wrkDir);
+        }
+    } // namespace tools_api
+} // namespace dds
+
+///////////////////////////////////
 // SCommanderInfoResponseData
 ///////////////////////////////////
 
@@ -441,7 +503,8 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; index: " << _data.m_index << "; agentID: " << _data.m_agentID
                        << "; slotID: " << _data.m_slotID << "; taskID: " << _data.m_taskID
-                       << "; state: " << _data.m_state << "; host: " << _data.m_host << "; wrkDir: " << _data.m_wrkDir;
+                       << "; state: " << _data.m_state << "; host: " << _data.m_host
+                       << "; wrkDir: " << quoted(_data.m_wrkDir);
         }
     } // namespace tools_api
 } // namespace dds
@@ -552,7 +615,7 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; taskID: " << _data.m_taskID
                        << "; exitCode: " << _data.m_exitCode << "; signal: " << _data.m_signal
-                       << "; host: " << _data.m_host << "; wrkDir: " << _data.m_wrkDir
+                       << "; host: " << _data.m_host << "; wrkDir: " << quoted(_data.m_wrkDir)
                        << "; taskPath: " << _data.m_taskPath;
         }
     } // namespace tools_api

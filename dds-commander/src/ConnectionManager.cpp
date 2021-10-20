@@ -317,7 +317,9 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     m_updateTopoCondition.wait();
 }
 
-void CConnectionManager::activateTasks(const CScheduler& _scheduler, CAgentChannel::weakConnectionPtr_t _channel)
+void CConnectionManager::activateTasks(const dds::tools_api::STopologyRequestData& _topologyInfo,
+                                       const CScheduler& _scheduler,
+                                       CAgentChannel::weakConnectionPtr_t _channel)
 {
     const CScheduler::ScheduleVector_t& schedule = _scheduler.getSchedule();
 
@@ -415,6 +417,25 @@ void CConnectionManager::activateTasks(const CScheduler& _scheduler, CAgentChann
 
         slot.m_taskID = sch.m_taskID;
         slot.m_state = EAgentState::executing;
+
+        try
+        {
+            // Notify Tools API befor activating the tasks
+            STopologyResponseData info;
+            info.m_requestID = _topologyInfo.m_requestID;
+            info.m_activated = true;
+            info.m_agentID = inf.m_id;
+            info.m_slotID = slot.m_id;
+            info.m_taskID = sch.m_taskID;
+            info.m_path = m_topo.getRuntimeTaskById(sch.m_taskID).m_taskPath;
+            info.m_host = inf.m_remoteHostInfo.m_host;
+            info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
+            sendCustomCommandResponse(_channel, info.toJSON());
+        }
+        catch (exception& _e)
+        {
+            LOG(error) << "Failed to notify Tools API about activated task (" << sch.m_taskID << "): " << _e.what();
+        }
     }
 
     broadcastUpdateTopologyAndWait<cmdACTIVATE_USER_TASK>(
@@ -1166,6 +1187,35 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             //                ptr->dequeueMsg<cmdUPDATE_KEY>();
             //            }
 
+            // Notify Tools API before stopping tasks
+            for (auto taskID : removedTasks)
+            {
+                try
+                {
+                    auto agent{ m_taskIDToAgentChannelMap[taskID] };
+                    if (agent.m_channel.expired())
+                        continue;
+                    auto ptr{ agent.m_channel.lock() };
+                    SAgentInfo& inf{ ptr->getAgentInfo() };
+
+                    STopologyResponseData info;
+                    info.m_requestID = _topologyInfo.m_requestID;
+                    info.m_activated = false;
+                    info.m_agentID = inf.m_id;
+                    info.m_slotID = 0; // TODO: we don't set slot ID for the moment.
+                                       // Setting it will require locking and looping over the container of slots.
+                    info.m_taskID = taskID;
+                    info.m_path = m_topo.getRuntimeTaskById(taskID).m_taskPath;
+                    info.m_host = inf.m_remoteHostInfo.m_host;
+                    info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
+                    sendCustomCommandResponse(_channel, info.toJSON());
+                }
+                catch (exception& _e)
+                {
+                    LOG(error) << "Failed to notify Tools API about stopped task (" << taskID << "): " << _e.what();
+                }
+            }
+
             broadcastUpdateTopologyAndWait<cmdSTOP_USER_TASK>(agents, _channel, "Stopping removed tasks...");
         }
         //
@@ -1233,7 +1283,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
                 m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
             }
 
-            activateTasks(scheduler, _channel);
+            activateTasks(_topologyInfo, scheduler, _channel);
         }
 
         // Send shutdown to UI channel at the end
