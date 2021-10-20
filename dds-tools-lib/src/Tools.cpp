@@ -321,58 +321,43 @@ void CSession::notify(std::istream& _stream)
             }
             else if (it->second.type() == typeid(SCommanderInfoRequest::ptr_t))
             {
-                processRequest<SCommanderInfoRequest>(it->second,
-                                                      child,
-                                                      [&child](SCommanderInfoRequest::ptr_t _request)
-                                                      {
-                                                          SCommanderInfoResponseData data;
-                                                          data.fromPT(child.second);
-                                                          _request->execResponseCallback(data);
-                                                      });
+                processRequest<SCommanderInfoRequest>(
+                    it->second,
+                    child,
+                    [&child](SCommanderInfoRequest::ptr_t _request)
+                    { _request->execResponseCallback(SCommanderInfoResponseData(child.second)); });
             }
             else if (it->second.type() == typeid(SAgentInfoRequest::ptr_t))
             {
-                processRequest<SAgentInfoRequest>(it->second,
-                                                  child,
-                                                  [&child](SAgentInfoRequest::ptr_t _request)
-                                                  {
-                                                      SAgentInfoResponseData data;
-                                                      data.fromPT(child.second);
-                                                      _request->execResponseCallback(data);
-                                                  });
+                processRequest<SAgentInfoRequest>(
+                    it->second,
+                    child,
+                    [&child](SAgentInfoRequest::ptr_t _request)
+                    { _request->execResponseCallback(SAgentInfoResponseData(child.second)); });
             }
             else if (it->second.type() == typeid(SSlotInfoRequest::ptr_t))
             {
-                processRequest<SSlotInfoRequest>(it->second,
-                                                 child,
-                                                 [&child](SSlotInfoRequest::ptr_t _request)
-                                                 {
-                                                     SSlotInfoResponseData data;
-                                                     data.fromPT(child.second);
-                                                     _request->execResponseCallback(data);
-                                                 });
+                processRequest<SSlotInfoRequest>(
+                    it->second,
+                    child,
+                    [&child](SSlotInfoRequest::ptr_t _request)
+                    { _request->execResponseCallback(SSlotInfoResponseData(child.second)); });
             }
             else if (it->second.type() == typeid(SAgentCountRequest::ptr_t))
             {
-                processRequest<SAgentCountRequest>(it->second,
-                                                   child,
-                                                   [&child](SAgentCountRequest::ptr_t _request)
-                                                   {
-                                                       SAgentCountResponseData data;
-                                                       data.fromPT(child.second);
-                                                       _request->execResponseCallback(data);
-                                                   });
+                processRequest<SAgentCountRequest>(
+                    it->second,
+                    child,
+                    [&child](SAgentCountRequest::ptr_t _request)
+                    { _request->execResponseCallback(SAgentCountResponseData(child.second)); });
             }
             else if (it->second.type() == typeid(SOnTaskDoneRequest::ptr_t))
             {
-                processRequest<SOnTaskDoneRequest>(it->second,
-                                                   child,
-                                                   [&child](SOnTaskDoneRequest::ptr_t _request)
-                                                   {
-                                                       SOnTaskDoneResponseData data;
-                                                       data.fromPT(child.second);
-                                                       _request->execResponseCallback(data);
-                                                   });
+                processRequest<SOnTaskDoneRequest>(
+                    it->second,
+                    child,
+                    [&child](SOnTaskDoneRequest::ptr_t _request)
+                    { _request->execResponseCallback(SOnTaskDoneResponseData(child.second)); });
             }
         }
     }
