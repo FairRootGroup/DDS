@@ -124,6 +124,8 @@ namespace dds
 
             void sendCustomCommandResponse(CAgentChannel::weakConnectionPtr_t _channel, const std::string& _json) const;
             void sendDoneResponse(CAgentChannel::weakConnectionPtr_t _channel, tools_api::requestID_t _requestID) const;
+            void executeAgentCommand(const dds::tools_api::SAgentCommandRequestData& _info,
+                                     CAgentChannel::weakConnectionPtr_t _channel);
 
           private:
             CGetLogChannelInfo m_getLog;

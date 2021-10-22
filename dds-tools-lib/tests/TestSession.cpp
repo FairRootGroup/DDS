@@ -592,4 +592,56 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_onTaskDone)
     session.shutdown();
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_tools_agentCommand)
+{
+    const std::chrono::seconds sleepTime(3);
+    const int tasksCount{ 9 };
+
+    CSession session;
+    boost::uuids::uuid sid = session.create();
+    BOOST_CHECK(!sid.is_nil());
+
+    // Submit DDS agents
+    const fs::path topoPath(fs::canonical(fs::path("sleep_test.xml")));
+    CTopology topo(topoPath.string());
+    auto numAgents = topo.getRequiredNofAgents(tasksCount);
+    size_t requiredCount{ numAgents.first * numAgents.second };
+
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = requiredCount;
+    submitInfo.m_instances = 0;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = topoPath.string();
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    SAgentInfoRequest::responseVector_t agentInfo;
+    BOOST_CHECK_NO_THROW(
+        session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, kTimeout, &std::cout));
+
+    BOOST_CHECK(agentInfo.size() > 0);
+
+    // take the first and shut it down
+    uint64_t agentID = agentInfo.at(0).m_agentID;
+
+    // Request to shutdown the agent
+    SAgentCommandRequest::request_t agentCmd;
+    agentCmd.m_commandType = SAgentCommandRequestData::EAgentCommandType::shutDownByID;
+    agentCmd.m_arg1 = agentID;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<SAgentCommandRequest>(agentCmd, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    BOOST_CHECK_NO_THROW(
+        session.syncSendRequest<SAgentInfoRequest>(SAgentInfoRequest::request_t(), agentInfo, kTimeout, &std::cout));
+
+    BOOST_CHECK(agentInfo.size() == 0);
+
+    session.shutdown();
+}
+
 BOOST_AUTO_TEST_SUITE_END()
