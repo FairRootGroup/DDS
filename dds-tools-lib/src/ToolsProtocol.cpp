@@ -623,3 +623,54 @@ namespace dds
         }
     } // namespace tools_api
 } // namespace dds
+
+///////////////////////////////////
+// SAgentCommandRequestData
+///////////////////////////////////
+
+// this declaration is important to help older compilers to eat this static constexpr
+constexpr const char* SAgentCommandRequestData::_protocolTag;
+
+SAgentCommandRequestData::SAgentCommandRequestData()
+{
+}
+
+SAgentCommandRequestData::SAgentCommandRequestData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
+void SAgentCommandRequestData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    _pt.put<uint8_t>("commandType", static_cast<uint8_t>(m_commandType));
+    _pt.put<uint64_t>("arg1", m_arg1);
+    _pt.put<string>("arg2", m_arg2);
+}
+
+void SAgentCommandRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_commandType = static_cast<EAgentCommandType>(_pt.get<uint8_t>("commandType", 0));
+    m_arg1 = _pt.get<uint64_t>("arg1", 0);
+    m_arg2 = _pt.get<string>("arg2", string());
+}
+
+bool SAgentCommandRequestData::operator==(const SAgentCommandRequestData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_commandType == _val.m_commandType && m_arg1 == _val.m_arg1 &&
+            m_arg2 == _val.m_arg2);
+}
+
+// We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
+// Such declaration "std::ostream& dds::tools_api::operator<<(std::ostream& _os, const ***& _data)" doesn't help.
+// In order to silent GCC warning "*** has not been declared within 'dds::tools_api'"
+namespace dds
+{
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SAgentCommandRequestData& _data)
+        {
+            return _os << _data.defaultToString() << "; commandType: " << static_cast<uint8_t>(_data.m_commandType)
+                       << "; arg1: " << _data.m_arg1 << "; arg2: " << _data.m_arg2;
+        }
+    } // namespace tools_api
+} // namespace dds

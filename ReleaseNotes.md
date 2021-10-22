@@ -24,9 +24,10 @@ Added: DDS agent monitors available disk space and if the (configurable) thresho
 
 ### dds-tools-api
 Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.    
-Added: new `SSlotInfoRequest` returning a list of details of all active slots (GH-374).    
+Added: a new `SSlotInfoRequest` request returns a list of all active slots details. (GH-374)    
 Added: task path to `OnTaskDone` reply.    
 Added: `Topology` request returns extended info of each activated or stopped task via new `STopologyResponseData` data class.    
+Added: A new `SAgentCommandRequest` request to shutdown agents by ID or by slotID. (GH-399)   
 
 ### dds-topology
 Added: new std::istream based APIs.    

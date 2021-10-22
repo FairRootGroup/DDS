@@ -174,6 +174,18 @@ namespace dds
          * \endcode
          *
          *
+         * \par Example5: Request Agent shutdown by AgentID with a sync request
+         * \code
+         *  ...
+         * // create a session
+         * SAgentCommandRequest::request_t agentCmd;
+         * agentCmd.m_commandType = SAgentCommandRequestData::EAgentCommandType::shutDownByID;
+         * agentCmd.m_arg1 = <Given AgentID>;
+         * session.syncSendRequest<SAgentCommandRequest>(agentCmd, kTimeout, &std::cout);
+         *  ...
+         * \endcode
+         *
+         *
          */
         class CSession
         {

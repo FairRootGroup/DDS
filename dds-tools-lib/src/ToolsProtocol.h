@@ -332,6 +332,44 @@ namespace dds
 
         /// \brief Request class of onTaskDone.
         using SOnTaskDoneRequest = SBaseRequestImpl<SOnTaskDoneRequestData, SOnTaskDoneResponseData>;
+
+        /// \brief Structure holds information of agentCommand request.
+        struct SAgentCommandRequestData : SBaseRequestData<SAgentCommandRequestData>
+        {
+
+            SAgentCommandRequestData();
+            SAgentCommandRequestData(const boost::property_tree::ptree& _pt);
+
+            enum class EAgentCommandType : uint8_t
+            {
+                shutDownByID = 0, ///<  m_arg1 should be set to a desired agent ID to shutdown
+                shutDownBySlotID, ///<  m_arg1 should be set to a desired slot ID. The corresponding agent holding this
+                                  ///<  slot will be shutdown.
+                // stopTaskByTaskID,
+                // stopTaskByAgentID,
+                // restartTaskByTaskID,
+                // restartTaskByAgentID
+            };
+
+            EAgentCommandType m_commandType = EAgentCommandType::shutDownByID;
+            uint64_t m_arg1{ 0 }; ///< argument #1 - numeric. The usage depends on the command.
+            std::string m_arg2;   ///< argument #1 - string.  The usage depends on the command.
+
+          private:
+            friend SBaseData<SAgentCommandRequestData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "agentCommand";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SAgentCommandRequestData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SAgentCommandRequestData& _data);
+        };
+
+        /// \brief Request class of submit.
+        using SAgentCommandRequest = SBaseRequestImpl<SAgentCommandRequestData, SEmptyResponseData>;
     } // namespace tools_api
 } // namespace dds
 

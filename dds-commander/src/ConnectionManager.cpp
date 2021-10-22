@@ -955,6 +955,10 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
                 lock_guard<mutex> lock(m_mtxOnTaskDoneSubscribers);
                 m_onTaskDoneSubscribers.push_back({ _channel, info });
             }
+            else if (tag == "agentCommand")
+            {
+                executeAgentCommand(SAgentCommandRequestData(data), _channel);
+            }
         }
     }
     // TODO: send back error in case of exception, otherwise UI hangs
@@ -1522,4 +1526,52 @@ void CConnectionManager::sendDoneResponse(CAgentChannel::weakConnectionPtr_t _ch
     SDoneResponseData done;
     done.m_requestID = _requestID;
     sendCustomCommandResponse(_channel, done.toJSON());
+}
+
+void CConnectionManager::executeAgentCommand(const dds::tools_api::SAgentCommandRequestData& _info,
+                                             CAgentChannel::weakConnectionPtr_t _channel)
+{
+    // get the list of active agents
+    CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
+        }));
+
+    bool stop_loop{ false };
+    for (const auto& v : channels)
+    {
+        if (stop_loop)
+            break;
+
+        if (v.m_channel.expired())
+            continue;
+        auto ptr{ v.m_channel.lock() };
+        SAgentInfo& inf{ ptr->getAgentInfo() };
+
+        switch (_info.m_commandType)
+        {
+            case SAgentCommandRequestData::EAgentCommandType::shutDownByID:
+                if (inf.m_id == _info.m_arg1)
+                {
+                    LOG(info) << "Executing a  TOOLS API request to shutdown the agent by ID: " << _info.m_arg1;
+                    // send shutdown to the agent
+                    ptr->template pushMsg<cmdSHUTDOWN>();
+                    stop_loop = true;
+                }
+                break;
+            case SAgentCommandRequestData::EAgentCommandType::shutDownBySlotID:
+                auto slots{ inf.getSlots() };
+                auto it = slots.find(_info.m_arg1);
+                if (it != slots.end())
+                {
+                    LOG(info) << "Executing a TOOLS API request to shutdown the agent by SlotID: " << _info.m_arg1
+                              << " AgentID: " << inf.m_id;
+                    // send shutdown to the agent
+                    ptr->template pushMsg<cmdSHUTDOWN>();
+                    stop_loop = true;
+                }
+                break;
+        }
+    }
+    sendDoneResponse(_channel, _info.m_requestID);
 }

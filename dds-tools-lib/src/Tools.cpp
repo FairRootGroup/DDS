@@ -359,6 +359,10 @@ void CSession::notify(std::istream& _stream)
                     [&child](SOnTaskDoneRequest::ptr_t _request)
                     { _request->execResponseCallback(SOnTaskDoneResponseData(child.second)); });
             }
+            else if (it->second.type() == typeid(SAgentCommandRequest::ptr_t))
+            {
+                processRequest<SAgentCommandRequest>(it->second, child, nullptr);
+            }
         }
     }
     catch (exception& error)
@@ -428,6 +432,7 @@ template void CSession::sendRequest<SAgentInfoRequest>(SAgentInfoRequest::ptr_t)
 template void CSession::sendRequest<SSlotInfoRequest>(SSlotInfoRequest::ptr_t);
 template void CSession::sendRequest<SAgentCountRequest>(SAgentCountRequest::ptr_t);
 template void CSession::sendRequest<SOnTaskDoneRequest>(SOnTaskDoneRequest::ptr_t);
+template void CSession::sendRequest<SAgentCommandRequest>(SAgentCommandRequest::ptr_t);
 
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
@@ -447,6 +452,9 @@ template void CSession::syncSendRequest<STopologyRequest>(const STopologyRequest
 template void CSession::syncSendRequest<SGetLogRequest>(const SGetLogRequest::request_t&,
                                                         const std::chrono::seconds&,
                                                         ostream*);
+template void CSession::syncSendRequest<SAgentCommandRequest>(const SAgentCommandRequest::request_t&,
+                                                              const std::chrono::seconds&,
+                                                              ostream*);
 
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,

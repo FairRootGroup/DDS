@@ -224,6 +224,21 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
 
             BOOST_CHECK(data == testData);
         }
+        else if (tag == "agentCommand")
+        {
+            SAgentCommandRequestData testData;
+            testData.m_commandType = SAgentCommandRequestData::EAgentCommandType::shutDownByID;
+            testData.m_arg1 = 235;
+            testData.m_arg2 = "testString";
+
+            SAgentCommandRequestData data(child.second);
+
+            // Test availability of the stream insertion
+            stringstream ss;
+            ss << data;
+
+            BOOST_CHECK(data == testData);
+        }
     }
 }
 

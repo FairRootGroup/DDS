@@ -89,6 +89,12 @@
                 "exitCode": 123,
                 "signal": 123
             }
+            "agentCommand":
+            {
+                "command": 123,
+                "arg1": 123,
+                "arg2": "string"
+            }
         }
     }
 }
