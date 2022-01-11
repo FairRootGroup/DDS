@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v3.6 (NOT YET RELEASED)
+## v3.6 (2022-01-11)
 
 ### DDS common
 Removed: obsolete test project. ODC is used as an integration platform for DDS.    
