@@ -406,11 +406,8 @@ namespace dds::misc
      */
     typedef std::vector<pid_t> vectorPid_t;
 
-#if defined(__APPLE__)
+    /// _filterForRealUserID is an OS X specific argument
     inline vectorPid_t getprocbyname(const std::string& _Srv, bool _filterForRealUserID = false)
-#else
-    inline vectorPid_t getprocbyname(const std::string& _Srv, bool /*_filterForRealUserID = false*/)
-#endif
     {
         vectorPid_t retVal;
 #if defined(__APPLE__)
