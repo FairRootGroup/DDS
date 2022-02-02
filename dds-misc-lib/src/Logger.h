@@ -103,6 +103,8 @@ namespace dds::misc
 
             LOG(info) << "Log engine is initialized with severety \""
                       << userDefaults.getOptions().m_server.m_logSeverityLevel << "\"";
+            LOG(info) << getpid() << " (process ID) : " << getpgrp() << " (process group ID) : " << getppid()
+                      << "(parent process ID)";
         }
 
         void reinit()

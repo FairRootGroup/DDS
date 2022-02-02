@@ -1,5 +1,11 @@
 # DDS Release Notes
 
+## v3.8 (NOT YET RELEASED)
+
+### DDS common
+
+Added: every DDS module logs now its pid, group id and parent pid. (GH-403)     
+
 ## v3.6 (2022-01-11)
 
 ### DDS common
