@@ -48,12 +48,6 @@
 	<xs:attribute name="value" type="xs:string" use="required"/>
 </xs:complexType>
 
-<xs:complexType name="mainGroupType">
-	<xs:attribute name="name" type="stringNameType" use="required"/>
-	<xs:attribute name="n" type="sizeType" use="required"/>
-</xs:complexType>
-
-
 <xs:complexType name="exeType">
    <xs:simpleContent>
        <xs:extension base="stringType">
@@ -109,6 +103,7 @@
   <xs:restriction base="xs:string">
     <xs:enumeration value="wnname"/>
     <xs:enumeration value="hostname"/>
+	<xs:enumeration value="groupname"/>
     <xs:enumeration value="gpu"/>
     <xs:enumeration value="maxinstances"/>
   </xs:restriction>

@@ -85,6 +85,7 @@ namespace dds
             uint32_t m_slots = 0;     /// < Number of task slots.
             std::string m_config;     ///< Path to the configuration file.
             std::string m_pluginPath; ///< Optional. A plug-in's directory search path
+            std::string m_groupName;  ///<  A group name of agents.
 
           private:
             friend SBaseData<SSubmitRequestData>;

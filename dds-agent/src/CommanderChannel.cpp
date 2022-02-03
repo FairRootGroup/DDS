@@ -129,6 +129,11 @@ void CCommanderChannel::setNumberOfSlots(size_t _nSlots)
     m_nSlots = _nSlots;
 }
 
+void CCommanderChannel::setGroupName(const std::string& _groupName)
+{
+    m_groupName = _groupName;
+}
+
 bool CCommanderChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _attachment, SSenderInfo& /*_sender*/)
 {
     switch (_attachment->m_srcCommand)
@@ -221,6 +226,7 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
     cmd.m_DDSPath = CUserDefaults::getDDSPath();
     cmd.m_agentPid = pid;
     cmd.m_slots = m_nSlots;
+    cmd.m_groupName = m_groupName;
 
     // get worker ID
     string sWorkerId;
@@ -241,6 +247,8 @@ bool CCommanderChannel::on_cmdGET_HOST_INFO(SCommandAttachmentImpl<cmdGET_HOST_I
         sSubmitTime.assign(pchSubmitTime);
         cmd.m_submitTime = stoll(sSubmitTime);
     }
+
+    LOG(info) << cmd;
 
     pushMsg<cmdREPLY_HOST_INFO>(cmd);
     return true;

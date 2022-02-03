@@ -37,12 +37,14 @@ void make_agent(boost::asio::io_context& _io_context,
                 const string& _hostName,
                 const string& _workerId,
                 uint64_t _protocolHeaderID,
-                size_t _numSlotsPerAgent)
+                size_t _numSlotsPerAgent,
+                const string& _groupName = "common")
 {
     CAgentChannel::connectionPtr_t agent{ CAgentChannel::makeNew(_io_context, _protocolHeaderID) };
     SAgentInfo& info{ agent->getAgentInfo() };
     info.m_remoteHostInfo.m_host = _hostName;
     info.m_remoteHostInfo.m_workerId = _workerId;
+    info.m_remoteHostInfo.m_groupName = _groupName;
 
     // Add slots to agent
     for (size_t is = 0; is < _numSlotsPerAgent; ++is)
@@ -133,6 +135,14 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
     // No Requirement
     make_agent(io_context, agents, "noname_host", "noname_wn", counter++, numSlotsPerAgent);
 
+    // Requirement type "groupname" for collections
+    make_agent(io_context, agents, "host7_0", "", counter++, numSlotsPerAgent, "test_group");
+    make_agent(io_context, agents, "host7_0", "", counter++, numSlotsPerAgent, "test_group");
+    make_agent(io_context, agents, "host7_0", "", counter++, numSlotsPerAgent, "test_group");
+
+    // Requirement type "groupname" for tasks
+    make_agent(io_context, agents, "host7_0", "", counter++, numSlotsPerAgent, "test_group2");
+
     using weak_t = CConnectionManager::weakChannelInfo_t;
     weak_t::container_t weakAgents;
     std::transform(
@@ -141,7 +151,8 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
         });
 
     CScheduler scheduler;
-    BOOST_CHECK_NO_THROW(scheduler.makeSchedule(topology, weakAgents));
+    scheduler.makeSchedule(topology, weakAgents);
+    // BOOST_CHECK_NO_THROW(scheduler.makeSchedule(topology, weakAgents));
     cout << scheduler.toString();
 }
 

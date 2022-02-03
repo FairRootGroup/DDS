@@ -46,6 +46,7 @@ namespace dds
 
             ECommands m_Command{ cmd_start };
             size_t m_slots{ 0 };
+            std::string m_groupName;
         } SOptions_t;
 
         // Command line parser
@@ -69,6 +70,8 @@ namespace dds
                                   "   clean: \tCleaning");
             options.add_options()(
                 "slots,s", bpo::value<size_t>(&_options->m_slots), "Defines a number of task slots per agent.");
+            options.add_options()(
+                "group-name,g", bpo::value<std::string>(&_options->m_groupName), "Defines a group name of the agent.");
 
             //...positional
             bpo::positional_options_description pd;

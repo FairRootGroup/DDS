@@ -72,6 +72,7 @@ namespace dds
           public:
             void stopChannel();
             void setNumberOfSlots(size_t _nSlots);
+            void setGroupName(const std::string& _groupName);
 
           private:
             // Message Handlers
@@ -151,6 +152,7 @@ namespace dds
             SSlotInfo::container_t m_slots;
             size_t m_nSlots{ 0 };
             timerPtr_t m_resourceMonitorTimer;
+            std::string m_groupName;
         };
     } // namespace agent_cmd
 } // namespace dds

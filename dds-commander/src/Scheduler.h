@@ -37,8 +37,9 @@ namespace dds
             using weakChannelInfoVector_t = std::vector<dds::protocol_api::SWeakChannelInfo<CAgentChannel>>;
 
           private:
-            // Map tuple<agent ID, host name, worker id> to vector of channel indeces.
-            using hostToChannelMap_t = std::map<std::tuple<uint64_t, std::string, std::string>, std::vector<size_t>>;
+            // Map tuple<agent ID, host name, worker id, group name> to vector of channel indeces.
+            using hostToChannelMap_t =
+                std::map<std::tuple<uint64_t, std::string, std::string, std::string>, std::vector<size_t>>;
             // Map pair<host name, task/collection name> to counter.
             using hostCounterMap_t = std::map<std::pair<std::string, std::string>, size_t>;
 
@@ -82,9 +83,11 @@ namespace dds
                                const topology_api::CTopoCore::IdSet_t* _addedTasks,
                                hostCounterMap_t& _hostCounterMap);
 
+            // TODO: host, wn and group names should be provided via a struct.
             bool checkRequirements(const topology_api::CTopoRequirement::PtrVector_t& _requirements,
                                    const std::string& _hostName,
                                    const std::string& _wnName,
+                                   const std::string& _groupName,
                                    const std::string& _elementName,
                                    hostCounterMap_t& _hostCounterMap) const;
 

@@ -29,9 +29,10 @@ DDS command line utility to prepare a worker package - all elements of DDS which
 Usage: $(basename $0) [OPTION]
      -i 			Re-pack user_worker_env.sh (for internal use only).
 	 -s arg			Submit time (optional).
-	 -a arg         DDS Session ID
-	 -t arg         A number of task slots
-	 -l             Create a lightweight package, without WN binaries
+	 -a arg         DDS Session ID.
+	 -t arg         A number of task slots.
+	 -g arg         Agent group name.
+	 -l             Create a lightweight package, without WN binaries.
      -h          	Show summary of options.
 
 Report bugs to http://dds.gsi.de
@@ -45,7 +46,8 @@ SUBMIT_TIME=""
 DDS_SESSION_ID=""
 LIGHTWEIGHT_PKG=""
 DDS_AGENT_SLOTS=""
-while getopts ":is:a:t:lh" opt; do
+AGENT_GROUP_NAME=""
+while getopts ":is:a:t:g:lh" opt; do
   case $opt in
   	i)
        REPACK_WRK_PKG="YES"
@@ -55,6 +57,8 @@ while getopts ":is:a:t:lh" opt; do
 	a) DDS_SESSION_ID="$OPTARG"
 	    ;;
 	t) DDS_AGENT_SLOTS="$OPTARG"
+	    ;;
+	g) AGENT_GROUP_NAME="$OPTARG"
 	    ;;
 	l) LIGHTWEIGHT_PKG="YES"
 		;;
@@ -301,6 +305,11 @@ mv "$DDS_WRK_TMP_DIR/DDSWorker.sh.temp" $DDS_WRK_SCRIPT_TMP
 # Replace a number of task slot variable with the actual value
 echo "$TOOL_NAME: setting agent task slots to $DDS_AGENT_SLOTS"
 LANG=C LC_ALL=C sed -i.back "s/_DDS_AGENT_SLOTS_/$DDS_AGENT_SLOTS/g" $DDS_WRK_SCRIPT_TMP
+rm -f "$DDS_WRK_SCRIPT_TMP.back"
+
+# Replace a group name variable with the actual value
+echo "$TOOL_NAME: setting agent group[ name to $AGENT_GROUP_NAME"
+LANG=C LC_ALL=C sed -i.back "s/_AGENT_GROUP_NAME_/$AGENT_GROUP_NAME/g" $DDS_WRK_SCRIPT_TMP
 rm -f "$DDS_WRK_SCRIPT_TMP.back"
 
 # copy worker script to the sandbox directory

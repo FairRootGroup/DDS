@@ -35,6 +35,7 @@ namespace dds
             size_t m_slots{ 0 };
             bool m_bListPlugins{ false };
             boost::uuids::uuid m_sid = boost::uuids::nil_uuid();
+            std::string m_groupName;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -50,11 +51,11 @@ namespace dds
 
             // Generic options
             bpo::options_description options("dds-submit options");
-            options.add_options()("help,h", "Produce help message");
-            options.add_options()("version,v", "Version information");
-            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
+            options.add_options()("help,h", "Produce help message.");
+            options.add_options()("version,v", "Version information.");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID.");
             options.add_options()(
-                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all available RMS plug-ins");
+                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all available RMS plug-ins.");
             options.add_options()("rms,r",
                                   bpo::value<std::string>(&_options->m_sRMS),
                                   "Defines a destination resource "
@@ -63,7 +64,7 @@ namespace dds
                                   "of available RMS plug-ins.");
             options.add_options()("config,c",
                                   bpo::value<std::string>(&_options->m_sCfgFile),
-                                  "A plug-in's configuration file. It can be used to provide additional RMS options");
+                                  "A plug-in's configuration file. It can be used to provide additional RMS options.");
             options.add_options()("path",
                                   bpo::value<std::string>(&_options->m_sPath),
                                   "A plug-in's directory search path. It can be used for external RMS plug-ins.");
@@ -74,6 +75,9 @@ namespace dds
                                   "used.\n");
             options.add_options()(
                 "slots", bpo::value<size_t>(&_options->m_slots), "Defines a number of task slots per agent.");
+            options.add_options()("group-name,g",
+                                  bpo::value<std::string>(&_options->m_groupName)->default_value("common"),
+                                  "Defines a group name of agents of this submission. Default: \"common\"");
 
             // Parsing command-line
             bpo::variables_map vm;
@@ -83,6 +87,7 @@ namespace dds
             dds::misc::conflicting_options(vm, "list", "rms");
             dds::misc::conflicting_options(vm, "list", "config");
             dds::misc::conflicting_options(vm, "list", "slots");
+            dds::misc::conflicting_options(vm, "list", "group-name");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
@@ -110,6 +115,22 @@ namespace dds
 
             if (vm.count("session"))
                 _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
+
+            if (vm.count("group-name"))
+            {
+                const unsigned int groupNameLimit{ 256 };
+                const std::string groupNameNotAllowedSymb{ " `\"@#%^&*()+=[]{};:\\|,.<>/$!?\t\r" };
+                size_t tmp = 0;
+                if (_options->m_groupName.find_first_of(groupNameNotAllowedSymb) != std::string::npos ||
+                    _options->m_groupName.size() > groupNameLimit)
+                {
+                    LOG(dds::misc::log_stderr)
+                        << "The group-name option can't be longer than " << groupNameLimit
+                        << " symbols and should not contain whitespaces or any special character such as: "
+                        << groupNameNotAllowedSymb;
+                    return false;
+                }
+            }
 
             // RMS plug-ins are always lower cased
             boost::to_lower(_options->m_sRMS);

@@ -71,7 +71,8 @@ void CScheduler::makeScheduleImpl(const CTopoCore& _topology,
             continue;
 
         const SHostInfoCmd& hostInfo = info.m_remoteHostInfo;
-        hostToChannelMap[make_tuple(info.m_id, hostInfo.m_host, hostInfo.m_workerId)].push_back(iChannel);
+        hostToChannelMap[make_tuple(info.m_id, hostInfo.m_host, hostInfo.m_workerId, hostInfo.m_groupName)].push_back(
+            iChannel);
     }
 
     // Collect all tasks that belong to collections
@@ -173,8 +174,9 @@ void CScheduler::scheduleTasks(const CTopoCore& _topology,
         {
             const string hostName{ std::get<1>(v.first) };
             const string wnName{ std::get<2>(v.first) };
+            const string groupName{ std::get<3>(v.first) };
             const bool requirementOk{ checkRequirements(
-                task->getRequirements(), hostName, wnName, task->getName(), _hostCounterMap) };
+                task->getRequirements(), hostName, wnName, groupName, task->getName(), _hostCounterMap) };
             if (requirementOk)
             {
                 if (!v.second.empty())
@@ -244,8 +246,13 @@ void CScheduler::scheduleCollections(const CTopoCore& _topology,
             {
                 const string hostName{ std::get<1>(v.first) };
                 const string wnName{ std::get<2>(v.first) };
-                const bool requirementOk{ checkRequirements(
-                    collection->getRequirements(), hostName, wnName, collection->getName(), _hostCounterMap) };
+                const string groupName{ std::get<3>(v.first) };
+                const bool requirementOk{ checkRequirements(collection->getRequirements(),
+                                                            hostName,
+                                                            wnName,
+                                                            groupName,
+                                                            collection->getName(),
+                                                            _hostCounterMap) };
                 if ((v.second.size() >= collectionInfo.m_collection->getNofTasks()) && requirementOk)
                 {
                     const STopoRuntimeCollection& collectionInfo{ _topology.getRuntimeCollectionById(id) };
@@ -290,6 +297,7 @@ void CScheduler::scheduleCollections(const CTopoCore& _topology,
 bool CScheduler::checkRequirements(const topology_api::CTopoRequirement::PtrVector_t& _requirements,
                                    const string& _hostName,
                                    const string& _wnName,
+                                   const string& _groupName,
                                    const string& _elementName,
                                    hostCounterMap_t& _hostCounterMap) const
 {
@@ -313,6 +321,10 @@ bool CScheduler::checkRequirements(const topology_api::CTopoRequirement::PtrVect
         {
             result = CScheduler::hostPatternMatches(requirement->getValue(),
                                                     (type == EType::HostName) ? _hostName : _wnName);
+        }
+        else if (type == EType::GroupName)
+        {
+            result = CScheduler::hostPatternMatches(requirement->getValue(), _groupName);
         }
         else if (type == EType::MaxInstancesPerHost)
         {
