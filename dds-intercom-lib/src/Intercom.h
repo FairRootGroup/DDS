@@ -168,6 +168,7 @@ namespace dds
             std::string m_cfgFilePath;    ///< Path to the configuration file.
             std::string m_id;             ///< ID for communication with DDS commander.
             std::string m_wrkPackagePath; ///< A full path of the agent worker package, which needs to be deployed.
+            std::string m_groupName;      /// < Agent group name
         };
 
         /// \brief Structure holds information of message notification.

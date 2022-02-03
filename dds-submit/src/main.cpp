@@ -92,6 +92,7 @@ int main(int argc, char* argv[])
         requestInfo.m_instances = options.m_number;
         requestInfo.m_slots = options.m_slots;
         requestInfo.m_pluginPath = options.m_sPath;
+        requestInfo.m_groupName = options.m_groupName;
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
 
         requestPtr->setMessageCallback(

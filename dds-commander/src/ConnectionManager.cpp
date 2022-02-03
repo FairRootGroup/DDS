@@ -122,7 +122,10 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 }
 
 //=============================================================================
-void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightweightPkg, uint32_t _nSlots) const
+void CConnectionManager::_createWnPkg(bool _needInlineBashScript,
+                                      bool _lightweightPkg,
+                                      uint32_t _nSlots,
+                                      const string& _groupName) const
 {
     // re-create the worker package if needed
     string out;
@@ -145,6 +148,9 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript, bool _lightwei
         // Slots per agent
         cmd += " -t ";
         cmd += to_string(_nSlots);
+        // Group name
+        cmd += " -g ";
+        cmd += _groupName;
 
         if (_lightweightPkg)
             cmd += " -l ";
@@ -1015,7 +1021,10 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
         // Use a lightweightpackage when possible
-        _createWnPkg(!inlineShellScripCmds.empty(), (_submitInfo.m_rms == "localhost"), _submitInfo.m_slots);
+        _createWnPkg(!inlineShellScripCmds.empty(),
+                     (_submitInfo.m_rms == "localhost"),
+                     _submitInfo.m_slots,
+                     _submitInfo.m_groupName);
 
         // remember the UI channel, which requested to submit the job
         m_SubmitAgents.m_channel = _channel;
@@ -1027,6 +1036,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         submitRequest.m_nInstances = _submitInfo.m_instances;
         submitRequest.m_slots = _submitInfo.m_slots;
         submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath();
+        submitRequest.m_groupName = _submitInfo.m_groupName;
         m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
 
         string sPluginInfoMsg("RMS plug-in: ");

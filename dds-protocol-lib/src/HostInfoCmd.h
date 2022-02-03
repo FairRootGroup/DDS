@@ -30,6 +30,7 @@ namespace dds
             std::string m_version;
             std::string m_DDSPath;
             std::string m_workerId;
+            std::string m_groupName; // Agent group name. Defined on submission.
         };
         std::ostream& operator<<(std::ostream& _stream, const SHostInfoCmd& val);
         bool operator!=(const SHostInfoCmd& lhs, const SHostInfoCmd& rhs);

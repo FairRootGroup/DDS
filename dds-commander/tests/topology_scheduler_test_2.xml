@@ -11,6 +11,10 @@
 	<declrequirement name="requirement5" type="wnname" value="wn5"/>
 
 	<declrequirement name="requirement6" type="wnname" value="wn6"/>
+	
+	<declrequirement name="requirement7" type="groupname" value="test_group"/>
+	
+	<declrequirement name="requirement8" type="groupname" value="test_group2"/>
 
   	<decltask name="TestTask1">
 		<exe reachable="false">test_task.exe</exe>
@@ -39,6 +43,13 @@
 			<name>requirement5</name>
 		</requirements>
 	</decltask>
+	
+  	<decltask name="TestTask5">
+		<exe reachable="false">test_task.exe</exe>
+		<requirements>
+			<name>requirement8</name>
+		</requirements>
+	</decltask>
 
 	<declcollection name="TestCollection1">
 		<requirements>
@@ -65,6 +76,17 @@
 			<name>TestTask1</name>
 		</tasks>
 	</declcollection>
+	
+	<declcollection name="TestCollection4">
+		<requirements>
+			<name>requirement7</name>
+		</requirements>
+		<tasks>
+			<name>TestTask1</name>
+			<name>TestTask2</name>
+			<name>TestTask3</name>
+		</tasks>
+	</declcollection>
 
 	<main name="main">
 		<group name="group1" n="3">
@@ -72,9 +94,11 @@
 			<task>TestTask2</task>
 			<task>TestTask3</task>
 			<task>TestTask4</task>
+			<task>TestTask5</task>
 			<collection>TestCollection1</collection>
 			<collection>TestCollection2</collection>
 			<collection>TestCollection3</collection>
+			<collection>TestCollection4</collection>
 		</group>
 	</main>
 

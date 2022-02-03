@@ -4,7 +4,13 @@
 
 ### DDS common
 
-Added: every DDS module logs now its pid, group id and parent pid. (GH-403)     
+Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
+
+### dds-submit
+Added: Users can specify a GroupName tag for each submission. This tag will be assigned to agents and can be used as a requirement in topologies. (GH-407)     
+
+### dds-topology
+Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
 
 ## v3.6 (2022-01-11)
 

@@ -58,6 +58,7 @@ std::string SSubmit::toJSON()
     pt.put<int>("dds.plug-in.submit.slots", m_slots);
     pt.put<string>("dds.plug-in.submit.cfgFilePath", m_cfgFilePath);
     pt.put<string>("dds.plug-in.submit.wrkPackagePath", m_wrkPackagePath);
+    pt.put<string>("dds.plug-in.submit.groupName", m_groupName);
 
     stringstream json;
     write_json(json, pt);
@@ -81,12 +82,14 @@ void SSubmit::fromPT(const boost::property_tree::ptree& _pt)
     m_cfgFilePath = pt.get<string>("submit.cfgFilePath", "");
     m_wrkPackagePath = pt.get<string>("submit.wrkPackagePath", "");
     m_id = pt.get<string>("id");
+    m_groupName = pt.get<string>("submit.groupName", "");
 }
 
 bool SSubmit::operator==(const SSubmit& val) const
 {
     return (m_id == val.m_id) && (m_nInstances == val.m_nInstances) && (m_slots == val.m_slots) &&
-           (m_cfgFilePath == val.m_cfgFilePath) && (m_wrkPackagePath == val.m_wrkPackagePath);
+           (m_cfgFilePath == val.m_cfgFilePath) && (m_wrkPackagePath == val.m_wrkPackagePath) &&
+           (m_groupName == val.m_groupName);
 }
 
 ///////////////////////////////////

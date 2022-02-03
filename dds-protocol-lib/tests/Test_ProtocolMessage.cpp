@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdSUBMIT)
 
 BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
 {
-    const unsigned int cmdSize = 67;
+    const unsigned int cmdSize = 78;
 
     SHostInfoCmd cmd;
     cmd.m_username = "username";
@@ -99,6 +99,7 @@ BOOST_AUTO_TEST_CASE(Test_ProtocolMessage_cmdREPLY_HOST_INFO)
     cmd.m_slots = 10;
     cmd.m_submitTime = 23465677;
     cmd.m_workerId = "wn5";
+    cmd.m_groupName = "TestGroup";
 
     TestCommand(cmd, cmdREPLY_HOST_INFO, cmdSize);
 }

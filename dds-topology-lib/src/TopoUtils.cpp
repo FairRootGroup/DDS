@@ -157,6 +157,8 @@ namespace dds
                 return CTopoRequirement::EType::Gpu;
             if (_name == "maxinstances")
                 return CTopoRequirement::EType::MaxInstancesPerHost;
+            if (_name == "groupname")
+                return CTopoRequirement::EType::GroupName;
             else
                 throw runtime_error("Host pattern type with name " + _name + " does not exist.");
         }
@@ -173,6 +175,8 @@ namespace dds
                     return "gpu";
                 case CTopoRequirement::EType::MaxInstancesPerHost:
                     return "maxinstances";
+                case CTopoRequirement::EType::GroupName:
+                    return "groupname";
                 default:
                     throw runtime_error("Topology element not found.");
             }
