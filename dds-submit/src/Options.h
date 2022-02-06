@@ -120,7 +120,6 @@ namespace dds
             {
                 const unsigned int groupNameLimit{ 256 };
                 const std::string groupNameNotAllowedSymb{ " `\"@#%^&*()+=[]{};:\\|,.<>/$!?\t\r" };
-                size_t tmp = 0;
                 if (_options->m_groupName.find_first_of(groupNameNotAllowedSymb) != std::string::npos ||
                     _options->m_groupName.size() > groupNameLimit)
                 {
