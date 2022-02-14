@@ -567,7 +567,7 @@ void CSession::waitForNumAgents(size_t _numAgents,
             {
                 stringstream ss;
                 ss << "Failed to wait for the required number of agents (" << _numAgents << ") / active ("
-                   << response.m_activeSlotsCount << ") idle (" << response.m_idleSlotsCount << " executing ("
+                   << response.m_activeSlotsCount << ") idle (" << response.m_idleSlotsCount << ") executing ("
                    << response.m_executingSlotsCount << ") /: exceed timeout (" << _timeout.count() << " s)";
                 throw runtime_error(ss.str());
             }

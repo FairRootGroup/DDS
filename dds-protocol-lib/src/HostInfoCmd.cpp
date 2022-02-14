@@ -62,7 +62,7 @@ std::ostream& dds::protocol_api::operator<<(std::ostream& _stream, const SHostIn
 {
     _stream << "host: " << val.m_username << "@" << val.m_host << "; ver." << val.m_version
             << "; dds path:" << val.m_DDSPath << "; agent [" << val.m_agentPid << "]; task slots: " << val.m_slots
-            << "startup time: " << val.m_submitTime << "; worker ID: " << val.m_workerId
+            << "; startup time: " << val.m_submitTime << "; worker ID: " << val.m_workerId
             << "; group Name: " << val.m_groupName;
     return _stream;
 }
