@@ -74,7 +74,7 @@ void CStart::getNewSessionID()
     Logger::instance().reinit();
 
     // create workers' sandbox dir
-    fs::path pathWrkSandboxDir(CUserDefaults::instance().getWrkPkgDir());
+    fs::path pathWrkSandboxDir(CUserDefaults::instance().getWrkPkgRootDir());
     fs::create_directories(pathWrkSandboxDir);
 }
 

@@ -48,7 +48,8 @@ void CWorker::printInfo(ostream& _stream) const
 bool CWorker::run(ETaskType _param)
 {
     stringstream ssParams;
-    ssParams << " -i \"" << m_rec->m_id << "\" -l \"" << m_rec->m_addr << "\" -w \"" << m_rec->m_wrkDir << "\"";
+    ssParams << " -i \"" << m_rec->m_id << "\" -l \"" << m_rec->m_addr << "\" -w \"" << m_rec->m_wrkDir << "\" -s \""
+             << m_rec->m_submissionID << "\" -a \"" << CUserDefaults::instance().getCurrentSID() << "\"";
     if (!m_rec->m_sshOptions.empty())
         ssParams << " -o \"" << m_rec->m_sshOptions << "\"";
 

@@ -36,6 +36,7 @@ bool parseCmdLine(int _Argc, char* _Argv[])
     visible.add_options()("default,d", "Generate the default DDS configuration file");
     visible.add_options()("config,c", bpo::value<string>(), "DDS user defaults configuration file");
     visible.add_options()("session,s", bpo::value<string>(), "DDS Session ID");
+    visible.add_options()("submission-id", bpo::value<string>(), "Submission ID");
     visible.add_options()("ignore-default-sid", bpo::bool_switch(&ignoreDefaultSID), "Ignore default DDS Session ID");
     visible.add_options()("key", bpo::value<string>(), "Get a value for the given key");
     visible.add_options()(
@@ -78,6 +79,8 @@ bool parseCmdLine(int _Argc, char* _Argv[])
 
     conflicting_options(vm, "default", "key");
     conflicting_options(vm, "force", "key");
+    option_dependency(vm, "wrkpkg", "submission-id");
+    option_dependency(vm, "wrkscript", "submission-id");
 
     if (vm.count("path"))
     {
@@ -135,14 +138,22 @@ bool parseCmdLine(int _Argc, char* _Argv[])
 
     userDefaults.reinit(sid, sCfgFileName);
 
+    string SubmissionID;
+    if (vm.count("submission-id"))
+    {
+        SubmissionID = vm["submission-id"].as<string>();
+    }
+
+    // This option uses option_dependency to be linked with "submission-id"
     if (vm.count("wrkpkg"))
     {
-        cout << userDefaults.getWrkPkgPath() << endl;
+        cout << userDefaults.getWrkPkgPath(SubmissionID) << endl;
         return false;
     }
+    // This option uses option_dependency to be linked with "submission-id"
     if (vm.count("wrkscript"))
     {
-        cout << userDefaults.getWrkScriptPath() << endl;
+        cout << userDefaults.getWrkScriptPath(SubmissionID) << endl;
         return false;
     }
     if (vm.count("rms-sandbox-dir"))

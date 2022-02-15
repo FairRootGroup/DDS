@@ -1,16 +1,40 @@
 #!/usr/bin/env bash
-# Copyright 2014 GSI, Inc. All rights reserved.
+# Copyright 2014-2022 GSI, Inc. All rights reserved.
 #
 #
 
 TOOL_NAME="$(basename $0)"
-eval WORK_DIR=$(dds-user-defaults --key server.work_dir)
+
+#=============================================================================
+# ***** OPTARG *****
+#=============================================================================
+DDS_SESSION_ID=""
+SUBMISSION_ID=""
+while getopts "a:s:" opt; do
+  case "$opt" in
+  a) DDS_SESSION_ID="$OPTARG"
+    ;;
+  s)
+    SUBMISSION_ID="$OPTARG"
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+
+eval WORK_DIR=$(dds-user-defaults --session $DDS_SESSION_ID --key server.work_dir)
+eval WRK_PKG=$(dds-user-defaults --session $DDS_SESSION_ID --wrkpkg --submission-id $SUBMISSION_ID)
+eval RMS_SANDBOX=$(dirname $WRK_PKG)
+eval WRK_S_L=$(dds-user-defaults --session $DDS_SESSION_ID --wrkscript --submission-id $SUBMISSION_ID)
+
 #=============================================================================
 # ***** DDS NAMED PIPE *****
 #=============================================================================
 # a dds-slurm communication pipe (log engine)
 eval pipe_dir="$WORK_DIR"
-pipe="$pipe_dir/.dds_slurm_pipe"
+pipe="$pipe_dir/$SUBMISSION_ID/.dds_slurm_pipe"
 if [[ ! -p $pipe ]]; then
     echo "$TOOL_NAME error: dds-slurm log engine is not running"
     exit 1
@@ -35,17 +59,6 @@ logMsg()
 #=============================================================================
 # ***** MAIN *****
 #=============================================================================
-
-# if sandbox dir is not equal to working dir,
-# copy worker package to the sandbox dir
-eval RMS_SANDBOX=$(dds-user-defaults --rms-sandbox-dir)
-eval WORK_DIR=$(dds-user-defaults --key server.work_dir)
-eval WRK_S_L=$(dds-user-defaults --wrkscript)
-
-if [ "$RMS_SANDBOX" != "$WORK_DIR" ]; then
-	cp "$WRK_S_L" "$RMS_SANDBOX"
-fi
-
 logMsg "Submitting DDS Job on the SLURM cluster..."
 # Set execute access for job.slurm
 chmod +x $RMS_SANDBOX/job.slurm
@@ -56,6 +69,6 @@ if (( $? != 0 )) ; then
 	exit $?
 fi
 logMsg "SLURM: $JOB_ID"
-echo $JOB_ID > "$WORK_DIR/.dds_slurm_jobid"
+echo $JOB_ID > "$WORK_DIR/$SUBMISSION_ID/.dds_slurm_jobid"
 
 exit 0

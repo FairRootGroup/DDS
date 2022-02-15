@@ -36,7 +36,6 @@ namespace bp = boost::process;
 //=============================================================================
 // file is located in the DDS server working dir
 const LPCSTR g_pipeName = ".dds_slurm_pipe";
-// file is located in the RMS sandbox directory
 const LPCSTR g_jobIDFile = ".dds_slurm_jobid";
 //=============================================================================
 
@@ -82,6 +81,17 @@ int main(int argc, char* argv[])
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
+    // Submission ID
+    string submissionID;
+    if (vm.count("id"))
+        submissionID = vm["id"].as<std::string>();
+
+    if (submissionID.empty())
+    {
+        cerr << "Submission ID is empty" << endl;
+        return EXIT_FAILURE;
+    }
+
     if (defaultExecReinit(sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
@@ -93,18 +103,23 @@ int main(int argc, char* argv[])
 
     try
     {
+        // The working directory for local files, like pipes, pids, jobid, etc...
+        fs::path pathWorkDirLocalFiles(smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
+        pathWorkDirLocalFiles /= submissionID;
+
         // init pipe log engine to get log messages from the child scripts
-        string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
-        smart_append(&pipeName, '/');
-        pipeName += g_pipeName;
+        fs::path pathPipeName(pathWorkDirLocalFiles);
+        pathPipeName /= g_pipeName;
 
         // instruct pipe log engine to reflect output on user's output as well
-        slog.start(pipeName, [&proto](const string& _msg) { proto.sendMessage(EMsgSeverity::info, _msg); });
+        slog.start(pathPipeName.string(),
+                   [&proto](const string& _msg) { proto.sendMessage(EMsgSeverity::info, _msg); });
 
         // Subscribe on onSubmit command
         proto.onSubmit(
-            [&proto, &vm](const SSubmit& _submit)
+            [&proto, &vm, &pathWorkDirLocalFiles](const SSubmit& _submit)
             {
+                const string submissionId{ _submit.m_id };
                 try
                 {
                     // location of the plug-in files
@@ -134,23 +149,18 @@ int main(int argc, char* argv[])
                             sSrcScript, "#DDS_CPU_PER_AGENT", "#SBATCH --cpus-per-task " + to_string(_submit.m_slots));
 
                     // Replace %DDS_JOB_ROOT_WRK_DIR%
-                    std::time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-                    struct std::tm* ptm = std::localtime(&now);
-                    char buffer[20];
-                    std::strftime(buffer, 20, "%Y-%m-%d-%H-%M-%S", ptm);
-                    string sSandboxDir(smart_path(CUserDefaults::instance().getValueForKey("server.sandbox_dir")));
+                    string sSandboxDir(smart_path(CUserDefaults::instance().getWrkPkgDir(submissionId)));
                     fs::path pathJobWrkDir(sSandboxDir);
-                    pathJobWrkDir /= CUserDefaults::instance().getCurrentSID();
-                    pathJobWrkDir /= buffer;
                     boost::replace_all(sSrcScript, "%DDS_JOB_ROOT_WRK_DIR%", pathJobWrkDir.string());
                     // create ROOT wrk dir for jobs
                     fs::create_directories(pathJobWrkDir);
 
-                    string sAgentWrkDir(CUserDefaults::instance().getValueForKey("agent.work_dir"));
+                    const string sAgentWrkDirSpecial(CUserDefaults::instance().getValueForKey("agent.work_dir"));
+                    fs::path pathAgentWrkDirSpecial(sAgentWrkDirSpecial);
+                    pathAgentWrkDirSpecial /= CUserDefaults::instance().getCurrentSID();
+                    pathAgentWrkDirSpecial /= submissionId;
                     // Uses AgentWrkDir as the agent's wrk dir, if not empty
-                    fs::path pathAgentWrkDir(sAgentWrkDir.empty() ? sSandboxDir : sAgentWrkDir);
-                    pathAgentWrkDir /= CUserDefaults::instance().getCurrentSID();
-                    pathAgentWrkDir /= buffer;
+                    fs::path pathAgentWrkDir(sAgentWrkDirSpecial.empty() ? sSandboxDir : pathAgentWrkDirSpecial);
                     // Non need to create the pathAgentWrkDir directory as the job script will do that
                     boost::replace_all(sSrcScript, "%DDS_AGENT_ROOT_WRK_DIR%", pathAgentWrkDir.string());
 
@@ -164,7 +174,7 @@ int main(int argc, char* argv[])
                     }
 
                     // Replace %DDS_SCOUT%
-                    string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath());
+                    string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath(submissionId));
                     boost::replace_all(sSrcScript, "%DDS_SCOUT%", sScoutScriptPath);
 
                     // Generate new job script
@@ -181,9 +191,13 @@ int main(int argc, char* argv[])
                     pathSLURMScript /= "dds-submit-slurm-worker";
                     stringstream cmd;
                     cmd << bp::search_path("dds-daemonize").string() << " " << quoted(sSandboxDir) << " "
-                        << bp::search_path("bash").string() << " -c " << quoted(pathSLURMScript.string());
+                        << bp::search_path("bash").string() << " -c "
+                        << quoted(pathSLURMScript.string() + " -s " + submissionId + " -a " +
+                                  CUserDefaults::instance().getCurrentSID());
 
-                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Preparing job submission...");
+                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info,
+                                      "Preparing job submission. SubmissionID: " + submissionId);
+                    proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Sandbox dir: " + sSandboxDir);
                     string output;
                     pid_t exitCode{ execute(cmd.str(), chrono::seconds(30), &output) };
 
@@ -194,7 +208,7 @@ int main(int argc, char* argv[])
                     if (exitCode == 0)
                     {
                         bool started(false);
-                        fs::path pathJobIDFile(smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
+                        fs::path pathJobIDFile(pathWorkDirLocalFiles);
                         pathJobIDFile /= g_jobIDFile;
 
                         // Give the job 2 minutes to submit
@@ -204,8 +218,6 @@ int main(int argc, char* argv[])
                             {
                                 started = true;
                                 proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
-                                // remove jobid file
-                                fs::remove(pathJobIDFile);
                                 break;
                             }
                             // give bash 20 sec to write the log file if it fails to start our script

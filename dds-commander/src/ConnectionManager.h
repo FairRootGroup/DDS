@@ -104,7 +104,8 @@ namespace dds
             void _createWnPkg(bool _needInlineBashScript,
                               bool _lightweightPkg,
                               uint32_t _nSlots,
-                              const std::string& _groupName) const;
+                              const std::string& _groupName,
+                              const std::string& _submissionID) const;
             void processToolsAPIRequests(const protocol_api::SCustomCmdCmd& _cmd,
                                          CAgentChannel::weakConnectionPtr_t _channel);
             void submitAgents(const dds::tools_api::SSubmitRequestData& _submitInfo,

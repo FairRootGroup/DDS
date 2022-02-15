@@ -3,7 +3,6 @@
 ## v3.8 (NOT YET RELEASED)
 
 ### DDS common
-
 Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
 
 ### dds-submit
@@ -14,6 +13,16 @@ Added: A new groupName requirement. It can be used on task and collection. (GH-4
 
 ### dds-ssh-plugin
 Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)    
+Added: Support for SessionID (GH-411)    
+
+### dds-slurm-plugin
+Added: Support for SessionID (GH-411)    
+
+### dds-localhost-plugin
+Added: Support for SessionID (GH-411)    
+
+### dds-tools-api
+Modified: Logs of user processes which use Tools API are moved now to the DDS root log directory, instead of sessions directory.    
 
 ## v3.6 (2022-01-11)
 

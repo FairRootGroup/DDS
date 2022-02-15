@@ -77,11 +77,19 @@ namespace dds
             bpo::positional_options_description pd;
             pd.add("command", 1);
 
-            // Parsing command-line
             bpo::variables_map vm;
-            bpo::store(bpo::command_line_parser(_argc, _argv).options(options).positional(pd).run(), vm);
-            bpo::notify(vm);
 
+            try
+            {
+                // Parsing command-line
+                bpo::store(bpo::command_line_parser(_argc, _argv).options(options).positional(pd).run(), vm);
+                bpo::notify(vm);
+            }
+            catch (bpo::error& _e)
+            {
+                LOG(dds::misc::log_stdout) << _e.what();
+                return false;
+            }
             if (vm.count("help") || vm.empty())
             {
                 LOG(dds::misc::log_stdout) << options;

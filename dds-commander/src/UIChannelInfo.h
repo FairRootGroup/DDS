@@ -31,8 +31,6 @@ namespace dds
                 : m_nofRequests(0)
                 , m_nofReceived(0)
                 , m_nofReceivedErrors(0)
-                , m_mutexStart()
-                , m_mutexReceive()
                 , m_shutdownOnComplete(false)
                 , m_srcCommand(0)
                 , m_startTime(std::chrono::steady_clock::now())
