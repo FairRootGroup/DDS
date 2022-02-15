@@ -353,9 +353,9 @@ do
 
    # _DDS_AGENT_SLOTS_ is replaced (set) by the dds-prep-worker
    if [ -n "$2" ]; then
-	   $dds_agent start --slots $2 --group-name _AGENT_GROUP_NAME_&
+	   $dds_agent start --slots $2 _AGENT_GROUP_NAME_&
    else
-   	   $dds_agent start --slots _DDS_AGENT_SLOTS_ --group-name _AGENT_GROUP_NAME_&
+   	   $dds_agent start --slots _DDS_AGENT_SLOTS_ _AGENT_GROUP_NAME_&
    fi
    # wait for dds-agent's process
    DDSAGENT_PID=$!

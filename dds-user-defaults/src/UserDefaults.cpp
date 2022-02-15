@@ -373,7 +373,7 @@ string CUserDefaults::getServerInfoFileLocation() const
     return val;
 }
 
-string CUserDefaults::getWrkPkgDir() const
+string CUserDefaults::getWrkPkgRootDir() const
 {
     string sSandboxDir;
     sSandboxDir = getValueForKey("server.sandbox_dir");
@@ -385,14 +385,19 @@ string CUserDefaults::getWrkPkgDir() const
     return (sSandboxDir + "wrk/");
 }
 
-string CUserDefaults::getWrkPkgPath() const
+string CUserDefaults::getWrkPkgDir(const string& _SubmissionID) const
 {
-    return (getWrkPkgDir() + "dds-worker");
+    return (getWrkPkgRootDir() + _SubmissionID + "/");
 }
 
-string CUserDefaults::getWrkScriptPath() const
+string CUserDefaults::getWrkPkgPath(const string& _SubmissionID) const
 {
-    return (getWrkPkgDir() + "DDSWorker.sh");
+    return (getWrkPkgDir(_SubmissionID) + "dds-worker");
+}
+
+string CUserDefaults::getWrkScriptPath(const string& _SubmissionID) const
+{
+    return (getWrkPkgDir(_SubmissionID) + "DDSWorker.sh");
 }
 
 string CUserDefaults::getUserEnvScript() const
@@ -419,7 +424,7 @@ string CUserDefaults::getAgentIDFileName()
 
 string CUserDefaults::getLogFile() const
 {
-    string sLogDir(isAgentInstance() ? getDDSPath() : getValueForKey("server.log_dir"));
+    string sLogDir(getValueForKey("server.log_dir"));
 
     if (sLogDir.empty())
         throw runtime_error("Can't init Log engine. Log location is not specified. Make sure DDS environment is "

@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_onTaskDone)
     topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
     BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
 
-    std::this_thread::sleep_for(sleepTime * 2);
+    std::this_thread::sleep_for(sleepTime * 5);
     BOOST_CHECK(nTaskDoneCount == tasksCount);
 
     session.shutdown();

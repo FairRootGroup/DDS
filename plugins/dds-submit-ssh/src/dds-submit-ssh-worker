@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2014 GSI, Inc. All rights reserved.
+# Copyright 2014-2022 GSI, Inc. All rights reserved.
 #
 #
 
@@ -17,13 +17,14 @@ fi
 usage() {
     cat <<EOF
 DDS command line utility, which is used to submit a DDS worker via ssh. It's used by dds-ssh utility.
-   Copyright (C) 2014-2019 GSI.
+   Copyright (C) 2014-2022 GSI.
 
 Usage: $(basename $0) [OPTION]
      -i id			ID of the worker.
      -l ssh login@host.fqdn 	SSH connection string.
      -w dir      		Remote working directory.
      -n X        		Desired number of slots.
+	 -s id              Submission ID
      -o SSH_Opt			Additinal SSH parameters.
      -h          		Show summary of options.
 
@@ -38,7 +39,9 @@ SSH_CON_STR=""
 RDIR=""
 NSLOTS=1
 SSHOPT=""
-while getopts "i:l:w:n:o:h" opt; do
+SUBMISSION_ID=""
+DDS_SESSION_ID=""
+while getopts "i:l:w:n:s:a:o:h" opt; do
   case "$opt" in
   i)
     WORKER_ID="$OPTARG"
@@ -54,6 +57,11 @@ while getopts "i:l:w:n:o:h" opt; do
     ;;
   o)
     SSHOPT="$OPTARG"
+    ;;
+  s)
+    SUBMISSION_ID="$OPTARG"
+    ;;
+  a) DDS_SESSION_ID="$OPTARG"
     ;;
   h) 
     usage
@@ -75,8 +83,8 @@ fi
 # ***** VARS *****
 #=============================================================================
 TOOL_NAME="$(basename $0)"
-eval WORK_DIR=$(dds-user-defaults --key server.work_dir)
-eval WRK_S_L=$(dds-user-defaults --wrkscript)
+eval WORK_DIR=$(dds-user-defaults --session $DDS_SESSION_ID --key server.work_dir)
+eval WRK_S_L=$(dds-user-defaults --session $DDS_SESSION_ID --wrkscript --submission-id $SUBMISSION_ID)
 # Execute the scout
 # set number of scouts to 1 and number of task slots to $NSLOTS
 WRK_S_R="$(basename "$WRK_S_L") 1 $NSLOTS"
@@ -88,9 +96,9 @@ SSH_CMD="ssh $SSH_OPT_INT -q $SSH_CON_STR $SSHOPT"
 #=============================================================================
 # a dds-ssh communication pipe (log engine)
 eval pipe_dir="$WORK_DIR"
-pipe="$pipe_dir/.dds_ssh_pipe"
+pipe="$pipe_dir/$SUBMISSION_ID/.dds_ssh_pipe"
 if [[ ! -p $pipe ]]; then
-    echo "$TOOL_NAME error: dds-ssh log engine is not running"
+    echo "$TOOL_NAME error: dds-ssh log engine is not running: $pipe"
     exit 1
 fi
 #=============================================================================

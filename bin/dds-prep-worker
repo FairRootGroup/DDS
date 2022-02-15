@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2014 GSI, Inc. All rights reserved.
+# Copyright 2014-2022 GSI, Inc. All rights reserved.
 #
 # a script to prepare a worker package - all elements of DDS which need to be uploaded to a worker
 #
@@ -24,12 +24,13 @@ fi
 usage() {
     cat <<EOF
 DDS command line utility to prepare a worker package - all elements of DDS which need to be uploaded to a worker
-   Copyright 2014 GSI, Inc. All rights reserved.
+   Copyright 2014-2022 GSI, Inc. All rights reserved.
 
 Usage: $(basename $0) [OPTION]
      -i 			Re-pack user_worker_env.sh (for internal use only).
 	 -s arg			Submit time (optional).
 	 -a arg         DDS Session ID.
+	 -b arg         Submission ID.
 	 -t arg         A number of task slots.
 	 -g arg         Agent group name.
 	 -l             Create a lightweight package, without WN binaries.
@@ -47,7 +48,8 @@ DDS_SESSION_ID=""
 LIGHTWEIGHT_PKG=""
 DDS_AGENT_SLOTS=""
 AGENT_GROUP_NAME=""
-while getopts ":is:a:t:g:lh" opt; do
+SUBMISSION_ID=""
+while getopts ":is:a:b:t:g:lh" opt; do
   case $opt in
   	i)
        REPACK_WRK_PKG="YES"
@@ -55,6 +57,8 @@ while getopts ":is:a:t:g:lh" opt; do
 	s) SUBMIT_TIME="$OPTARG"
 		;;
 	a) DDS_SESSION_ID="$OPTARG"
+	    ;;
+	b) SUBMISSION_ID="$OPTARG"
 	    ;;
 	t) DDS_AGENT_SLOTS="$OPTARG"
 	    ;;
@@ -87,10 +91,10 @@ if [ -z "$DDS_CFG" ]; then
 fi
 
 eval WRK_DIR=$(dds-user-defaults --session $DDS_SESSION_ID --key server.work_dir)
-eval ARC_NAME=$(dds-user-defaults --session $DDS_SESSION_ID --wrkpkg)
-eval WRK_SCRIPT=$(dds-user-defaults --session $DDS_SESSION_ID --wrkscript)
+eval ARC_NAME=$(dds-user-defaults --session $DDS_SESSION_ID --wrkpkg --submission-id $SUBMISSION_ID)
+eval WRK_SCRIPT=$(dds-user-defaults --session $DDS_SESSION_ID --wrkscript --submission-id $SUBMISSION_ID)
 eval USER_SCRIPT=$(dds-user-defaults --session $DDS_SESSION_ID --user-env-script)
-eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --session $DDS_SESSION_ID --wrkscript))/user_worker_env.sh"
+eval INLINEBASH_SCRIPT="$(dirname $(dds-user-defaults --session $DDS_SESSION_ID --wrkscript --submission-id $SUBMISSION_ID))/user_worker_env.sh"
 eval SERVER_INFO_FILE=$(dds-user-defaults --session $DDS_SESSION_ID --server-info-file)
 eval DDS_WRK_SCRIPT_IN=$DDS_LOCATION/etc/DDSWorker.sh.in
 eval DDS_TASK_WRAPPER_IN=$DDS_LOCATION/etc/dds_user_task_wrapper.sh.in
@@ -308,15 +312,22 @@ LANG=C LC_ALL=C sed -i.back "s/_DDS_AGENT_SLOTS_/$DDS_AGENT_SLOTS/g" $DDS_WRK_SC
 rm -f "$DDS_WRK_SCRIPT_TMP.back"
 
 # Replace a group name variable with the actual value
-echo "$TOOL_NAME: setting agent group[ name to $AGENT_GROUP_NAME"
+if [ -z "$AGENT_GROUP_NAME" ]; then
+	echo "$TOOL_NAME: setting agent group name to default"
+	AGENT_GROUP_NAME=""
+else
+	echo "$TOOL_NAME: setting agent group name to $AGENT_GROUP_NAME"
+	AGENT_GROUP_NAME="--group-name $AGENT_GROUP_NAME"
+fi
 LANG=C LC_ALL=C sed -i.back "s/_AGENT_GROUP_NAME_/$AGENT_GROUP_NAME/g" $DDS_WRK_SCRIPT_TMP
 rm -f "$DDS_WRK_SCRIPT_TMP.back"
+
 
 # copy worker script to the sandbox directory
 cp "$DDS_WRK_SCRIPT_TMP" "$WRK_SCRIPT" || { echo "error: Can't copy the worker script to the sandbox." >&2 ; exit 1; }
 chmod u+wx "$WRK_SCRIPT"
 
-echo "PoD worker package: "$WRK_SCRIPT
+echo "DDS worker package: "$WRK_SCRIPT
 
 # remove artifacts
 rm -f $ARC_NAME $ARC_NAME.tar $ARC_NAME.tgz

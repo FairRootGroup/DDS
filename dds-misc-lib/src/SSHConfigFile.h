@@ -40,6 +40,7 @@ namespace dds
         std::string m_sshOptions;
         std::string m_wrkDir;
         size_t m_nSlots{ 1 };
+        std::string m_submissionID;
     };
     //=============================================================================
     using configRecord_t = std::shared_ptr<SConfigRecord>;

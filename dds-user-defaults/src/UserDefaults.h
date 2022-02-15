@@ -51,9 +51,10 @@ namespace dds
             std::string getServerInfoFileLocationSrv() const;
             std::string getServerInfoFileName() const;
             std::string getServerInfoFileLocation() const;
-            std::string getWrkPkgDir() const;
-            std::string getWrkPkgPath() const;
-            std::string getWrkScriptPath() const;
+            std::string getWrkPkgRootDir() const;
+            std::string getWrkPkgDir(const std::string& _SubmissionID) const;
+            std::string getWrkPkgPath(const std::string& _SubmissionID) const;
+            std::string getWrkScriptPath(const std::string& _SubmissionID) const;
             std::string getUserEnvScript() const;
             static std::string getAgentIDFilePath();
             static std::string getAgentIDFileName();

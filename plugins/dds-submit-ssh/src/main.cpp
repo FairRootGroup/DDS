@@ -33,7 +33,7 @@ using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
 using namespace dds::misc;
 namespace bpo = boost::program_options;
-namespace bfs = boost::filesystem;
+namespace fs = boost::filesystem;
 
 //=============================================================================
 const LPCSTR g_pipeName = ".dds_ssh_pipe";
@@ -84,12 +84,12 @@ string createLocalhostCfg(size_t& _nInstances, const string& _sessionId)
     ss.str("");
 
     // Create temporary ssh configuration
-    bfs::path tempDirPath = bfs::temp_directory_path();
-    bfs::path wrkDirPath(tempDirPath);
+    fs::path tempDirPath = fs::temp_directory_path();
+    fs::path wrkDirPath(tempDirPath);
     string tmpDir = get_temp_dir("dds");
     wrkDirPath /= tmpDir;
 
-    if (!bfs::exists(wrkDirPath) && !bfs::create_directories(wrkDirPath))
+    if (!fs::exists(wrkDirPath) && !fs::create_directories(wrkDirPath))
     {
         stringstream ssErr;
         ssErr << "Can't create working directory: " << wrkDirPath.string();
@@ -136,6 +136,17 @@ int main(int argc, char* argv[])
     if (vm.count("session"))
         sid = boost::uuids::string_generator()(vm["session"].as<std::string>());
 
+    // Submission ID
+    string submissionID;
+    if (vm.count("id"))
+        submissionID = vm["id"].as<std::string>();
+
+    if (submissionID.empty())
+    {
+        cerr << "Submission ID is empty" << endl;
+        return EXIT_FAILURE;
+    }
+
     if (dds::misc::defaultExecReinit(sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
@@ -158,7 +169,7 @@ int main(int argc, char* argv[])
 
         // Subscribe on onSubmit command
         proto->onSubmit(
-            [&pool, proto, &vm](const SSubmit& _submit)
+            [&submissionID, &pool, proto, &vm](const SSubmit& _submit)
             {
                 size_t wrkCount(0);
                 size_t taskCount(0);
@@ -167,10 +178,17 @@ int main(int argc, char* argv[])
                 {
                     // Create the pipe log engine to cartch logs from external commands
                     CLogEngine slog(true);
-                    string pipeName(CUserDefaults::instance().getOptions().m_server.m_workDir);
-                    smart_append(&pipeName, '/');
-                    pipeName += g_pipeName;
-                    slog.start(pipeName, [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
+
+                    fs::path pathWorkDirLocalFiles(
+                        smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
+                    pathWorkDirLocalFiles /= submissionID;
+
+                    // init pipe log engine to get log messages from the child scripts
+                    fs::path pathPipeName(pathWorkDirLocalFiles);
+                    pathPipeName /= g_pipeName;
+
+                    slog.start(pathPipeName.string(),
+                               [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
 
                     bool needLocalHost = _submit.m_cfgFilePath.empty();
                     string configFile(_submit.m_cfgFilePath);
@@ -194,6 +212,8 @@ int main(int argc, char* argv[])
                     taskCount = recs.size();
                     for (auto& rec : recs)
                     {
+                        rec->m_submissionID = _submit.m_id;
+
                         shared_ptr<CWorker> task =
                             shared_ptr<CWorker>(new CWorker(rec, options, vm["path"].as<string>()));
 

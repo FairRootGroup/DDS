@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
                     }
 
                     // Replace %DDS_SCOUT%
-                    string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath());
+                    string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath(_submit.m_id));
                     boost::replace_all(sSrcScript, "%DDS_SCOUT%", sScoutScriptPath);
 
                     // Generate new job script

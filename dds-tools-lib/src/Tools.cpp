@@ -126,7 +126,9 @@ boost::uuids::uuid CSession::create()
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(boost::uuids::to_string(m_impl->m_sid)),
                                      CUserDefaults::instance().currentUDFile());
-    Logger::instance().reinit();
+    // IMPORTANT: The log reinit is commented out because Tools API logs should be stored above sessions
+    // Otherwise if multiple sessions present in one process, all los will be sent to the last session ID log
+    // Logger::instance().reinit();
 
     // Subscribe to custom commands after the DDS session has started
     subscribe();
@@ -153,7 +155,9 @@ void CSession::attach(const boost::uuids::uuid& _sid)
     // Reinit UserDefaults and Log with new session ID
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(boost::uuids::to_string(m_impl->m_sid)),
                                      CUserDefaults::instance().currentUDFile());
-    Logger::instance().reinit();
+    // IMPORTANT: The log reinit is commented out because Tools API logs should be stored above sessions
+    // Otherwise if multiple sessions present in one process, all los will be sent to the last session ID log
+    // Logger::instance().reinit();
 
     // Subscribe to custom commands after the DDS session has been attached
     subscribe();

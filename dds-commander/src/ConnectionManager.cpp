@@ -125,8 +125,11 @@ void CConnectionManager::newClientCreated(CAgentChannel::connectionPtr_t _newCli
 void CConnectionManager::_createWnPkg(bool _needInlineBashScript,
                                       bool _lightweightPkg,
                                       uint32_t _nSlots,
-                                      const string& _groupName) const
+                                      const string& _groupName,
+                                      const string& _submissionID) const
 {
+    LOG(info) << "Creating new worker package...";
+
     // re-create the worker package if needed
     string out;
     string err;
@@ -149,8 +152,14 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript,
         cmd += " -t ";
         cmd += to_string(_nSlots);
         // Group name
-        cmd += " -g ";
-        cmd += _groupName;
+        if (!_groupName.empty())
+        {
+            cmd += " -g ";
+            cmd += _groupName;
+        }
+        // Submission ID
+        cmd += " -b ";
+        cmd += _submissionID;
 
         if (_lightweightPkg)
             cmd += " -l ";
@@ -160,18 +169,19 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript,
 
         LOG(debug) << "Preparing WN package: " << ssCmd.str();
 
-        // 10 sec time-out for this command
-        execute(ssCmd.str(), chrono::seconds(10), &out, &err);
+        // 15 sec time-out for this command
+        execute(ssCmd.str(), chrono::seconds(15), &out, &err);
         if (!err.empty())
             throw runtime_error("failed");
     }
     catch (exception& e)
     {
         stringstream ssErr;
-        ssErr << "WN Package Tool: " << e.what() << "; STDOUT:" << out << "; STDERR: " << err;
+        ssErr << "WN Package Tool: " << e.what() << "; STDOUT: " << out << "; STDERR: " << err;
+        LOG(info) << ssErr.str();
         throw runtime_error(ssErr.str());
     }
-    LOG(info) << "WN Package Tool: STDOUT:" << out << "; STDERR: " << err;
+    LOG(info) << "WN Package Tool: STDOUT: " << out << "; STDERR: " << err;
 }
 
 void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
@@ -795,14 +805,13 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             }
         }
         catch (boost::bad_lexical_cast&)
-        {
-            // Condition is not a positiove integer.
+        { // Condition is not a positive integer.
 
             // check if this is an agent submit request
             if (_attachment->m_sCondition == g_sRmsAgentSign)
             {
                 LOG(info) << "Received a message from RMS plug-in.";
-                lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
+
                 if (m_SubmitAgents.m_channel.expired())
                     throw runtime_error("Internal error. Submit info channel is not initialized.");
 
@@ -983,6 +992,10 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 {
     try
     {
+        if (!m_SubmitAgents.m_channel.expired())
+            throw runtime_error("Can not process the request. Submit is already in progress.");
+
+        // find the requested plug-in
         string pluginDir = CUserDefaults::instance().getPluginDir(_submitInfo.m_pluginPath, _submitInfo.m_rms);
         stringstream ssPluginExe;
         ssPluginExe << pluginDir << "dds-submit-" << _submitInfo.m_rms;
@@ -995,8 +1008,24 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 
         // Create a new submit communication info channel
         lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
-        if (!m_SubmitAgents.m_channel.expired())
-            throw runtime_error("Can not process the request. Submit is already in progress.");
+
+        // remember the UI channel, which requested to submit the job
+        m_SubmitAgents.m_channel = _channel;
+        m_SubmitAgents.m_requestID = _submitInfo.m_requestID;
+        m_SubmitAgents.zeroCounters();
+
+        // Generating a submissin ID
+        const boost::uuids::uuid submissionID{ boost::uuids::random_generator()() };
+        const string sSubmissionID{ boost::lexical_cast<std::string>(submissionID) };
+        LOG(info) << "Initializing an agent submit request with submissionID = " << sSubmissionID;
+
+        // Create WN package dir
+        fs::path pathWrkPackageDir(CUserDefaults::instance().getWrkPkgDir(sSubmissionID));
+        fs::create_directories(pathWrkPackageDir);
+        // Create local working dir for this submission ID
+        fs::path pathWorkDirLocalFiles(smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
+        pathWorkDirLocalFiles /= sSubmissionID;
+        fs::create_directories(pathWorkDirLocalFiles);
 
         // Create / re-pack WN package
         // Include inline script if present
@@ -1008,7 +1037,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
             LOG(info)
                 << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
 
-            string scriptFileName(CUserDefaults::instance().getWrkPkgDir());
+            string scriptFileName(pathWrkPackageDir.string());
             scriptFileName += "user_worker_env.sh";
             smart_path(&scriptFileName);
             ofstream f_script(scriptFileName.c_str());
@@ -1018,6 +1047,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
             f_script << inlineShellScripCmds;
             f_script.close();
         }
+
         // pack worker package
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
@@ -1025,18 +1055,16 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         _createWnPkg(!inlineShellScripCmds.empty(),
                      (_submitInfo.m_rms == "localhost"),
                      _submitInfo.m_slots,
-                     _submitInfo.m_groupName);
+                     _submitInfo.m_groupName,
+                     sSubmissionID);
 
-        // remember the UI channel, which requested to submit the job
-        m_SubmitAgents.m_channel = _channel;
-        m_SubmitAgents.m_requestID = _submitInfo.m_requestID;
-        m_SubmitAgents.zeroCounters();
-
+        // Submit request
         SSubmit submitRequest;
+        submitRequest.m_id = sSubmissionID;
         submitRequest.m_cfgFilePath = _submitInfo.m_config;
         submitRequest.m_nInstances = _submitInfo.m_instances;
         submitRequest.m_slots = _submitInfo.m_slots;
-        submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath();
+        submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath(sSubmissionID);
         submitRequest.m_groupName = _submitInfo.m_groupName;
         m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
 
@@ -1047,10 +1075,8 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         // Submitting the job
         stringstream ssCmd;
         ssCmd << ssPluginExe.str();
-        // TODO: Send ID to the plug-in
-        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id "
-              << "FAKE_ID_FOR_TESTS"
-              << " --path \"" << pluginDir << "\"";
+        ssCmd << " --session " << CUserDefaults::instance().getCurrentSID() << " --id " << sSubmissionID << " --path \""
+              << pluginDir << "\"";
 
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Initializing RMS plug-in...", EMsgSeverity::info);
 

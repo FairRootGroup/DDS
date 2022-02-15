@@ -415,6 +415,7 @@ namespace dds::misc
         CFindProcess::getAllPIDsForProcessName(_Srv, &container, _filterForRealUserID);
         copy(container.begin(), container.end(), std::back_inserter(retVal));
 #else
+        _filterForRealUserID = _filterForRealUserID; // silence the warning of unused arg
         CProcList::ProcContainer_t pids;
         CProcList::GetProcList(&pids);
 
