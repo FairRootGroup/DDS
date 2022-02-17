@@ -12,6 +12,9 @@ Added: Users can specify a GroupName tag for each submission. This tag will be a
 ### dds-topology
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
 
+### dds-ssh-plugin
+Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)    
+
 ## v3.6 (2022-01-11)
 
 ### DDS common

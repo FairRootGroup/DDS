@@ -1000,8 +1000,9 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 
         // Create / re-pack WN package
         // Include inline script if present
+        // Only the ssh plug-in supports it.
         string inlineShellScripCmds;
-        if (!_submitInfo.m_config.empty())
+        if (_submitInfo.m_rms == "ssh" && !_submitInfo.m_config.empty())
         {
             inlineShellScripCmds = CSSHConfigFile(_submitInfo.m_config).getBash();
             LOG(info)
