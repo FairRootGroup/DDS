@@ -32,7 +32,7 @@ set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build" FORCE )
 # This is needed to be able to build DDS worker packages.
 # Otherwise cmake look up algorithms can't find boost libs on wn_bin build
 #
-set(Boost_NO_BOOST_CMAKE TRUE CACHE BOOL "" FORCE)
+#set(Boost_NO_BOOST_CMAKE TRUE CACHE BOOL "" FORCE)
 
 
 #

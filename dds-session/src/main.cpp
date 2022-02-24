@@ -20,10 +20,25 @@ using namespace dds::session_cmd;
 using namespace dds::user_defaults_api;
 namespace fs = boost::filesystem;
 
+bool IsValid(const string& _sid)
+{
+    try
+    {
+        boost::uuids::uuid sid{ boost::uuids::string_generator()(_sid) };
+        if (sid.is_nil())
+            return false;
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool IsSessionRunning(const string& _sid)
 {
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(_sid), CUserDefaults::instance().currentUDFile());
-
     return CUserDefaults::instance().IsSessionRunning();
 }
 
@@ -81,6 +96,9 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
     for (auto& dir : sortedDirs)
     {
         string sSID = dir.second.leaf().string();
+        if (!IsValid(sSID))
+            continue;
+
         time_t tmLastUseTime = fs::last_write_time(dir.second);
         char sLastUseTime[1000];
         struct tm* p = localtime(&tmLastUseTime);
@@ -174,6 +192,9 @@ int main(int argc, char* argv[])
             rebuildSessions(session_dirs, sessions);
             for (const auto& i : sessions)
             {
+                if (!IsValid(i))
+                    continue;
+
                 if (!IsSessionRunning(i))
                     continue;
 
@@ -211,6 +232,10 @@ int main(int argc, char* argv[])
             for (auto& dir : session_dirs)
             {
                 const string sSID(dir.leaf().string());
+
+                // Ignore non-sid or bad items
+                if (!IsValid(sSID))
+                    continue;
 
                 if (IsSessionRunning(sSID))
                     continue;
