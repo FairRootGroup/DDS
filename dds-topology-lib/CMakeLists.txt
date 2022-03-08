@@ -26,7 +26,6 @@ set(HEADER_FILES
   src/TopoUtils.h
   src/TopoCore.h
   src/TopoParserXML.h
-  src/TopoVars.h
   src/TopoCreatorCore.h
 )
 
@@ -40,6 +39,7 @@ set(HEADER_FILES_EXT
   src/TopoRequirement.h
   src/TopoTask.h
   src/TopoProperty.h
+  src/TopoVars.h
   src/TopoTrigger.h
   src/TopoGroup.h
   src/TopoCreator.h

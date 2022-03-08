@@ -992,9 +992,6 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 {
     try
     {
-        if (!m_SubmitAgents.m_channel.expired())
-            throw runtime_error("Can not process the request. Submit is already in progress.");
-
         // find the requested plug-in
         string pluginDir = CUserDefaults::instance().getPluginDir(_submitInfo.m_pluginPath, _submitInfo.m_rms);
         stringstream ssPluginExe;
@@ -1008,6 +1005,9 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 
         // Create a new submit communication info channel
         lock_guard<mutex> lock(m_SubmitAgents.m_mutexStart);
+
+        if (!m_SubmitAgents.m_channel.expired())
+            throw runtime_error("Can not process the request. Submit is already in progress.");
 
         // remember the UI channel, which requested to submit the job
         m_SubmitAgents.m_channel = _channel;
