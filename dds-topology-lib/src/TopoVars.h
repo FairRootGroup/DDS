@@ -11,6 +11,8 @@
 // STD
 #include <map>
 #include <string>
+// BOOST
+#include <boost/filesystem.hpp>
 
 namespace dds
 {
@@ -20,13 +22,23 @@ namespace dds
         {
           public:
             using Ptr_t = std::shared_ptr<CTopoVars>;
-            using varMap_t = std::map<std::string, std::string>;
+            using varName_t = std::string;
+            using varValue_t = std::string;
+            using varMap_t = std::map<varName_t, varValue_t>;
+            using propTreePtr_t = std::unique_ptr<boost::property_tree::ptree>;
 
             /// \brief Constructor.
+            CTopoVars();
             CTopoVars(const std::string& _name);
 
             /// \brief Destructor.
             virtual ~CTopoVars();
+
+            /// \brief Init the obejct from DDS topology xml
+            void initFromXML(const std::string& _filepath);
+
+            /// \brief Serizalize the obejct to DDS topology xml
+            void saveToXML(const std::string& _filepath);
 
             /// \brief Inherited from TopoBase
             void initFromPropertyTree(const boost::property_tree::ptree& _pt);
@@ -46,10 +58,18 @@ namespace dds
             /// \brief Inherited from TopoBase
             virtual std::string hashString() const;
 
+            /// \brief Add a new topology variable.
+            /// \return a bool denoting whether the insertion took place.
+            bool add(const varName_t& _name, const varValue_t& _value);
+            /// \brief Update existing topology variable.
+            /// \return a bool denoting whether the update took place.
+            bool update(const varName_t& _name, const varValue_t& _newValue);
+
             const varMap_t& getMap() const;
 
           private:
             varMap_t m_map; ///< Key-Value storage of variables
+            propTreePtr_t m_pPropTreePtr;
         };
     } // namespace topology_api
 } // namespace dds

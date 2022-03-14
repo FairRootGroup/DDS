@@ -13,6 +13,7 @@ Added: Users can specify a GroupName tag for each submission. This tag will be a
 
 ### dds-topology
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
+Added: Open API to read/update/add topology variable. The CTopoVars class.    
 
 ### dds-ssh-plugin
 Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)    

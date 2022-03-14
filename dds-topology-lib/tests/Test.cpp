@@ -22,6 +22,7 @@
 #include "TopoProperty.h"
 #include "TopoTask.h"
 #include "TopoUtils.h"
+#include "TopoVars.h"
 #include "Topology.h"
 #include "UserDefaults.h"
 // BOOST
@@ -979,6 +980,32 @@ BOOST_AUTO_TEST_CASE(test_dds_create_topo_2)
     std::ifstream topoStream1(topoFile1);
     std::ifstream topoStream2(topoFile2);
     test_create_topo_2(topoStream1, topoStream2);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_read_vars)
+{
+    // Initialize topology creator with existing topology
+    CTopoVars vars;
+    vars.initFromXML("topology_test_1.xml");
+    BOOST_CHECK(vars.getMap().size() == 3);
+    auto found = vars.getMap().find("nofGroups");
+    BOOST_CHECK(found != vars.getMap().end());
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_change_vars_add_vars)
+{
+    {
+        CTopoVars vars;
+        vars.initFromXML("topology_test_1.xml");
+        vars.update("nofGroups", "100");
+        vars.saveToXML("topology_test_1-tmp.xml");
+    }
+
+    CTopoVars vars;
+    vars.initFromXML("topology_test_1-tmp.xml");
+    auto found = vars.getMap().find("nofGroups");
+    BOOST_CHECK(found != vars.getMap().end());
+    BOOST_CHECK(found->second == "100");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
