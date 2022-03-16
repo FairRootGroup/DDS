@@ -644,4 +644,59 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_agentCommand)
     session.shutdown();
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_tools_unsubscribe)
+{
+    const std::chrono::seconds sleepTime(3);
+    const int tasksCount{ 9 };
+
+    CSession session;
+    boost::uuids::uuid sid = session.create();
+    BOOST_CHECK(!sid.is_nil());
+
+    // test onTaskDone events
+    // Subscrube on events
+    SOnTaskDoneRequest::request_t request;
+    SOnTaskDoneRequest::ptr_t requestPtr = SOnTaskDoneRequest::makeRequest(request);
+
+    int* testVarPtr = new int(0);
+
+    requestPtr->setResponseCallback([&testVarPtr](const SOnTaskDoneResponseData& /*_info*/)
+                                    { BOOST_CHECK(testVarPtr != nullptr); });
+    BOOST_CHECK_NO_THROW(session.sendRequest<SOnTaskDoneRequest>(requestPtr));
+
+    // Unsubscribe from all events
+    requestPtr->unsubscribeAll();
+    // Delete the temp var to trigger an erroneous behaviour in case if unsubscribe didn't work
+    delete (testVarPtr);
+    testVarPtr = nullptr;
+
+    // Submit DDS agents
+    const fs::path topoPath(fs::canonical(fs::path("sleep_test.xml")));
+    CTopology topo(topoPath.string());
+    auto numAgents = topo.getRequiredNofAgents(tasksCount);
+    size_t requiredCount{ numAgents.first * numAgents.second };
+
+    SSubmitRequest::request_t submitInfo;
+    submitInfo.m_rms = "localhost";
+    submitInfo.m_slots = requiredCount;
+    submitInfo.m_instances = 0;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<SSubmitRequest>(submitInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    STopologyRequest::request_t topoInfo;
+    topoInfo.m_topologyFile = topoPath.string();
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+
+    std::this_thread::sleep_for(sleepTime);
+    topoInfo.m_topologyFile = "";
+    topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::STOP;
+    BOOST_CHECK_NO_THROW(session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+
+    // give it a chance to receive the OnTaskDone event
+    std::this_thread::sleep_for(sleepTime * 5);
+
+    session.shutdown();
+}
+
 BOOST_AUTO_TEST_SUITE_END()
