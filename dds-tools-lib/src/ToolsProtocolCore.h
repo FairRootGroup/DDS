@@ -275,9 +275,19 @@ namespace dds
                 m_callbackResponse = _callbackResponse;
             }
 
+            void unsubscribeResponseCallback()
+            {
+                m_callbackResponse = nullptr;
+            }
+
             void setProgressCallback(callbackProgress_t _callbackProgress)
             {
                 m_callbackProgress = _callbackProgress;
+            }
+
+            void unsubscribeProgressCallback()
+            {
+                m_callbackProgress = nullptr;
             }
 
             void setMessageCallback(callbackMessage_t _callbackMessage)
@@ -285,9 +295,28 @@ namespace dds
                 m_callbackMessage = _callbackMessage;
             }
 
+            void unsubscribeMessageCallback()
+            {
+                m_callbackMessage = nullptr;
+            }
+
             void setDoneCallback(callbackDone_t _callbackDone)
             {
                 m_callbackDone = _callbackDone;
+            }
+
+            void unsubscribeDoneCallback()
+            {
+                m_callbackDone = nullptr;
+            }
+
+            /// \brief Use this method to unsubscribe from all events. of this request
+            void unsubscribeAll()
+            {
+                unsubscribeResponseCallback();
+                unsubscribeProgressCallback();
+                unsubscribeMessageCallback();
+                unsubscribeDoneCallback();
             }
 
             /// For tests or internal use
