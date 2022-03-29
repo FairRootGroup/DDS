@@ -629,20 +629,28 @@ void CConnectionManager::on_cmdUPDATE_KEY(const SSenderInfo& /*_sender*/,
                                           CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
     // Commander forwards cmdUPDATE_KEY to the proper channel
-    auto channel = m_taskIDToAgentChannelMap.find(_attachment->m_receiverTaskID);
-    if (channel != m_taskIDToAgentChannelMap.end())
-    {
-        CAgentChannel::weakConnectionPtr_t weakPtr = channel->second.m_channel;
-        if (!weakPtr.expired())
+
+    CAgentChannel::weakConnectionPtr_t weakPtr;
+    uint64_t protocolHeaderID{ 0 };
+
+    { // a smaller scope for the lock
+        lock_guard<mutex> lock(m_mapMutex);
+        auto channel = m_taskIDToAgentChannelMap.find(_attachment->m_receiverTaskID);
+        if (channel == m_taskIDToAgentChannelMap.end())
         {
-            auto ptr = weakPtr.lock();
-            ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment, channel->second.m_protocolHeaderID);
+            LOG(debug) << "on_cmdUPDATE_KEY task <" << _attachment->m_receiverTaskID
+                       << "> not found in map. Property will not be updated.";
+            return;
         }
+
+        weakPtr = channel->second.m_channel;
+        protocolHeaderID = channel->second.m_protocolHeaderID;
     }
-    else
+
+    if (!weakPtr.expired())
     {
-        LOG(debug) << "on_cmdUPDATE_KEY task <" << _attachment->m_receiverTaskID
-                   << "> not found in map. Property will not be updated.";
+        auto ptr = weakPtr.lock();
+        ptr->accumulativePushMsg<cmdUPDATE_KEY>(*_attachment, protocolHeaderID);
     }
 }
 
@@ -669,14 +677,12 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     }
 
     // remove task ID from the map
-    // TODO: Temporary solution. We do not remove tasks from the map to avoid synchronization bottlenecks in
-    // on_cmdUPDATE_KEY.
-    //{
-    //    lock_guard<mutex> lock(m_mapMutex);
-    //    auto it = m_taskIDToAgentChannelMap.find(taskID);
-    //    if (it != m_taskIDToAgentChannelMap.end())
-    //        m_taskIDToAgentChannelMap.erase(it);
-    //}
+    {
+        lock_guard<mutex> lock(m_mapMutex);
+        auto it = m_taskIDToAgentChannelMap.find(_attachment->m_taskID);
+        if (it != m_taskIDToAgentChannelMap.end())
+            m_taskIDToAgentChannelMap.erase(it);
+    }
 
     string path;
     try
