@@ -4,6 +4,7 @@
 
 ### DDS common
 Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
+Fixed: On task done remove agents from the agent to tasks mapping.    
 
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         
