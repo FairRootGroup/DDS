@@ -1221,6 +1221,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             weakChannelInfo_t::container_t agents;
             for (auto taskID : removedTasks)
             {
+                lock_guard<mutex> lock(m_mapMutex);
                 auto agentChannel = m_taskIDToAgentChannelMap[taskID];
                 agents.push_back(agentChannel);
             }

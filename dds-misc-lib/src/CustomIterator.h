@@ -21,9 +21,14 @@ namespace dds::misc
      *
      */
     template <class T, class Ch = char, class Tr = std::char_traits<Ch>, class Dist = std::ptrdiff_t>
-    class custom_istream_iterator : public std::iterator<std::input_iterator_tag, T, Dist, const T*, const T&>
+    class custom_istream_iterator
     {
       public:
+        using iterator_category = std::input_iterator_tag;
+        using value_type = T;
+        using difference_type = Dist;
+        using pointer = T*;
+        using reference = T&;
         typedef custom_istream_iterator<T, Ch, Tr, Dist> m_it;
         typedef Ch char_type;
         typedef Tr traits_type;

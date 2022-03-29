@@ -420,7 +420,7 @@ set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
 set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
 set( WN_PKG_REMOTE_DIR "/u/ddswww/web-docs/releases/add/${DDS_VERSION}" )
 
-set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR})
+set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIRS})
 if("${DDS_BOOST_LIB_DIR}" STREQUAL "")
 	set(DDS_BOOST_LIB_DIR ${Boost_LIBRARY_DIR_RELEASE})
 endif()
