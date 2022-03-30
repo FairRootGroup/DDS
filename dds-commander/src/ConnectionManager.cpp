@@ -1219,11 +1219,13 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         if (removedTasks.size() > 0)
         {
             weakChannelInfo_t::container_t agents;
-            for (auto taskID : removedTasks)
             {
                 lock_guard<mutex> lock(m_mapMutex);
-                auto agentChannel = m_taskIDToAgentChannelMap[taskID];
-                agents.push_back(agentChannel);
+                for (auto taskID : removedTasks)
+                {
+                    auto agentChannel = m_taskIDToAgentChannelMap[taskID];
+                    agents.push_back(agentChannel);
+                }
             }
 
             // FIXME: Needs to be reviewed for the current architecture
