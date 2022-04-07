@@ -1,0 +1,108 @@
+<topology name="myTopology">
+
+	<var name="requirementVar" value=".+.gsi.de" />
+	<var name="appNameVar" value="app1 -l -n" />
+	<var name="nofGroups" value="10" />
+
+	<property name="property1"/>
+	<property name="property2"/>
+	<property name="property3"/>
+	<property name="property4"/>
+
+	<asset name="asset1" type="inline" value="abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #"/>
+
+
+	<declrequirement name="requirement1" type="hostname" value="${requirementVar}"/>
+
+	<decltrigger name="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
+	<decltrigger name="trigger2" condition="TaskCrashed" action="RestartTask" arg="10"/>
+	
+	<!-- THIS IS A COMMENT -->
+
+  	<decltask name="task1">
+		<exe reachable="true">${appNameVar}</exe>
+		<env reachable="false">env1</env>
+		<requirements>
+			<name>requirement1</name>
+		</requirements>
+		<properties>
+			<name access="read">property1</name>
+			<name access="write">property4</name>
+			<name access="readwrite">property1</name>
+		</properties>
+        <triggers>
+			<name>trigger1</name>
+			<name>trigger2</name>
+		</triggers>
+	    <assets>
+				<name>asset1</name>
+		</assets>
+	</decltask>
+	<decltask name="task2">
+		<exe>app2</exe>
+		<properties>
+		   <name access="read">property1</name>
+		   <name access="read">property2</name>
+	    </properties>
+	</decltask>
+	<decltask name="task3">
+		<exe reachable="true">app3</exe>
+		<properties>
+		   <name access="read">property2</name>
+		   <name access="read">property3</name>
+	  </properties>
+		<triggers>
+			<name>trigger1</name>
+		</triggers>
+	</decltask>
+	<decltask name="task4">
+		<exe>app4</exe>
+		<properties>
+		   <name access="read">property3</name>
+		   <name access="read">property4</name>
+	    </properties>
+	</decltask>
+	<decltask name="task5">
+		<exe reachable="false">app5</exe>
+		<properties>
+		   <name access="read">property1</name>
+	    </properties>
+	</decltask>
+
+  	<declcollection name="collection1">
+		<requirements>
+			<name>requirement1</name>
+		</requirements>
+		<tasks>
+   		   <name>task1</name>
+		   <name n="2">task2</name>
+		   <name>task3</name>
+	    </tasks>
+  	</declcollection>
+
+  	<declcollection name="collection2">
+		<tasks>
+   		   <name>task4</name>
+		   <name>task4</name>
+		   <name>task5</name>
+	    </tasks>
+  	</declcollection>
+
+	<main name="main">
+		<!--task>task2</task-->
+	    <task>task1</task>
+	    <collection>collection1</collection>
+		<group name="group1" n="${nofGroups}">
+			<task>task1</task>
+			<collection>collection1</collection>
+			<collection>collection2</collection>
+		</group>
+		<group name="group2" n="15">
+			<task>task3</task>
+			<task>task4</task>
+			<collection>collection1</collection>
+			<collection>collection2</collection>
+		</group>
+	</main>
+
+</topology>

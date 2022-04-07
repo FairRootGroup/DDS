@@ -77,5 +77,6 @@ install(FILES
   topology_test_creator_1.xml
   topology_test_creator_2.xml
   topology_test_creator_3.xml
+  topology_test_assets.xml
   DESTINATION "${PROJECT_INSTALL_TESTS}"
 )

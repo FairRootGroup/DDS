@@ -19,7 +19,7 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoTask::CTopoTask(const std::string& _name)
+CTopoTask::CTopoTask(const string& _name)
     : CTopoElement(_name)
 {
     setType(CTopoBase::EType::TASK);
@@ -49,7 +49,7 @@ void CTopoTask::setEnvReachable(bool _envReachable)
     m_envReachable = _envReachable;
 }
 
-CTopoProperty::Ptr_t CTopoTask::addProperty(const std::string& _name)
+CTopoProperty::Ptr_t CTopoTask::addProperty(const string& _name)
 {
     auto property{ make_shared<CTopoProperty>(_name) };
     property->setParent(this);
@@ -57,7 +57,7 @@ CTopoProperty::Ptr_t CTopoTask::addProperty(const std::string& _name)
     return property;
 }
 
-CTopoRequirement::Ptr_t CTopoTask::addRequirement(const std::string& _name)
+CTopoRequirement::Ptr_t CTopoTask::addRequirement(const string& _name)
 {
     auto requirement{ make_shared<CTopoRequirement>(_name) };
     requirement->setParent(this);
@@ -65,12 +65,20 @@ CTopoRequirement::Ptr_t CTopoTask::addRequirement(const std::string& _name)
     return requirement;
 }
 
-CTopoTrigger::Ptr_t CTopoTask::addTrigger(const std::string& _name)
+CTopoTrigger::Ptr_t CTopoTask::addTrigger(const string& _name)
 {
     auto trigger{ make_shared<CTopoTrigger>(_name) };
     trigger->setParent(this);
     m_triggers.push_back(trigger);
     return trigger;
+}
+
+CTopoAsset::Ptr_t CTopoTask::addAsset(const string& _name)
+{
+    auto asset{ make_shared<CTopoAsset>(_name) };
+    asset->setParent(this);
+    m_assets.push_back(asset);
+    return asset;
 }
 
 size_t CTopoTask::getNofTasks() const
@@ -118,12 +126,17 @@ size_t CTopoTask::getNofTriggers() const
     return m_triggers.size();
 }
 
+size_t CTopoTask::getNofAssets() const
+{
+    return m_assets.size();
+}
+
 size_t CTopoTask::getTotalCounter() const
 {
     return getTotalCounterDefault();
 }
 
-CTopoProperty::Ptr_t CTopoTask::getProperty(const std::string& _id) const
+CTopoProperty::Ptr_t CTopoTask::getProperty(const string& _id) const
 {
     auto it = m_properties.find(_id);
     if (it == m_properties.end())
@@ -146,12 +159,17 @@ const CTopoTrigger::PtrVector_t& CTopoTask::getTriggers() const
     return m_triggers;
 }
 
-std::string CTopoTask::getParentCollectionId() const
+const CTopoAsset::PtrVector_t& CTopoTask::getAssets() const
+{
+    return m_assets;
+}
+
+string CTopoTask::getParentCollectionId() const
 {
     return (getParent() == nullptr || getParent()->getType() == CTopoBase::EType::GROUP) ? "" : getParent()->getName();
 }
 
-std::string CTopoTask::getParentGroupId() const
+string CTopoTask::getParentGroupId() const
 {
     if (getParent() == nullptr)
         return "";
@@ -200,6 +218,15 @@ void CTopoTask::initFromPropertyTree(const ptree& _pt)
                 addTrigger(trigger.second.data())->initFromPropertyTree(_pt);
             }
         }
+
+        boost::optional<const ptree&> assetsPT = taskPT.get_child_optional("assets");
+        if (assetsPT)
+        {
+            for (const auto& asset : assetsPT.get())
+            {
+                addAsset(asset.second.data())->initFromPropertyTree(_pt);
+            }
+        }
     }
     catch (exception& error) // ptree_error, logic_error
     {
@@ -211,7 +238,7 @@ void CTopoTask::saveToPropertyTree(ptree& _pt)
 {
     try
     {
-        std::string tag("topology.decltask");
+        string tag("topology.decltask");
         _pt.put(tag + ".<xmlattr>.name", getName());
         _pt.put(tag + ".exe", getExe());
         _pt.put(tag + ".exe.<xmlattr>.reachable", isExeReachable());
@@ -238,6 +265,11 @@ void CTopoTask::saveToPropertyTree(ptree& _pt)
         {
             _pt.add(tag + ".triggers.name", v->getName());
         }
+
+        for (const auto& v : m_assets)
+        {
+            _pt.add(tag + ".assets.name", v->getName());
+        }
     }
     catch (exception& error) // ptree_error, logic_error
     {
@@ -252,6 +284,11 @@ string CTopoTask::toString() const
     for (const auto& property : m_properties)
     {
         ss << " - " << property.second->toString() << endl;
+    }
+    ss << " m_assets:\n";
+    for (const auto& asset : m_assets)
+    {
+        ss << " - " << asset->toString() << endl;
     }
     return ss.str();
 }
@@ -278,6 +315,10 @@ string CTopoTask::hashString() const
     for (const auto& trigger : getTriggers())
     {
         ss << trigger->hashString() << "|";
+    }
+    for (const auto& asset : getAssets())
+    {
+        ss << asset->hashString() << "|";
     }
     return ss.str();
 }

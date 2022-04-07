@@ -501,6 +501,34 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     pushMsg<cmdREPLY>(SReplyCmd("User task assigned", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdASSIGN_USER_TASK),
                       _sender.m_ID);
 
+    // Creating task assets, if needed
+    CTopoTask::Ptr_t task;
+    {
+        lock_guard<mutex> lock(m_topoMutex);
+        task = m_topo->getRuntimeTaskById(slot->m_taskID).m_task;
+    }
+    auto assets = task->getAssets();
+    for (const auto& asset : assets)
+    {
+        stringstream assetFileName;
+        assetFileName << asset->getName() << "_" << task->getName() << ".asset";
+        fs::path pathAsset(dir);
+        pathAsset /= assetFileName.str();
+
+        LOG(info) << "Creating task ASSET for taskID " << slot->m_taskID << ": " << pathAsset.generic_string();
+        ofstream f(pathAsset.generic_string());
+        if (!f.is_open())
+        {
+            LOG(error) << "Failed to create task ASSET for taskID " << slot->m_taskID << ": "
+                       << pathAsset.generic_string();
+            continue;
+        }
+        f << asset->getValue();
+        f.flush();
+
+        slot->m_assets.push_back(pathAsset);
+    }
+
     return true;
 }
 
@@ -1033,6 +1061,14 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
             m_taskIDToSlotIDMap.erase(slot.m_taskID);
         }
 
+        // Remove tasks assets
+        for (const auto& asset : slot.m_assets)
+        {
+            if (fs::exists(asset) && fs::is_regular_file(asset))
+                fs::remove(asset);
+        }
+        slot.m_assets.clear();
+
         // Save values before we reset them
         SUserTaskDoneCmd cmd;
         cmd.m_exitCode = _exitCode;
@@ -1099,7 +1135,7 @@ void CCommanderChannel::send_cmdUPDATE_KEY(const SSenderInfo& _sender,
         string propertyName(_attachment->m_propertyName);
         uint64_t taskID(_attachment->m_senderTaskID);
 
-        // Store a local pointer to the topology in order to keep it in memory.
+        // Store the local pointer to the topology in order to keep it in memory.
         // If the global m_topo goes out of scope, for instance, during the topology update, old topology will still be
         // in memory.
         CTopoCore::Ptr_t topo{ nullptr };

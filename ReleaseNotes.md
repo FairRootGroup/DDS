@@ -3,9 +3,10 @@
 ## v3.8 (NOT YET RELEASED)
 
 ### DDS common
-Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
 Fixed: On task done remove agents from the agent to tasks mapping.    
 Fixed: Replace std::iterator as it's deprecated (C++17).    
+Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
+Added: Support for Task Assets. (GH-406)    
 
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         
@@ -16,6 +17,7 @@ Added: Users can specify a GroupName tag for each submission. This tag will be a
 ### dds-topology
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
 Added: Open API to read/update/add topology variable. The CTopoVars class.    
+Added: Support for Task Assets. (GH-406)     
 
 ### dds-ssh-plugin
 Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)    
