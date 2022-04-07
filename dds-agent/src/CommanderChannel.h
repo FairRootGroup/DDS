@@ -21,6 +21,7 @@ namespace dds
         struct SSlotInfo
         {
             using container_t = std::map<slotId_t, SSlotInfo>;
+            using assets_t = std::vector<boost::filesystem::path>;
 
             slotId_t m_id{ 0 };
             std::string m_sUsrExe;
@@ -33,6 +34,7 @@ namespace dds
             std::string m_collectionName;
             std::string m_taskName;
             pid_t m_pid{ 0 };
+            assets_t m_assets;
         };
 
         class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>

@@ -31,6 +31,8 @@ namespace dds
                     return "requirement";
                 case CTopoBase::EType::TRIGGER:
                     return "trigger";
+                case CTopoBase::EType::ASSET:
+                    return "asset";
                 default:
                     throw runtime_error("Topology element not found.");
             }
@@ -50,6 +52,8 @@ namespace dds
                 return CTopoBase::EType::REQUIREMENT;
             else if (_name == "trigger")
                 return CTopoBase::EType::TRIGGER;
+            else if (_name == "asset")
+                return CTopoBase::EType::ASSET;
             else
                 throw runtime_error("Topology element with name " + _name + " does not exist.");
         }
@@ -72,6 +76,8 @@ namespace dds
                     return "var";
                 case CTopoBase::EType::TRIGGER:
                     return "decltrigger";
+                case CTopoBase::EType::ASSET:
+                    return "asset";
                 default:
                     throw runtime_error("Topology element not found.");
             }
@@ -93,6 +99,8 @@ namespace dds
                 return CTopoBase::EType::TOPO_VARS;
             else if (_name == "decltrigger")
                 return CTopoBase::EType::TRIGGER;
+            else if (_name == "asset")
+                return CTopoBase::EType::ASSET;
             else
                 throw runtime_error("Topology element with name " + _name + " does not exist.");
         }
@@ -177,6 +185,25 @@ namespace dds
                     return "maxinstances";
                 case CTopoRequirement::EType::GroupName:
                     return "groupname";
+                default:
+                    throw runtime_error("Topology element not found.");
+            }
+        }
+
+        CTopoAsset::EType TagToAssetType(const string& _name)
+        {
+            if (_name == "inline")
+                return CTopoAsset::EType::Inline;
+            else
+                throw runtime_error("Asset type type with name " + _name + " does not exist.");
+        }
+
+        std::string AssetTypeToTag(CTopoAsset::EType _type)
+        {
+            switch (_type)
+            {
+                case CTopoAsset::EType::Inline:
+                    return "inline";
                 default:
                     throw runtime_error("Topology element not found.");
             }

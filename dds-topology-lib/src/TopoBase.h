@@ -30,7 +30,8 @@ namespace dds
                 GROUP,
                 REQUIREMENT,
                 TOPO_VARS,
-                TRIGGER
+                TRIGGER,
+                ASSET
             };
 
             using Ptr_t = std::shared_ptr<CTopoBase>;

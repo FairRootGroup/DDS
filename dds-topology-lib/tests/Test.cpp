@@ -42,6 +42,17 @@ using namespace dds::misc;
 
 BOOST_AUTO_TEST_SUITE(test_dds_topology)
 
+const string asset1TestData{
+    "abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !\"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} "
+    "abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !\"§ $%& /() =?* '<> #abc def ghi jkl mno "
+    "pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !\"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno "
+    "pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !\"§ $%& /() =?* '<> #abc def ghi jkl mno pqrs tuv wxyz ABC DEF "
+    "GHI JKL MNO PQRS TUV WXYZ !\"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF "
+    "GHI JKL MNO PQRS TUV WXYZ !\"§ $%& /() =?* '<> #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV "
+    "WXYZ !\"§ $%& /() =?* '<> #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV "
+    "WXYZ !\"§ $%& /() =?* '<> #"
+};
+
 BOOST_AUTO_TEST_CASE(test_dds_topology_constructor)
 {
     string topoFile("topology_test_1.xml");
@@ -321,6 +332,7 @@ void test_topology_parser_xml(const string& _filename)
     BOOST_CHECK(trigger->getCondition() == CTopoTrigger::EConditionType::TaskCrashed);
     BOOST_CHECK(trigger->getAction() == CTopoTrigger::EActionType::RestartTask);
     BOOST_CHECK(trigger->getArgument() == "5");
+
     CTopoElement::Ptr_t element2 = main->getElement(1);
     BOOST_CHECK(element2->getName() == "collection1");
     BOOST_CHECK(element2->getType() == CTopoBase::EType::COLLECTION);
@@ -555,6 +567,12 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     // ActionTypeToTag
     BOOST_CHECK(ActionTypeToTag(CTopoTrigger::EActionType::RestartTask) == "RestartTask");
 
+    // TagToAssetType
+    BOOST_CHECK(TagToAssetType("inline") == CTopoAsset::EType::Inline);
+
+    // AssetTypeToTag
+    BOOST_CHECK(AssetTypeToTag(CTopoAsset::EType::Inline) == "inline");
+
     // DeclTagToTopoType
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topobase"), runtime_error);
@@ -566,6 +584,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     BOOST_CHECK(DeclTagToTopoType("declrequirement") == CTopoBase::EType::REQUIREMENT);
     BOOST_CHECK(DeclTagToTopoType("var") == CTopoBase::EType::TOPO_VARS);
     BOOST_CHECK(DeclTagToTopoType("decltrigger") == CTopoBase::EType::TRIGGER);
+    BOOST_CHECK(DeclTagToTopoType("asset") == CTopoBase::EType::ASSET);
 }
 
 BOOST_AUTO_TEST_CASE(test_dds_find_element_in_property_tree)
@@ -1006,6 +1025,36 @@ BOOST_AUTO_TEST_CASE(test_dds_change_vars_add_vars)
     auto found = vars.getMap().find("nofGroups");
     BOOST_CHECK(found != vars.getMap().end());
     BOOST_CHECK(found->second == "100");
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_topology_assets)
+{
+    const string topoFile("topology_test_assets.xml");
+
+    CTopoCore topology;
+    BOOST_CHECK_THROW(topology.getName(), std::runtime_error);
+    topology.init(topoFile);
+    BOOST_CHECK(topology.getName() == "myTopology");
+
+    BOOST_CHECK(topology.getFilepath() == boost::filesystem::canonical(topoFile).string());
+
+    CTopoGroup::Ptr_t main = topology.getMainGroup();
+    BOOST_CHECK(main != nullptr);
+
+    CTopoElement::Ptr_t element1 = main->getElement(0);
+    BOOST_CHECK(element1->getName() == "task1");
+    BOOST_CHECK(element1->getType() == CTopoBase::EType::TASK);
+    BOOST_CHECK(element1->getParent() == main.get());
+    BOOST_CHECK(element1->getPath() == "main/task1");
+    BOOST_CHECK(element1->getNofTasks() == 1);
+    BOOST_CHECK(element1->getTotalNofTasks() == 1);
+    CTopoTask::Ptr_t casted1 = dynamic_pointer_cast<CTopoTask>(element1);
+    // Assets
+    BOOST_CHECK(casted1->getNofAssets() == 1);
+    CTopoAsset::Ptr_t asset = casted1->getAssets()[0];
+    BOOST_CHECK(asset->getName() == "asset1");
+    BOOST_CHECK(asset->getAssetType() == CTopoAsset::EType::Inline);
+    BOOST_CHECK(asset->getValue() == asset1TestData);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

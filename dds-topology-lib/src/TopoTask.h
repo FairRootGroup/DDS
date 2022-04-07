@@ -7,6 +7,7 @@
 #define __DDS__TopoTask__
 
 // DDS
+#include "TopoAsset.h"
 #include "TopoDef.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
@@ -42,9 +43,11 @@ namespace dds
             size_t getNofProperties() const;
             size_t getNofRequirements() const;
             size_t getNofTriggers() const;
+            size_t getNofAssets() const;
             const CTopoProperty::PtrMap_t& getProperties() const;
             const CTopoRequirement::PtrVector_t& getRequirements() const;
             const CTopoTrigger::PtrVector_t& getTriggers() const;
+            const CTopoAsset::PtrVector_t& getAssets() const;
             /// Get property by ID. If property not fount than return nullptr.
             CTopoProperty::Ptr_t getProperty(const std::string& _id) const;
 
@@ -56,6 +59,7 @@ namespace dds
             CTopoProperty::Ptr_t addProperty(const std::string& _name);
             CTopoRequirement::Ptr_t addRequirement(const std::string& _name);
             CTopoTrigger::Ptr_t addTrigger(const std::string& _name);
+            CTopoAsset::Ptr_t addAsset(const std::string& _name);
 
             // Parent collection and group ID
             std::string getParentCollectionId() const;
@@ -96,6 +100,7 @@ namespace dds
             CTopoProperty::PtrMap_t m_properties;         ///< Properties
             CTopoRequirement::PtrVector_t m_requirements; ///< Array of requirements
             CTopoTrigger::PtrVector_t m_triggers;         ///< Array of triggers
+            CTopoAsset::PtrVector_t m_assets;             ///< Array of assets
         };
 
         struct STopoRuntimeTask

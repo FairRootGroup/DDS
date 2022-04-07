@@ -116,6 +116,23 @@
   <xs:attribute name="value" type="stringType" use="required"/>
 </xs:complexType>
 
+<xs:simpleType name="assetTypeType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="inline"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:complexType name="assetType">
+  <xs:attribute name="name" type="stringNameType" use="required"/>
+  <xs:attribute name="type" type="assetTypeType" use="required"/>
+  <xs:attribute name="value" type="stringType" use="required"/>
+</xs:complexType>
+
+<xs:complexType name="assetArrayType">
+  <xs:sequence>
+  	<xs:element name="name" type="stringNameType" maxOccurs="unbounded" minOccurs="0"/>
+  </xs:sequence>
+</xs:complexType>
 
 <xs:complexType name="triggerArrayType">
   <xs:sequence>
@@ -148,11 +165,12 @@
 
 <xs:complexType name="taskType">
   <xs:sequence>
-	<xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
-	<xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
-	<xs:element name="requirements" type="requirementArrayType" maxOccurs="1" minOccurs="0"/>
-  <xs:element name="properties" type="propertyArrayType" maxOccurs="1" minOccurs="0"/>
-  <xs:element name="triggers" type="triggerArrayType" maxOccurs="1" minOccurs="0"/>
+    <xs:element name="exe" type="exeType" maxOccurs="1" minOccurs="1"/>
+    <xs:element name="env" type="exeType" maxOccurs="1" minOccurs="0"/>
+    <xs:element name="requirements" type="requirementArrayType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="properties" type="propertyArrayType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="triggers" type="triggerArrayType" maxOccurs="1" minOccurs="0"/>
+	<xs:element name="assets" type="assetArrayType" maxOccurs="1" minOccurs="0"/>
   </xs:sequence>
   <xs:attribute name="name" type="stringNameType" use="required"/>
 </xs:complexType>
@@ -191,7 +209,8 @@
   <xs:sequence>
 	<xs:element name="var" type="varType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="property" type="propertyType" maxOccurs="unbounded" minOccurs="0"/>
-	  <xs:element name="declrequirement" type="requirementType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="asset" type="assetType" maxOccurs="unbounded" minOccurs="0"/>
+	<xs:element name="declrequirement" type="requirementType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="decltrigger" type="triggerType" maxOccurs="unbounded" minOccurs="0"/>
     <xs:element name="decltask" type="taskType" maxOccurs="unbounded" minOccurs="1"/>
     <xs:element name="declcollection" type="collectionType" maxOccurs="unbounded" minOccurs="0"/>

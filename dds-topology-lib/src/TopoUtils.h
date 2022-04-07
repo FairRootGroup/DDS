@@ -7,6 +7,7 @@
 #define __DDS__TopoUtils__
 
 // DDS
+#include "TopoAsset.h"
 #include "TopoElement.h"
 #include "TopoProperty.h"
 #include "TopoRequirement.h"
@@ -39,6 +40,10 @@ namespace dds
         CTopoRequirement::EType TagToRequirementType(const std::string& _name);
 
         std::string RequirementTypeToTag(CTopoRequirement::EType _type);
+
+        CTopoAsset::EType TagToAssetType(const std::string& _name);
+
+        std::string AssetTypeToTag(CTopoAsset::EType _type);
 
         CTopoTrigger::EConditionType TagToConditionType(const std::string& _name);
 
