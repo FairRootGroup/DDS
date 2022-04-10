@@ -424,7 +424,7 @@ string CUserDefaults::getAgentIDFileName()
 
 string CUserDefaults::getLogFile() const
 {
-    string sLogDir(getValueForKey("server.log_dir"));
+    string sLogDir(isAgentInstance() ? getDDSPath() : getValueForKey("server.log_dir"));
 
     if (sLogDir.empty())
         throw runtime_error("Can't init Log engine. Log location is not specified. Make sure DDS environment is "
