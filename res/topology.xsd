@@ -122,9 +122,17 @@
   </xs:restriction>
 </xs:simpleType>
 
+<xs:simpleType name="assetVisibilityType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="task"/>
+	<xs:enumeration value="global"/>
+  </xs:restriction>
+</xs:simpleType>
+
 <xs:complexType name="assetType">
   <xs:attribute name="name" type="stringNameType" use="required"/>
   <xs:attribute name="type" type="assetTypeType" use="required"/>
+  <xs:attribute name="visibility" type="assetVisibilityType" use="required"/>
   <xs:attribute name="value" type="stringType" use="required"/>
 </xs:complexType>
 

@@ -573,6 +573,14 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_utils)
     // AssetTypeToTag
     BOOST_CHECK(AssetTypeToTag(CTopoAsset::EType::Inline) == "inline");
 
+    // TagToAssetVisibility
+    BOOST_CHECK(TagToAssetVisibility("task") == CTopoAsset::EVisibility::Task);
+    BOOST_CHECK(TagToAssetVisibility("global") == CTopoAsset::EVisibility::Global);
+
+    // AssetVisibilityToTag
+    BOOST_CHECK(AssetVisibilityToTag(CTopoAsset::EVisibility::Task) == "task");
+    BOOST_CHECK(AssetVisibilityToTag(CTopoAsset::EVisibility::Global) == "global");
+
     // DeclTagToTopoType
     BOOST_CHECK_THROW(DeclTagToTopoType(""), runtime_error);
     BOOST_CHECK_THROW(DeclTagToTopoType("topobase"), runtime_error);
@@ -1054,7 +1062,13 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_assets)
     CTopoAsset::Ptr_t asset = casted1->getAssets()[0];
     BOOST_CHECK(asset->getName() == "asset1");
     BOOST_CHECK(asset->getAssetType() == CTopoAsset::EType::Inline);
+    BOOST_CHECK(asset->getAssetVisibility() == CTopoAsset::EVisibility::Task);
     BOOST_CHECK(asset->getValue() == asset1TestData);
+
+    CTopoAsset::Ptr_t asset2 = casted1->getAssets()[1];
+    BOOST_CHECK(asset->getName() == "asset2");
+    BOOST_CHECK(asset->getAssetType() == CTopoAsset::EType::Inline);
+    BOOST_CHECK(asset->getAssetVisibility() == CTopoAsset::EVisibility::Global);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

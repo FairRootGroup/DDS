@@ -117,7 +117,7 @@ namespace dds
                 throw runtime_error("Property access type with name " + _name + " does not exist.");
         }
 
-        std::string PropertyAccessTypeToTag(CTopoProperty::EAccessType _type)
+        string PropertyAccessTypeToTag(CTopoProperty::EAccessType _type)
         {
             switch (_type)
             {
@@ -132,7 +132,7 @@ namespace dds
             }
         }
 
-        CTopoProperty::EScopeType TagToPropertyScopeType(const std::string& _name)
+        CTopoProperty::EScopeType TagToPropertyScopeType(const string& _name)
         {
             if (_name == "collection")
                 return CTopoProperty::EScopeType::COLLECTION;
@@ -142,7 +142,7 @@ namespace dds
                 throw runtime_error("Property scope type with name " + _name + " does not exist.");
         }
 
-        std::string PropertyScopeTypeToTag(CTopoProperty::EScopeType _type)
+        string PropertyScopeTypeToTag(CTopoProperty::EScopeType _type)
         {
             switch (_type)
             {
@@ -171,7 +171,7 @@ namespace dds
                 throw runtime_error("Host pattern type with name " + _name + " does not exist.");
         }
 
-        std::string RequirementTypeToTag(CTopoRequirement::EType _type)
+        string RequirementTypeToTag(CTopoRequirement::EType _type)
         {
             switch (_type)
             {
@@ -198,7 +198,7 @@ namespace dds
                 throw runtime_error("Asset type type with name " + _name + " does not exist.");
         }
 
-        std::string AssetTypeToTag(CTopoAsset::EType _type)
+        string AssetTypeToTag(CTopoAsset::EType _type)
         {
             switch (_type)
             {
@@ -209,7 +209,30 @@ namespace dds
             }
         }
 
-        CTopoTrigger::EConditionType TagToConditionType(const std::string& _name)
+        CTopoAsset::EVisibility TagToAssetVisibility(const string& _name)
+        {
+            if (_name == "task")
+                return CTopoAsset::EVisibility::Task;
+            else if (_name == "global")
+                return CTopoAsset::EVisibility::Global;
+            else
+                throw runtime_error("Asset visibility type with name " + _name + " does not exist.");
+        }
+
+        string AssetVisibilityToTag(CTopoAsset::EVisibility _val)
+        {
+            switch (_val)
+            {
+                case CTopoAsset::EVisibility::Task:
+                    return "task";
+                case CTopoAsset::EVisibility::Global:
+                    return "global";
+                default:
+                    throw runtime_error("Topology element not found.");
+            }
+        }
+
+        CTopoTrigger::EConditionType TagToConditionType(const string& _name)
         {
             if (_name == "TaskCrashed")
                 return CTopoTrigger::EConditionType::TaskCrashed;
@@ -217,7 +240,7 @@ namespace dds
                 throw runtime_error("Condition type with name " + _name + " does not exist.");
         }
 
-        std::string ConditionTypeToTag(CTopoTrigger::EConditionType _type)
+        string ConditionTypeToTag(CTopoTrigger::EConditionType _type)
         {
             switch (_type)
             {
@@ -228,7 +251,7 @@ namespace dds
             }
         }
 
-        CTopoTrigger::EActionType TagToActionType(const std::string& _name)
+        CTopoTrigger::EActionType TagToActionType(const string& _name)
         {
             if (_name == "RestartTask")
                 return CTopoTrigger::EActionType::RestartTask;
@@ -236,7 +259,7 @@ namespace dds
                 throw runtime_error("Action type with name " + _name + " does not exist.");
         }
 
-        std::string ActionTypeToTag(CTopoTrigger::EActionType _type)
+        string ActionTypeToTag(CTopoTrigger::EActionType _type)
         {
             switch (_type)
             {

@@ -45,6 +45,10 @@ namespace dds
 
         std::string AssetTypeToTag(CTopoAsset::EType _type);
 
+        CTopoAsset::EVisibility TagToAssetVisibility(const std::string& _name);
+
+        std::string AssetVisibilityToTag(CTopoAsset::EVisibility _val);
+
         CTopoTrigger::EConditionType TagToConditionType(const std::string& _name);
 
         std::string ConditionTypeToTag(CTopoTrigger::EConditionType _type);

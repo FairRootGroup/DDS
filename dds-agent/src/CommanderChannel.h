@@ -17,11 +17,11 @@ namespace dds
     {
         using slotId_t = uint64_t;
         using taskId_t = uint64_t;
+        using assets_t = std::vector<boost::filesystem::path>;
 
         struct SSlotInfo
         {
             using container_t = std::map<slotId_t, SSlotInfo>;
-            using assets_t = std::vector<boost::filesystem::path>;
 
             slotId_t m_id{ 0 };
             std::string m_sUsrExe;
@@ -34,7 +34,7 @@ namespace dds
             std::string m_collectionName;
             std::string m_taskName;
             pid_t m_pid{ 0 };
-            assets_t m_assets;
+            assets_t m_taskAssets;
         };
 
         class CCommanderChannel : public protocol_api::CClientChannelImpl<CCommanderChannel>
@@ -153,6 +153,8 @@ namespace dds
             std::mutex m_mutexSlots;
             SSlotInfo::container_t m_slots;
             size_t m_nSlots{ 0 };
+            std::mutex m_mutexGlobalAssets;
+            assets_t m_globalAssets;
             timerPtr_t m_resourceMonitorTimer;
             std::string m_groupName;
         };

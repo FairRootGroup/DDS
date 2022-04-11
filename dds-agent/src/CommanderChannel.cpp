@@ -259,6 +259,27 @@ bool CCommanderChannel::on_cmdSHUTDOWN(SCommandAttachmentImpl<cmdSHUTDOWN>::ptr_
 {
     deleteAgentIDFile();
     LOG(info) << "The Agent [" << m_id << "] received cmdSHUTDOWN.";
+
+    // Remove global Assets
+    {
+        lock_guard<mutex> lock(m_mutexGlobalAssets);
+        for (const auto& asset : m_globalAssets)
+        {
+            try
+            {
+                if (!fs::exists(asset) || !fs::is_regular_file(asset))
+                    continue;
+
+                fs::remove(asset);
+                LOG(info) << "Removing global asset: " << asset.generic_string();
+            }
+            catch (...)
+            {
+            }
+        }
+        m_globalAssets.clear();
+    }
+
     // return false to let connection manager to catch this message as well
     return false;
 }
@@ -512,8 +533,29 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     {
         stringstream assetFileName;
         assetFileName << asset->getName() << ".asset";
-        fs::path pathAsset(dir);
-        pathAsset /= assetFileName.str();
+        fs::path pathAsset;
+        switch (asset->getAssetVisibility())
+        {
+            case CTopoAsset::EVisibility::Task:
+                pathAsset = dir;
+                pathAsset /= assetFileName.str();
+
+                // If local asset exists, we will overwrite it. No skiping.
+
+                slot->m_taskAssets.push_back(pathAsset);
+                break;
+            case CTopoAsset::EVisibility::Global:
+                pathAsset = CUserDefaults::instance().getDDSPath();
+                pathAsset /= assetFileName.str();
+
+                // Create global Asset only once. Skip if exists.
+                if (fs::exists(pathAsset))
+                    continue;
+
+                lock_guard<mutex> lock(m_mutexGlobalAssets);
+                m_globalAssets.push_back(pathAsset);
+                break;
+        }
 
         LOG(info) << "Creating task ASSET for taskID " << slot->m_taskID << ": " << pathAsset.generic_string();
         ofstream f(pathAsset.generic_string());
@@ -525,8 +567,6 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
         }
         f << asset->getValue();
         f.flush();
-
-        slot->m_assets.push_back(pathAsset);
     }
 
     return true;
@@ -1062,12 +1102,18 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         }
 
         // Remove tasks assets
-        for (const auto& asset : slot.m_assets)
+        for (const auto& asset : slot.m_taskAssets)
         {
-            if (fs::exists(asset) && fs::is_regular_file(asset))
-                fs::remove(asset);
+            try
+            {
+                if (fs::exists(asset) && fs::is_regular_file(asset))
+                    fs::remove(asset);
+            }
+            catch (...)
+            {
+            }
         }
-        slot.m_assets.clear();
+        slot.m_taskAssets.clear();
 
         // Save values before we reset them
         SUserTaskDoneCmd cmd;

@@ -25,6 +25,12 @@ namespace dds
                 Inline
             };
 
+            enum class EVisibility
+            {
+                Task,  ///< The asset is visiable only for the task it is assigned to
+                Global ///< The asset is visiable for all tasks of the given session.
+            };
+
             using Ptr_t = std::shared_ptr<CTopoAsset>;
             using PtrVector_t = std::vector<CTopoAsset::Ptr_t>;
 
@@ -46,6 +52,9 @@ namespace dds
             CTopoAsset::EType getAssetType() const;
             void setAssetType(const CTopoAsset::EType& _val);
 
+            CTopoAsset::EVisibility getAssetVisibility() const;
+            void setAssetVisibility(const CTopoAsset::EVisibility& _val);
+
             /// \brief Returns string representation of an object.
             /// \return String representation of an object.
             virtual std::string toString() const;
@@ -59,8 +68,9 @@ namespace dds
             virtual std::string hashString() const;
 
           private:
-            std::string m_value;                                   ///< Asset value
-            CTopoAsset::EType m_type{ CTopoAsset::EType::Inline }; ///< Asset type
+            std::string m_value;                                                   ///< Asset value
+            CTopoAsset::EType m_type{ CTopoAsset::EType::Inline };                 ///< Asset type
+            CTopoAsset::EVisibility m_visibility{ CTopoAsset::EVisibility::Task }; /// < Asset visibility
         };
     } // namespace topology_api
 } // namespace dds

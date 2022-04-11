@@ -9,8 +9,69 @@
 	<property name="property3"/>
 	<property name="property4"/>
 
-	<asset name="asset1" type="inline" value="abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #"/>
+	<asset name="asset1" type="inline" visibility="task" value="abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #|; ²³~ @`´ ©«» ¤¼× {} abc def ghi jkl mno pqrs tuv wxyz ABC DEF GHI JKL MNO PQRS TUV WXYZ !&quot;§ $%&amp; /() =?* &apos;&lt;&gt; #"/>
 
+		<asset name="asset2" type="inline" visibility="global" value="# DDS user defaults
+# version: 0.4
+#
+# Please use DDS User's Manual to find out more details on
+# keys and values of this configuration file.
+# DDS User's Manual can be found in $DDS_LOCATION/doc folder or
+# by the following address: http://dds.gsi.de/documentation.html
+[server]
+work_dir=$HOME/.DDS
+sandbox_dir=$HOME/.DDS
+log_dir=$HOME/.DDS/log
+#
+# Log severity can be one of the following values:
+# p_l, p_m, p_h, dbg, inf, wrn, err, fat
+# p_l - protocol low level events and higher
+# p_m - protocol middle level events and higher
+# p_h - protocol high level events and higher
+# dbg - general debug events and higher
+# inf - info events and higher
+# wrn - warning events and higher
+# err - error events and higher
+# fat - fatal errors and higher
+#
+log_severity_level=inf
+log_rotation_size=10
+log_has_console_output=1
+commander_port_range_min=20000
+commander_port_range_max=21000
+idle_time=1800
+
+
+[agent]
+# This option can help to relocate the work directory of agents.
+# The option is ignored by the localhost and ssh plug-ins.
+# By default the wrk dir is placed inside the path specified by server.sandbox_dir.
+# It's recommended to keep this option empty.
+work_dir=
+#
+# This option forces the given file mode on agent side files.
+# At the moment the access permissions are applied only on user task log files (stdout and stderr).
+# Mode can be specified with octal numbers.
+# 0400 - Read by owner
+# 0040 - Read by group
+# 0004 - Read by world
+# 0200 - Write by owner
+# 0020 - Write by group
+# 0002 - Write by world
+# 0100 - execute by owner
+# 0010 - execute by group
+# 0001 - execute by world
+# To combine these, just add the numbers together:
+# 0444 - Allow read permission to owner and group and world
+# 0777 - Allow everyone to read, write, and execute file
+#
+access_permissions=0660
+# The agent will trigger a self-shutdown if the free disk space is below this threshold.
+# The value in MB. Default is 500 MB.
+# Set it to 0 to disiable.
+#
+disk_space_threshold=500
+"/>
 
 	<declrequirement name="requirement1" type="hostname" value="${requirementVar}"/>
 
@@ -36,6 +97,7 @@
 		</triggers>
 	    <assets>
 				<name>asset1</name>
+				<name>asset2</name>
 		</assets>
 	</decltask>
 	<decltask name="task2">
