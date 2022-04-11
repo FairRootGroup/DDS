@@ -511,7 +511,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     for (const auto& asset : assets)
     {
         stringstream assetFileName;
-        assetFileName << asset->getName() << "_" << task->getName() << ".asset";
+        assetFileName << asset->getName() << ".asset";
         fs::path pathAsset(dir);
         pathAsset /= assetFileName.str();
 
