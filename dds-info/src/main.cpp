@@ -90,6 +90,7 @@ void requestAgentInfo(CSession& _session, const SOptions_t& /*_options*/)
         {
             LOG(log_stdout_clean) << "Agent " << _info.m_index << ": id (" << _info.m_agentID << "), pid ("
                                   << _info.m_agentPid << "),"
+                                  << " group name (" << _info.m_groupName << "),"
                                   << " startup time (" << chrono::duration<double>(_info.m_startUpTime).count()
                                   << "s), slots total/executing/idle (" << _info.m_nSlots << "/"
                                   << _info.m_nExecutingSlots << "/" << _info.m_nIdleSlots << "), host ("

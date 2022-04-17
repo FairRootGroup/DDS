@@ -407,6 +407,7 @@ void SAgentInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
     _pt.put<string>("username", m_username);
     _pt.put<string>("host", m_host);
     _pt.put<string>("DDSPath", m_DDSPath);
+    _pt.put<string>("groupName", m_groupName);
     _pt.put<uint32_t>("agentPid", m_agentPid);
     _pt.put<uint32_t>("slots", m_nSlots);
     _pt.put<uint32_t>("idleSlots", m_nIdleSlots);
@@ -421,6 +422,7 @@ void SAgentInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
     m_username = _pt.get<string>("username", "");
     m_host = _pt.get<string>("host", "");
     m_DDSPath = _pt.get<string>("DDSPath", "");
+    m_groupName = _pt.get<string>("groupName", "");
     m_agentPid = _pt.get<uint32_t>("agentPid", 0);
     m_nSlots = _pt.get<uint32_t>("slots", 0);
     m_nIdleSlots = _pt.get<uint32_t>("idleSlots", 0);
@@ -431,8 +433,9 @@ bool SAgentInfoResponseData::operator==(const SAgentInfoResponseData& _val) cons
 {
     return (SBaseData::operator==(_val) && m_index == _val.m_index && m_agentID == _val.m_agentID &&
             m_startUpTime == _val.m_startUpTime && m_username == _val.m_username && m_host == _val.m_host &&
-            m_DDSPath == _val.m_DDSPath && m_agentPid == _val.m_agentPid && m_nSlots == _val.m_nSlots &&
-            m_nIdleSlots == _val.m_nIdleSlots && m_nExecutingSlots == _val.m_nExecutingSlots);
+            m_DDSPath == _val.m_DDSPath && m_groupName == _val.m_groupName && m_agentPid == _val.m_agentPid &&
+            m_nSlots == _val.m_nSlots && m_nIdleSlots == _val.m_nIdleSlots &&
+            m_nExecutingSlots == _val.m_nExecutingSlots);
 }
 
 // We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
@@ -445,10 +448,11 @@ namespace dds
         std::ostream& operator<<(std::ostream& _os, const SAgentInfoResponseData& _data)
         {
             return _os << _data.defaultToString() << "; index: " << _data.m_index << "; agentID: " << _data.m_agentID
-                       << "; startUpTime: " << _data.m_startUpTime.count() << "; username: " << _data.m_username
-                       << "; host: " << _data.m_host << "; DDSPath: " << _data.m_DDSPath
-                       << "; agentPid: " << _data.m_agentPid << "; nSlots: " << _data.m_nSlots
-                       << "; nIdleSlots: " << _data.m_nIdleSlots << "; nExecutingSlots: " << _data.m_nExecutingSlots;
+                       << "; groupName: " << _data.m_groupName << "; startUpTime: " << _data.m_startUpTime.count()
+                       << "; username: " << _data.m_username << "; host: " << _data.m_host
+                       << "; DDSPath: " << _data.m_DDSPath << "; agentPid: " << _data.m_agentPid
+                       << "; nSlots: " << _data.m_nSlots << "; nIdleSlots: " << _data.m_nIdleSlots
+                       << "; nExecutingSlots: " << _data.m_nExecutingSlots;
         }
     } // namespace tools_api
 } // namespace dds

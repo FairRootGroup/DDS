@@ -33,6 +33,7 @@ Added: Support for SessionID (GH-411)
 ### dds-tools-api
 Modified: Logs of user processes which use Tools API are moved now to the DDS root log directory, instead of sessions directory.    
 Added: An ability to unsubscribe from either individual events or all events of requests. (GH-382)    
+Added: SAgentInfoResponseData provides the agent group name. (GH-415)    
 
 ## v3.6 (2022-01-11)
 

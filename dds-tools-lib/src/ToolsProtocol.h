@@ -212,6 +212,7 @@ namespace dds
             std::string m_username;                                                  ///< Username
             std::string m_host;                                                      ///< Hostname
             std::string m_DDSPath;                                                   ///< DDS path
+            std::string m_groupName;                                                 ///< Agent group name
             uint32_t m_agentPid{ 0 };                                                ///< Agent's process ID
             uint32_t m_nSlots{ 0 };                                                  ///< Number of task slots
             uint32_t m_nIdleSlots{ 0 };                                              ///< Number of idle slots

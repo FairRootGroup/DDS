@@ -1465,6 +1465,7 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
         info.m_username = inf.m_remoteHostInfo.m_username;
         info.m_host = inf.m_remoteHostInfo.m_host;
         info.m_DDSPath = inf.m_remoteHostInfo.m_DDSPath;
+        info.m_groupName = inf.m_remoteHostInfo.m_groupName;
         info.m_agentPid = inf.m_remoteHostInfo.m_agentPid;
         auto slots{ inf.getSlots() };
         info.m_nSlots = slots.size();

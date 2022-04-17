@@ -139,6 +139,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_username = "user1";
             testData.m_host = "host1";
             testData.m_DDSPath = "/path/to/dds";
+            testData.m_groupName = "testGroup";
             testData.m_agentPid = 34;
             testData.m_requestID = 123;
             testData.m_nSlots = 10;
