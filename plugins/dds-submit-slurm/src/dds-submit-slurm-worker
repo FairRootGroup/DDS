@@ -62,8 +62,7 @@ logMsg()
 logMsg "Submitting DDS Job on the SLURM cluster..."
 # Set execute access for job.slurm
 chmod +x $RMS_SANDBOX/job.slurm
-# --chdir overrides the current working directory
-JOB_ID=$(sbatch --job-name dds_agent_ --chdir $RMS_SANDBOX $RMS_SANDBOX/job.slurm)
+JOB_ID=$(sbatch $RMS_SANDBOX/job.slurm)
 if (( $? != 0 )) ; then
 	logMsg "Error: Failed to submit SLURM job ($?)"
 	exit $?

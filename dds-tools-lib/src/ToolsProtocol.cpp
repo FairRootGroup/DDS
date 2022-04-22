@@ -179,6 +179,7 @@ void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
     _pt.put<string>("rms", m_rms);
     _pt.put<string>("pluginPath", m_pluginPath);
     _pt.put<string>("groupName", m_groupName);
+    _pt.put<string>("submissionTag", m_submissionTag);
 }
 
 void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
@@ -189,13 +190,14 @@ void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
     m_rms = _pt.get<string>("rms", "");
     m_pluginPath = _pt.get<string>("pluginPath", "");
     m_groupName = _pt.get<string>("groupName", "");
+    m_submissionTag = _pt.get<string>("submissionTag", "");
 }
 
 bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
 {
     return (SBaseData::operator==(_val) && m_rms == _val.m_rms && m_instances == _val.m_instances &&
             m_slots == _val.m_slots && m_config == _val.m_config && m_pluginPath == _val.m_pluginPath &&
-            m_groupName == _val.m_groupName);
+            m_groupName == _val.m_groupName && m_submissionTag == _val.m_submissionTag);
 }
 
 // We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
@@ -209,7 +211,8 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; instances: " << _data.m_instances
                        << "; slots: " << _data.m_slots << "; config: " << _data.m_config << "; rms: " << _data.m_rms
-                       << "; pluginPath: " << _data.m_pluginPath << "; groupName: " << _data.m_groupName;
+                       << "; pluginPath: " << _data.m_pluginPath << "; groupName: " << _data.m_groupName
+                       << "; submissionTag: " << _data.m_submissionTag;
         }
     } // namespace tools_api
 } // namespace dds
