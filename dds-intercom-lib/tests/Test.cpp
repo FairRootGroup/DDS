@@ -54,8 +54,10 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
          << "\"submit\":"
          << "{"
          << "\"nInstances\": 11,"
-         << "\"cfgFilePath\": \"/path/to/cfg/dds_plugin.cfg\""
-         << "\"wrkPackagePath\": \"/path/to/cfg/DDSWorker\""
+         << "\"cfgFilePath\": \"/path/to/cfg/dds_plugin.cfg\","
+         << "\"wrkPackagePath\": \"/path/to/cfg/DDSWorker\","
+         << "\"groupName\": \"TestGroup\","
+         << "\"submissionTag\": \"TestSubmissionTag\","
          << "},"
          << "\"message\":"
          << "{"
@@ -79,6 +81,8 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
             BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
             BOOST_CHECK(_submit.m_wrkPackagePath == "/path/to/cfg/DDSWorker");
             BOOST_CHECK(_submit.m_id == "plug-in-id");
+            BOOST_CHECK(_submit.m_groupName == "TestGroup");
+            BOOST_CHECK(_submit.m_submissionTag == "TestSubmissionTag");
         });
 
     parser.onMessage(

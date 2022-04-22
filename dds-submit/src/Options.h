@@ -36,6 +36,7 @@ namespace dds
             bool m_bListPlugins{ false };
             boost::uuids::uuid m_sid = boost::uuids::nil_uuid();
             std::string m_groupName;
+            std::string m_submissionTag;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -78,6 +79,11 @@ namespace dds
             options.add_options()("group-name,g",
                                   bpo::value<std::string>(&_options->m_groupName)->default_value("common"),
                                   "Defines a group name of agents of this submission. Default: \"common\"");
+            options.add_options()(
+                "submission-tag,t",
+                bpo::value<std::string>(&_options->m_submissionTag)->default_value("dds_agent_job"),
+                "It can be used to define a submission tag. DDS RMS plug-ins will use this tag to name DDS RMS jobs "
+                "and directories they create on the worker nodes. Default: \"dds_agent_job\"");
 
             // Parsing command-line
             bpo::variables_map vm;
@@ -88,6 +94,7 @@ namespace dds
             dds::misc::conflicting_options(vm, "list", "config");
             dds::misc::conflicting_options(vm, "list", "slots");
             dds::misc::conflicting_options(vm, "list", "group-name");
+            dds::misc::conflicting_options(vm, "list", "submission-tag");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
@@ -127,6 +134,21 @@ namespace dds
                         << "The group-name option can't be longer than " << groupNameLimit
                         << " symbols and should not contain whitespaces or any special character such as: "
                         << groupNameNotAllowedSymb;
+                    return false;
+                }
+            }
+
+            if (vm.count("submission-tag"))
+            {
+                const unsigned int submissionTagLimit{ 256 };
+                const std::string submissionTagNotAllowedSymb{ " `\"@#%^&*()+=[]{};:\\|,.<>/$!?\t\r" };
+                if (_options->m_submissionTag.find_first_of(submissionTagNotAllowedSymb) != std::string::npos ||
+                    _options->m_submissionTag.size() > submissionTagLimit)
+                {
+                    LOG(dds::misc::log_stderr)
+                        << "The submission-tag option can't be longer than " << submissionTagLimit
+                        << " symbols and should not contain whitespaces or any special character such as: "
+                        << submissionTagNotAllowedSymb;
                     return false;
                 }
             }

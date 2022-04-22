@@ -148,6 +148,11 @@ int main(int argc, char* argv[])
                         boost::replace_all(
                             sSrcScript, "#DDS_CPU_PER_AGENT", "#SBATCH --cpus-per-task " + to_string(_submit.m_slots));
 
+                    // Replace %DDS_SUBMISSION_TAG%
+                    boost::replace_all(sSrcScript,
+                                       "%DDS_JOB_ROOT_WRK_DIR%",
+                                       (!_submit.m_submissionTag.empty() ? _submit.m_submissionTag : "dds_agent"));
+
                     // Replace %DDS_JOB_ROOT_WRK_DIR%
                     string sSandboxDir(smart_path(CUserDefaults::instance().getWrkPkgDir(submissionId)));
                     fs::path pathJobWrkDir(sSandboxDir);
