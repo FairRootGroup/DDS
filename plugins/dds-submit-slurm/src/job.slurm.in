@@ -1,22 +1,17 @@
 #!/usr/bin/env bash
 
-#DDS_NEED_ARRAY
-#DDS_CPU_PER_AGENT
+#SBATCH --nodes=%DDS_NINSTANCES%
+#SBATCH --no-kill
+#SBATCH --ntasks-per-node=1
+
+#SBATCH --cpus-per-task=%DDS_NSLOTS%
 
 #SBATCH --job-name=%DDS_SUBMISSION_TAG%
 #SBATCH --chdir=%DDS_JOB_ROOT_WRK_DIR%
 
 #DDS_USER_OPTIONS
 
-# create working dir
-eval JOB_WRK_DIR=%DDS_AGENT_ROOT_WRK_DIR%/${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}
-mkdir -p $JOB_WRK_DIR
-cd $JOB_WRK_DIR
-
-# copy DDS Scout script into the working dir.
-cp %DDS_SCOUT% $JOB_WRK_DIR/
-
 # execute DDS Scout
-./DDSWorker.sh
+srun --output=slurm-%j-%N.out /usr/bin/env bash -c 'eval JOB_WRK_DIR=%DDS_AGENT_ROOT_WRK_DIR%/${SLURM_JOB_NAME}_${SLURM_JOBID}_${SLURMD_NODENAME}; mkdir -p $JOB_WRK_DIR; cd $JOB_WRK_DIR; cp %DDS_SCOUT% $JOB_WRK_DIR/; ./DDSWorker.sh'
 
 exit 0
