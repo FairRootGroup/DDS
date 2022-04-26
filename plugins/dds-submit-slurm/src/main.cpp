@@ -138,20 +138,24 @@ int main(int argc, char* argv[])
                     string sSrcScript(ssSrcScript.str());
 
                     proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Generating SLURM Job script...");
-                    // Replace #DDS_NEED_ARRAY
-                    if (_submit.m_nInstances > 0)
-                        boost::replace_all(
-                            sSrcScript, "#DDS_NEED_ARRAY", "#SBATCH --array=1-" + to_string(_submit.m_nInstances));
 
-                    // Replace #DDS_CPU_PER_AGENT
-                    if (_submit.m_slots > 0)
-                        boost::replace_all(
-                            sSrcScript, "#DDS_CPU_PER_AGENT", "#SBATCH --cpus-per-task " + to_string(_submit.m_slots));
+                    // Replace #DDS_USER_OPTIONS
+                    fs::path pathUserOptions(_submit.m_cfgFilePath);
+                    if (fs::exists(pathUserOptions))
+                    {
+                        fs::ifstream f_userOptions(pathUserOptions);
+                        string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
+                        boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
+                    }
+
+                    // Replace %DDS_NINSTANCES%
+                    boost::replace_all(sSrcScript, "%DDS_NINSTANCES%", to_string(_submit.m_nInstances));
+
+                    // Replace %DDS_NSLOTS%
+                    boost::replace_all(sSrcScript, "%DDS_NSLOTS%", to_string(_submit.m_slots));
 
                     // Replace %DDS_SUBMISSION_TAG%
-                    boost::replace_all(sSrcScript,
-                                       "%DDS_JOB_ROOT_WRK_DIR%",
-                                       (!_submit.m_submissionTag.empty() ? _submit.m_submissionTag : "dds_agent"));
+                    boost::replace_all(sSrcScript, "%DDS_SUBMISSION_TAG%", _submit.m_submissionTag);
 
                     // Replace %DDS_JOB_ROOT_WRK_DIR%
                     string sSandboxDir(smart_path(CUserDefaults::instance().getWrkPkgDir(submissionId)));
@@ -168,15 +172,6 @@ int main(int argc, char* argv[])
                     fs::path pathAgentWrkDir(sAgentWrkDirSpecial.empty() ? sSandboxDir : pathAgentWrkDirSpecial);
                     // Non need to create the pathAgentWrkDir directory as the job script will do that
                     boost::replace_all(sSrcScript, "%DDS_AGENT_ROOT_WRK_DIR%", pathAgentWrkDir.string());
-
-                    // Replace #DDS_USER_OPTIONS
-                    fs::path pathUserOptions(_submit.m_cfgFilePath);
-                    if (fs::exists(pathUserOptions))
-                    {
-                        fs::ifstream f_userOptions(pathUserOptions);
-                        string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
-                        boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
-                    }
 
                     // Replace %DDS_SCOUT%
                     string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath(submissionId));

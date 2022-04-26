@@ -27,6 +27,7 @@ Added: Support for SessionID (GH-411)
 
 ### dds-slurm-plugin
 Added: Support for SessionID (GH-411)    
+Modified: Replace array job submission with nodes requirement. (GH-430)    
 
 ### dds-localhost-plugin
 Added: Support for SessionID (GH-411)    

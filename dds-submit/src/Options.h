@@ -142,11 +142,11 @@ namespace dds
             {
                 const unsigned int submissionTagLimit{ 256 };
                 const std::string submissionTagNotAllowedSymb{ " `\"@#%^&*()+=[]{};:\\|,.<>/$!?\t\r" };
-                if (_options->m_submissionTag.find_first_of(submissionTagNotAllowedSymb) != std::string::npos ||
+                if (_options->m_submissionTag.empty() || _options->m_submissionTag.find_first_of(submissionTagNotAllowedSymb) != std::string::npos ||
                     _options->m_submissionTag.size() > submissionTagLimit)
                 {
                     LOG(dds::misc::log_stderr)
-                        << "The submission-tag option can't be longer than " << submissionTagLimit
+                        << "The submission-tag option can't be empty or longer than " << submissionTagLimit
                         << " symbols and should not contain whitespaces or any special character such as: "
                         << submissionTagNotAllowedSymb;
                     return false;
