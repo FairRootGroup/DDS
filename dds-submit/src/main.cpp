@@ -94,6 +94,7 @@ int main(int argc, char* argv[])
         requestInfo.m_pluginPath = options.m_sPath;
         requestInfo.m_groupName = options.m_groupName;
         requestInfo.m_submissionTag = options.m_submissionTag;
+        requestInfo.m_envCfgFilePath = options.m_envCfgFilePath;
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
 
         requestPtr->setMessageCallback(

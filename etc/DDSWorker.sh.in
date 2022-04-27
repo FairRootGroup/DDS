@@ -241,7 +241,7 @@ PKG_VERSION=$(cat $WD/version)
 
 # execute user's script if present
 if [ -r $USER_SCRIPT ]; then
-   logMsg "Sourcing a user defined environment script..."
+   logMsg "Sourcing the user defined environment script..."
    source $USER_SCRIPT
    logMsg "Current environment: "
    env

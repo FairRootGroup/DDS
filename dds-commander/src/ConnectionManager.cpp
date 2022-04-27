@@ -1034,31 +1034,47 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         fs::create_directories(pathWorkDirLocalFiles);
 
         // Create / re-pack WN package
-        // Include inline script if present
-        // Only the ssh plug-in supports it.
-        string inlineShellScripCmds;
+        // Include inline script, if present.
+        // For ssh plug-in inline script has a higher priorety, than the sxcript provided via the submit command
+        // (--env-config). Only the ssh plug-in supports it.
+        bool bNeedCustomEnv{ false };
+        string scriptFileName(pathWrkPackageDir.string());
+        scriptFileName += "user_worker_env.sh";
+        smart_path(&scriptFileName);
         if (_submitInfo.m_rms == "ssh" && !_submitInfo.m_config.empty())
         {
+            string inlineShellScripCmds;
             inlineShellScripCmds = CSSHConfigFile(_submitInfo.m_config).getBash();
             LOG(info)
                 << "Agent submitter config contains an inline shell script. It will be injected it into wrk. package";
 
-            string scriptFileName(pathWrkPackageDir.string());
-            scriptFileName += "user_worker_env.sh";
-            smart_path(&scriptFileName);
             ofstream f_script(scriptFileName.c_str());
             if (!f_script.is_open())
                 throw runtime_error("Can't open for writing: " + scriptFileName);
 
             f_script << inlineShellScripCmds;
             f_script.close();
+            bNeedCustomEnv = !inlineShellScripCmds.empty();
+        }
+        else if (!_submitInfo.m_envCfgFilePath.empty()) // Use the environment script provided by the user
+        {
+            if (!fs::exists(_submitInfo.m_envCfgFilePath))
+            {
+                LOG(error) << "Can't find custom envrionment script: " << _submitInfo.m_envCfgFilePath;
+            }
+            else
+            {
+                LOG(info) << "Adding using environment script to the WN package: " << _submitInfo.m_envCfgFilePath;
+                fs::copy(_submitInfo.m_envCfgFilePath, scriptFileName);
+                bNeedCustomEnv = true;
+            }
         }
 
         // pack worker package
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
         // Use a lightweightpackage when possible
-        _createWnPkg(!inlineShellScripCmds.empty(),
+        _createWnPkg(bNeedCustomEnv,
                      (_submitInfo.m_rms == "localhost"),
                      _submitInfo.m_slots,
                      _submitInfo.m_groupName,
