@@ -8,6 +8,7 @@ Fixed: Replace std::iterator as it's deprecated (C++17).
 Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.    
 Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
 Added: Support for Task Assets. (GH-406)    
+Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.20)  and boost (from 1.67 to 1.72). (GH-428)    
 
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         

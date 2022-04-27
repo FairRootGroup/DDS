@@ -1,4 +1,4 @@
-# Copyright 2014-2020 GSI, Inc. All rights reserved.
+# Copyright 2014-2022 GSI, Inc. All rights reserved.
 #
 #
 project( DDS )
@@ -10,7 +10,7 @@ set(DDS_PROTOCOL_VERSION "2")
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.11.0 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.20 FATAL_ERROR )
 
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
@@ -233,7 +233,7 @@ if(BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
 endif(BUILD_TESTS)
 
-find_package(Boost 1.67 REQUIRED COMPONENTS  ${Boost_Components})
+find_package(Boost 1.72 REQUIRED COMPONENTS  ${Boost_Components})
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 endif(Boost_FOUND)
