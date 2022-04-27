@@ -20,6 +20,7 @@
 #include "Version.h"
 
 namespace bpo = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace dds
 {
@@ -37,6 +38,7 @@ namespace dds
             boost::uuids::uuid m_sid = boost::uuids::nil_uuid();
             std::string m_groupName;
             std::string m_submissionTag;
+            std::string m_envCfgFilePath;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -63,9 +65,15 @@ namespace dds
                                   "management system plug-in. Use "
                                   "\"--list\" to find out names "
                                   "of available RMS plug-ins.");
-            options.add_options()("config,c",
-                                  bpo::value<std::string>(&_options->m_sCfgFile),
-                                  "A plug-in's configuration file. It can be used to provide additional RMS options.");
+            options.add_options()(
+                "config,c",
+                bpo::value<std::string>(&_options->m_sCfgFile),
+                "A plug-in's configuration file. It can be used to provide additional RMS options. It should contain "
+                "only RMS options. To define custom environment per agent, use --env-config.");
+            options.add_options()("env-config,e",
+                                  bpo::value<std::string>(&_options->m_envCfgFilePath),
+                                  "A path to a user enironment script. Will be execeuted once per agent (valid for all "
+                                  "task slots of the agent).");
             options.add_options()("path",
                                   bpo::value<std::string>(&_options->m_sPath),
                                   "A plug-in's directory search path. It can be used for external RMS plug-ins.");
@@ -92,6 +100,7 @@ namespace dds
 
             dds::misc::conflicting_options(vm, "list", "rms");
             dds::misc::conflicting_options(vm, "list", "config");
+            dds::misc::conflicting_options(vm, "list", "env-config");
             dds::misc::conflicting_options(vm, "list", "slots");
             dds::misc::conflicting_options(vm, "list", "group-name");
             dds::misc::conflicting_options(vm, "list", "submission-tag");
@@ -142,7 +151,8 @@ namespace dds
             {
                 const unsigned int submissionTagLimit{ 256 };
                 const std::string submissionTagNotAllowedSymb{ " `\"@#%^&*()+=[]{};:\\|,.<>/$!?\t\r" };
-                if (_options->m_submissionTag.empty() || _options->m_submissionTag.find_first_of(submissionTagNotAllowedSymb) != std::string::npos ||
+                if (_options->m_submissionTag.empty() ||
+                    _options->m_submissionTag.find_first_of(submissionTagNotAllowedSymb) != std::string::npos ||
                     _options->m_submissionTag.size() > submissionTagLimit)
                 {
                     LOG(dds::misc::log_stderr)
@@ -151,6 +161,18 @@ namespace dds
                         << submissionTagNotAllowedSymb;
                     return false;
                 }
+            }
+
+            if (vm.count("env-config"))
+            {
+                fs::path envCfg{ _options->m_envCfgFilePath };
+                if (!fs::exists(envCfg))
+                {
+                    LOG(dds::misc::log_stderr) << "Can't find environment configuration file: " << envCfg.native();
+                    return false;
+                }
+                envCfg = fs::canonical(envCfg);
+                _options->m_envCfgFilePath = envCfg.native();
             }
 
             // RMS plug-ins are always lower cased
