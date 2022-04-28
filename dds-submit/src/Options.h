@@ -33,6 +33,7 @@ namespace dds
             std::string m_sCfgFile;
             std::string m_sPath;
             size_t m_number{ 0 };
+            size_t m_minInstances{ 0 };
             size_t m_slots{ 0 };
             bool m_bListPlugins{ false };
             boost::uuids::uuid m_sid = boost::uuids::nil_uuid();
@@ -54,44 +55,47 @@ namespace dds
 
             // Generic options
             bpo::options_description options("dds-submit options");
-            options.add_options()("help,h", "Produce help message.");
-            options.add_options()("version,v", "Version information.");
-            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID.");
+            options.add_options()("help,h", "Produce help message.\n");
+            options.add_options()("version,v", "Version information.\n");
+            options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID.\n");
             options.add_options()(
-                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all available RMS plug-ins.");
+                "list,l", bpo::bool_switch(&_options->m_bListPlugins), "List all available RMS plug-ins.\n");
             options.add_options()("rms,r",
                                   bpo::value<std::string>(&_options->m_sRMS),
                                   "Defines a destination resource "
                                   "management system plug-in. Use "
                                   "\"--list\" to find out names "
-                                  "of available RMS plug-ins.");
+                                  "of available RMS plug-ins.\n");
             options.add_options()(
                 "config,c",
                 bpo::value<std::string>(&_options->m_sCfgFile),
                 "A plug-in's configuration file. It can be used to provide additional RMS options. It should contain "
-                "only RMS options. To define custom environment per agent, use --env-config.");
+                "only RMS options. To define custom environment per agent, use --env-config.\n");
             options.add_options()("env-config,e",
                                   bpo::value<std::string>(&_options->m_envCfgFilePath),
                                   "A path to a user enironment script. Will be execeuted once per agent (valid for all "
-                                  "task slots of the agent).");
+                                  "task slots of the agent).\n");
             options.add_options()("path",
                                   bpo::value<std::string>(&_options->m_sPath),
                                   "A plug-in's directory search path. It can be used for external RMS plug-ins.");
             options.add_options()("number,n",
                                   bpo::value<size_t>(&_options->m_number)->default_value(1),
-                                  "Defines a number of agents to spawn."
-                                  "If 0 is provided as an argument, then a number of available logical cores will be "
-                                  "used.\n");
+                                  "Defines a number of DDS agents to spawn.\n");
+            options.add_options()("min-instances",
+                                  bpo::value<size_t>(&_options->m_minInstances)->default_value(0),
+                                  "Request that a minimum of \"--min-instances\" and maximum of \"--number\" agents to "
+                                  "spawn. This option is RMS plug-in depended. At the moment only the slurm plug-in "
+                                  "supports it. If set to 0, the minimum is ignored.\n");
             options.add_options()(
                 "slots", bpo::value<size_t>(&_options->m_slots), "Defines a number of task slots per agent.");
             options.add_options()("group-name,g",
                                   bpo::value<std::string>(&_options->m_groupName)->default_value("common"),
-                                  "Defines a group name of agents of this submission. Default: \"common\"");
+                                  "Defines a group name of agents of this submission.\n");
             options.add_options()(
                 "submission-tag,t",
                 bpo::value<std::string>(&_options->m_submissionTag)->default_value("dds_agent_job"),
                 "It can be used to define a submission tag. DDS RMS plug-ins will use this tag to name DDS RMS jobs "
-                "and directories they create on the worker nodes. Default: \"dds_agent_job\"");
+                "and directories they create on the worker nodes.");
 
             // Parsing command-line
             bpo::variables_map vm;
@@ -173,6 +177,12 @@ namespace dds
                 }
                 envCfg = fs::canonical(envCfg);
                 _options->m_envCfgFilePath = envCfg.native();
+            }
+
+            if (vm.count("number") && vm.count("min-instances") && _options->m_minInstances > _options->m_number)
+            {
+                LOG(dds::misc::log_stderr) << "Value of min-instances is bigger than \"--number\"";
+                return false;
             }
 
             // RMS plug-ins are always lower cased

@@ -164,6 +164,7 @@ namespace dds
             bool operator==(const SSubmit& _val) const;
 
             uint32_t m_nInstances;        ///< A number of instances.
+            uint32_t m_nMinInstances;     ///< A minimum number of instances.
             uint32_t m_slots;             ///< A number of task slots.
             std::string m_cfgFilePath;    ///< A path to the configuration file.
             std::string m_id;             ///< ID for communication with DDS commander.

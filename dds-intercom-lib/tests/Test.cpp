@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
          << "\"submit\":"
          << "{"
          << "\"nInstances\": 11,"
+         << "\"nMinInstances\": 8,"
          << "\"cfgFilePath\": \"/path/to/cfg/dds_plugin.cfg\","
          << "\"wrkPackagePath\": \"/path/to/cfg/DDSWorker\","
          << "\"groupName\": \"TestGroup\","
@@ -78,6 +79,7 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
         [](const SSubmit& _submit)
         {
             BOOST_CHECK(_submit.m_nInstances == 11);
+            BOOST_CHECK(_submit.m_nMinInstances == 8);
             BOOST_CHECK(_submit.m_cfgFilePath == "/path/to/cfg/dds_plugin.cfg");
             BOOST_CHECK(_submit.m_wrkPackagePath == "/path/to/cfg/DDSWorker");
             BOOST_CHECK(_submit.m_id == "plug-in-id");

@@ -81,9 +81,10 @@ namespace dds
             SSubmitRequestData(const boost::property_tree::ptree& _pt);
 
             std::string m_rms;            ///< RMS.
-            uint32_t m_instances = 0;     ///< Number of instances.
+            uint32_t m_instances = 0;     ///< A number of instances.
+            uint32_t m_minInstances = 0;  ///< A minimum number of instances.
             uint32_t m_slots = 0;         /// < Number of task slots.
-            std::string m_config;         ///< Path to the configuration file.
+            std::string m_config;         ///< A path to the configuration file.
             std::string m_pluginPath;     ///< Optional. A plug-in's directory search path
             std::string m_groupName;      ///<  A group name of agents.
             std::string m_submissionTag;  ///< A Submission Tag

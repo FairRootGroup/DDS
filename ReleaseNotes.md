@@ -17,6 +17,7 @@ Fixed: skip bad or non-session directories/files when performing clean and list 
 Added: Users can specify a GroupName tag for each submission. This tag will be assigned to agents and can be used as a requirement in topologies. (GH-407)     
 Added: Users can provide a Submission Tag (--submission-tag). DDS RMS plug-ins will use this tag to name RMS jobs and directories. (GH-426)    
 Added: The command learned a new argument --env-config/-e. It can be used to define a custom environment script for each agent. (GH-430)    
+Added: The command learned a new argument --min-instances. It can be used to provide the minimum number of agents to spawn. (GH-434) 
 
 ### dds-topology
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
@@ -29,6 +30,7 @@ Added: Support for SessionID (GH-411)
 
 ### dds-slurm-plugin
 Added: Support for SessionID (GH-411)    
+Added: Support of minimum number of agents to spawn. (GH-434)   
 Modified: Replace array job submission with nodes requirement. (GH-430)    
 
 ### dds-localhost-plugin

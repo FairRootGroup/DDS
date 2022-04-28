@@ -151,6 +151,12 @@ int main(int argc, char* argv[])
                     // Replace %DDS_NINSTANCES%
                     boost::replace_all(sSrcScript, "%DDS_NINSTANCES%", to_string(_submit.m_nInstances));
 
+                    // Replace %DDS_NMININSTANCES%
+                    if (_submit.m_nMinInstances > 0)
+                        boost::replace_all(sSrcScript, "%DDS_NMININSTANCES%", to_string(_submit.m_nMinInstances) + "-");
+                    else
+                        boost::replace_all(sSrcScript, "%DDS_NMININSTANCES%", "");
+
                     // Replace %DDS_NSLOTS%
                     boost::replace_all(sSrcScript, "%DDS_NSLOTS%", to_string(_submit.m_slots));
 
