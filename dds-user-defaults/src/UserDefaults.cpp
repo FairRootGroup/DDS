@@ -90,6 +90,9 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
         "server.idle_time",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_idleTime)->default_value(1800));
     config_file_options.add_options()(
+        "server.data_retention",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_dataRetention)->default_value(7));
+    config_file_options.add_options()(
         "agent.work_dir", boost::program_options::value<string>(&m_options.m_agent.m_workDir)->default_value(""), "");
     // default is "-rw-rw----", i.e. 0660
     config_file_options.add_options()(
@@ -225,6 +228,10 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
             << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
             << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n"
+            << "#\n"
+            << "# Defines a number of days to keep DDS sessions.\n"
+            << "# Not running sessions older than the specified number of days will be auto deleted.\n"
+            << "data_retention=" << ud.getValueForKey("server.data_retention") << "\n"
             << "\n\n[agent]\n"
             << "# This option can help to relocate the work directory of agents.\n"
             << "# The option is ignored by the localhost and ssh plug-ins.\n"

@@ -33,6 +33,9 @@ namespace dds
             bool m_logHasConsoleOutput;
             //!< Idle time in [s] after which process will be killed by monitoring thread
             unsigned int m_idleTime;
+            //!< Defines a number of days to keep DDS sessions. Not running sessions older than the specified number of
+            //!< days will be auto deleted.
+            unsigned int m_dataRetention;
 
         } SDDSGeneralOptions_t;
 
