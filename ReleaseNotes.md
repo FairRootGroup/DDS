@@ -12,6 +12,7 @@ Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.20)  and
 
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         
+Added: A data retention sanitization. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)    
 
 ### dds-submit
 Added: Users can specify a GroupName tag for each submission. This tag will be assigned to agents and can be used as a requirement in topologies. (GH-407)     
@@ -40,6 +41,10 @@ Added: Support for SessionID (GH-411)
 Modified: Logs of user processes which use Tools API are moved now to the DDS root log directory, instead of sessions directory.    
 Added: An ability to unsubscribe from either individual events or all events of requests. (GH-382)    
 Added: SAgentInfoResponseData provides the agent group name. (GH-415)    
+
+### dds-user-defaults
+Modified: Bumo the version to 0.5     
+Added: A "server.data_retention" configuration key. (GH-435)    
 
 ## v3.6 (2022-01-11)
 

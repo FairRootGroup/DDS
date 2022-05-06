@@ -124,7 +124,7 @@ namespace dds
                 " by just specifying the command name directly, like:\ndds-session start or dds-session stop.\n\n"
                 "Commands:\n"
                 "   start        : \tStart a new DDS session\n"
-                "   stop         : \tStop a given DDS session\n"
+                "   stop         : \tStop the given DDS session\n"
                 "     Argument:\n"
                 "        <session id>: a session ID to stop\n"
                 "   stop-all     : \tStop All running DDS sessions\n"

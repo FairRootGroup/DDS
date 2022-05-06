@@ -9,11 +9,14 @@
 #include "Options.h"
 #include "Start.h"
 #include "Stop.h"
+// STD
+#include <chrono>
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
 
 using namespace std;
+using namespace std::chrono;
 using namespace dds::misc;
 using namespace dds;
 using namespace dds::session_cmd;
@@ -36,6 +39,7 @@ bool IsValid(const string& _sid)
     return true;
 }
 
+// NOTE: This method also changes the currently active SID for UserDefaults
 bool IsSessionRunning(const string& _sid)
 {
     CUserDefaults::instance().reinit(boost::uuids::string_generator()(_sid), CUserDefaults::instance().currentUDFile());
@@ -112,6 +116,72 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
                                   << (IsSessionRunning(sSID) ? "RUNNING" : "STOPPED");
     }
 }
+
+void performDataRetention(const vector<fs::path>& _session_dirs) noexcept
+{
+    try
+    {
+        unsigned int dataRetentionDays{
+            user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_dataRetention
+        };
+        if (dataRetentionDays <= 0)
+        {
+            LOG(log_stdout_clean) << "Data retention is disiabled by the user.";
+            return;
+        }
+
+        system_clock::time_point dataRetentionTimePoint{ system_clock::now() - hours(dataRetentionDays * 24) };
+        time_t timeDataRetentionTimePoint{ system_clock::to_time_t(dataRetentionTimePoint) };
+        LOG(log_stdout_clean) << "Performing Data Retention sanitization. Session older than "
+                              << put_time(localtime(&timeDataRetentionTimePoint), "%Y-%m-%d %H:%M:%S")
+                              << " will be deleted...";
+        for (const auto& i : _session_dirs)
+        {
+            const string sid{ i.leaf().string() };
+
+            if (!IsValid(sid))
+                continue;
+
+            if (IsSessionRunning(sid))
+                continue;
+
+            boost::system::error_code ec;
+            time_t wt{ boost::filesystem::last_write_time(i, ec) };
+            if (!ec.failed() && wt <= timeDataRetentionTimePoint)
+            {
+                // TODO: I am not sure, but we might need here a global robust mutex to prevent multiple dds sessions
+                // try deleting the same context in the same time. Theoretically file system operations (like remove)
+                // should not give problems if called for the same file. But let's keep this TODO just for visibility.
+                string sWrkDir(CUserDefaults::instance().getValueForKey("server.work_dir"));
+                smart_path(&sWrkDir);
+                string sLogDir(CUserDefaults::instance().getValueForKey("server.log_dir"));
+                smart_path(&sLogDir);
+                string sSandboxDir(CUserDefaults::instance().getValueForKey("server.sandbox_dir"));
+                smart_path(&sSandboxDir);
+
+                if (!sWrkDir.empty())
+                {
+                    LOG(log_stdout_clean) << "\tDDS Work dir: " << sWrkDir << "\n"
+                                          << "\tremoved files count: " << fs::remove_all(sWrkDir, ec);
+                }
+                if (!sLogDir.empty())
+                {
+                    LOG(log_stdout_clean) << "\tDDS Log dir: " << sLogDir << "\n"
+                                          << "\tremoved files count: " << fs::remove_all(sLogDir, ec);
+                }
+                if (!sSandboxDir.empty())
+                {
+                    LOG(log_stdout_clean) << "\tDDS Sandbox dir: " << sSandboxDir << "\n"
+                                          << "\tremoved files count: " << fs::remove_all(sSandboxDir, ec);
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
 //=============================================================================
 int main(int argc, char* argv[])
 {
@@ -138,6 +208,9 @@ int main(int argc, char* argv[])
                 LOG(log_stdout_clean) << "Default DDS session is set to " << start.getSessionID();
                 LOG(log_stdout_clean) << "Currently running DDS sessions:";
                 listSessions(session_dirs, SSessionsSorting::sort_running);
+
+                // Data Retention sanitization
+                performDataRetention(session_dirs);
             }
             catch (exception& e)
             {
@@ -246,7 +319,7 @@ int main(int argc, char* argv[])
                 smart_path(&sWrkDir);
                 string sLogDir(CUserDefaults::instance().getValueForKey("server.log_dir"));
                 smart_path(&sLogDir);
-                string sSandboxDir(CUserDefaults::instance().getValueForKey("server.server.sandbox_dir"));
+                string sSandboxDir(CUserDefaults::instance().getValueForKey("server.sandbox_dir"));
                 smart_path(&sSandboxDir);
 
                 if (!options.m_bForce)

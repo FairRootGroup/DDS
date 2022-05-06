@@ -88,7 +88,7 @@ namespace dds
                     A* pThis = static_cast<A*>(this);
                     pThis->_start();
 
-                    const float maxIdleTime =
+                    const double maxIdleTime =
                         user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_idleTime;
 
                     CMonitoringThread::instance().start(maxIdleTime,
