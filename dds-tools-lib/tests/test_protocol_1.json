@@ -43,14 +43,13 @@
             "agentInfo":
             {
                 "index": 123,
-                "lobbyLeader" : true,
                 "agentID": 3456,
-                "taskID": 5678,
                 "startUpTime": 12345,
                 "agentState": "executing",
                 "username": "user1",
                 "host": "host1",
                 "DDSPath": "/path/to/dds",
+				"groupName": "test_Group",
                 "agentPid": 34,
                 "slots" : 10,
                 "idleSlots" : 3,

@@ -1058,7 +1058,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_assets)
     BOOST_CHECK(element1->getTotalNofTasks() == 1);
     CTopoTask::Ptr_t casted1 = dynamic_pointer_cast<CTopoTask>(element1);
     // Assets
-    BOOST_CHECK(casted1->getNofAssets() == 1);
+    BOOST_CHECK(casted1->getNofAssets() == 2);
     CTopoAsset::Ptr_t asset = casted1->getAssets()[0];
     BOOST_CHECK(asset->getName() == "asset1");
     BOOST_CHECK(asset->getAssetType() == CTopoAsset::EType::Inline);
@@ -1066,9 +1066,9 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_assets)
     BOOST_CHECK(asset->getValue() == asset1TestData);
 
     CTopoAsset::Ptr_t asset2 = casted1->getAssets()[1];
-    BOOST_CHECK(asset->getName() == "asset2");
-    BOOST_CHECK(asset->getAssetType() == CTopoAsset::EType::Inline);
-    BOOST_CHECK(asset->getAssetVisibility() == CTopoAsset::EVisibility::Global);
+    BOOST_CHECK(asset2->getName() == "asset2");
+    BOOST_CHECK(asset2->getAssetType() == CTopoAsset::EType::Inline);
+    BOOST_CHECK(asset2->getAssetVisibility() == CTopoAsset::EVisibility::Global);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
