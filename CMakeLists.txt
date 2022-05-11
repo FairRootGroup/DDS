@@ -438,6 +438,9 @@ set(PREREQ_DIRS "$<TARGET_FILE_DIR:dds-user-defaults>::$<TARGET_FILE_DIR:dds_pro
 foreach(p IN LISTS ENV_LD_LIBRARY_PATH)
   set(PREREQ_DIRS "${PREREQ_DIRS}::${p}")
 endforeach()
+foreach(p IN LISTS DDS_LD_LIBRARY_PATH)
+  set(PREREQ_DIRS "${PREREQ_DIRS}::${p}")
+endforeach()
 
 set(DDS_AGENT_BIN_PATH $<TARGET_FILE:dds-agent>)
 set(DDS_PREREQ_SOURCE_BIN_PATH $<TARGET_FILE:dds-commander>)
