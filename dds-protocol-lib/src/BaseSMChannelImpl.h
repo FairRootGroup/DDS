@@ -310,10 +310,10 @@ namespace dds
                 static const unsigned int maxNofMessages = 100;
                 // Taking into account that maximum size of the string for the command is 2^16 plus some extra bytes
                 // for key size (128 bytes) and other.
-                // TODO: Because of performance problems we had to reduce the size of the message from 65K to 1K.
+                // TODO: Because of performance problems we had to reduce the size of the message from 65K to 2K.
                 // TODO: Need to implement an algorithm to break protocol messages on smaller chunks if they are bigger
                 // than nmaxMessageSize
-                static const unsigned int maxMessageSize = 1024;
+                static const unsigned int maxMessageSize = 2048;
 
                 try
                 {
