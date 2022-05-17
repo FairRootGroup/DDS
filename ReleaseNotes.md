@@ -10,6 +10,9 @@ Added: every DDS module logs now its pid, group id and parent pid. (GH-403)
 Added: Support for Task Assets. (GH-406)    
 Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.20)  and boost (from 1.67 to 1.72). (GH-428)    
 
+### dds\_intercom\_lib
+Modified: Temporary increase intercom message size to 2048. (GH-440)     
+
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         
 Added: A data retention sanitization. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)    
