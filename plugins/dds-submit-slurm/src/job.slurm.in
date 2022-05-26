@@ -2,9 +2,6 @@
 
 #SBATCH --nodes=%DDS_NMININSTANCES%%DDS_NINSTANCES%
 #SBATCH --no-kill
-#SBATCH --ntasks-per-node=1
-
-#SBATCH --cpus-per-task=%DDS_NSLOTS%
 
 #SBATCH --job-name=%DDS_SUBMISSION_TAG%
 #SBATCH --chdir=%DDS_JOB_ROOT_WRK_DIR%

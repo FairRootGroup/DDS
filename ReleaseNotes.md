@@ -36,6 +36,8 @@ Added: Support for SessionID (GH-411)
 Added: Support for SessionID (GH-411)    
 Added: Support of minimum number of agents to spawn. (GH-434)   
 Modified: Replace array job submission with nodes requirement. (GH-430)    
+Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)   
+Modified: Remove #SBATCH --cpus-per-task=%DDS_NSLOTS%. (GH-442)     
 
 ### dds-localhost-plugin
 Added: Support for SessionID (GH-411)    
