@@ -27,6 +27,7 @@ Added: The command learned a new argument --min-instances. It can be used to pro
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
 Added: Open API to read/update/add topology variable. The CTopoVars class.    
 Added: Support for Task Assets. (GH-406)     
+Added: Custom type of Task and Collection requirements. (GH-445)     
 
 ### dds-ssh-plugin
 Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)    

@@ -106,6 +106,7 @@
 	<xs:enumeration value="groupname"/>
     <xs:enumeration value="gpu"/>
     <xs:enumeration value="maxinstances"/>
+	<xs:enumeration value="custom"/>
   </xs:restriction>
 </xs:simpleType>
 
