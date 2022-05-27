@@ -119,14 +119,14 @@ namespace dds
          submitInfo.m_instances = numAgents;
          session.syncSendRequest<SSubmitRequest>(submitInfo, timeout, &std::cout);
 
-         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, &std::cout);
+         session.waitForNumSlots<CSession::EAgentState::idle>(numSlots, timeout, requestInterval, &std::cout);
 
          STopologyRequest::request_t topoInfo;
          topoInfo.m_topologyFile = topoFile;
          topoInfo.m_updateType = STopologyRequest::request_t::EUpdateType::ACTIVATE;
          session.syncSendRequest<STopologyRequest>(topoInfo, timeout, &std::cout);
 
-         session.waitForNumAgents<CSession::EAgentState::idle>(numAgents, timeout, requestInterval, maxRequests,
+         session.waitForNumSlots<CSession::EAgentState::idle>(numSlots, timeout, requestInterval, maxRequests,
          &std::cout);
 
          session.shutdown();
@@ -278,17 +278,17 @@ namespace dds
                                  const std::chrono::seconds& _timeout = std::chrono::seconds(0),
                                  std::ostream* _out = nullptr);
 
-            /// \brief Wait for the required number of agents with a certain state.
-            /// \param[in] _numAgents Required number of agents. Must be > 0.
+            /// \brief Wait for the required number of task slots with a certain state.
+            /// \param[in] _numSlots Required number of task slots. Must be > 0.
             /// \param[in] _timeout Timeout per each request and total timeout in seconds. Timeout of 0 means no timeout
             /// is applied (default). \param[in] _requestInterval Interval between SAgentCountRequest requests in
             /// milliseconds. \param[in] _out Pointer to output stream. nullptr means no output to stream (default).
             /// \throw std::runtime_error
             template <CSession::EAgentState _state>
-            void waitForNumAgents(size_t _numAgents,
-                                  const std::chrono::seconds& _timeout = std::chrono::seconds(0),
-                                  const std::chrono::milliseconds& _requestInterval = std::chrono::milliseconds(500),
-                                  std::ostream* _out = nullptr);
+            void waitForNumSlots(size_t _numSlots,
+                                 const std::chrono::seconds& _timeout = std::chrono::seconds(0),
+                                 const std::chrono::milliseconds& _requestInterval = std::chrono::milliseconds(500),
+                                 std::ostream* _out = nullptr);
 
             /// \brief This method returns a configuration value for a given configuration key. It uses the DDS
             /// configuration of the current session.

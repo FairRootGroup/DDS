@@ -168,29 +168,29 @@ void submitAgents(vector<CSession>& _sessions, uint32_t _numSlots = 0, uint32_t 
     }
 }
 
-void checkIdleAgents(CSession& _session, size_t _numAgents)
+void checkIdleSlots(CSession& _session, size_t _numSlots)
 {
     const std::chrono::milliseconds requestInterval(500);
     BOOST_CHECK_NO_THROW(
-        _session.waitForNumAgents<CSession::EAgentState::idle>(_numAgents, kTimeout, requestInterval, &std::cout));
+        _session.waitForNumSlots<CSession::EAgentState::idle>(_numSlots, kTimeout, requestInterval, &std::cout));
 
-    BOOST_CHECK_THROW(_session.waitForNumAgents<CSession::EAgentState::idle>(
-                          _numAgents + 1, std::chrono::seconds(2), requestInterval, &std::cout),
+    BOOST_CHECK_THROW(_session.waitForNumSlots<CSession::EAgentState::idle>(
+                          _numSlots + 1, std::chrono::seconds(2), requestInterval, &std::cout),
                       std::runtime_error);
 
     SAgentCountRequest::response_t agentCountInfo;
     BOOST_CHECK_NO_THROW(_session.syncSendRequest<SAgentCountRequest>(
         SAgentCountRequest::request_t(), agentCountInfo, kTimeout, &std::cout));
-    BOOST_CHECK_EQUAL(agentCountInfo.m_activeSlotsCount, _numAgents);
-    BOOST_CHECK_EQUAL(agentCountInfo.m_idleSlotsCount, _numAgents);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_activeSlotsCount, _numSlots);
+    BOOST_CHECK_EQUAL(agentCountInfo.m_idleSlotsCount, _numSlots);
     BOOST_CHECK_EQUAL(agentCountInfo.m_executingSlotsCount, 0);
 }
 
-void checkIdleAgents(vector<CSession>& _sessions, size_t _numAgents)
+void checkIdleSlots(vector<CSession>& _sessions, size_t _numSlots)
 {
     for (auto& session : _sessions)
     {
-        checkIdleAgents(session, _numAgents);
+        checkIdleSlots(session, _numSlots);
     }
 }
 
@@ -267,11 +267,11 @@ void makeRequests(CSession& _session,
     }
 
     size_t numSlots = _totalAgents.first * _totalAgents.second;
-    checkIdleAgents(_session, numSlots);
+    checkIdleSlots(_session, numSlots);
 
     updateTopology(_session, _topoPath.string(), _updateType);
 
-    checkIdleAgents(_session, numSlots);
+    checkIdleSlots(_session, numSlots);
 
     SAgentInfoRequest::responseVector_t agentInfo;
     BOOST_CHECK_NO_THROW(
@@ -357,7 +357,7 @@ void runDDSInf(vector<CSession>& _sessions)
 
     // Submit enough agent for the upscaled topology
     submitAgents(_sessions, numSlots);
-    checkIdleAgents(_sessions, numSlots);
+    checkIdleSlots(_sessions, numSlots);
 
     for (size_t i = 0; i < kDDSNumTestIterations; i++)
     {
@@ -376,7 +376,7 @@ void runDDSInf(vector<CSession>& _sessions)
         // Stop topology
         updateTopology(_sessions, "", STopologyRequest::request_t::EUpdateType::STOP);
 
-        checkIdleAgents(_sessions, numSlots);
+        checkIdleSlots(_sessions, numSlots);
     }
 
     shutdownSessions(_sessions);
@@ -451,7 +451,7 @@ void runDDSCustomCmd(vector<CSession>& _sessions)
     auto numAgents = topo.getRequiredNofAgents(5);
     size_t requiredCount{ numAgents.first * numAgents.second };
     submitAgents(_sessions, requiredCount);
-    checkIdleAgents(_sessions, requiredCount);
+    checkIdleSlots(_sessions, requiredCount);
 
     // Activate default topology
     updateTopology(_sessions, topoPath.string(), STopologyRequest::request_t::EUpdateType::ACTIVATE);
@@ -466,7 +466,7 @@ void runDDSCustomCmd(vector<CSession>& _sessions)
     runIntercom(_sessions, services, customCmds);
 
     // Wait until all tasks are done
-    checkIdleAgents(_sessions, requiredCount);
+    checkIdleSlots(_sessions, requiredCount);
 
     shutdownSessions(_sessions);
 }
@@ -492,13 +492,13 @@ void runDDSEnv(vector<CSession>& _sessions)
     auto numAgents = topo.getRequiredNofAgents(9);
     size_t requiredCount{ numAgents.first * numAgents.second };
     submitAgents(_sessions, numAgents.first * numAgents.second);
-    checkIdleAgents(_sessions, requiredCount);
+    checkIdleSlots(_sessions, requiredCount);
 
     // Activate default topology
     updateTopology(_sessions, topoPath.string(), STopologyRequest::request_t::EUpdateType::ACTIVATE);
 
     // Wait until all tasks are done
-    checkIdleAgents(_sessions, requiredCount);
+    checkIdleSlots(_sessions, requiredCount);
 
     // Parse logs
     parseLogs(_sessions, "Task successfully done", requiredCount);

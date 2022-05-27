@@ -546,10 +546,10 @@ template void CSession::syncSendRequest<SAgentInfoRequest>(const SAgentInfoReque
                                                            ostream*);
 
 template <CSession::EAgentState _state>
-void CSession::waitForNumAgents(size_t _numAgents,
-                                const std::chrono::seconds& _timeout,
-                                const std::chrono::milliseconds& _requestInterval,
-                                ostream* _out)
+void CSession::waitForNumSlots(size_t _numSlots,
+                               const std::chrono::seconds& _timeout,
+                               const std::chrono::milliseconds& _requestInterval,
+                               ostream* _out)
 {
     using Time_t = std::chrono::seconds;
     std::chrono::system_clock::time_point start{ std::chrono::system_clock::now() };
@@ -561,16 +561,16 @@ void CSession::waitForNumAgents(size_t _numAgents,
         syncSendRequest<SAgentCountRequest>(SAgentCountRequest::request_t(), response, remained, _out);
 
         // Check if we have the required number of agents
-        if ((_state == CSession::EAgentState::active && (response.m_activeSlotsCount < _numAgents)) ||
-            (_state == CSession::EAgentState::idle && (response.m_idleSlotsCount < _numAgents)) ||
-            (_state == CSession::EAgentState::executing && (response.m_executingSlotsCount < _numAgents)))
+        if ((_state == CSession::EAgentState::active && (response.m_activeSlotsCount < _numSlots)) ||
+            (_state == CSession::EAgentState::idle && (response.m_idleSlotsCount < _numSlots)) ||
+            (_state == CSession::EAgentState::executing && (response.m_executingSlotsCount < _numSlots)))
         {
             remained = std::chrono::duration_cast<Time_t>(_timeout - (std::chrono::system_clock::now() - start) -
                                                           _requestInterval);
             if (_timeout.count() != 0 && remained.count() <= 0)
             {
                 stringstream ss;
-                ss << "Failed to wait for the required number of agents (" << _numAgents << ") / active ("
+                ss << "Failed to wait for the required number of task slots (" << _numSlots << ") / active ("
                    << response.m_activeSlotsCount << ") idle (" << response.m_idleSlotsCount << ") executing ("
                    << response.m_executingSlotsCount << ") /: exceed timeout (" << _timeout.count() << " s)";
                 throw runtime_error(ss.str());
@@ -584,18 +584,20 @@ void CSession::waitForNumAgents(size_t _numAgents,
     }
 }
 
-template void CSession::waitForNumAgents<CSession::EAgentState::active>(size_t,
-                                                                        const std::chrono::seconds&,
-                                                                        const std::chrono::milliseconds&,
-                                                                        ostream*);
-template void CSession::waitForNumAgents<CSession::EAgentState::idle>(size_t,
-                                                                      const std::chrono::seconds&,
-                                                                      const std::chrono::milliseconds&,
-                                                                      ostream*);
-template void CSession::waitForNumAgents<CSession::EAgentState::executing>(size_t,
-                                                                           const std::chrono::seconds&,
-                                                                           const std::chrono::milliseconds&,
-                                                                           ostream*);
+template void CSession::waitForNumSlots<CSession::EAgentState::active>(size_t,
+                                                                       const std::chrono::seconds&,
+                                                                       const std::chrono::milliseconds&,
+                                                                       ostream*) __attribute__((deprecated));
+
+template void CSession::waitForNumSlots<CSession::EAgentState::idle>(size_t,
+                                                                     const std::chrono::seconds&,
+                                                                     const std::chrono::milliseconds&,
+                                                                     ostream*);
+
+template void CSession::waitForNumSlots<CSession::EAgentState::executing>(size_t,
+                                                                          const std::chrono::seconds&,
+                                                                          const std::chrono::milliseconds&,
+                                                                          ostream*);
 
 std::string CSession::userDefaultsGetValueForKey(const std::string& _key) const noexcept
 {
