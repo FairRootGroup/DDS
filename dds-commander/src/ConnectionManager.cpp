@@ -257,7 +257,10 @@ void CConnectionManager::on_cmdBINARY_ATTACHMENT_RECEIVED(
 template <protocol_api::ECmdType _cmd>
 void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t /*_index*/, weakChannelInfo_t _agent)
 {
+    if(_agent.m_channel.expired())
+        return;
     auto p = _agent.m_channel.lock();
+    
     p->pushMsg<_cmd>(_agent.m_protocolHeaderID);
 }
 
@@ -266,7 +269,10 @@ void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t /*_index*/,
                                                              weakChannelInfo_t _agent,
                                                              typename SCommandAttachmentImpl<_cmd>::ptr_t _attachment)
 {
+    if(_agent.m_channel.expired())
+        return;
     auto p = _agent.m_channel.lock();
+    
     p->pushMsg<_cmd>(*_attachment, _agent.m_protocolHeaderID);
 }
 
@@ -274,7 +280,10 @@ template <protocol_api::ECmdType _cmd>
 void CConnectionManager::broadcastUpdateTopologyAndWait_impl(
     size_t index, weakChannelInfo_t _agent, const vector<typename SCommandAttachmentImpl<_cmd>::ptr_t>& _attachments)
 {
+    if(_agent.m_channel.expired())
+        return;
     auto p = _agent.m_channel.lock();
+    
     p->pushMsg<_cmd>(*_attachments[index], _agent.m_protocolHeaderID);
 }
 
@@ -284,7 +293,10 @@ void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t /*_index*/,
                                                              const std::string& _filePath,
                                                              const std::string& _filename)
 {
+    if(_agent.m_channel.expired())
+        return;
     auto p = _agent.m_channel.lock();
+    
     p->pushBinaryAttachmentCmd(_filePath, _filename, _cmd, _agent.m_protocolHeaderID);
 }
 
@@ -294,7 +306,10 @@ void CConnectionManager::broadcastUpdateTopologyAndWait_impl(size_t _index,
                                                              const std::vector<std::string>& _filePaths,
                                                              const std::vector<std::string>& _filenames)
 {
+    if(_agent.m_channel.expired())
+        return;
     auto p = _agent.m_channel.lock();
+    
     string filePath = _filePaths[_index];
     string filename = _filenames[_index];
     p->pushBinaryAttachmentCmd(filePath, filename, _cmd, _agent.m_protocolHeaderID);
