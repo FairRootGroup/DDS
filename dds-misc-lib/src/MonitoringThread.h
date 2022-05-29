@@ -19,11 +19,12 @@
 
 namespace dds
 {
-    class CMonitoringThread
+    class CMonitoringThread : public std::enable_shared_from_this<CMonitoringThread>
     {
         typedef std::function<bool()> callbackFunction_t;
         // the function to call, the interval (in sec) the function should be called at
         typedef std::pair<callbackFunction_t, std::chrono::seconds> callbackValue_t;
+        typedef std::function<void(void)> idleCallback_t;
 
       private:
         CMonitoringThread()
@@ -45,7 +46,7 @@ namespace dds
         /// \param[in] _idleTime Maximum allowed elapsed time since last activity in seconds.
         /// \param[in] _idleCallback Function which is called after idle is detected.
         /// \brief example CMonitoringThread::instance().start(300, [](){ do_something_here() });
-        void start(double _idleTime, const std::function<void(void)>& _idleCallback)
+        void start(double _idleTime, const idleCallback_t& _idleCallback)
         {
             // Looping monitoring thread with a step of 1 sec up to *Unlimited* sec (size of int)
             static const std::chrono::seconds INTERVAL_STEP(1);
@@ -53,8 +54,9 @@ namespace dds
 
             updateIdle();
 
+            auto self(this->shared_from_this());
             std::thread t(
-                [this, &_idleCallback, _idleTime]()
+                [this, self, &_idleCallback, _idleTime]()
                 {
                     try
                     {
@@ -120,7 +122,8 @@ namespace dds
                                 // monitoring thread
                                 try
                                 {
-                                    _idleCallback();
+                                    if (_idleCallback)
+                                        _idleCallback();
                                 }
                                 catch (std::exception& _e)
                                 {
@@ -204,7 +207,7 @@ namespace dds
       private:
         std::chrono::steady_clock::time_point m_startIdleTime;
 
-        std::function<void(void)> m_idleCallback;
+        idleCallback_t m_idleCallback;
         std::vector<callbackValue_t> m_registeredCallbackFunctions;
 
         std::mutex m_registeredCallbackFunctionsMutex;
