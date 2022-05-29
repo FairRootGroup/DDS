@@ -599,6 +599,35 @@ template void CSession::waitForNumSlots<CSession::EAgentState::executing>(size_t
                                                                           const std::chrono::milliseconds&,
                                                                           ostream*);
 
+// TODO: Remove on DDS v3.10
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// The following is left for backward capability.
+// I didn't find a way to deprecate template functions without changing them to struct
+template <CSession::EAgentState _state>
+ void CSession::waitForNumAgents(size_t _numAgents,
+                                 const std::chrono::seconds& _timeout,
+                                 const std::chrono::milliseconds& _requestInterval,
+                                 ostream* _out)
+{
+     waitForNumSlots<_state>(_numAgents, _timeout, _requestInterval, _out);
+}
+
+template void CSession::waitForNumAgents<CSession::EAgentState::active>(size_t,
+                                                                       const std::chrono::seconds&,
+                                                                       const std::chrono::milliseconds&,
+                                                                       ostream*) __attribute__((deprecated));
+
+template void CSession::waitForNumAgents<CSession::EAgentState::idle>(size_t,
+                                                                     const std::chrono::seconds&,
+                                                                     const std::chrono::milliseconds&,
+                                                                     ostream*);
+
+template void CSession::waitForNumAgents<CSession::EAgentState::executing>(size_t,
+                                                                          const std::chrono::seconds&,
+                                                                          const std::chrono::milliseconds&,
+                                                                          ostream*);
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 std::string CSession::userDefaultsGetValueForKey(const std::string& _key) const noexcept
 {
     return CUserDefaults::instance().getValueForKey(_key);
