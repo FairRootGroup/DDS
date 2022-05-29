@@ -19,7 +19,7 @@
 
 namespace dds
 {
-    class CMonitoringThread : public std::enable_shared_from_this<CMonitoringThread>
+    class CMonitoringThread
     {
         typedef std::function<bool()> callbackFunction_t;
         // the function to call, the interval (in sec) the function should be called at
@@ -54,9 +54,8 @@ namespace dds
 
             updateIdle();
 
-            auto self(this->shared_from_this());
             std::thread t(
-                [this, self, &_idleCallback, _idleTime]()
+                [this, &_idleCallback, _idleTime]()
                 {
                     try
                     {
