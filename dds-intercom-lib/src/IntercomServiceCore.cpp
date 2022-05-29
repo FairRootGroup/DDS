@@ -291,7 +291,7 @@ void CIntercomServiceCore::on_cmdCUSTOM_CMD_SM(
         chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
     auto duration = (_attachment->m_timestamp > 0) ? (timestamp - _attachment->m_timestamp) : 0;
 
-    LOG(info) << "Received custom command: " << *_attachment << " Delivery time (ms): " << duration;
+    LOG(debug) << "Received custom command: " << *_attachment << " Delivery time (ms): " << duration;
     execUserSignal(m_customCmdSignal, _attachment->m_sCmd, _attachment->m_sCondition, _attachment->m_senderId);
 }
 
