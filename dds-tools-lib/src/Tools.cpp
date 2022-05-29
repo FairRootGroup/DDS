@@ -58,9 +58,9 @@ struct CSession::SImpl
     SImpl& operator=(const SImpl&) = delete;
     SImpl& operator=(SImpl&&) = delete;
 
-    boost::uuids::uuid m_sid;                                       ///< Session ID.
-    std::shared_ptr<dds::intercom_api::CIntercomService> m_service; ///< Intercom service.
-    std::shared_ptr<dds::intercom_api::CCustomCmd>
+    boost::uuids::uuid m_sid;                                  ///< Session ID.
+    shared_ptr<dds::intercom_api::CIntercomService> m_service; ///< Intercom service.
+    shared_ptr<dds::intercom_api::CCustomCmd>
         m_customCmd;       ///< Custom commands API. Used for communication with commander.
     requests_t m_requests; ///< Array of requests.
 };
@@ -96,7 +96,7 @@ boost::uuids::uuid CSession::create()
 
     stringstream ssCmd;
     ssCmd << boost::process::search_path("dds-session").string() << " start";
-    execute(ssCmd.str(), std::chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
+    execute(ssCmd.str(), chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
     if (nExitCode != 0 || !sErr.empty())
     {
@@ -136,7 +136,7 @@ boost::uuids::uuid CSession::create()
     return getSessionID();
 }
 
-void CSession::attach(const std::string& _sid)
+void CSession::attach(const string& _sid)
 {
     attach(boost::uuids::string_generator()(_sid));
 }
@@ -178,7 +178,7 @@ void CSession::shutdown()
     int nExitCode(0);
     stringstream ssCmd;
     ssCmd << boost::process::search_path("dds-session").string() << " stop " << boost::uuids::to_string(m_impl->m_sid);
-    execute(ssCmd.str(), std::chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
+    execute(ssCmd.str(), chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
     m_impl->m_sid = boost::uuids::nil_uuid();
     m_impl->m_customCmd.reset();
@@ -285,7 +285,7 @@ bool CSession::IsRunning() const
     return CUserDefaults::instance().IsSessionRunning(m_impl->m_sid);
 }
 
-void CSession::notify(std::istream& _stream)
+void CSession::notify(istream& _stream)
 {
     ptree pt;
 
@@ -378,9 +378,9 @@ void CSession::notify(std::istream& _stream)
 template <class T>
 void CSession::processRequest(requests_t::mapped_type _request,
                               const boost::property_tree::ptree::value_type& _child,
-                              std::function<void(typename T::ptr_t)> _processResponseCallback)
+                              function<void(typename T::ptr_t)> _processResponseCallback)
 {
-    const std::string& tag = _child.first;
+    const string& tag = _child.first;
 
     auto request = boost::any_cast<typename T::ptr_t>(_request);
     try
@@ -407,9 +407,9 @@ void CSession::processRequest(requests_t::mapped_type _request,
                 _processResponseCallback(request);
         }
     }
-    catch (const std::exception& _e)
+    catch (const exception& _e)
     {
-        throw std::runtime_error("DDS tools API: User's callback exception: " + std::string(_e.what()));
+        throw runtime_error("DDS tools API: User's callback exception: " + string(_e.what()));
     }
 }
 
@@ -417,13 +417,13 @@ template <class T>
 void CSession::sendRequest(typename T::ptr_t _request)
 {
     if (_request == nullptr)
-        throw std::runtime_error("sendRequest: argument can't be NULL");
+        throw runtime_error("sendRequest: argument can't be NULL");
 
     if (m_impl->m_customCmd == nullptr)
-        throw std::runtime_error("sendRequest: custom commands service is not running");
+        throw runtime_error("sendRequest: custom commands service is not running");
 
     requestID_t reqID = _request->getRequest().m_requestID;
-    m_impl->m_requests.insert(std::make_pair(reqID, _request));
+    m_impl->m_requests.insert(make_pair(reqID, _request));
 
     m_impl->m_customCmd->send(_request->getRequest().toJSON(), dds::intercom_api::g_sToolsAPISign);
 }
@@ -440,31 +440,31 @@ template void CSession::sendRequest<SAgentCommandRequest>(SAgentCommandRequest::
 
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
-                               const std::chrono::seconds& _timeout,
-                               std::ostream* _out)
+                               const chrono::seconds& _timeout,
+                               ostream* _out)
 {
     typename Request_t::responseVector_t responseVector;
     syncSendRequest<Request_t>(_requestData, responseVector, _timeout, _out);
 }
 
 template void CSession::syncSendRequest<SSubmitRequest>(const SSubmitRequest::request_t&,
-                                                        const std::chrono::seconds&,
+                                                        const chrono::seconds&,
                                                         ostream*);
 template void CSession::syncSendRequest<STopologyRequest>(const STopologyRequest::request_t&,
-                                                          const std::chrono::seconds&,
+                                                          const chrono::seconds&,
                                                           ostream*);
 template void CSession::syncSendRequest<SGetLogRequest>(const SGetLogRequest::request_t&,
-                                                        const std::chrono::seconds&,
+                                                        const chrono::seconds&,
                                                         ostream*);
 template void CSession::syncSendRequest<SAgentCommandRequest>(const SAgentCommandRequest::request_t&,
-                                                              const std::chrono::seconds&,
+                                                              const chrono::seconds&,
                                                               ostream*);
 
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
                                typename Request_t::response_t& _responseData,
-                               const std::chrono::seconds& _timeout,
-                               std::ostream* _out)
+                               const chrono::seconds& _timeout,
+                               ostream* _out)
 {
     typename Request_t::responseVector_t responseVector;
     syncSendRequest<Request_t>(_requestData, responseVector, _timeout, _out);
@@ -475,18 +475,18 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
 
 template void CSession::syncSendRequest<SCommanderInfoRequest>(const SCommanderInfoRequest::request_t&,
                                                                SCommanderInfoRequest::response_t&,
-                                                               const std::chrono::seconds&,
+                                                               const chrono::seconds&,
                                                                ostream*);
 template void CSession::syncSendRequest<SAgentCountRequest>(const SAgentCountRequest::request_t&,
                                                             SAgentCountRequest::response_t&,
-                                                            const std::chrono::seconds&,
+                                                            const chrono::seconds&,
                                                             ostream*);
 
 template <class Request_t>
 void CSession::syncSendRequest(const typename Request_t::request_t& _requestData,
                                typename Request_t::responseVector_t& _responseDataVector,
-                               const std::chrono::seconds& _timeout,
-                               std::ostream* _out)
+                               const chrono::seconds& _timeout,
+                               ostream* _out)
 {
     // FIXME: Dublicate output to DDS log?
 
@@ -542,17 +542,17 @@ void CSession::syncSendRequest(const typename Request_t::request_t& _requestData
 
 template void CSession::syncSendRequest<SAgentInfoRequest>(const SAgentInfoRequest::request_t&,
                                                            SAgentInfoRequest::responseVector_t&,
-                                                           const std::chrono::seconds&,
+                                                           const chrono::seconds&,
                                                            ostream*);
 
 template <CSession::EAgentState _state>
 void CSession::waitForNumSlots(size_t _numSlots,
-                               const std::chrono::seconds& _timeout,
-                               const std::chrono::milliseconds& _requestInterval,
+                               const chrono::seconds& _timeout,
+                               const chrono::milliseconds& _requestInterval,
                                ostream* _out)
 {
-    using Time_t = std::chrono::seconds;
-    std::chrono::system_clock::time_point start{ std::chrono::system_clock::now() };
+    using Time_t = chrono::seconds;
+    chrono::system_clock::time_point start{ chrono::system_clock::now() };
 
     auto remained{ _timeout };
     while (true)
@@ -565,8 +565,8 @@ void CSession::waitForNumSlots(size_t _numSlots,
             (_state == CSession::EAgentState::idle && (response.m_idleSlotsCount < _numSlots)) ||
             (_state == CSession::EAgentState::executing && (response.m_executingSlotsCount < _numSlots)))
         {
-            remained = std::chrono::duration_cast<Time_t>(_timeout - (std::chrono::system_clock::now() - start) -
-                                                          _requestInterval);
+            remained =
+                chrono::duration_cast<Time_t>(_timeout - (chrono::system_clock::now() - start) - _requestInterval);
             if (_timeout.count() != 0 && remained.count() <= 0)
             {
                 stringstream ss;
@@ -585,18 +585,18 @@ void CSession::waitForNumSlots(size_t _numSlots,
 }
 
 template void CSession::waitForNumSlots<CSession::EAgentState::active>(size_t,
-                                                                       const std::chrono::seconds&,
-                                                                       const std::chrono::milliseconds&,
+                                                                       const chrono::seconds&,
+                                                                       const chrono::milliseconds&,
                                                                        ostream*) __attribute__((deprecated));
 
 template void CSession::waitForNumSlots<CSession::EAgentState::idle>(size_t,
-                                                                     const std::chrono::seconds&,
-                                                                     const std::chrono::milliseconds&,
+                                                                     const chrono::seconds&,
+                                                                     const chrono::milliseconds&,
                                                                      ostream*);
 
 template void CSession::waitForNumSlots<CSession::EAgentState::executing>(size_t,
-                                                                          const std::chrono::seconds&,
-                                                                          const std::chrono::milliseconds&,
+                                                                          const chrono::seconds&,
+                                                                          const chrono::milliseconds&,
                                                                           ostream*);
 
 // TODO: Remove on DDS v3.10
@@ -604,31 +604,31 @@ template void CSession::waitForNumSlots<CSession::EAgentState::executing>(size_t
 // The following is left for backward capability.
 // I didn't find a way to deprecate template functions without changing them to struct
 template <CSession::EAgentState _state>
- void CSession::waitForNumAgents(size_t _numAgents,
-                                 const std::chrono::seconds& _timeout,
-                                 const std::chrono::milliseconds& _requestInterval,
-                                 ostream* _out)
+void CSession::waitForNumAgents(size_t _numAgents,
+                                const chrono::seconds& _timeout,
+                                const chrono::milliseconds& _requestInterval,
+                                ostream* _out)
 {
-     waitForNumSlots<_state>(_numAgents, _timeout, _requestInterval, _out);
+    waitForNumSlots<_state>(_numAgents, _timeout, _requestInterval, _out);
 }
 
 template void CSession::waitForNumAgents<CSession::EAgentState::active>(size_t,
-                                                                       const std::chrono::seconds&,
-                                                                       const std::chrono::milliseconds&,
-                                                                       ostream*) __attribute__((deprecated));
+                                                                        const chrono::seconds&,
+                                                                        const chrono::milliseconds&,
+                                                                        ostream*) __attribute__((deprecated));
 
 template void CSession::waitForNumAgents<CSession::EAgentState::idle>(size_t,
-                                                                     const std::chrono::seconds&,
-                                                                     const std::chrono::milliseconds&,
-                                                                     ostream*);
+                                                                      const chrono::seconds&,
+                                                                      const chrono::milliseconds&,
+                                                                      ostream*);
 
 template void CSession::waitForNumAgents<CSession::EAgentState::executing>(size_t,
-                                                                          const std::chrono::seconds&,
-                                                                          const std::chrono::milliseconds&,
-                                                                          ostream*);
+                                                                           const chrono::seconds&,
+                                                                           const chrono::milliseconds&,
+                                                                           ostream*);
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-std::string CSession::userDefaultsGetValueForKey(const std::string& _key) const noexcept
+string CSession::userDefaultsGetValueForKey(const string& _key) const noexcept
 {
     return CUserDefaults::instance().getValueForKey(_key);
 }
