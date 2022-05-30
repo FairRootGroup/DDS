@@ -848,7 +848,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             // MARK: ToolsAPI request
             else if (_attachment->m_sCondition == g_sToolsAPISign)
             {
-                LOG(info) << "Received a message from TOOLS API.";
+                LOG(debug) << "Received a message from TOOLS API.";
                 processToolsAPIRequests(*_attachment, _channel);
                 return;
             }
@@ -1191,6 +1191,8 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
 
         sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, msg, EMsgSeverity::info);
 
+        LOG(info) << msg;
+
         //
         // Check if topology is currently active, i.e. there are executing tasks
         //
@@ -1217,12 +1219,13 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         // If topology is active we can't activate it again
         if (updateType == STopologyRequest::request_t::EUpdateType::ACTIVATE && topologyActive)
         {
-            throw runtime_error("Topology is currently active, can't activate it again.");
+            throw runtime_error("Topology is currently active. Can't activate it again.");
         }
 
         //
         // Get new topology and calculate the difference
         //
+        LOG(info) << "Get new topology and calculate the difference.";
         CTopoCore topo;
         // If topo file is empty than we stop the topology
         if (!topologyFile.empty())
@@ -1244,6 +1247,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
            << topo.stringOfTasks(addedTasks) << "Added collections: " << addedCollections.size() << "\n"
            << topo.stringOfCollections(addedCollections);
 
+        LOG(info) << ss.str();
         sendToolsAPIMsg(_channel, _topologyInfo.m_requestID, ss.str(), EMsgSeverity::info);
 
         //
@@ -1251,17 +1255,17 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         if (removedTasks.size() > 0)
         {
+            LOG(info) << "Stoppoing removed tasks";
             weakChannelInfo_t::container_t agents;
-            {
-                lock_guard<mutex> lock(m_mapMutex);
-                for (auto taskID : removedTasks)
-                {
-                    auto agentChannel = m_taskIDToAgentChannelMap[taskID];
-                    agents.push_back(agentChannel);
-                }
-            }
-
             // FIXME: Needs to be reviewed for the current architecture
+            //            {
+            //                lock_guard<mutex> lock(m_mapMutex);
+            //                for (auto taskID : removedTasks)
+            //                {
+            //                    auto agentChannel = m_taskIDToAgentChannelMap[taskID];
+            //                    agents.push_back(agentChannel);
+            //                }
+            //            }
             //            for (const auto& v : agents)
             //            {
             //                if (v.m_channel.expired())
@@ -1273,33 +1277,38 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             //            }
 
             // Notify Tools API before stopping tasks
-            for (auto taskID : removedTasks)
             {
-                try
+                lock_guard<mutex> lock(m_mapMutex);
+                for (auto taskID : removedTasks)
                 {
-                    auto agent{ m_taskIDToAgentChannelMap[taskID] };
-                    if (agent.m_channel.expired())
-                        continue;
-                    auto ptr{ agent.m_channel.lock() };
-                    SAgentInfo& inf{ ptr->getAgentInfo() };
+                    try
+                    {
+                        auto agent{ m_taskIDToAgentChannelMap[taskID] };
+                        if (agent.m_channel.expired())
+                            continue;
+                        auto ptr{ agent.m_channel.lock() };
 
-                    STopologyResponseData info;
-                    info.m_requestID = _topologyInfo.m_requestID;
-                    info.m_activated = false;
-                    info.m_agentID = inf.m_id;
-                    info.m_slotID = 0; // TODO: we don't set slot ID for the moment.
-                                       // Setting it will require locking and looping over the container of slots.
-                    info.m_taskID = taskID;
-                    auto task{ m_topo.getRuntimeTaskById(taskID) };
-                    info.m_collectionID = task.m_taskCollectionId;
-                    info.m_path = task.m_taskPath;
-                    info.m_host = inf.m_remoteHostInfo.m_host;
-                    info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
-                    sendCustomCommandResponse(_channel, info.toJSON());
-                }
-                catch (exception& _e)
-                {
-                    LOG(error) << "Failed to notify Tools API about stopped task (" << taskID << "): " << _e.what();
+                        agents.push_back(agent);
+                        SAgentInfo& inf{ ptr->getAgentInfo() };
+
+                        STopologyResponseData info;
+                        info.m_requestID = _topologyInfo.m_requestID;
+                        info.m_activated = false;
+                        info.m_agentID = inf.m_id;
+                        info.m_slotID = 0; // TODO: we don't set slot ID for the moment.
+                                           // Setting it will require locking and looping over the container of slots.
+                        info.m_taskID = taskID;
+                        auto task{ m_topo.getRuntimeTaskById(taskID) };
+                        info.m_collectionID = task.m_taskCollectionId;
+                        info.m_path = task.m_taskPath;
+                        info.m_host = inf.m_remoteHostInfo.m_host;
+                        info.m_wrkDir = inf.m_remoteHostInfo.m_DDSPath;
+                        sendCustomCommandResponse(_channel, info.toJSON());
+                    }
+                    catch (exception& _e)
+                    {
+                        LOG(error) << "Failed to notify Tools API about stopped task (" << taskID << "): " << _e.what();
+                    }
                 }
             }
 
@@ -1308,6 +1317,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
 
         // Assign new topology for DDS commander
+        LOG(info) << "Assign new topology for DDS commander.";
         m_topo = topo;
         //
 
@@ -1334,6 +1344,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         if (addedTasks.size() > 0)
         {
+            LOG(info) << "Activating added tasks.";
             auto idleCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
             {
                 return (_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
@@ -1360,14 +1371,18 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             const CScheduler::ScheduleVector_t& schedule = scheduler.getSchedule();
 
             // Erase removed tasks
-            for (auto taskID : removedTasks)
             {
-                m_taskIDToAgentChannelMap.erase(taskID);
-            }
-            // Add new elements
-            for (const auto& sch : schedule)
-            {
-                m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
+                lock_guard<mutex> lock(m_mapMutex);
+                for (auto taskID : removedTasks)
+                {
+                    m_taskIDToAgentChannelMap.erase(taskID);
+                }
+
+                // Add new elements
+                for (const auto& sch : schedule)
+                {
+                    m_taskIDToAgentChannelMap[sch.m_taskID] = sch.m_weakChannelInfo;
+                }
             }
 
             activateTasks(_topologyInfo, scheduler, _channel);
@@ -1633,7 +1648,7 @@ void CConnectionManager::executeAgentCommand(const dds::tools_api::SAgentCommand
             case SAgentCommandRequestData::EAgentCommandType::shutDownByID:
                 if (inf.m_id == _info.m_arg1)
                 {
-                    LOG(info) << "Executing a  TOOLS API request to shutdown the agent by ID: " << _info.m_arg1;
+                    LOG(info) << "Executing a TOOLS API request to shutdown the agent by ID: " << _info.m_arg1;
                     // send shutdown to the agent
                     ptr->template pushMsg<cmdSHUTDOWN>();
                     stop_loop = true;

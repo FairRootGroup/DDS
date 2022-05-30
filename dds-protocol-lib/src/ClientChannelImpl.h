@@ -19,9 +19,6 @@ namespace dds
         template <class T>
         class CClientChannelImpl : public CBaseChannelImpl<T>
         {
-
-            typedef std::function<void(T*)> handlerEventFunction_t;
-
           protected:
             CClientChannelImpl<T>(boost::asio::io_context& _service,
                                   EChannelType _channelType,

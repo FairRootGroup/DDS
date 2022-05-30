@@ -28,14 +28,14 @@ CScheduler::~CScheduler()
 {
 }
 
-void CScheduler::makeSchedule(const CTopoCore& _topology, const weakChannelInfoVector_t& _channels)
+void CScheduler::makeSchedule(CTopoCore& _topology, const weakChannelInfoVector_t& _channels)
 {
     auto execTime = STimeMeasure<chrono::microseconds>::execution(
         [this, &_topology, &_channels]() { makeScheduleImpl(_topology, _channels, nullptr, nullptr); });
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
-void CScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
+void CScheduler::makeSchedule(topology_api::CTopoCore& _topology,
                               const weakChannelInfoVector_t& _channels,
                               const CTopoCore::IdSet_t& _addedTasks,
                               const CTopoCore::IdSet_t& _addedCollections)
@@ -46,7 +46,7 @@ void CScheduler::makeSchedule(const topology_api::CTopoCore& _topology,
     LOG(info) << "Made schedule for tasks in " << execTime << " microsec.";
 }
 
-void CScheduler::makeScheduleImpl(const CTopoCore& _topology,
+void CScheduler::makeScheduleImpl(CTopoCore& _topology,
                                   const weakChannelInfoVector_t& _channels,
                                   const CTopoCore::IdSet_t* _addedTasks,
                                   const CTopoCore::IdSet_t* _addedCollections)
@@ -222,7 +222,7 @@ void CScheduler::scheduleTasks(const CTopoCore& _topology,
     }
 }
 
-void CScheduler::scheduleCollections(const CTopoCore& _topology,
+void CScheduler::scheduleCollections(CTopoCore& _topology,
                                      const weakChannelInfoVector_t& _channels,
                                      hostToChannelMap_t& _hostToChannelMap,
                                      set<uint64_t>& _scheduledTasks,

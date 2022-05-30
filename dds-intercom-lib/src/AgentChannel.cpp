@@ -33,7 +33,7 @@ CAgentChannel::CAgentChannel(boost::asio::io_context& _service, uint64_t _protoc
         [](const SSenderInfo& /*_sender*/) { LOG(log_stderr) << "Failed to connect to commander server."; });
 }
 
-void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const string&)>& callback)
+void CAgentChannel::reconnectAgentWithErrorHandler(function<void(const string&)> _callback)
 {
     if (m_connectionAttempts <= g_MaxConnectionAttempts)
     {
@@ -49,6 +49,6 @@ void CAgentChannel::reconnectAgentWithErrorHandler(const function<void(const str
         LOG(log_stderr) << errorMsg;
         this->sendYourself<cmdSHUTDOWN>();
 
-        callback(errorMsg);
+        _callback(errorMsg);
     }
 }

@@ -47,9 +47,9 @@ namespace dds
             CScheduler();
             ~CScheduler();
 
-            void makeSchedule(const topology_api::CTopoCore& _topology, const weakChannelInfoVector_t& _channels);
+            void makeSchedule(topology_api::CTopoCore& _topology, const weakChannelInfoVector_t& _channels);
 
-            void makeSchedule(const topology_api::CTopoCore& _topology,
+            void makeSchedule(topology_api::CTopoCore& _topology,
                               const weakChannelInfoVector_t& _channels,
                               const topology_api::CTopoCore::IdSet_t& _addedTasks,
                               const topology_api::CTopoCore::IdSet_t& _addedCollections);
@@ -61,12 +61,12 @@ namespace dds
             std::string toString();
 
           private:
-            void makeScheduleImpl(const topology_api::CTopoCore& _topology,
+            void makeScheduleImpl(topology_api::CTopoCore& _topology,
                                   const weakChannelInfoVector_t& _channels,
                                   const topology_api::CTopoCore::IdSet_t* _addedTasks,
                                   const topology_api::CTopoCore::IdSet_t* _addedCollections);
 
-            void scheduleCollections(const topology_api::CTopoCore& _topology,
+            void scheduleCollections(topology_api::CTopoCore& _topology,
                                      const weakChannelInfoVector_t& _channels,
                                      hostToChannelMap_t& _hostToChannelMap,
                                      std::set<uint64_t>& _scheduledTasks,

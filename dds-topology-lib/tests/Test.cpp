@@ -709,7 +709,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topo_difference)
     test_topo_difference<ifstream>(topoFile, newTopoFile);
 }
 
-long long test_property(const CTopoCore& _topology)
+long long test_property(CTopoCore& _topology)
 {
     auto execTime = STimeMeasure<>::execution(
         [&_topology]()

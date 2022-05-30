@@ -21,7 +21,7 @@ namespace dds
                 MESSAGE_HANDLER_DISPATCH(cmdCUSTOM_CMD)
             END_MSG_MAP()
 
-            void reconnectAgentWithErrorHandler(const std::function<void(const std::string&)>& callback);
+            void reconnectAgentWithErrorHandler(std::function<void(const std::string&)> callback);
 
           private:
             REGISTER_DEFAULT_REMOTE_ID_STRING

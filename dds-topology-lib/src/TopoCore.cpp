@@ -30,6 +30,58 @@ CTopoCore::CTopoCore()
 {
 }
 
+/// copy constructor
+CTopoCore::CTopoCore(CTopoCore const& _topo)
+{
+    // no need to lock this objec because no other thread
+    // will be using it until after construction
+    // but we DO need to lock the other object
+    std::unique_lock<std::mutex> lock_other(_topo.m_mtxTopoInit);
+
+    m_main = _topo.m_main;
+    m_idToRuntimeTaskMap = _topo.m_idToRuntimeTaskMap;
+    m_idToRuntimeCollectionMap = _topo.m_idToRuntimeCollectionMap;
+    m_taskIdPathToIdMap = _topo.m_taskIdPathToIdMap;
+    m_collectionIdPathToIdMap = _topo.m_collectionIdPathToIdMap;
+    m_counterMap = _topo.m_counterMap;
+    m_currentCollectionIdPath = _topo.m_currentCollectionIdPath;
+    m_currentCollectionId = _topo.m_currentCollectionId;
+    m_bXMLValidationDisabled = _topo.m_bXMLValidationDisabled;
+    m_name = _topo.m_name;
+    m_hash = _topo.m_hash;
+    m_filepath = _topo.m_filepath;
+}
+
+/// copy assignment operator
+CTopoCore& CTopoCore::operator=(CTopoCore const& _topo)
+{
+    if (&_topo != this)
+    {
+        // lock both objects
+        std::unique_lock<std::mutex> lock_this(m_mtxTopoInit, std::defer_lock);
+        std::unique_lock<std::mutex> lock_other(_topo.m_mtxTopoInit, std::defer_lock);
+
+        // ensure no deadlock
+        std::lock(lock_this, lock_other);
+
+        // safely copy the data
+        m_main = _topo.m_main;
+        m_idToRuntimeTaskMap = _topo.m_idToRuntimeTaskMap;
+        m_idToRuntimeCollectionMap = _topo.m_idToRuntimeCollectionMap;
+        m_taskIdPathToIdMap = _topo.m_taskIdPathToIdMap;
+        m_collectionIdPathToIdMap = _topo.m_collectionIdPathToIdMap;
+        m_counterMap = _topo.m_counterMap;
+        m_currentCollectionIdPath = _topo.m_currentCollectionIdPath;
+        m_currentCollectionId = _topo.m_currentCollectionId;
+        m_bXMLValidationDisabled = _topo.m_bXMLValidationDisabled;
+        m_name = _topo.m_name;
+        m_hash = _topo.m_hash;
+        m_filepath = _topo.m_filepath;
+    }
+
+    return *this;
+}
+
 CTopoCore::~CTopoCore()
 {
 }
@@ -39,12 +91,12 @@ CTopoGroup::Ptr_t CTopoCore::getMainGroup() const
     return m_main;
 }
 
-void CTopoCore::init(const std::string& _fileName)
+void CTopoCore::init(const string& _fileName)
 {
     init(_fileName, CUserDefaults::getTopologyXSDFilePath());
 }
 
-void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFileName)
+void CTopoCore::init(const string& _fileName, const string& _schemaFileName)
 {
     string filename(_fileName);
 
@@ -68,13 +120,15 @@ void CTopoCore::init(const std::string& _fileName, const std::string& _schemaFil
     }
 }
 
-void CTopoCore::init(std::istream& _stream)
+void CTopoCore::init(istream& _stream)
 {
     init(_stream, CUserDefaults::getTopologyXSDFilePath());
 }
 
-void CTopoCore::init(std::istream& _stream, const std::string& _schemaFileName)
+void CTopoCore::init(istream& _stream, const string& _schemaFileName)
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
+
     if (_schemaFileName.empty() && !m_bXMLValidationDisabled)
     {
         throw runtime_error("XSD schema file not provided. Disable validation or provide a valid schema file.");
@@ -101,7 +155,7 @@ void CTopoCore::init(std::istream& _stream, const std::string& _schemaFileName)
     FillIdToTopoElementMap(m_main);
 }
 
-void CTopoCore::getDifference(const CTopoCore& _topology,
+void CTopoCore::getDifference(CTopoCore& _topology,
                               IdSet_t& _removedTasks,
                               IdSet_t& _removedCollections,
                               IdSet_t& _addedTasks,
@@ -118,33 +172,30 @@ void CTopoCore::getDifference(const CTopoCore& _topology,
     IdSet_t newCollections;
 
     // Get all keys from maps as a set
-    boost::copy(m_idToRuntimeTaskMap | boost::adaptors::map_keys, std::inserter(tasks, tasks.end()));
-    boost::copy(_topology.getIdToRuntimeTaskMap() | boost::adaptors::map_keys, std::inserter(newTasks, newTasks.end()));
-    boost::copy(m_idToRuntimeCollectionMap | boost::adaptors::map_keys, std::inserter(collections, collections.end()));
+    boost::copy(m_idToRuntimeTaskMap | boost::adaptors::map_keys, inserter(tasks, tasks.end()));
+    boost::copy(_topology.getIdToRuntimeTaskMap() | boost::adaptors::map_keys, inserter(newTasks, newTasks.end()));
+    boost::copy(m_idToRuntimeCollectionMap | boost::adaptors::map_keys, inserter(collections, collections.end()));
     boost::copy(_topology.getIdToRuntimeCollectionMap() | boost::adaptors::map_keys,
-                std::inserter(newCollections, newCollections.end()));
+                inserter(newCollections, newCollections.end()));
 
     // Get difference between two sets
-    std::set_difference(tasks.begin(),
-                        tasks.end(),
-                        newTasks.begin(),
-                        newTasks.end(),
-                        std::inserter(_removedTasks, _removedTasks.end()));
-    std::set_difference(
-        newTasks.begin(), newTasks.end(), tasks.begin(), tasks.end(), std::inserter(_addedTasks, _addedTasks.begin()));
-    std::set_difference(collections.begin(),
-                        collections.end(),
-                        newCollections.begin(),
-                        newCollections.end(),
-                        std::inserter(_removedCollections, _removedCollections.end()));
-    std::set_difference(newCollections.begin(),
-                        newCollections.end(),
-                        collections.begin(),
-                        collections.end(),
-                        std::inserter(_addedCollections, _addedCollections.begin()));
+    set_difference(
+        tasks.begin(), tasks.end(), newTasks.begin(), newTasks.end(), inserter(_removedTasks, _removedTasks.end()));
+    set_difference(
+        newTasks.begin(), newTasks.end(), tasks.begin(), tasks.end(), inserter(_addedTasks, _addedTasks.begin()));
+    set_difference(collections.begin(),
+                   collections.end(),
+                   newCollections.begin(),
+                   newCollections.end(),
+                   inserter(_removedCollections, _removedCollections.end()));
+    set_difference(newCollections.begin(),
+                   newCollections.end(),
+                   collections.begin(),
+                   collections.end(),
+                   inserter(_addedCollections, _addedCollections.begin()));
 }
 
-std::string CTopoCore::getName() const
+string CTopoCore::getName() const
 {
     if (!m_main)
     {
@@ -153,7 +204,7 @@ std::string CTopoCore::getName() const
     return m_name;
 }
 
-std::string CTopoCore::getFilepath() const
+string CTopoCore::getFilepath() const
 {
     return m_filepath;
 }
@@ -195,86 +246,96 @@ size_t CTopoCore::getTotalNofTasks() const
     return getMainGroup()->getTotalNofTasks();
 }
 
-const STopoRuntimeTask::Map_t& CTopoCore::getIdToRuntimeTaskMap() const
+const STopoRuntimeTask::Map_t& CTopoCore::getIdToRuntimeTaskMap()
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
     return m_idToRuntimeTaskMap;
 }
 
-const STopoRuntimeCollection::Map_t& CTopoCore::getIdToRuntimeCollectionMap() const
+const STopoRuntimeCollection::Map_t& CTopoCore::getIdToRuntimeCollectionMap()
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
     return m_idToRuntimeCollectionMap;
 }
 
-const CTopoCore::IdPathToIdMap_t& CTopoCore::getTaskIdPathToIdMap() const
+const CTopoCore::IdPathToIdMap_t& CTopoCore::getTaskIdPathToIdMap()
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
     return m_taskIdPathToIdMap;
 }
 
-const CTopoCore::IdPathToIdMap_t& CTopoCore::getCollectionIdPathToIdMap() const
+const CTopoCore::IdPathToIdMap_t& CTopoCore::getCollectionIdPathToIdMap()
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
     return m_collectionIdPathToIdMap;
 }
 
-const STopoRuntimeTask& CTopoCore::getRuntimeTaskById(Id_t _id) const
+const STopoRuntimeTask& CTopoCore::getRuntimeTaskById(Id_t _id)
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
+
     auto it = m_idToRuntimeTaskMap.find(_id);
     if (it == m_idToRuntimeTaskMap.end())
         throw runtime_error("Can not find task info with ID " + to_string(_id));
     return it->second;
 }
 
-const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionById(Id_t _id) const
+const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionById(Id_t _id)
 {
+    lock_guard<mutex> lock(m_mtxTopoInit);
+
     auto it = m_idToRuntimeCollectionMap.find(_id);
     if (it == m_idToRuntimeCollectionMap.end())
         throw runtime_error("Can not find task collection with ID " + to_string(_id));
     return it->second;
 }
 
-const STopoRuntimeTask& CTopoCore::getRuntimeTaskByIdPath(const std::string& _idPath) const
+const STopoRuntimeTask& CTopoCore::getRuntimeTaskByIdPath(const string& _idPath)
 {
+    // TODO: Add a m_mtxTopoInit lock, but avoid deadlock in getRuntimeTaskById
     auto it = m_taskIdPathToIdMap.find(_idPath);
     if (it == m_taskIdPathToIdMap.end())
         throw runtime_error("Can not find task with path ID " + _idPath);
     return getRuntimeTaskById(it->second);
 }
 
-const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionByIdPath(const std::string& _idPath) const
+const STopoRuntimeCollection& CTopoCore::getRuntimeCollectionByIdPath(const string& _idPath)
 {
+    // TODO: Add a m_mtxTopoInit lock, but avoid deadlock in getRuntimeCollectionById
     auto it = m_collectionIdPathToIdMap.find(_idPath);
     if (it == m_collectionIdPathToIdMap.end())
         throw runtime_error("Can not find collection with path ID " + _idPath);
     return getRuntimeCollectionById(it->second);
 }
 
-const STopoRuntimeTask& CTopoCore::getRuntimeTask(const std::string& _path) const
+const STopoRuntimeTask& CTopoCore::getRuntimeTask(const string& _path)
 {
     try
     {
         // throws boost::bad_lexical_cast if path is not a number
         uint64_t taskID{ boost::lexical_cast<uint64_t>(_path) };
-        // throws std::runtime_error if ID not found
+        // throws runtime_error if ID not found
         return getRuntimeTaskById(taskID);
     }
     catch (boost::bad_lexical_cast&)
     {
-        // throws std::runtime_error if path not found
+        // throws runtime_error if path not found
         return getRuntimeTaskByIdPath(_path);
     }
 }
 
-const STopoRuntimeCollection& CTopoCore::getRuntimeCollection(const std::string& _path) const
+const STopoRuntimeCollection& CTopoCore::getRuntimeCollection(const string& _path)
 {
     try
     {
         // throws boost::bad_lexical_cast if path is not a number
         uint64_t taskID{ boost::lexical_cast<uint64_t>(_path) };
-        // throws std::runtime_error if ID not found
+        // throws runtime_error if ID not found
         return getRuntimeCollectionById(taskID);
     }
     catch (boost::bad_lexical_cast&)
     {
-        // throws std::runtime_error if path not found
+        // throws runtime_error if path not found
         return getRuntimeCollectionByIdPath(_path);
     }
 }
@@ -312,8 +373,8 @@ STopoRuntimeCollection::FilterIteratorPair_t CTopoCore::getRuntimeCollectionIter
     return make_pair(begin_iterator, end_iterator);
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPropertyName(
-    const std::string& _propertyName, Id_t _taskId) const
+STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPropertyName(const string& _propertyName,
+                                                                                        Id_t _taskId) const
 {
     auto taskIt = m_idToRuntimeTaskMap.find(_taskId);
     if (taskIt == m_idToRuntimeTaskMap.end())
@@ -361,20 +422,19 @@ STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorForPrope
     return make_pair(STopoRuntimeTask::FilterIterator_t(), STopoRuntimeTask::FilterIterator_t());
 }
 
-STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorMatchingPath(
-    const std::string& _pathPattern) const
+STopoRuntimeTask::FilterIteratorPair_t CTopoCore::getRuntimeTaskIteratorMatchingPath(const string& _pathPattern) const
 {
-    // std::shared_ptr is needed to keep the object alive when the object is used in lambda
-    std::shared_ptr<boost::regex> pathRegex = std::make_shared<boost::regex>(_pathPattern);
+    // shared_ptr is needed to keep the object alive when the object is used in lambda
+    std::shared_ptr<boost::regex> pathRegex = make_shared<boost::regex>(_pathPattern);
     return getRuntimeTaskIterator([pathRegex](const STopoRuntimeTask::FilterIterator_t::value_type& _value) -> bool
                                   { return boost::regex_match(_value.second.m_taskPath, *pathRegex); });
 }
 
 STopoRuntimeCollection::FilterIteratorPair_t CTopoCore::getRuntimeCollectionIteratorMatchingPath(
-    const std::string& _pathPattern) const
+    const string& _pathPattern) const
 {
-    // std::shared_ptr is needed to keep the object alive when the object is used in lambda
-    std::shared_ptr<boost::regex> pathRegex = std::make_shared<boost::regex>(_pathPattern);
+    // shared_ptr is needed to keep the object alive when the object is used in lambda
+    std::shared_ptr<boost::regex> pathRegex = make_shared<boost::regex>(_pathPattern);
     return getRuntimeCollectionIterator(
         [pathRegex](const STopoRuntimeCollection::FilterIterator_t::value_type& _value) -> bool
         { return boost::regex_match(_value.second.m_collectionPath, *pathRegex); });
@@ -385,7 +445,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
     if (_element->getType() == CTopoBase::EType::TASK)
     {
         CTopoTask::Ptr_t task = dynamic_pointer_cast<CTopoTask>(_element);
-        std::string path;
+        string path;
         size_t collectionCounter;
         if (task->getParent()->getType() == CTopoBase::EType::COLLECTION)
         {
@@ -395,18 +455,18 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
         else
         {
             path = _element->getPath();
-            collectionCounter = std::numeric_limits<uint32_t>::max();
+            collectionCounter = numeric_limits<uint32_t>::max();
         }
 
         size_t counter = ++m_counterMap[path];
         size_t index = counter - 1;
-        std::string idPath = path + "_" + to_string(index);
+        string idPath = path + "_" + to_string(index);
 
         Id_t crc{ calculateId(idPath, task->hashString()) };
         if (m_idToRuntimeTaskMap.find(crc) != m_idToRuntimeTaskMap.end())
         {
-            throw std::runtime_error("Failed to create unique ID for task with path " + idPath +
-                                     ". Rename task/collection/group in the path.");
+            throw runtime_error("Failed to create unique ID for task with path " + idPath +
+                                ". Rename task/collection/group in the path.");
         }
 
         STopoRuntimeTask info;
@@ -435,7 +495,7 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
     {
         CTopoCollection::Ptr_t collection = dynamic_pointer_cast<CTopoCollection>(_element);
 
-        std::string path = collection->getPath();
+        string path = collection->getPath();
         size_t counter = ++m_counterMap[path];
         size_t index = counter - 1;
         m_currentCollectionIdPath = path + "_" + to_string(index);
@@ -443,8 +503,8 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
         Id_t crc{ calculateId(m_currentCollectionIdPath, collection->hashString()) };
         if (m_idToRuntimeCollectionMap.find(crc) != m_idToRuntimeCollectionMap.end())
         {
-            throw std::runtime_error("Failed to create unique ID for collection with path " +
-                                     m_currentCollectionIdPath + ". Rename task/collection/group in the path.");
+            throw runtime_error("Failed to create unique ID for collection with path " + m_currentCollectionIdPath +
+                                ". Rename task/collection/group in the path.");
         }
 
         STopoRuntimeCollection info;
@@ -478,12 +538,12 @@ void CTopoCore::FillIdToTopoElementMap(const CTopoElement::Ptr_t& _element)
     }
 }
 
-Id_t CTopoCore::calculateId(const std::string& _idPath, const std::string& _hashString)
+Id_t CTopoCore::calculateId(const string& _idPath, const string& _hashString)
 {
     return dds::misc::crc64(_idPath + _hashString);
 }
 
-std::string CTopoCore::stringOfTasks(const IdSet_t& _ids) const
+string CTopoCore::stringOfTasks(const IdSet_t& _ids) const
 {
     set<string> tasksSet;
     multiset<string> tasksMultiset;
@@ -506,7 +566,7 @@ std::string CTopoCore::stringOfTasks(const IdSet_t& _ids) const
     return ss.str();
 }
 
-std::string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
+string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
 {
     set<string> collectionsSet;
     multiset<string> collectionsMultiset;
@@ -529,7 +589,7 @@ std::string CTopoCore::stringOfCollections(const IdSet_t& _ids) const
     return ss.str();
 }
 
-uint32_t CTopoCore::CalculateHash(std::istream& _stream)
+uint32_t CTopoCore::CalculateHash(istream& _stream)
 {
     return dds::misc::crc32(_stream);
 }

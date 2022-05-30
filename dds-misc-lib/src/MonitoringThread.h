@@ -26,12 +26,19 @@ namespace dds
         typedef std::pair<callbackFunction_t, std::chrono::seconds> callbackValue_t;
         typedef std::function<void(void)> idleCallback_t;
 
+        typedef std::unique_ptr<std::thread> threadHandlerPtr_t;
+
       private:
         CMonitoringThread()
         {
         }
         ~CMonitoringThread()
         {
+            if (m_threadHandler && m_threadHandler->joinable())
+            {
+                m_exitCondition = true;
+                m_threadHandler->join();
+            }
         }
 
       public:
@@ -46,7 +53,7 @@ namespace dds
         /// \param[in] _idleTime Maximum allowed elapsed time since last activity in seconds.
         /// \param[in] _idleCallback Function which is called after idle is detected.
         /// \brief example CMonitoringThread::instance().start(300, [](){ do_something_here() });
-        void start(double _idleTime, const idleCallback_t& _idleCallback)
+        void start(double _idleTime, idleCallback_t _idleCallback)
         {
             // Looping monitoring thread with a step of 1 sec up to *Unlimited* sec (size of int)
             static const std::chrono::seconds INTERVAL_STEP(1);
@@ -54,13 +61,13 @@ namespace dds
 
             updateIdle();
 
-            std::thread t(
+            m_threadHandler = std::make_unique<threadHandlerPtr_t::element_type>(
                 [this, &_idleCallback, _idleTime]()
                 {
                     try
                     {
                         std::chrono::seconds secInterval(0);
-                        while (true)
+                        while (!m_exitCondition)
                         {
                             // handle exceptions of the custom actions separately to prevent breaks of the
                             // monitoring thread
@@ -154,7 +161,6 @@ namespace dds
                         LOG(dds::misc::error) << "MonitoringThread exception: " << _e.what();
                     }
                 });
-            t.detach();
         }
 
         void updateIdle()
@@ -210,8 +216,10 @@ namespace dds
         std::vector<callbackValue_t> m_registeredCallbackFunctions;
 
         std::mutex m_registeredCallbackFunctionsMutex;
-
         std::mutex m_mutex; // Mutex for updateIdle call
+
+        threadHandlerPtr_t m_threadHandler;
+        std::atomic_bool m_exitCondition = false;
     };
 } // namespace dds
 

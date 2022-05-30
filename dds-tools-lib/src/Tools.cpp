@@ -587,7 +587,7 @@ void CSession::waitForNumSlots(size_t _numSlots,
 template void CSession::waitForNumSlots<CSession::EAgentState::active>(size_t,
                                                                        const chrono::seconds&,
                                                                        const chrono::milliseconds&,
-                                                                       ostream*) __attribute__((deprecated));
+                                                                       ostream*);
 
 template void CSession::waitForNumSlots<CSession::EAgentState::idle>(size_t,
                                                                      const chrono::seconds&,
@@ -615,7 +615,7 @@ void CSession::waitForNumAgents(size_t _numAgents,
 template void CSession::waitForNumAgents<CSession::EAgentState::active>(size_t,
                                                                         const chrono::seconds&,
                                                                         const chrono::milliseconds&,
-                                                                        ostream*) __attribute__((deprecated));
+                                                                        ostream*);
 
 template void CSession::waitForNumAgents<CSession::EAgentState::idle>(size_t,
                                                                       const chrono::seconds&,

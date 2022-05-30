@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
                     return;
                 }
 
-                unsigned int nInstances = _submit.m_nInstances;
+                unsigned int nInstances = (_submit.m_nInstances < 1 ? 1 : _submit.m_nInstances);
 
                 stringstream ss;
                 ss << "Will use the local host to deploy " << nInstances << " agents";

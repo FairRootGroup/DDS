@@ -34,7 +34,7 @@ namespace dds
         /// \class CConnectionManagerImpl
         /// \brief Base class for connection managers.
         template <class T, class A>
-        class CConnectionManagerImpl
+        class CConnectionManagerImpl : public std::enable_shared_from_this<A>
         {
           public:
             typedef SChannelInfo<T> channelInfo_t;
@@ -421,6 +421,15 @@ namespace dds
             }
 
           private:
+            static boost::system::error_code _canceled()
+            {
+                return boost::asio::error::operation_aborted;
+            }
+            bool _is_canceled(const boost::system::error_code& _ec) const
+            {
+                return _ec == _canceled();
+            }
+
             void acceptHandler(typename T::connectionPtr_t _client,
                                asioAcceptorPtr_t _acceptor,
                                const boost::system::error_code& _ec)
@@ -436,7 +445,10 @@ namespace dds
                 }
                 else
                 {
-                    LOG(dds::misc::error) << "Can't accept new connection: " << _ec.message();
+                    if (_is_canceled(_ec))
+                        LOG(dds::misc::info) << "Connection manager is stopping. All operations are canceled.";
+                    else
+                        LOG(dds::misc::error) << "Can't accept new connection: " << _ec.message();
                 }
             }
 
@@ -464,10 +476,12 @@ namespace dds
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
                     [this, newClient](const SSenderInfo& /*_sender*/) -> void { this->removeClient(newClient.get()); });
 
-                _acceptor->async_accept(
-                    newClient->socket(),
-                    std::bind(
-                        &CConnectionManagerImpl::acceptHandler, this, newClient, _acceptor, std::placeholders::_1));
+                _acceptor->async_accept(newClient->socket(),
+                                        std::bind(&CConnectionManagerImpl::acceptHandler,
+                                                  this->shared_from_this(),
+                                                  newClient,
+                                                  _acceptor,
+                                                  std::placeholders::_1));
             }
 
             void createInfoFile()

@@ -38,6 +38,8 @@ namespace dds
           public:
             /// \brief Constructor.
             CTopoCore();
+            CTopoCore(CTopoCore const& _topo);
+            CTopoCore& operator=(CTopoCore const& _topo);
 
             /// \brief Destructor.
             virtual ~CTopoCore();
@@ -64,7 +66,7 @@ namespace dds
             /// \param[out] _removedCollections Collections which exist in THIS topology and don't exist in new one.
             /// \param[out] _addedTasks Tasks which exist in new topology and don't exist in THIS one.
             /// \param[out] _addedCollections Collections which exist in new topology and don't exist in THIS one.
-            void getDifference(const CTopoCore& _topology,
+            void getDifference(CTopoCore& _topology,
                                IdSet_t& _removedTasks,
                                IdSet_t& _removedCollections,
                                IdSet_t& _addedTasks,
@@ -78,17 +80,17 @@ namespace dds
             uint32_t getHash() const;
             CTopoGroup::Ptr_t getMainGroup() const;
             /// \brief Returns runtime task by ID.
-            const STopoRuntimeTask& getRuntimeTaskById(Id_t _id) const;
+            const STopoRuntimeTask& getRuntimeTaskById(Id_t _id);
             /// \brief Returns runtime collection by ID.
-            const STopoRuntimeCollection& getRuntimeCollectionById(Id_t _id) const;
+            const STopoRuntimeCollection& getRuntimeCollectionById(Id_t _id);
             /// \brief Returns runtime task by runtime path.
-            const STopoRuntimeTask& getRuntimeTaskByIdPath(const std::string& _idPath) const;
+            const STopoRuntimeTask& getRuntimeTaskByIdPath(const std::string& _idPath);
             /// \brief Returns runtime collection by runtime path.
-            const STopoRuntimeCollection& getRuntimeCollectionByIdPath(const std::string& _idPath) const;
+            const STopoRuntimeCollection& getRuntimeCollectionByIdPath(const std::string& _idPath);
             /// \brief Returns runtime task by either ID or runtime path.
-            const STopoRuntimeTask& getRuntimeTask(const std::string& _path) const;
+            const STopoRuntimeTask& getRuntimeTask(const std::string& _path);
             /// \brief Returns runtime collection by either ID or runtime path.
-            const STopoRuntimeCollection& getRuntimeCollection(const std::string& _path) const;
+            const STopoRuntimeCollection& getRuntimeCollection(const std::string& _path);
             std::pair<size_t, size_t> getRequiredNofAgents(size_t _defaultNumSlots) const;
             size_t getTotalNofTasks() const;
 
@@ -107,10 +109,10 @@ namespace dds
                 const std::string& _pathPattern) const;
 
             /// Accessors to internal data structures. Used for unit tests.
-            const STopoRuntimeTask::Map_t& getIdToRuntimeTaskMap() const;
-            const STopoRuntimeCollection::Map_t& getIdToRuntimeCollectionMap() const;
-            const IdPathToIdMap_t& getTaskIdPathToIdMap() const;
-            const IdPathToIdMap_t& getCollectionIdPathToIdMap() const;
+            const STopoRuntimeTask::Map_t& getIdToRuntimeTaskMap();
+            const STopoRuntimeCollection::Map_t& getIdToRuntimeCollectionMap();
+            const IdPathToIdMap_t& getTaskIdPathToIdMap();
+            const IdPathToIdMap_t& getCollectionIdPathToIdMap();
 
             std::string stringOfTasks(const IdSet_t& _ids) const;
             std::string stringOfCollections(const IdSet_t& _ids) const;
@@ -130,6 +132,7 @@ namespace dds
             uint32_t CalculateHash(std::istream& _stream);
             Id_t calculateId(const std::string& _idPath, const std::string& _hashString);
 
+          private:
             CTopoGroup::Ptr_t m_main{ nullptr }; ///< Main task group which we run
 
             STopoRuntimeTask::Map_t m_idToRuntimeTaskMap; ///< Task ID to runtime task object map
@@ -146,6 +149,7 @@ namespace dds
             std::string m_name;                     ///< Name of the topology
             uint32_t m_hash{ 0 };                   ///< CRC64 of the topology XML file
             std::string m_filepath;                 ///< Path to the XML topology file
+            mutable std::mutex m_mtxTopoInit;       ///< Lock topo re-initialisation
         };
     } // namespace topology_api
 } // namespace dds

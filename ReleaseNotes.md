@@ -11,7 +11,12 @@ Added: every DDS module logs now its pid, group id and parent pid. (GH-403)
 Added: Support for Task Assets. (GH-406)    
 Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.20)  and boost (from 1.67 to 1.72). (GH-428)    
 
+### dds-agent
+Fixed: Address potential crash in the external process termination routines.    
+Fixed: Revised handling of the slots container.    
+
 ### dds\_intercom\_lib
+Fixed: Stability improvements.      
 Modified: Temporary increase intercom message size to 2048. (GH-440)     
 Modified: Set debug log severity on Custom command events. (GH-424)    
 
@@ -26,6 +31,7 @@ Added: The command learned a new argument --env-config/-e. It can be used to def
 Added: The command learned a new argument --min-instances. It can be used to provide the minimum number of agents to spawn. (GH-434) 
 
 ### dds-topology
+Fixed: Stability improvements.     
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
 Added: Open API to read/update/add topology variable. The CTopoVars class.    
 Added: Support for Task Assets. (GH-406)     
@@ -33,17 +39,17 @@ Added: Custom type of Task and Collection requirements. (GH-445)
 
 ### dds-ssh-plugin
 Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)    
-Added: Support for SessionID (GH-411)    
+Added: Support for SubmissionID (GH-411)    
 
 ### dds-slurm-plugin
-Added: Support for SessionID (GH-411)    
+Added: Support for SubmissionID (GH-411)    
 Added: Support of minimum number of agents to spawn. (GH-434)   
 Modified: Replace array job submission with nodes requirement. (GH-430)    
 Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)   
 Modified: Remove #SBATCH --cpus-per-task=%DDS_NSLOTS%. (GH-442)     
 
 ### dds-localhost-plugin
-Added: Support for SessionID (GH-411)    
+Added: Support for SubmissionID (GH-411)    
 
 ### dds-tools-api
 Modified: Logs of user processes which use Tools API are moved now to the DDS root log directory, instead of sessions directory.    

@@ -170,6 +170,8 @@ void submitAgents(vector<CSession>& _sessions, uint32_t _numSlots = 0, uint32_t 
 
 void checkIdleSlots(CSession& _session, size_t _numSlots)
 {
+    BOOST_TEST_MESSAGE("checkIdleSlots. SID: " << boost::lexical_cast<string>(_session.getSessionID()));
+
     const std::chrono::milliseconds requestInterval(500);
     BOOST_CHECK_NO_THROW(
         _session.waitForNumSlots<CSession::EAgentState::idle>(_numSlots, kTimeout, requestInterval, &std::cout));
@@ -198,10 +200,15 @@ void updateTopology(CSession& _session,
                     const string& _topologyFile,
                     STopologyRequest::request_t::EUpdateType _updateType)
 {
+    BOOST_TEST_MESSAGE("updateTopology request. SID: " << boost::lexical_cast<string>(_session.getSessionID())
+                                                       << " type: " << static_cast<int>(_updateType)
+                                                       << " topo: " << _topologyFile);
     STopologyRequest::request_t topoInfo;
     topoInfo.m_topologyFile = _topologyFile;
     topoInfo.m_updateType = _updateType;
-    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+
+    _session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout);
+    // BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
 }
 
 void updateTopology(vector<CSession>& _sessions,
