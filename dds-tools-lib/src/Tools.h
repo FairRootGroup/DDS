@@ -293,9 +293,9 @@ namespace dds
             /// Deprecated!
             template <CSession::EAgentState _state>
             void waitForNumAgents(size_t _numAgents,
-                                  const std::chrono::seconds& _timeout,
-                                  const std::chrono::milliseconds& _requestInterval,
-                                  std::ostream* _out);
+                                  const std::chrono::seconds& _timeout = std::chrono::seconds(0),
+                                  const std::chrono::milliseconds& _requestInterval = std::chrono::milliseconds(500),
+                                  std::ostream* _out = nullptr);
 
             /// \brief This method returns a configuration value for a given configuration key. It uses the DDS
             /// configuration of the current session.

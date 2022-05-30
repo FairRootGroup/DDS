@@ -207,8 +207,7 @@ void updateTopology(CSession& _session,
     topoInfo.m_topologyFile = _topologyFile;
     topoInfo.m_updateType = _updateType;
 
-    _session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout);
-    // BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
+    BOOST_CHECK_NO_THROW(_session.syncSendRequest<STopologyRequest>(topoInfo, kTimeout, &std::cout));
 }
 
 void updateTopology(vector<CSession>& _sessions,

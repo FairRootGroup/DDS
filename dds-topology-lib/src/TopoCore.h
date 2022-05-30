@@ -14,10 +14,10 @@
 #include "TopoTask.h"
 // STD
 #include <map>
+#include <mutex>
 #include <ostream>
 #include <set>
 #include <string>
-#include <mutex>
 
 namespace dds
 {

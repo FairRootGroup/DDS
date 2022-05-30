@@ -33,6 +33,7 @@ CIntercomServiceCore::CIntercomServiceCore()
 
 CIntercomServiceCore::~CIntercomServiceCore()
 {
+    m_workerThreads.join_all();
 }
 
 void CIntercomServiceCore::start(const std::string& _sessionID)
@@ -222,7 +223,6 @@ void CIntercomServiceCore::stop()
     }
 
     m_io_context.stop();
-    m_workerThreads.join_all();
 }
 
 connection_t CIntercomServiceCore::connectError(intercom_api::errorSignal_t::slot_function_type _subscriber)
