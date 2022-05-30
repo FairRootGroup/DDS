@@ -21,7 +21,8 @@ namespace dds
 
         struct SSlotInfo
         {
-            using container_t = std::map<slotId_t, SSlotInfo>;
+            using SSlotInfoPtr_t = std::shared_ptr<SSlotInfo>;
+            using container_t = std::map<slotId_t, SSlotInfoPtr_t>;
 
             slotId_t m_id{ 0 };
             std::string m_sUsrExe;
@@ -133,10 +134,11 @@ namespace dds
             void terminateChildrenProcesses(timerPtr_t& _timer,
                                             const pidContainer_t& _children,
                                             const std::chrono::steady_clock::time_point& _wait_until,
-                                            const terminateChildrenOnComplete_t& _onCompleteSlot);
+                                            const terminateChildrenOnComplete_t& _onCompleteSlot,
+                                            const boost::system::error_code& _error);
             void enumChildProcesses(pid_t _forPid, stringContainer_t& _chilren);
             void taskExited(uint64_t _taskID, int _exitCode);
-            SSlotInfo& getSlotInfoById(const slotId_t& _slotID);
+            SSlotInfo::SSlotInfoPtr_t getSlotInfoById(const slotId_t& _slotID);
             bool isLowDiskSpace(uintmax_t* _available = nullptr);
             void startResourceMonitor(boost::asio::io_context& _service, const std::chrono::seconds& _interval);
 

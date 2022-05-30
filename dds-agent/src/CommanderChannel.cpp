@@ -475,16 +475,26 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
         return true;
     }
 
-    SSlotInfo* slot;
+    SSlotInfo::SSlotInfoPtr_t slot;
     try
     {
-        slot = &(getSlotInfoById(_sender.m_ID));
+        slot = getSlotInfoById(_sender.m_ID);
     }
     catch (exception& _e)
     {
         pushMsg<cmdREPLY>(SReplyCmd(_e.what(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK),
                           _sender.m_ID);
         LOG(error) << "Assign task error: " << _e.what();
+        return true;
+    }
+
+    if (slot->m_taskID > 0)
+    {
+        stringstream ssError;
+        ssError << "Assign task error: The slot " << _sender.m_ID << " already running task with id " << slot->m_taskID;
+        pushMsg<cmdREPLY>(SReplyCmd(ssError.str(), (uint16_t)SReplyCmd::EStatusCode::ERROR, 0, cmdASSIGN_USER_TASK),
+                          _sender.m_ID);
+        LOG(error) << ssError.str();
         return true;
     }
 
@@ -575,9 +585,13 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
 bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIVATE_USER_TASK>::ptr_t _attachment,
                                                  SSenderInfo& _sender)
 {
-    // take slot ID from the command attachment
-    auto slot_it = m_slots.find(_attachment->m_id);
-    if (slot_it == m_slots.end())
+
+    SSlotInfo::SSlotInfoPtr_t slot;
+    try
+    {
+        slot = getSlotInfoById(_attachment->m_id);
+    }
+    catch (exception& _e)
     {
         LOG(error) << "Received activation command. Wrong slot ID.";
         // Send response back to server
@@ -589,9 +603,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         return true;
     }
 
-    const SSlotInfo& slot = slot_it->second;
-
-    const string sUsrExe(slot.m_sUsrExe);
+    const string sUsrExe(slot->m_sUsrExe);
 
     if (sUsrExe.empty())
     {
@@ -612,27 +624,27 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     {
         // set task's environment
         LOG(info) << "Setting up task's environment: "
-                  << "DDS_TASK_ID:" << slot.m_taskID << " DDS_TASK_INDEX:" << slot.m_taskIndex
-                  << " DDS_COLLECTION_INDEX:" << slot.m_collectionIndex << " DDS_TASK_PATH:" << slot.m_taskPath
-                  << " DDS_GROUP_NAME:" << slot.m_groupName << " DDS_COLLECTION_NAME:" << slot.m_collectionName
-                  << " DDS_TASK_NAME:" << slot.m_taskName << " DDS_SLOT_ID:" << slot.m_id
+                  << "DDS_TASK_ID:" << slot->m_taskID << " DDS_TASK_INDEX:" << slot->m_taskIndex
+                  << " DDS_COLLECTION_INDEX:" << slot->m_collectionIndex << " DDS_TASK_PATH:" << slot->m_taskPath
+                  << " DDS_GROUP_NAME:" << slot->m_groupName << " DDS_COLLECTION_NAME:" << slot->m_collectionName
+                  << " DDS_TASK_NAME:" << slot->m_taskName << " DDS_SLOT_ID:" << slot->m_id
                   << " DDS_SESSION_ID: " << dds::env_prop<dds::EEnvProp::dds_session_id>();
-        if (::setenv("DDS_TASK_ID", to_string(slot.m_taskID).c_str(), 1) == -1)
+        if (::setenv("DDS_TASK_ID", to_string(slot->m_taskID).c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_TASK_ID");
-        if (::setenv("DDS_TASK_INDEX", to_string(slot.m_taskIndex).c_str(), 1) == -1)
+        if (::setenv("DDS_TASK_INDEX", to_string(slot->m_taskIndex).c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_TASK_INDEX");
-        if (slot.m_collectionIndex != numeric_limits<uint32_t>::max())
-            if (::setenv("DDS_COLLECTION_INDEX", to_string(slot.m_collectionIndex).c_str(), 1) == -1)
+        if (slot->m_collectionIndex != numeric_limits<uint32_t>::max())
+            if (::setenv("DDS_COLLECTION_INDEX", to_string(slot->m_collectionIndex).c_str(), 1) == -1)
                 throw dds::misc::system_error("Failed to set up $DDS_COLLECTION_INDEX");
-        if (::setenv("DDS_TASK_PATH", slot.m_taskPath.c_str(), 1) == -1)
+        if (::setenv("DDS_TASK_PATH", slot->m_taskPath.c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_TASK_PATH");
-        if (::setenv("DDS_GROUP_NAME", slot.m_groupName.c_str(), 1) == -1)
+        if (::setenv("DDS_GROUP_NAME", slot->m_groupName.c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_GROUP_NAME");
-        if (::setenv("DDS_COLLECTION_NAME", slot.m_collectionName.c_str(), 1) == -1)
+        if (::setenv("DDS_COLLECTION_NAME", slot->m_collectionName.c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_COLLECTION_NAME");
-        if (::setenv("DDS_TASK_NAME", slot.m_taskName.c_str(), 1) == -1)
+        if (::setenv("DDS_TASK_NAME", slot->m_taskName.c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_TASK_NAME");
-        if (::setenv("DDS_SLOT_ID", to_string(slot.m_id).c_str(), 1) == -1)
+        if (::setenv("DDS_SLOT_ID", to_string(slot->m_id).c_str(), 1) == -1)
             throw dds::misc::system_error("Failed to set up $DDS_SLOT_ID");
 
         // execute the task
@@ -641,8 +653,8 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         // Task output files: <user_task_name>_<datetime>_<task_id>_<out/err>.log
         const time_t now{ chrono::system_clock::to_time_t(chrono::system_clock::now()) };
         stringstream ssTaskOutput;
-        ssTaskOutput << CUserDefaults::getDDSPath() << slot.m_taskName << "_"
-                     << put_time(localtime(&now), "%Y-%m-%d-%H-%M-%S") << "_" << slot.m_taskID;
+        ssTaskOutput << CUserDefaults::getDDSPath() << slot->m_taskName << "_"
+                     << put_time(localtime(&now), "%Y-%m-%d-%H-%M-%S") << "_" << slot->m_taskID;
         const string sTaskStdOut(ssTaskOutput.str() + "_out.log");
         const string sTaskStdErr(ssTaskOutput.str() + "_err.log");
 
@@ -657,9 +669,9 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
             throw runtime_error("Failed to open task wrapper template.");
         string sTaskWrapperContent((istreambuf_iterator<char>(fTaskWrapper)), istreambuf_iterator<char>());
         // JOB SCRIPT ---  Custom environment
-        if (!slot.m_sUsrEnv.empty())
+        if (!slot->m_sUsrEnv.empty())
         {
-            boost::replace_all(sTaskWrapperContent, "# %DDS_USER_ENVIRONMENT%", "source " + slot.m_sUsrEnv);
+            boost::replace_all(sTaskWrapperContent, "# %DDS_USER_ENVIRONMENT%", "source " + slot->m_sUsrEnv);
         }
         // JOB SCRIPT --- Task Executable
         boost::replace_all(sTaskWrapperContent, "# %DDS_USER_TASK%", sUsrExe);
@@ -699,7 +711,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
     ss << "User task (pid:" << pidUsrTask << ") is activated.";
     LOG(info) << ss.str();
 
-    onNewUserTask(slot.m_id, pidUsrTask);
+    onNewUserTask(slot->m_id, pidUsrTask);
 
     // Send response back to server
     pushMsg<cmdREPLY>(SReplyCmd(ss.str(), (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdACTIVATE_USER_TASK),
@@ -713,12 +725,14 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
 {
     try
     {
-        auto& slot = getSlotInfoById(_sender.m_ID);
+        LOG(info) << "Received a STOP_USER_TASK request, slot id = " << _sender.m_ID;
+        SSlotInfo::SSlotInfoPtr_t slot = getSlotInfoById(_sender.m_ID);
 
-        if (slot.m_taskID == 0)
+        if (slot->m_taskID == 0)
         {
             // No running tasks, nothing to stop
             // Send response back to server
+            LOG(info) << "No tasks is running. Nothing to stop. Slot id = " << _sender.m_ID;
             pushMsg<cmdREPLY>(SReplyCmd("No tasks is running. Nothing to stop.",
                                         (uint16_t)SReplyCmd::EStatusCode::OK,
                                         0,
@@ -727,15 +741,16 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
             return true;
         }
 
-        if (slot.m_pid > 0)
+        if (slot->m_pid > 0)
         {
             // Prevent blocking of the current thread.
             // The term-kill logic is posted to a different free thread in the queue.
+            LOG(info) << "Scheduling a task stop for Slot id = " << _sender.m_ID << "; pid = " << slot->m_pid;
             m_ioContext.post(
-                [this, &slot, id = _sender.m_ID]
+                [this, slot, id = _sender.m_ID]
                 {
                     terminateChildrenProcesses(
-                        slot.m_pid,
+                        slot->m_pid,
                         [this, id]()
                         {
                             // Once child termionation is finished, send User task "Done" to the commander
@@ -758,25 +773,25 @@ bool CCommanderChannel::on_cmdADD_SLOT(SCommandAttachmentImpl<cmdADD_SLOT>::ptr_
     LOG(info) << "Received a ADD SLOT request, id = " << _attachment->m_id;
 
     // Add new Task slot
-    SSlotInfo info;
-    info.m_id = _attachment->m_id;
+    SSlotInfo::SSlotInfoPtr_t info = make_shared<SSlotInfo::SSlotInfoPtr_t::element_type>();
+    info->m_id = _attachment->m_id;
 
     // TODO: catch exception if directory can not be created
     fs::path dir(CUserDefaults::instance().getSlotsRootDir());
-    dir /= to_string(info.m_id);
+    dir /= to_string(info->m_id);
     fs::create_directories(dir);
 
     // Add shared memory output for intercom API task
-    m_intercomChannel->addOutput(info.m_id, CUserDefaults::instance().getSMLeaderOutputName(info.m_id));
+    m_intercomChannel->addOutput(info->m_id, CUserDefaults::instance().getSMLeaderOutputName(info->m_id));
 
     {
         lock_guard<mutex> lock(m_mutexSlots);
-        m_slots.insert(make_pair(info.m_id, info));
+        m_slots.insert(make_pair(info->m_id, info));
     }
 
     // Confirm to commander the new slot
     SIDCmd msg_cmd;
-    msg_cmd.m_id = info.m_id;
+    msg_cmd.m_id = info->m_id;
     pushMsg<cmdREPLY_ADD_SLOT>(msg_cmd);
 
     return true;
@@ -809,8 +824,8 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
     try
     {
         // Add a new task to the watchdog list
-        auto& slot = getSlotInfoById(_slotID);
-        slot.m_pid = _pid;
+        SSlotInfo::SSlotInfoPtr_t slot = getSlotInfoById(_slotID);
+        slot->m_pid = _pid;
     }
     catch (exception& _e)
     {
@@ -869,7 +884,7 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
                     }
                     LOG(info) << "User Tasks on slot " << _slotID
                               << " cannot be found. Probably it has exited. pid = " << _pid;
-                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
+                    LOG(info) << "Stopping the watchdog for slot " << _slotID << " pid = " << _pid;
 
                     taskExited(_slotID, 0);
 
@@ -906,7 +921,7 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
                     else
                         LOG(info) << "User task on slot " << _slotID << " exited with unexpected status: " << status;
 
-                    LOG(info) << "Stopping the watchdog for user task " << _slotID << " pid = " << _pid;
+                    LOG(info) << "Stopping the watchdog for slot " << _slotID << " pid = " << _pid;
 
                     // Note: The value from WEXITSTATUS(status) is valid only if WIFEXITED returned true.
                     LOG(info) << "slot = " << _slotID << " pid = " << _pid
@@ -1027,16 +1042,18 @@ void CCommanderChannel::terminateChildrenProcesses(
     // Prevent blocking of the current thread.
     // The term-kill logic is posted to a different free thread in the queue.
     // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
-    timer->async_wait([this, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ move(timer) }](
-                          const boost::system::error_code& /*_error*/) mutable
-                      { terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot); });
+    auto self(this->shared_from_this());
+    timer->async_wait([this, self, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ move(timer) }](
+                          const boost::system::error_code& _error) mutable
+                      { terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot, _error); });
 }
 
 void CCommanderChannel::terminateChildrenProcesses(
     CCommanderChannel::timerPtr_t& _timer,
     const CCommanderChannel::pidContainer_t& _children,
     const chrono::steady_clock::time_point& _wait_until,
-    const CCommanderChannel::terminateChildrenOnComplete_t& _onCompleteSlot)
+    const CCommanderChannel::terminateChildrenOnComplete_t& _onCompleteSlot,
+    const boost::system::error_code& _error)
 {
     bool bAllDone(true);
     for (auto const& pid : _children)
@@ -1058,14 +1075,15 @@ void CCommanderChannel::terminateChildrenProcesses(
     }
 
     auto duration = chrono::duration_cast<chrono::milliseconds>(_wait_until - chrono::steady_clock::now());
-    if (duration.count() > 0)
+    if (!_error && duration.count() > 0)
     {
         // Prevent blocking of the current thread.
         // The term-kill logic is posted to a different free thread in the queue.
         // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
-        _timer->async_wait([this, _children, _wait_until, _onCompleteSlot, timer{ move(_timer) }](
-                               const boost::system::error_code& /*_error*/) mutable
-                           { terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot); });
+        auto self(this->shared_from_this());
+        _timer->async_wait([this, self, _children, _wait_until, _onCompleteSlot, timer{ move(_timer) }](
+                               const boost::system::error_code& _error) mutable
+                           { terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot, _error); });
     }
     else
     {
@@ -1094,15 +1112,15 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
     try
     {
         // Add a new task to the watchdog list
-        auto& slot = getSlotInfoById(_slotID);
+        SSlotInfo::SSlotInfoPtr_t slot = getSlotInfoById(_slotID);
 
         {
             lock_guard<mutex> lock(m_taskIDToSlotIDMapMutex);
-            m_taskIDToSlotIDMap.erase(slot.m_taskID);
+            m_taskIDToSlotIDMap.erase(slot->m_taskID);
         }
 
         // Remove tasks assets
-        for (const auto& asset : slot.m_taskAssets)
+        for (const auto& asset : slot->m_taskAssets)
         {
             try
             {
@@ -1113,16 +1131,16 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
             {
             }
         }
-        slot.m_taskAssets.clear();
+        slot->m_taskAssets.clear();
 
         // Save values before we reset them
         SUserTaskDoneCmd cmd;
         cmd.m_exitCode = _exitCode;
-        cmd.m_taskID = slot.m_taskID;
+        cmd.m_taskID = slot->m_taskID;
 
         // reset slot info
-        slot.m_pid = 0;
-        slot.m_taskID = 0;
+        slot->m_pid = 0;
+        slot->m_taskID = 0;
 
         // Drainning the Intercom write queue
         m_intercomChannel->drainWriteQueue(true, _slotID);
@@ -1137,7 +1155,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
     }
 }
 
-SSlotInfo& CCommanderChannel::getSlotInfoById(const slotId_t& _slotID)
+dds::agent_cmd::SSlotInfo::SSlotInfoPtr_t CCommanderChannel::getSlotInfoById(const slotId_t& _slotID)
 {
     lock_guard<mutex> lock(m_mutexSlots);
     auto it = m_slots.find(_slotID);
