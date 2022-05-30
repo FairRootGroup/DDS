@@ -17,6 +17,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <mutex>
 
 namespace dds
 {
