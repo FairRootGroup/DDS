@@ -92,6 +92,7 @@ int main(int argc, char* argv[])
         requestInfo.m_instances = options.m_number;
         requestInfo.m_minInstances = options.m_minInstances;
         requestInfo.m_slots = options.m_slots;
+        requestInfo.m_flags = options.m_flags;
         requestInfo.m_pluginPath = options.m_sPath;
         requestInfo.m_groupName = options.m_groupName;
         requestInfo.m_submissionTag = options.m_submissionTag;

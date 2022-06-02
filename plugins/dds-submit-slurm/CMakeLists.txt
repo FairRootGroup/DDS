@@ -9,6 +9,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
   dds_misc_lib
   dds_user_defaults_lib
+  dds_tools_lib
   dds_intercom_lib
   dds_pipe_log_engine_lib
   Boost::boost

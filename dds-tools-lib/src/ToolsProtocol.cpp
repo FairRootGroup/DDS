@@ -171,11 +171,36 @@ SSubmitRequestData::SSubmitRequestData(const boost::property_tree::ptree& _pt)
     fromPT(_pt);
 }
 
+void SSubmitRequestData::setFlag(const ESubmitRequestFlags& _flag, bool _value)
+{
+    m_flagContainer.set((uint32_t)_flag, _value);
+    m_flags = m_flagContainer.to_ulong();
+}
+
+void SSubmitRequestData::setFlag(flagContainer_t* _flagContainer, const ESubmitRequestFlags& _flag, bool _value)
+{
+    if (_flagContainer == nullptr)
+        return;
+
+    _flagContainer->set((uint32_t)_flag, _value);
+}
+bool SSubmitRequestData::isFlagEnabled(const ESubmitRequestFlags& _flag) const
+{
+    return (m_flagContainer.test((uint32_t)_flag));
+}
+
+bool SSubmitRequestData::isFlagEnabled(const uint32_t& _flagContainer, const ESubmitRequestFlags& _flag)
+{
+    flagContainer_t container{ _flagContainer };
+    return (container.test(((uint32_t)_flag)));
+}
+
 void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 {
-    _pt.put<int>("instances", m_instances);
-    _pt.put<int>("minInstances", m_minInstances);
-    _pt.put<int>("slots", m_slots);
+    _pt.put<uint32_t>("instances", m_instances);
+    _pt.put<uint32_t>("minInstances", m_minInstances);
+    _pt.put<uint32_t>("slots", m_slots);
+    _pt.put<uint32_t>("flags", m_flags);
     _pt.put<string>("config", m_config);
     _pt.put<string>("rms", m_rms);
     _pt.put<string>("pluginPath", m_pluginPath);
@@ -186,9 +211,13 @@ void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
 
 void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 {
-    m_instances = _pt.get<int>("instances", 0);
-    m_minInstances = _pt.get<int>("minInstances", 0);
-    m_slots = _pt.get<int>("slots", 0);
+    m_instances = _pt.get<uint32_t>("instances", 0);
+    m_minInstances = _pt.get<uint32_t>("minInstances", 0);
+    m_slots = _pt.get<uint32_t>("slots", 0);
+
+    m_flags = _pt.get<uint32_t>("flags", 0);
+    m_flagContainer = { m_flags };
+
     m_config = _pt.get<string>("config", "");
     m_rms = _pt.get<string>("rms", "");
     m_pluginPath = _pt.get<string>("pluginPath", "");
@@ -200,9 +229,10 @@ void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
 bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
 {
     return (SBaseData::operator==(_val) && m_rms == _val.m_rms && m_instances == _val.m_instances &&
-            m_slots == _val.m_slots && m_config == _val.m_config && m_pluginPath == _val.m_pluginPath &&
-            m_groupName == _val.m_groupName && m_submissionTag == _val.m_submissionTag &&
-            m_envCfgFilePath == _val.m_envCfgFilePath && m_minInstances == _val.m_minInstances);
+            m_slots == _val.m_slots && m_flags == _val.m_flags && m_config == _val.m_config &&
+            m_pluginPath == _val.m_pluginPath && m_groupName == _val.m_groupName &&
+            m_submissionTag == _val.m_submissionTag && m_envCfgFilePath == _val.m_envCfgFilePath &&
+            m_minInstances == _val.m_minInstances);
 }
 
 // We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
@@ -216,7 +246,7 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; instances: " << _data.m_instances
                        << "; minInstances: " << _data.m_minInstances << "; slots: " << _data.m_slots
-                       << "; config: " << _data.m_config << "; rms: " << _data.m_rms
+                       << "; falgs: " << _data.m_flags << "; config: " << _data.m_config << "; rms: " << _data.m_rms
                        << "; pluginPath: " << _data.m_pluginPath << "; groupName: " << _data.m_groupName
                        << "; submissionTag: " << _data.m_submissionTag
                        << "; envCfgFilePath: " << _data.m_envCfgFilePath;

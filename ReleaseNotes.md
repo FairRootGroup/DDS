@@ -29,6 +29,7 @@ Added: Users can specify a GroupName tag for each submission. This tag will be a
 Added: Users can provide a Submission Tag (--submission-tag). DDS RMS plug-ins will use this tag to name RMS jobs and directories. (GH-426)    
 Added: The command learned a new argument --env-config/-e. It can be used to define a custom environment script for each agent. (GH-430)    
 Added: The command learned a new argument --min-instances. It can be used to provide the minimum number of agents to spawn. (GH-434) 
+Added: The command learned a new argument --enable-overbooking. The flag instructs DDS RMS plug-ing to not specify any CPU requirement for RMS jobs. (GH-442)   
 
 ### dds-topology
 Fixed: Stability improvements.     
@@ -46,7 +47,7 @@ Added: Support for SubmissionID (GH-411)
 Added: Support of minimum number of agents to spawn. (GH-434)   
 Modified: Replace array job submission with nodes requirement. (GH-430)    
 Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)   
-Modified: Remove #SBATCH --cpus-per-task=%DDS_NSLOTS%. (GH-442)     
+Modified: The #SBATCH --cpus-per-task=%DDS_NSLOTS% requirment is now can be disiabled by providing the "enable-overbooking" flag (ToolsAPI or dds-submit). (GH-442)     
 
 ### dds-localhost-plugin
 Added: Support for SubmissionID (GH-411)    
@@ -56,6 +57,7 @@ Modified: Logs of user processes which use Tools API are moved now to the DDS ro
 Modified: CSession::waitForNumAgents is renamed to CSession::waitForNumSlots. (GH-439)     
 Added: An ability to unsubscribe from either individual events or all events of requests. (GH-382)    
 Added: SAgentInfoResponseData provides the agent group name. (GH-415)    
+Added: SSubmitRequestData supports flags. See SSubmitRequestData::setFlag and SSubmitRequestData::ESubmitRequestFlags. (GH-442)    
 
 ### dds-user-defaults
 Modified: Bumo the version to 0.5     

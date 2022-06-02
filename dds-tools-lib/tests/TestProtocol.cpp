@@ -96,6 +96,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             testData.m_config = "string";
             testData.m_pluginPath = "string";
             testData.m_requestID = 123;
+            testData.setFlag(SSubmitRequestData::ESubmitRequestFlags::enable_overbooking, true);
 
             SSubmitRequestData data(child.second);
 
@@ -104,6 +105,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol)
             ss << data;
 
             BOOST_CHECK(data == testData);
+            BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_overbooking));
         }
         else if (tag == "topology")
         {

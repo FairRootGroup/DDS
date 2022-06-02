@@ -21,6 +21,7 @@
 #include "PipeLogEngine.h"
 #include "Process.h"
 #include "SysHelper.h"
+#include "ToolsProtocol.h"
 #include "UserDefaults.h"
 
 using namespace std;
@@ -159,6 +160,18 @@ int main(int argc, char* argv[])
 
                     // Replace %DDS_NSLOTS%
                     boost::replace_all(sSrcScript, "%DDS_NSLOTS%", to_string(_submit.m_slots));
+
+                    // #DDS_AGENT_CPU_REQUIREMENT
+                    if (!dds::tools_api::SSubmitRequestData::isFlagEnabled(
+                            _submit.m_flags,
+                            dds::tools_api::SSubmitRequestData::ESubmitRequestFlags::enable_overbooking))
+                    {
+                        stringstream ss;
+                        ss << "#SBATCH --cpus-per-task=" << _submit.m_slots;
+                        boost::replace_all(sSrcScript, "#DDS_AGENT_CPU_REQUIREMENT", ss.str());
+                    }
+                    else
+                        boost::replace_all(sSrcScript, "#DDS_AGENT_CPU_REQUIREMENT", "");
 
                     // Replace %DDS_SUBMISSION_TAG%
                     boost::replace_all(sSrcScript, "%DDS_SUBMISSION_TAG%", _submit.m_submissionTag);
