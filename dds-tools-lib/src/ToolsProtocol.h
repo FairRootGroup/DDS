@@ -77,13 +77,30 @@ namespace dds
         /// \brief Structure holds information of a submit request.
         struct SSubmitRequestData : SBaseRequestData<SSubmitRequestData>
         {
+            /// \brief Additional flags of the SSubmitRequestData
+            /// Uee SSubmitRequestData::setFlag to set flags.
+            enum class ESubmitRequestFlags : uint32_t
+            {
+                enable_overbooking,
+                //----------
+                size_value
+            };
+
+            using flagContainer_t = std::bitset<(uint32_t)ESubmitRequestFlags::size_value>;
+
             SSubmitRequestData();
             SSubmitRequestData(const boost::property_tree::ptree& _pt);
+
+            void setFlag(const ESubmitRequestFlags& _flag, bool _value);
+            static void setFlag(flagContainer_t* _flagContainer, const ESubmitRequestFlags& _flag, bool _value);
+            bool isFlagEnabled(const ESubmitRequestFlags& _flag) const;
+            static bool isFlagEnabled(const uint32_t& _flagContainer, const ESubmitRequestFlags& _flag);
 
             std::string m_rms;            ///< RMS.
             uint32_t m_instances = 0;     ///< A number of instances.
             uint32_t m_minInstances = 0;  ///< A minimum number of instances.
-            uint32_t m_slots = 0;         /// < Number of task slots.
+            uint32_t m_slots = 0;         ///< Number of task slots.
+            uint32_t m_flags = 0;         ///< Additional flags, see SSubmitRequestData::ESubmitRequestFlags
             std::string m_config;         ///< A path to the configuration file.
             std::string m_pluginPath;     ///< Optional. A plug-in's directory search path
             std::string m_groupName;      ///<  A group name of agents.
@@ -102,6 +119,9 @@ namespace dds
             bool operator==(const SSubmitRequestData& _val) const;
             /// \brief Ostream operator.
             friend std::ostream& operator<<(std::ostream& _os, const SSubmitRequestData& _data);
+
+          private:
+            flagContainer_t m_flagContainer;
         };
 
         /// \brief Request class of submit.

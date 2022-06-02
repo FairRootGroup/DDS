@@ -20,6 +20,7 @@
                 "rms": "string",
                 "instances": 123,
                 "slots" : 15,
+				"flags" : 1,
                 "config": "string",
                 "pluginPath": "string",
                 "requestID": 123

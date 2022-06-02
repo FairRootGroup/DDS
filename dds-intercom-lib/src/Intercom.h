@@ -166,6 +166,7 @@ namespace dds
             uint32_t m_nInstances;        ///< A number of instances.
             uint32_t m_nMinInstances;     ///< A minimum number of instances.
             uint32_t m_slots;             ///< A number of task slots.
+            uint32_t m_flags;             ///< Additional flags, see SSubmitRequestData::ESubmitRequestFlags
             std::string m_cfgFilePath;    ///< A path to the configuration file.
             std::string m_id;             ///< ID for communication with DDS commander.
             std::string m_wrkPackagePath; ///< A full path of the agent worker package, which needs to be deployed.

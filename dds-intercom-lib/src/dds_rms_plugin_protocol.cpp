@@ -54,9 +54,10 @@ std::string SSubmit::toJSON()
     ptree pt;
 
     pt.put<string>("dds.plug-in.id", m_id);
-    pt.put<int>("dds.plug-in.submit.nInstances", m_nInstances);
-    pt.put<int>("dds.plug-in.submit.nMinInstances", m_nMinInstances);
-    pt.put<int>("dds.plug-in.submit.slots", m_slots);
+    pt.put<uint32_t>("dds.plug-in.submit.nInstances", m_nInstances);
+    pt.put<uint32_t>("dds.plug-in.submit.nMinInstances", m_nMinInstances);
+    pt.put<uint32_t>("dds.plug-in.submit.slots", m_slots);
+    pt.put<uint32_t>("dds.plug-in.submit.flags", m_flags);
     pt.put<string>("dds.plug-in.submit.cfgFilePath", m_cfgFilePath);
     pt.put<string>("dds.plug-in.submit.wrkPackagePath", m_wrkPackagePath);
     pt.put<string>("dds.plug-in.submit.groupName", m_groupName);
@@ -79,9 +80,10 @@ void SSubmit::fromJSON(const std::string& _json)
 void SSubmit::fromPT(const boost::property_tree::ptree& _pt)
 {
     const ptree& pt = _pt.get_child("dds.plug-in");
-    m_nInstances = pt.get<int>("submit.nInstances", 0);
-    m_nMinInstances = pt.get<int>("submit.nMinInstances", 0);
-    m_slots = pt.get<int>("submit.slots", 0);
+    m_nInstances = pt.get<uint32_t>("submit.nInstances", 0);
+    m_nMinInstances = pt.get<uint32_t>("submit.nMinInstances", 0);
+    m_slots = pt.get<uint32_t>("submit.slots", 0);
+    m_flags = pt.get<uint32_t>("submit.flags", 0);
     m_cfgFilePath = pt.get<string>("submit.cfgFilePath", "");
     m_wrkPackagePath = pt.get<string>("submit.wrkPackagePath", "");
     m_id = pt.get<string>("id");
@@ -92,9 +94,9 @@ void SSubmit::fromPT(const boost::property_tree::ptree& _pt)
 bool SSubmit::operator==(const SSubmit& _val) const
 {
     return (m_id == _val.m_id) && (m_nInstances == _val.m_nInstances) && (m_slots == _val.m_slots) &&
-           (m_cfgFilePath == _val.m_cfgFilePath) && (m_wrkPackagePath == _val.m_wrkPackagePath) &&
-           (m_groupName == _val.m_groupName) && (m_submissionTag == _val.m_submissionTag) &&
-           (m_nMinInstances == _val.m_nMinInstances);
+           (m_flags == _val.m_flags) && (m_cfgFilePath == _val.m_cfgFilePath) &&
+           (m_wrkPackagePath == _val.m_wrkPackagePath) && (m_groupName == _val.m_groupName) &&
+           (m_submissionTag == _val.m_submissionTag) && (m_nMinInstances == _val.m_nMinInstances);
 }
 
 ///////////////////////////////////

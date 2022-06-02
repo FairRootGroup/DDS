@@ -1102,6 +1102,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         submitRequest.m_nInstances = _submitInfo.m_instances;
         submitRequest.m_nMinInstances = _submitInfo.m_minInstances;
         submitRequest.m_slots = _submitInfo.m_slots;
+        submitRequest.m_flags = _submitInfo.m_flags;
         submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath(sSubmissionID);
         submitRequest.m_groupName = _submitInfo.m_groupName;
         submitRequest.m_submissionTag = _submitInfo.m_submissionTag;
