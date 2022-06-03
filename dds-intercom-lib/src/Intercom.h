@@ -172,6 +172,7 @@ namespace dds
             std::string m_wrkPackagePath; ///< A full path of the agent worker package, which needs to be deployed.
             std::string m_groupName;      ///< Agent group name
             std::string m_submissionTag;  ///< Submission tag. It can be used by RMS to name dds jobs and direcrtories.
+            std::string m_inlineConfig;   ///< Content of this buffer will be added to the RMS job configuration file.
         };
 
         /// \brief Structure holds information of message notification.

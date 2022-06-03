@@ -1106,6 +1106,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         submitRequest.m_wrkPackagePath = CUserDefaults::instance().getWrkScriptPath(sSubmissionID);
         submitRequest.m_groupName = _submitInfo.m_groupName;
         submitRequest.m_submissionTag = _submitInfo.m_submissionTag;
+        submitRequest.m_inlineConfig = _submitInfo.m_inlineConfig;
         m_SubmitAgents.m_strInitialSubmitRequest = submitRequest.toJSON();
 
         string sPluginInfoMsg("RMS plug-in: ");

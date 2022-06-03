@@ -30,6 +30,7 @@ Added: Users can provide a Submission Tag (--submission-tag). DDS RMS plug-ins w
 Added: The command learned a new argument --env-config/-e. It can be used to define a custom environment script for each agent. (GH-430)    
 Added: The command learned a new argument --min-instances. It can be used to provide the minimum number of agents to spawn. (GH-434) 
 Added: The command learned a new argument --enable-overbooking. The flag instructs DDS RMS plug-ing to not specify any CPU requirement for RMS jobs. (GH-442)   
+Added: The command learned a new argument --inline-config. Content of this string will be added to the RMS job configuration file as is. It can be specified multiple times to add multiline options. (GH-449)     
 
 ### dds-topology
 Fixed: Stability improvements.     
@@ -58,6 +59,7 @@ Modified: CSession::waitForNumAgents is renamed to CSession::waitForNumSlots. (G
 Added: An ability to unsubscribe from either individual events or all events of requests. (GH-382)    
 Added: SAgentInfoResponseData provides the agent group name. (GH-415)    
 Added: SSubmitRequestData supports flags. See SSubmitRequestData::setFlag and SSubmitRequestData::ESubmitRequestFlags. (GH-442)    
+Added: Users can define additional job RMS configuration via SSubmitRequestData::m_inlineConfig. It will be inlined as is into the final job script. (GH-449)   
 
 ### dds-user-defaults
 Modified: Bump the version to 0.5     

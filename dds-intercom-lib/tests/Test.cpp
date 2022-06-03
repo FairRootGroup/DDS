@@ -59,6 +59,7 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
          << "\"wrkPackagePath\": \"/path/to/cfg/DDSWorker\","
          << "\"groupName\": \"TestGroup\","
          << "\"submissionTag\": \"TestSubmissionTag\","
+         << "\"inlineConfig\": \"test=23\ntest2=56\","
          << "},"
          << "\"message\":"
          << "{"
@@ -85,6 +86,7 @@ BOOST_AUTO_TEST_CASE(test_protocol_parser_1)
             BOOST_CHECK(_submit.m_id == "plug-in-id");
             BOOST_CHECK(_submit.m_groupName == "TestGroup");
             BOOST_CHECK(_submit.m_submissionTag == "TestSubmissionTag");
+            BOOST_CHECK(_submit.m_inlineConfig == "test=23\ntest2=56");
         });
 
     parser.onMessage(

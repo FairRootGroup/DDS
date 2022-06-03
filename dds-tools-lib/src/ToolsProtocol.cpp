@@ -207,6 +207,7 @@ void SSubmitRequestData::_toPT(boost::property_tree::ptree& _pt) const
     _pt.put<string>("groupName", m_groupName);
     _pt.put<string>("submissionTag", m_submissionTag);
     _pt.put<string>("envCfgFilePath", m_envCfgFilePath);
+    _pt.put<string>("inlineConfig", m_inlineConfig);
 }
 
 void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
@@ -224,6 +225,7 @@ void SSubmitRequestData::_fromPT(const boost::property_tree::ptree& _pt)
     m_groupName = _pt.get<string>("groupName", "");
     m_submissionTag = _pt.get<string>("submissionTag", "");
     m_envCfgFilePath = _pt.get<string>("envCfgFilePath", "");
+    m_inlineConfig = _pt.get<string>("inlineConfig", "");
 }
 
 bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
@@ -232,7 +234,7 @@ bool SSubmitRequestData::operator==(const SSubmitRequestData& _val) const
             m_slots == _val.m_slots && m_flags == _val.m_flags && m_config == _val.m_config &&
             m_pluginPath == _val.m_pluginPath && m_groupName == _val.m_groupName &&
             m_submissionTag == _val.m_submissionTag && m_envCfgFilePath == _val.m_envCfgFilePath &&
-            m_minInstances == _val.m_minInstances);
+            m_minInstances == _val.m_minInstances && m_inlineConfig == _val.m_inlineConfig);
 }
 
 // We need to put function implementation in the same "dds::tools_api" namespace as a friend function declaration.
@@ -248,8 +250,8 @@ namespace dds
                        << "; minInstances: " << _data.m_minInstances << "; slots: " << _data.m_slots
                        << "; falgs: " << _data.m_flags << "; config: " << _data.m_config << "; rms: " << _data.m_rms
                        << "; pluginPath: " << _data.m_pluginPath << "; groupName: " << _data.m_groupName
-                       << "; submissionTag: " << _data.m_submissionTag
-                       << "; envCfgFilePath: " << _data.m_envCfgFilePath;
+                       << "; submissionTag: " << _data.m_submissionTag << "; envCfgFilePath: " << _data.m_envCfgFilePath
+                       << "; inlineConfig: " << _data.m_inlineConfig;
         }
     } // namespace tools_api
 } // namespace dds

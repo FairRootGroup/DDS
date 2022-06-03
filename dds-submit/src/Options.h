@@ -41,6 +41,7 @@ namespace dds
             std::string m_submissionTag;
             std::string m_envCfgFilePath;
             bool m_bEnableOverbooking{ false };
+            std::vector<std::string> m_inlineConfig;
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -76,6 +77,12 @@ namespace dds
                                   bpo::value<std::string>(&_options->m_envCfgFilePath),
                                   "A path to a user enironment script. Will be execeuted once per agent (valid for all "
                                   "task slots of the agent).\n");
+            options.add_options()(
+                "inline-config",
+                bpo::value<std::vector<std::string>>(&_options->m_inlineConfig)->multitoken(),
+                "Content of this string will be added to the RMS job configuration file as is. It can be specified "
+                "multiple times, example: dds-submit -r slurm -n 5 --slots=10 --inline-config=\"#SBATCH "
+                "--cpus-per-task=124\" --inline-config=\"#SBATCH --test=45\"");
             options.add_options()("path",
                                   bpo::value<std::string>(&_options->m_sPath),
                                   "A plug-in's directory search path. It can be used for external RMS plug-ins.");
@@ -113,6 +120,7 @@ namespace dds
             dds::misc::conflicting_options(vm, "list", "rms");
             dds::misc::conflicting_options(vm, "list", "config");
             dds::misc::conflicting_options(vm, "list", "env-config");
+            dds::misc::conflicting_options(vm, "list", "inline-config");
             dds::misc::conflicting_options(vm, "list", "slots");
             dds::misc::conflicting_options(vm, "list", "group-name");
             dds::misc::conflicting_options(vm, "list", "submission-tag");

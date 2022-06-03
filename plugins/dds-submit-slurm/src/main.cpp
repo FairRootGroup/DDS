@@ -173,6 +173,9 @@ int main(int argc, char* argv[])
                     else
                         boost::replace_all(sSrcScript, "#DDS_AGENT_CPU_REQUIREMENT", "");
 
+                    // #DDS_INLINE_CONFIG
+                    boost::replace_all(sSrcScript, "#DDS_INLINE_CONFIG", _submit.m_inlineConfig);
+
                     // Replace %DDS_SUBMISSION_TAG%
                     boost::replace_all(sSrcScript, "%DDS_SUBMISSION_TAG%", _submit.m_submissionTag);
 

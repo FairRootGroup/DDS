@@ -10,6 +10,7 @@
 #include <chrono>
 #include <ostream>
 #include <string>
+#include <bitset>
 //// BOOST
 #include <boost/property_tree/ptree.hpp>
 // DDS
@@ -101,12 +102,13 @@ namespace dds
             uint32_t m_minInstances = 0;  ///< A minimum number of instances.
             uint32_t m_slots = 0;         ///< Number of task slots.
             uint32_t m_flags = 0;         ///< Additional flags, see SSubmitRequestData::ESubmitRequestFlags
-            std::string m_config;         ///< A path to the configuration file.
+            std::string m_config;         ///< A path to the RMS job configuration file.
             std::string m_pluginPath;     ///< Optional. A plug-in's directory search path
             std::string m_groupName;      ///<  A group name of agents.
             std::string m_submissionTag;  ///< A Submission Tag
-            std::string m_envCfgFilePath; //< A path to a user enironment script. Will be execeuted once per agent
-                                          //(valid for all task slots of the agent)
+            std::string m_envCfgFilePath; ///< A path to a user enironment script. Will be execeuted once per agent
+                                          ///< (valid for all task slots of the agent)
+            std::string m_inlineConfig;   ///< Content of this buffer will be added to the RMS job configuration file.
 
           private:
             friend SBaseData<SSubmitRequestData>;

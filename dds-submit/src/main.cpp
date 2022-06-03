@@ -100,6 +100,12 @@ int main(int argc, char* argv[])
         requestInfo.m_groupName = options.m_groupName;
         requestInfo.m_submissionTag = options.m_submissionTag;
         requestInfo.m_envCfgFilePath = options.m_envCfgFilePath;
+        for (const auto& i : options.m_inlineConfig)
+        {
+            requestInfo.m_inlineConfig += i;
+            requestInfo.m_inlineConfig += "\n";
+        }
+
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
 
         requestPtr->setMessageCallback(
