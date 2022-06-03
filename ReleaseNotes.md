@@ -22,7 +22,7 @@ Modified: Set debug log severity on Custom command events. (GH-424)
 
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         
-Added: A data retention sanitization. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)    
+Added: A data retention sanitisation. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)    
 
 ### dds-submit
 Added: Users can specify a GroupName tag for each submission. This tag will be assigned to agents and can be used as a requirement in topologies. (GH-407)     
@@ -47,7 +47,7 @@ Added: Support for SubmissionID (GH-411)
 Added: Support of minimum number of agents to spawn. (GH-434)   
 Modified: Replace array job submission with nodes requirement. (GH-430)    
 Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)   
-Modified: The #SBATCH --cpus-per-task=%DDS_NSLOTS% requirment is now can be disiabled by providing the "enable-overbooking" flag (ToolsAPI or dds-submit). (GH-442)     
+Modified: The #SBATCH --cpus-per-task=%DDS_NSLOTS% requirement is now can be disabled by providing the "enable-overbooking" flag (ToolsAPI or dds-submit). (GH-442)     
 
 ### dds-localhost-plugin
 Added: Support for SubmissionID (GH-411)    
@@ -60,7 +60,7 @@ Added: SAgentInfoResponseData provides the agent group name. (GH-415)
 Added: SSubmitRequestData supports flags. See SSubmitRequestData::setFlag and SSubmitRequestData::ESubmitRequestFlags. (GH-442)    
 
 ### dds-user-defaults
-Modified: Bumo the version to 0.5     
+Modified: Bump the version to 0.5     
 Added: A "server.data_retention" configuration key. (GH-435)    
 
 ## v3.6 (2022-01-11)
@@ -76,7 +76,7 @@ Modified: C++17 is now a required standard.
 Modified: Remove an obsolet dds-test tool. (GH-341)    
 Modified: Remove obsolet internal statistics of channels. (GH-341)    
 Added: A cmake option "CREATE_BOOST_SYMLINKS", which enables creation of boost (libboost_*) symlinks in $DDS_LOCATION/lib/. Default is OFF. (GH-199, GH-357)    
-Modified: Refactor internal version implementation. Use a single `Version.h.in` confiuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)    
+Modified: Refactor internal version implementation. Use a single `Version.h.in` configuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)    
 Fixed: `--version` option for `dds-session`.    
 Added: setup DDS environment and create default config file in code. No need to exec DDS_env.sh script anymore. (GH-350)    
 Added: Add a onTaskDone event to ToolsAPI. Using ToolsAPI users are able now to subscribe and receive onTaskDone events whenever a user tasks exists.(GH-370)    
@@ -110,7 +110,7 @@ Modified: DDS Session ID is added to the root path of job's wrk dir and the slur
 
 ### dds-ssh-plugin
 Modified: Remote destination directories are no longer required and will be created automatically at runtime. (GH-349)    
-Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. direcrtory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)    
+Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. directory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)    
 Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)    
 
 ### dds-user-defaults
@@ -136,12 +136,12 @@ Added: new max instances per host requirement ("maxinstances") for tasks and col
 ### DDS common
 Added: Users now can specify custom environment scripts for each task. (GH-24)    
 Modified: Improved cleaning of child processes of user tasks.     
-Fixed: If process is killed or crased it can leave opened and locked interprocess mutex. It leads to hanging boost::interprocess::message_queue::timed_send function. The function tries to write to the queue which is locked by the mutex from the killed process. BOOST implements a workaround flag - BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING. It forces the boost::interprocess to use timed mutexes instead of a simple ones.    
+Fixed: If process is killed or crashed it can leave opened and locked interprocess mutex. It leads to hanging boost::interprocess::message_queue::timed_send function. The function tries to write to the queue which is locked by the mutex from the killed process. BOOST implements a workaround flag - BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING. It forces the boost::interprocess to use timed mutexes instead of a simple ones.    
 
 ### dds-agent
 Modified: Intercom channel got a dedicated service. Now DDS main transport and Intercom work on different threads. (GH-279)    
 Modified: Significantly improved performance of stopping of user tasks.    
-Modified: Improved the logic of stopping of user tasks. The algorithm now recursively enumerates absoltuyly all child process and send first graceful TERM followed by unconditional TERM after a given timeout.   
+Modified: Improved the logic of stopping of user tasks. The algorithm now recursively enumerates absolutely all child process and send first graceful TERM followed by unconditional TERM after a given timeout.   
 
 ### dds-tools-api
 Added: new static API calls CSession::getDefaultSessionIDString and CSession::getDefaultSessionID to get the default session id. (GH-209)    
@@ -157,11 +157,11 @@ Fixed: a bug, which caused the command to block if an unknown plug-in is request
 Fixed: CLI returns 1 if submission failed. (GH-227)    
 
 ### localhost plug-in
-Modified: Requares now the --slots argument.    
+Modified: Requires now the --slots argument.    
 
 ### ssh plug-includes
 Modified: Replace custom thread pool with boost asio's thread__pool.    
-Modified: Improve performence and stability.   
+Modified: Improve performance and stability.   
 
 ## v3.0 (2019-12-11)
 
@@ -202,13 +202,13 @@ Fixed: check that agent's topology hash is the same as commander's one before ta
 Fixed: SIGSEGV in dds-info. (GH-261)   
 Added: --wait option to wait for the required number of agents online. Must be used together with  --active-count, --idle-count, --executing-count.    
 Added: --active-count, --idle-count, --executing-count option to get the number of active, idle or executing agents respectively. These option can be used together with --wait in order to wait for the required number of agents.    
-Removed: --wait-for-idle-agents, --wait-for-executing-agents are obsolete. Replaced with -idle-count, --executing-count options used toghether with --wait option.  
+Removed: --wait-for-idle-agents, --wait-for-executing-agents are obsolete. Replaced with -idle-count, --executing-count options used together with --wait option.  
 
 ## v2.4 (2019-06-18)
 
 ### DDS common
 Fixed: don't copy reachable task to agent's directory. (GH-215)    
-Fixed: WnName requirement is only used for SSH plug-in. For other plug-ins the requirement is skiped with a warning message in the log. (GH-217)    
+Fixed: WnName requirement is only used for SSH plug-in. For other plug-ins the requirement is skipped with a warning message in the log. (GH-217)    
 Fixed: build system writes temporary files only in build directory. (GH-182)   
 Fixed: Workaround wait_for bug in boost::process.    
 Added: support relative task executables. (GH-216)    
@@ -233,7 +233,7 @@ Modified: The watchdog now terminates/kills not only user tasks (parent processe
 ### dds-topology
 Fixed: dds-topology --activate hangs if there are no active agents. (GH-218)    
 Modified: rename "id" to "name" in the topology XML file and topology classes. WARNING: this change is incompatible with an older XML topology files. Rename all "id" attributes and tags to "name" in the XML topology files in order to be compatible with current version of DDS.    
-Added: new CTopology class for publicj user API.    
+Added: new CTopology class for public user API.    
 
 ### dds-protocol
 Removed: cmdDELETE_KEY is obsolete and was removed.    
@@ -248,7 +248,7 @@ Modified: dds-intercom key-value API changed to reflect recent changes in the pr
 Modified: Improve log dir detection algorithm for commander and agents. The new algorithm doesn' rely on DDS_LOG_LOCATION anymore.    
 Added: Get rid of explicit include path mgmt and install CMake package.     
 Added: Improved error reporting for localhost plug-in. In case of failure logs are sent to the user.    
-Added: decentrilized key-value propagation. Lobby leader acts as a mini-commander which creates update key messages and forwards them either locally via shared memory if the receiver is in the same lobby or  to the commnader via network if the receiver is in a different lobby.  (GH-196)    
+Added: decentralised key-value propagation. Lobby leader acts as a mini-commander which creates update key messages and forwards them either locally via shared memory if the receiver is in the same lobby or  to the commnader via network if the receiver is in a different lobby.  (GH-196)    
 
 ### dds\_intercom\_lib
 Removed: notification on key delete CKeyValue::subscribeOnDelete.   
