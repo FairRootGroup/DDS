@@ -17,7 +17,6 @@
 #include "ProtocolCommands.h"
 #include "SubmitCmd.h"
 #include "SysHelper.h"
-#include "ToolsProtocol.h"
 #include "Version.h"
 
 namespace bpo = boost::program_options;
@@ -36,12 +35,12 @@ namespace dds
             size_t m_number{ 0 };
             size_t m_minInstances{ 0 };
             size_t m_slots{ 0 };
-            uint32_t m_flags{ 0 };
             bool m_bListPlugins{ false };
             boost::uuids::uuid m_sid = boost::uuids::nil_uuid();
             std::string m_groupName;
             std::string m_submissionTag;
             std::string m_envCfgFilePath;
+            bool m_bEnableOverbooking{ false };
         } SOptions_t;
         //=============================================================================
         inline std::ostream& operator<<(std::ostream& _stream, const SOptions& val)
@@ -101,7 +100,7 @@ namespace dds
 
             options.add_options()(
                 "enable-overbooking",
-                bpo::bool_switch()->default_value(false),
+                bpo::bool_switch(&_options->m_bEnableOverbooking)->default_value(false),
                 "The flag instructs DDS RMS plug-in to not specify any CPU requirement for RMS jobs. For example, the "
                 "SLURM plug-in will not add the \"#SBATCH --cpus-per-task\" option to the job script. Otherwise "
                 "DDS will try to require as many CPU per agent as tasks slots.");
@@ -193,14 +192,6 @@ namespace dds
                 LOG(dds::misc::log_stderr) << "Value of min-instances is bigger than \"--number\"";
                 return false;
             }
-
-            // Flags
-            dds::tools_api::SSubmitRequestData::flagContainer_t flags;
-            dds::tools_api::SSubmitRequestData::setFlag(
-                &flags,
-                dds::tools_api::SSubmitRequestData::ESubmitRequestFlags::enable_overbooking,
-                vm["enable-overbooking"].as<bool>());
-            _options->m_flags = flags.to_ulong();
 
             // RMS plug-ins are always lower cased
             boost::to_lower(_options->m_sRMS);
