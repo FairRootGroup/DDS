@@ -7,10 +7,10 @@
 #define DDS_TOOLSPROTOCOL_H
 
 // STD
+#include <bitset>
 #include <chrono>
 #include <ostream>
 #include <string>
-#include <bitset>
 //// BOOST
 #include <boost/property_tree/ptree.hpp>
 // DDS

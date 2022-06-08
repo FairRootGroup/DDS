@@ -56,4 +56,13 @@ SpaceBeforeParens: ControlStatements
 
 MacroBlockBegin: "^BEGIN_[A-Z_]*$"
 MacroBlockEnd: "^END_[A-Z_]*$"
+
+---
+Language: Proto
+BasedOnStyle: Google
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true 
+ColumnLimit: 0
+IndentWidth: 4
 ...
+

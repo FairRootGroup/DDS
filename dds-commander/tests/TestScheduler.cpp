@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_performance_1)
     using weak_t = CConnectionManager::weakChannelInfo_t;
     weak_t::container_t weakAgents;
     std::transform(
-        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto {
+        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto{
             return weak_t(_v.m_channel, _v.m_protocolHeaderID, _v.m_isSlot);
         });
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_1)
     using weak_t = CConnectionManager::weakChannelInfo_t;
     weak_t::container_t weakAgents;
     std::transform(
-        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto {
+        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto{
             return weak_t(_v.m_channel, _v.m_protocolHeaderID, _v.m_isSlot);
         });
 
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_2)
     using weak_t = CConnectionManager::weakChannelInfo_t;
     weak_t::container_t weakAgents;
     std::transform(
-        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto {
+        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto{
             return weak_t(_v.m_channel, _v.m_protocolHeaderID, _v.m_isSlot);
         });
 
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(test_dds_scheduler_3)
     using weak_t = CConnectionManager::weakChannelInfo_t;
     weak_t::container_t weakAgents;
     std::transform(
-        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto {
+        agents.begin(), agents.end(), std::back_inserter(weakAgents), [](const auto& _v) -> auto{
             return weak_t(_v.m_channel, _v.m_protocolHeaderID, _v.m_isSlot);
         });
 
