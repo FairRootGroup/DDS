@@ -353,7 +353,7 @@ bool CScheduler::checkRequirements(const topology_api::CTopoRequirement::PtrVect
         else if (type == EType::Custom)
         {
             // ignore custom requirements
-            return true;
+            result = true;
         }
 
         // All requirements must be satisfied at the same time
