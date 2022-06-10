@@ -350,6 +350,11 @@ bool CScheduler::checkRequirements(const topology_api::CTopoRequirement::PtrVect
                 throw runtime_error(ss.str());
             }
         }
+        else if (type == EType::Custom)
+        {
+            // ignore custom requirements
+            return true;
+        }
 
         // All requirements must be satisfied at the same time
         if (!result)
