@@ -49,6 +49,7 @@ Added: Support of minimum number of agents to spawn. (GH-434)
 Modified: Replace array job submission with nodes requirement. (GH-430)    
 Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)   
 Modified: The #SBATCH --cpus-per-task=%DDS_NSLOTS% requirement is now can be disabled by providing the "enable-overbooking" flag (ToolsAPI or dds-submit). (GH-442)     
+Modified: Prevent job termination when downing a single node of the job allocation. (GH-450)    
 
 ### dds-localhost-plugin
 Added: Support for SubmissionID (GH-411)    

@@ -13,6 +13,6 @@
 #DDS_USER_OPTIONS
 
 # execute DDS Scout
-srun --output=slurm-%j-%N.out /usr/bin/env bash -c 'eval JOB_WRK_DIR=%DDS_AGENT_ROOT_WRK_DIR%/${SLURM_JOB_NAME}_${SLURM_JOBID}_${SLURMD_NODENAME}; mkdir -p $JOB_WRK_DIR; cd $JOB_WRK_DIR; cp %DDS_SCOUT% $JOB_WRK_DIR/; ./DDSWorker.sh'
+srun --no-kill --kill-on-bad-exit=0 --output=slurm-%j-%N.out /usr/bin/env bash -c 'eval JOB_WRK_DIR=%DDS_AGENT_ROOT_WRK_DIR%/${SLURM_JOB_NAME}_${SLURM_JOBID}_${SLURMD_NODENAME}; mkdir -p $JOB_WRK_DIR; cd $JOB_WRK_DIR; cp %DDS_SCOUT% $JOB_WRK_DIR/; ./DDSWorker.sh'
 
 exit 0
