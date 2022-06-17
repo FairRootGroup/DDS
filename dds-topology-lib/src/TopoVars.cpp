@@ -43,7 +43,7 @@ void CTopoVars::initFromXML(const string& _filepath)
     if (stream.is_open())
     {
         m_pPropTreePtr = make_unique<propTreePtr_t::element_type>();
-        read_xml(stream, *m_pPropTreePtr, xml_parser::no_comments);
+        read_xml(stream, *m_pPropTreePtr, xml_parser::no_comments|xml_parser::trim_whitespace);
         stream.seekg(0);
 
         initFromPropertyTree(*m_pPropTreePtr);
