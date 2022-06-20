@@ -23,6 +23,11 @@
 #include "SysHelper.h"
 #include "ToolsProtocol.h"
 #include "UserDefaults.h"
+// protobuf
+#include "submit_info.pb.h"
+#include "submit_info_slurm.pb.h"
+#include <google/protobuf/util/time_util.h>
+using google::protobuf::util::TimeUtil;
 
 using namespace std;
 using namespace dds;
@@ -38,6 +43,10 @@ namespace bp = boost::process;
 // file is located in the DDS server working dir
 const LPCSTR g_pipeName = ".dds_slurm_pipe";
 const LPCSTR g_jobIDFile = ".dds_slurm_jobid";
+// TODO: Move this to DDS commander once ToolsAPI supports protobuf.
+// Ideally the commander should create and read this file. Plug-ins will only receive info data blocks via DDS
+// transport.
+const LPCSTR g_submitInfoFile = "submit.inf";
 //=============================================================================
 
 // Command line parser
@@ -73,6 +82,10 @@ bool parseCmdLine(int _argc, char* _argv[], bpo::variables_map* _vm)
 //=============================================================================
 int main(int argc, char* argv[])
 {
+    // Verify that the version of the library that we linked against is
+    // compatible with the version of the headers we compiled against.
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
+
     bpo::variables_map vm;
     if (defaultExecSetup<bpo::variables_map>(argc, argv, &vm, &parseCmdLine) == EXIT_FAILURE)
         return EXIT_FAILURE;
@@ -238,6 +251,36 @@ int main(int argc, char* argv[])
                         {
                             if (fs::exists(pathJobIDFile))
                             {
+                                string rmsJobID;
+                                ifstream f;
+                                f.open(pathJobIDFile.native());
+                                if (f.is_open())
+                                {
+                                    f >> rmsJobID;
+                                }
+                                // Create submit info block
+                                dds::protocol::SlurmSubmitInfo protoSlurmSubmitInfo;
+                                protoSlurmSubmitInfo.add_slurm_job_id(rmsJobID);
+
+                                dds::protocol::SubmitInfo protoSubmitInfo;
+                                protoSubmitInfo.set_session_id(CUserDefaults::instance().getCurrentSID());
+                                protoSubmitInfo.set_submission_id(submissionId);
+                                protoSubmitInfo.set_dds_sandbox_dir(sSandboxDir);
+                                *protoSubmitInfo.mutable_submission_timestamp() =
+                                    TimeUtil::SecondsToTimestamp(time(NULL));
+                                protoSubmitInfo.set_rms_plugin("dds-submit-slurm");
+                                protoSubmitInfo.mutable_rms_plugin_data()->PackFrom(protoSlurmSubmitInfo);
+
+                                // Write submit info
+                                fs::path pathSubmitInfoFile(pathWorkDirLocalFiles);
+                                pathSubmitInfoFile /= g_submitInfoFile;
+                                fstream output(pathSubmitInfoFile.native(), ios::out | ios::trunc | ios::binary);
+                                if (!protoSubmitInfo.SerializeToOstream(&output))
+                                {
+                                    proto.sendMessage(EMsgSeverity::error, "Failed to save submission metadata");
+                                }
+                                // < < < < < < < < < < < < <
+
                                 started = true;
                                 proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
                                 break;

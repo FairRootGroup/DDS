@@ -1,0 +1,22 @@
+// Copyright 2022 GSI, Inc. All rights reserved.
+//
+//
+//
+syntax = "proto3";
+
+package dds.protocol;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+message SubmitInfo {
+    string session_id      = 1;
+    string submission_id   = 2;
+    string dds_sandbox_dir = 3;
+    // Creation date
+    google.protobuf.Timestamp submission_timestamp = 4;
+    // RMS plug-in
+    string rms_plugin = 5;
+    // actual RMS plug-in data block
+    google.protobuf.Any rms_plugin_data = 6;
+}

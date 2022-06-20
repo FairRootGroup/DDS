@@ -11,6 +11,9 @@
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+// protobuf
+#include "submit_info.pb.h"
+#include "submit_info_slurm.pb.h"
 
 using namespace std;
 using namespace dds::misc;
@@ -19,6 +22,11 @@ using namespace dds::commander_cmd;
 using namespace dds::user_defaults_api;
 using boost::asio::ip::tcp;
 namespace fs = boost::filesystem;
+
+// TODO: Move this to DDS commander once ToolsAPI supports protobuf.
+// Ideally the commander should create and read this file. Plug-ins will only receive info data blocks via DDS
+// transport.
+const LPCSTR g_submitInfoFile = "submit.inf";
 
 //=============================================================================
 int createDirectories(const boost::uuids::uuid& _sid)
@@ -143,6 +151,64 @@ int main(int argc, char* argv[])
                 kill(pid_to_kill, SIGKILL);
             }
         }
+
+        // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // TODO: A temporary solution to cancel slurm jobs.
+        // ToolsAPI and DDS Plug-in API is being upgraded to use protobuf. In meantime, we cancel slurm jobs diurectloy
+        // from commander.
+
+        // - Loop over all submissions of this session
+        // - Collect Job IDs from submission metadata
+        // - Call scancel for the list of jobs
+        vector<string> jobs;
+        fs::path pathWorkDirLocalFiles(smart_path(CUserDefaults::instance().getValueForKey("server.work_dir")));
+        for (auto& f : fs::recursive_directory_iterator(pathWorkDirLocalFiles))
+        {
+            if (f.path().filename() == g_submitInfoFile)
+            {
+                dds::protocol::SubmitInfo protoSubmitInfo;
+                fstream input(f.path().native(), ios::in | ios::binary);
+                if (!protoSubmitInfo.ParseFromIstream(&input))
+                {
+                    LOG(log_stderr) << "SLURM JOB CANCEL: Failed to parse job metadata." << f.path().native();
+                    continue;
+                }
+
+                if (!protoSubmitInfo.mutable_rms_plugin_data()->Is<dds::protocol::SlurmSubmitInfo>())
+                {
+                    LOG(log_stderr) << "SLURM JOB CANCEL: Submission metadata doesn't contain slurm job info "
+                                    << f.path().native();
+                    return 1;
+                }
+                dds::protocol::SlurmSubmitInfo protoSlurmSubmitInfo;
+                protoSubmitInfo.mutable_rms_plugin_data()->UnpackTo(&protoSlurmSubmitInfo);
+
+                if (protoSlurmSubmitInfo.slurm_job_id_size() == 0)
+                {
+                    LOG(log_stderr) << "SLURM JOB CANCEL: No slurm jobs found in submission metadata"
+                                    << f.path().native();
+                    return 1;
+                }
+                jobs.push_back(protoSlurmSubmitInfo.slurm_job_id(0));
+            }
+        }
+        const fs::path scancelPath{ bp::search_path("scancel") };
+
+        stringstream ssCmd;
+        ssCmd << scancelPath.string();
+        for (const auto& id : jobs)
+        {
+            ssCmd << " " << id;
+        }
+
+        LOG(log_stdout) << "SLURM JOB CANCEL: " << ssCmd.str();
+        string sout;
+        string serr;
+        execute(ssCmd.str(), chrono::seconds(30), &sout, &serr);
+        if (!serr.empty())
+            LOG(log_stderr) << "SLURM JOB CANCEL: " << serr;
+
+        // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         return EXIT_SUCCESS;
     }
