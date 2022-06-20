@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
   dds_misc_lib
+  dds_proto_lib
   dds_user_defaults_lib
   dds_topology_lib
   dds_protocol_lib
@@ -43,6 +44,7 @@ target_link_libraries(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  ${Protobuf_INCLUDE_DIRS}
 )
 
 install(TARGETS ${PROJECT_NAME}

@@ -1,0 +1,12 @@
+// Copyright 2022 GSI, Inc. All rights reserved.
+//
+//
+//
+syntax = "proto3";
+
+package dds.protocol;
+
+message SlurmSubmitInfo {
+    // RMS job ID
+    repeated string slurm_job_id = 1;
+}

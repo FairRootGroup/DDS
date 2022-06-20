@@ -7,6 +7,7 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
+  dds_proto_lib
   dds_misc_lib
   dds_user_defaults_lib
   dds_tools_lib
@@ -22,6 +23,7 @@ target_link_libraries(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR/src}>
+  ${Protobuf_INCLUDE_DIRS}
 )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "${PROJECT_INSTALL_PLUGINSDIR}/${PROJECT_NAME}")

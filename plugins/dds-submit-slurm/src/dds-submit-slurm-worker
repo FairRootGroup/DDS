@@ -62,7 +62,7 @@ logMsg()
 logMsg "Submitting DDS Job on the SLURM cluster..."
 # Set execute access for job.slurm
 chmod +x $RMS_SANDBOX/job.slurm
-JOB_ID=$(sbatch $RMS_SANDBOX/job.slurm)
+JOB_ID=$(sbatch --parsable $RMS_SANDBOX/job.slurm)
 if (( $? != 0 )) ; then
 	logMsg "Error: Failed to submit SLURM job ($?)"
 	exit $?

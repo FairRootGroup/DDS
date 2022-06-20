@@ -135,7 +135,7 @@ void CTopoCreatorCore::addDeclElements(CTopoTask::Ptr_t _task, objectMap_t& _dec
         _declElements[CTopoBase::EType::TOPO_PROPERTY][property.first] =
             static_pointer_cast<CTopoBase>(property.second);
     }
-    
+
     const auto& assets = _task->getAssets();
     for (const auto& asset : assets)
     {
