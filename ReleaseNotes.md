@@ -34,6 +34,7 @@ Added: The command learned a new argument --inline-config. Content of this strin
 
 ### dds-topology
 Fixed: Stability improvements.     
+Fixed: A bug which caused dds::topology_api::CTopoCreator to ignore task assets. (GH-452)      
 Added: A new groupName requirement. It can be used on task and collection. (GH-407)   
 Added: Open API to read/update/add topology variable. The CTopoVars class.    
 Added: Support for Task Assets. (GH-406)     

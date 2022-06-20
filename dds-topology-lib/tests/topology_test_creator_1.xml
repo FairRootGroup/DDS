@@ -4,6 +4,8 @@
     <property name="property2" scope="global"/>
     <property name="property3" scope="global"/>
     <property name="property4" scope="global"/>
+    <asset name="asset1" type="inline" visibility="task" value="abc def ghi jkl mno"/>
+    <asset name="asset2" type="inline" visibility="global" value="# DDS user defaults"/>
     <declrequirement name="requirement1" value=".+.gsi.de" type="hostname"/>
     <declrequirement name="requirement2" value="server1.gsi.de" type="hostname"/>
     <declrequirement name="requirement3" value="node2" type="wnname"/>
@@ -37,6 +39,10 @@
             <name access="read">property1</name>
             <name access="read">property2</name>
         </properties>
+        <assets>
+            <name>asset1</name>
+            <name>asset2</name>
+        </assets>
     </decltask>
     <decltask name="task3">
         <exe reachable="true">app3</exe>

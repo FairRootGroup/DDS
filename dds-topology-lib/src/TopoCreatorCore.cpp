@@ -65,9 +65,10 @@ void CTopoCreatorCore::save(boost::property_tree::ptree& _pt)
             addDeclElements(element, declElements);
         }
 
-        vector<CTopoBase::EType> declOrder{ CTopoBase::EType::TOPO_VARS,   CTopoBase::EType::TOPO_PROPERTY,
-                                            CTopoBase::EType::REQUIREMENT, CTopoBase::EType::TRIGGER,
-                                            CTopoBase::EType::TASK,        CTopoBase::EType::COLLECTION };
+        vector<CTopoBase::EType> declOrder{ CTopoBase::EType::TOPO_VARS, CTopoBase::EType::TOPO_PROPERTY,
+                                            CTopoBase::EType::ASSET,     CTopoBase::EType::REQUIREMENT,
+                                            CTopoBase::EType::TRIGGER,   CTopoBase::EType::TASK,
+                                            CTopoBase::EType::COLLECTION };
 
         for (const auto& declType : declOrder)
         {
@@ -133,6 +134,12 @@ void CTopoCreatorCore::addDeclElements(CTopoTask::Ptr_t _task, objectMap_t& _dec
     {
         _declElements[CTopoBase::EType::TOPO_PROPERTY][property.first] =
             static_pointer_cast<CTopoBase>(property.second);
+    }
+    
+    const auto& assets = _task->getAssets();
+    for (const auto& asset : assets)
+    {
+        _declElements[CTopoBase::EType::ASSET][asset->getName()] = static_pointer_cast<CTopoBase>(asset);
     }
 
     const auto& triggers = _task->getTriggers();
