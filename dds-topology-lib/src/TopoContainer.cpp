@@ -23,6 +23,10 @@ using namespace topology_api;
 CTopoContainer::CTopoContainer(const std::string& _name)
     : CTopoElement(_name)
 {
+    if (_name == "main")
+    {
+        setNameToValueCache(make_shared<CTopoBase::CNameToValueCachePtr_t::element_type>());
+    }
 }
 
 CTopoContainer::~CTopoContainer()

@@ -15,7 +15,7 @@ using namespace boost::property_tree;
 using namespace dds;
 using namespace topology_api;
 
-CTopoAsset::CTopoAsset(const std::string& _name)
+CTopoAsset::CTopoAsset(const string& _name)
     : CTopoBase(_name)
 {
     setType(CTopoBase::EType::ASSET);
@@ -30,9 +30,14 @@ void CTopoAsset::initFromPropertyTree(const boost::property_tree::ptree& _pt)
     try
     {
         const ptree& assetPT = FindElementInPropertyTree(CTopoBase::EType::ASSET, getName(), _pt.get_child("topology"));
-        setAssetType(TagToAssetType(assetPT.get<std::string>("<xmlattr>.type", "")));
-        setAssetVisibility(TagToAssetVisibility(assetPT.get<std::string>("<xmlattr>.visibility", "")));
-        setValue(assetPT.get<std::string>("<xmlattr>.value", ""));
+        setAssetType(TagToAssetType(assetPT.get<string>("<xmlattr>.type", "")));
+        setAssetVisibility(TagToAssetVisibility(assetPT.get<string>("<xmlattr>.visibility", "")));
+
+        // Add asset value if the asset container doesn't have it.
+        if (getNameToValueCache() && !getNameToValueCache()->exists(getName()))
+        {
+            getNameToValueCache()->insertValue(getName(), assetPT.get<string>("<xmlattr>.value", ""));
+        }
     }
     catch (exception& error) // ptree_error, runtime_error
     {
@@ -44,7 +49,7 @@ void CTopoAsset::saveToPropertyTree(boost::property_tree::ptree& _pt)
 {
     try
     {
-        std::string tag("topology.asset.<xmlattr>");
+        string tag("topology.asset.<xmlattr>");
         _pt.put(tag + ".name", getName());
         _pt.put(tag + ".type", AssetTypeToTag(getAssetType()));
         _pt.put(tag + ".visibility", AssetVisibilityToTag(getAssetVisibility()));
@@ -56,12 +61,17 @@ void CTopoAsset::saveToPropertyTree(boost::property_tree::ptree& _pt)
     }
 }
 
-std::string CTopoAsset::getValue() const
+string CTopoAsset::getValue() const
 {
-    return m_value;
+    CNameToValueCachePtr_t assetCache{ getNameToValueCache() };
+
+    if (!assetCache)
+        return string();
+
+    return (assetCache->getValue(getName()));
 }
 
-void CTopoAsset::setValue(const std::string& _val)
+void CTopoAsset::setValue(const string& _val)
 {
     m_value = _val;
 }
@@ -102,8 +112,14 @@ ostream& operator<<(ostream& _strm, const CTopoAsset& _requirement)
 
 string CTopoAsset::hashString() const
 {
+    // WORKAROUND:
+    // Assets value can be big.
+    // We therefore can't use its value in hash calculations as it significantly drops the performance.
+    // see GH-454
+    // That means, if an asset value is changed, DDS will be not able to detect changes.
+    // Therefore, if you need to change the asset value and request a topology update, change its name too.
     stringstream ss;
     ss << "|Asset|" << getName() << "|" << AssetTypeToTag(getAssetType()) << "|"
-       << AssetVisibilityToTag(getAssetVisibility()) << "|" << getValue() << "|";
+       << AssetVisibilityToTag(getAssetVisibility()) << "|" /*<< getValue() << "|"*/;
     return ss.str();
 }

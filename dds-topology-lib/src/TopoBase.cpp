@@ -38,6 +38,11 @@ void CTopoBase::setParent(CTopoBase* _parent)
     m_parent = _parent;
 }
 
+void CTopoBase::setNameToValueCache(CNameToValueCachePtr_t _container)
+{
+    m_nameToValueCache = _container;
+}
+
 const string& CTopoBase::getName() const
 {
     return m_name;
@@ -51,6 +56,11 @@ CTopoBase::EType CTopoBase::getType() const
 CTopoBase* CTopoBase::getParent() const
 {
     return m_parent;
+}
+
+dds::topology_api::CTopoBase::CNameToValueCachePtr_t CTopoBase::getNameToValueCache() const
+{
+    return m_nameToValueCache;
 }
 
 string CTopoBase::getPath() const
