@@ -77,6 +77,7 @@ CTopoAsset::Ptr_t CTopoTask::addAsset(const string& _name)
 {
     auto asset{ make_shared<CTopoAsset>(_name) };
     asset->setParent(this);
+    asset->setNameToValueCache(getNameToValueCache());
     m_assets.push_back(asset);
     return asset;
 }

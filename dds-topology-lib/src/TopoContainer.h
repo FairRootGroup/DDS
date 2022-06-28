@@ -82,6 +82,7 @@ namespace dds
             {
                 auto element{ std::make_shared<Object_t>(_name) };
                 element->setParent(this);
+                element->setNameToValueCache(getNameToValueCache());
                 m_elements.push_back(element);
                 return element;
             }

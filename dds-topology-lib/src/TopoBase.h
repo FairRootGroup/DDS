@@ -17,6 +17,38 @@ namespace dds
 {
     namespace topology_api
     {
+        class CNameToValueCache
+        {
+            using container_t = std::map<std::string, std::string>;
+
+          public:
+            void insertValue(const std::string& _name, const std::string _value)
+            {
+                if (exists(_name))
+                    return;
+
+                m_container.insert(std::make_pair(_name, _value));
+            }
+
+            std::string getValue(const std::string& _name)
+            {
+                auto found = m_container.find(_name);
+                if (found == m_container.end())
+                    return std::string();
+
+                return found->second;
+            }
+
+            bool exists(const std::string& _name)
+            {
+                auto found = m_container.find(_name);
+                return (found != m_container.end());
+            }
+
+          private:
+            container_t m_container;
+        };
+
         class CTopoBase
         {
           public:
@@ -36,15 +68,18 @@ namespace dds
 
             using Ptr_t = std::shared_ptr<CTopoBase>;
             using PtrVector_t = std::vector<CTopoBase::Ptr_t>;
+            using CNameToValueCachePtr_t = std::shared_ptr<CNameToValueCache>;
 
             /// Modifiers
             void setName(const std::string& _name);
             void setParent(CTopoBase* _parent);
+            void setNameToValueCache(CNameToValueCachePtr_t _container);
 
             /// Accessors
             const std::string& getName() const;
             CTopoBase::EType getType() const;
             CTopoBase* getParent() const;
+            CNameToValueCachePtr_t getNameToValueCache() const;
 
             /// \brief Return full path to topo element or property.
             std::string getPath() const;
@@ -147,6 +182,7 @@ namespace dds
             std::string m_name;                          ///< Name of topology element
             CTopoBase::EType m_type{ EType::TOPO_BASE }; ///< Type of the topology element
             CTopoBase* m_parent{ nullptr };              ///< Pointer to parent element
+            CNameToValueCachePtr_t m_nameToValueCache;
         };
     } // namespace topology_api
 } // namespace dds
