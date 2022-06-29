@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 // BOOST
 #include <boost/property_tree/ptree.hpp>
 
