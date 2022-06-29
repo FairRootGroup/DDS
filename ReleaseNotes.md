@@ -11,7 +11,8 @@ Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  a
 Added: 3rd party dependency on Protobuf (min v3.15).         
 Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
 Added: Support for Task Assets. (GH-406)    
-Added: Cancel running and panding SLURM jobs on DDS shutdown. (GH-429)   
+Added: Cancel running and pending SLURM jobs on DDS shutdown. (GH-429)   
+Added: Support for Apple's arm64 architecture. (GH-393)    
 
 ### dds-agent
 Fixed: Address potential crash in the external process termination routines.    
@@ -24,7 +25,7 @@ Modified: Set debug log severity on Custom command events. (GH-424)
 
 ### dds-session
 Fixed: skip bad or non-session directories/files when performing clean and list operations.         
-Added: A data retention sanitisation. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)    
+Added: A data retention sanitization. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)    
 
 ### dds-submit
 Added: Users can specify a GroupName tag for each submission. This tag will be assigned to agents and can be used as a requirement in topologies. (GH-407)     
@@ -80,8 +81,8 @@ Fixed: a bug, which prevented to kill user task processes if they ignore SIGTERM
 Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)   
 Fixed: Clang 9 warning/error. (GH-249)   
 Modified: C++17 is now a required standard.     
-Modified: Remove an obsolet dds-test tool. (GH-341)    
-Modified: Remove obsolet internal statistics of channels. (GH-341)    
+Modified: Remove an obsolete dds-test tool. (GH-341)    
+Modified: Remove obsolete internal statistics of channels. (GH-341)    
 Added: A cmake option "CREATE_BOOST_SYMLINKS", which enables creation of boost (libboost_*) symlinks in $DDS_LOCATION/lib/. Default is OFF. (GH-199, GH-357)    
 Modified: Refactor internal version implementation. Use a single `Version.h.in` configuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)    
 Fixed: `--version` option for `dds-session`.    
@@ -231,7 +232,7 @@ Added: Initial release
 Added: make custom command's condition regex aware. (GH-211)    
 
 ### dds-submit
-Modified: Introduced a lightweight worker package for the localhost plug-in. It doesn't contain libs and binaties. Deployment speed is x3 faster. Instead of ~15MB/agent disk space, DDS uses ~50 KB/agent now. (GH-210).    
+Modified: Introduced a lightweight worker package for the localhost plug-in. It doesn't contain libs and binaries. Deployment speed is x3 faster. Instead of ~15MB/agent disk space, DDS uses ~50 KB/agent now. (GH-210).    
 Added: The command reports now the time it took to submit the job.    
 
 ### dds-agent
@@ -264,7 +265,7 @@ Added: notification on Task Done CIntercomService::subscribeOnTaskDone.
 ### dds-protocol
 Added: Confirmation for cmdASSIGN_USER_TASK and cmdACTIVATE_USER_TASK. (GH-202)    
 Added: Generic reply command cmdREPLY. (GH-201)    
-Modified: new fields in cmdUPDATE_KEY: propertyID, value, sender trask ID and receiver task ID. (GH-196)    
+Modified: new fields in cmdUPDATE_KEY: propertyID, value, sender task ID and receiver task ID. (GH-196)    
 
 ### dds-session
 Added: Initial version of the tool. (GH-191)   
@@ -436,7 +437,7 @@ Modified: accept both -n and -c command line options.
 ## v1.0 (2015-11-20)
 ### DDS common
 Fixed: git error when using out of source builds (GH-85)    
-Fixed: a class name lookup issues, which could result in unpredictable behaviour during run-time (agent and key-value-lib had classes with the same name and same header protection).    
+Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
 Fixed: check DDS_LOCATION before agent start. (GH-98)   
 Fixed: since Mac OS 10.11 (El Capitan) DYLD_LIBRARY_PATH is not exported in the sub-shell environment. We explicitly set DYLD_LIBRARY_PATH to the libraries directory.  
 Added: Give users a possibility to specify task requirement based on worker node name in the SSH configuration. Name can be specified as regular expression. (GH-88)   
@@ -539,7 +540,7 @@ Added: shared memory storage for key-value. (GH-35)
 
 ### dds-protocol-lib
 Modified: The DDS transport learned to accumulate commands before sending, instead of sending them one by one. (GH-38)   
-Modified: Hand-shake messages are prioritised now. DDS doesn't send/accept any other message until hand-shake is successful. (GH-37)   
+Modified: Hand-shake messages are prioritized now. DDS doesn't send/accept any other message until hand-shake is successful. (GH-37)   
 Fixed: Revised write message algorithms. It is also faster now.    
 Fixed: a bug in the dds-agent, which could cause a SEGFAULT when trying to access a deleted channel object on disconnect.    
 Added: Implemented callbacks (signals) in BaseChannelImpl for different channel events like connect, disconnect, handshakeOK, handshakeFailed. (GH-41)   

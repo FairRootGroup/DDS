@@ -155,6 +155,9 @@ check_arch()
       x86_64)
          host_arch="amd64"
          ;;
+	  arm64)
+		 host_arch="arm64"
+		 ;;
       *)
          logMsg "Error: unsupported architecture: $host_arch"
          clean_up 1
