@@ -44,8 +44,14 @@ CAgentConnectionManager::~CAgentConnectionManager()
 void CAgentConnectionManager::doAwaitStop()
 {
     m_signals.async_wait(
-        [this](boost::system::error_code /*ec*/, int /*signo*/)
+        [this](boost::system::error_code /*ec*/, int signo)
         {
+            // The server is stopped by cancelling all outstanding asynchronous
+            // operations. Once all operations have finished the io_context::run()
+            // call will exit.
+            LOG(dds::misc::info) << "Received a signal: " << signo;
+            LOG(dds::misc::info) << "Stopping DDS connetion manager...";
+
             // Stop transport engine
             stop();
         });

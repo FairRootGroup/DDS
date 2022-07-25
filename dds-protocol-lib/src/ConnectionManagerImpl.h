@@ -67,7 +67,7 @@ namespace dds
                         // operations. Once all operations have finished the io_context::run()
                         // call will exit.
                         LOG(dds::misc::info) << "Received a signal: " << signo;
-                        LOG(dds::misc::info) << "Stopping DDS transport server";
+                        LOG(dds::misc::info) << "Stopping DDS transport server...";
 
                         stop();
                     });
