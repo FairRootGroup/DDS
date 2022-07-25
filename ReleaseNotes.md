@@ -17,6 +17,7 @@ Added: Support for Apple's arm64 architecture. (GH-393)
 ### dds-agent
 Fixed: Address potential crash in the external process termination routines.    
 Fixed: Revised handling of the slots container.    
+Fixed: Ignore SIGTERM while performing cleaning procedures. (GH-459)   
 
 ### dds\_intercom\_lib
 Fixed: Stability improvements.      
@@ -49,6 +50,7 @@ Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)
 Added: Support for SubmissionID (GH-411)    
 
 ### dds-slurm-plugin
+Fixed: Make sure that scancel's SIGTERM is properly handled by all job steps and their scripts. (GH-459)   
 Added: Support for SubmissionID (GH-411)    
 Added: Support of minimum number of agents to spawn. (GH-434)   
 Modified: Replace array job submission with nodes requirement. (GH-430)    

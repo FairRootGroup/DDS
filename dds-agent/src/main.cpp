@@ -52,6 +52,11 @@ void clean()
 
 int main(int argc, char* argv[])
 {
+    // ignore SIGTERM
+    // This is mainly for the clean mode to be able to finish the clean process.
+    // Other agent modes will reassign sig handlers via asio in anyway.
+    std::signal(SIGTERM, SIG_IGN);
+
     // Command line parser
     SOptions_t options;
     try

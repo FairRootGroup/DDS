@@ -192,22 +192,26 @@ int main(int argc, char* argv[])
                 jobs.push_back(protoSlurmSubmitInfo.slurm_job_id(0));
             }
         }
-        const fs::path scancelPath{ bp::search_path("scancel") };
 
-        stringstream ssCmd;
-        ssCmd << scancelPath.string();
-        for (const auto& id : jobs)
+        if (!jobs.empty())
         {
-            ssCmd << " " << id;
+            const fs::path scancelPath{ bp::search_path("scancel") };
+
+            stringstream ssCmd;
+            ssCmd << scancelPath.string();
+            ssCmd << " --full ";
+            for (const auto& id : jobs)
+            {
+                ssCmd << " " << id;
+            }
+
+            LOG(log_stdout) << "SLURM JOB CANCEL: " << ssCmd.str();
+            string sout;
+            string serr;
+            execute(ssCmd.str(), chrono::seconds(30), &sout, &serr);
+            if (!serr.empty())
+                LOG(log_stderr) << "SLURM JOB CANCEL: " << serr;
         }
-
-        LOG(log_stdout) << "SLURM JOB CANCEL: " << ssCmd.str();
-        string sout;
-        string serr;
-        execute(ssCmd.str(), chrono::seconds(30), &sout, &serr);
-        if (!serr.empty())
-            LOG(log_stderr) << "SLURM JOB CANCEL: " << serr;
-
         // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         return EXIT_SUCCESS;
