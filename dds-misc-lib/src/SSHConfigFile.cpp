@@ -6,6 +6,7 @@
 // std
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 // boost
 #include <boost/tokenizer.hpp>
 // Misc
