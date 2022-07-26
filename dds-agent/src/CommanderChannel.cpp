@@ -664,7 +664,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         const fs::path pathTaskWrapper(pathSlotDir / "dds_user_task_wrapper.sh");
 
         // Replace placeholders in the task wrapper
-        fs::ifstream fTaskWrapper(pathTaskWrapperIn.native());
+        std::ifstream fTaskWrapper(pathTaskWrapperIn.native());
         if (!fTaskWrapper.is_open())
             throw runtime_error("Failed to open task wrapper template.");
         string sTaskWrapperContent((istreambuf_iterator<char>(fTaskWrapper)), istreambuf_iterator<char>());
@@ -676,7 +676,7 @@ bool CCommanderChannel::on_cmdACTIVATE_USER_TASK(SCommandAttachmentImpl<cmdACTIV
         // JOB SCRIPT --- Task Executable
         boost::replace_all(sTaskWrapperContent, "# %DDS_USER_TASK%", sUsrExe);
 
-        fs::ofstream fTaskWrapperOut(pathTaskWrapper.native());
+        std::ofstream fTaskWrapperOut(pathTaskWrapper.native());
         if (!fTaskWrapperOut.is_open())
             throw runtime_error("Failed to create task wrapper script.");
 
