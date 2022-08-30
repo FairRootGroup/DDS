@@ -13,6 +13,7 @@ Added: every DDS module logs now its pid, group id and parent pid. (GH-403)
 Added: Support for Task Assets. (GH-406)    
 Added: Cancel running and pending SLURM jobs on DDS shutdown. (GH-429)   
 Added: Support for Apple's arm64 architecture. (GH-393)    
+Added: $DDS_CONFIG and "/etc/dds/DDS.cfg" are added to the DDS config search paths. (GH-458)   
 
 ### dds-agent
 Fixed: Address potential crash in the external process termination routines.    

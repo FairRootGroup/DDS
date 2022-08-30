@@ -329,7 +329,8 @@ const SDDSUserDefaultsOptions_t CUserDefaults::getOptions() const
 string CUserDefaults::currentUDFile()
 {
     CFindCfgFile<string> cfg;
-    cfg.SetOrder("$HOME/.DDS/DDS.cfg")("$DDS_LOCATION/etc/DDS.cfg")("$DDS_LOCATION/DDS.cfg");
+    cfg.SetOrder("$DDS_CONFIG")("$HOME/.DDS/DDS.cfg")("$DDS_LOCATION/etc/DDS.cfg")("$DDS_LOCATION/DDS.cfg")(
+        "/etc/dds/DDS.cfg");
     string val;
     cfg.GetCfg(&val);
 
