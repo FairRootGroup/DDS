@@ -5,6 +5,8 @@
 #ifndef _DDS_STLX_H_
 #define _DDS_STLX_H_
 
+#include "MiscUtils.h"
+
 namespace dds::misc
 {
     /**
@@ -27,7 +29,7 @@ namespace dds::misc
         };
 
         template <typename _Result, typename _Class, typename _Argument>
-        class mem_fun1_t : public std::binary_function<_Class*,
+        class mem_fun1_t : public dds::misc::workaround_binary_function<_Class*,
                                                        typename remove_cref<_Argument>::type, // was: Argument
                                                        _Result>
         {
@@ -62,7 +64,7 @@ namespace dds::misc
          *
          */
         template <class _Pair>
-        struct select1st : public std::unary_function<_Pair, typename _Pair::first_type>
+        struct select1st : public dds::misc::workaround_unary_function<_Pair, typename _Pair::first_type>
         {
             typename _Pair::first_type& operator()(_Pair& __x) const
             {
@@ -79,7 +81,7 @@ namespace dds::misc
          *
          */
         template <class _Pair>
-        struct select2nd : public std::unary_function<_Pair, typename _Pair::second_type>
+        struct select2nd : public dds::misc::workaround_unary_function<_Pair, typename _Pair::second_type>
         {
             typename _Pair::second_type& operator()(_Pair& __x) const
             {

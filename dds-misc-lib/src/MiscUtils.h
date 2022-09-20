@@ -20,6 +20,22 @@
  */
 namespace dds::misc
 {
+     // Workaround: Since std::unary_function is removed in C++17, we provide a simple workaround for the old code until it is upgraded to modern new C++
+    template <class ArgumentType, class ResultType>
+    struct workaround_unary_function
+    {
+        typedef ArgumentType argument_type;
+        typedef ResultType result_type;
+    };
+
+    template <class Argument1Type, class Argument2Type, class ResultType>
+    struct workaround_binary_function
+    {
+        typedef Argument1Type first_argument_type;
+        typedef Argument2Type second_argument_type;
+        typedef ResultType result_type;
+    };
+
     /**
      *
      * @brief Class which makes child to be non-copyable object.
@@ -214,13 +230,6 @@ namespace dds::misc
         char operator()(char c) const
         {
             return std::toupper(c);
-        }
-    };
-    struct IsDigit : std::unary_function<int, int>
-    {
-        int operator()(int c) const
-        {
-            return std::isdigit(c);
         }
     };
 

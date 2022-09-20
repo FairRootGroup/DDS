@@ -300,7 +300,7 @@ namespace dds::misc
             // removing all dots
             _Addr.erase(remove(_Addr.begin(), _Addr.end(), '.'), _Addr.end());
             // Checking for all numerics
-            return (_Addr.end() == std::find_if(_Addr.begin(), _Addr.end(), std::not_fn(IsDigit())));
+            return (_Addr.end() == std::find_if(_Addr.begin(), _Addr.end(), [](int _c) { return !std::isdigit(_c); }));
         }
         /**
          *

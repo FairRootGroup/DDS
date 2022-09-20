@@ -286,7 +286,7 @@ namespace dds::misc
         {
             const std::string sName(_d->d_name);
             // Checking whether file name has all digits
-            return (sName.end() == std::find_if(sName.begin(), sName.end(), std::not1(IsDigit())));
+            return (sName.end() == std::find_if(sName.begin(), sName.end(), [](int c) { return !std::isdigit(c); }));
         }
     };
 #endif
@@ -349,7 +349,7 @@ namespace dds::misc
             custom_istream_iterator<std::string> in_end;
             StringVector_t vec(in_begin, in_end);
 
-            for_each(vec.begin(), vec.end(), std::bind1st(dds::misc::stlx::mem_fun(&CProcStatus::_Parser), this));
+            for_each(vec.begin(), vec.end(), std::bind(&CProcStatus::_Parser, this, std::placeholders::_1));
         }
         std::string GetValue(const std::string& _KeyName) const
         {
@@ -390,7 +390,7 @@ namespace dds::misc
  *
  */
 #if !defined(__APPLE__)
-    struct SFindName : public std::binary_function<CProcList::ProcContainer_t::value_type, std::string, bool>
+    struct SFindName : public dds::misc::workaround_binary_function<CProcList::ProcContainer_t::value_type, std::string, bool>
     {
         bool operator()(CProcList::ProcContainer_t::value_type _pid, const std::string& _Name) const
         {
@@ -422,7 +422,7 @@ namespace dds::misc
         CProcList::ProcContainer_t::const_iterator iter = pids.begin();
         while (true)
         {
-            iter = std::find_if(iter, pids.end(), std::bind2nd(SFindName(), _Srv));
+            iter = std::find_if(iter, pids.end(), std::bind(SFindName(), std::placeholders::_1, _Srv));
             if (pids.end() == iter)
                 break;
 
