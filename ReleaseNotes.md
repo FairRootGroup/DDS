@@ -74,6 +74,9 @@ Added: Users can define additional job RMS configuration via SSubmitRequestData:
 Modified: Bump the version to 0.5     
 Added: A "server.data_retention" configuration key. (GH-435)    
 
+### dds-info
+Fixed: wrong exit code when called with --help/--version. (GH-470)    
+
 ## v3.6 (2022-01-11)
 
 ### DDS common

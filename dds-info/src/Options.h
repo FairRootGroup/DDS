@@ -31,6 +31,8 @@ namespace dds
             bool m_bNeedActiveCount{ false };
             bool m_bNeedIdleCount{ false };
             bool m_bNeedExecutingCount{ false };
+            bool m_bHelp{ false };
+            bool m_bVersion{ false };
             uint32_t m_nWaitCount{ 0 };
             boost::uuids::uuid m_sid{ boost::uuids::nil_uuid() };
         } SOptions_t;
@@ -43,8 +45,8 @@ namespace dds
 
             // Generic options
             bpo::options_description options("dds-info options");
-            options.add_options()("help,h", "Produce help message");
-            options.add_options()("version,v", "Version information");
+            options.add_options()("help,h", bpo::bool_switch(&_options->m_bHelp), "Produce help message");
+            options.add_options()("version,v", bpo::bool_switch(&_options->m_bVersion), "Version information");
             options.add_options()("session,s", bpo::value<std::string>(), "DDS Session ID");
             options.add_options()("commander-pid",
                                   bpo::bool_switch(&_options->m_bNeedCommanderPid),
@@ -85,12 +87,12 @@ namespace dds
             if (vm.count("help") || vm.end() == found)
             {
                 LOG(dds::misc::log_stdout) << options;
-                return false;
+                return true;
             }
             if (vm.count("version"))
             {
                 LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
-                return false;
+                return true;
             }
             if (vm.count("session"))
                 _options->m_sid = boost::uuids::string_generator()(vm["session"].as<std::string>());

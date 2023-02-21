@@ -191,6 +191,9 @@ int main(int argc, char* argv[])
     if (dds::misc::defaultExecReinit(options.m_sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
+    if (options.m_bHelp || options.m_bVersion) // Nothing to do, exiting.
+        return EXIT_SUCCESS;
+
     string sid;
     try
     {
