@@ -124,7 +124,7 @@ void CCommanderChannel::startResourceMonitor(boost::asio::io_context& _service, 
         });
 }
 
-void CCommanderChannel::setNumberOfSlots(size_t _nSlots)
+void CCommanderChannel::setNumberOfSlots(uint32_t _nSlots)
 {
     m_nSlots = _nSlots;
 }
@@ -970,7 +970,7 @@ void CCommanderChannel::enumChildProcesses(pid_t _forPid, CCommanderChannel::str
             pid_t pid{ 0 };
             try
             {
-                pid = stol(i);
+                pid = stoi(i);
             }
             catch (invalid_argument& _e)
             {
@@ -1010,7 +1010,7 @@ void CCommanderChannel::terminateChildrenProcesses(
         pid_t pid{ 0 };
         try
         {
-            pid = stol(i);
+            pid = stoi(i);
             pidChildren.push_back(pid);
         }
         catch (invalid_argument& _e)

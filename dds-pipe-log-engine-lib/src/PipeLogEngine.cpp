@@ -138,7 +138,7 @@ void CLogEngine::operator()(const string& _msg, const string& _id, bool _debugMs
     copy(out.begin(), out.end(), back_inserter(buf));
 
     size_t total = 0;
-    int n = 0;
+    long n = 0;
     size_t len = buf.size();
     while (total < len)
     {
@@ -192,7 +192,7 @@ void CLogEngine::thread_worker(int _fd, const string& /*_pipename*/)
             string input;
             while (true)
             {
-                int numread = read(_fd, buf, read_size);
+                long numread = read(_fd, buf, read_size);
                 // don't print the last Control character
                 // it was sent just to wake up the thread
                 if (m_stopLogEngine && 1 == numread)

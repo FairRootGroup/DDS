@@ -109,7 +109,7 @@ void CProtocolMessage::_encode_message(uint16_t _cmd, const CProtocolMessage::da
 {
     // local copy
     m_header.m_cmd = _cmd;
-    m_header.m_len = _data.size();
+    m_header.m_len = static_cast<uint32_t>(_data.size());
     m_header.m_ID = _ID;
     m_header.m_crc = m_header.getChecksum();
 

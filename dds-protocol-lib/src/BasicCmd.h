@@ -408,7 +408,7 @@ namespace dds
                 throw std::invalid_argument("Vector<uint32_t> size can't exceed 2^32 symbols. Vector size: " +
                                             std::to_string(_value.size()));
 
-            uint32_t n = _value.size();
+            uint32_t n = static_cast<uint32_t>(_value.size());
             pushData(n, _data);
             copy(_value.begin(), _value.end(), back_inserter(*_data));
         }

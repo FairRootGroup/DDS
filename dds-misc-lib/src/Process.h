@@ -216,7 +216,7 @@ namespace dds::misc
             kinfo_proc* result = (kinfo_proc*)malloc(length);
             if (sysctl(name, 4, result, &length, NULL, 0))
                 throw system_error("Unable to call sysctl in the pidExists function.");
-            int i, procCount = length / sizeof(kinfo_proc);
+            size_t i, procCount = length / sizeof(kinfo_proc);
             for (i = 0; i < procCount; ++i)
             {
                 kinfo_proc* test = &result[i];

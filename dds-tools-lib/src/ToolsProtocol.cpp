@@ -174,7 +174,7 @@ SSubmitRequestData::SSubmitRequestData(const boost::property_tree::ptree& _pt)
 void SSubmitRequestData::setFlag(const ESubmitRequestFlags& _flag, bool _value)
 {
     m_flagContainer.set((uint32_t)_flag, _value);
-    m_flags = m_flagContainer.to_ulong();
+    m_flags = static_cast<uint32_t>(m_flagContainer.to_ulong());
 }
 
 void SSubmitRequestData::setFlag(flagContainer_t* _flagContainer, const ESubmitRequestFlags& _flag, bool _value)

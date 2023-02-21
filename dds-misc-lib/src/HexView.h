@@ -47,7 +47,7 @@ namespace dds::misc
     class CHexView
     {
       public:
-        CHexView(const _T& _Val, size_t _nElementsInRaw = 16)
+        CHexView(const _T& _Val, uint32_t _nElementsInRaw = 16)
             : m_nElementsInRaw(_nElementsInRaw)
             , m_Container(_Val)
         {
@@ -98,7 +98,7 @@ namespace dds::misc
         }
 
       private:
-        const size_t m_nElementsInRaw;
+        const uint32_t m_nElementsInRaw;
         const _T& m_Container;
     };
 

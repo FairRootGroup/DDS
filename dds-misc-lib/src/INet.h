@@ -126,7 +126,7 @@ namespace dds::misc
                 return ::shutdown(m_Socket, _How);
             }
             /// This function indicates that socket is ready to be read (for non-blocking sockets)
-            int is_read_ready(size_t m_SecTimeOut, size_t m_USecTimeOut = 0)
+            int is_read_ready(uint32_t m_SecTimeOut, uint32_t m_USecTimeOut = 0)
             {
                 if (!is_valid())
                     throw std::runtime_error("Socket is invalid");
@@ -215,11 +215,11 @@ namespace dds::misc
          * @brief A helper function, which insures that whole buffer was send.
          *
          */
-        inline int sendall(int s, const unsigned char* const buf, int len, int flags)
+        inline long sendall(int s, const unsigned char* const buf, int len, int flags)
         {
             // TODO: sendall - Make this code safer!!!
             int total = 0;
-            int n = 0;
+            long n = 0;
 
             while (total < len)
             {
@@ -262,7 +262,7 @@ namespace dds::misc
         inline smart_socket& operator<<(smart_socket& _Socket, BYTEVector_t& _Buf)
         {
             //::send( _Socket, &_Buf[ 0 ], _Buf.size(), 0 );
-            sendall(_Socket, &_Buf[0], _Buf.size(), 0);
+            sendall(_Socket, &_Buf[0], static_cast<int>(_Buf.size()), 0);
             return _Socket;
         }
         /**
@@ -647,14 +647,14 @@ namespace dds::misc
          */
         inline void writeall(int _handle, const std::string& _msg)
         {
-            size_t total = 0;
-            int n = 0;
+            long total = 0;
+            long n = 0;
 
             std::vector<char> buf;
             buf.reserve(_msg.size());
             copy(_msg.begin(), _msg.end(), back_inserter(buf));
 
-            const size_t len = buf.size();
+            const long len = buf.size();
 
             while (total < len)
             {

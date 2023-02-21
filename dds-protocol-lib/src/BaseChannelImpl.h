@@ -548,8 +548,9 @@ namespace dds
                                          uint64_t _protocolHeaderID)
             {
                 static const int maxCommandSize = 65536;
-                int nofParts = (_data.size() % maxCommandSize == 0) ? (_data.size() / maxCommandSize)
-                                                                    : (_data.size() / maxCommandSize + 1);
+                int nofParts =
+                    static_cast<int>((_data.size() % maxCommandSize == 0) ? (_data.size() / maxCommandSize)
+                                                                          : (_data.size() / maxCommandSize + 1));
                 boost::crc_32_type fileCrc32;
                 fileCrc32.process_bytes(&_data[0], _data.size());
 
@@ -560,7 +561,7 @@ namespace dds
                 start_cmd.m_fileId = fileId;
                 start_cmd.m_srcCommand = _cmdSource;
                 start_cmd.m_fileName = _fileName;
-                start_cmd.m_fileSize = _data.size();
+                start_cmd.m_fileSize = static_cast<uint32_t>(_data.size());
                 start_cmd.m_fileCrc32 = fileCrc32.checksum();
                 pushMsg<cmdBINARY_ATTACHMENT_START>(start_cmd, _protocolHeaderID);
 
@@ -569,8 +570,9 @@ namespace dds
                     SBinaryAttachmentCmd cmd;
                     cmd.m_fileId = fileId;
 
-                    size_t offset = i * maxCommandSize;
-                    size_t size = (i != (nofParts - 1)) ? maxCommandSize : (_data.size() - offset);
+                    uint32_t offset = i * maxCommandSize;
+                    uint32_t size =
+                        static_cast<uint32_t>((i != (nofParts - 1)) ? maxCommandSize : (_data.size() - offset));
 
                     auto iter_begin = _data.begin() + offset;
                     auto iter_end = iter_begin + size;
@@ -728,7 +730,7 @@ namespace dds
                         reply_cmd.m_receivedFilePath = filePath;
                         reply_cmd.m_requestedFileName = info->m_fileName;
                         reply_cmd.m_srcCommand = info->m_srcCommand;
-                        reply_cmd.m_downloadTime = downloadTime.count();
+                        reply_cmd.m_downloadTime = static_cast<uint32_t>(downloadTime.count());
                         reply_cmd.m_receivedFileSize = info->m_fileSize;
                         sendYourself<cmdBINARY_ATTACHMENT_RECEIVED>(reply_cmd, _sender.m_ID);
                     }

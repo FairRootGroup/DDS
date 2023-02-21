@@ -74,7 +74,7 @@ namespace dds
 
           public:
             void stopChannel();
-            void setNumberOfSlots(size_t _nSlots);
+            void setNumberOfSlots(uint32_t _nSlots);
             void setGroupName(const std::string& _groupName);
 
           private:
@@ -154,7 +154,7 @@ namespace dds
 
             std::mutex m_mutexSlots;
             SSlotInfo::container_t m_slots;
-            size_t m_nSlots{ 0 };
+            uint32_t m_nSlots{ 0 };
             std::mutex m_mutexGlobalAssets;
             assets_t m_globalAssets;
             timerPtr_t m_resourceMonitorTimer;
