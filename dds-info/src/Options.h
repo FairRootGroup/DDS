@@ -84,12 +84,12 @@ namespace dds
                                 vm.end(),
                                 [](const bpo::variables_map::value_type& _v) { return (!_v.second.defaulted()); }) };
 
-            if (vm.count("help") || vm.end() == found)
+            if (_options->m_bHelp || vm.end() == found)
             {
                 LOG(dds::misc::log_stdout) << options;
                 return true;
             }
-            if (vm.count("version"))
+            if (_options->m_bVersion)
             {
                 LOG(dds::misc::log_stdout) << dds::misc::DDSVersionInfoString();
                 return true;

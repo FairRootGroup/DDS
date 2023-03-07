@@ -169,17 +169,18 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript,
 
         LOG(debug) << "Preparing WN package: " << ssCmd.str();
 
-        // 15 sec time-out for this command
-        execute(ssCmd.str(), chrono::seconds(15), &out, &err);
-        if (!err.empty())
-            throw runtime_error("failed");
+        // 30 sec time-out for this command
+        execute(ssCmd.str(), chrono::seconds(30), &out, &err);
     }
     catch (exception& e)
     {
         stringstream ssErr;
         ssErr << "WN Package Tool: " << e.what() << "; STDOUT: " << out << "; STDERR: " << err;
         LOG(info) << ssErr.str();
-        throw runtime_error(ssErr.str());
+
+        // Check, if the package was actually created
+        if (!fs::exists(CUserDefaults::instance().getWrkScriptPath(_submissionID)))
+            throw runtime_error(ssErr.str());
     }
     LOG(info) << "WN Package Tool: STDOUT: " << out << "; STDERR: " << err;
 }

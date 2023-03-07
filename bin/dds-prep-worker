@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2014-2022 GSI, Inc. All rights reserved.
+# Copyright 2014-2023 GSI, Inc. All rights reserved.
 #
 # a script to prepare a worker package - all elements of DDS which need to be uploaded to a worker
 #
@@ -108,9 +108,6 @@ eval DDS_WRK_SCRIPT_TMP=$DDS_WRK_TMP_DIR/DDSWorker.sh
 WN_BINS="$DDS_LOCATION/bin/wn_bins/*"
 XPD_CFG="$WRK_DIR/etc/xpd.cf"
 
-CACHE_DIR="$WRK_DIR/tmp/wpkg_cache"
-mkdir -p "$CACHE_DIR"
-
 # check that all needed components are available
 COMPONENTS_ETC=( "$DDS_CFG"
                  "$DDS_LOCATION/etc/version"
@@ -188,63 +185,9 @@ do
    fi
 done
 #=============================================================================
-# ***** is there a need to recreate the package  *****
-#=============================================================================
-need_update()
-{
-   # TODO: rewrite this algorithms using checksums
-   ##
-     return 1
-   ##
-   ##
-   if [ -n "$REPACK_WRK_PKG" ]; then
-      echo "$TOOL_NAME: it was requested to repack worker package"
-      return 1
-   fi
-
-   local _os=$(uname -s 2>&1)
-   local pkg_time=0
-   if [ -f $ARC_NAME ]; then
-      # the last modified time of <file> as timestamp format
-      if [ "$_os" = "Darwin" ]; then
-         pkg_time=$(stat -f "%m" -t "%s" "$ARC_NAME") 2>/dev/null         
-      else
-         pkg_time=$(stat --format='%Z' "$ARC_NAME") 2>/dev/null
-      fi
-   fi
-
-   for i in "${COMPONENTS[@]}"
-   do
-      local ts=0
-      if [ "$_os" = "Darwin" ]; then
-         ts=$(stat -f "%m" -t "%s" "$i") 2>/dev/null
-      else
-         ts=$(stat --format='%Z' "$i") 2>/dev/null
-      fi
- 
-      if (( $ts > $pkg_time )); then
-         # if timestamp is different, than compare to a cached file
-         d=$(diff $i "$CACHE_DIR/$(basename $i)" 2>/dev/null)
-         if (( 0 != $? )); then
-            echo "DDS worker package will be repacked because \"$i\" was updated"
-            return 1 
-         fi
-      fi
-   done
-   
-   return 0
-}
-#=============================================================================
 # ***** MAIN *****
 #=============================================================================
-need_update
-if (( 0 == $? )); then
-   echo "DDS worker package is up-to-dat."
-   echo "DDS worker package: "$ARC_NAME
-   exit 0
-else
-   clean_up
-fi
+echo "DDS worker package: "$ARC_NAME
 
 # create an empty archive first
 tar cvf $ARC_NAME --files-from=/dev/null 
@@ -255,15 +198,9 @@ do
    if [ -f $i ]; then
       tar --append --file=$ARC_NAME -C $(dirname $i) $(basename $i)
       RET_VAL=$?
-      if [ "X$RET_VAL" = "X0" ]; then
-         # copy the file to cache
-         # TODO: revise the algorithm of the cache using md5
-         cp $i $CACHE_DIR/
-         chmod u+w "$CACHE_DIR/$(basename $i)"
-	 continue
-      else
-	 echo "failed. Exit code: $RET_VAL" >&2
-	 exit 1
+      if [ "X$RET_VAL" != "X0" ]; then
+	      echo "failed. Exit code: $RET_VAL" >&2
+	      exit 1
       fi
    else
       echo "Error: missing component: $i" >&2
@@ -271,7 +208,6 @@ do
       exit 1
    fi
 done
-
 
 # compress the archive
 gzip -9 $ARC_NAME
@@ -323,8 +259,8 @@ LANG=C LC_ALL=C sed -i.back "s/_AGENT_GROUP_NAME_/$AGENT_GROUP_NAME/g" $DDS_WRK_
 rm -f "$DDS_WRK_SCRIPT_TMP.back"
 
 
-# copy worker script to the sandbox directory
-cp "$DDS_WRK_SCRIPT_TMP" "$WRK_SCRIPT" || { echo "error: Can't copy the worker script to the sandbox." >&2 ; exit 1; }
+# move worker script to the sandbox directory
+mv "$DDS_WRK_SCRIPT_TMP" "$WRK_SCRIPT" || { echo "error: Failed to move the worker script to the sandbox." >&2 ; exit 1; }
 chmod u+wx "$WRK_SCRIPT"
 
 echo "DDS worker package: "$WRK_SCRIPT
@@ -333,4 +269,3 @@ echo "DDS worker package: "$WRK_SCRIPT
 rm -f $ARC_NAME $ARC_NAME.tar $ARC_NAME.tgz
 
 exit 0
-

@@ -29,9 +29,10 @@ namespace dds::misc
         };
 
         template <typename _Result, typename _Class, typename _Argument>
-        class mem_fun1_t : public dds::misc::workaround_binary_function<_Class*,
-                                                       typename remove_cref<_Argument>::type, // was: Argument
-                                                       _Result>
+        class mem_fun1_t
+            : public dds::misc::workaround_binary_function<_Class*,
+                                                           typename remove_cref<_Argument>::type, // was: Argument
+                                                           _Result>
         {
           public:
             explicit mem_fun1_t(_Result (_Class::*member)(_Argument))

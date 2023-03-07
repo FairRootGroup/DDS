@@ -20,7 +20,8 @@
  */
 namespace dds::misc
 {
-     // Workaround: Since std::unary_function is removed in C++17, we provide a simple workaround for the old code until it is upgraded to modern new C++
+    // Workaround: Since std::unary_function is removed in C++17, we provide a simple workaround for the old code until
+    // it is upgraded to modern new C++
     template <class ArgumentType, class ResultType>
     struct workaround_unary_function
     {

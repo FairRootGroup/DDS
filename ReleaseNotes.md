@@ -35,7 +35,9 @@ Added: Users can provide a Submission Tag (--submission-tag). DDS RMS plug-ins w
 Added: The command learned a new argument --env-config/-e. It can be used to define a custom environment script for each agent. (GH-430)    
 Added: The command learned a new argument --min-instances. It can be used to provide the minimum number of agents to spawn. (GH-434) 
 Added: The command learned a new argument --enable-overbooking. The flag instructs DDS RMS plug-ing to not specify any CPU requirement for RMS jobs. (GH-442)   
-Added: The command learned a new argument --inline-config. Content of this string will be added to the RMS job configuration file as is. It can be specified multiple times to add multiline options. (GH-449)     
+Added: The command learned a new argument --inline-config. Content of this string will be added to the RMS job configuration file as is. It can be specified multiple times to add multiline options. (GH-449)   
+Modified: WN package builder timout interval was increased from 15 to 30 sec. (GH-468)    
+Modified: Improve validation of the WN package builder. (GH-468)    
 
 ### dds-topology
 Fixed: Stability improvements.     
