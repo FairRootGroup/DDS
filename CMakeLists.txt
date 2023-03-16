@@ -1,4 +1,4 @@
-# Copyright 2014-2022 GSI, Inc. All rights reserved.
+# Copyright 2014-2023 GSI, Inc. All rights reserved.
 #
 #
 project( DDS )

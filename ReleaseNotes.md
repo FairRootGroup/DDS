@@ -2,7 +2,7 @@
 
 ## v3.8 (NOT YET RELEASED)
 
-### DDS common
+### DDS general
 Fixed: On task done remove agents from the agent to tasks mapping.    
 Fixed: Replace std::iterator as it's deprecated (C++17).    
 Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.    
@@ -14,6 +14,7 @@ Added: Support for Task Assets. (GH-406)
 Added: Cancel running and pending SLURM jobs on DDS shutdown. (GH-429)   
 Added: Support for Apple's arm64 architecture. (GH-393)    
 Added: $DDS_CONFIG and "/etc/dds/DDS.cfg" are added to the DDS config search paths. (GH-458)   
+Added: DDS libraries are now decorated with an ABI version. (GH-410)    
 
 ### dds-agent
 Fixed: Address potential crash in the external process termination routines.    
@@ -81,7 +82,7 @@ Fixed: wrong exit code when called with --help/--version. (GH-470)
 
 ## v3.6 (2022-01-11)
 
-### DDS common
+### DDS general
 Removed: obsolete test project. ODC is used as an integration platform for DDS.    
 Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentation fault.   
 Fixed: When creating softlinks to boost prerequisite libs, skip linking if destination file exists. (GH-323)    
@@ -137,7 +138,7 @@ Added: dds-user-defaults learned a new global option "agent.disk_space_threshold
 
 ## v3.4 (2020-07-01)
 
-### DDS common
+### DDS general
 Modified: General improvements and bug fixes.
 
 ### dds-tools-api
@@ -149,7 +150,7 @@ Added: new max instances per host requirement ("maxinstances") for tasks and col
 
 ## v3.2 (2020-05-12)
 
-### DDS common
+### DDS general
 Added: Users now can specify custom environment scripts for each task. (GH-24)    
 Modified: Improved cleaning of child processes of user tasks.     
 Fixed: If process is killed or crashed it can leave opened and locked interprocess mutex. It leads to hanging boost::interprocess::message_queue::timed_send function. The function tries to write to the queue which is locked by the mutex from the killed process. BOOST implements a workaround flag - BOOST_INTERPROCESS_ENABLE_TIMEOUT_WHEN_LOCKING. It forces the boost::interprocess to use timed mutexes instead of a simple ones.    
@@ -186,7 +187,7 @@ Starting from this release, DDS supports multiple tasks per agent.
 DDS now requires much less resources at runtime.   
 In compare to previous versions it's also significantly faster when using DDS Key-Value and DDS Custom Commands in user tasks.    
 
-### DDS common
+### DDS general
 Fixed: a race condition in DDS Core in external process handling. (GH-252)    
 Fixed: Support list of values in DDS_LD_LIBRARY_PATH. (GH-262)     
 Modified: API breaking change! Names of all API headers are now streamlined.   
@@ -222,7 +223,7 @@ Removed: --wait-for-idle-agents, --wait-for-executing-agents are obsolete. Repla
 
 ## v2.4 (2019-06-18)
 
-### DDS common
+### DDS general
 Fixed: don't copy reachable task to agent's directory. (GH-215)    
 Fixed: WnName requirement is only used for SSH plug-in. For other plug-ins the requirement is skipped with a warning message in the log. (GH-217)    
 Fixed: build system writes temporary files only in build directory. (GH-182)   
@@ -256,12 +257,12 @@ Removed: cmdDELETE_KEY is obsolete and was removed.
 
 ## v2.2 (2018-11-27)
 
-### DDS common 
+### DDS general 
 Removed: update key command from dds-agent-cmd.    
 Modified: Bump minimum required Boost version to 1.67.    
 Modified: Bump minimum required cmake version to 3.11.0.    
 Modified: dds-intercom key-value API changed to reflect recent changes in the protocol. (GH-196)   
-Modified: Improve log dir detection algorithm for commander and agents. The new algorithm doesn' rely on DDS_LOG_LOCATION anymore.    
+Modified: Improve log dir detection algorithm for commander and agents. The new algorithm doesn't rely on DDS_LOG_LOCATION anymore.    
 Added: Get rid of explicit include path mgmt and install CMake package.     
 Added: Improved error reporting for localhost plug-in. In case of failure logs are sent to the user.    
 Added: decentralised key-value propagation. Lobby leader acts as a mini-commander which creates update key messages and forwards them either locally via shared memory if the receiver is in the same lobby or  to the commnader via network if the receiver is in a different lobby.  (GH-196)    
@@ -294,7 +295,7 @@ Added: Property scope. Properties having COLLECTION scope are propagated only to
 
 ## v2.0 (2018-03-12)
 
-### DDS common
+### DDS general
 Added: Introduced DDS Sessions. (GH-186)   
 Modified: Bump minimum required Boost version to 1.64.    
 Modified: Code related to external processes execution has been ported to use boost::process library. (GH-190)    
@@ -313,7 +314,7 @@ Fixed: efficient transfer of binary attachments for shared memory channels.
 Added: Initial version of the tool. (GH-191)    
 
 ## v1.8 (2017-11-09)
-### DDS common
+### DDS general
 Fixed: an issue that all the key-value update errors were processed as version mismatch errors, which is wrong. A new error type 'key-value not found' was introduced. DDS agent does not send back an updated key if the error was of type 'key-value not found'.   
 Added: Lobby based deployment. (GH-78)   
 Added: Introduced Session ID. (GH-170)   
@@ -343,7 +344,7 @@ Fixed: Download WN packages only for supported systems. We don't support 32bit W
 
 ## v1.6 (2017-03-26)
 
-### DDS common
+### DDS general
 Added: Dependency look up and bundling of WN package using cmake. (GH-166)       
 Added: Bundle-like installation. (GH-167)    
 Modified: BOOST libs from WN packages are built now without libicudata support to reduce the package size. (GH-141)    
@@ -367,7 +368,7 @@ Enhanced handling of the messages and events. Common base class for message and 
 
 ## v1.4 (2016-10-31)
 
-### DDS common
+### DDS general
 Modified: pipe log engine is improved to log events line by line, rather than using a fixed string length.  
 Modified: key-value updates from external utilities are not supported now.   
 Modified: support versioning in key-value propagation. (GH-131)  
@@ -400,7 +401,7 @@ Added: Initial release. (GH-150)
 
 ## v1.2 (2016-06-07)
 
-### DDS common
+### DDS general
 Fixed: cmake: Updated OSX RPATH settings.   
 Fixed: cmake: Fail with an explicit error when missing DDS worker package dependency. (GH-117)   
 Fixed: dds-intercom-lib: fails to parse JASON message with quotes. (GH-120)   
@@ -443,7 +444,7 @@ Added: customisable plugin location. --path option which specifies the root dire
 Modified: accept both -n and -c command line options.   
 
 ## v1.0 (2015-11-20)
-### DDS common
+### DDS general
 Fixed: git error when using out of source builds (GH-85)    
 Fixed: a class name lookup issues, which could result in unpredictable behavior during run-time (agent and key-value-lib had classes with the same name and same header protection).    
 Fixed: check DDS_LOCATION before agent start. (GH-98)   
@@ -470,7 +471,7 @@ Modified: log pre-execution env to make sure environment is correct. (GH-67)
 
 ## v0.10 (2015-07-16)
 
-### DDS common
+### DDS general
 Added: handlers of the monitoring thread can be registered now with custom call intervals. (GH-63)   
 Added: accumulated push message function. (GH-64)   
 Added: include std c++ lib into worker package. (GH-61)   
@@ -520,7 +521,7 @@ Modified: use string log severity values instead of numbers. (GH-49)
 
 ## v0.8 (2015-02-17)
 
-### DDS common
+### DDS general
 Fixed: idle time calculation for dds-commander and dds-agent. (GH-32)   
 Fixed: a bug, which prevented log files to rotate.    
 Fixed: reaching the idle timeout causes Commander and Agents to exit even if user processes are still running. (GH-54)    
@@ -564,7 +565,7 @@ Fixed: a bug, which caused a crash when topology activate is called before dds-s
 
 ## v0.6 (2014-12-05)
 
-### DDS common   
+### DDS general   
 Modified: Build WN packages without ICU support. (GH-14)   
 Added: key-value propagation support. (GH-12)   
 Added: key-value propagation API lib. (GH-11)   
@@ -589,7 +590,7 @@ Added: dds-agent-cmd learned a new command - update-key. It forces an update of 
 
 ## v0.4 (2014-10-24)
 
-### DDS common
+### DDS general
 Added: DDS learned how to expand given user tasks commands with arguments given as a single string. (in the Topology->Task->exec parameter).   
 Added: if a user's task is defined in the topology as not reachable, then DDS will take care of delivering it to worker nodes. (GH-6)   
 Improved: all DDS CLI commands use now common code to find suitable DDS commander server.   

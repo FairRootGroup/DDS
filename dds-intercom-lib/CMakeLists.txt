@@ -23,6 +23,13 @@ set(SRC_HDRS
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${SRC_HDRS_INT} ${SRC_HDRS})
+#
+# Set Target version
+#
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    VERSION  ${DDS_VERSION}
+    # SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC

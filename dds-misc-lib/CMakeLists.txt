@@ -52,6 +52,13 @@ set(HEADER_FILES_EXT
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${HEADER_FILES_EXT})
+#
+# Set Target version
+#
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    VERSION  ${DDS_VERSION}
+    # SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC

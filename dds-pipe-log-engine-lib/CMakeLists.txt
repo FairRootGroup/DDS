@@ -3,12 +3,19 @@
 #
 project(dds_pipe_log_engine_lib)
 
-add_library(dds_pipe_log_engine_lib SHARED
+add_library(${PROJECT_NAME} SHARED
   src/PipeLogEngine.cpp
   src/PipeLogEngine.h
 )
+#
+# Set Target version
+#
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    VERSION  ${DDS_VERSION}
+    # SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+)
 
-target_link_libraries(dds_pipe_log_engine_lib
+target_link_libraries(${PROJECT_NAME}
   PUBLIC
   dds_misc_lib
   dds_user_defaults_lib
@@ -19,11 +26,11 @@ target_link_libraries(dds_pipe_log_engine_lib
   Boost::system
 )
 
-target_include_directories(dds_pipe_log_engine_lib
+target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )
 
-install(TARGETS dds_pipe_log_engine_lib
+install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION "${PROJECT_INSTALL_LIBDIR}"
 )

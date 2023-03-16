@@ -18,6 +18,13 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
   ${Protobuf_LIBRARIES}
 )
+#
+# Set Target version
+#
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    VERSION  ${DDS_VERSION}
+    # SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC

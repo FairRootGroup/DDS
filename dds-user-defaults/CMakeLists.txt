@@ -33,21 +33,30 @@ target_link_libraries(${PROJECT_NAME}
   Boost::filesystem
 )
 
-add_library(dds_user_defaults_lib SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
+set(target "dds_user_defaults_lib")
+add_library(${target} SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
+add_library(${PROJECT_NAME}::${target_lib} ALIAS ${target})
+#
+# Set Target version
+#
+set_target_properties(${target} PROPERTIES
+    VERSION  ${DDS_VERSION}
+    # SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+)
 
 # we want to have the same name for the library and for the exe
-set_target_properties(dds_user_defaults_lib PROPERTIES
+set_target_properties(${target} PROPERTIES
   OUTPUT_NAME ${PROJECT_NAME}
 )
 
-target_include_directories(dds_user_defaults_lib
+target_include_directories(${target}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(dds_user_defaults_lib
+target_link_libraries(${target}
   PUBLIC
   dds_misc_lib
   Boost::boost
@@ -56,7 +65,7 @@ target_link_libraries(dds_user_defaults_lib
   Boost::filesystem
 )
 
-install(TARGETS ${PROJECT_NAME} dds_user_defaults_lib
+install(TARGETS ${PROJECT_NAME} ${target}
   EXPORT DDSTargets
   RUNTIME DESTINATION "${PROJECT_INSTALL_BINDIR}"
   LIBRARY DESTINATION "${PROJECT_INSTALL_LIBDIR}"
