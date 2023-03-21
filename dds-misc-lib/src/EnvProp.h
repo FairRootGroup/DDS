@@ -1,4 +1,4 @@
-// Copyright 2015 GSI, Inc. All rights reserved.
+// Copyright 2015-2023 GSI, Inc. All rights reserved.
 //
 //
 //
@@ -30,127 +30,28 @@ namespace dds
     /// \brief The function returns a value for a given environment property.
     /// \brief Example Usage:
     /// \code
-    /// #include "DDSEnvProp.h"
+    /// #include "EnvProp.h"
     /// uint64_t val = env_prop<task_id>();
+    /// std::string = env_prop<task_name>();
     /// \endcode
     /// \tparam T type one of the environment property listed in #EEnvProp.
     /// \return a numeric value for a given environment property.
-    template <EEnvProp T>
-    inline typename std::enable_if<T == task_id || T == dds_slot_id, uint64_t>::type env_prop()
+    template <EEnvProp p>
+    auto env_prop()
     {
-        size_t ret(0);
-        std::string envName;
-        switch (T)
-        {
-            case task_id:
-                envName = "DDS_TASK_ID";
-                break;
-            case dds_slot_id:
-                envName = "DDS_SLOT_ID";
-                break;
-            default:
-                return 0;
-        }
-        const char* env = std::getenv(envName.c_str());
-        if (nullptr == env)
-            return ret;
-
-        try
-        {
-            ret = std::stoull(env);
-        }
-        catch (...)
-        {
-            return 0;
-        }
-
-        return ret;
+        // assert(p >= task_id && p <= dds_slot_id);
+        static constexpr const char* envNames[] = { "DDS_TASK_ID",    "DDS_TASK_INDEX",       "DDS_TASK_NAME",
+                                                    "DDS_TASK_PATH",  "DDS_COLLECTION_INDEX", "DDS_COLLECTION_NAME",
+                                                    "DDS_GROUP_NAME", "DDS_LOCATION",         "DDS_SESSION_ID",
+                                                    "DDS_SLOT_ID" };
+        static constexpr bool asInt[] = { true, true, false, false, true, false, false, false, false, true };
+        const char* env = std::getenv(envNames[p]);
+        if constexpr (asInt[p])
+            return env ? std::stoull(env) : 0;
+        else
+            return env ? env : "";
     }
 
-    /// \brief The function returns a value for a given environment property.
-    /// \brief Example Usage:
-    /// \code
-    /// #include "DDSEnvProp.h"
-    /// size_t val = env_prop<collection_index>();
-    /// \endcode
-    /// \tparam T type one of the environment property listed in #EEnvProp.
-    /// \return a numeric value for a given environment property.
-    template <EEnvProp T>
-    inline typename std::enable_if<T == task_index || T == collection_index, size_t>::type env_prop()
-    {
-        size_t ret(0);
-        std::string envName;
-        switch (T)
-        {
-            case task_index:
-                envName = "DDS_TASK_INDEX";
-                break;
-            case collection_index:
-                envName = "DDS_COLLECTION_INDEX";
-                break;
-            default:
-                return 0;
-        }
-        const char* env = std::getenv(envName.c_str());
-        if (nullptr == env)
-            return ret;
-
-        try
-        {
-            ret = std::stoi(env);
-        }
-        catch (...)
-        {
-            return 0;
-        }
-
-        return ret;
-    }
-
-    /// \brief The function returns a value for a given environment property.
-    /// \brief Example Usage:
-    /// \code
-    /// #include "DDSEnvProp.h"
-    /// std::string val = env_prop<task_name>();
-    /// \endcode
-    /// \tparam T type one of the environment property listed in enum #EEnvProp.
-    /// \return a string value for a given environment property.
-    template <EEnvProp T>
-    inline typename std::enable_if<T == task_name || T == collection_name || T == group_name || T == dds_location ||
-                                       T == task_path || T == dds_session_id,
-                                   std::string>::type
-        env_prop()
-    {
-        std::string envName;
-        switch (T)
-        {
-            case task_name:
-                envName = "DDS_TASK_NAME";
-                break;
-            case collection_name:
-                envName = "DDS_COLLECTION_NAME";
-                break;
-            case group_name:
-                envName = "DDS_GROUP_NAME";
-                break;
-            case dds_location:
-                envName = "DDS_LOCATION";
-                break;
-            case task_path:
-                envName = "DDS_TASK_PATH";
-                break;
-            case dds_session_id:
-                envName = "DDS_SESSION_ID";
-                break;
-            default:
-                return 0;
-        }
-        const char* env = std::getenv(envName.c_str());
-        if (nullptr == env)
-            return "";
-
-        return std::string(env);
-    }
 }; // namespace dds
 
 #endif /*DDSENVPROP_H_*/

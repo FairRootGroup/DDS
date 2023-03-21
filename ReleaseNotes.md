@@ -7,7 +7,8 @@ Fixed: On task done remove agents from the agent to tasks mapping.
 Fixed: Replace std::iterator as it's deprecated (C++17).    
 Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.    
 Fixed: Multiple stability issues.     
-Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  and boost (from 1.67 to 1.75). (GH-428)
+Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  and boost (from 1.67 to 1.75). (GH-428)   
+Modified: C++17 modernisation of EnvProp.h/env_prop. (GH-368)   
 Added: 3rd party dependency on Protobuf (min v3.15).         
 Added: every DDS module logs now its pid, group id and parent pid. (GH-403)    
 Added: Support for Task Assets. (GH-406)    
