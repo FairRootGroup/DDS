@@ -81,6 +81,10 @@ Added: A "server.data_retention" configuration key. (GH-435)
 ### dds-info
 Fixed: wrong exit code when called with --help/--version. (GH-470)    
 
+### dds-agent-cmd
+Modified: getlog: now logs are tar'ed without their source directory structure - as a flat stack of files. (GH-369)  
+Modified: getlog: the command outputs the destination directory where downloaded archives will be stored into. Also fixed command's description. (GH-369)      
+
 ## v3.6 (2022-01-11)
 
 ### DDS general

@@ -391,8 +391,8 @@ bool CCommanderChannel::on_cmdGET_LOG(SCommandAttachmentImpl<cmdGET_LOG>::ptr_t 
 
         stringstream ssCmd;
         ssCmd << bashPath.string() << " -c \"" << findPath.string() << " \\\"" << logDir.string()
-              << "\\\" -name \\\"*.log\\\" | " << tarPath.string() << " -czf \\\"" << filePath.string()
-              << "\\\" -T -\"";
+              << "\\\" -depth 1 -type f -name \\\"*.log\\\" -exec basename {} \\; | " << tarPath.string()
+              << " -czf \\\"" << filePath.string() << "\\\" --directory \\\"" << logDir.string() << "\\\" -T -\"";
 
         string output;
         execute(ssCmd.str(), chrono::seconds(60), &output);

@@ -48,6 +48,7 @@ int main(int argc, char* argv[])
         {
             case EAgentCmdType::GETLOG:
                 LOG(log_stdout) << "Requesting log files from agents...";
+                LOG(log_stdout) << "Files will be downloaded to \"~/.DDS/sessions/" << sid << "/log/agents\"";
                 break;
             default:
                 LOG(log_stderr) << "Uknown command.";

@@ -85,7 +85,8 @@ namespace dds
                 "For user's convenience it is allowed to call dds-agent-cmd without \"--command\" option"
                 " by just specifying the command name directly, like:\ndds-agent-cmd getlog\n\n"
                 "Commands:\n"
-                "   getlog: \tRetrieve log files from worker nodes. Files will be saved in ~/.DDS/log/agents\n");
+                "   getlog: \tRetrieve log files from worker nodes. Files will be saved in "
+                "~/.DDS/sessions/<sid>/log/agents\n");
             options.add_options()("all,a", "Send command to all active agents");
 
             bpo::positional_options_description positional;
