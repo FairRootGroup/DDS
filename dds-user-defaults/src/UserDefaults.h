@@ -43,6 +43,8 @@ namespace dds
 
           public:
             std::string getValueForKey(const std::string& _key) const;
+            // this is the same as getValueForKey but without appending sid for path related keys
+            std::string getDefaultValueForKey(const std::string& _key) const;
             static void printDefaults(std::ostream& _stream);
             const SDDSUserDefaultsOptions_t getOptions() const;
             static std::string currentUDFile();

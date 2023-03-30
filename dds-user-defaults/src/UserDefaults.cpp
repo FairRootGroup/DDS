@@ -207,9 +207,9 @@ void CUserDefaults::printDefaults(ostream& _stream)
     ud.init(true);
 
     _stream << "[server]\n"
-            << "work_dir=" << ud.getValueForKey("server.work_dir") << "\n"
-            << "sandbox_dir=" << ud.getValueForKey("server.sandbox_dir") << "\n"
-            << "log_dir=" << ud.getValueForKey("server.log_dir") << "\n"
+            << "work_dir=" << ud.getDefaultValueForKey("server.work_dir") << "\n"
+            << "sandbox_dir=" << ud.getDefaultValueForKey("server.sandbox_dir") << "\n"
+            << "log_dir=" << ud.getDefaultValueForKey("server.log_dir") << "\n"
             << "#\n"
             << "# Log severity can be one of the following values:\n"
             << "# p_l, p_m, p_h, dbg, inf, wrn, err, fat\n"
@@ -222,22 +222,22 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "# err - error events and higher\n"
             << "# fat - fatal errors and higher\n"
             << "#\n"
-            << "log_severity_level=" << ud.getValueForKey("server.log_severity_level") << "\n"
-            << "log_rotation_size=" << ud.getValueForKey("server.log_rotation_size") << "\n"
-            << "log_has_console_output=" << ud.getValueForKey("server.log_has_console_output") << "\n"
-            << "commander_port_range_min=" << ud.getValueForKey("server.commander_port_range_min") << "\n"
-            << "commander_port_range_max=" << ud.getValueForKey("server.commander_port_range_max") << "\n"
-            << "idle_time=" << ud.getValueForKey("server.idle_time") << "\n"
+            << "log_severity_level=" << ud.getDefaultValueForKey("server.log_severity_level") << "\n"
+            << "log_rotation_size=" << ud.getDefaultValueForKey("server.log_rotation_size") << "\n"
+            << "log_has_console_output=" << ud.getDefaultValueForKey("server.log_has_console_output") << "\n"
+            << "commander_port_range_min=" << ud.getDefaultValueForKey("server.commander_port_range_min") << "\n"
+            << "commander_port_range_max=" << ud.getDefaultValueForKey("server.commander_port_range_max") << "\n"
+            << "idle_time=" << ud.getDefaultValueForKey("server.idle_time") << "\n"
             << "#\n"
             << "# Defines a number of days to keep DDS sessions.\n"
             << "# Not running sessions older than the specified number of days will be auto deleted.\n"
-            << "data_retention=" << ud.getValueForKey("server.data_retention") << "\n"
+            << "data_retention=" << ud.getDefaultValueForKey("server.data_retention") << "\n"
             << "\n\n[agent]\n"
             << "# This option can help to relocate the work directory of agents.\n"
             << "# The option is ignored by the localhost and ssh plug-ins.\n"
             << "# By default the wrk dir is placed inside the path specified by server.sandbox_dir.\n"
             << "# It's recommended to keep this option empty.\n"
-            << "work_dir=" << ud.getValueForKey("agent.work_dir") << "\n"
+            << "work_dir=" << ud.getDefaultValueForKey("agent.work_dir") << "\n"
             << "#\n"
             << "# This option forces the given file mode on agent side files.\n"
             << "# At the moment the access permissions are applied only on user task log files (stdout and stderr).\n"
@@ -255,12 +255,12 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "# 0444 - Allow read permission to owner and group and world\n"
             << "# 0777 - Allow everyone to read, write, and execute file\n"
             << "#\n"
-            << "access_permissions=" << ud.getValueForKey("agent.access_permissions") << "\n"
+            << "access_permissions=" << ud.getDefaultValueForKey("agent.access_permissions") << "\n"
             << "# The agent will trigger a self-shutdown if the free disk space is below this threshold.\n"
             << "# The value in MB. Default is 500 MB.\n"
             << "# Set it to 0 to disiable.\n"
             << "#\n"
-            << "disk_space_threshold=" << ud.getValueForKey("agent.disk_space_threshold") << "\n";
+            << "disk_space_threshold=" << ud.getDefaultValueForKey("agent.disk_space_threshold") << "\n";
 }
 
 string CUserDefaults::convertAnyToString(const boost::any& _any) const
@@ -300,6 +300,11 @@ string CUserDefaults::getValueForKey(const string& _key) const
     }
 
     return ret;
+}
+
+std::string CUserDefaults::getDefaultValueForKey(const std::string& _key) const
+{
+    return convertAnyToString(m_keys[_key].value());
 }
 
 /// Returns DDS working directory. For agents it is always $DDS_LOCATION
