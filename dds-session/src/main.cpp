@@ -78,7 +78,7 @@ void rebuildSessions(vector<fs::path>& _session_dirs, StringVector_t& _sessions)
         _session_dirs.push_back(dir.path());
         // Workaround: using .leaf().string(), instead of just .leaf(), vecasue we want to avoid double quotes
         // in output.
-        _sessions.push_back(dir.path().leaf().string());
+        _sessions.push_back(dir.path().filename().string());
     }
 }
 
@@ -99,7 +99,7 @@ void listSessions(const vector<fs::path>& _session_dirs, SSessionsSorting::EType
 
     for (auto& dir : sortedDirs)
     {
-        string sSID = dir.second.leaf().string();
+        string sSID = dir.second.filename().string();
         if (!IsValid(sSID))
             continue;
 
@@ -137,7 +137,7 @@ void performDataRetention(const vector<fs::path>& _session_dirs) noexcept
                               << " will be deleted...";
         for (const auto& i : _session_dirs)
         {
-            const string sid{ i.leaf().string() };
+            const string sid{ i.filename().string() };
 
             if (!IsValid(sid))
                 continue;
@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
         {
             for (auto& dir : session_dirs)
             {
-                const string sSID(dir.leaf().string());
+                const string sSID(dir.filename().string());
 
                 // Ignore non-sid or bad items
                 if (!IsValid(sSID))

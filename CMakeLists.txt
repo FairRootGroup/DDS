@@ -1,16 +1,16 @@
 # Copyright 2014-2023 GSI, Inc. All rights reserved.
 #
 #
+#
+# Check if cmake has the required version
+#
+cmake_minimum_required( VERSION 3.23.1 FATAL_ERROR )
+
 project( DDS )
 set(BUILD_SHARED_LIBS ON)
 
 set(DDS_USER_DEFAULTS_CFG_VERSION "0.5")
 set(DDS_PROTOCOL_VERSION "2")
-
-#
-# Check if cmake has the required version
-#
-cmake_minimum_required( VERSION 3.23.1 FATAL_ERROR )
 
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
