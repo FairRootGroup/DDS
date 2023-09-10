@@ -4,9 +4,15 @@
     "name": "FairRootGroup/DDS",
     "description": "<p>The Dynamic Deployment System (DDS) - is a tool-set that automates and significantly simplifies a deployment of user defined processes and their dependencies on any resource management system using a given topology.</p>",
     "license": "https://spdx.org/licenses/CC-BY-4.0",
-    "version": "3.2",
+    "softwareVersion": "3.2",
     "datePublished": "2020-05-26",
-    "contributor": [
+    "maintainer": {
+        "@type": "Person",
+        "familyName": "Manafov",
+        "givenName": "Anar"
+    },
+    "readme": "https://github.com/FairRootGroup/DDS/blob/master/README.md",
+    "author": [
         {
             "@type": "Person",
             "familyName": "Manafov",
