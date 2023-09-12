@@ -21,33 +21,18 @@ DDS:
 
 ## Documentation
 
+- [Requirements](./docs/requirements.md)
+- [Installation](./docs/install.md)
+- [Quick Start](./docs/quick-start.md)
+- RMS plug-ins
+  - [localhost](./plugins/dds-submit-localhost/README.md)
+  - [ssh](./plugins/dds-submit-ssh/README.md)
+  - [slurm](./plugins/dds-submit-slurm/README.md)
+  - [lsf](./plugins/dds-submit-lsf/README.md)
+  - [pbs](./plugins/dds-submit-pbs/README.md)
+- Additional docs
+  - [Build 3rd-party dependencies](./docs/3rd-party.md)
+
+## Links
+
 - [User's manual](http://dds.gsi.de/documentation.html)
-- [Installation](http://dds.gsi.de/doc/nightly/install.html)
-- [Quick Start](http://dds.gsi.de/doc/nightly/quick-start.html)
-
-## Building 3rd-party
-
-### BOOST on macOS
-
-```bash
-./bootstrap.sh --prefix=[INSTALL DIR] --without-icu
-./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=system threading=multi link=shared,static cxxstd=17 install
-
-cd [INSTALL_DIR]/lib
-find . -name '*.dylib' -exec bash -c 'nm=$(basename $1);install_name_tool $1 -id [INSTALL_DIR]/lib/$nm' -- {} \;
-```
-
-### BOOST on Linux
-
-```bash
-./bootstrap.sh --prefix=[INSTALL DIR] --without-icu
-./b2 --disable-icu --prefix=[INSTALL DIR] -j8 --layout=system threading=multi link=shared,static cxxflags="-std=c++11" install
-```
-
-### clang-format on macOS
-
-[LLVM binary builds](http://releases.llvm.org/download.html) An LLVM version 15.0.7 should be used: [Download](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7)
-
-### devtools-3 on CentOS
-
-[Instructions](https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/)
