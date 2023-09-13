@@ -22,15 +22,17 @@ DDS:
 ## Documentation
 
 - [Requirements](./docs/requirements.md)
-- [Installation](./docs/install.md)
 - [Quick Start](./docs/quick-start.md)
+- [Download](./docs/download.md)
+- [Installation](./docs/install.md)
+- [How to Start](./docs/how-to-start.md)
 - RMS plug-ins
   - [localhost](./plugins/dds-submit-localhost/README.md)
   - [ssh](./plugins/dds-submit-ssh/README.md)
   - [slurm](./plugins/dds-submit-slurm/README.md)
   - [lsf](./plugins/dds-submit-lsf/README.md)
   - [pbs](./plugins/dds-submit-pbs/README.md)
-  - [For Plug-in developers](./plugins/README.md)
+  - [For Plug-in developers](./plugins/README.md#for-plug-in-developers)
 - Additional docs
   - [Build 3rd-party dependencies](./docs/3rd-party.md)
 

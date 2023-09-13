@@ -1,3 +1,11 @@
+# RMS plug-ins
+
+- [localhost](./plugins/dds-submit-localhost/README.md)
+- [ssh](./plugins/dds-submit-ssh/README.md)
+- [slurm](./plugins/dds-submit-slurm/README.md)
+- [lsf](./plugins/dds-submit-lsf/README.md)
+- [pbs](./plugins/dds-submit-pbs/README.md)
+
 # For Plug-in developers
 
 ## Basic concept
