@@ -4,26 +4,26 @@
 
 If your home directory is not shared on the SLURM cluster, then you must define a sandbox directory, which DDS will use to store SLURM job script and all jobs' working directories will be also located there. Please note, that at the moment DDS doesn't clean jobs' working directories, therefore you are responsible to remove them if needed.
 
-In order to set sandbox directory a DDS global option ```server.sandbox_dir``` have to be changed, which is located in the DDS configuration file ```DDS.cfg``` (default location: ```$HOME/.DDS/DDS.cfg```)
+In order to set sandbox directory a DDS global option `server.sandbox_dir` have to be changed, which is located in the DDS configuration file `DDS.cfg` (default location: `$HOME/.DDS/DDS.cfg`)
 
 ## User configuration
 
 Using [dds-submit -c My_SLURM.cfg](../../dds-submit/README.md) command you can provide additional configuration options for DDS SLURM jobs.  
-For example, the following command will submit 10 DDS agents (each with 50 task slots) and will use additional SLURM configuration options provided in the ```My_SLURM.cfg```:
+For example, the following command will submit 10 DDS agents (each with 50 task slots) and will use additional SLURM configuration options provided in the `My_SLURM.cfg`:
 
 ```shell
 dds-submit -r slurm -n 10 --slots 50 -c My_SLURM.cfg
 ```
 
-**Note**  
-The content of the custom SLURM job configuration file can be any ```sbatch``` parameter, except ```srun``` and ```--array```.
-
-For example, My_SLURM.cfg can contain:
-
-```bash
-#SBATCH -A "account"
-#SBATCH --time=00:30:00
-```
+> [!NOTE]  
+> The content of the custom SLURM job configuration file can be any `sbatch` parameter, except `srun` and `--array`.
+>
+> For example, My_SLURM.cfg can contain:
+>
+>   ```bash
+>   #SBATCH -A "account"
+>   #SBATCH --time=00:30:00
+>   ```
 
 ## Usage example
 

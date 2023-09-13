@@ -30,6 +30,7 @@ DDS:
   - [slurm](./plugins/dds-submit-slurm/README.md)
   - [lsf](./plugins/dds-submit-lsf/README.md)
   - [pbs](./plugins/dds-submit-pbs/README.md)
+  - [For Plug-in developers](./plugins/README.md)
 - Additional docs
   - [Build 3rd-party dependencies](./docs/3rd-party.md)
 
