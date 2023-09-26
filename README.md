@@ -26,6 +26,15 @@ DDS:
 - [Download](./docs/download.md)
 - [Installation](./docs/install.md)
 - [How to Start](./docs/how-to-start.md)
+- Command-line interface
+  - [dds-session](dds-session/README.md)
+  - [dds-commander](dds-commander/README.md)
+  - [dds-user-defaults](dds-user-defaults/README.md)
+  - [dds-submit](dds-submit/README.md)
+  - [dds-info](dds-info/README.md)
+  - [dds-test](dds-test/README.md)
+  - [dds-topology](dds-topology/README.md)
+  - [dds-agent-cmd](dds-agent-cmd/README.md)
 - RMS plug-ins
   - [localhost](./plugins/dds-submit-localhost/README.md)
   - [ssh](./plugins/dds-submit-ssh/README.md)
