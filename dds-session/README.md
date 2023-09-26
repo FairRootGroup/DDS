@@ -30,18 +30,24 @@ To build a binary package for the local system, just issue:
 
 * **stop**  
 Stop a given DDS session specified by `SESSION_ID`. If no `SESSION_ID` argument is provided, the command will stop the default DDS session. But in this case the command will ask user to confirm the choice.
+
 * **stop_all**  
 Stop all running DDS sessions.
+
 * **list**  
 List available DDS sessions. User must provide the filter criteria, either all or run
 With all the command will list absolutely all existing sessions, including expired ones.
 With run the command will list only running DDS sessions.
+
 * **set-default**  
 Sets a given `SESSION_ID` as a default session ID.
 The default session ID is used by all DDS commands, when user doesn't provide a session ID explicitly in the command line arguments.
+
 * **clean**  
 The command cleans DDS sessions. It will remove all session related temporary files and logs. Be careful using this command. The operation can't be undone.
 For safety reason the command confirms with the user removal of each DDS session, but you can avoid this by providing the `-f` argument.
+
+**Usage example:**
 
 ```console
 $ dds-session start
