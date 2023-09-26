@@ -33,11 +33,11 @@ Generates a default DDS configuration file.
 If the destination file exists, removes it and creates a new file, without prompting for confirmation.  
 Can only be used with the `-d, --default` options.
 
-* **-c, --config *arg***  
+* **-c, --config** *arg*  
 This options can be used together with other options to specify non-default location of the DDS configuration file.  
 By default the command uses `~/.DDS/DDS.cfg`.
 
-* **-s, --session *arg***  
+* **-s, --session** *arg*  
 Use the specified DDS Session ID instead of a default one.
 
 * **--ignore-default-sid**  
