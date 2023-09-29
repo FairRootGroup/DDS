@@ -26,6 +26,7 @@ DDS:
 - [Download](./docs/download.md)
 - [Installation](./docs/install.md)
 - [How to Start](./docs/how-to-start.md)
+- [Topology description](./dds-topology-lib/README.md)
 - Command-line interface
   - [dds-session](dds-session/README.md)
   - [dds-commander](dds-commander/README.md)
