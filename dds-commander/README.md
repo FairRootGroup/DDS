@@ -1,6 +1,6 @@
 # dds-commander
 
-Manages DDS facility UNIX/Linux/OSX
+Manages DDS facility. **UNIX/Linux/OSX**
 
 ## Synopsis
 

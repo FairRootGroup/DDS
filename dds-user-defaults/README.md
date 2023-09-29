@@ -1,6 +1,6 @@
 # dds-user-defaults
 
-Get and set global DDS options UNIX/Linux/OSX
+Get and set global DDS options. **UNIX/Linux/OSX**
 
 ## Synopsis
 

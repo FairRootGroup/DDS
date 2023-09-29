@@ -1,6 +1,6 @@
 # dds-submimt
 
-Submits and activates DDS agents UNIX/Linux/OSX
+Submits and activates DDS agents. **UNIX/Linux/OSX**
 
 ## Synopsis
 

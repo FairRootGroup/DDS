@@ -1,6 +1,6 @@
 # dds-session
 
-Start/Stop DDS commander and manage DDS sessions UNIX/Linux/OSX.
+Start/Stop DDS commander and manage DDS sessions. **UNIX/Linux/OSX**
 
 ## Synopsis
 
