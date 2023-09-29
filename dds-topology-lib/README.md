@@ -155,40 +155,38 @@ A group is declared using the group tag. It has a required attribute name, which
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| No | property, task, collection, main | name | Declares a topology.|
+| no | property, task, collection, main, [var](#var) | name | Declares a topology.|
 
 Exmaple:
 
-  ```xml
-  <topology name="myTopology">
-    [... Definition of tasks, 
-    properties, collections and 
-    groups ...]
-   </topology>
-   ```
+```xml
+<topology name="myTopology">
+  [... Definition of tasks, 
+  properties, collections and 
+  groups ...]
+</topology>
+```
 
 #### var
 
-* **Parents:** topology
-* **Children:** No
-* **Attributes:** name, value
-* **Description:**  
-Declares a variable which can be used inside the topology file as ${variable_name}.
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | no | name, value | Declares a variable which can be used inside the topology file as `${variable_name}`. |
 
-  ```xml
-  <var name="var1" value="value1"/>
-  <var name="var2" value="value2"/>
-  ```
+Example:
+
+```xml
+<var name="var1" value="value1"/>
+<var name="var2" value="value2"/>
+```
 
 #### property
 
-* **Parents:** topology
-* **Children:** No
-* **Attributes:** name
-* **Description:**  
-Declares a property.
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | no | name | Declares a property. |
 
-  ```xml
-  <property name="property1"/>
-  <property name="property2"/>
-  ```
+```xml
+<property name="property1"/>
+<property name="property2"/>
+```
