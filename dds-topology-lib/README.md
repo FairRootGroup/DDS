@@ -6,7 +6,7 @@ The basic building block of the system is a **task**. Namely, a task is a user d
 
 In order to describe dependencies between tasks in a topology we use **properties**. At run-time properties will be turned into simple key-value pairs. DDS uses its key-value propagation engine to make sure, that once property is set by one task, it will be propagated to other depended tasks. DDS treats values of properties as simple strings and doesn't do any special treatment/preprocessing on them. So, basically tasks can write anything into the values of properties (256 char max). Any of depended tasks can set properties. Anytime property is set it will be propagated to other depended tasks. (see for details TODO:"key-value propagation").
 
-> [!INFORMATION]  
+> [!NOTE]  
 > For example, if one task needs to connect with another task they can have the same property. A "server" task can store its TCP/IP port and host in the property. Once the property set, DDS will notice that and propagate it to other tasks.
 
 Tasks can be grouped into **collections** and **groups**. Both collections and groups can be used to group several tasks.  
