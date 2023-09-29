@@ -153,11 +153,11 @@ A group is declared using the group tag. It has a required attribute name, which
 
 #### topology
 
-* **Parents:** No
-* **Children:** property, task, collection, main
-* **Attributes:** name
-* **Description:**  
-Declares a topology.
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| No | property, task, collection, main | name | Declares a topology.|
+
+Exmaple:
 
   ```xml
   <topology name="myTopology">
