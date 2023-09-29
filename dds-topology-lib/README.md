@@ -146,3 +146,49 @@ The main tag declares the topology itself. In the example our main block consist
 A group is declared using the group tag. It has a required attribute name, which is used to uniquely identify the group and optional attribute n, which defines multiplication factor for the group. In the example group1 consists of one task (task1) and two collections (collection1 and collection2). group2 consists of one collection (collection1).
 
 ## Topology XML tag reference
+
+### Topology XML tags
+
+[topology](#topology), [var](#var), [property](#property)
+
+#### topology
+
+* **Parents:** No
+* **Children:** property, task, collection, main
+* **Attributes:** name
+* **Description:**  
+Declares a topology.
+
+  ```xml
+  <topology name="myTopology">
+    [... Definition of tasks, 
+    properties, collections and 
+    groups ...]
+   </topology>
+   ```
+
+#### var
+
+* **Parents:** topology
+* **Children:** No
+* **Attributes:** name, value
+* **Description:**  
+Declares a variable which can be used inside the topology file as ${variable_name}.
+
+  ```xml
+  <var name="var1" value="value1"/>
+  <var name="var2" value="value2"/>
+  ```
+
+#### property
+
+* **Parents:** topology
+* **Children:** No
+* **Attributes:** name
+* **Description:**  
+Declares a property.
+
+  ```xml
+  <property name="property1"/>
+  <property name="property2"/>
+  ```
