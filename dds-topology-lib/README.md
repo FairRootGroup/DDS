@@ -139,7 +139,7 @@ In case when there is a script, that, for example sets environment, has to be ex
 
 If a task depends on some properties this can de specified using the properties tag together with a list of name elements which specify ID of already declared properties. Each property has an optional access attribute which defines whether user task will read (read), write (write) or both read and write (readwrite) a property. Default is readwrite.
 
-Collections are declared using the declcollection tag. It contains a list of task tags with IDs which specified already declared tasks. Task has to be declared before it can be used in the collection. As for the task collection has an optional requirements element which is used to specify a list of the requirements for the collection. If the requirement defined for both task and collection than collection requirement has higher priority and is used for deployment.
+Collections are declared using the [declcollection](#declcollection) tag. It contains a list of task tags with IDs which specified already declared tasks. Task has to be declared before it can be used in the collection. As for the task collection has an optional requirements element which is used to specify a list of the requirements for the collection. If the requirement defined for both task and collection than collection requirement has higher priority and is used for deployment.
 
 The main tag declares the topology itself. In the example our main block consists of one task (task1), one collection (collection1) and two groups (group1 and group2).
 
@@ -149,13 +149,13 @@ A group is declared using the group tag. It has a required attribute name, which
 
 ### Topology XML tags
 
-[topology](#topology), [var](#var), [property](#property)
+[topology](#topology), [var](#var), [property](#property), [declrequirement](#declrequirement), [decltrigger](#decltrigger), [decltask](#decltask), [declcollection](#declcollection), [task](#task), [collection](#collection), [group](#group), [main](#main), [exe](#exe), [env](#env), [requirements](#requirements), [properties](#properties), [name](#name)
 
 #### topology
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| no | property, task, collection, main, [var](#var) | name | Declares a topology.|
+| no | [property](#property), [task](#task), [collection](#collection), [main](#main), [var](#var) | name | Declares a topology.|
 
 Exmaple:
 
@@ -189,4 +189,183 @@ Example:
 ```xml
 <property name="property1"/>
 <property name="property2"/>
+```
+
+#### declrequirement
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | no | name, type, value | Declares a requirement for tasks and collections. |
+
+```xml
+<declrequirement name="requirement1" type="hostname" value="+.gsi.de"/>
+```
+
+#### decltrigger
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | no | name, condition, action, arg | Declares a task trigger. |
+
+```xml
+<decltrigger name="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
+```
+
+#### decltask
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | [exe](#exe), [env](#env), [requirements](#requirements), triggers, [properties](#properties) | name | Declares a task. |
+
+```xml
+<decltask name="task1">
+    <exe reachable="true">app1 -l -n</exe>
+    <env reachable="false">env1</env>
+    <requirements>
+       <name>requirement1</name>
+    </requirement>
+  <triggers>
+       <name>trigger1</name>
+    </triggers>
+    <properties>
+        <name access="read">property1</name>
+        <name access="readwrite">property2</name>
+    </properties>
+</decltask>
+```
+
+#### declcollection
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | [task](#task) | name | Declares a collection. |
+
+```xml
+<declcollection name="collection1">
+    <task>task1</task>
+    <task>task1</task>
+</declcollection>
+```
+
+#### task
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [collection](#collection), [group](#group) | no | no | Specifies the unique ID of the already defined task. |
+
+```xml
+<task>task1</task>
+```
+
+#### collection
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [group](#group) | no | no | Specifies the unique ID of the already defined collection. |
+
+```xml
+<collection>collection1</collection>
+```
+
+#### group
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [main](#main) | [task](#task), [collection](#collection) | name, n | Declares a group. |
+
+```xml
+<group name="group1" n="10">
+    <task>task1</task>
+    <collection>collection1</collection>
+    <collection>collection2</collection>
+</group>
+```
+
+#### main
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [topology](#topology) | [task](#task), [collection](#collection), [group](#group) | name | Declares the main group. |
+
+```xml
+<main name="main">
+    <task>task1</task>
+    <collection>collection1</collection>
+    <group name="group1" n="10">
+        <task>task1</task>
+        <collection>collection1</collection>
+        <collection>collection2</collection>
+    </group>
+</main>
+```
+
+#### exe
+
+> [!NOTE]  
+> Required.
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [decltask](#decltask) | no | reachable | Defines path to the executable or script for the task. |
+
+```xml
+<exe reachable="true">app1 -l -n</exe>
+```
+
+#### env
+
+> [!NOTE]  
+> Optional.
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [decltask](#decltask) | no | reachable | Defines the path to script that has to be executed prior to main executable. |
+
+```xml
+<env reachable="false">setEnv.sh</env>
+```
+
+#### requirements
+
+> [!NOTE]  
+> Optional.
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [decltask](#decltask), [declcollection](#declcollection) | [name](#name) | no | Defines a list of requirements. |
+
+```xml
+<requirements>
+   <name>requirement1</name>
+   <name>requirement2</name>
+</requirements>
+```
+
+#### properties
+
+> [!NOTE]  
+> Optional.
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [decltask](#decltask) | [name](#name) | no | Defines a list of dependent properties. |
+
+```xml
+<properties>
+    <name>property1</name>
+    <name>property2</name>
+</properties>
+```
+
+#### name
+
+> [!NOTE]  
+> Required.
+
+| Parents | Children | Attributes | Description |
+| --- | --- | --- | --- |
+| [properties](#properties) | no | access | Defines an ID of the already declared property. |
+
+```xml
+<name>property1</name>
 ```
