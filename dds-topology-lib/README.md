@@ -2,14 +2,14 @@
 
 The definition of the topology by the user has to be simple and powerful at the same time. Therefore a simple and powerful so called topology language has been developed.
 
-The basic building block of the system is a **task**. Namely, a task is a user defined executable or a shell script, which will be deployed and executed by DDS on a given Resource Management System.
+The basic building block of the system is a [**task**](#decltask). Namely, a task is a user defined executable or a shell script, which will be deployed and executed by DDS on a given Resource Management System.
 
-In order to describe dependencies between tasks in a topology we use **properties**. At run-time properties will be turned into simple key-value pairs. DDS uses its key-value propagation engine to make sure, that once property is set by one task, it will be propagated to other depended tasks. DDS treats values of properties as simple strings and doesn't do any special treatment/preprocessing on them. So, basically tasks can write anything into the values of properties (256 char max). Any of depended tasks can set properties. Anytime property is set it will be propagated to other depended tasks. (see for details TODO:"key-value propagation").
+In order to describe dependencies between tasks in a topology we use [**properties**](#properties). At run-time properties will be turned into simple key-value pairs. DDS uses its key-value propagation engine to make sure, that once property is set by one task, it will be propagated to other depended tasks. DDS treats values of properties as simple strings and doesn't do any special treatment/preprocessing on them. So, basically tasks can write anything into the values of properties (256 char max). Any of depended tasks can set properties. Anytime property is set it will be propagated to other depended tasks. (see for details TODO:"key-value propagation").
 
 > [!NOTE]  
 > For example, if one task needs to connect with another task they can have the same property. A "server" task can store its TCP/IP port and host in the property. Once the property set, DDS will notice that and propagate it to other tasks.
 
-Tasks can be grouped into **collections** and **groups**. Both collections and groups can be used to group several tasks.  
+Tasks can be grouped into [**collections**](#declcollection) and [**groups**](#group). Both collections and groups can be used to group several tasks.  
 The main difference between collections and groups is that a collection requests from DDS to execute its tasks on the same physical machine, if resource allow that. This is useful if tasks suppose to communicate a lot or they want to access the same shared memory. A set of tasks and task collections can be also grouped into task groups. Another difference between groups and collection is that only groups can define multiplication factor for all its child elements.
 
 Main group defines the entry point for task execution. Only main group can contain other groups.
@@ -129,11 +129,11 @@ For each user task a set of environment variables is populated.
 
 In the example above we define 2 properties - `property1` and `property2`. As you can see the property tag is used to define properties. The `name` attribute is required and has to be unique for all properties.
 
-Requirements is a way to tell DDS that a task or a collection has to be deployed on a particular computing node. As of now only host name or worker node name which is defined in the SSH configuration file are supported. Requirements are defined using declrequirement tag which has a number of attributes. All attributes are required. name attribute is an identifier and has to be unique for all requirements. type attribute is a type of the requirement. value attribute is a string value of the requirement. In order to define the pattern of the host name use either hostname or wnname values for the type attribute. value attribute for these requirement types can be either a full host name or a regular expression which matches the required host name. Use hostname if the requirement is defined based on the host name or wnname if the requirement is defined based on the SSH worker node name.
+Requirements is a way to tell DDS that a task or a collection has to be deployed on a particular computing node. As of now only host name or worker node name which is defined in the SSH configuration file are supported. Requirements are defined using the [declrequirement](#declrequirement) tag which has a number of attributes. All attributes are required. name attribute is an identifier and has to be unique for all requirements. type attribute is a type of the requirement. value attribute is a string value of the requirement. In order to define the pattern of the host name use either hostname or wnname values for the type attribute. value attribute for these requirement types can be either a full host name or a regular expression which matches the required host name. Use hostname if the requirement is defined based on the host name or wnname if the requirement is defined based on the SSH worker node name.
 
-Task trigger defines a certain action which has to be performed whenever a specified condition is triggered. For example, if task crashed DDS will try to restart the task multiple times. For the moment only predefined conditions and actions are supported. Triggers are defined using decltrigger tag which has a number of attributes. All attributes are required. name attribute is an identifier and has to be unique for all triggers. condition attribute is a predefined condition. Has to be one of the following: TaskCrashed. action attribute is a predefined action. Has to be one of the following: RestartTask. arg is an argument for the action, for example, it can specify the number of attempts to restart the task.
+Task trigger defines a certain action which has to be performed whenever a specified condition is triggered. For example, if task crashed DDS will try to restart the task multiple times. For the moment only predefined conditions and actions are supported. Triggers are defined using the [decltrigger](#decltrigger) tag which has a number of attributes. All attributes are required. name attribute is an identifier and has to be unique for all triggers. condition attribute is a predefined condition. Has to be one of the following: TaskCrashed. action attribute is a predefined action. Has to be one of the following: RestartTask. arg is an argument for the action, for example, it can specify the number of attempts to restart the task.
 
-In the next block we define tasks. For this the decltask tag is used. A task must also have the name attribute which is required and has to be unique for all declared tasks. The requirements element is optional and specifies the list of the already declared requirements for the task. The triggers element is optional and defines the list of task triggers. The exe element defines path to executable. The path can include program options, even options with quotes. DDS will automatically parse the path and extract program options in runtime. The exe tag has an optional attribute reachable, which defines whether executable is available on worker nodes. If it is not available, then DDS will take care of delivering it to an assigned worker in run-time.
+In the next block we define tasks. For this the [decltask](#decltask) tag is used. A task must also have the name attribute which is required and has to be unique for all declared tasks. The requirements element is optional and specifies the list of the already declared requirements for the task. The triggers element is optional and defines the list of task triggers. The exe element defines path to executable. The path can include program options, even options with quotes. DDS will automatically parse the path and extract program options in runtime. The exe tag has an optional attribute reachable, which defines whether executable is available on worker nodes. If it is not available, then DDS will take care of delivering it to an assigned worker in run-time.
 
 In case when there is a script, that, for example sets environment, has to be executed prior to main executable one can specify it using the env element. The env tag also have reachable attribute.
 
@@ -145,7 +145,7 @@ The main tag declares the topology itself. In the example our main block consist
 
 A group is declared using the group tag. It has a required attribute name, which is used to uniquely identify the group and optional attribute n, which defines multiplication factor for the group. In the example group1 consists of one task (task1) and two collections (collection1 and collection2). group2 consists of one collection (collection1).
 
-## Topology XML tag reference
+## Topology XML references
 
 ### Topology XML tags
 
@@ -155,9 +155,9 @@ A group is declared using the group tag. It has a required attribute name, which
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| no | [property](#property), [task](#task), [collection](#collection), [main](#main), [var](#var) | name | Declares a topology.|
+| no | [property](#property), [task](#task), [collection](#collection), [main](#main), [var](#var) | [name](#attribute-name) | Declares a topology.|
 
-Exmaple:
+Example:
 
 ```xml
 <topology name="myTopology">
@@ -171,7 +171,7 @@ Exmaple:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [topology](#topology) | no | name, value | Declares a variable which can be used inside the topology file as `${variable_name}`. |
+| [topology](#topology) | no | [name](#attribute-name), value | Declares a variable which can be used inside the topology file as `${variable_name}`. |
 
 Example:
 
@@ -195,7 +195,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [topology](#topology) | no | name, type, value | Declares a requirement for tasks and collections. |
+| [topology](#topology) | no | [name](#attribute-name), [type](#attribute-type), value | Declares a requirement for tasks and collections. |
 
 ```xml
 <declrequirement name="requirement1" type="hostname" value="+.gsi.de"/>
@@ -205,7 +205,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [topology](#topology) | no | name, condition, action, arg | Declares a task trigger. |
+| [topology](#topology) | no | [name](#attribute-name), [condition](#attribute-condition), [action](#attribute-action), arg | Declares a task trigger. |
 
 ```xml
 <decltrigger name="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
@@ -215,7 +215,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [topology](#topology) | [exe](#exe), [env](#env), [requirements](#requirements), triggers, [properties](#properties) | name | Declares a task. |
+| [topology](#topology) | [exe](#exe), [env](#env), [requirements](#requirements), triggers, [properties](#properties) | [name](#attribute-name) | Declares a task. |
 
 ```xml
 <decltask name="task1">
@@ -238,7 +238,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [topology](#topology) | [task](#task) | name | Declares a collection. |
+| [topology](#topology) | [task](#task) | [name](#attribute-name) | Declares a collection. |
 
 ```xml
 <declcollection name="collection1">
@@ -271,7 +271,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [main](#main) | [task](#task), [collection](#collection) | name, n | Declares a group. |
+| [main](#main) | [task](#task), [collection](#collection) | [name](#attribute-name), [n](#attribute-n) | Declares a group. |
 
 ```xml
 <group name="group1" n="10">
@@ -285,7 +285,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [topology](#topology) | [task](#task), [collection](#collection), [group](#group) | name | Declares the main group. |
+| [topology](#topology) | [task](#task), [collection](#collection), [group](#group) | [name](#attribute-name) | Declares the main group. |
 
 ```xml
 <main name="main">
@@ -306,7 +306,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [decltask](#decltask) | no | reachable | Defines path to the executable or script for the task. |
+| [decltask](#decltask) | no | [reachable](#attribute-reachable) | Defines path to the executable or script for the task. |
 
 ```xml
 <exe reachable="true">app1 -l -n</exe>
@@ -319,7 +319,7 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [decltask](#decltask) | no | reachable | Defines the path to script that has to be executed prior to main executable. |
+| [decltask](#decltask) | no | [reachable](#attribute-reachable) | Defines the path to script that has to be executed prior to main executable. |
 
 ```xml
 <env reachable="false">setEnv.sh</env>
@@ -364,8 +364,87 @@ Example:
 
 | Parents | Children | Attributes | Description |
 | --- | --- | --- | --- |
-| [properties](#properties) | no | access | Defines an ID of the already declared property. |
+| [properties](#properties) | no | [access](#attribute-access) | Defines an ID of the already declared property. |
 
 ```xml
 <name>property1</name>
+```
+
+### Topology XML attributes
+
+[name](#attribute-name), [reachable](#attribute-reachable), [n](#attribute-n), [access](#attribute-access), [type](#attribute-type), [condition](#attribute-condition), [action](#attribute-action)
+
+#### attribute: name
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| yes | - | [topology](#topology), [property](#properties), [declrequirement](#declrequirement), [decltask](#decltask), [declcollection](#declcollection), [group](#group), [main](#main) | A string with a minimum length of 1 character. | Defines identifier (ID) for topology, property, requirement, task, collection and group. ID has to be unique within its scope, i.e. ID for tasks has to be unique only for tasks. |
+
+```xml
+<topology name="myTopology">
+```
+
+#### attribute: reachable
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| no | true | [exe](#exe), [env](#env) |  `true` \| `false` | Defines if executable or script is available on the worker node. |
+
+```xml
+<exe reachable="true">app -l</exe>
+<env>env1</env>
+```
+
+#### attribute: n
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| no | 1 | [group](#group) |  An unsigned integer 32-bit value. Min is 1 | Defines multiplication factor for group. |
+
+```xml
+<group name="group1" n="10">
+    <task>task1</task>
+    <collection>collection1</collection>
+    <collection>collection2</collection>
+</group>
+```
+
+#### attribute: access
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| no | `readwrite` | [name](#name) |  `read`\|`write`\|`readwrite` | Defines access type from user task to properties. |
+
+```xml
+<name access="read">property1</name>
+```
+
+#### attribute: type
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| yes | - | [declrequirement](#declrequirement) |  `hostname`|`wnname` | Defines the type of the requirement. |
+
+```xml
+<declrequirement name="requirement1" type="wnname" value="wn2"/>
+```
+
+#### attribute: condition
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| yes | - | [decltrigger](#decltrigger) |  `TaskCrashed` | Defines trigger condition. |
+
+```xml
+<decltrigger name="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
+```
+
+#### attribute: action
+
+| Required | Default | Tags | Restrictions | Description |
+| --- | --- | --- | --- | --- |
+| yes | - | [decltrigger](#decltrigger) |  `RestartTask` | Defines trigger action. |
+
+```xml
+<decltrigger name="trigger1" condition="TaskCrashed" action="RestartTask" arg="5"/>
 ```
