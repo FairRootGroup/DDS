@@ -28,7 +28,7 @@ Before running the tutorial make sure that:
 1. Default working directory `~/tmp/dds_wn_test` must exist before running the tutorial. The directory can be changed in `tutorial1_hosts.cfg`.
 1. An SSH passwordless access to the localhost is required.
 
-```console
+```shell
 cd $DDS_LOCATION/tutorials/tutorial1
 dds-session start --local
 dds-submit -r ssh -c tutorial1_hosts.cfg
@@ -51,7 +51,7 @@ Before running the tutorial make sure that:
 1. Default working directory `~/tmp/dds_wn_test` must exist before running the tutorial. The directory can be changed in `tutorial1_hosts.cfg`.
 1. An SSH passwordless access to the localhost is required.
 
-```console
+```shell
 cd $DDS_LOCATION/tutorials/tutorial2
 dds-session start --local
 dds-submit -r ssh -c tutorial2_hosts.cfg
