@@ -2,13 +2,15 @@ name: validate codemeta
 
 on:
   push:
+    branches: ["master"]
     paths:
-    - codemeta.json
-    - .github/workflows/codemeta_validate.yaml
+      - codemeta.json
+      - .github/workflows/codemeta_validate.yaml
   pull_request:
+    branches: ["master"]
     paths:
-    - codemeta.json
-    - .github/workflows/codemeta_validate.yaml
+      - codemeta.json
+      - .github/workflows/codemeta_validate.yaml
 
 jobs:
   build:
