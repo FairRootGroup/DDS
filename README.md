@@ -1,5 +1,6 @@
 # The Dynamic Deployment System (DDS)
 
+![DDS CI](https://github.com/FairRootGroup/DDS/actions/workflows/master.yaml/badge.svg)
 [![license](https://alfa-ci.gsi.de/shields/badge/license-LGPL--3.0-orange.svg)](COPYRIGHT)
 [![fair-software.eu](https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8B%20%20%E2%97%8F%20%20%E2%97%8B-orange)](https://fair-software.eu)
 [![DOI](https://zenodo.org/badge/16586922.svg)](https://zenodo.org/badge/latestdoi/16586922)
