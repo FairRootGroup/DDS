@@ -3,7 +3,7 @@
 #
 include(GetPrerequisites)
 
-# WORKAROUND: if "macro" is used it doesn't outoup "message" messages.
+# WORKAROUND: if "macro" is used it doesn't output "message" messages.
 #macro(DDS_CollectPrerequisites)
 	
 	###################################################
@@ -14,7 +14,7 @@ include(GetPrerequisites)
 	message( STATUS "prerequisite dirs: " "${PREREQ_DIRS_LIST}")
 	
 	# WORKAROUND: the list comes broken into the macro, we need to rebuild it
-	# if we don't do that, the  get_prerequisites doesn't use all avaliable directories.
+	# if we don't do that, GET_RUNTIME_DEPENDENCIES doesn't use all avaliable directories.
 	# I didn't find anyother way, but rebuilt the list.
 	set(PREREQ_DIRS_LIST_REBUILT "")
 	foreach(dir ${PREREQ_DIRS_LIST})
@@ -22,16 +22,22 @@ include(GetPrerequisites)
 		 LIST(APPEND PREREQ_DIRS_LIST_REBUILT ${dir})
 	 endforeach()
 
-	get_prerequisites(${DDS_AGENT_BIN_PATH} DEPENDENCIES 1 1 "" "${PREREQ_DIRS_LIST_REBUILT}")
-
+    file(GET_RUNTIME_DEPENDENCIES
+        EXECUTABLES ${DDS_AGENT_BIN_PATH}
+        RESOLVED_DEPENDENCIES_VAR _r_deps
+        UNRESOLVED_DEPENDENCIES_VAR _u_deps
+        DIRECTORIES ${PREREQ_DIRS_LIST_REBUILT}
+        )
 	
-	foreach(DEPENDENCY_FILE ${DEPENDENCIES})
-		# get file name to be able to resolve files with @rpath on macOS
-		get_filename_component(PREREQNAME "${DEPENDENCY_FILE}"  NAME)
-	  	gp_resolve_item(${DDS_AGENT_BIN_PATH} "${PREREQNAME}" "" "${PREREQ_DIRS_LIST_REBUILT}" resolved_file)
-	 	message("WN PKG prerequisite='${resolved_file}'")
-		file(COPY ${resolved_file} DESTINATION ${PREREQ_DESTINATION})
-	endforeach()
+    foreach(_file ${_r_deps})
+        message("WN PKG prerequisite='${_file}'")
+        file(COPY "${_file}" DESTINATION ${PREREQ_DESTINATION})
+    endforeach()
+    
+    list(LENGTH _u_deps _u_length)
+    if("${_u_length}" GREATER 0)
+        message(WARNING "Unresolved dependencies detected!")
+    endif()
 	###################################################
 
 #endmacro(DDS_CollectPrerequisites)

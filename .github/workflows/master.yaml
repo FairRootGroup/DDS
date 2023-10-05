@@ -61,7 +61,7 @@ jobs:
         run: | 
             echo "Building the DDS WN package..."
             cmake --build ${{ steps.strings.outputs.build-output-dir }} --target wn_bin --parallel ${{ matrix.jobs }} --config ${{ matrix.build_type }}
-            echo "Building DDS and installing  in ${{ steps.strings.outputs.install-dir }}..."
+            echo "Building DDS and installing  in " ${{ steps.strings.outputs.install-dir }}
             cmake --build ${{ steps.strings.outputs.build-output-dir }} --target instll --parallel ${{ matrix.jobs }} --config ${{ matrix.build_type }}
 
       # - name: Test
