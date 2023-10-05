@@ -43,6 +43,7 @@ jobs:
         shell: bash
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          echo "install-dir=$${{ github.workspace }}/install" >> "$GITHUB_OUTPUT"
 
       - name: Configure
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -52,11 +53,16 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.install-dir }}
           -DBUILD_TESTS=TRUE
           -S ${{ github.workspace }}
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --parallel ${{ matrix.jobs }} --config ${{ matrix.build_type }}
+        run: | 
+            echo "Building the DDS WN package..."
+            cmake --build ${{ steps.strings.outputs.build-output-dir }} --target wn_bin --parallel ${{ matrix.jobs }} --config ${{ matrix.build_type }}
+            echo "Building DDS and installing  in ${{ steps.strings.outputs.install-dir }}..."
+            cmake --build ${{ steps.strings.outputs.build-output-dir }} --target instll --parallel ${{ matrix.jobs }} --config ${{ matrix.build_type }}
 
       # - name: Test
       #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
