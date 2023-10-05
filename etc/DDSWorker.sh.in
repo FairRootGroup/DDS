@@ -133,7 +133,7 @@ get_freeport()
 }
 #=============================================================================
 # ***** check_arch *****
-# so far we support only Linux (amd64 and x86) and MacOSX (tested on 10.6)
+# so far we support only Linux (x64 and x86) and MacOSX (tested on 10.6)
 #=============================================================================
 check_arch()
 {
@@ -153,7 +153,7 @@ check_arch()
          host_arch="x86"
          ;;
       x86_64)
-         host_arch="amd64"
+         host_arch="x86_64"
          ;;
 	  arm64)
 		 host_arch="arm64"
@@ -164,12 +164,6 @@ check_arch()
    ;;
    esac
    logMsg "host's CPU/instruction set: $host_arch"
-
-   #MacOSX is using always universal bins
-   if [ "$OS" == "Darwin" ]; then
-      host_arch="universal"
-      logMsg "using universal MacOSX bins"
-   fi
 }
 #=============================================================================
 # ***** untar_payload *****

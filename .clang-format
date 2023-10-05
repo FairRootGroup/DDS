@@ -1,5 +1,5 @@
 ---
-Language:        Cpp
+Language: Cpp
 #AccessModifierOffset: -4
 ConstructorInitializerIndentWidth: 4
 AlignAfterOpenBracket: Align
@@ -21,7 +21,6 @@ BinPackArguments: false
 BinPackParameters: false
 ColumnLimit: 120
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-ConstructorInitializerIndentWidth: 4
 DerivePointerBinding: false
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
@@ -38,20 +37,20 @@ PenaltyReturnTypeOnItsOwnLine: 200
 PointerBindsToType: true
 SpacesBeforeTrailingComments: 1
 Cpp11BracedListStyle: false
-Standard:        c++17
-IndentWidth:     4
-TabWidth:        4
-UseTab:          Never
+Standard: c++17
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
 BreakBeforeBraces: Allman
 IndentFunctionDeclarationAfterType: true
 SpacesInParentheses: false
-SpacesInAngles:  false
+SpacesInAngles: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpacesInContainerLiterals: true
 SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 4
-CommentPragmas:  '^ IWYU pragma:'
+CommentPragmas: "^ IWYU pragma:"
 SpaceBeforeParens: ControlStatements
 
 MacroBlockBegin: "^BEGIN_[A-Z_]*$"
@@ -61,8 +60,8 @@ MacroBlockEnd: "^END_[A-Z_]*$"
 Language: Proto
 BasedOnStyle: Google
 AlignConsecutiveDeclarations: true
-AlignConsecutiveAssignments: true 
+AlignConsecutiveAssignments: true
 ColumnLimit: 0
 IndentWidth: 4
-...
+---
 

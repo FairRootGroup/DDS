@@ -72,13 +72,13 @@ namespace dds::misc
      */
     typedef std::basic_string<char> tstring;
     typedef std::basic_stringstream<char> tstringstream;
-/**
- *
- * @brief Use TCHAR instead of char or wchar_t. It will be appropriately
- *translated
- * @brief if _GLIBCPP_USE_WCHAR_T and _UNICODE are correctly defined (or not).
- *
- */
+    /**
+     *
+     * @brief Use TCHAR instead of char or wchar_t. It will be appropriately
+     *translated
+     * @brief if _GLIBCPP_USE_WCHAR_T and _UNICODE are correctly defined (or not).
+     *
+     */
 #define _T(s) s
     /**
      *

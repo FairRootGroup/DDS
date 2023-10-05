@@ -92,11 +92,11 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
     const string sOS("Linux");
 #endif
 
-    // support of x86 is dropeed, we support on 64bit
-    const string sArch("amd64");
+    // support of x86 is dropped, we support only 64bit
+    const string sArch("x64");
 
     array<string, 2> sListOS = { { "Linux", sOSXArch } };
-    array<string, 1> sListArch = { { "amd64" } };
+    array<string, 1> sListArch = { { "x64" } };
 
     // WN bins path
     fs::path pathWnBins(CUserDefaults::instance().getWnBinsDir());
@@ -104,8 +104,7 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
     {
         LOG(log_stdout_clean) << "Checking precompiled binaries for the local system only:";
         stringstream ssName;
-        ssName << sBaseName << "-" << DDS_VERSION_STRING << "-" << sOS << "-" << (sOS == sOSXArch ? "universal" : sArch)
-               << sBaseSufix;
+        ssName << sBaseName << "-" << DDS_VERSION_STRING << "-" << sOS << "-" << sArch << sBaseSufix;
         // Check availability
         fs::path pathBin(pathWnBins);
         pathBin /= ssName.str();

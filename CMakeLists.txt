@@ -19,6 +19,12 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version to use (default is 17)")
 message(STATUS "Requiring C++${CMAKE_CXX_STANDARD}")
 
+# Arch
+execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(HOST_ARCHITECTURE "${arch}")
+string(TOLOWER ${HOST_ARCHITECTURE} HOST_ARCHITECTURE)
+message( STATUS "Host Architecture: ${HOST_ARCHITECTURE}" )
+
 # Version
 #
 # take the version string from git and write it to a version file
@@ -164,7 +170,6 @@ add_compile_options(-Wall -Wextra)
 #
 if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wthread-safety")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 elseif(UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 	set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,--enable-new-dtags")
@@ -410,17 +415,7 @@ endif( BUILD_TESTS )
 #
 # Build DDS WN Package
 #
-if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-	set(TRG_ARCH x86)
-else( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-	set(TRG_ARCH amd64)
-endif( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-
-if(APPLE)
-	set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-universal" )
-elseif(UNIX)
-	set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-${TRG_ARCH}" )
-endif(APPLE)
+set( WN_PKG_NAME "dds-wrk-bin-${DDS_VERSION}-${CMAKE_SYSTEM_NAME}-${HOST_ARCHITECTURE}" )
 
 set( WN_PKG_DIR "${CMAKE_BINARY_DIR}/dds-wrk-bin" )
 set( WN_PKG_NAME_ARCH "${WN_PKG_NAME}.tar.gz" )
