@@ -16,10 +16,9 @@ jobs:
 
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [macOS]
+        os: [macOS, Linux]
         arch: [x64, ARM64]
         build_type: [RelWithDebInfo]
-        c_compiler: [clang]
         include:
           - os: macOS
             arch: x64
@@ -31,6 +30,14 @@ jobs:
             c_compiler: clang
             cpp_compiler: clang++
             jobs: 7
+          - os: Linux
+            arch: x64
+            c_compiler: gcc
+            cpp_compiler: g++
+            jobs: 4
+        exclude:
+          - os: Linux
+            arch: ARM64
 
     steps:
       - uses: actions/checkout@v4
