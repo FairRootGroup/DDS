@@ -24,16 +24,19 @@ jobs:
             arch: x64
             c_compiler: clang
             cpp_compiler: clang++
+            compile_warning_as_error: ON
             jobs: 5
           - os: macOS
             arch: ARM64
             c_compiler: clang
             cpp_compiler: clang++
+            compile_warning_as_error: ON
             jobs: 7
           - os: Linux
             arch: x64
             c_compiler: gcc
             cpp_compiler: g++
+            compile_warning_as_error: ON
             jobs: 4
         exclude:
           - os: Linux
@@ -61,7 +64,7 @@ jobs:
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.install-dir }}
-          -DCMAKE_COMPILE_WARNING_AS_ERROR:BOOL=ON
+          -DCMAKE_COMPILE_WARNING_AS_ERROR:BOOL=${{ matrix.compile_warning_as_error }}
           -DBUILD_TESTS:BOOL=ON
           -S ${{ github.workspace }}
 

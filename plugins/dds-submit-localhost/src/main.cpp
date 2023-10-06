@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
                 bfs::path wrkScriptPath(CUserDefaults::instance().getWrkScriptPath(_submit.m_id));
                 bfs::path dstWrkScriptPath(wrkDirPath);
                 dstWrkScriptPath /= wrkScriptPath.filename();
-                bfs::copy_file(wrkScriptPath, dstWrkScriptPath, bfs::copy_option::overwrite_if_exists);
+                bfs::copy_file(wrkScriptPath, dstWrkScriptPath, bfs::copy_options::overwrite_existing);
 
                 bfs::path bashPath = bp::search_path("bash");
                 bfs::path logPath(wrkDirPath);

@@ -1043,7 +1043,7 @@ void CCommanderChannel::terminateChildrenProcesses(
     // The term-kill logic is posted to a different free thread in the queue.
     // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
     auto self(this->shared_from_this());
-    timer->async_wait([this, self, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ move(timer) }](
+    timer->async_wait([this, self, pidChildren, tpWaitUntil, _onCompleteSlot, timer{ std::move(timer) }](
                           const boost::system::error_code& _error) mutable
                       { terminateChildrenProcesses(timer, pidChildren, tpWaitUntil, _onCompleteSlot, _error); });
 }
@@ -1081,7 +1081,7 @@ void CCommanderChannel::terminateChildrenProcesses(
         // The term-kill logic is posted to a different free thread in the queue.
         // To prevent this algorithm to spin too fast and block the thread pool, we put it on a short timer.
         auto self(this->shared_from_this());
-        _timer->async_wait([this, self, _children, _wait_until, _onCompleteSlot, timer{ move(_timer) }](
+        _timer->async_wait([this, self, _children, _wait_until, _onCompleteSlot, timer{ std::move(_timer) }](
                                const boost::system::error_code& _error) mutable
                            { terminateChildrenProcesses(timer, _children, _wait_until, _onCompleteSlot, _error); });
     }
