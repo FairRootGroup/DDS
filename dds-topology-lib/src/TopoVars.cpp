@@ -56,9 +56,9 @@ void CTopoVars::initFromXML(const string& _filepath)
 
 void CTopoVars::saveToXML(const string& _filepath)
 {
-    // The vars object can't be saved as is. It must have been initilized from a topology file first.
+    // The vars object can't be saved as is. It must have been initialized from a topology file first.
     if (!m_pPropTreePtr)
-        runtime_error("The CTopoVars object can't be saved to XML. It wasn't iniutlized from a topology file.");
+        runtime_error("The CTopoVars object can't be saved to XML. It wasn't initialized from a topology file.");
 
     ofstream stream(_filepath);
     if (stream.is_open())
@@ -106,15 +106,17 @@ void CTopoVars::saveToPropertyTree(ptree& _pt)
     {
         // Remove exiting vars, if any
         ptree& pt = _pt.get_child("topology");
-        for (auto it = pt.begin(); it != pt.end(); ++it)
+        for (auto it = pt.begin(); it != pt.end();)
         {
             if (it->first == TopoTypeToDeclTag(CTopoBase::EType::TOPO_VARS))
             {
-                pt.erase(it);
+                it = pt.erase(it);
             }
+            else
+                ++it;
         }
 
-        // pupulate the topoloogy with new vars
+        // populate the topology with new vars
         ptree& topo = _pt.get_child("topology");
         for (const auto& v : m_map)
         {

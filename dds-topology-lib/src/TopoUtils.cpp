@@ -283,7 +283,7 @@ namespace dds
                 if (v.first == TopoTypeToDeclTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
                 {
                     if (result != nullptr)
-                        throw logic_error("Element \"" + _name + "\" has dublicated name.");
+                        throw logic_error("Element \"" + _name + "\" has duplicated name.");
                     result = &elementPT;
                 }
             }

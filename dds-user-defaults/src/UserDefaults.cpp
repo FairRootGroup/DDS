@@ -34,7 +34,7 @@ CUserDefaults::~CUserDefaults()
 {
 }
 
-CUserDefaults& CUserDefaults::instance(const boost::uuids::uuid& _sid)
+CUserDefaults& CUserDefaults::instance(const boost::uuids::uuid _sid)
 {
     static CUserDefaults instance(_sid);
     return instance;
