@@ -60,7 +60,7 @@ void CTopoTrigger::initFromPropertyTree(const boost::property_tree::ptree& _pt)
     try
     {
         const ptree& triggerPT =
-            FindElementInPropertyTree(CTopoBase::EType::TRIGGER, getName(), _pt.get_child("topology"));
+            (FindElementInPropertyTree(CTopoBase::EType::TRIGGER, getName(), _pt.get_child("topology")))->second;
         setAction(TagToActionType(triggerPT.get<std::string>("<xmlattr>.action", "")));
         setCondition(TagToConditionType(triggerPT.get<std::string>("<xmlattr>.condition", "")));
         setArgument(triggerPT.get<std::string>("<xmlattr>.arg", ""));

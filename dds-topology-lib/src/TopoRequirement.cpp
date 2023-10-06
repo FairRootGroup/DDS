@@ -50,7 +50,7 @@ void CTopoRequirement::initFromPropertyTree(const boost::property_tree::ptree& _
     try
     {
         const ptree& requirementPT =
-            FindElementInPropertyTree(CTopoBase::EType::REQUIREMENT, getName(), _pt.get_child("topology"));
+            (FindElementInPropertyTree(CTopoBase::EType::REQUIREMENT, getName(), _pt.get_child("topology")))->second;
         setValue(requirementPT.get<std::string>("<xmlattr>.value", ""));
         setRequirementType(TagToRequirementType(requirementPT.get<std::string>("<xmlattr>.type", "")));
     }

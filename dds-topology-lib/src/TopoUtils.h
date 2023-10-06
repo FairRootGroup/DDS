@@ -64,7 +64,7 @@ namespace dds
         /// \return Property tree with root node pointing to found element.
         /// \throw logic_error if element was not found.
         /// \note This function does not catch exceptions from property tree.
-        const boost::property_tree::ptree& FindElementInPropertyTree(CTopoBase::EType _type,
+        boost::property_tree::ptree::const_iterator FindElementInPropertyTree(CTopoBase::EType _type,
                                                                      const std::string& _name,
                                                                      const boost::property_tree::ptree& _pt);
 

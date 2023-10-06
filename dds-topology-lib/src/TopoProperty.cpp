@@ -59,7 +59,7 @@ void CTopoProperty::initFromPropertyTree(const boost::property_tree::ptree& _pt)
     try
     {
         const ptree& propertyPT =
-            FindElementInPropertyTree(CTopoBase::EType::TOPO_PROPERTY, getName(), _pt.get_child("topology"));
+            (FindElementInPropertyTree(CTopoBase::EType::TOPO_PROPERTY, getName(), _pt.get_child("topology")))->second;
 
         boost::optional<const ptree&> childScope = propertyPT.get_child_optional("<xmlattr>.scope");
         if (childScope)

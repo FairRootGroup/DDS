@@ -185,7 +185,7 @@ void CTopoTask::initFromPropertyTree(const ptree& _pt)
 {
     try
     {
-        const ptree& taskPT = FindElementInPropertyTree(CTopoBase::EType::TASK, getName(), _pt.get_child("topology"));
+        const ptree& taskPT = (FindElementInPropertyTree(CTopoBase::EType::TASK, getName(), _pt.get_child("topology")))->second;
         setExe(taskPT.get<string>("exe"));
         setEnv(taskPT.get<string>("env", ""));
         setExeReachable(taskPT.get<bool>("exe.<xmlattr>.reachable", true));

@@ -274,23 +274,22 @@ namespace dds
             }
         }
 
-        const ptree& FindElementInPropertyTree(CTopoBase::EType _type, const string& _name, const ptree& _pt)
+        ptree::const_iterator FindElementInPropertyTree(CTopoBase::EType _type, const string& _name, const ptree& _pt)
         {
-            const ptree* result = nullptr;
-            for (const auto& v : _pt)
+            ptree::const_iterator iter = _pt.end();
+            for (auto i = _pt.begin(); i != _pt.end(); ++i)
             {
-                const auto& elementPT = v.second;
-                if (v.first == TopoTypeToDeclTag(_type) && elementPT.get<string>("<xmlattr>.name") == _name)
+                if (i->first == TopoTypeToDeclTag(_type) && i->second.get<string>("<xmlattr>.name") == _name)
                 {
-                    if (result != nullptr)
+                    if (iter != _pt.end())
                         throw logic_error("Element \"" + _name + "\" has duplicated name.");
-                    result = &elementPT;
+                    iter = i;
                 }
             }
-            if (result == nullptr)
+            if (iter == _pt.end())
                 throw logic_error("Element \"" + _name + "\"not found in property tree.");
 
-            return *result;
+            return iter;
         }
 
     } // namespace topology_api

@@ -61,7 +61,7 @@ void CTopoCollection::initFromPropertyTree(const ptree& _pt)
     try
     {
         const ptree& collectionPT =
-            FindElementInPropertyTree(CTopoBase::EType::COLLECTION, getName(), _pt.get_child("topology"));
+            (FindElementInPropertyTree(CTopoBase::EType::COLLECTION, getName(), _pt.get_child("topology")))->second;
 
         boost::optional<const ptree&> requirementsPT = collectionPT.get_child_optional("requirements");
         if (requirementsPT)

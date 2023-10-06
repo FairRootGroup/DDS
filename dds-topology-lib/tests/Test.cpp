@@ -600,21 +600,21 @@ BOOST_AUTO_TEST_CASE(test_dds_find_element_in_property_tree)
     ptree pt;
     read_xml("topology_test_6.xml", pt);
 
-    const ptree& pt1 = FindElementInPropertyTree(CTopoBase::EType::TASK, "task1", pt.get_child("topology"));
+    const ptree& pt1 = (FindElementInPropertyTree(CTopoBase::EType::TASK, "task1", pt.get_child("topology")))->second;
     BOOST_CHECK(pt1.get<string>("<xmlattr>.name") == "task1");
 
-    const ptree& pt2 = FindElementInPropertyTree(CTopoBase::EType::COLLECTION, "collection1", pt.get_child("topology"));
+    const ptree& pt2 = (FindElementInPropertyTree(CTopoBase::EType::COLLECTION, "collection1", pt.get_child("topology")))->second;
     BOOST_CHECK(pt2.get<string>("<xmlattr>.name") == "collection1");
 
-    const ptree& pt3 = FindElementInPropertyTree(CTopoBase::EType::GROUP, "group1", pt.get_child("topology.main"));
+    const ptree& pt3 = (FindElementInPropertyTree(CTopoBase::EType::GROUP, "group1", pt.get_child("topology.main")))->second;
     BOOST_CHECK(pt3.get<string>("<xmlattr>.name") == "group1");
 
     const ptree& pt4 =
-        FindElementInPropertyTree(CTopoBase::EType::TOPO_PROPERTY, "property1", pt.get_child("topology"));
+        (FindElementInPropertyTree(CTopoBase::EType::TOPO_PROPERTY, "property1", pt.get_child("topology")))->second;
     BOOST_CHECK(pt4.get<string>("<xmlattr>.name") == "property1");
 
     const ptree& pt5 =
-        FindElementInPropertyTree(CTopoBase::EType::REQUIREMENT, "requirement1", pt.get_child("topology"));
+        (FindElementInPropertyTree(CTopoBase::EType::REQUIREMENT, "requirement1", pt.get_child("topology")))->second;
     BOOST_CHECK(pt5.get<string>("<xmlattr>.name") == "requirement1");
 
     // Wrong path to property tree
