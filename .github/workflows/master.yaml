@@ -61,7 +61,8 @@ jobs:
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.install-dir }}
-          -DBUILD_TESTS=TRUE
+          -DCMAKE_COMPILE_WARNING_AS_ERROR:BOOL=ON
+          -DBUILD_TESTS:BOOL=ON
           -S ${{ github.workspace }}
 
       - name: Build
