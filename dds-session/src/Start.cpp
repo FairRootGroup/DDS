@@ -92,8 +92,17 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
     const string sOS("Linux");
 #endif
 
-    // support of x86 is dropped, we support only 64bit
-    const string sArch("x64");
+    
+    #if BOOST_ARCH_X86
+    #if BOOST_ARCH_X86_64
+            const string sArch("x64");
+            // support of x86 is dropped, we support only 64bit
+    //#elif BOOST_ARCH_X86_32
+      //      const string sArch("x64");
+    #endif
+#elif BOOST_ARCH_ARM
+const string sArch("arm64");
+#endif
 
     array<string, 2> sListOS = { { "Linux", sOSXArch } };
     array<string, 1> sListArch = { { "x64" } };
