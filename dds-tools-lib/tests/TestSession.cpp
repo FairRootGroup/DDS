@@ -555,7 +555,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_onTaskDone)
     BOOST_CHECK(!sid.is_nil());
 
     // test onTaskDone events
-    // Subscrube on events
+    // Subscribe on events
     SOnTaskDoneRequest::request_t request;
     SOnTaskDoneRequest::ptr_t requestPtr = SOnTaskDoneRequest::makeRequest(request);
     int nTaskDoneCount{ 0 };
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_onTaskDone)
         [&nTaskDoneCount](const SOnTaskDoneResponseData& _info)
         {
             ++nTaskDoneCount;
-            BOOST_TEST_MESSAGE("Recieved onTaskDone event. TaskID: "
+            BOOST_TEST_MESSAGE("Received onTaskDone event. TaskID: "
                                << _info.m_taskID << " ; ExitCode: " << _info.m_exitCode << " ; Signal: "
                                << _info.m_signal << " ; Host: " << _info.m_host << " ; WrkDir: " << _info.m_wrkDir);
         });
