@@ -29,7 +29,8 @@ void CTopoAsset::initFromPropertyTree(const boost::property_tree::ptree& _pt)
 {
     try
     {
-        const auto& assetPT = (FindElementInPropertyTree(CTopoBase::EType::ASSET, getName(), _pt.get_child("topology")))->second;
+        const auto& assetPT =
+            (FindElementInPropertyTree(CTopoBase::EType::ASSET, getName(), _pt.get_child("topology")))->second;
         setAssetType(TagToAssetType(assetPT.get<string>("<xmlattr>.type", "")));
         setAssetVisibility(TagToAssetVisibility(assetPT.get<string>("<xmlattr>.visibility", "")));
 

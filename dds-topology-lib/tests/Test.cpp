@@ -603,10 +603,12 @@ BOOST_AUTO_TEST_CASE(test_dds_find_element_in_property_tree)
     const ptree& pt1 = (FindElementInPropertyTree(CTopoBase::EType::TASK, "task1", pt.get_child("topology")))->second;
     BOOST_CHECK(pt1.get<string>("<xmlattr>.name") == "task1");
 
-    const ptree& pt2 = (FindElementInPropertyTree(CTopoBase::EType::COLLECTION, "collection1", pt.get_child("topology")))->second;
+    const ptree& pt2 =
+        (FindElementInPropertyTree(CTopoBase::EType::COLLECTION, "collection1", pt.get_child("topology")))->second;
     BOOST_CHECK(pt2.get<string>("<xmlattr>.name") == "collection1");
 
-    const ptree& pt3 = (FindElementInPropertyTree(CTopoBase::EType::GROUP, "group1", pt.get_child("topology.main")))->second;
+    const ptree& pt3 =
+        (FindElementInPropertyTree(CTopoBase::EType::GROUP, "group1", pt.get_child("topology.main")))->second;
     BOOST_CHECK(pt3.get<string>("<xmlattr>.name") == "group1");
 
     const ptree& pt4 =

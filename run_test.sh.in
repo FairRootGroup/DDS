@@ -37,8 +37,14 @@ exec_test()
       echo ">>> Processing $1"
      "./$1" $2 || clean_up
      echo
+     retVal=$? 
+     if [ $retVal -ne 0 ]; then
+         echo "Test failed: $1"
+         exit $retVal
+     fi
    else
      echo "WARNING: can't find $1"
+     exit 1
    fi
 }
 

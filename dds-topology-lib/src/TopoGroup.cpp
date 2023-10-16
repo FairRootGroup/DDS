@@ -46,8 +46,9 @@ void CTopoGroup::initFromPropertyTree(const ptree& _pt)
     try
     {
         const ptree& mainPT = _pt.get_child("topology.main");
-        const ptree& groupPT =
-            (getName() == "main") ? mainPT : (FindElementInPropertyTree(CTopoBase::EType::GROUP, getName(), mainPT))->second;
+        const ptree& groupPT = (getName() == "main")
+                                   ? mainPT
+                                   : (FindElementInPropertyTree(CTopoBase::EType::GROUP, getName(), mainPT))->second;
 
         setN(groupPT.get<size_t>("<xmlattr>.n", 1));
 

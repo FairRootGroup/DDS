@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(Test_UserDefaults_CustomCfgPath)
     const string sidTempalte("ed0eac3e-24d7-4cae-a46c-a1cece17d7fc");
     int ret = setenv("DDS_SESSION_ID", sidTempalte.c_str(), 1);
     BOOST_TEST(ret == 0, "Failed to set DDS_SESSION_ID");
-    
+
     fs::path pathCfg{ fs::temp_directory_path() / fs::unique_path() };
     fs::create_directories(pathCfg);
     pathCfg /= "dds_test.cfg";
