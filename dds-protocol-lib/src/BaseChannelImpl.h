@@ -237,7 +237,7 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseChannelImpl<T>(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
+            CBaseChannelImpl(boost::asio::io_context& _service, uint64_t _protocolHeaderID)
                 : CChannelEventHandlersImpl()
                 , CChannelMessageHandlersImpl()
                 , m_isHandshakeOK(false)
@@ -265,7 +265,7 @@ namespace dds
             }
 
           public:
-            ~CBaseChannelImpl<T>()
+            ~CBaseChannelImpl()
             {
                 LOG(dds::misc::info) << "Channel " << gChannelTypeName[m_channelType] << " destructor is called";
                 stop();

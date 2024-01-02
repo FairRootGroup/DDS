@@ -194,7 +194,7 @@ namespace dds
             DDS_DECLARE_EVENT_HANDLER_CLASS(CChannelMessageHandlersImpl)
 
           protected:
-            CBaseSMChannelImpl<T>(boost::asio::io_context& _service,
+            CBaseSMChannelImpl(boost::asio::io_context& _service,
                                   const std::string& _inputName,
                                   const std::string& _outputName,
                                   uint64_t _protocolHeaderID,
@@ -209,7 +209,7 @@ namespace dds
                 defaultInit({ _inputName }, _outputName, _inputOpenType, _outputOpenType);
             }
 
-            CBaseSMChannelImpl<T>(boost::asio::io_context& _service,
+            CBaseSMChannelImpl(boost::asio::io_context& _service,
                                   const std::vector<std::string>& _inputNames,
                                   const std::string& _outputName,
                                   uint64_t _protocolHeaderID,
@@ -250,7 +250,7 @@ namespace dds
             }
 
           public:
-            ~CBaseSMChannelImpl<T>()
+            ~CBaseSMChannelImpl()
             {
                 LOG(dds::misc::info) << "SM: channel destructor is called. MQ: " << getName();
                 stop();

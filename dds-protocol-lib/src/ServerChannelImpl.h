@@ -18,7 +18,7 @@ namespace dds
         class CServerChannelImpl : public CBaseChannelImpl<T>
         {
           protected:
-            CServerChannelImpl<T>(boost::asio::io_context& _service, const channelTypeVector_t _requiredChannelTypes)
+            CServerChannelImpl(boost::asio::io_context& _service, const channelTypeVector_t _requiredChannelTypes)
                 : CBaseChannelImpl<T>(_service, 0)
                 , m_requiredChannelTypes(_requiredChannelTypes)
             {
@@ -81,7 +81,7 @@ namespace dds
                 //                    });
             }
 
-            ~CServerChannelImpl<T>()
+            ~CServerChannelImpl()
             {
             }
 

@@ -20,7 +20,7 @@ namespace dds
         class CClientChannelImpl : public CBaseChannelImpl<T>
         {
           protected:
-            CClientChannelImpl<T>(boost::asio::io_context& _service,
+            CClientChannelImpl(boost::asio::io_context& _service,
                                   EChannelType _channelType,
                                   uint64_t _protocolHeaderID)
                 : CBaseChannelImpl<T>(_service, _protocolHeaderID)
@@ -31,7 +31,7 @@ namespace dds
                     [this](const SSenderInfo& _sender,
                            SCommandAttachmentImpl<cmdREPLY_HANDSHAKE_OK>::ptr_t /*_attachment*/)
                     {
-                        LOG(dds::misc::info) << "Successfull handshake";
+                        LOG(dds::misc::info) << "Successful handshake";
 
                         this->m_isHandshakeOK = true;
 
@@ -60,7 +60,7 @@ namespace dds
                     });
             }
 
-            ~CClientChannelImpl<T>()
+            ~CClientChannelImpl()
             {
             }
 
