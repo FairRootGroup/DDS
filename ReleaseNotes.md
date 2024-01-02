@@ -8,6 +8,7 @@
 * Fixed: Replace std::iterator as it's deprecated (C++17).
 * Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.
 * Fixed: Multiple stability issues.
+* Modified: C++20 is now a required standard (GH-477).
 * Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  and boost (from 1.67 to 1.75). (GH-428)
 * Modified: C++17 modernization of EnvProp.h/env_prop. (GH-368)
 * Added: 3rd party dependency on Protobuf (min v3.15).

@@ -16,8 +16,9 @@ string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version to use (default is 17)")
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard version to use (default is 20)")
 message(STATUS "Requiring C++${CMAKE_CXX_STANDARD}")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Arch
 execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
