@@ -143,7 +143,7 @@ namespace dds
             };
             EUpdateType m_updateType = EUpdateType::UPDATE; ///< Topology update type: Update, Activate, Stop
             std::string m_topologyFile;                     ///< A topology file to process
-            bool m_disableValidation = false; ///< A flag to disiable topology validation before processing it.
+            bool m_disableValidation = false; ///< A flag to disable topology validation before processing it.
 
           private:
             friend SBaseData<STopologyRequestData>;

@@ -68,7 +68,7 @@ work_dir=
 access_permissions=0660
 # The agent will trigger a self-shutdown if the free disk space is below this threshold.
 # The value in MB. Default is 500 MB.
-# Set it to 0 to disiable.
+# Set it to 0 to disable.
 #
 disk_space_threshold=500
 "/>

@@ -258,7 +258,7 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "access_permissions=" << ud.getDefaultValueForKey("agent.access_permissions") << "\n"
             << "# The agent will trigger a self-shutdown if the free disk space is below this threshold.\n"
             << "# The value in MB. Default is 500 MB.\n"
-            << "# Set it to 0 to disiable.\n"
+            << "# Set it to 0 to disable.\n"
             << "#\n"
             << "disk_space_threshold=" << ud.getDefaultValueForKey("agent.disk_space_threshold") << "\n";
 }

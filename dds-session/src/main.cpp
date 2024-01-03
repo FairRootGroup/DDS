@@ -126,7 +126,7 @@ void performDataRetention(const vector<fs::path>& _session_dirs) noexcept
         };
         if (dataRetentionDays <= 0)
         {
-            LOG(log_stdout_clean) << "Data retention is disiabled by the user.";
+            LOG(log_stdout_clean) << "Data retention is disabled by the user.";
             return;
         }
 
