@@ -5,6 +5,8 @@ project(dds-submit-localhost)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
+
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
   dds_misc_lib

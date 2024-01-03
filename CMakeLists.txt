@@ -1,4 +1,4 @@
-# Copyright 2014-2023 GSI, Inc. All rights reserved.
+# Copyright 2014-2024 GSI, Inc. All rights reserved.
 #
 #
 #
@@ -16,9 +16,22 @@ string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard version to use (default is 20)")
-message(STATUS "Requiring C++${CMAKE_CXX_STANDARD}")
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(PROJECT_CXX_STANDARD 17)
+# Handle C++ standard level
+if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD VERSION_LESS PROJECT_CXX_STANDARD)
+  message(FATAL_ERROR "A minimum CMAKE_CXX_STANDARD of ${PROJECT_CXX_STANDARD} is required.")
+endif()
+
+if(CMAKE_CXX_STANDARD)
+    set(PROJECT_CXX_STANDARD ${CMAKE_CXX_STANDARD})
+endif()
+message( STATUS "C++ Standard: ${PROJECT_CXX_STANDARD}" )
+
+# Set -fPIC as default for all library types
+if(NOT CMAKE_POSITION_INDEPENDENT_CODE)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 
 # Arch
 execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)

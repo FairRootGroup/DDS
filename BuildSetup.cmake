@@ -50,3 +50,7 @@ set( CREATE_BOOST_SYMLINKS FALSE CACHE BOOL "Create boost (libboost_*) symlinks 
 #
 set( BUILD_TESTS ON CACHE BOOL "Build DDS tests" FORCE )
 
+#
+# C++ Standard
+#
+# set(CMAKE_CXX_STANDARD 20 CACHE STRING "Default value for CXX_STANDARD property of targets")

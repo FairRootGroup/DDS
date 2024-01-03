@@ -2,167 +2,154 @@
 
 ## v3.8 (NOT YET RELEASED)
 
-### DDS general
+- DDS general
+  - Fixed: On task done remove agents from the agent to tasks mapping.
+  - Fixed: Replace std::iterator as it's deprecated (C++17).
+  - Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.
+  - Fixed: Multiple stability issues.
+  - Modified: support C++20 standard (GH-477).
+  - Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  and boost (from 1.67 to 1.75). (GH-428)
+  - Modified: C++17 modernization of EnvProp.h/env_prop. (GH-368)
+  - Added: 3rd party dependency on Protobuf (min v3.15).
+  - Added: every DDS module logs now its pid, group id and parent pid. (GH-403)
+  - Added: Support for Task Assets. (GH-406)
+  - Added: Cancel running and pending SLURM jobs on DDS shutdown. (GH-429)
+  - Added: Support for Apple's arm64 architecture. (GH-393)
+  - Added: $DDS_CONFIG and "/etc/dds/DDS.cfg" are added to the DDS config search paths.   (GH-458)
+  - Added: DDS libraries are now decorated with an ABI version. (GH-410)
 
-* Fixed: On task done remove agents from the agent to tasks mapping.
-* Fixed: Replace std::iterator as it's deprecated (C++17).
-* Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.
-* Fixed: Multiple stability issues.
-* Modified: C++20 is now a required standard (GH-477).
-* Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  and boost (from 1.67 to 1.75). (GH-428)
-* Modified: C++17 modernization of EnvProp.h/env_prop. (GH-368)
-* Added: 3rd party dependency on Protobuf (min v3.15).
-* Added: every DDS module logs now its pid, group id and parent pid. (GH-403)
-* Added: Support for Task Assets. (GH-406)
-* Added: Cancel running and pending SLURM jobs on DDS shutdown. (GH-429)
-* Added: Support for Apple's arm64 architecture. (GH-393)
-* Added: $DDS_CONFIG and "/etc/dds/DDS.cfg" are added to the DDS config search paths. (GH-458)
-* Added: DDS libraries are now decorated with an ABI version. (GH-410)
+- dds-agent
+  - Fixed: Address potential crash in the external process termination routines.
+  - Fixed: Revised handling of the slots container.
+  - Fixed: Ignore SIGTERM while performing cleaning procedures. (GH-459)
 
-### dds-agent
+- dds\_intercom\_lib
+  - Fixed: Stability improvements.
+  - Modified: Temporary increase intercom message size to 2048. (GH-440)
+  - Modified: Set debug log severity on Custom command events. (GH-424)
 
-* Fixed: Address potential crash in the external process termination routines.
-* Fixed: Revised handling of the slots container.
-* Fixed: Ignore SIGTERM while performing cleaning procedures. (GH-459)
+- dds-session
+  - Fixed: skip bad or non-session directories/files when performing clean and list operations.
+  - Added: A data retention sanitization. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)
 
-### dds\_intercom\_lib
+- dds-submit
+  - Added: Users can specify a GroupName tag for each submission. This tag will be assigned   to agents and can be used as a requirement in topologies. (GH-407)
+  - Added: Users can provide a Submission Tag (--submission-tag). DDS RMS plug-ins will use   this tag to name RMS jobs and directories. (GH-426)
+  - Added: The command learned a new argument --env-config/-e. It can be used to define a   custom environment script for each agent. (GH-430)
+  - Added: The command learned a new argument --min-instances. It can be used to provide   the minimum number of agents to spawn. (GH-434)
+  - Added: The command learned a new argument --enable-overbooking. The flag instructs DDS   RMS plug-ing to not specify any CPU requirement for RMS jobs. (GH-442)
+  - Added: The command learned a new argument --inline-config. Content of this string will   be added to the RMS job configuration file as is. It can be specified multiple times to   add multiline options. (GH-449)
+  - Modified: WN package builder timeout interval was increased from 15 to 30 sec. (GH-468)
+  - Modified: Improve validation of the WN package builder. (GH-468)
 
-* Fixed: Stability improvements.
-* Modified: Temporary increase intercom message size to 2048. (GH-440)
-* Modified: Set debug log severity on Custom command events. (GH-424)
+- dds-topology
+  - Fixed: Stability improvements.
+  - Fixed: A bug which caused dds::topology_api::CTopoCreator to ignore task assets.     (GH-452)
+  - Fixed: Activating topology takes too long when task assets are used. (GH-454)
+  - Fixed: a bug, which can cause a segfault when updating variables in topology.
+  - Added: A new groupName requirement. It can be used on task and collection. (GH-407)
+  - Added: Open API to read/update/add topology variable. The CTopoVars class.
+  - Added: Support for Task Assets. (GH-406)
+  - Added: Custom type of Task and Collection requirements. (GH-445)
 
-### dds-session
+- dds-ssh-plugin
+  - Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)
+  - Added: Support for SubmissionID (GH-411)
 
-* Fixed: skip bad or non-session directories/files when performing clean and list operations.
-* Added: A data retention sanitization. Not running sessions older than the specified number of days ("server.data_retention") are auto deleted. (GH-435)
+- dds-slurm-plugin
+  - Fixed: Make sure that scancel's SIGTERM is properly handled by all job steps and their   scripts. (GH-459)
+  - Added: Support for SubmissionID (GH-411)
+  - Added: Support of minimum number of agents to spawn. (GH-434)
+  - Modified: Replace array job submission with nodes requirement. (GH-430)
+  - Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)
+  - Modified: The #SBATCH --cpus-per-task=%DDS_NSLOTS% requirement is now can be disabled   by providing the "enable-overbooking" flag (ToolsAPI or dds-submit). (GH-442)
+  - Modified: Prevent job termination when downing a single node of the job allocation. (GH-450)
 
-### dds-submit
+- dds-localhost-plugin
+  - Added: Support for SubmissionID (GH-411)
 
-* Added: Users can specify a GroupName tag for each submission. This tag will be assigned to agents and can be used as a requirement in topologies. (GH-407)
-* Added: Users can provide a Submission Tag (--submission-tag). DDS RMS plug-ins will use this tag to name RMS jobs and directories. (GH-426)
-* Added: The command learned a new argument --env-config/-e. It can be used to define a custom environment script for each agent. (GH-430)
-* Added: The command learned a new argument --min-instances. It can be used to provide the minimum number of agents to spawn. (GH-434)
-* Added: The command learned a new argument --enable-overbooking. The flag instructs DDS RMS plug-ing to not specify any CPU requirement for RMS jobs. (GH-442)
-* Added: The command learned a new argument --inline-config. Content of this string will be added to the RMS job configuration file as is. It can be specified multiple times to add multiline options. (GH-449)
-* Modified: WN package builder timeout interval was increased from 15 to 30 sec. (GH-468)
-* Modified: Improve validation of the WN package builder. (GH-468)
+- dds-tools-api
+  - Modified: Logs of user processes which use Tools API are moved now to the DDS root log   directory, instead of sessions directory.
+  - Modified: CSession::waitForNumAgents is renamed to CSession::waitForNumSlots. (GH-439)
+  - Added: An ability to unsubscribe from either individual events or all events of   requests. (GH-382)
+  - Added: SAgentInfoResponseData provides the agent group name. (GH-415)
+  - Added: SSubmitRequestData supports flags. See SSubmitRequestData::setFlag and   SSubmitRequestData::ESubmitRequestFlags. (GH-442)
+  - Added: Users can define additional job RMS configuration via SSubmitRequestData::m_inlineConfig. It will be inlined as is into the final job script. (GH-449)
 
-### dds-topology
+- dds-user-defaults
+  - Fixed: a dangling reference to a temporary in User Defaults class.
+  - Modified: Bump the version to 0.5.
+  - Added: A "server.data_retention" configuration key. (GH-435)
 
-* Fixed: Stability improvements.
-* Fixed: A bug which caused dds::topology_api::CTopoCreator to ignore task assets. (GH-452)
-* Fixed: Activating topology takes too long when task assets are used. (GH-454)
-* Fixed: a bug, which can cause a segfault when updating variables in topology.
-* Added: A new groupName requirement. It can be used on task and collection. (GH-407)
-* Added: Open API to read/update/add topology variable. The CTopoVars class.
-* Added: Support for Task Assets. (GH-406)
-* Added: Custom type of Task and Collection requirements. (GH-445)
+- dds-info
+  - Fixed: wrong exit code when called with --help/--version. (GH-470)
 
-### dds-ssh-plugin
-
-* Fixed: ssh cfg parser is passing cfg files of all plug-ins. (GH-413)
-* Added: Support for SubmissionID (GH-411)
-
-### dds-slurm-plugin
-
-* Fixed: Make sure that scancel's SIGTERM is properly handled by all job steps and their scripts. (GH-459)
-* Added: Support for SubmissionID (GH-411)
-* Added: Support of minimum number of agents to spawn. (GH-434)
-* Modified: Replace array job submission with nodes requirement. (GH-430)
-* Modified: Remove #SBATCH --ntasks-per-node=1. (GH-444)
-* Modified: The #SBATCH --cpus-per-task=%DDS_NSLOTS% requirement is now can be disabled by providing the "enable-overbooking" flag (ToolsAPI or dds-submit). (GH-442)
-* Modified: Prevent job termination when downing a single node of the job allocation. (GH-450)
-
-### dds-localhost-plugin
-
-* Added: Support for SubmissionID (GH-411)
-
-### dds-tools-api
-
-* Modified: Logs of user processes which use Tools API are moved now to the DDS root log directory, instead of sessions directory.
-* Modified: CSession::waitForNumAgents is renamed to CSession::waitForNumSlots. (GH-439)
-* Added: An ability to unsubscribe from either individual events or all events of requests. (GH-382)
-* Added: SAgentInfoResponseData provides the agent group name. (GH-415)
-* Added: SSubmitRequestData supports flags. See SSubmitRequestData::setFlag and SSubmitRequestData::ESubmitRequestFlags. (GH-442)
-* Added: Users can define additional job RMS configuration via SSubmitRequestData::m_inlineConfig. It will be inlined as is into the final job script. (GH-449)
-
-### dds-user-defaults
-
-* Fixed: a dangling reference to a temporary in User Defaults class.
-* Modified: Bump the version to 0.5.
-* Added: A "server.data_retention" configuration key. (GH-435)
-
-### dds-info
-
-* Fixed: wrong exit code when called with --help/--version. (GH-470)
-
-### dds-agent-cmd
-
-* Modified: getlog: now logs are tar'ed without their source directory structure - as a flat stack of files. (GH-369)  
-* Modified: getlog: the command outputs the destination directory where downloaded archives will be stored into. Also fixed command's description. (GH-369)
+- dds-agent-cmd
+  - Modified: getlog: now logs are tar'ed without their source directory structure - as a   flat stack of files. (GH-369)  
+  - Modified: getlog: the command outputs the destination directory where downloaded archives will be stored into. Also fixed command's description. (GH-369)
 
 ## v3.6 (2022-01-11)
 
 ### DDS general
 
-* Removed: obsolete test project. ODC is used as an integration platform for DDS.
-* Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentation fault.
-* Fixed: When creating softlinks to boost prerequisite libs, skip linking if destination file exists. (GH-323)
-* Fixed: a bug, which prevented to kill user task processes if they ignore SIGTERM. (GH-359)
-* Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)
-* Fixed: Clang 9 warning/error. (GH-249)
-* Modified: C++17 is now a required standard.
-* Modified: Remove an obsolete dds-test tool. (GH-341)
-* Modified: Remove obsolete internal statistics of channels. (GH-341)
-* Added: A cmake option "CREATE_BOOST_SYMLINKS", which enables creation of boost (libboost_*) symlinks in $DDS_LOCATION/lib/. Default is OFF. (GH-199, GH-357)
-* Modified: Refactor internal version implementation. Use a single `Version.h.in` configuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)
-* Fixed: `--version` option for `dds-session`.
-* Added: setup DDS environment and create default config file in code. No need to exec DDS_env.sh script anymore. (GH-350)
-* Added: Add a onTaskDone event to ToolsAPI. Using ToolsAPI users are able now to subscribe and receive onTaskDone events whenever a user tasks exists.(GH-370)
-* Modified: Refactor `MiscCommon`.
-* Added: Refactor and open DDS SSH config API to the users. Rename `ncf` to `SSHConfigFile`. (GH-340)
-* Added: new command line option `--slot-list` of  `dds-info` performing `SSlotInfoRequest`. (GH-374)
-* Added: DDS agent monitors available disk space and if the (configurable) threshold is reached, it will trigger a self-shutdown. (GH-392)
+- Removed: obsolete test project. ODC is used as an integration platform for DDS.
+- Fixed: in some edge cases a topology update, performed during an intensive key-value exchange, can lead to a segmentation fault.
+- Fixed: When creating softlinks to boost prerequisite libs, skip linking if destination file exists. (GH-323)
+- Fixed: a bug, which prevented to kill user task processes if they ignore SIGTERM. (GH-359)
+- Fixed: Refined command line parsing using `boost::program_options::split_unix`. (GH-353 and GH-352)
+- Fixed: Clang 9 warning/error. (GH-249)
+- Modified: C++17 is now a required standard.
+- Modified: Remove an obsolete dds-test tool. (GH-341)
+- Modified: Remove obsolete internal statistics of channels. (GH-341)
+- Added: A cmake option "CREATE_BOOST_SYMLINKS", which enables creation of boost (libboost_*) symlinks in $DDS_LOCATION/lib/. Default is OFF. (GH-199, GH-357)
+- Modified: Refactor internal version implementation. Use a single `Version.h.in` configuration file for version instead of multiple files for each subproject. Install `Version.h`. (GH-342)
+- Fixed: `--version` option for `dds-session`.
+- Added: setup DDS environment and create default config file in code. No need to exec DDS_env.sh script anymore. (GH-350)
+- Added: Add a onTaskDone event to ToolsAPI. Using ToolsAPI users are able now to subscribe and receive onTaskDone events whenever a user tasks exists.(GH-370)
+- Modified: Refactor `MiscCommon`.
+- Added: Refactor and open DDS SSH config API to the users. Rename `ncf` to `SSHConfigFile`. (GH-340)
+- Added: new command line option `--slot-list` of  `dds-info` performing `SSlotInfoRequest`. (GH-374)
+- Added: DDS agent monitors available disk space and if the (configurable) threshold is reached, it will trigger a self-shutdown. (GH-392)
 
 ### dds-tools-api
 
-* Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.
-* Added: a new `SSlotInfoRequest` request returns a list of all active slots details. (GH-374)
-* Added: task path to `OnTaskDone` reply.
-* Added: `Topology` request returns extended info of each activated or stopped task via new `STopologyResponseData` data class.
-* Added: A new `SAgentCommandRequest` request to shutdown agents by ID or by slotID. (GH-399)
+- Added: CSession::userDefaultsGetValueForKey - returns a configuration value for a given configuration key.
+- Added: a new `SSlotInfoRequest` request returns a list of all active slots details. (GH-374)
+- Added: task path to `OnTaskDone` reply.
+- Added: `Topology` request returns extended info of each activated or stopped task via new `STopologyResponseData` data class.
+- Added: A new `SAgentCommandRequest` request to shutdown agents by ID or by slotID. (GH-399)
 
 ### dds-topology
 
-* Added: new std::istream based APIs.
-* Added: new CTopology::getRuntimeTask and CTopology::getRuntimeCollection methods which take either ID or runtime path as input.
-* Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.
-* Added: On topology update/stop a task done event is now only sent when all processes of the given task are actually exited or killed. (GH-360)
-* Added: scheduler supports multiple requirements for task or collection. (GH-395)
+- Added: new std::istream based APIs.
+- Added: new CTopology::getRuntimeTask and CTopology::getRuntimeCollection methods which take either ID or runtime path as input.
+- Added: task ID to STopoRuntimeTask and collection ID to STopoRuntimeCollection.
+- Added: On topology update/stop a task done event is now only sent when all processes of the given task are actually exited or killed. (GH-360)
+- Added: scheduler supports multiple requirements for task or collection. (GH-395)
 
 ### dds-session
 
-* Modified: improved default SID storage and handling. (GH-318)
-* Fixed: silence the error "dds-session: error: Sessions holder dir doesn't exists". (GH-376)
+- Modified: improved default SID storage and handling. (GH-318)
+- Fixed: silence the error "dds-session: error: Sessions holder dir doesn't exists". (GH-376)
 
 ### dds-slurm-plugin
 
-* Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.
-* Fixed: fixed path to demonised log file. This log is created if plug-in failed to start.
-* Modified: DDS Session ID is added to the root path of job's wrk dir and the slurm sandbox wrk dir. (GH-349)
+- Fixed: a couple of fixes in Slurm plugin found on a Virgo cluster.
+- Fixed: fixed path to demonised log file. This log is created if plug-in failed to start.
+- Modified: DDS Session ID is added to the root path of job's wrk dir and the slurm sandbox wrk dir. (GH-349)
 
 ### dds-ssh-plugin
 
-* Modified: Remote destination directories are no longer required and will be created automatically at runtime. (GH-349)
-* Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. directory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)
-* Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)
+- Modified: Remote destination directories are no longer required and will be created automatically at runtime. (GH-349)
+- Modified: Final remote destination directories are created in DDS session ID subfolder, i.e. directory format is "(root wrk dir from plugin cfg)/(sessionID)/(wn ID from plugin cfg)". (GH-349)
+- Fixed: dds-submit-ssh doesn't exit if an exception is raised. (GH-363)
 
 ### dds-user-defaults
 
-* Modified: remove the "-V/--verbose" command line options. (GH-376)
-* Modified: a default cfg file creation workflow has been revised. (GH-376)
-* Added: dds-user-defaults learned a new global option "agent.access_permissions". This option forces the given file mode on agent side files. At the moment it's only applied to user task log files (stdout and stderr). (GH-389)
-* Added: dds-user-defaults learned a new global option "agent.disk_space_threshold". The agent will trigger a self-shutdown if the free disk space is below this threshold. (GH-392)
+- Modified: remove the "-V/--verbose" command line options. (GH-376)
+- Modified: a default cfg file creation workflow has been revised. (GH-376)
+- Added: dds-user-defaults learned a new global option "agent.access_permissions". This option forces the given file mode on agent side files. At the moment it's only applied to user task log files (stdout and stderr). (GH-389)
+- Added: dds-user-defaults learned a new global option "agent.disk_space_threshold". The agent will trigger a self-shutdown if the free disk space is below this threshold. (GH-392)
 
 ## v3.4 (2020-07-01)
 
@@ -506,9 +493,9 @@ Added: sending of arrays (GH-105)
 Added: sending of strings (GH-106)
 Added: improve protocol attachment architecture. Check maximum size for vectors and strings in commands. Size limitations:
 
-* all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;
-* all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;
-* all std::string's have a maximum size of uint16_t i.e. 2^16.
+- all vectors (except uint8_t) have a maximum size of uint16_t i.e. 2^16;
+- all vector<uint8_t>'s have a maximum size of uint32_t i.e. 2^32;
+- all std::string's have a maximum size of uint16_t i.e. 2^16.
 
 ### SLURM plug-in
 

@@ -7,6 +7,7 @@ add_library(${PROJECT_NAME} SHARED
   src/PipeLogEngine.cpp
   src/PipeLogEngine.h
 )
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
 #
 # Set Target version
 #

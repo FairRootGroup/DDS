@@ -19,6 +19,8 @@ set(HEADER_FILES
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
+
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
@@ -36,6 +38,8 @@ target_link_libraries(${PROJECT_NAME}
 set(target "dds_user_defaults_lib")
 add_library(${target} SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
 add_library(${PROJECT_NAME}::${target_lib} ALIAS ${target})
+
+target_compile_features(${target} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
 #
 # Set Target version
 #

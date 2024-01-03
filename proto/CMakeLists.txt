@@ -12,7 +12,9 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTOBUF_FILELIST})
 
 SET_SOURCE_FILES_PROPERTIES(${PROTO_SRC} ${PROTO_INCL} PROPERTIES GENERATED TRUE)
 
-add_library(dds_proto_lib ${PROTO_SRCS} ${PROTO_INCL})
+add_library(${PROJECT_NAME} ${PROTO_SRCS} ${PROTO_INCL})
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC

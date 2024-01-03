@@ -11,6 +11,8 @@ set(task task-custom-cmd)
 
 add_executable(${task} task-custom-cmd.cpp)
 
+target_compile_features(${task} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
+
 target_link_libraries(${task}
   PUBLIC
 	dds_intercom_lib
@@ -29,6 +31,8 @@ install(TARGETS ${task}
 set(task ui-custom-cmd)
 
 add_executable(${task} ui-custom-cmd.cpp)
+
+target_compile_features(${task} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
 
 target_link_libraries(${task}
   PUBLIC

@@ -17,6 +17,8 @@ set(HEADER_FILES
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
+
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
   dds_misc_lib
