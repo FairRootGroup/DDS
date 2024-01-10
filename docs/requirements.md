@@ -8,7 +8,7 @@ DDS UI/Server/WN run on Linux and Mac OS X.
 
 - Incoming connection on dds-commander port (configurable).
 - A C++17 or a higher compiler.
-- [cmake](http://www.cmake.org/) 3.23.1 or higher.
+- [cmake](http://www.cmake.org/) 3.19 or higher.
 - [BOOST](http://www.boost.org/) 1.75 or higher.
 - shell: [BASH (or a compatible one)](http://en.wikipedia.org/wiki/Bash_(Unix_shell))
 
