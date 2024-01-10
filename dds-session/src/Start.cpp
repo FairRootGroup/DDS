@@ -94,10 +94,10 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed)
 
 #if BOOST_ARCH_X86
 #if BOOST_ARCH_X86_64
-    const string sArch("x64");
+    const string sArch("x86_64");
     // support of x86 is dropped, we support only 64bit
 // #elif BOOST_ARCH_X86_32
-//       const string sArch("x64");
+//       const string sArch("x86_32");
 #endif
 #elif BOOST_ARCH_ARM
     const string sArch("arm64");
