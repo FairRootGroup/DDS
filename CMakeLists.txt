@@ -4,7 +4,8 @@
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.23.1 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.19 FATAL_ERROR )
+cmake_policy(VERSION 3.19...3.26)
 
 project( DDS )
 set(BUILD_SHARED_LIBS ON)

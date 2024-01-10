@@ -8,7 +8,7 @@
   - Fixed: Tasks working directory is set to their slot directory instead of $DDS_LOCATION.
   - Fixed: Multiple stability issues.
   - Modified: support C++20 standard (GH-477).
-  - Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.23.1)  and boost (from 1.67 to 1.75). (GH-428)
+  - Modified: Bump minimum version requirements for cmake (from 3.11.0 to 3.19)  and boost (from 1.67 to 1.75). (GH-428)
   - Modified: C++17 modernization of EnvProp.h/env_prop. (GH-368)
   - Added: 3rd party dependency on Protobuf (min v3.15).
   - Added: every DDS module logs now its pid, group id and parent pid. (GH-403)
