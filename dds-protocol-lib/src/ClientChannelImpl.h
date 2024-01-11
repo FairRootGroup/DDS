@@ -20,9 +20,7 @@ namespace dds
         class CClientChannelImpl : public CBaseChannelImpl<T>
         {
           protected:
-            CClientChannelImpl(boost::asio::io_context& _service,
-                                  EChannelType _channelType,
-                                  uint64_t _protocolHeaderID)
+            CClientChannelImpl(boost::asio::io_context& _service, EChannelType _channelType, uint64_t _protocolHeaderID)
                 : CBaseChannelImpl<T>(_service, _protocolHeaderID)
             {
                 this->m_channelType = _channelType;

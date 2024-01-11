@@ -195,11 +195,11 @@ namespace dds
 
           protected:
             CBaseSMChannelImpl(boost::asio::io_context& _service,
-                                  const std::string& _inputName,
-                                  const std::string& _outputName,
-                                  uint64_t _protocolHeaderID,
-                                  EMQOpenType _inputOpenType,
-                                  EMQOpenType _outputOpenType)
+                               const std::string& _inputName,
+                               const std::string& _outputName,
+                               uint64_t _protocolHeaderID,
+                               EMQOpenType _inputOpenType,
+                               EMQOpenType _outputOpenType)
                 : CChannelMessageHandlersImpl()
                 , m_isShuttingDown(false)
                 , m_started(false)
@@ -210,11 +210,11 @@ namespace dds
             }
 
             CBaseSMChannelImpl(boost::asio::io_context& _service,
-                                  const std::vector<std::string>& _inputNames,
-                                  const std::string& _outputName,
-                                  uint64_t _protocolHeaderID,
-                                  EMQOpenType _inputOpenType,
-                                  EMQOpenType _outputOpenType)
+                               const std::vector<std::string>& _inputNames,
+                               const std::string& _outputName,
+                               uint64_t _protocolHeaderID,
+                               EMQOpenType _inputOpenType,
+                               EMQOpenType _outputOpenType)
                 : CChannelMessageHandlersImpl()
                 , m_isShuttingDown(false)
                 , m_started(false)
