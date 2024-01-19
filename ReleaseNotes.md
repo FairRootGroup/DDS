@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v3.8 (NOT YET RELEASED)
+## v3.8 (2024-01-19)
 
 - DDS general
   - Fixed: On task done remove agents from the agent to tasks mapping.

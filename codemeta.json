@@ -4,14 +4,17 @@
     "name": "FairRootGroup/DDS",
     "description": "<p>The Dynamic Deployment System (DDS) - is a tool-set that automates and significantly simplifies a deployment of user defined processes and their dependencies on any resource management system using a given topology.</p>",
     "license": "https://spdx.org/licenses/CC-BY-4.0",
-    "softwareVersion": "3.2",
-    "datePublished": "2020-05-26",
+    "softwareVersion": "master",
+    "datePublished": "2024-01-19",
+    "developmentStatus": "active",
     "maintainer": {
         "@type": "Person",
         "familyName": "Manafov",
         "givenName": "Anar"
     },
+    "codeRepository": "https://github.com/FairRootGroup/DDS/",
     "readme": "https://github.com/FairRootGroup/DDS/blob/master/README.md",
+    "issueTracker": "https://github.com/FairRootGroup/DDS/issues",
     "author": [
         {
             "@type": "Person",
@@ -27,6 +30,37 @@
             "@type": "Person",
             "familyName": "Al-Turany",
             "givenName": "Mohammad"
+        }
+    ],
+    "contributor": [
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0003-3787-1910",
+            "givenName": "Dennis",
+            "familyName": "Klein"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Giulio",
+            "familyName": "Eulisse"
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0002-5321-8404",
+            "givenName": "Christian",
+            "familyName": "Tacke"
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0002-6249-155X",
+            "givenName": "Alexey",
+            "familyName": "Rybalchenko"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Matthias",
+            "familyName": "Kretz",
+            "email": "kretz@kde.org"
         }
     ]
 }
