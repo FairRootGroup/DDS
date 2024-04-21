@@ -106,7 +106,7 @@ namespace dds
             std::string m_pluginPath;     ///< Optional. A plug-in's directory search path
             std::string m_groupName;      ///<  A group name of agents.
             std::string m_submissionTag;  ///< A Submission Tag
-            std::string m_envCfgFilePath; ///< A path to a user enironment script. Will be execeuted once per agent
+            std::string m_envCfgFilePath; ///< A path to a user environment script. Will be executed once per agent
                                           ///< (valid for all task slots of the agent)
             std::string m_inlineConfig;   ///< Content of this buffer will be added to the RMS job configuration file.
 

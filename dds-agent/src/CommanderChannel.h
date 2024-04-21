@@ -128,7 +128,7 @@ namespace dds
             /// The function first sends a graceful SIGTERM to all children. After a defined timeout (5 sec) an
             /// unconditional SIGKILL is sent.
             /// \param[in] _parentPid The pid of the parent process, which children needs to
-            /// \param[in] _onCompleteSlot is a callback fucntion. It's called when termination of all child process is
+            /// \param[in] _onCompleteSlot is a callback function. It's called when termination of all child process is
             /// finished.
             void terminateChildrenProcesses(pid_t _parentPid, const terminateChildrenOnComplete_t& _onCompleteSlot);
             void terminateChildrenProcesses(timerPtr_t& _timer,

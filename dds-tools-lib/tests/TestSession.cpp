@@ -299,7 +299,7 @@ void runDDS(vector<CSession>& _sessions)
 
     createSessions(_sessions);
 
-    // Initital topology
+    // Initial topology
     CTopology topo(topoPath.string());
     auto numAgents = topo.getRequiredNofAgents(10);
     size_t requiredCount{ numAgents.first * numAgents.second };
@@ -309,7 +309,7 @@ void runDDS(vector<CSession>& _sessions)
             session, topoPath, STopologyRequest::request_t::EUpdateType::ACTIVATE, numAgents, numAgents, requiredCount);
     }
 
-    // Upscaled topology
+    // Unscaled topology
     CTopology upTopo(upTopoPath.string());
     auto upNumAgents = upTopo.getRequiredNofAgents(10);
     requiredCount += upNumAgents.first * upNumAgents.second;
@@ -323,7 +323,7 @@ void runDDS(vector<CSession>& _sessions)
                      requiredCount);
     }
 
-    // Downscaled topology
+    // Downcased topology
     CTopology downTopo(downTopoPath.string());
     auto downNumAgents = downTopo.getRequiredNofAgents(10);
     requiredCount += downNumAgents.first * downNumAgents.second;
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_unsubscribe)
     BOOST_CHECK(!sid.is_nil());
 
     // test onTaskDone events
-    // Subscrube on events
+    // Subscribe on events
     SOnTaskDoneRequest::request_t request;
     SOnTaskDoneRequest::ptr_t requestPtr = SOnTaskDoneRequest::makeRequest(request);
 

@@ -119,7 +119,7 @@ namespace dds
             boost::asio::io_context m_io_context;         ///> boost::asio IO context
             boost::thread_group m_workerThreads;          ///> Thread container
             CAgentChannel::connectionPtr_t m_channel;     ///< TCP channel for communication with DDS commander
-            CSMAgentChannel::connectionPtr_t m_SMChannel; ///< Shared memory channel for comunication with DDS agent
+            CSMAgentChannel::connectionPtr_t m_SMChannel; ///< Shared memory channel for communication with DDS agent
             std::atomic<bool> m_started;                  ///< True if started, False otherwise
 
             /// Condition variable used to stop the current thread.

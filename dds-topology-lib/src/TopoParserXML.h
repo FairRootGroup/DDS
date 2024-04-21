@@ -19,7 +19,7 @@ namespace dds
         {
           public:
             /// \brief Parse  topology from specified XML file.
-            /// \param[out] _pt Output ptoperty tree.
+            /// \param[out] _pt Output property tree.
             /// \param[in] _filepath Path to the topology file.
             /// \param[in] _schemaFilepath Path to the XSD schema file.
             /// \throw std::runtime_error.
@@ -29,7 +29,7 @@ namespace dds
                               std::string* _topologyName = nullptr);
 
             /// \brief Parse  topology from specified XML input stream.
-            /// \param[out] _pt Output ptoperty tree.
+            /// \param[out] _pt Output property tree.
             /// \param[in] _stream Input stream.
             /// \param[in] _schemaFilepath Path to the XSD schema file.
             /// \throw std::runtime_error.

@@ -92,10 +92,10 @@ CCommanderChannel::CCommanderChannel(boost::asio::io_context& _service,
         });
 
     // Check free disk space (GH-392)
-    // Report avaliable disk space at start
+    // Report available disk space at start
     uintmax_t nAvailable{ 0 };
     isLowDiskSpace(&nAvailable);
-    LOG(info) << "Avaliable disk space: " << dds::misc::HumanReadable{ nAvailable };
+    LOG(info) << "Available disk space: " << dds::misc::HumanReadable{ nAvailable };
     // create async timer
     m_resourceMonitorTimer = make_unique<timer_t>(_service);
     startResourceMonitor(_service, chrono::seconds(30));
@@ -166,7 +166,7 @@ bool CCommanderChannel::on_cmdREPLY(SCommandAttachmentImpl<cmdREPLY>::ptr_t _att
         {
             if (_attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::OK)
             {
-                LOG(info) << "SM: Handshake successfull. PHID: " << this->m_protocolHeaderID;
+                LOG(info) << "SM: Handshake successful. PHID: " << this->m_protocolHeaderID;
                 return true;
             }
             else if (_attachment->m_statusCode == (uint16_t)SReplyCmd::EStatusCode::ERROR)
@@ -321,6 +321,18 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             destFilePath /= _attachment->m_requestedFileName;
             fs::rename(_attachment->m_receivedFilePath, destFilePath);
             LOG(info) << "Received new topology file: " << destFilePath.generic_string();
+
+            // Decompressing the topology file
+            if (destFilePath.extension() == ".gz")
+            {
+                const fs::path gzipPath{ bp::search_path("gzip") };
+                stringstream ssCmd;
+                ssCmd << gzipPath.string() << " -d " << destFilePath;
+                string output;
+                execute(ssCmd.str(), chrono::seconds(60), &output);
+                // remove ".gz" extension
+                destFilePath = destFilePath.stem();
+            }
 
             // Activating new topology
             CTopoCore::Ptr_t topo{ make_shared<CTopoCore>() };
@@ -518,12 +530,12 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
     if (slot->m_collectionIndex != numeric_limits<uint32_t>::max())
         ba::replace_all(slot->m_sUsrExe, "%collectionIndex%", to_string(slot->m_collectionIndex));
 
-    // If the user task was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
+    // If the user task was transferred, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
     fs::path dir(CUserDefaults::instance().getSlotsRootDir());
     dir /= to_string(_sender.m_ID);
     dir += fs::path::preferred_separator;
     ba::replace_all(slot->m_sUsrExe, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
-    // If the user custom environment was transfered, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
+    // If the user custom environment was transferred, than replace "%DDS_DEFAULT_TASK_PATH%" with the real path
     ba::replace_all(slot->m_sUsrEnv, "%DDS_DEFAULT_TASK_PATH%", dir.generic_string());
 
     // Revoke drain of the write queue to start accept messages
@@ -550,7 +562,7 @@ bool CCommanderChannel::on_cmdASSIGN_USER_TASK(SCommandAttachmentImpl<cmdASSIGN_
                 pathAsset = dir;
                 pathAsset /= assetFileName.str();
 
-                // If local asset exists, we will overwrite it. No skiping.
+                // If local asset exists, we will overwrite it. No skipping.
 
                 slot->m_taskAssets.push_back(pathAsset);
                 break;
@@ -753,7 +765,7 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
                         slot->m_pid,
                         [this, id]()
                         {
-                            // Once child termionation is finished, send User task "Done" to the commander
+                            // Once child termination is finished, send User task "Done" to the commander
                             pushMsg<cmdREPLY>(
                                 SReplyCmd("Done", (uint16_t)SReplyCmd::EStatusCode::OK, 0, cmdSTOP_USER_TASK), id);
                         });
@@ -895,7 +907,7 @@ void CCommanderChannel::onNewUserTask(uint64_t _slotID, pid_t _pid)
                     if (WIFEXITED(status))
                     {
                         // NOTE: We are using a bash wrapper script for user tasks.
-                        // According to bash, the exist status of child processes can be interpreted in the folloiwing
+                        // According to bash, the exist status of child processes can be interpreted in the following
                         // way:
                         // - For the shell’s purposes, a command which exits with a zero exit status has succeeded.
                         // - A non-zero exit status indicates failure.
@@ -1001,8 +1013,8 @@ void CCommanderChannel::terminateChildrenProcesses(
     enumChildProcesses(mainPid, vecChildren);
 
     // the mainPid is never included to the list
-    // In case of the agent the reseaon is obviouse.
-    // In case of a task, since it is running via the DDS task wrapper it will exit autoamticlaly once children are out
+    // In case of the agent the reason is obvious.
+    // In case of a task, since it is running via the DDS task wrapper it will exit automatically once children are out
     string sChildren;
     pidContainer_t pidChildren;
     for (const auto& i : vecChildren)
@@ -1088,7 +1100,7 @@ void CCommanderChannel::terminateChildrenProcesses(
     else
     {
         // kill all child process of tasks if there are any
-        // We do it before terminating tasks to give parenrt task processes a change to read state of children -
+        // We do it before terminating tasks to give the parent task processes a chance to read state of children -
         // otherwise we will get zombies if user tasks don't manage their children properly
         LOG(info) << "Timeout is reached. Sending unconditional kill signal to all existing child processes...";
         for (auto const& pid : _children)
@@ -1142,7 +1154,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
         slot->m_pid = 0;
         slot->m_taskID = 0;
 
-        // Drainning the Intercom write queue
+        // Draining the Intercom write queue
         m_intercomChannel->drainWriteQueue(true, _slotID);
 
         // Notify DDS commander
@@ -1151,7 +1163,7 @@ void CCommanderChannel::taskExited(uint64_t _slotID, int _exitCode)
     catch (exception& _e)
     {
         LOG(fatal) << "Failed to remove user task on slot " << _slotID << " from the list of children: " << _e.what();
-        LOG(error) << "Can't send TASK_DONE. The coresponding slot is missing";
+        LOG(error) << "Can't send TASK_DONE. The corrsponding slot is missing";
     }
 }
 
@@ -1176,7 +1188,7 @@ void CCommanderChannel::stopChannel()
     terminateChildrenProcesses(0, [&waitCondition]() { waitCondition.notifyAll(); });
 
     // wait for termination to finish
-    // either it is finsihed or we procceed in 30 sec in anyway
+    // either it is finished or we proceed in 30 sec in anyway
     waitCondition.waitUntil(std::chrono::system_clock::now() + std::chrono::seconds(30));
 
     if (m_intercomChannel)
@@ -1350,7 +1362,7 @@ bool CCommanderChannel::isLowDiskSpace(uintmax_t* _available)
     }
     catch (exception& _e)
     {
-        LOG(error) << "Failed getting avaliable disk space: " << _e.what();
+        LOG(error) << "Failed to get available disk space: " << _e.what();
     }
     return false;
 }

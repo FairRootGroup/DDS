@@ -54,7 +54,7 @@ void CScheduler::makeScheduleImpl(CTopoCore& _topology,
     m_schedule.clear();
 
     size_t nofChannels{ _channels.size() };
-    // Map pair<host name, worker id> to vector of channel indeces.
+    // Map pair<host name, worker id> to vector of channel indexes.
     // This is needed in order to reduce number of regex matches and speed up scheduling.
     hostToChannelMap_t hostToChannelMap;
     for (size_t iChannel = 0; iChannel < nofChannels; ++iChannel)

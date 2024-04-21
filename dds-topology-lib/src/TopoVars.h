@@ -34,10 +34,10 @@ namespace dds
             /// \brief Destructor.
             virtual ~CTopoVars();
 
-            /// \brief Init the obejct from DDS topology xml
+            /// \brief Init the object from DDS topology xml
             void initFromXML(const std::string& _filepath);
 
-            /// \brief Serizalize the obejct to DDS topology xml
+            /// \brief Serizalize the object to DDS topology xml
             void saveToXML(const std::string& _filepath);
 
             /// \brief Inherited from TopoBase

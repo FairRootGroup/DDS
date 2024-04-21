@@ -47,7 +47,7 @@ void CLogEngine::start(const string& _pipeFilePath, onLogEvent_t _callback)
     // Open the pipe for reading
     m_fd = open(m_pipeName.c_str(), O_RDWR | O_NONBLOCK);
     if ((-1 == m_fd) && (EEXIST != errno))
-        throw runtime_error("Can't opem a named pipe: " + m_pipeName);
+        throw runtime_error("Can't open a named pipe: " + m_pipeName);
 
     // Start the log engine
     m_thread = new boost::thread(boost::bind(&CLogEngine::thread_worker, this, m_fd, m_pipeName));
@@ -59,7 +59,7 @@ void CLogEngine::stop()
     if (NULL != m_thread)
     {
         m_stopLogEngine = 1;
-        // send just *one* charecter to wake up the thread.
+        // send just *one* character to wake up the thread.
         this->operator()("\0", "");
         m_thread->join();
         delete m_thread;

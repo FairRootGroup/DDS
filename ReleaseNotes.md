@@ -1,5 +1,11 @@
 # DDS Release Notes
 
+## v3.9 (2024-04-23)
+
+- DDS general
+  - Modified: compress topology files before broadcasting to agents. Significantly improves performance for big topology activations. (GH-478)  
+  - Modified: Improved performance of the Core transport when transferring binary attachments. (GH-478)
+
 ## v3.8 (2024-01-19)
 
 - DDS general

@@ -29,7 +29,7 @@ bool parseCmdLine(int _Argc, char* _Argv[])
     bool ignoreDefaultSID(false);
     // Generic options
     bpo::options_description visible("Options");
-    // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce ureadable output
+    // WORKAROUND: repeat add_options call to help clang-format, otherwise it produce unreadable output
     visible.add_options()("help,h", "Produce help message");
     visible.add_options()("version,v", "Version information");
     visible.add_options()("path,p", "Show DDS user defaults config file path");

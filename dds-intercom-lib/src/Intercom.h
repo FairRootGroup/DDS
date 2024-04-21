@@ -93,7 +93,7 @@ namespace dds
         class CCustomCmd
         {
           public:
-            /// \typedef Custom command cllback function
+            /// \typedef Custom command callback function
             typedef boost::signals2::signal<void(
                 const std::string& /*_command*/, const std::string& /*_condition*/, uint64_t /*_senderID*/)>
                 signal_t;
@@ -171,7 +171,7 @@ namespace dds
             std::string m_id;             ///< ID for communication with DDS commander.
             std::string m_wrkPackagePath; ///< A full path of the agent worker package, which needs to be deployed.
             std::string m_groupName;      ///< Agent group name
-            std::string m_submissionTag;  ///< Submission tag. It can be used by RMS to name dds jobs and direcrtories.
+            std::string m_submissionTag;  ///< Submission tag. It can be used by RMS to name dds jobs and directories.
             std::string m_inlineConfig;   ///< Content of this buffer will be added to the RMS job configuration file.
         };
 

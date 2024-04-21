@@ -37,7 +37,7 @@ namespace dds
             using weakChannelInfoVector_t = std::vector<dds::protocol_api::SWeakChannelInfo<CAgentChannel>>;
 
           private:
-            // Map tuple<agent ID, host name, worker id, group name> to vector of channel indeces.
+            // Map tuple<agent ID, host name, worker id, group name> to vector of channel indexes.
             using hostToChannelMap_t =
                 std::map<std::tuple<uint64_t, std::string, std::string, std::string>, std::vector<size_t>>;
             // Map pair<host name, task/collection name> to counter.

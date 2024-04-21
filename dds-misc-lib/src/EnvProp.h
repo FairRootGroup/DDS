@@ -11,7 +11,7 @@
 
 namespace dds
 {
-    /// a list of envioronment properties
+    /// a list of enviornment properties
     enum EEnvProp
     {
         task_id,    ///< associated with $DDS_TASK_ID environment variable.

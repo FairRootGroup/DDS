@@ -552,7 +552,7 @@ string CUserDefaults::getMainSIDFile() const
 }
 
 /// Returns Session ID full file path (return main SID if exists. If there is no main, it checks for a clone SID. If
-/// none of SID exist, the fucntions returns an empty string)
+/// none of SID exist, the functions returns an empty string)
 string CUserDefaults::getSIDFile() const
 {
     string sWorkDir(m_options.m_server.m_workDir);

@@ -33,7 +33,7 @@ CTopoCore::CTopoCore()
 /// copy constructor
 CTopoCore::CTopoCore(CTopoCore const& _topo)
 {
-    // no need to lock this objec because no other thread
+    // no need to lock this object because no other thread
     // will be using it until after construction
     // but we DO need to lock the other object
     std::unique_lock<std::mutex> lock_other(_topo.m_mtxTopoInit);

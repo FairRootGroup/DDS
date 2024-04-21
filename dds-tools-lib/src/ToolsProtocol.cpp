@@ -248,7 +248,7 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; instances: " << _data.m_instances
                        << "; minInstances: " << _data.m_minInstances << "; slots: " << _data.m_slots
-                       << "; falgs: " << _data.m_flags << "; config: " << _data.m_config << "; rms: " << _data.m_rms
+                       << "; flags: " << _data.m_flags << "; config: " << _data.m_config << "; rms: " << _data.m_rms
                        << "; pluginPath: " << _data.m_pluginPath << "; groupName: " << _data.m_groupName
                        << "; submissionTag: " << _data.m_submissionTag << "; envCfgFilePath: " << _data.m_envCfgFilePath
                        << "; inlineConfig: " << _data.m_inlineConfig;

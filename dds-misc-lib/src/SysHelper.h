@@ -179,7 +179,7 @@ namespace dds::misc
         return tmp;
     }
     /**
-     * @brief The function is used to access the host name (with FCDN) of the current processor.
+     * @brief The function is used to access the host name (with FQDN) of the current processor.
      * @param[out] _RetVal - The returned buffer string. Must not be NULL.
      **/
     inline void get_hostname(std::string* _RetVal)

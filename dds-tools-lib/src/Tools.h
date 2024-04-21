@@ -22,10 +22,10 @@ namespace dds
     {
         /**
          *
-         * \brief The main class of the Tools API. It represets a DDS session.
+         * \brief The main class of the Tools API. It represents a DDS session.
          * \details
          *        It can be used to create new DDS sessions or attach to existing ones.
-         *        Also, this class can be used to send and recieve Tools commands.
+         *        Also, this class can be used to send and receive Tools commands.
          *        Currently the following commands are \link ToolsProtocol.h \endlink
          *
          *        Please note, when you send a requests, server will respond with a corresponding reply with a following
@@ -54,7 +54,7 @@ namespace dds
          });
 
          // Subscribe on Done evens.
-         // Server will send Done when there it has finsihed proccessing a corresponding request.
+         // Server will send Done when there it has finished processing a corresponding request.
          submitRequestPtr->setDoneCallback([&session, &start]() {
              auto end = chrono::high_resolution_clock::now();
              chrono::duration<double, std::milli> elapsed = end - start;
@@ -85,7 +85,7 @@ namespace dds
          });
 
          // Subscribe on Done event.
-         // Server sends Done when it has finsihed proccessing the request.
+         // Server sends Done when it has finished processing the request.
          agentInfoRequestPtr->setDoneCallback([&session]() {
             session.unblockCurrentThread();
          });
@@ -165,7 +165,7 @@ namespace dds
          *               [&nTaskDoneCount](const SOnTaskDoneResponseData& _info)
          *               {
          *                 ++nTaskDoneCount;
-         *                 cout << "Recieved onTaskDone event. TaskID: " << _info.m_taskID
+         *                 cout << "Received onTaskDone event. TaskID: " << _info.m_taskID
          *                      << " ; ExitCode: " << _info.m_exitCode
          *                      << " ; Signal: " << _info.m_signal;
          *               });

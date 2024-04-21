@@ -412,7 +412,7 @@ namespace dds
 
             void start()
             {
-                // Check that all message queues were succesfully created
+                // Check that all message queues were successfully created
                 bool queuesCreated(true);
                 for (const auto& v : m_transportIn)
                 {
