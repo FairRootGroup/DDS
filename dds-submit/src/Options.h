@@ -75,7 +75,7 @@ namespace dds
                 "only RMS options. To define custom environment per agent, use --env-config.\n");
             options.add_options()("env-config,e",
                                   bpo::value<std::string>(&_options->m_envCfgFilePath),
-                                  "A path to a user enironment script. Will be execeuted once per agent (valid for all "
+                                  "A path to a user environment script. Will be executed once per agent (valid for all "
                                   "task slots of the agent).\n");
             options.add_options()(
                 "inline-config",

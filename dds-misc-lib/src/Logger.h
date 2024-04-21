@@ -127,7 +127,7 @@ namespace dds::misc
 
             // Default format for logger
             formatter formatter =
-                // TODO: std::setw doesn't work for the first collumn of the log (TimeStamp). Investigate!
+                // TODO: std::setw doesn't work for the first column of the log (TimeStamp). Investigate!
                 expressions::stream << std::left
                                     << expressions::format_date_time<boost::posix_time::ptime>("TimeStamp",
                                                                                                "%Y-%m-%d %H:%M:%S.%f")

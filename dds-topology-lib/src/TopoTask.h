@@ -94,7 +94,7 @@ namespace dds
 
           private:
             std::string m_exe;                            ///< Path to executable
-            std::string m_env;                            ///< Path to environmtnt file
+            std::string m_env;                            ///< Path to environment file
             bool m_exeReachable{ true };                  ///< If executable is available on the WN
             bool m_envReachable{ true };                  ///< If environment script is available on the WN
             CTopoProperty::PtrMap_t m_properties;         ///< Properties

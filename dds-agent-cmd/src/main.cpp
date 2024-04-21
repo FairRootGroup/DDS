@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
                 LOG(log_stdout) << "Files will be downloaded to \"~/.DDS/sessions/" << sid << "/log/agents\"";
                 break;
             default:
-                LOG(log_stderr) << "Uknown command.";
+                LOG(log_stderr) << "Unknown command.";
                 return EXIT_FAILURE;
         }
 

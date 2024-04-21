@@ -27,7 +27,7 @@ namespace dds
             void _convertToData(dds::misc::BYTEVector_t* _data) const;
             bool operator==(const SUpdateTopologyCmd& val) const;
 
-            // when 0 - valiadate, any other value - don't validate
+            // when 0 - validate, any other value - don't validate
             uint16_t m_nDisableValidation;
             // topology file
             std::string m_sTopologyFile;

@@ -88,7 +88,7 @@ boost::uuids::uuid CSession::create()
     if (!m_impl->m_sid.is_nil())
         throw runtime_error("ToolsAPI: DDS session is already running.");
 
-    // Call "dds-session start" to fireup a new session
+    // Call "dds-session start" to fire up a new session
     // Get new session ID
     string sOut;
     string sErr;

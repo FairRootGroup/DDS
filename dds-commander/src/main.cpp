@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
         // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         // TODO: A temporary solution to cancel slurm jobs.
-        // ToolsAPI and DDS Plug-in API is being upgraded to use protobuf. In meantime, we cancel slurm jobs diurectloy
+        // ToolsAPI and DDS Plug-in API is being upgraded to use protobuf. In meantime, we cancel slurm jobs directly
         // from commander.
 
         // - Loop over all submissions of this session

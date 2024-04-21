@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     if (dds::misc::defaultExecReinit(options.m_sid) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
-    // List all avbaliable plug-ins
+    // List all available plug-ins
     if (options.m_bListPlugins)
     {
         namespace fs = boost::filesystem;
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
         if (fs::exists(someDir) && fs::is_directory(someDir))
         {
-            cout << "Avaliable RMS plug-ins:\n";
+            cout << "Available RMS plug-ins:\n";
             for (fs::directory_iterator dir_iter(someDir); dir_iter != end_iter; ++dir_iter)
             {
                 if (fs::is_directory(dir_iter->status()))

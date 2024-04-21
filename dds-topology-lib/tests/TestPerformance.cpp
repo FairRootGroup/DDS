@@ -27,6 +27,7 @@ BOOST_AUTO_TEST_CASE(test_dds_topology_performance_1)
     auto execTime = STimeMeasure<>::execution(
         [&topology]()
         {
+            topology.setXMLValidationDisabled(true);
             for (size_t i = 0; i < 3; i++)
             {
                 topology.init("topology_test_8.xml");

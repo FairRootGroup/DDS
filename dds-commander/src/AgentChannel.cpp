@@ -117,8 +117,8 @@ bool CAgentChannel::on_cmdREPLY_HOST_INFO(SCommandAttachmentImpl<cmdREPLY_HOST_I
               << "] has successfully connected. Startup time: " << m_info.m_startUpTime.count() << " ms.";
 
     // Request agent to add Task Slots
-    // We get the number of slots from the agent. On submit each agent is assiugned to a fixed number of slots. Then
-    // when agent is up, we requast tyhe agent to actully active each slot.
+    // We get the number of slots from the agent. On submit each agent is assigned to a fixed number of slots. Then
+    // when agent is up, we request the agent to actually active each slot.
     LOG(info) << "Requesting " << _attachment->m_slots << " task slots from " << m_info.m_id;
     for (size_t i = 0; i < _attachment->m_slots; ++i)
     {

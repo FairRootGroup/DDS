@@ -79,7 +79,7 @@ namespace dds::misc
                                              _FileName + "\" is still running");
                 }
 
-                // Wrtiting new pidfile
+                // Writing new pidfile
                 std::ofstream f(m_FileName.c_str());
                 if (!f.is_open())
                     throw std::runtime_error("can't create PID file: " + m_FileName);
@@ -458,7 +458,7 @@ namespace dds::misc
             smart_path(&smartCmd);
 
             // FIX: A fix for cases when the parent process sets SIG_IGN (if it was created by
-            // bosot::process::spawn). Restore default handler. If we don't do so, we might fail to waitpid our
+            // boost::process::spawn). Restore default handler. If we don't do so, we might fail to waitpid our
             // children. After we started using boost::process we noticed that ::waitpid fails. boost:process either
             // sets its own handler or there is a call for signal(SIGCHLD, SIG_IGN);
             std::signal(SIGCHLD, SIG_DFL);
@@ -561,7 +561,7 @@ namespace dds::misc
             watchdog.async_wait(
                 [&](boost::system::error_code ec)
                 {
-                    // Workaround we can't use boost::process::child::wait_for because it's buged in Boost 1.70 and not
+                    // Workaround we can't use boost::process::child::wait_for because it's bugged in Boost 1.70 and not
                     // yet fixed. We therefore use a deadline timer.
                     if (!ec)
                     {

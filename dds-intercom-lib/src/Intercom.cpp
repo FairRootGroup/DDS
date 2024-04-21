@@ -108,7 +108,7 @@ void CCustomCmd::subscribe(signal_t::slot_function_type _subscriber)
 void CCustomCmd::subscribeOnReply(replySignal_t::slot_function_type _subscriber)
 {
     connection_t connection = m_service.m_impl->connectCustomCmdReply(_subscriber);
-    LOG(info) << "User process is waiting for replys from custom commands.";
+    LOG(info) << "User process is waiting for a reply from custom commands.";
 }
 
 void CCustomCmd::unsubscribe()

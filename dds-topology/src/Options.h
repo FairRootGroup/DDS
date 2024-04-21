@@ -66,7 +66,7 @@ namespace dds
                                   "Define a topology to update currently active topology.");
             options.add_options()("disable-validation",
                                   bpo::bool_switch(&_options->m_bDisableValidation),
-                                  "Disable topology valiadation.");
+                                  "Disable topology validation.");
             options.add_options()("activate",
                                   bpo::value<std::string>(&_options->m_sTopoFile),
                                   "Request to activate agents, i.e. distribute and start user tasks.");

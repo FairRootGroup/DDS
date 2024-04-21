@@ -5,7 +5,7 @@
 #ifndef _DDS_NCF_H_
 #define _DDS_NCF_H_
 //
-// - - - - - = = =     DDS NCF (nodes configuration file parcer)     = = = - - - - -
+// - - - - - = = =     DDS NCF (nodes configuration file parser)     = = = - - - - -
 //
 // a configuration should be a comma-separated values (CSV) with
 // the following records:

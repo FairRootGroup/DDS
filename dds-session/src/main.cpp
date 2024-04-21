@@ -76,7 +76,7 @@ void rebuildSessions(vector<fs::path>& _session_dirs, StringVector_t& _sessions)
     for (auto& dir : boost::make_iterator_range(fs::directory_iterator(pathSessions), {}))
     {
         _session_dirs.push_back(dir.path());
-        // Workaround: using .leaf().string(), instead of just .leaf(), vecasue we want to avoid double quotes
+        // Workaround: using .leaf().string(), instead of just .leaf(), because we want to avoid double quotes
         // in output.
         _sessions.push_back(dir.path().filename().string());
     }

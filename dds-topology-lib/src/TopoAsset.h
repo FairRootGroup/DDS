@@ -27,8 +27,8 @@ namespace dds
 
             enum class EVisibility
             {
-                Task,  ///< The asset is visiable only for the task it is assigned to
-                Global ///< The asset is visiable for all tasks of the given session.
+                Task,  ///< The asset is visible only for the task it is assigned to
+                Global ///< The asset is visible for all tasks of the given session.
             };
 
             using Ptr_t = std::shared_ptr<CTopoAsset>;

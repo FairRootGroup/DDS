@@ -97,7 +97,7 @@ namespace dds
                     bindPortAndListen(m_acceptor);
                     createClientAndStartAccept(m_acceptor);
 
-                    // If we use second channel for communication with UI we have to start acceptiing connection on that
+                    // If we use second channel for communication with UI we have to start accepting connection on that
                     // channel.
                     if (m_useUITransport)
                     {
@@ -388,10 +388,16 @@ namespace dds
 
                     for (const auto& v : channels)
                     {
-                        if (v.m_channel.expired())
-                            continue;
-                        auto ptr = v.m_channel.lock();
-                        ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource, v.m_protocolHeaderID);
+                        // Post each push call, otherwise it will block other pushes until "post" each block of the
+                        // binary file if the file is big.
+                        this->m_ioContext.post(
+                            [&]
+                            {
+                                if (v.m_channel.expired())
+                                    return;
+                                auto ptr = v.m_channel.lock();
+                                ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource, v.m_protocolHeaderID);
+                            });
                     }
                 }
                 catch (std::bad_weak_ptr& e)
@@ -459,7 +465,7 @@ namespace dds
                 A* pThis = static_cast<A*>(this);
                 pThis->newClientCreated(newClient);
 
-                // Subsribe on lobby member handshake
+                // Subscribe on task slot handshake
                 newClient->template registerHandler<EChannelEvents::OnReplyAddSlot>(
                     [this, newClient](const SSenderInfo& _sender) -> void
                     {
@@ -472,7 +478,7 @@ namespace dds
                             << "Adding new slot to " << newClient->getId() << " with id " << _sender.m_ID;
                     });
 
-                // Subscribe on dissconnect event
+                // Subscribe on the disconnect event
                 newClient->template registerHandler<EChannelEvents::OnRemoteEndDissconnected>(
                     [this, newClient](const SSenderInfo& /*_sender*/) -> void { this->removeClient(newClient.get()); });
 
@@ -559,7 +565,7 @@ namespace dds
             typename channelInfo_t::container_t m_channels;
             channelContainerCache_t m_channelsCache;
 
-            /// Used for the main comunication
+            /// Used for the main communication
             boost::asio::io_context m_ioContext;
             asioAcceptorPtr_t m_acceptor;
 

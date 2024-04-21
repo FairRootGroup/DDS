@@ -57,7 +57,7 @@ void CStart::getNewSessionID()
     {
         stringstream ss;
         if (nExitCode != 0)
-            ss << "dds-comnader prep-session exited with code " << nExitCode << "; ";
+            ss << "dds-commander prep-session exited with code " << nExitCode << "; ";
         if (!sErr.empty())
             ss << "error: " << sErr;
 
@@ -81,7 +81,7 @@ void CStart::getNewSessionID()
 bool CStart::checkPrecompiledWNBins(bool _Mixed)
 {
     // wn bin name:
-    // <pakage>-<version>-<OS>-<ARCH>.tar.gz
+    // <package>-<version>-<OS>-<ARCH>.tar.gz
     const string sBaseName("dds-wrk-bin");
     const string sBaseSufix(".tar.gz");
     const string sOSXArch("Darwin");
@@ -198,7 +198,7 @@ void CStart::getPrecompiledWNBins(StringVector_t& _list)
     // Set Working dir
     fs::path pathCur(boost::filesystem::current_path());
     fs::current_path(pathWnBins);
-    // Trying to dowlond bins
+    // Trying to download bins
     stringstream ssURL;
     ssURL << " http://dds.gsi.de/releases/add"
           << "/" << DDS_VERSION_STRING << "/";
@@ -274,7 +274,7 @@ void CStart::checkCommanderStatus()
         this_thread::sleep_for(chrono::milliseconds(10));
     }
     if (sHost.empty() || sPort.empty())
-        throw runtime_error("Can't detect Comander's UI address. Assuming DDS Commander failed to start.");
+        throw runtime_error("Can't detect commander's UI address. Assuming DDS Commander failed to start.");
 
     LOG(log_stdout_clean) << "DDS commander appears online. Testing connection...";
 
@@ -300,7 +300,7 @@ void CStart::checkCommanderStatus()
         requestPtr->setResponseCallback(
             [](const SCommanderInfoResponseData& _info)
             {
-                LOG(debug) << "UI agent has recieved pid of the commander server: " << _info.m_pid;
+                LOG(debug) << "UI agent has received pid of the commander server: " << _info.m_pid;
                 LOG(log_stdout_clean) << "------------------------";
                 LOG(log_stdout_clean) << "DDS commander server: " << _info.m_pid;
                 LOG(log_stdout_clean) << "------------------------";

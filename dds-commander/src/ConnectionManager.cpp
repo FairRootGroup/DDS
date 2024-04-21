@@ -336,7 +336,7 @@ void CConnectionManager::broadcastUpdateTopologyAndWait(weakChannelInfo_t::conta
     dds::tools_api::SProgressResponseData progress(_cmd, 0, m_updateTopology.m_nofRequests, 0);
     sendCustomCommandResponse(_channel, progress.toJSON());
 
-    // Broadcast message or binary to agents
+    // Broadcast a message or a binary to agents
     size_t index = 0;
     for (auto& agent : _agents)
     {
@@ -713,10 +713,10 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
     }
 
     // MARK: ToolsAPI - onTaskDone
-    // send task done ToolsAPI event to registred channels. A channel, whcih is expired of filed should be removed from
+    // send task done ToolsAPI event to registered channels. A channel, which is expired of filed should be removed from
     // the list.
     lock_guard<mutex> lock(m_mtxOnTaskDoneSubscribers);
-    // The loop always recalclates the end() iterator since we might delete expired elelemts from the list
+    // The loop always recalculates the end() iterator since we might delete expired elemets from the list
     for (auto iter = m_onTaskDoneSubscribers.begin(); iter != m_onTaskDoneSubscribers.end(); ++iter)
     {
         if (auto ch = iter->first.lock())
@@ -726,7 +726,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
             response.m_taskID = _attachment->m_taskID;
             response.m_exitCode = (WIFEXITED(_attachment->m_exitCode) ? WEXITSTATUS(_attachment->m_exitCode) : 0);
             // NOTE: We are using a bash wrapper script for user tasks.
-            // According to bash, the exist status of child processes can be interpreted in the folloiwing way:
+            // According to bash, the exist status of child processes can be interpreted in the following way:
             // - For the shell’s purposes, a command which exits with a zero exit status has succeeded.
             // - A non-zero exit status indicates failure.
             //   This seemingly counter-intuitive scheme is used so there is one well-defined way to indicate success
@@ -744,7 +744,7 @@ void CConnectionManager::on_cmdUSER_TASK_DONE(const SSenderInfo& _sender,
         }
         else
         {
-            // channel is expiored - removing it from the list
+            // channel is expired - removing it from the list
             m_onTaskDoneSubscribers.erase(iter);
         }
     }
@@ -754,7 +754,7 @@ void CConnectionManager::on_cmdGET_PROP_LIST(const SSenderInfo& /*_sender*/,
                                              SCommandAttachmentImpl<cmdGET_PROP_LIST>::ptr_t /*_attachment*/,
                                              CAgentChannel::weakConnectionPtr_t /*_channel*/)
 {
-    // FIXME: This command desn't work without CKeyValueManager
+    // FIXME: This command doesn't work without CKeyValueManager
 }
 
 void CConnectionManager::on_cmdGET_PROP_VALUES(const SSenderInfo& /*_sender*/,
@@ -823,7 +823,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             else
             {
                 LOG(error) << "Failed to deliver. Channel is missing. CUSTOM_CMD senderID: " << _sender.m_ID
-                           << "; attachemnt: " << *_attachment;
+                           << "; attachment: " << *_attachment;
             }
         }
         catch (boost::bad_lexical_cast&)
@@ -923,7 +923,7 @@ void CConnectionManager::on_cmdCUSTOM_CMD(const SSenderInfo& _sender,
             ptr->pushMsg<cmdCUSTOM_CMD>(*_attachment, v.m_protocolHeaderID);
         }
 
-        // Debug msg: there are too many of such messages if tasks intensivly use CC
+        // Debug msg: there are too many of such messages if tasks intensively use CC
         /*  stringstream ss;
           ss << "Send custom command to " << channels.size() << " channels." << endl;
 
@@ -988,7 +988,7 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
             else if (tag == "onTaskDone")
             {
                 SOnTaskDoneRequestData info(data);
-                // add the given channel (_channel) to the list, which will be allerted whenever a task is exited
+                // add the given channel (_channel) to the list, which will be alerted whenever a task is exited
                 lock_guard<mutex> lock(m_mtxOnTaskDoneSubscribers);
                 m_onTaskDoneSubscribers.push_back({ _channel, info });
             }
@@ -1036,7 +1036,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         m_SubmitAgents.m_requestID = _submitInfo.m_requestID;
         m_SubmitAgents.zeroCounters();
 
-        // Generating a submissin ID
+        // Generating a submission ID
         const boost::uuids::uuid submissionID{ boost::uuids::random_generator()() };
         const string sSubmissionID{ boost::lexical_cast<std::string>(submissionID) };
         LOG(info) << "Initializing an agent submit request with submissionID = " << sSubmissionID;
@@ -1051,7 +1051,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
 
         // Create / re-pack WN package
         // Include inline script, if present.
-        // For ssh plug-in inline script has a higher priorety, than the sxcript provided via the submit command
+        // For ssh plug-in inline script has a higher priority, than the script provided via the submit command
         // (--env-config). Only the ssh plug-in supports it.
         bool bNeedCustomEnv{ false };
         string scriptFileName(pathWrkPackageDir.string());
@@ -1089,7 +1089,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         // pack worker package
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
-        // Use a lightweightpackage when possible
+        // Use a lightweight package when possible
         _createWnPkg(bNeedCustomEnv,
                      (_submitInfo.m_rms == "localhost"),
                      _submitInfo.m_slots,
@@ -1130,7 +1130,7 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         try
         {
             // Execute RMS plug-in and don't wait for it.
-            // Omnce plug-in is up it will connect back to the commander.
+            // Once plug-in is up it will connect back to the commander.
             // We will report to user if it won't connect.
             execute(ssCmd.str());
         }
@@ -1258,7 +1258,7 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         if (removedTasks.size() > 0)
         {
-            LOG(info) << "Stoppoing removed tasks";
+            LOG(info) << "Stopping removed tasks";
             weakChannelInfo_t::container_t agents;
             // FIXME: Needs to be reviewed for the current architecture
             //            {
@@ -1338,8 +1338,46 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
             if (allAgents.size() == 0)
                 throw runtime_error("There are no active agents.");
 
+            string topFileDestName{ "topology.xml" };
+            fs::path copyTopoFile;
+            try
+            {
+                // compressing the topology.
+                // In some production cases the orig. file was more than 20MB. Sending such size to hundreds of agents
+                // might be resource consuming. In case of ALICE prod it was 300 agents (175K task slots) and 20 MB topo
+                // file.
+                LOG(info) << "Topology file uncompressed size: "
+                          << dds::misc::HumanReadable{ fs::file_size(topologyFile) } << " Compressing topology file...";
+                // make a copy of the orig. file
+                // The copy is located in the commander's working directory
+                const fs::path wrkDir(user_defaults_api::CUserDefaults::instance().getWrkDir());
+                copyTopoFile = wrkDir;
+                copyTopoFile /= "topology_agent_copy.xml";
+                fs::copy_file(topologyFile, copyTopoFile);
+                // compressing
+                const fs::path gzipPath{ bp::search_path("gzip") };
+                stringstream ssCmd;
+                ssCmd << gzipPath.string() << " -9 " << copyTopoFile;
+                string output;
+                execute(ssCmd.str(), chrono::seconds(60), &output);
+                copyTopoFile += ".gz";
+                topologyFile = copyTopoFile.string();
+                LOG(info) << "Topology file compressed size: "
+                          << dds::misc::HumanReadable{ fs::file_size(topologyFile) };
+                topFileDestName += ".gz";
+            }
+            catch (exception& e)
+            {
+                LOG(error) << "Failed to compress topology file. " << e.what();
+                LOG(info) << "Sending uncompressed topology...";
+            }
+
+            LOG(info) << "Broadcasting topology update with a file: " << topologyFile;
             broadcastUpdateTopologyAndWait<cmdUPDATE_TOPOLOGY>(
-                allAgents, _channel, "Updating topology for agents...", topologyFile, "topology.xml");
+                allAgents, _channel, "Updating topology for agents...", topologyFile, topFileDestName);
+
+            if (!copyTopoFile.empty())
+                fs::remove(copyTopoFile);
         }
 
         //

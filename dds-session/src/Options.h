@@ -143,7 +143,7 @@ namespace dds
                                   "Can be used only with the \"remove\" command.");
             options.add_options()("mixed",
                                   bpo::bool_switch(&_options->m_bMixed),
-                                  "Use worker package for a mixed environment - workes on Linux and on OS X.\n"
+                                  "Use worker package for a mixed environment - agents on Linux and on OS X.\n"
                                   "Can be used only with the \"start\" command.");
 
             //...positional

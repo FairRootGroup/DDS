@@ -146,7 +146,7 @@ namespace dds
             std::string m_currentCollectionIdPath;
             Id_t m_currentCollectionId{ 0 };
 
-            bool m_bXMLValidationDisabled{ false }; ///< if true than XML will not be validated agains XSD
+            bool m_bXMLValidationDisabled{ false }; ///< if true than XML will not be validated against XSD
             std::string m_name;                     ///< Name of the topology
             uint32_t m_hash{ 0 };                   ///< CRC64 of the topology XML file
             std::string m_filepath;                 ///< Path to the XML topology file
