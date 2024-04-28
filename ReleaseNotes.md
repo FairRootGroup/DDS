@@ -1,5 +1,10 @@
 # DDS Release Notes
 
+## v3.10 (2004-04-28)
+
+- DDS general
+  - Fixed: a regression bug causing topology update to fail on the hash validation. (GH-480)
+
 ## v3.9 (2024-04-23)
 
 - DDS general

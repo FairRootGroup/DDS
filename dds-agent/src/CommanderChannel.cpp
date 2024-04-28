@@ -327,7 +327,7 @@ bool CCommanderChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
             {
                 const fs::path gzipPath{ bp::search_path("gzip") };
                 stringstream ssCmd;
-                ssCmd << gzipPath.string() << " -d " << destFilePath;
+                ssCmd << gzipPath.string() << " -df " << destFilePath;
                 string output;
                 execute(ssCmd.str(), chrono::seconds(60), &output);
                 // remove ".gz" extension
