@@ -11,6 +11,7 @@
 // BOOST
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/uuid/entropy_error.hpp>
 // protobuf
 #include "submit_info.pb.h"
 #include "submit_info_slurm.pb.h"
