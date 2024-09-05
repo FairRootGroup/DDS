@@ -53,6 +53,7 @@ namespace dds
         /// Helpers for event dispatching
         struct SHandlerHlpFunc
         {
+            virtual ~SHandlerHlpFunc() = default;
         };
         template <typename T>
         struct SHandlerHlpBaseFunc : SHandlerHlpFunc
