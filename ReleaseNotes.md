@@ -10,8 +10,6 @@
 
 - DDS general
   - Fixed: a regression bug causing topology update to fail on the hash validation. (GH-480)
-  - Fixed: compilation error on clang 15.
-  - Fixed: new-delete-type-mismatch in BaseEventHandlersImpl.
 
 ## v3.9 (2024-04-23)
 
