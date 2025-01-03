@@ -1,5 +1,7 @@
 # DDS Release Notes
 
+## v3.12 (NOT YET RELEASED)
+
 ## v3.11 (2024-09-05)
 
 - DDS general

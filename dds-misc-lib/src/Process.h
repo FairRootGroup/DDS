@@ -527,7 +527,7 @@ namespace dds::misc
                 return pid;
             }
 
-            boost::asio::io_service ios;
+            boost::asio::io_context ios;
             bp::async_pipe outPipe(ios);
             bp::async_pipe errPipe(ios);
             boost::asio::streambuf outBuf;

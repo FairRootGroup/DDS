@@ -31,7 +31,7 @@ CAgentConnectionManager::CAgentConnectionManager(const SOptions_t& _options)
     m_signals.add(SIGTERM);
 #if defined(SIGQUIT)
     m_signals.add(SIGQUIT);
-#endif // defined(SIGQUIT)
+#endif // defined(SIGQUIT
 
     doAwaitStop();
 }
@@ -167,8 +167,7 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
 
     // Resolve endpoint iterator from host and port
     tcp::resolver resolver(m_context);
-    tcp::resolver::query query(sHost, sPort);
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+    auto endpoints = resolver.resolve(sHost, sPort);
 
     // Create new agent and push handshake message
     m_commanderChannel = CCommanderChannel::makeNew(m_context, _protocolHeaderID, m_intercomContext);
@@ -181,7 +180,7 @@ void CAgentConnectionManager::createCommanderChannel(uint64_t _protocolHeaderID)
         { this->on_cmdSHUTDOWN(_sender, _attachment, m_commanderChannel); });
 
     // Connect to DDS commander
-    m_commanderChannel->connect(endpoint_iterator);
+    m_commanderChannel->connect(endpoints);
 }
 
 void CAgentConnectionManager::on_cmdSHUTDOWN(const SSenderInfo& /*_sender*/,

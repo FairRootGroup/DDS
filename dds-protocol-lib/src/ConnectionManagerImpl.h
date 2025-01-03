@@ -390,14 +390,15 @@ namespace dds
                     {
                         // Post each push call, otherwise it will block other pushes until "post" each block of the
                         // binary file if the file is big.
-                        this->m_ioContext.post(
-                            [&]
-                            {
-                                if (v.m_channel.expired())
-                                    return;
-                                auto ptr = v.m_channel.lock();
-                                ptr->pushBinaryAttachmentCmd(_data, _fileName, _cmdSource, v.m_protocolHeaderID);
-                            });
+                        boost::asio::post(this->m_ioContext,
+                                          [&]
+                                          {
+                                              if (v.m_channel.expired())
+                                                  return;
+                                              auto ptr = v.m_channel.lock();
+                                              ptr->pushBinaryAttachmentCmd(
+                                                  _data, _fileName, _cmdSource, v.m_protocolHeaderID);
+                                          });
                     }
                 }
                 catch (std::bad_weak_ptr& e)

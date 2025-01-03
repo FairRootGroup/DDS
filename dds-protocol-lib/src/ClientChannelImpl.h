@@ -68,13 +68,13 @@ namespace dds
                 connect(m_endpoint_iterator);
             }
 
-            void connect(boost::asio::ip::tcp::resolver::iterator _endpoint_iterator)
+            void connect(boost::asio::ip::tcp::resolver::results_type _endpoint_iterator)
             {
                 m_endpoint_iterator = _endpoint_iterator;
                 boost::asio::async_connect(
                     this->socket(),
                     _endpoint_iterator,
-                    [this](boost::system::error_code ec, boost::asio::ip::tcp::resolver::iterator)
+                    [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint)
                     {
                         if (!ec)
                         {
@@ -102,7 +102,7 @@ namespace dds
             }
 
           private:
-            boost::asio::ip::tcp::resolver::iterator m_endpoint_iterator;
+            boost::asio::ip::tcp::resolver::results_type m_endpoint_iterator;
         };
     } // namespace protocol_api
 } // namespace dds

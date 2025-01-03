@@ -17,6 +17,10 @@ string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
+# Set policy CMP0167 to NEW to suppress the warning about FindBoost module removal
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 
 set(PROJECT_CXX_STANDARD 17)
 # Handle C++ standard level
@@ -261,7 +265,7 @@ endif(Boost_FOUND)
 #
 # Search for protobuf
 #
-find_package(Protobuf 3.15 REQUIRED)
+find_package(Protobuf REQUIRED)
 add_subdirectory(proto)
 
 # DDS Misc Common

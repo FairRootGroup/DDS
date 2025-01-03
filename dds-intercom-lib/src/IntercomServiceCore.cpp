@@ -157,8 +157,7 @@ void CIntercomServiceCore::setupChannel(const std::string& _sessionID)
 
     // Resolve endpoint iterator from host and port
     boost::asio::ip::tcp::resolver resolver(m_io_context);
-    boost::asio::ip::tcp::resolver::query query(sHost, sPort);
-    boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+    auto endpoints = resolver.resolve(sHost, sPort);
 
     // Create new communication channel and push handshake message
     m_channel = CAgentChannel::makeNew(m_io_context, 0);
@@ -199,7 +198,7 @@ void CIntercomServiceCore::setupChannel(const std::string& _sessionID)
                 });
         });
 
-    m_channel->connect(endpoint_iterator);
+    m_channel->connect(endpoints);
 }
 
 void CIntercomServiceCore::stop()
