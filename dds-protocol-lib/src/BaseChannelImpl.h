@@ -35,7 +35,7 @@ namespace dds
         class CClientChannelImpl; // needed for friend class
         template <class T>
         class CServerChannelImpl; // needed for friend class
-    }                             // namespace protocol_api
+    } // namespace protocol_api
 } // namespace dds
 
 // Either raw message or command based processing can be used at a time
@@ -465,18 +465,18 @@ namespace dds
 
                 // process standard async writing
                 auto self(this->shared_from_this());
-                m_ioContext.post(
-                    [this, self]
-                    {
-                        try
-                        {
-                            writeMessage();
-                        }
-                        catch (std::exception& ex)
-                        {
-                            LOG(dds::misc::error) << "BaseChannelImpl can't write message: " << ex.what();
-                        }
-                    });
+                boost::asio::post(m_ioContext,
+                                  [this, self]
+                                  {
+                                      try
+                                      {
+                                          writeMessage();
+                                      }
+                                      catch (std::exception& ex)
+                                      {
+                                          LOG(dds::misc::error) << "BaseChannelImpl can't write message: " << ex.what();
+                                      }
+                                  });
             }
 
             template <ECmdType _cmd, class A>

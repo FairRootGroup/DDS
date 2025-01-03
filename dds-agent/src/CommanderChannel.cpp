@@ -758,7 +758,8 @@ bool CCommanderChannel::on_cmdSTOP_USER_TASK(SCommandAttachmentImpl<cmdSTOP_USER
             // Prevent blocking of the current thread.
             // The term-kill logic is posted to a different free thread in the queue.
             LOG(info) << "Scheduling a task stop for Slot id = " << _sender.m_ID << "; pid = " << slot->m_pid;
-            m_ioContext.post(
+            boost::asio::post(
+                m_ioContext,
                 [this, slot, id = _sender.m_ID]
                 {
                     terminateChildrenProcesses(

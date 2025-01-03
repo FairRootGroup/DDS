@@ -449,18 +449,19 @@ namespace dds
                 auto self(this->shared_from_this());
                 for (const auto& v : m_transportIn)
                 {
-                    m_ioContext.post(
-                        [this, self, &v]
-                        {
-                            try
-                            {
-                                readMessage(v);
-                            }
-                            catch (std::exception& ex)
-                            {
-                                LOG(dds::misc::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                            }
-                        });
+                    boost::asio::post(m_ioContext,
+                                      [this, self, &v]
+                                      {
+                                          try
+                                          {
+                                              readMessage(v);
+                                          }
+                                          catch (std::exception& ex)
+                                          {
+                                              LOG(dds::misc::error)
+                                                  << "BaseSMChannelImpl can't read message: " << ex.what();
+                                          }
+                                      });
                 }
 
                 SSenderInfo sender;
@@ -536,18 +537,19 @@ namespace dds
 
                     // process standard async writing
                     auto self(this->shared_from_this());
-                    m_ioContext.post(
-                        [this, self, &buffer]
-                        {
-                            try
-                            {
-                                writeMessage(buffer);
-                            }
-                            catch (std::exception& ex)
-                            {
-                                LOG(dds::misc::error) << "BaseSMChannelImpl can't write message: " << ex.what();
-                            }
-                        });
+                    boost::asio::post(m_ioContext,
+                                      [this, self, &buffer]
+                                      {
+                                          try
+                                          {
+                                              writeMessage(buffer);
+                                          }
+                                          catch (std::exception& ex)
+                                          {
+                                              LOG(dds::misc::error)
+                                                  << "BaseSMChannelImpl can't write message: " << ex.what();
+                                          }
+                                      });
                 }
                 catch (std::exception& ex)
                 {
@@ -681,18 +683,19 @@ namespace dds
                     pThis->processMessage(_currentMsg);
 
                     auto self(this->shared_from_this());
-                    m_ioContext.post(
-                        [this, self, &_info]
-                        {
-                            try
-                            {
-                                readMessage(_info);
-                            }
-                            catch (std::exception& ex)
-                            {
-                                LOG(dds::misc::error) << "BaseSMChannelImpl can't read message: " << ex.what();
-                            }
-                        });
+                    boost::asio::post(m_ioContext,
+                                      [this, self, &_info]
+                                      {
+                                          try
+                                          {
+                                              readMessage(_info);
+                                          }
+                                          catch (std::exception& ex)
+                                          {
+                                              LOG(dds::misc::error)
+                                                  << "BaseSMChannelImpl can't read message: " << ex.what();
+                                          }
+                                      });
                 }
             }
 
