@@ -240,6 +240,8 @@ namespace dds
         struct SDoneResponseData;
         struct SMessageResponseData;
         struct SProgressResponseData;
+        struct SRMSJobInfoRequestData;
+        struct SRMSJobInfoResponseData;
 
         template <class TRequest, class TResponse>
         struct SBaseRequestImpl

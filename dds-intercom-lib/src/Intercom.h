@@ -307,7 +307,8 @@ namespace dds
             /// \brief Unsubscribe all user callbacks.
             void unsubscribe();
 
-            signalSubmit_t m_signalSubmit;   ///< Submit signal.
+            signalSubmit_t m_signalSubmit; ///< Submit signal.
+
             signalMessage_t m_signalMessage; ///< Message signal.
 
             std::string m_id; ///< ID for communication with DDS commander (provided via constructor).

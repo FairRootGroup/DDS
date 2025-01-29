@@ -10,6 +10,7 @@
 #include "CustomCmdCmd.h"
 #include "ProtocolCommands.h"
 #include "ToolsProtocol.h"
+#include "UserDefaults.h"
 // STD
 #include <chrono>
 #include <mutex>
@@ -411,6 +412,9 @@ namespace dds
             std::string m_strInitialSubmitRequest;
             std::chrono::system_clock::duration m_PluginStartTime;
             bool m_bInit;
+
+          private:
+            std::string m_sSubmissionID; // Store submission ID when processing submit request
         };
     } // namespace commander_cmd
 } // namespace dds

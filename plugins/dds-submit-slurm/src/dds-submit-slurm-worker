@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2014-2022 GSI, Inc. All rights reserved.
+# Copyright 2014-2025 GSI, Inc. All rights reserved.
 #
 #
 
@@ -69,5 +69,85 @@ if (( $? != 0 )) ; then
 fi
 logMsg "SLURM: $JOB_ID"
 echo $JOB_ID > "$WORK_DIR/$SUBMISSION_ID/.dds_slurm_jobid"
+
+# Try to get job info for up to 1 minute with adaptive sleep time
+sleep_time=0.1
+max_attempts=600
+for i in $(seq 1 $max_attempts); do
+    # Get job info once per iteration
+    JOB_INFO=$(scontrol show job $JOB_ID 2>/dev/null)
+    if [ $? -eq 0 ] && [ -n "$JOB_INFO" ]; then
+        # Extract NumNodes - using a more permissive pattern to match various SLURM output formats
+        if [[ "$JOB_INFO" =~ NumNodes=([0-9]+) ]]; then
+            NUM_NODES="${BASH_REMATCH[1]}"
+        else
+            # Fallback to sed
+            NUM_NODES=$(echo "$JOB_INFO" | sed -n 's/.*NumNodes=\([0-9]\+\).*/\1/p')
+        fi
+        
+        # Try to count nodes from NodeList if NumNodes is empty
+        if [ -z "$NUM_NODES" ]; then
+            if [[ "$JOB_INFO" =~ NodeList=([^ ]+) ]]; then
+                NODELIST="${BASH_REMATCH[1]}"
+                if [ -n "$NODELIST" ]; then
+                    # Count nodes including ranges (e.g., lxbk[1130-1135] = 6 nodes)
+                    NUM_NODES=$(scontrol show hostnames "$NODELIST" | wc -l)
+                fi
+            fi
+        fi
+        
+        # Get JobState - using a more permissive pattern
+        if [[ "$JOB_INFO" =~ JobState=([[:alnum:]]+) ]]; then
+            JOB_STATE="${BASH_REMATCH[1]}"
+        else
+            # Fallback to sed
+            JOB_STATE=$(echo "$JOB_INFO" | sed -n 's/.*JobState=\([[:alnum:]]\+\).*/\1/p')
+        fi
+        
+        # Verify we got the values
+        if [ -n "$NUM_NODES" ] && [ -n "$JOB_STATE" ]; then
+            # Convert state to numeric value
+            case "$JOB_STATE" in
+                CONFIGURING|PENDING)
+                    STATE_NUM=0
+                    ;;
+                RUNNING)
+                    STATE_NUM=1
+                    ;;
+                COMPLETED|COMPLETING)
+                    STATE_NUM=2
+                    ;;
+                FAILED|CANCELLED|TIMEOUT|PREEMPTED|NODE_FAIL)
+                    STATE_NUM=3
+                    ;;
+                *)
+                    STATE_NUM=0
+                    logMsg "Warning: Unknown job state: $JOB_STATE"
+                    ;;
+            esac
+            
+            # Write info to file
+            echo "$NUM_NODES $STATE_NUM" > "$WORK_DIR/$SUBMISSION_ID/job.info"
+            logMsg "Job info retrieved: Nodes=$NUM_NODES State=$JOB_STATE (StateNum=$STATE_NUM)"
+            break
+        else
+            logMsg "Warning: Incomplete job info - Nodes:$NUM_NODES State:$JOB_STATE"
+        fi
+    fi
+    
+    # Adaptive sleep: increase sleep time as we wait longer
+    if [ $i -gt 300 ]; then
+        sleep_time=0.5  # After 30 seconds, check less frequently
+    elif [ $i -gt 100 ]; then
+        sleep_time=0.2  # After 10 seconds, check less frequently
+    fi
+    sleep $sleep_time
+done
+
+# If we couldn't get the job info, log a warning
+if [ ! -f "$WORK_DIR/$SUBMISSION_ID/job.info" ]; then
+    logMsg "Warning: Could not retrieve complete job information"
+    echo "0 0" > "$WORK_DIR/$SUBMISSION_ID/job.info"
+fi
 
 exit 0

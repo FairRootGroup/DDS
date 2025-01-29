@@ -34,6 +34,6 @@ namespace dds
         std::ostream& operator<<(std::ostream& _stream, const SAssignUserTaskCmd& val);
         bool operator!=(const SAssignUserTaskCmd& lhs, const SAssignUserTaskCmd& rhs);
     } // namespace protocol_api
-};    // namespace dds
+}; // namespace dds
 
 #endif /* defined(__DDS__AssignUserTaskCmd__) */

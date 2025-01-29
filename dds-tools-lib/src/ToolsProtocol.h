@@ -11,7 +11,8 @@
 #include <chrono>
 #include <ostream>
 #include <string>
-//// BOOST
+#include <vector>
+// BOOST
 #include <boost/property_tree/ptree.hpp>
 // DDS
 #include "Intercom.h"
@@ -126,8 +127,33 @@ namespace dds
             flagContainer_t m_flagContainer;
         };
 
+        /// \brief Structure holds information of a submit response.
+        struct SSubmitResponseData : SBaseResponseData<SSubmitResponseData>
+        {
+            SSubmitResponseData();
+            SSubmitResponseData(const boost::property_tree::ptree& _pt);
+
+            std::vector<std::string> m_jobIDs; ///< RMS Job IDs (can be multiple for job arrays)
+            uint32_t m_allocNodes{ 0 };        ///< Number of allocated nodes
+            uint32_t m_state{ 0 };             ///< Job state (1=RUNNING, 2=COMPLETED)
+            bool m_jobInfoAvailable{ false };  ///< Flag indicating if job info was successfully retrieved
+
+          private:
+            friend SBaseData<SSubmitResponseData>;
+            friend SBaseResponseData<SSubmitResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "submit";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SSubmitResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SSubmitResponseData& _data);
+        };
+
         /// \brief Request class of submit.
-        using SSubmitRequest = SBaseRequestImpl<SSubmitRequestData, SEmptyResponseData>;
+        using SSubmitRequest = SBaseRequestImpl<SSubmitRequestData, SSubmitResponseData>;
 
         /// \brief Structure holds information of topology request.
         struct STopologyRequestData : SBaseRequestData<STopologyRequestData>
@@ -398,6 +424,55 @@ namespace dds
 
         /// \brief Request class of submit.
         using SAgentCommandRequest = SBaseRequestImpl<SAgentCommandRequestData, SEmptyResponseData>;
+
+        /// \brief Structure holds information of RMS job info request.
+        struct SRMSJobInfoRequestData : SBaseRequestData<SRMSJobInfoRequestData>
+        {
+            SRMSJobInfoRequestData();
+            SRMSJobInfoRequestData(const boost::property_tree::ptree& _pt);
+
+            std::string m_submissionID; ///< Submission ID.
+
+          private:
+            friend SBaseData<SRMSJobInfoRequestData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "rmsJobInfo";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SRMSJobInfoRequestData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SRMSJobInfoRequestData& _data);
+        };
+
+        /// \brief Structure holds information of RMS job info response.
+        struct SRMSJobInfoResponseData : SBaseResponseData<SRMSJobInfoResponseData>
+        {
+            SRMSJobInfoResponseData();
+            SRMSJobInfoResponseData(const boost::property_tree::ptree& _pt);
+
+            uint32_t m_allocNodes; ///< Allocated nodes.
+            uint32_t m_state;      ///< Job state.
+            std::string m_jobName; ///< Job name.
+
+          private:
+            friend SBaseData<SRMSJobInfoResponseData>;
+            friend SBaseResponseData<SRMSJobInfoResponseData>;
+            void _fromPT(const boost::property_tree::ptree& _pt);
+            void _toPT(boost::property_tree::ptree& _pt) const;
+            static constexpr const char* _protocolTag = "rmsJobInfo";
+
+          public:
+            /// \brief Equality operator.
+            bool operator==(const SRMSJobInfoResponseData& _val) const;
+            /// \brief Ostream operator.
+            friend std::ostream& operator<<(std::ostream& _os, const SRMSJobInfoResponseData& _data);
+        };
+
+        /// \brief Request class of RMS job info.
+        using SRMSJobInfoRequest = SBaseRequestImpl<SRMSJobInfoRequestData, SRMSJobInfoResponseData>;
+
     } // namespace tools_api
 } // namespace dds
 

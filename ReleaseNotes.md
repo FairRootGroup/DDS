@@ -2,6 +2,10 @@
 
 ## v3.12 (NOT YET RELEASED)
 
+- DDS general
+  - Fixed: build errors with boost 1.87.
+  - Added: The DDS Submit Tools API command now provides a response with job information. Currently, this feature is supported only by the Slurm plug-in. (GH-483)
+
 ## v3.11 (2024-09-05)
 
 - DDS general

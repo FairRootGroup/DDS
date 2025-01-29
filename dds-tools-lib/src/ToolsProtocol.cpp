@@ -18,6 +18,8 @@ constexpr const char* SSlotInfoRequestData::_protocolTag;
 constexpr const char* SAgentCountRequestData::_protocolTag;
 constexpr const char* SCommanderInfoRequestData::_protocolTag;
 constexpr const char* SDoneResponseData::_protocolTag;
+constexpr const char* SRMSJobInfoRequestData::_protocolTag;
+constexpr const char* SRMSJobInfoResponseData::_protocolTag;
 
 ///////////////////////////////////
 // SProgressResponseData
@@ -252,6 +254,80 @@ namespace dds
                        << "; pluginPath: " << _data.m_pluginPath << "; groupName: " << _data.m_groupName
                        << "; submissionTag: " << _data.m_submissionTag << "; envCfgFilePath: " << _data.m_envCfgFilePath
                        << "; inlineConfig: " << _data.m_inlineConfig;
+        }
+    } // namespace tools_api
+} // namespace dds
+
+///////////////////////////////////
+// SSubmitResponseData
+///////////////////////////////////
+
+SSubmitResponseData::SSubmitResponseData()
+{
+}
+
+SSubmitResponseData::SSubmitResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
+void SSubmitResponseData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    boost::property_tree::ptree jobIDsArray;
+    for (const auto& id : m_jobIDs)
+    {
+        boost::property_tree::ptree jobID;
+        jobID.put("", id);
+        jobIDsArray.push_back(std::make_pair("", jobID));
+    }
+    _pt.add_child("jobIDs", jobIDsArray);
+    _pt.put("allocNodes", m_allocNodes);
+    _pt.put("state", m_state);
+    _pt.put("jobInfoAvailable", m_jobInfoAvailable);
+}
+
+void SSubmitResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_jobIDs.clear();
+    try
+    {
+        const auto& jobIDsNode = _pt.get_child("jobIDs");
+        for (const auto& item : jobIDsNode)
+        {
+            m_jobIDs.push_back(item.second.get_value<std::string>());
+        }
+    }
+    catch (boost::property_tree::ptree_bad_path&)
+    {
+        // If jobIDs node doesn't exist, leave vector empty
+    }
+
+    m_allocNodes = _pt.get<uint32_t>("allocNodes", 0);
+    m_state = _pt.get<uint32_t>("state", 0);
+    m_jobInfoAvailable = _pt.get<bool>("jobInfoAvailable", false);
+}
+
+bool SSubmitResponseData::operator==(const SSubmitResponseData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_jobIDs == _val.m_jobIDs && m_allocNodes == _val.m_allocNodes &&
+            m_state == _val.m_state && m_jobInfoAvailable == _val.m_jobInfoAvailable);
+}
+
+namespace dds
+{
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SSubmitResponseData& _data)
+        {
+            _os << _data.defaultToString() << "; jobIDs: [";
+            for (size_t i = 0; i < _data.m_jobIDs.size(); ++i)
+            {
+                if (i > 0)
+                    _os << ",";
+                _os << _data.m_jobIDs[i];
+            }
+            return _os << "]; allocNodes: " << _data.m_allocNodes << "; state: " << _data.m_state
+                       << "; jobInfoAvailable: " << _data.m_jobInfoAvailable;
         }
     } // namespace tools_api
 } // namespace dds
@@ -720,6 +796,90 @@ namespace dds
         {
             return _os << _data.defaultToString() << "; commandType: " << static_cast<uint8_t>(_data.m_commandType)
                        << "; arg1: " << _data.m_arg1 << "; arg2: " << _data.m_arg2;
+        }
+    } // namespace tools_api
+} // namespace dds
+
+///////////////////////////////////
+// SRMSJobInfoRequestData
+///////////////////////////////////
+
+SRMSJobInfoRequestData::SRMSJobInfoRequestData()
+{
+}
+
+SRMSJobInfoRequestData::SRMSJobInfoRequestData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
+void SRMSJobInfoRequestData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    _pt.put<std::string>("submissionID", m_submissionID);
+}
+
+void SRMSJobInfoRequestData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_submissionID = _pt.get<std::string>("submissionID", "");
+}
+
+bool SRMSJobInfoRequestData::operator==(const SRMSJobInfoRequestData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_submissionID == _val.m_submissionID);
+}
+
+namespace dds
+{
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SRMSJobInfoRequestData& _data)
+        {
+            return _os << _data.defaultToString() << "; submissionID: " << _data.m_submissionID;
+        }
+    } // namespace tools_api
+} // namespace dds
+
+///////////////////////////////////
+// SRMSJobInfoResponseData
+///////////////////////////////////
+
+SRMSJobInfoResponseData::SRMSJobInfoResponseData()
+{
+}
+
+SRMSJobInfoResponseData::SRMSJobInfoResponseData(const boost::property_tree::ptree& _pt)
+{
+    fromPT(_pt);
+}
+
+void SRMSJobInfoResponseData::_toPT(boost::property_tree::ptree& _pt) const
+{
+    _pt.put<uint32_t>("allocNodes", m_allocNodes);
+    _pt.put<uint32_t>("state", m_state);
+    _pt.put<std::string>("jobName", m_jobName);
+}
+
+void SRMSJobInfoResponseData::_fromPT(const boost::property_tree::ptree& _pt)
+{
+    m_allocNodes = _pt.get<uint32_t>("allocNodes", 0);
+    m_state = _pt.get<uint32_t>("state", 0);
+    m_jobName = _pt.get<std::string>("jobName", "");
+}
+
+bool SRMSJobInfoResponseData::operator==(const SRMSJobInfoResponseData& _val) const
+{
+    return (SBaseData::operator==(_val) && m_allocNodes == _val.m_allocNodes && m_state == _val.m_state &&
+            m_jobName == _val.m_jobName);
+}
+
+namespace dds
+{
+    namespace tools_api
+    {
+        std::ostream& operator<<(std::ostream& _os, const SRMSJobInfoResponseData& _data)
+        {
+            return _os << _data.defaultToString() << "; allocNodes: " << _data.m_allocNodes
+                       << "; state: " << _data.m_state << "; jobName: " << _data.m_jobName;
         }
     } // namespace tools_api
 } // namespace dds

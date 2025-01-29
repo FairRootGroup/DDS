@@ -74,7 +74,7 @@ namespace dds
          * \par Example2: Attach to an existing DDS session and request the number of running agent
          * \code
          CSession session;
-         // Attach to a DDS sesion with sessionID = 446b4183-1313-4648-99aa-4f8fae81311c
+         // Attach to a DDS session with sessionID = 446b4183-1313-4648-99aa-4f8fae81311c
          session.attach("446b4183-1313-4648-99aa-4f8fae81311c");
 
          SAgentInfoRequest::ptr_t agentInfoRequestPtr = SAgentInfoRequest::makeRequest();

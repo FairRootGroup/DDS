@@ -279,5 +279,5 @@ namespace dds::misc
             return i == 0 ? os : os << "B (" << hr.size << ')';
         }
     };
-};     // namespace dds::misc
+}; // namespace dds::misc
 #endif // _DDS_MISCUTILS_H_

@@ -1,7 +1,5 @@
 // Copyright 2014 GSI, Inc. All rights reserved.
 //
-//
-//
 // DDS
 #include "DDSHelper.h"
 #include "ErrorCode.h"
@@ -12,6 +10,8 @@
 // BOOST
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <iomanip>
+#include <iostream>
 
 using namespace std;
 using namespace dds;
@@ -19,6 +19,33 @@ using namespace dds::submit_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::tools_api;
 using namespace dds::misc;
+
+// Define an enum for better type safety
+enum class JobState : uint32_t
+{
+    PENDING = 0,
+    RUNNING = 1,
+    COMPLETED = 2,
+    FAILED = 3,
+    UNKNOWN = 4
+};
+
+string getStateString(JobState state)
+{
+    switch (state)
+    {
+        case JobState::PENDING:
+            return "PENDING";
+        case JobState::RUNNING:
+            return "RUNNING";
+        case JobState::COMPLETED:
+            return "COMPLETED";
+        case JobState::FAILED:
+            return "FAILED";
+        default:
+            return "UNKNOWN";
+    }
+}
 
 //=============================================================================
 int main(int argc, char* argv[])
@@ -36,22 +63,18 @@ int main(int argc, char* argv[])
         string pluginsRootDir = (options.m_sPath.empty())
                                     ? dds::user_defaults_api::CUserDefaults::instance().getPluginsRootDir()
                                     : options.m_sPath;
-        fs::path someDir(pluginsRootDir);
-        fs::directory_iterator end_iter;
+        const fs::path pluginsDir(pluginsRootDir);
 
-        typedef std::multimap<std::time_t, fs::path> result_set_t;
-        result_set_t result_set;
-
-        if (fs::exists(someDir) && fs::is_directory(someDir))
+        if (fs::exists(pluginsDir) && fs::is_directory(pluginsDir))
         {
             cout << "Available RMS plug-ins:\n";
-            for (fs::directory_iterator dir_iter(someDir); dir_iter != end_iter; ++dir_iter)
+            for (const auto& entry : fs::directory_iterator(pluginsDir))
             {
-                if (fs::is_directory(dir_iter->status()))
+                if (fs::is_directory(entry.status()))
                 {
                     // The plug-ins have names like "dds-submit-xxx", where xxx is a plug-in name
                     vector<string> parts;
-                    boost::split(parts, dir_iter->path().stem().string(), boost::is_any_of("-"));
+                    boost::split(parts, entry.path().stem().string(), boost::is_any_of("-"));
                     if (parts.size() == 3)
                         cout << "\t" << parts[2] << "\n";
                 }
@@ -60,7 +83,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            cout << "Directory " << someDir << " doesn't exist or is not a directory.\n";
+            cout << "Directory " << pluginsDir << " doesn't exist or is not a directory.\n";
         }
         return EXIT_SUCCESS;
     }
@@ -82,7 +105,6 @@ int main(int argc, char* argv[])
         std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
         CSession session;
         session.attach(sid);
-
         LOG(log_stdout) << "Connection established.";
         LOG(log_stdout) << "Requesting server to process job submission...";
 
@@ -100,13 +122,51 @@ int main(int argc, char* argv[])
         requestInfo.m_groupName = options.m_groupName;
         requestInfo.m_submissionTag = options.m_submissionTag;
         requestInfo.m_envCfgFilePath = options.m_envCfgFilePath;
-        for (const auto& i : options.m_inlineConfig)
+
+        // Pre-allocate string capacity to avoid multiple reallocations
+        if (!options.m_inlineConfig.empty())
         {
-            requestInfo.m_inlineConfig += i;
-            requestInfo.m_inlineConfig += "\n";
+            requestInfo.m_inlineConfig.reserve(std::accumulate(options.m_inlineConfig.begin(),
+                                                               options.m_inlineConfig.end(),
+                                                               0,
+                                                               [](size_t sum, const string& s)
+                                                               { return sum + s.size() + 1; }));
+
+            for (const auto& config : options.m_inlineConfig)
+            {
+                requestInfo.m_inlineConfig += config;
+                requestInfo.m_inlineConfig += "\n";
+            }
         }
 
         SSubmitRequest::ptr_t requestPtr = SSubmitRequest::makeRequest(requestInfo);
+
+        requestPtr->setResponseCallback(
+            [](const SSubmitResponseData& _response)
+            {
+                LOG(log_stdout) << "\nSubmission details:";
+                LOG(log_stdout) << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+
+                if (!_response.m_jobIDs.empty())
+                {
+                    LOG(log_stdout) << "Job IDs:";
+                    for (const auto& id : _response.m_jobIDs)
+                    {
+                        LOG(log_stdout) << "  • " << id;
+                    }
+                }
+
+                if (_response.m_jobInfoAvailable)
+                {
+                    LOG(log_stdout) << "Allocated nodes: " << _response.m_allocNodes;
+                    LOG(log_stdout) << "State: " << getStateString(static_cast<JobState>(_response.m_state));
+                }
+                else
+                {
+                    LOG(log_stdout) << "Warning: Job information is not fully available";
+                }
+                LOG(log_stdout) << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+            });
 
         requestPtr->setMessageCallback(
             [&isFailed](const SMessageResponseData& _message)
@@ -136,12 +196,11 @@ int main(int argc, char* argv[])
             });
 
         session.sendRequest<SSubmitRequest>(requestPtr);
-
         session.blockCurrentThread();
     }
-    catch (exception& e)
+    catch (const exception& e)
     {
-        LOG(log_stderr) << e.what();
+        LOG(log_stderr) << "Error: " << e.what();
         return EXIT_FAILURE;
     }
 

@@ -94,5 +94,5 @@ namespace dds::misc
             }
         };
     }; // namespace stlx
-};     // namespace dds::misc
+}; // namespace dds::misc
 #endif /*_DDS_STLX_H_*/
