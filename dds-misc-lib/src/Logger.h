@@ -161,5 +161,5 @@ namespace dds::misc
 
         fileSink_t m_fileSink; ///> File sink
     };
-};     // namespace dds::misc
+}; // namespace dds::misc
 #endif //_DDS_LOGGER_H_

@@ -69,5 +69,5 @@ namespace dds::misc
                                                     : (bfs::path(_exePrefix) / bfs::path(_filename)).generic_string() };
         ba::replace_first(_cmdStr, origFilepath, toReplace);
     }
-};     // namespace dds::misc
+}; // namespace dds::misc
 #endif // _DDS_MISCCLI_H_

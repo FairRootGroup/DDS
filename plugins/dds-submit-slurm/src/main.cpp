@@ -9,6 +9,7 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <boost/regex.hpp>
 // STD
 #include <chrono>
 #include <list>
@@ -129,7 +130,7 @@ int main(int argc, char* argv[])
         slog.start(pathPipeName.string(),
                    [&proto](const string& _msg) { proto.sendMessage(EMsgSeverity::info, _msg); });
 
-        // Subscribe on onSubmit command
+        // Subscribe on protocol messages
         proto.onSubmit(
             [&proto, &vm, &pathWorkDirLocalFiles](const SSubmit& _submit)
             {
@@ -246,8 +247,8 @@ int main(int argc, char* argv[])
                         fs::path pathJobIDFile(pathWorkDirLocalFiles);
                         pathJobIDFile /= g_jobIDFile;
 
-                        // Give the job 2 minutes to submit
-                        for (int t = 0; t < 240; ++t)
+                        // Give the job 2 minutes to submit (240s = 2400 * 100ms)
+                        for (int t = 0; t < 2400; ++t)
                         {
                             if (fs::exists(pathJobIDFile))
                             {
@@ -262,6 +263,44 @@ int main(int argc, char* argv[])
                                 dds::protocol::SlurmSubmitInfo protoSlurmSubmitInfo;
                                 protoSlurmSubmitInfo.add_slurm_job_id(rmsJobID);
 
+                                // Default values
+                                protoSlurmSubmitInfo.set_alloc_nodes(0);
+                                protoSlurmSubmitInfo.set_state(0);
+                                protoSlurmSubmitInfo.set_job_info_available(false);
+
+                                // Try to read job info if available
+                                fs::path pathJobInfoFile(pathWorkDirLocalFiles);
+                                pathJobInfoFile /= "job.info";
+                                if (fs::exists(pathJobInfoFile))
+                                {
+                                    uint32_t allocNodes = 0;
+                                    uint32_t state = 0;
+                                    ifstream f(pathJobInfoFile.native());
+                                    if (f.is_open())
+                                    {
+                                        if (f >> allocNodes >> state)
+                                        {
+                                            protoSlurmSubmitInfo.set_alloc_nodes(allocNodes);
+                                            protoSlurmSubmitInfo.set_state(state);
+                                            protoSlurmSubmitInfo.set_job_info_available(true);
+
+                                            // Add additional log message for debugging
+                                            proto.sendMessage(EMsgSeverity::info,
+                                                              "Job info read successfully: Nodes=" +
+                                                                  to_string(allocNodes) + " State=" + to_string(state));
+                                        }
+                                        else
+                                        {
+                                            proto.sendMessage(EMsgSeverity::error,
+                                                              "Failed to parse job info file format");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        proto.sendMessage(EMsgSeverity::error, "Failed to open job info file");
+                                    }
+                                }
+
                                 dds::protocol::SubmitInfo protoSubmitInfo;
                                 protoSubmitInfo.set_session_id(CUserDefaults::instance().getCurrentSID());
                                 protoSubmitInfo.set_submission_id(submissionId);
@@ -275,18 +314,23 @@ int main(int argc, char* argv[])
                                 fs::path pathSubmitInfoFile(pathWorkDirLocalFiles);
                                 pathSubmitInfoFile /= g_submitInfoFile;
                                 fstream output(pathSubmitInfoFile.native(), ios::out | ios::trunc | ios::binary);
-                                if (!protoSubmitInfo.SerializeToOstream(&output))
+                                if (!output.is_open())
+                                {
+                                    proto.sendMessage(EMsgSeverity::error, "Failed to open submission metadata file");
+                                }
+                                else if (!protoSubmitInfo.SerializeToOstream(&output))
                                 {
                                     proto.sendMessage(EMsgSeverity::error, "Failed to save submission metadata");
                                 }
-                                // < < < < < < < < < < < < <
+                                output.close();
 
                                 started = true;
                                 proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
                                 break;
                             }
-                            // give bash 20 sec to write the log file if it fails to start our script
-                            else if (t > 40 && fs::exists(pathBashlog))
+                            // give bash 40 sec to write the log file if it fails to start our script (40s = 400 *
+                            // 100ms)
+                            else if (t > 400 && fs::exists(pathBashlog))
                             {
                                 // if bash log exists, then we have a problem starting the submit script
                                 started = false;
@@ -294,7 +338,7 @@ int main(int argc, char* argv[])
                             }
                             else
                             {
-                                this_thread::sleep_for(chrono::milliseconds(500));
+                                this_thread::sleep_for(chrono::milliseconds(100));
                             }
                         }
                         if (!started)

@@ -14,8 +14,8 @@ include(GetPrerequisites)
 	message( STATUS "prerequisite dirs: " "${PREREQ_DIRS_LIST}")
 	
 	# WORKAROUND: the list comes broken into the macro, we need to rebuild it
-	# if we don't do that, GET_RUNTIME_DEPENDENCIES doesn't use all avaliable directories.
-	# I didn't find anyother way, but rebuilt the list.
+	# if we don't do that, GET_RUNTIME_DEPENDENCIES doesn't use all available directories.
+	# I didn't find any other way, but rebuilt the list.
 	set(PREREQ_DIRS_LIST_REBUILT "")
 	foreach(dir ${PREREQ_DIRS_LIST})
 	     # message(STATU "DEBUG: " ${dir})

@@ -71,5 +71,5 @@ namespace dds::misc
         std::mutex m_mutex;
         std::condition_variable m_condition;
     };
-};     // namespace dds::misc
+}; // namespace dds::misc
 #endif /*_DDS_CONDITIONEVENT_H_*/

@@ -262,4 +262,32 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_toJSON)
     BOOST_CHECK(dataCommanderInfo == dataCommanderInfoTest);
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_submit_response)
+{
+    SSubmitResponseData testData;
+    testData.m_jobIDs = { "123.job", "124.job", "125.job" }; // Test multiple job IDs
+    testData.m_allocNodes = 42;
+    testData.m_state = 1; // RUNNING
+    testData.m_jobInfoAvailable = true;
+    testData.m_requestID = 123;
+
+    stringstream strBuf(testData.toJSON());
+
+    ptree pt;
+    read_json(strBuf, pt);
+    const ptree& childPT = pt.get_child("dds.tools-api.submit");
+
+    SSubmitResponseData data(childPT);
+
+    // Test availability of the stream insertion
+    stringstream ss;
+    ss << data;
+
+    BOOST_CHECK(data == testData);
+    BOOST_CHECK_EQUAL(data.m_jobIDs.size(), 3);
+    BOOST_CHECK_EQUAL(data.m_jobIDs[0], "123.job");
+    BOOST_CHECK_EQUAL(data.m_jobIDs[1], "124.job");
+    BOOST_CHECK_EQUAL(data.m_jobIDs[2], "125.job");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

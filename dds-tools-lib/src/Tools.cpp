@@ -309,7 +309,10 @@ void CSession::notify(istream& _stream)
 
             if (it->second.type() == typeid(SSubmitRequest::ptr_t))
             {
-                processRequest<SSubmitRequest>(it->second, child, nullptr);
+                processRequest<SSubmitRequest>(it->second,
+                                               child,
+                                               [&child](SSubmitRequest::ptr_t _request)
+                                               { _request->execResponseCallback(SSubmitResponseData(child.second)); });
             }
             else if (it->second.type() == typeid(STopologyRequest::ptr_t))
             {

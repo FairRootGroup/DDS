@@ -11,6 +11,9 @@
 #include "MiscCli.h"
 #include "SSHConfigFile.h"
 #include "TopoCore.h"
+// Protobuf
+#include "submit_info.pb.h"
+#include "submit_info_slurm.pb.h"
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -964,6 +967,7 @@ void CConnectionManager::processToolsAPIRequests(const SCustomCmdCmd& _cmd, CAge
             }
             else if (tag == "message")
             {
+                // No special handling needed here anymore
             }
             else if (tag == "getlog")
             {
@@ -1140,6 +1144,8 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
             ssMsg << "Failed to deploy agents: " << e.what();
             throw runtime_error(ssMsg.str());
         }
+
+        // The response will come via CSubmitAgentsChannelInfo::processCustomCommandMessage
     }
     catch (bad_weak_ptr& e)
     {
@@ -1329,7 +1335,8 @@ void CConnectionManager::updateTopology(const dds::tools_api::STopologyRequestDa
         //
         if (!topologyFile.empty())
         {
-            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+            auto allCondition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+            {
                 return (!_v.m_isSlot && _v.m_channel->getChannelType() == EChannelType::AGENT &&
                         _v.m_channel->started());
             };
@@ -1532,7 +1539,8 @@ void CConnectionManager::sendUIAgentInfo(const dds::tools_api::SAgentInfoRequest
                                          CAgentChannel::weakConnectionPtr_t _channel)
 {
     CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
-        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+        {
             return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
         }));
 
@@ -1669,7 +1677,8 @@ void CConnectionManager::executeAgentCommand(const dds::tools_api::SAgentCommand
 {
     // get the list of active agents
     CConnectionManager::weakChannelInfo_t::container_t channels(getChannels(
-        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/) {
+        [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+        {
             return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot && _v.m_channel->started());
         }));
 

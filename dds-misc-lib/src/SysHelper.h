@@ -388,5 +388,5 @@ namespace dds::misc
 #endif
         return numCPU;
     }
-};     // namespace dds::misc
+}; // namespace dds::misc
 #endif /*_DDS_SYSHELPER_H_*/

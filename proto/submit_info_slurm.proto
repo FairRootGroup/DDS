@@ -8,5 +8,8 @@ package dds.protocol;
 
 message SlurmSubmitInfo {
     // RMS job ID
-    repeated string slurm_job_id = 1;
+    repeated string slurm_job_id       = 1;
+    uint32          alloc_nodes        = 2;  // Number of allocated nodes
+    uint32          state              = 3;  // Job state (1=RUNNING, 2=COMPLETED)
+    bool            job_info_available = 4;  // Flag indicating if job info was successfully retrieved
 }

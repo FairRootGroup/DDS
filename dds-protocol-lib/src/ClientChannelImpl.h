@@ -71,34 +71,34 @@ namespace dds
             void connect(boost::asio::ip::tcp::resolver::results_type _endpoint_iterator)
             {
                 m_endpoint_iterator = _endpoint_iterator;
-                boost::asio::async_connect(
-                    this->socket(),
-                    _endpoint_iterator,
-                    [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint)
-                    {
-                        if (!ec)
-                        {
-                            LOG(dds::misc::debug) << "Client channel connected.";
-                            // notify all subscribers about the event
-                            this->dispatchHandlers(EChannelEvents::OnConnected, SSenderInfo());
+                boost::asio::async_connect(this->socket(),
+                                           _endpoint_iterator,
+                                           [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint)
+                                           {
+                                               if (!ec)
+                                               {
+                                                   LOG(dds::misc::debug) << "Client channel connected.";
+                                                   // notify all subscribers about the event
+                                                   this->dispatchHandlers(EChannelEvents::OnConnected, SSenderInfo());
 
-                            // start the communication channel
-                            this->start();
+                                                   // start the communication channel
+                                                   this->start();
 
-                            // Prepare a hand shake message
-                            SVersionCmd cmd;
-                            cmd.m_channelType = this->m_channelType;
-                            cmd.m_sSID = this->m_sessionID;
-                            cmd.m_version = DDS_PROTOCOL_VERSION;
-                            this->template pushMsg<cmdHANDSHAKE>(cmd, this->m_protocolHeaderID);
-                        }
-                        else
-                        {
-                            LOG(dds::misc::error) << "Failed to connect to remote end.";
-                            // notify all subscribers about the event
-                            this->dispatchHandlers(EChannelEvents::OnFailedToConnect, SSenderInfo());
-                        }
-                    });
+                                                   // Prepare a hand shake message
+                                                   SVersionCmd cmd;
+                                                   cmd.m_channelType = this->m_channelType;
+                                                   cmd.m_sSID = this->m_sessionID;
+                                                   cmd.m_version = DDS_PROTOCOL_VERSION;
+                                                   this->template pushMsg<cmdHANDSHAKE>(cmd, this->m_protocolHeaderID);
+                                               }
+                                               else
+                                               {
+                                                   LOG(dds::misc::error) << "Failed to connect to remote end.";
+                                                   // notify all subscribers about the event
+                                                   this->dispatchHandlers(EChannelEvents::OnFailedToConnect,
+                                                                          SSenderInfo());
+                                               }
+                                           });
             }
 
           private:

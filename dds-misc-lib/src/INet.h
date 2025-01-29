@@ -664,6 +664,6 @@ namespace dds::misc
             }
         }
     }; // namespace INet
-};     // namespace dds::misc
+}; // namespace dds::misc
 
 #endif

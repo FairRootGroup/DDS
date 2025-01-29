@@ -4,8 +4,17 @@
 #
 # Check if cmake has the required version
 #
-cmake_minimum_required( VERSION 3.19 FATAL_ERROR )
-cmake_policy(VERSION 3.19...3.26)
+# NOTE: There is a bug in CMake 3.27.0 that causes the following error:
+# install(RUNTIME_DEPENDENCIES): Searches in DIRECTORIES although the dependency is found in rpath
+# If you get something like that when building wn packages, upgrade your cmake. This bug is fixed in CMake 3.31.0
+cmake_minimum_required( VERSION 3.27 FATAL_ERROR )
+cmake_policy(VERSION 3.27)
+
+# CMP0144 changes how CMake handles package-specific ROOT variables in find_package().
+# When set to NEW, CMake will respect the BOOST_ROOT variable when searching for Boost.
+# This is needed to properly find and use Boost from custom locations.
+# This policy was introduced in CMake 3.27
+cmake_policy(SET CMP0144 NEW)
 
 project( DDS )
 set(BUILD_SHARED_LIBS ON)
@@ -191,8 +200,8 @@ if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -Wthread-safety")
 elseif(UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-	set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,--enable-new-dtags")
-	set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-Wl,--enable-new-dtags")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-new-dtags")
 endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
