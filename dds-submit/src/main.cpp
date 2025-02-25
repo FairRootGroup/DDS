@@ -12,6 +12,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 
 using namespace std;
 using namespace dds;
