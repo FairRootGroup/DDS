@@ -92,6 +92,13 @@ void CUserDefaults::init(const string& _cfgFileName, bool _get_default)
     config_file_options.add_options()(
         "server.data_retention",
         boost::program_options::value<unsigned int>(&m_options.m_server.m_dataRetention)->default_value(7));
+    // Add new health check parameters with updated names and values
+    config_file_options.add_options()(
+        "server.agent_health_check_interval",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_agentHealthCheckInterval)->default_value(30));
+    config_file_options.add_options()(
+        "server.agent_health_check_timeout",
+        boost::program_options::value<unsigned int>(&m_options.m_server.m_agentHealthCheckTimeout)->default_value(30));
     config_file_options.add_options()(
         "agent.work_dir", boost::program_options::value<string>(&m_options.m_agent.m_workDir)->default_value(""), "");
     // default is "-rw-rw----", i.e. 0660
@@ -232,6 +239,11 @@ void CUserDefaults::printDefaults(ostream& _stream)
             << "# Defines a number of days to keep DDS sessions.\n"
             << "# Not running sessions older than the specified number of days will be auto deleted.\n"
             << "data_retention=" << ud.getDefaultValueForKey("server.data_retention") << "\n"
+            << "# Agent health check interval in seconds. Defines how often the Commander checks Agent health status\n"
+            << "agent_health_check_interval=" << ud.getDefaultValueForKey("server.agent_health_check_interval") << "\n"
+            << "# Agent health check timeout in seconds. If an Agent doesn't respond within this time, it will be "
+               "considered dead\n"
+            << "agent_health_check_timeout=" << ud.getDefaultValueForKey("server.agent_health_check_timeout") << "\n"
             << "\n\n[agent]\n"
             << "# This option can help to relocate the work directory of agents.\n"
             << "# The option is ignored by the localhost and ssh plug-ins.\n"

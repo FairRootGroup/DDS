@@ -35,6 +35,10 @@ namespace fs = boost::filesystem;
 
 CConnectionManager::CConnectionManager(const SOptions_t& /*_options*/)
     : CConnectionManagerImpl<CAgentChannel, CConnectionManager>(20000, 22000, true)
+    , m_agentHealthCheckInterval(std::chrono::seconds(
+          user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_agentHealthCheckInterval))
+    , m_agentHealthCheckTimeout(std::chrono::seconds(
+          user_defaults_api::CUserDefaults::instance().getOptions().m_server.m_agentHealthCheckTimeout))
 {
     LOG(info) << "CConnectionManager constructor";
 }
@@ -63,6 +67,91 @@ void CConnectionManager::_start()
             return true;
         },
         chrono::seconds(15));
+
+    // Setup agent health monitoring
+    CMonitoringThread::instance().registerCallbackFunction(
+        [this, self]() -> bool
+        {
+            try
+            {
+                // Get all active agent channels
+                auto condition = [](const CConnectionManager::channelInfo_t& _v, bool& /*_stop*/)
+                {
+                    return (_v.m_channel->getChannelType() == EChannelType::AGENT && !_v.m_isSlot &&
+                            _v.m_channel->started());
+                };
+
+                auto channels = getChannels(condition);
+
+                // Get current time
+                auto now = std::chrono::steady_clock::now();
+
+                {
+                    std::lock_guard<std::mutex> lock(m_agentHealthMutex);
+
+                    // Remove outdated entries from health map
+                    for (auto it = m_agentHealth.begin(); it != m_agentHealth.end();)
+                    {
+                        bool found = false;
+                        for (const auto& channel : channels)
+                        {
+                            if (channel.m_channel.expired())
+                                continue;
+                            auto ptr = channel.m_channel.lock();
+                            if (ptr->getId() == it->first)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found)
+                            it = m_agentHealth.erase(it);
+                        else
+                            ++it;
+                    }
+
+                    // Check health of each agent
+                    for (const auto& channel : channels)
+                    {
+                        if (channel.m_channel.expired())
+                            continue;
+
+                        auto ptr = channel.m_channel.lock();
+                        uint64_t agentId = ptr->getId();
+                        auto& health = m_agentHealth[agentId];
+
+                        // If waiting for response and timeout exceeded
+                        if (health.m_waitingResponse && (now - health.m_lastResponseTime) > m_agentHealthCheckTimeout)
+                        {
+                            LOG(warning) << "Agent " << agentId << " not responding for "
+                                         << m_agentHealthCheckTimeout.count() << " seconds. Shutting down.";
+
+                            // Send shutdown command
+                            ptr->pushMsg<cmdSHUTDOWN>();
+
+                            // Remove from active agents
+                            deleteChannel(agentId);
+                            continue;
+                        }
+
+                        // If not waiting for response, send health check
+                        if (!health.m_waitingResponse)
+                        {
+                            health.m_waitingResponse = true;
+                            health.m_lastResponseTime = now;
+                            ptr->pushMsg<cmdGET_ID>();
+                        }
+                    }
+                }
+            }
+            catch (const std::exception& e)
+            {
+                LOG(error) << "Agent health monitoring error: " << e.what();
+            }
+
+            return true;
+        },
+        m_agentHealthCheckInterval);
 }
 
 void CConnectionManager::_stop()
@@ -797,6 +886,16 @@ void CConnectionManager::on_cmdREPLY_ID(const SSenderInfo& _sender,
     catch (exception& _e)
     {
         p->pushMsg<cmdSIMPLE_MSG>(SSimpleMsgCmd(_e.what(), fatal, cmdREPLY_ID), _sender.m_ID);
+    }
+
+    // Update agent health status
+    {
+        std::lock_guard<std::mutex> lock(m_agentHealthMutex);
+        if (auto it = m_agentHealth.find(p->getId()); it != m_agentHealth.end())
+        {
+            it->second.m_waitingResponse = false;
+            it->second.m_lastResponseTime = std::chrono::steady_clock::now();
+        }
     }
 }
 
@@ -1719,4 +1818,26 @@ void CConnectionManager::executeAgentCommand(const dds::tools_api::SAgentCommand
         }
     }
     sendDoneResponse(_channel, _info.m_requestID);
+}
+
+void CConnectionManager::deleteChannel(uint64_t _agentId)
+{
+    auto condition = [_agentId](const CConnectionManager::channelInfo_t& _v, bool& _stop)
+    {
+        if (_v.m_channel->getId() == _agentId)
+        {
+            _stop = true;
+            return true;
+        }
+        return false;
+    };
+
+    auto channels = getChannels(condition);
+    for (const auto& v : channels)
+    {
+        if (v.m_channel.expired())
+            continue;
+        auto ptr = v.m_channel.lock();
+        this->removeClient(ptr.get());
+    }
 }

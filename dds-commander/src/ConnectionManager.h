@@ -34,6 +34,9 @@ namespace dds
             void _createInfoFile(const std::vector<size_t>& _ports) const;
             void _deleteInfoFile() const;
 
+            // Delete a channel by agent ID
+            void deleteChannel(uint64_t _agentId);
+
           private:
             void on_cmdBINARY_ATTACHMENT_RECEIVED(
                 const protocol_api::SSenderInfo& _sender,
@@ -150,6 +153,19 @@ namespace dds
             typedef std::list<onTaskDoneSubscriberInfo_t> weakConnectionPtrList_t;
             weakConnectionPtrList_t m_onTaskDoneSubscribers;
             std::mutex m_mtxOnTaskDoneSubscribers;
+
+            struct SAgentHealth
+            {
+                std::chrono::steady_clock::time_point m_lastResponseTime;
+                bool m_waitingResponse{ false };
+            };
+
+            std::mutex m_agentHealthMutex;
+            std::map<uint64_t, SAgentHealth> m_agentHealth; // Maps agent ID to health info
+
+            // Use values from user defaults instead of hardcoded constants
+            std::chrono::seconds m_agentHealthCheckInterval;
+            std::chrono::seconds m_agentHealthCheckTimeout;
         };
     } // namespace commander_cmd
 } // namespace dds

@@ -123,8 +123,14 @@ void CScheduler::makeScheduleImpl(CTopoCore& _topology,
                       taskHostCounter);
     }
 
-    size_t totalNofTasks =
-        (_addedTasks == nullptr) ? _topology.getMainGroup()->getTotalNofTasks() : _addedTasks->size();
+    // Check if main group exists
+    auto mainGroup = _topology.getMainGroup();
+    if (!mainGroup)
+    {
+        throw runtime_error("Main group not found in topology");
+    }
+
+    size_t totalNofTasks = (_addedTasks == nullptr) ? mainGroup->getTotalNofTasks() : _addedTasks->size();
     if (totalNofTasks != m_schedule.size())
     {
         LOG(debug) << toString();
