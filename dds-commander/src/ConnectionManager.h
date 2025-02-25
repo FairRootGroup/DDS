@@ -150,6 +150,17 @@ namespace dds
             typedef std::list<onTaskDoneSubscriberInfo_t> weakConnectionPtrList_t;
             weakConnectionPtrList_t m_onTaskDoneSubscribers;
             std::mutex m_mtxOnTaskDoneSubscribers;
+
+            struct SAgentHealth
+            {
+                std::chrono::steady_clock::time_point m_lastResponseTime;
+                bool m_waitingResponse{ false };
+            };
+
+            std::mutex m_agentHealthMutex;
+            std::map<uint64_t, SAgentHealth> m_agentHealth; // Maps agent ID to health info
+            static constexpr std::chrono::seconds HEALTH_CHECK_INTERVAL{ 30 };
+            static constexpr std::chrono::seconds HEALTH_CHECK_TIMEOUT{ 30 };
         };
     } // namespace commander_cmd
 } // namespace dds
