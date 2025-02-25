@@ -427,6 +427,23 @@ namespace dds
                 return counter;
             }
 
+            void removeClient(T* _client)
+            {
+                // TODO: fix getTypeName call
+                LOG(dds::misc::debug) << "Removing " /*<< _client->getTypeName()*/
+                                      << " client from the list of active";
+                std::lock_guard<std::mutex> lock(m_mutex);
+                // FIXME: Delete all connections of the channel if the primary protocol header ID is deleted
+                m_channels.erase(remove_if(m_channels.begin(),
+                                           m_channels.end(),
+                                           [&](const channelInfo_t& i) { return (i.m_channel.get() == _client); }),
+                                 m_channels.end());
+
+                // Clear the channels cache whenever a client is removed
+                // to ensure the cache stays consistent with the actual channels list
+                m_channelsCache.clear();
+            }
+
           private:
             static boost::system::error_code _canceled()
             {
@@ -509,19 +526,6 @@ namespace dds
                 // The child needs to have that method
                 A* pThis = static_cast<A*>(this);
                 pThis->_deleteInfoFile();
-            }
-
-            void removeClient(T* _client)
-            {
-                // TODO: fix getTypeName call
-                LOG(dds::misc::debug) << "Removing " /*<< _client->getTypeName()*/
-                                      << " client from the list of active";
-                std::lock_guard<std::mutex> lock(m_mutex);
-                // FIXME: Delete all connections of the channel if the primary protocol header ID is deleted
-                m_channels.erase(remove_if(m_channels.begin(),
-                                           m_channels.end(),
-                                           [&](const channelInfo_t& i) { return (i.m_channel.get() == _client); }),
-                                 m_channels.end());
             }
 
             void bindPortAndListen(asioAcceptorPtr_t& _acceptor)

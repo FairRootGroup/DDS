@@ -154,12 +154,25 @@ bool CAgentChannel::on_cmdBINARY_ATTACHMENT_RECEIVED(
     {
         case cmdGET_LOG:
         {
-            const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
-            const string logFileName(sLogStorageDir + _attachment->m_requestedFileName);
-            const boost::filesystem::path logFilePath(logFileName);
-            const boost::filesystem::path receivedFilePath(_attachment->m_receivedFilePath);
+            try
+            {
+                const string sLogStorageDir(CUserDefaults::instance().getAgentLogStorageDir());
+                const string logFileName(sLogStorageDir + _attachment->m_requestedFileName);
+                const boost::filesystem::path logFilePath(logFileName);
+                const boost::filesystem::path receivedFilePath(_attachment->m_receivedFilePath);
 
-            boost::filesystem::rename(receivedFilePath, logFilePath);
+                boost::filesystem::rename(receivedFilePath, logFilePath);
+            }
+            catch (const boost::filesystem::filesystem_error& e)
+            {
+                LOG(error) << "File operation failed: " << e.what();
+                return true;
+            }
+            catch (const std::exception& e)
+            {
+                LOG(error) << "Exception during log file processing: " << e.what();
+                return true;
+            }
 
             return false;
         }

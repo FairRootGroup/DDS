@@ -36,6 +36,10 @@ namespace dds
             //!< Defines a number of days to keep DDS sessions. Not running sessions older than the specified number of
             //!< days will be auto deleted.
             unsigned int m_dataRetention;
+            //!< Health check interval in seconds
+            unsigned int m_agentHealthCheckInterval; // Renamed to agent_health_check_interval
+            //!< Health check timeout in seconds
+            unsigned int m_agentHealthCheckTimeout; // Renamed to agent_health_check_timeout
 
         } SDDSGeneralOptions_t;
 

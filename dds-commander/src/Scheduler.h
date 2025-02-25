@@ -2,8 +2,8 @@
 //
 //
 //
-#ifndef __DDS__SSHScheduler__
-#define __DDS__SSHScheduler__
+#ifndef __DDS__CScheduler__
+#define __DDS__CScheduler__
 
 // DDS
 #include "AgentChannel.h"
@@ -97,4 +97,4 @@ namespace dds
     } // namespace commander_cmd
 } // namespace dds
 
-#endif /* defined(__DDS__SSHScheduler__) */
+#endif /* defined(__DDS__CScheduler__) */

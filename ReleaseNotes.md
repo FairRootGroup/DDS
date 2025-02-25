@@ -4,7 +4,14 @@
 
 - DDS general
   - Fixed: build errors with boost 1.87.
+  - Fixed: Multiple stability issues.
   - Added: The DDS Submit Tools API command now provides a response with job information. Currently, this feature is supported only by the Slurm plug-in. (GH-483)
+
+- dds-commander
+  - Added: Implement agent health monitoring (GH-484)
+
+- dds-user-defaults
+  - Added: Agent health monitoring configuration. (GH-484)
 
 ## v3.11 (2024-09-05)
 
