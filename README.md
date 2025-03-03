@@ -38,6 +38,8 @@ DDS:
   - [dds-test](dds-test/README.md)
   - [dds-topology](dds-topology/README.md)
   - [dds-agent-cmd](dds-agent-cmd/README.md)
+- ToolsAPI documentation
+  - [dds-tools](./dds-tools-lib/README.md)
 - RMS plug-ins
   - [localhost](./plugins/dds-submit-localhost/README.md)
   - [ssh](./plugins/dds-submit-ssh/README.md)

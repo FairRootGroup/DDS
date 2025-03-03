@@ -20,7 +20,7 @@ fi
 # Change the task working dir
 cd "$(dirname "$0")"
 
-# Run user process in background to prevent propogation of the signals
+# Run user process in background to prevent propagation of the signals
 # Otherwise user task will catch the signals sent to the wrapper
 # %DDS_USER_TASK% &
 

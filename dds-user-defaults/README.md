@@ -5,7 +5,7 @@ Get and set global DDS options. **UNIX/Linux/OSX**
 ## Synopsis
 
 ```shell
-dds-user-defaults [[-h, --help] | [-v, --version] | [-V, --verbose] | [-p, --path] | [-d, --default]] [-c, --config arg] [-s, --session arg] [--ignore-default-sid] [--default-session-id] [--default-session-id-file] [-f, --force] [[--key arg] | [--wrkpkg] | [--wrkscript] | [--rms-sandbox-dir] | [--user-env-script] | [--server-info-file]]
+dds-user-defaults [[-h, --help] | [-v, --version] | [-V, --verbose] | [-p, --path] | [-d, --default]] [-c, --config arg] [-s, --session arg] [--submission-id arg] [--ignore-default-sid] [--default-session-id] [--default-session-id-file] [-f, --force] [[--key arg] | [--wrkpkg] | [--wrkscript] | [--rms-sandbox-dir] | [--user-env-script] | [--server-info-file] | [--session-id-file]]
 ```
 
 ## Description
@@ -40,6 +40,9 @@ By default the command uses `~/.DDS/DDS.cfg`.
 * **-s, --session** *arg*  
 Use the specified DDS Session ID instead of a default one.
 
+* **--submission-id** *arg*  
+Specifies the Submission ID. Required for --wrkpkg and --wrkscript options.
+
 * **--ignore-default-sid**  
 Force to ignore a default sid.
 
@@ -66,3 +69,6 @@ Shows the full path of user's environment script for workers (if present). The p
 
 * **--server-info-file**  
 Shows the full path of the DDS server info file. The path must be evaluated before use.
+
+* **--session-id-file**  
+Shows the full path of the session ID file of the local environment.
