@@ -4,8 +4,11 @@
 
 - DDS general
   - Fixed: build errors with boost 1.87.
+  - Fixed: task termination when no child processes exist.
   - Fixed: Multiple stability issues.
+  - Fixed: Unit-tests.
   - Added: The DDS Submit Tools API command now provides a response with job information. Currently, this feature is supported only by the Slurm plug-in. (GH-483)
+  - Added: ToolsAPI documentation.
 
 - dds-commander
   - Added: Implement agent health monitoring (GH-484)

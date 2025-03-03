@@ -1038,6 +1038,19 @@ void CCommanderChannel::terminateChildrenProcesses(
     LOG(info) << "The parent process " << mainPid << " has " << vecChildren.size()
               << " children: " << (sChildren.empty() ? "." : " " + sChildren);
 
+    // If there are no children, we can immediately call the completion callback
+    // This fixes the case where a task has no children and we'd otherwise wait for nothing
+    if (pidChildren.empty())
+    {
+        LOG(info) << "No child processes to terminate for parent pid " << mainPid;
+
+        // Report back to the user of the API that termination is completed
+        if (_onCompleteSlot != nullptr)
+            _onCompleteSlot();
+
+        return;
+    }
+
     LOG(info) << "Sending graceful terminate signal to child processes.";
     for (const auto i : pidChildren)
     {

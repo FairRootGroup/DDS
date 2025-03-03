@@ -44,7 +44,8 @@ namespace dds
          SSubmitRequest::request_t submitInfo;
          submitInfo.m_config = "";
          submitInfo.m_rms = "localhost";
-         submitInfo.m_instances = "10";
+         submitInfo.m_instances = 10;
+         submitInfo.m_slots = 0;
          submitInfo.m_pluginPath = "";
          SSubmitRequest::ptr_t submitRequestPtr = SSubmitRequest::makeRequest(submitInfo);
 
@@ -61,6 +62,28 @@ namespace dds
              cout << "Submission took: " << elapsed.count() << " ms\n";
              session.unblockCurrentThread();
          });
+
+         // Subscribe on job submission response
+         submitRequestPtr->setResponseCallback(
+            [](const SSubmitResponseData& _response) {
+                cout << "\nSubmission details:" << endl;
+                cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" << endl;
+
+                if (!_response.m_jobIDs.empty()) {
+                    cout << "Job IDs:" << endl;
+                    for (const auto& id : _response.m_jobIDs) {
+                        cout << "  • " << id << endl;
+                    }
+                }
+
+                if (_response.m_jobInfoAvailable) {
+                    cout << "Allocated nodes: " << _response.m_allocNodes << endl;
+                    cout << "State: " << getStateString(static_cast<JobState>(_response.m_state)) << endl;
+                } else {
+                    cout << "Warning: Job information is not fully available" << endl;
+                }
+                cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" << endl;
+            });
 
          // Send request to commander
          session.sendRequest<SSubmitRequest>(submitRequestPtr);

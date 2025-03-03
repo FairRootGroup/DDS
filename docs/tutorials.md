@@ -11,7 +11,7 @@ After DDS is installed the tutorial can be found in `$DDS_LOCATION/tutorials/tut
 
 The source code of tasks is located in `<DDS_SRC_DIR>/dds-tutorials/dds-tutorial1`
 
-### Files of the tutorial
+### Tutorial 1 - Files of the tutorial
 
 * **task-type-one**: executable of the task TaskTypeOne.
 
@@ -21,7 +21,7 @@ The source code of tasks is located in `<DDS_SRC_DIR>/dds-tutorials/dds-tutorial
 
 * **tutorial1_hosts.cfg**: a configuration file for DDS SSH plug-in.
 
-### Usage example
+### Tutorial 1 - Usage example
 
 Before running the tutorial make sure that:
 
@@ -35,7 +35,7 @@ dds-submit -r ssh -c tutorial1_hosts.cfg
 dds-topology --activate tutorial1_topo.xml
 ```
 
-### Result
+### Tutorial 1 - Result
 
 To check the result, change to `~/tmp/dds_wn_test`. If the default setup was used, then there will be WN directories located: wn, wn_1, wn_2, wn_3, wn_4, wn_5.
 
@@ -44,7 +44,7 @@ For example: `TaskTypeOne_2015-07-16-11-44-42_6255430612052815609_out.log`
 
 ## Tutorial 2
 
-### Usage example
+### Tutorial 2 - Usage example
 
 Before running the tutorial make sure that:
 
@@ -59,7 +59,7 @@ dds-topology --activate tutorial2_topo.xml
 ui-custom-command
 ```
 
-### Result
+### Tutorial 2 - Result
 
 To check the result, change to `~/tmp/dds_wn_test`. If the default setup was used, then there will be WN directories located: wn, wn_1, wn_2, wn_3, wn_4, wn_5.
 
