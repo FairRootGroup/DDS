@@ -1,6 +1,6 @@
 # DDS Release Notes
 
-## v3.12 (NOT YET RELEASED)
+## v3.12 (2025-03-03)
 
 - DDS general
   - Fixed: build errors with boost 1.87.
