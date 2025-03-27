@@ -274,7 +274,7 @@ endif(Boost_FOUND)
 #
 # Search for protobuf
 #
-find_package(Protobuf REQUIRED)
+find_package(Protobuf REQUIRED CONFIG)
 add_subdirectory(proto)
 
 # DDS Misc Common
