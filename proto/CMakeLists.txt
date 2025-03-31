@@ -8,43 +8,67 @@ project(dds_proto_lib)
 #
 
 file(GLOB PROTOBUF_FILELIST "${CMAKE_CURRENT_SOURCE_DIR}/*.proto")
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTOBUF_FILELIST})
 
-SET_SOURCE_FILES_PROPERTIES(${PROTO_SRC} ${PROTO_INCL} PROPERTIES GENERATED TRUE)
+# Create the library target first
+add_library(${PROJECT_NAME})
 
-add_library(${PROJECT_NAME} ${PROTO_SRCS} ${PROTO_INCL})
+# Try modern approach first (CONFIG mode with protobuf_generate)
+if(TARGET protobuf::protoc AND COMMAND protobuf_generate)
+  message(STATUS "Using modern Protobuf approach with protobuf_generate")
+  
+  protobuf_generate(
+    TARGET ${PROJECT_NAME}
+    LANGUAGE cpp
+    PROTOS ${PROTOBUF_FILELIST}
+  )
+# If modern command not available but we have the imported targets, try to include the module
+elseif(TARGET protobuf::protoc AND EXISTS "${Protobuf_DIR}/protobuf-generate.cmake")
+  message(STATUS "Including protobuf-generate.cmake module from ${Protobuf_DIR}")
+  
+  include("${Protobuf_DIR}/protobuf-generate.cmake")
+  protobuf_generate(
+    TARGET ${PROJECT_NAME}
+    LANGUAGE cpp
+    PROTOS ${PROTOBUF_FILELIST}
+  )
+# Fall back to traditional approach
+elseif(COMMAND protobuf_generate_cpp)
+  message(STATUS "Using traditional Protobuf approach with protobuf_generate_cpp")
+  
+  protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTOBUF_FILELIST})
+  target_sources(${PROJECT_NAME} PRIVATE ${PROTO_SRCS} ${PROTO_HDRS})
+  set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
+# Last resort: try to find the commands in standard modules
+else()
+  message(STATUS "Attempting to find Protobuf commands in standard modules")
+  
+  if(EXISTS "${CMAKE_ROOT}/Modules/FindProtobuf.cmake")
+    include("${CMAKE_ROOT}/Modules/FindProtobuf.cmake")
+    
+    if(COMMAND protobuf_generate_cpp)
+      protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTOBUF_FILELIST})
+      target_sources(${PROJECT_NAME} PRIVATE ${PROTO_SRCS} ${PROTO_HDRS})
+      set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
+    else()
+      message(FATAL_ERROR "Could not find protobuf_generate_cpp command. Please ensure Protobuf is properly installed.")
+    endif()
+  else()
+    message(FATAL_ERROR "Could not find Protobuf CMake modules. Please ensure Protobuf is properly installed.")
+  endif()
+endif()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
 
-# Check if Protobuf was found via CONFIG mode (imported targets available)
+# Link with Protobuf libraries (use imported targets when available)
 if(TARGET protobuf::libprotobuf)
-  # Modern approach with imported targets
-  target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-    protobuf::libprotobuf
-  )
-  # Note: We don't need to explicitly add ${Protobuf_INCLUDE_DIRS} here
-  # The protobuf::libprotobuf target already includes the necessary include paths
-  
-  # We still need to include the build directory for our generated files
-  target_include_directories(${PROJECT_NAME}
-    PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-  )
+  target_link_libraries(${PROJECT_NAME} PUBLIC protobuf::libprotobuf)
 else()
-  # Traditional approach with variables
-  target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-    ${Protobuf_LIBRARIES}
-  )
-  
-  # With traditional approach, we need to explicitly add include directories
-  target_include_directories(${PROJECT_NAME}
-    PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-    ${Protobuf_INCLUDE_DIRS}
-  )
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${Protobuf_LIBRARIES})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${Protobuf_INCLUDE_DIRS})
 endif()
+
+# Always include the build directory for generated files
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
 
 #
 # Set Target version
