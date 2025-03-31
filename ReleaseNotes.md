@@ -1,5 +1,10 @@
 # DDS Release Notes
 
+## v3.13 (2025-03-31)
+
+- DDS general
+  - Fix Protobuf detection for modern and legacy installs.
+
 ## v3.12 (2025-03-03)
 
 - DDS general

@@ -1,4 +1,4 @@
-# Copyright 2014-2024 GSI, Inc. All rights reserved.
+# Copyright 2014-2025 GSI, Inc. All rights reserved.
 #
 #
 #
@@ -274,7 +274,12 @@ endif(Boost_FOUND)
 #
 # Search for protobuf
 #
-find_package(Protobuf REQUIRED)
+# First try with CONFIG mode, but make it optional
+find_package(Protobuf CONFIG QUIET)
+if(NOT Protobuf_FOUND)
+   # Fallback to MODULE mode if CONFIG mode failed
+   find_package(Protobuf REQUIRED)
+endif()
 add_subdirectory(proto)
 
 # DDS Misc Common
