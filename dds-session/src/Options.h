@@ -6,8 +6,11 @@
 #define DDSOPTIONS_H
 //=============================================================================
 // BOOST
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
+// STD
+#include <cstdlib>
 // DDS
 #include "BoostHelper.h"
 #include "SysHelper.h"
@@ -79,6 +82,7 @@ namespace dds
                 , m_ListSessions("")
                 , m_bForce(false)
                 , m_bMixed(false)
+                , m_bLightweight(false)
             {
             }
             static ECommands getCommandByName(const std::string& _name)
@@ -103,6 +107,7 @@ namespace dds
             bool m_bForce;
             std::string m_sSessionID;
             bool m_bMixed;
+            bool m_bLightweight;
         } SOptions_t;
 
         // Command line parser
@@ -145,6 +150,13 @@ namespace dds
                                   bpo::bool_switch(&_options->m_bMixed),
                                   "Use worker package for a mixed environment - agents on Linux and on OS X.\n"
                                   "Can be used only with the \"start\" command.");
+            options.add_options()(
+                "lightweight",
+                bpo::bool_switch(&_options->m_bLightweight),
+                "Create a lightweight worker package without DDS binaries and libraries. Requires DDS to be "
+                "pre-installed on worker nodes with DDS_COMMANDER_BIN_LOCATION and DDS_COMMANDER_LIBS_LOCATION "
+                "environment variables set. Can also be enabled via DDS_LIGHTWEIGHT_PACKAGE environment variable. "
+                "Can be used only with the \"start\" command.");
 
             //...positional
             bpo::positional_options_description pd;
@@ -224,6 +236,19 @@ namespace dds
             {
                 LOG(dds::misc::log_stderr) << "Session ID argument is missing or empty";
                 return false;
+            }
+
+            // Check environment variable for lightweight mode if not set via command line
+            if (vm["lightweight"].defaulted())
+            {
+                const char* envLightweight = std::getenv("DDS_LIGHTWEIGHT_PACKAGE");
+                if (envLightweight != nullptr)
+                {
+                    std::string envValue(envLightweight);
+                    boost::to_lower(envValue);
+                    _options->m_bLightweight =
+                        (envValue == "1" || envValue == "true" || envValue == "yes" || envValue == "on");
+                }
             }
 
             return true;

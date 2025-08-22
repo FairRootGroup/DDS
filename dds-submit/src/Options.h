@@ -12,6 +12,8 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+// STD
+#include <cstdlib>
 // DDS
 #include "BoostHelper.h"
 #include "ProtocolCommands.h"
@@ -41,6 +43,7 @@ namespace dds
             std::string m_submissionTag;
             std::string m_envCfgFilePath;
             bool m_bEnableOverbooking{ false };
+            bool m_bLightweight{ false };
             std::vector<std::string> m_inlineConfig;
         } SOptions_t;
         //=============================================================================
@@ -112,6 +115,13 @@ namespace dds
                 "SLURM plug-in will not add the \"#SBATCH --cpus-per-task\" option to the job script. Otherwise "
                 "DDS will try to require as many CPU per agent as tasks slots.");
 
+            options.add_options()(
+                "lightweight",
+                bpo::bool_switch(&_options->m_bLightweight)->default_value(false),
+                "Create a lightweight worker package without DDS binaries and libraries. Requires DDS to be "
+                "pre-installed on worker nodes with DDS_COMMANDER_BIN_LOCATION and DDS_COMMANDER_LIBS_LOCATION "
+                "environment variables set. Can also be enabled via DDS_LIGHTWEIGHT_PACKAGE environment variable.");
+
             // Parsing command-line
             bpo::variables_map vm;
             bpo::store(bpo::command_line_parser(_argc, _argv).options(options).run(), vm);
@@ -124,6 +134,7 @@ namespace dds
             dds::misc::conflicting_options(vm, "list", "slots");
             dds::misc::conflicting_options(vm, "list", "group-name");
             dds::misc::conflicting_options(vm, "list", "submission-tag");
+            dds::misc::conflicting_options(vm, "list", "lightweight");
 
             // check for non-defaulted arguments
             bpo::variables_map::const_iterator found =
@@ -210,6 +221,20 @@ namespace dds
                 boost::filesystem::path pathCfgFile(_options->m_sCfgFile);
                 _options->m_sCfgFile = boost::filesystem::absolute(pathCfgFile).string();
             }
+
+            // Check environment variable for lightweight mode if not set via command line
+            if (vm["lightweight"].defaulted())
+            {
+                const char* envLightweight = std::getenv("DDS_LIGHTWEIGHT_PACKAGE");
+                if (envLightweight != nullptr)
+                {
+                    std::string envValue(envLightweight);
+                    boost::to_lower(envValue);
+                    _options->m_bLightweight =
+                        (envValue == "1" || envValue == "true" || envValue == "yes" || envValue == "on");
+                }
+            }
+
             return true;
         }
     } // namespace submit_cmd

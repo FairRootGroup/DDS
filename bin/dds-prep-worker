@@ -167,27 +167,49 @@ fi
 # add all pre-compiled bins
 if [ -z "$LIGHTWEIGHT_PKG" ]; then
 	echo "selecting pre-compiled bins to be added to worker package..."
-	for i in ${WN_BINS[@]} 
-	do
-   		COMPONENTS=( "${COMPONENTS[@]}" "$i" )
-	done
+	# Check if wn_bins directory exists and has files
+	if [ -d "$DDS_LOCATION/bin/wn_bins" ] && [ "$(ls -A "$DDS_LOCATION/bin/wn_bins" 2>/dev/null)" ]; then
+		for i in $WN_BINS
+		do
+   			COMPONENTS=( "${COMPONENTS[@]}" "$i" )
+		done
+	else
+		echo "Error: wn_bins directory not found or empty at $DDS_LOCATION/bin/wn_bins" >&2
+		echo "Error: Non-lightweight mode requires pre-compiled worker binaries." >&2
+		echo "Error: Please either:" >&2
+		echo "Error:   1. Use lightweight mode: dds-submit --lightweight or export DDS_LIGHTWEIGHT_PACKAGE=1" >&2
+		echo "Error:   2. Build/install DDS with worker binaries (make wn_bin && make install)" >&2
+		exit 1
+	fi
 else
-	echo "Creating a lighweight WN package..."
+	echo "Creating a lightweight WN package..."
+	echo "Lightweight package includes only essential files:"
+	for i in "${COMPONENTS[@]}"
+	do
+		echo "  - $(basename "$i")"
+	done
+	echo "DDS binaries are excluded - worker nodes must have DDS pre-installed."
 fi
 
 
 # check that all components are exists
+echo "Checking components for worker package:"
 for i in "${COMPONENTS[@]}"
 do
+   echo "  - checking: $(basename "$i")"
    if [ ! -r "$i" ]; then
       echo "Failed to create the package. There is a missing component: \"$i\"" >&2
       exit 1
    fi
 done
+echo "All components verified successfully."
 #=============================================================================
 # ***** MAIN *****
 #=============================================================================
 echo "DDS worker package: "$ARC_NAME
+
+# create the target directory if it doesn't exist
+mkdir -p "$(dirname "$ARC_NAME")"
 
 # create an empty archive first
 tar cvf $ARC_NAME --files-from=/dev/null 
@@ -260,6 +282,8 @@ rm -f "$DDS_WRK_SCRIPT_TMP.back"
 
 
 # move worker script to the sandbox directory
+# create the target directory if it doesn't exist
+mkdir -p "$(dirname "$WRK_SCRIPT")"
 mv "$DDS_WRK_SCRIPT_TMP" "$WRK_SCRIPT" || { echo "error: Failed to move the worker script to the sandbox." >&2 ; exit 1; }
 chmod u+wx "$WRK_SCRIPT"
 

@@ -268,13 +268,24 @@ void CConnectionManager::_createWnPkg(bool _needInlineBashScript,
     {
         stringstream ssErr;
         ssErr << "WN Package Tool: " << e.what() << "; STDOUT: " << out << "; STDERR: " << err;
-        LOG(info) << ssErr.str();
+        LOG(error) << ssErr.str();
 
         // Check, if the package was actually created
         if (!fs::exists(CUserDefaults::instance().getWrkScriptPath(_submissionID)))
+        {
+            LOG(error) << "Worker package creation failed - DDSWorker.sh script not found at: "
+                       << CUserDefaults::instance().getWrkScriptPath(_submissionID);
             throw runtime_error(ssErr.str());
+        }
     }
-    LOG(info) << "WN Package Tool: STDOUT: " << out << "; STDERR: " << err;
+    if (!err.empty())
+    {
+        LOG(warning) << "WN Package Tool: STDERR: " << err;
+    }
+    if (!out.empty())
+    {
+        LOG(info) << "WN Package Tool: STDOUT: " << out;
+    }
 }
 
 void CConnectionManager::_createInfoFile(const vector<size_t>& _ports) const
@@ -1193,11 +1204,24 @@ void CConnectionManager::submitAgents(const dds::tools_api::SSubmitRequestData& 
         sendToolsAPIMsg(_channel, _submitInfo.m_requestID, "Creating new worker package...", EMsgSeverity::info);
 
         // Use a lightweight package when possible
-        _createWnPkg(bNeedCustomEnv,
-                     (_submitInfo.m_rms == "localhost"),
-                     _submitInfo.m_slots,
-                     _submitInfo.m_groupName,
-                     sSubmissionID);
+        bool isLightweight =
+            (_submitInfo.m_rms == "localhost") ||
+            _submitInfo.isFlagEnabled(dds::tools_api::SSubmitRequestData::ESubmitRequestFlags::enable_lightweight);
+        _createWnPkg(bNeedCustomEnv, isLightweight, _submitInfo.m_slots, _submitInfo.m_groupName, sSubmissionID);
+
+        // Send success message
+        if (isLightweight)
+        {
+            sendToolsAPIMsg(_channel,
+                            _submitInfo.m_requestID,
+                            "Worker package created successfully (lightweight mode)",
+                            EMsgSeverity::info);
+        }
+        else
+        {
+            sendToolsAPIMsg(
+                _channel, _submitInfo.m_requestID, "Worker package created successfully", EMsgSeverity::info);
+        }
 
         // Submit request
         SSubmit submitRequest;

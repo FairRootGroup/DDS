@@ -21,6 +21,7 @@
 #include "PipeLogEngine.h"
 #include "SSHConfigFile.h"
 #include "SysHelper.h"
+#include "ToolsProtocol.h"
 #include "UserDefaults.h"
 #include "local_types.h"
 #include "worker.h"
@@ -32,6 +33,7 @@ using namespace dds::ssh_cmd;
 using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
 using namespace dds::misc;
+using namespace dds::tools_api;
 namespace bpo = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -174,6 +176,11 @@ int main(int argc, char* argv[])
                 size_t wrkCount(0);
                 size_t taskCount(0);
                 atomic<size_t> successfulTasks(0);
+
+                // Check if lightweight mode is enabled
+                bool isLightweightMode = SSubmitRequestData::isFlagEnabled(
+                    _submit.m_flags, SSubmitRequestData::ESubmitRequestFlags::enable_lightweight);
+
                 try
                 {
                     // Create the pipe log engine to cartch logs from external commands
@@ -189,6 +196,14 @@ int main(int argc, char* argv[])
 
                     slog.start(pathPipeName.string(),
                                [proto](const string& _msg) { proto->sendMessage(EMsgSeverity::info, _msg); });
+
+                    // Log lightweight mode detection
+                    if (isLightweightMode)
+                    {
+                        proto->sendMessage(EMsgSeverity::info,
+                                           "Lightweight deployment mode detected. Workers will validate DDS "
+                                           "installation on remote nodes.");
+                    }
 
                     bool needLocalHost = _submit.m_cfgFilePath.empty();
                     string configFile(_submit.m_cfgFilePath);
@@ -219,6 +234,10 @@ int main(int argc, char* argv[])
 
                         stringstream ssWorkerInfoMsg;
                         task->printInfo(ssWorkerInfoMsg);
+                        if (isLightweightMode)
+                        {
+                            ssWorkerInfoMsg << " (lightweight mode)";
+                        }
                         proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ssWorkerInfoMsg.str());
 
                         wrkCount += rec->m_nSlots;
@@ -239,7 +258,12 @@ int main(int argc, char* argv[])
                     }
 
                     stringstream ss;
-                    ss << "Deploying " << wrkCount << " agents...";
+                    ss << "Deploying " << wrkCount << " agents";
+                    if (isLightweightMode)
+                    {
+                        ss << " (lightweight mode - using existing DDS installation)";
+                    }
+                    ss << "...";
                     proto->sendMessage(dds::intercom_api::EMsgSeverity::info, ss.str());
 
                     pool.join();
@@ -263,7 +287,15 @@ int main(int argc, char* argv[])
                     proto->sendMessage(dds::intercom_api::EMsgSeverity::error, "WARNING: some tasks have failed.");
 
                 if (successfulTasks > 0)
-                    proto->sendMessage(dds::intercom_api::EMsgSeverity::info, "DDS agents have been submitted.");
+                {
+                    string successMsg = "DDS agents have been submitted";
+                    if (isLightweightMode)
+                    {
+                        successMsg += " (lightweight mode)";
+                    }
+                    successMsg += ".";
+                    proto->sendMessage(dds::intercom_api::EMsgSeverity::info, successMsg);
+                }
 
                 proto->stop();
             });

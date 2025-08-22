@@ -255,15 +255,48 @@ LIGHTWEIGHT_PKG=""
 WN_BIN_ARC="$WD/$BASE_NAME-$PKG_VERSION-$OS-$host_arch.tar.gz"
 if [ ! -f "$WN_BIN_ARC" ]; then
 	# Checking for a lightweight package
-	echo "DDS_COMMANDER_BIN_LOCATION=$DDS_COMMANDER_BIN_LOCATION"
-	if [ -x  $DDS_COMMANDER_BIN_LOCATION/dds-agent ]; then
-		DDS_BINARIES_LOCATION=$DDS_COMMANDER_BIN_LOCATION
-		DDS_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION
-		LIGHTWEIGHT_PKG="YES"
-	else
-   	   logMsg "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
-   	   clean_up 1
-   	fi
+	logMsg "Worker package is in lightweight mode. Validating environment..."
+	
+	# Validate DDS_COMMANDER_BIN_LOCATION
+	if [ -z "$DDS_COMMANDER_BIN_LOCATION" ]; then
+		logMsg "Error: Lightweight package mode requires DDS_COMMANDER_BIN_LOCATION environment variable to be set"
+		logMsg "Please set DDS_COMMANDER_BIN_LOCATION to point to DDS binaries directory (e.g., /opt/dds/bin)"
+		clean_up 1
+	fi
+	
+	if [ ! -d "$DDS_COMMANDER_BIN_LOCATION" ]; then
+		logMsg "Error: DDS_COMMANDER_BIN_LOCATION points to non-existent directory: $DDS_COMMANDER_BIN_LOCATION"
+		clean_up 1
+	fi
+	
+	if [ ! -x "$DDS_COMMANDER_BIN_LOCATION/dds-agent" ]; then
+		logMsg "Error: Cannot find dds-agent executable in DDS_COMMANDER_BIN_LOCATION: $DDS_COMMANDER_BIN_LOCATION"
+		logMsg "Please verify that DDS_COMMANDER_BIN_LOCATION points to a valid DDS installation"
+		clean_up 1
+	fi
+	
+	# Validate DDS_COMMANDER_LIBS_LOCATION
+	if [ -z "$DDS_COMMANDER_LIBS_LOCATION" ]; then
+		logMsg "Error: Lightweight package mode requires DDS_COMMANDER_LIBS_LOCATION environment variable to be set"
+		logMsg "Please set DDS_COMMANDER_LIBS_LOCATION to point to DDS libraries directory (e.g., /opt/dds/lib)"
+		clean_up 1
+	fi
+	
+	if [ ! -d "$DDS_COMMANDER_LIBS_LOCATION" ]; then
+		logMsg "Error: DDS_COMMANDER_LIBS_LOCATION points to non-existent directory: $DDS_COMMANDER_LIBS_LOCATION"
+		clean_up 1
+	fi
+	
+	logMsg "Lightweight package validation passed:"
+	logMsg "  DDS_COMMANDER_BIN_LOCATION=$DDS_COMMANDER_BIN_LOCATION"
+	logMsg "  DDS_COMMANDER_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION"
+	
+	DDS_BINARIES_LOCATION=$DDS_COMMANDER_BIN_LOCATION
+	DDS_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION
+	LIGHTWEIGHT_PKG="YES"
+else
+   logMsg "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
+   clean_up 1
 fi
 
 # un-tar without creating a sub-directory
@@ -306,7 +339,7 @@ if [ -n "$1" ]; then
     NUM_WNs=1
     while [ $NUM_WNs -lt $1 ]
     do
-      # create working dorectory for the child agent
+      # create working directory for the child agent
       WD_child_name="$(basename "$WD")_$NUM_WNs"
       logMsg "Deploying child: $WD_child_name"
       eval WD_child="$WD/../$WD_child_name"

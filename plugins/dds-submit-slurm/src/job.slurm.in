@@ -1,5 +1,34 @@
 #!/usr/bin/env bash
 
+#
+# DDS SLURM Job Execution Workflow:
+#
+# PHASE 1: Resource Allocation & Job Scheduling
+# - SLURM scheduler allocates nodes based on #SBATCH directives
+# - Job script is dispatched to a single allocation node (sbatch host)
+#
+# PHASE 2: Sbatch Host Execution (Single Node)
+# - Script executes sequentially on the sbatch host
+# - Lightweight package validation (#DDS_LIGHTWEIGHT_VALIDATION) runs once
+#   * Validates DDS_COMMANDER_BIN_LOCATION environment variable
+#   * Validates DDS_COMMANDER_LIBS_LOCATION environment variable
+#   * Provides immediate failure feedback if prerequisites are missing
+# - Signal handlers are configured to manage process lifecycle
+#
+# PHASE 3: Parallel Task Distribution (Multiple Nodes)
+# - srun command distributes DDS worker tasks across all allocated nodes
+# - Each allocated node receives and executes DDSWorker.sh scout script
+# - Per-node validation occurs within DDSWorker.sh on each srun host:
+#   * Secondary validation of environment variables
+#   * DDS agent initialization and registration
+#   * Worker-specific error handling and logging
+#
+# PHASE 4: Job Lifecycle Management
+# - Parent process waits for all srun tasks to complete
+# - Signal propagation ensures graceful shutdown of distributed tasks
+# - Job artifacts and logs are collected per-node basis
+#
+
 #SBATCH --nodes=%DDS_NMININSTANCES%%DDS_NINSTANCES%
 #SBATCH --no-kill
 
@@ -12,11 +41,13 @@
 
 #DDS_USER_OPTIONS
 
+#DDS_LIGHTWEIGHT_VALIDATION
+
 # ignore signals
 # continue waiting for child processes by any means
 trap -- '' SIGINT SIGTERM
 
-# execute DDS Scoullt
+# execute DDS Scout
 srun --no-kill --kill-on-bad-exit=0 --output=slurm-%j-%N.out /usr/bin/env bash -c 'trap  '"'"'kill $PID && wait'"'"'  SIGINT SIGTERM; eval JOB_WRK_DIR=%DDS_AGENT_ROOT_WRK_DIR%/${SLURM_JOB_NAME}_${SLURM_JOBID}_${SLURMD_NODENAME}; mkdir -p $JOB_WRK_DIR; cd $JOB_WRK_DIR; cp %DDS_SCOUT% $JOB_WRK_DIR/; ./DDSWorker.sh & PID=$!;  wait' &
 
 wait

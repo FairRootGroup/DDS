@@ -16,7 +16,7 @@ namespace dds
         class CStart
         {
           public:
-            void start(bool _onlyLocalSys);
+            void start(bool _Mixed, bool _Lightweight = false);
             std::string getSessionID()
             {
                 return m_sSessionID;
@@ -25,7 +25,7 @@ namespace dds
           private:
             void getNewSessionID();
             /// returns false if there is a missing prec. binary.
-            bool checkPrecompiledWNBins(bool _onlyLocalSys);
+            bool checkPrecompiledWNBins(bool _Mixed, bool _Lightweight);
             void getPrecompiledWNBins(dds::misc::StringVector_t& _list);
             void spawnDDSCommander();
             void checkCommanderStatus();

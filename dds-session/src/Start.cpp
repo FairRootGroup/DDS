@@ -16,6 +16,13 @@
 // BOOST
 #include <boost/filesystem.hpp>
 #include <boost/predef.h>
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
+#include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 
 using namespace std;
 using namespace dds::session_cmd;
@@ -24,14 +31,14 @@ using namespace dds::tools_api;
 using namespace dds::misc;
 namespace fs = boost::filesystem;
 
-void CStart::start(bool _Mixed)
+void CStart::start(bool _Mixed, bool _Lightweight)
 {
     auto start = chrono::high_resolution_clock::now();
 
     getNewSessionID();
-    if (!checkPrecompiledWNBins(_Mixed))
+    if (!checkPrecompiledWNBins(_Mixed, _Lightweight))
     {
-        if (!_Mixed)
+        if (!_Mixed && !_Lightweight)
             printHint();
         throw runtime_error("Precompiled bins check failed.");
     }
@@ -50,7 +57,7 @@ void CStart::getNewSessionID()
     int nExitCode(0);
 
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("dds-commander").string() << " prep-session";
+    ssCmd << bp::search_path("dds-commander").string() << " prep-session";
     execute(ssCmd.str(), std::chrono::seconds(15), &sOut, &sErr, &nExitCode);
 
     if (nExitCode != 0 || !sErr.empty())
@@ -78,8 +85,17 @@ void CStart::getNewSessionID()
     fs::create_directories(pathWrkSandboxDir);
 }
 
-bool CStart::checkPrecompiledWNBins(bool _Mixed)
+bool CStart::checkPrecompiledWNBins(bool _Mixed, bool _Lightweight)
 {
+    // If lightweight mode is enabled, skip WN package validation entirely
+    if (_Lightweight)
+    {
+        LOG(log_stdout_clean) << "Starting DDS in lightweight mode - WN package validation skipped.";
+        LOG(log_stdout_clean) << "Note: Workers must have DDS pre-installed with DDS_COMMANDER_BIN_LOCATION and "
+                                 "DDS_COMMANDER_LIBS_LOCATION set.";
+        return true;
+    }
+
     // wn bin name:
     // <package>-<version>-<OS>-<ARCH>.tar.gz
     const string sBaseName("dds-wrk-bin");
@@ -164,11 +180,11 @@ void CStart::getPrecompiledWNBins(StringVector_t& _list)
 
     bool useCurl(false);
     LOG(log_stdout_clean) << "looking for CURL...";
-    if (boost::process::search_path("curl").empty())
+    if (bp::search_path("curl").empty())
     {
         LOG(log_stdout_clean) << "- NOT FOUND";
         LOG(log_stdout_clean) << "looking for WGET...";
-        if (boost::process::search_path("wget").empty())
+        if (bp::search_path("wget").empty())
         {
             LOG(log_stdout_clean) << "- NOT FOUND";
             throw runtime_error(
@@ -187,9 +203,9 @@ void CStart::getPrecompiledWNBins(StringVector_t& _list)
 
     stringstream ssCmd;
     if (useCurl)
-        ssCmd << boost::process::search_path("curl") << " --fail -s -O";
+        ssCmd << bp::search_path("curl") << " --fail -s -O";
     else
-        ssCmd << boost::process::search_path("wget") << " -q";
+        ssCmd << bp::search_path("wget") << " -q";
 
     // Create WN bin dir
     fs::path pathWnBins(CUserDefaults::instance().getWnBinsDir());
@@ -238,9 +254,9 @@ void CStart::spawnDDSCommander()
     string sErr;
     int nExitCode(0);
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("dds-daemonize").string() << " \""
+    ssCmd << bp::search_path("dds-daemonize").string() << " \""
           << CUserDefaults::instance().getValueForKey("server.log_dir") << "\" "
-          << boost::process::search_path("dds-commander").string() << " --session " << m_sSessionID << " start";
+          << bp::search_path("dds-commander").string() << " --session " << m_sSessionID << " start";
 
     execute(ssCmd.str(), std::chrono::seconds(30), &sOut, &sErr, &nExitCode);
 
@@ -319,9 +335,9 @@ void CStart::checkCommanderStatus()
 void CStart::printHint()
 {
     cout << "\nHint: DDS failed to find the worker package for the local system.\n"
-         << "      You probably didn't create it.\n"
-         << "      Use the wn_bin target before installing DDS: \"> make wn_bin\"\n"
-         << "\n      You can also run DDS in a mixed mode with workers on Linux and on OS X in the same time.\n"
-         << "      In this case DDS will take packages from the DDS binary repository or you can build them yourself.\n"
-         << "      Use \"dds-session start --mixed\" to start DDS in a mixed mode." << endl;
+         << "      You have several options:\n"
+         << "      1. Create worker packages: \"> make wn_bin\"\n"
+         << "      2. Use mixed mode: \"dds-session start --mixed\"\n"
+         << "      3. Use lightweight mode: Set DDS_LIGHTWEIGHT_PACKAGE=1 or use --lightweight\n"
+         << "         (requires DDS pre-installed on worker nodes)" << endl;
 }

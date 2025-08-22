@@ -26,15 +26,19 @@
 #include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/filesystem/operations.hpp>
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 // DDS
 #include "CustomIterator.h"
 #include "ErrorCode.h"
 #include "MiscUtils.h"
 #include "SysHelper.h"
 #include "stlx.h"
-
-namespace bp = boost::process;
 namespace bio = boost::asio;
 namespace fs = boost::filesystem;
 
@@ -521,7 +525,7 @@ namespace dds::misc
 
             if (std::chrono::seconds(0) == _Timeout)
             {
-                boost::process::child c(smartCmd);
+                bp::child c(smartCmd);
                 pid_t pid = c.id();
                 c.detach();
                 return pid;

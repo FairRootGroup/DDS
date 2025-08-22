@@ -23,16 +23,17 @@ set( CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build" FOR
 
 #set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOL "This is useful for debugging only." FORCE)
 
+#
+# Boost Configuration Options
+#
+# Prefer modern Boost CMAKE config by default, but allow fallback
+# set(Boost_NO_BOOST_CMAKE TRUE CACHE BOOL "Force use of legacy FindBoost module" FORCE)
+
+# Set Boost root if needed (useful for custom installations)
+# set(BOOST_ROOT "/opt/homebrew" CACHE PATH "Boost installation root" FORCE)
+
 # This is needed if you want to use gLite plug-in and have several version of BOOST installed
 #set( Boost_USE_MULTITHREADED OFF CACHE BOOL "BOOST" FORCE )
-
-
-#
-# Disable the search for boost-cmake.
-# This is needed to be able to build DDS worker packages.
-# Otherwise cmake look up algorithms can't find boost libs on wn_bin build
-#
-#set(Boost_NO_BOOST_CMAKE TRUE CACHE BOOL "" FORCE)
 
 
 #
