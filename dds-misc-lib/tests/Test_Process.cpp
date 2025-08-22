@@ -18,6 +18,12 @@
 using namespace dds::misc;
 using namespace std;
 using boost::unit_test::test_suite;
+
+#if __has_include(<boost/process/v1.hpp>)
+namespace bp = boost::process::v1;
+#else
+namespace bp = boost::process;
+#endif
 namespace fs = boost::filesystem;
 //=============================================================================
 BOOST_AUTO_TEST_SUITE(test_Process);
@@ -76,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_timeout)
     boost::filesystem::remove(sFile);
 
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("bash").string()
+    ssCmd << bp::search_path("bash").string()
           << " -c \"echo test > /tmp/test.test; sleep 3; echo test2 > /tmp/test.test\"";
     BOOST_CHECK_NO_THROW(execute(ssCmd.str(), std::chrono::seconds(10)));
 
@@ -95,7 +101,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_timeout)
 
     string output;
     stringstream ssCmd2;
-    ssCmd2 << boost::process::search_path("hostname").string() << " -f";
+    ssCmd2 << bp::search_path("hostname").string() << " -f";
     execute(ssCmd2.str(), std::chrono::seconds(3), &output);
     BOOST_CHECK(!output.empty());
 }
@@ -103,7 +109,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_timeout)
 BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_terminate_exception)
 {
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("ping").string() << " localhost";
+    ssCmd << bp::search_path("ping").string() << " localhost";
     BOOST_CHECK_THROW(execute(ssCmd.str(), std::chrono::seconds(3)), runtime_error);
 }
 //=============================================================================
@@ -111,7 +117,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_stdout_stderr)
 {
     // Check stderr
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("bash").string() << " -c \"hostname -f; hostname -f 1>&2; exit 11;\"";
+    ssCmd << bp::search_path("bash").string() << " -c \"hostname -f; hostname -f 1>&2; exit 11;\"";
     string output;
     string error;
     int exitCode(-1);
@@ -126,8 +132,8 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_fileout)
 {
     stringstream ssCmd;
     string sTestString = "TEST1234 45";
-    ssCmd << boost::process::search_path("bash").string() << " -c \"echo -n " << sTestString << "; echo -n "
-          << sTestString << " >&2\"";
+    ssCmd << bp::search_path("bash").string() << " -c \"echo -n " << sTestString << "; echo -n " << sTestString
+          << " >&2\"";
     string stdoutFile("/tmp/stdout");
     string sterrorFile("/tmp/stderr");
 
@@ -202,7 +208,7 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_no_stdout_stderr)
 {
     // Check stderr
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("bash").string() << " -c \"sleep 1\"";
+    ssCmd << bp::search_path("bash").string() << " -c \"sleep 1\"";
     string output;
     string error;
     int exitCode(-1);
@@ -218,8 +224,8 @@ BOOST_AUTO_TEST_CASE(test_MiscCommon_execute_dds_daemonize)
     auto tmpDir{ STestConfig::instance()->m_pathWrkDir };
     // Check stderr
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("dds-daemonize").string() << " \"" << tmpDir.string() << "\" "
-          << boost::process::search_path("hostname").string() << " -f";
+    ssCmd << bp::search_path("dds-daemonize").string() << " \"" << tmpDir.string() << "\" "
+          << bp::search_path("hostname").string() << " -f";
     string output;
     string error;
     int exitCode(-1);

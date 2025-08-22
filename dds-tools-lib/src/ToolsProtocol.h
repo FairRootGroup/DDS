@@ -84,6 +84,7 @@ namespace dds
             enum class ESubmitRequestFlags : uint32_t
             {
                 enable_overbooking,
+                enable_lightweight,
                 //----------
                 size_value
             };

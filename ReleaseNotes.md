@@ -1,5 +1,27 @@
 # DDS Release Notes
 
+## v3.14 (2025-08-23)
+
+- DDS general
+  - Added: Lightweight worker package support via --lightweight option and DDS_LIGHTWEIGHT_PACKAGE environment variable. This feature allows deployment of minimal packages (~50KB) instead of full packages (~15MB) when DDS is pre-installed on worker nodes, significantly improving deployment efficiency. (GH-491)
+  - Fixed: boost::process compatibility with Boost 1.89+ by implementing conditional compilation to use boost::process v1 API when available, maintaining backward compatibility with older Boost versions. (GH-473)
+
+- dds-session
+  - Added: --lightweight command-line option to enable lightweight worker package mode for session startup. (GH-491)
+  - Added: DDS_LIGHTWEIGHT_PACKAGE environment variable support with command-line precedence for session startup. (GH-491)
+  - Modified: Enhanced startup logic to skip WN package validation when in lightweight mode, allowing DDS sessions to start without requiring precompiled worker packages. (GH-491)
+  - Improved: Error messaging to suggest lightweight mode as alternative when WN packages are missing. (GH-491)
+
+- dds-submit
+  - Added: --lightweight command-line option to enable lightweight worker package mode. (GH-491)
+  - Added: DDS_LIGHTWEIGHT_PACKAGE environment variable support with command-line precedence. (GH-491)
+
+- dds-tools-lib
+  - Added: enable_lightweight flag to ESubmitRequestFlags enum for lightweight package support. (GH-491)
+
+- dds-commander
+  - Modified: Enhanced worker package creation to support lightweight mode based on submit request flags. (GH-491)
+
 ## v3.13 (2025-03-31)
 
 - DDS general

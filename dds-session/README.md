@@ -5,7 +5,7 @@ Start/Stop DDS commander and manage DDS sessions. **UNIX/Linux/OSX**
 ## Synopsis
 
 ```shell
-dds-session {[[start --mixed] | [stop SESSION_ID] | [stop_all] | [list all | run]] | [set-default SESSION_ID] | [clean -f]}
+dds-session {[[start [--mixed] [--lightweight]] | [stop SESSION_ID] | [stop_all] | [list all | run]] | [set-default SESSION_ID] | [clean -f]}
 ```
 
 ## Description
@@ -27,6 +27,16 @@ To build a binary package for the local system, just issue:
   make -j wn_bin
   make -j install
   ```
+
+  **Options for start command:**
+  * `--mixed` - Use worker package for a mixed environment with agents on Linux and macOS simultaneously
+  * `--lightweight` - Create lightweight worker packages without DDS binaries and libraries. This mode requires DDS to be pre-installed on worker nodes with proper environment variables set. Can also be enabled via `DDS_LIGHTWEIGHT_PACKAGE` environment variable.
+
+  **Lightweight Package Mode:**
+  When using `--lightweight` option or setting `DDS_LIGHTWEIGHT_PACKAGE=1`, DDS will skip worker package validation and create minimal packages (~50KB instead of ~15MB). Worker nodes must have:
+  * DDS pre-installed
+  * `DDS_COMMANDER_BIN_LOCATION` environment variable pointing to DDS binaries directory
+  * `DDS_COMMANDER_LIBS_LOCATION` environment variable pointing to DDS libraries directory
 
 * **stop**  
 Stop a given DDS session specified by `SESSION_ID`. If no `SESSION_ID` argument is provided, the command will stop the default DDS session. But in this case the command will ask user to confirm the choice.
@@ -72,6 +82,29 @@ $ dds-session list all
    cfc8e86d-157b-404e-bde8-a32f8b3c1331   [2018-08-21T13:49:35Z]   STOPPED    
    5fdc6142-497c-433c-8333-721f05eabe31   [2018-08-21T14:10:39Z]   STOPPED
  * cf84e72d-a3af-4fd8-af73-4337e9434612   [2018-08-22T11:53:34Z]   RUNNING
+
+$ dds-session start --lightweight
+
+DDS session ID: 12345678-1234-1234-1234-123456789abc
+Starting DDS in lightweight mode - WN package validation skipped.
+Note: Workers must have DDS pre-installed with DDS_COMMANDER_BIN_LOCATION and DDS_COMMANDER_LIBS_LOCATION set.
+Starting DDS commander...
+Waiting for DDS Commander to appear online...
+DDS commander appears online. Testing connection...
+DDS commander is up and running.
+------------------------
+DDS commander server: 12345
+------------------------
+Startup time: 142.56 ms
+
+$ export DDS_LIGHTWEIGHT_PACKAGE=1
+$ dds-session start
+
+DDS session ID: 87654321-4321-4321-4321-210987654321
+Starting DDS in lightweight mode - WN package validation skipped.
+Note: Workers must have DDS pre-installed with DDS_COMMANDER_BIN_LOCATION and DDS_COMMANDER_LIBS_LOCATION set.
+Starting DDS commander...
+...
 
     
     

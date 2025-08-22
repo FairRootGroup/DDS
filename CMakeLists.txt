@@ -261,14 +261,71 @@ SET(DDS_SHARE_FILES
 #
 # Search for BOOST
 #
-set(Boost_Components log log_setup thread program_options filesystem system regex)
+# Note: Starting with Boost 1.69+, system library is header-only and may not be available as a separate component
+# in modern CMake configurations. We handle this by trying CONFIG mode first, then falling back to MODULE mode.
+set(Boost_Components log log_setup thread program_options filesystem regex process)
 if(BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
 endif(BUILD_TESTS)
 
-find_package(Boost 1.75 REQUIRED COMPONENTS  ${Boost_Components})
+# Try modern Boost CONFIG mode first (preferred for Boost 1.75+)
+find_package(Boost 1.75 CONFIG QUIET COMPONENTS ${Boost_Components})
+if(Boost_FOUND)
+  message(STATUS "Found Boost ${Boost_VERSION} using CONFIG mode")
+  # In Boost 1.75+, system library is header-only and may not exist as separate component
+  if(NOT TARGET Boost::system)
+    message(STATUS "Boost::system not found as separate component (header-only in Boost 1.75+), creating alias")
+    add_library(Boost::system ALIAS Boost::headers)
+  endif()
+  # Boost::process is also header-only and may not be available as separate component in CONFIG mode
+  if(NOT TARGET Boost::process)
+    message(STATUS "Boost::process not found as separate component (header-only), creating alias")
+    add_library(Boost::process ALIAS Boost::headers)
+  endif()
+else()
+  # Fallback to traditional FindBoost module for compatibility
+  message(STATUS "CONFIG mode failed, falling back to MODULE mode")
+  set(Boost_NO_BOOST_CMAKE TRUE)
+  # Add system back for legacy mode as it might exist there
+  set(Boost_Components ${Boost_Components} system)
+  find_package(Boost 1.75 REQUIRED COMPONENTS ${Boost_Components})
+  message(STATUS "Found Boost ${Boost_VERSION} using MODULE mode")
+endif()
 if(Boost_FOUND)
   set(local_boost_version "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+  message(STATUS "Found Boost ${local_boost_version}")
+  if(TARGET Boost::boost)
+    message(STATUS "Using modern Boost CMake targets")
+  else()
+    message(STATUS "Using legacy Boost variables (creating interface targets for Boost 1.75+)")
+    
+    # Create interface target for header-only boost if it doesn't exist
+    if(NOT TARGET Boost::boost)
+      add_library(Boost::boost INTERFACE IMPORTED)
+      set_target_properties(Boost::boost PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+      )
+    endif()
+    
+    # Create missing component targets for legacy Boost 1.75+ support
+    foreach(component IN LISTS Boost_Components)
+      string(TOUPPER ${component} COMPONENT_UPPER)
+      if(NOT TARGET Boost::${component} AND Boost_${COMPONENT_UPPER}_FOUND)
+        add_library(Boost::${component} INTERFACE IMPORTED)
+        set_target_properties(Boost::${component} PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${Boost_${COMPONENT_UPPER}_LIBRARIES}"
+        )
+        if(Boost_${COMPONENT_UPPER}_LIBRARY_DIRS)
+          set_target_properties(Boost::${component} PROPERTIES
+            INTERFACE_LINK_DIRECTORIES "${Boost_${COMPONENT_UPPER}_LIBRARY_DIRS}"
+          )
+        endif()
+      endif()
+    endforeach()
+  endif()
+else()
+  message(FATAL_ERROR "Boost not found. Please install Boost 1.75+ or set BOOST_ROOT to the installation directory.")
 endif(Boost_FOUND)
 
 #

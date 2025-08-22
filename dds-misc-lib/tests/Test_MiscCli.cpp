@@ -19,6 +19,12 @@ using boost::unit_test::test_suite;
 using namespace dds::misc;
 using namespace std;
 
+#if __has_include(<boost/process/v1.hpp>)
+namespace bp = boost::process::v1;
+#else
+namespace bp = boost::process;
+#endif
+
 BOOST_AUTO_TEST_SUITE(MiscCommon_Cli);
 
 void testParseExe(const string& _exeStr,
@@ -44,7 +50,7 @@ BOOST_AUTO_TEST_CASE(Test_MiscCommon_parseExe)
                  "test_exe",
                  "${DDS_LOCATION}/test_exe --arg1 arg1 --arg2 arg2 --arg3");
 
-    const string bashPath{ boost::process::search_path("bash").string() };
+    const string bashPath{ bp::search_path("bash").string() };
     testParseExe(
         "bash --arg1 arg1 --arg2 arg2 --arg3", "", bashPath, "bash", bashPath + " --arg1 arg1 --arg2 arg2 --arg3");
 

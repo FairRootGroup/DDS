@@ -10,7 +10,13 @@
 // BOOST
 #include <boost/any.hpp>
 #include <boost/filesystem.hpp>
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
 #include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 #include <boost/regex.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -95,7 +101,7 @@ boost::uuids::uuid CSession::create()
     int nExitCode(0);
 
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("dds-session").string() << " start";
+    ssCmd << bp::search_path("dds-session").string() << " start";
     execute(ssCmd.str(), chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
     if (nExitCode != 0 || !sErr.empty())
@@ -177,7 +183,7 @@ void CSession::shutdown()
     string sErr;
     int nExitCode(0);
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("dds-session").string() << " stop " << boost::uuids::to_string(m_impl->m_sid);
+    ssCmd << bp::search_path("dds-session").string() << " stop " << boost::uuids::to_string(m_impl->m_sid);
     execute(ssCmd.str(), chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
     m_impl->m_sid = boost::uuids::nil_uuid();

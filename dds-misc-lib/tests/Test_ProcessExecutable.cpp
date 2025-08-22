@@ -13,6 +13,12 @@ using namespace std;
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
+#if __has_include(<boost/process/v1.hpp>)
+namespace bp = boost::process::v1;
+#else
+namespace bp = boost::process;
+#endif
+
 using namespace boost::program_options;
 
 int main(int argc, char* argv[])
@@ -40,7 +46,7 @@ int main(int argc, char* argv[])
         {
             string output;
             stringstream ssCmd;
-            ssCmd << boost::process::search_path("hostname").string() << " -f";
+            ssCmd << bp::search_path("hostname").string() << " -f";
             execute(ssCmd.str(), timeout, &output);
             if (!output.empty())
             {

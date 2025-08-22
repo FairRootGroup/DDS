@@ -21,6 +21,7 @@
 #include "PipeLogEngine.h"
 #include "Process.h"
 #include "SysHelper.h"
+#include "ToolsProtocol.h"
 #include "UserDefaults.h"
 
 using namespace std;
@@ -28,6 +29,7 @@ using namespace dds;
 using namespace dds::intercom_api;
 using namespace dds::user_defaults_api;
 using namespace dds::pipe_log_engine;
+using namespace dds::tools_api;
 using namespace dds::misc;
 ;
 namespace bpo = boost::program_options;
@@ -38,6 +40,56 @@ namespace fs = boost::filesystem;
 const LPCSTR g_pipeName = ".dds_lsf_pipe";
 // file is located in the RMS sandbox directory
 const LPCSTR g_jobIDFile = ".dds_lsf_jobid";
+//=============================================================================
+
+std::string getLightweightValidationScript()
+{
+    return R"(
+# DDS Lightweight Package Prerequisite Validation
+echo "Validating DDS lightweight package prerequisites..."
+
+# Function to check if a path exists and is accessible
+check_path() {
+    local path="$1"
+    local description="$2"
+    
+    if [ -z "$path" ]; then
+        echo "ERROR: $description is not set"
+        return 1
+    fi
+    
+    if [ ! -e "$path" ]; then
+        echo "ERROR: $description does not exist: $path"
+        return 1
+    fi
+    
+    if [ ! -r "$path" ]; then
+        echo "ERROR: $description is not readable: $path"
+        return 1
+    fi
+    
+    echo "OK: $description is valid: $path"
+    return 0
+}
+
+# Check DDS_COMMANDER_BIN_LOCATION
+if ! check_path "$DDS_COMMANDER_BIN_LOCATION" "DDS_COMMANDER_BIN_LOCATION"; then
+    echo "FATAL: DDS lightweight package validation failed - missing commander binary location"
+    echo "Please ensure DDS_COMMANDER_BIN_LOCATION is properly set in your environment"
+    exit 1
+fi
+
+# Check DDS_COMMANDER_LIBS_LOCATION  
+if ! check_path "$DDS_COMMANDER_LIBS_LOCATION" "DDS_COMMANDER_LIBS_LOCATION"; then
+    echo "FATAL: DDS lightweight package validation failed - missing commander libraries location"
+    echo "Please ensure DDS_COMMANDER_LIBS_LOCATION is properly set in your environment"
+    exit 1
+fi
+
+echo "All DDS lightweight package prerequisites validated successfully"
+)";
+}
+
 //=============================================================================
 
 // Command line parser
@@ -123,6 +175,16 @@ int main(int argc, char* argv[])
                     string sSrcScript(ssSrcScript.str());
 
                     proto.sendMessage(dds::intercom_api::EMsgSeverity::info, "Generating lsf Job script...");
+
+                    // Check if lightweight mode is enabled and log it
+                    bool isLightweightMode = dds::tools_api::SSubmitRequestData::isFlagEnabled(
+                        _submit.m_flags, dds::tools_api::SSubmitRequestData::ESubmitRequestFlags::enable_lightweight);
+                    if (isLightweightMode)
+                    {
+                        proto.sendMessage(dds::intercom_api::EMsgSeverity::info,
+                                          "Lightweight deployment mode: Workers will use existing DDS installation on "
+                                          "compute nodes.");
+                    }
                     // Replace #DDS_NEED_ARRAY
                     if (_submit.m_nInstances > 0)
                         boost::replace_all(sSrcScript, "#DDS_NEED_ARRAY", to_string(_submit.m_nInstances));
@@ -148,6 +210,10 @@ int main(int argc, char* argv[])
                         string sUserOptions((istreambuf_iterator<char>(f_userOptions)), istreambuf_iterator<char>());
                         boost::replace_all(sSrcScript, "#DDS_USER_OPTIONS", sUserOptions);
                     }
+
+                    // Replace #DDS_LIGHTWEIGHT_VALIDATION
+                    string sLightweightValidation = getLightweightValidationScript();
+                    boost::replace_all(sSrcScript, "#DDS_LIGHTWEIGHT_VALIDATION", sLightweightValidation);
 
                     // Replace %DDS_SCOUT%
                     string sScoutScriptPath(CUserDefaults::instance().getWrkScriptPath(_submit.m_id));
@@ -192,7 +258,12 @@ int main(int argc, char* argv[])
                             if (fs::exists(pathJobIDFile))
                             {
                                 started = true;
-                                proto.sendMessage(EMsgSeverity::info, "DDS agents have been submitted");
+                                string submitMsg = "DDS agents have been submitted";
+                                if (isLightweightMode)
+                                {
+                                    submitMsg += " (lightweight mode)";
+                                }
+                                proto.sendMessage(EMsgSeverity::info, submitMsg);
                                 // remove jobid file
                                 fs::remove(pathJobIDFile);
                                 break;

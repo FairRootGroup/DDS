@@ -15,6 +15,12 @@
 
 namespace dds::misc
 {
+#if __has_include(<boost/process/v1.hpp>)
+    namespace bp = boost::process::v1;
+#else
+    namespace bp = boost::process;
+#endif
+
     inline void parseExe(const std::string& _exeStr,
                          const std::string& _exePrefix,
                          std::string& _filepath,
@@ -53,7 +59,7 @@ namespace dds::misc
         // If no absolute path is given, search executable in $PATH
         if (!exeFilePath.is_absolute())
         {
-            bfs::path exePath{ boost::process::search_path(_filename) };
+            bfs::path exePath{ bp::search_path(_filename) };
             if (exePath.empty())
             {
                 std::stringstream ss;

@@ -11,6 +11,13 @@
 #include <chrono>
 // BOOST
 #include <boost/filesystem.hpp>
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+namespace bp = boost::process::v1;
+#else
+#include <boost/process.hpp>
+namespace bp = boost::process;
+#endif
 
 using namespace std;
 using namespace dds::session_cmd;
@@ -50,7 +57,7 @@ void CStop::stop(const std::string& _sessionID)
     int nExitCode(0);
 
     stringstream ssCmd;
-    ssCmd << boost::process::search_path("dds-commander").string() << " --session " << _sessionID << " stop";
+    ssCmd << bp::search_path("dds-commander").string() << " --session " << _sessionID << " stop";
     try
     {
         execute(ssCmd.str(), std::chrono::seconds(50), &sOut, &sErr, &nExitCode);

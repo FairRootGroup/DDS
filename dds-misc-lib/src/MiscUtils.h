@@ -10,7 +10,11 @@
 #include <iostream>
 // BOOST
 #include <boost/filesystem.hpp>
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+#else
 #include <boost/process.hpp>
+#endif
 #include <boost/program_options/parsers.hpp>
 
 /**

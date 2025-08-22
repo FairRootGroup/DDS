@@ -13,6 +13,7 @@ target_link_libraries(${PROJECT_NAME}
   dds_user_defaults_lib
   dds_intercom_lib
   dds_pipe_log_engine_lib
+  dds_tools_lib
   Boost::boost
   Boost::program_options
   Boost::log

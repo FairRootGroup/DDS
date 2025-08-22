@@ -10,6 +10,7 @@
 // BOOST
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/filesystem.hpp>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
@@ -103,6 +104,13 @@ int main(int argc, char* argv[])
     std::atomic<bool> isFailed(false);
     try
     {
+        // Log lightweight mode detection
+        if (options.m_bLightweight)
+        {
+            LOG(log_stdout) << "Lightweight package mode requested for " << options.m_sRMS << " RMS.";
+            LOG(log_stdout) << "Environment validation will be performed on worker nodes.";
+        }
+
         std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
         CSession session;
         session.attach(sid);
@@ -118,6 +126,8 @@ int main(int argc, char* argv[])
         // Flags
         requestInfo.setFlag(dds::tools_api::SSubmitRequestData::ESubmitRequestFlags::enable_overbooking,
                             options.m_bEnableOverbooking);
+        requestInfo.setFlag(dds::tools_api::SSubmitRequestData::ESubmitRequestFlags::enable_lightweight,
+                            options.m_bLightweight);
 
         requestInfo.m_pluginPath = options.m_sPath;
         requestInfo.m_groupName = options.m_groupName;

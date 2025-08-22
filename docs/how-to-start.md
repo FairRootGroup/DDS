@@ -17,6 +17,21 @@ Use the `dds-session` command to start/stop/list DDS sessions.
 dds-session start
 ```
 
+### Starting DDS in Lightweight Mode
+
+DDS can be started in lightweight mode for environments where DDS is pre-installed on worker nodes:
+
+```shell
+# Using command-line option
+dds-session start --lightweight
+
+# Using environment variable
+export DDS_LIGHTWEIGHT_PACKAGE=1
+dds-session start
+```
+
+In lightweight mode, DDS skips worker package validation and creates minimal deployment packages, significantly improving startup times. This is particularly useful in environments with pre-configured DDS installations.
+
 ## Deploy Agents
 
 In order to deploy agents you can use different [DDS plug-ins](../plugins/README.md#rms-plug-ins).
@@ -33,6 +48,28 @@ Then use `dds-submit`` to deploy DDS agents on the given resources:
 ```shell
 dds-submit --rms ssh -c FULL_PATH_TO_YOUR_SSHPLUGIN_RESOURCE_FILE
 ```
+
+### Lightweight Worker Packages
+
+For faster deployment when DDS is pre-installed on worker nodes, you can use lightweight worker packages:
+
+```shell
+# Enable globally via environment variable
+export DDS_LIGHTWEIGHT_PACKAGE=1
+dds-submit --rms slurm -n 10 --slots 8
+
+# Or use command-line option
+dds-submit --rms slurm -n 10 --slots 8 --lightweight
+```
+
+This reduces package size from ~15MB to ~50KB and provides 3x faster deployment speed.
+
+**Important:** For lightweight packages to work, worker nodes must have these environment variables set at runtime:
+
+- `DDS_COMMANDER_BIN_LOCATION` - Path to DDS binaries (e.g., `/opt/dds/bin`)
+- `DDS_COMMANDER_LIBS_LOCATION` - Path to DDS libraries (e.g., `/opt/dds/lib`)
+
+These should point to a valid DDS installation on the worker nodes. Configure your batch system or environment scripts to export these variables before DDS worker startup.
 
 ## Check availability of Agents
 

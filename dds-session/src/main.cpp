@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
         if (SOptions_t::cmd_start == options.m_Command)
         {
             CStart start;
-            start.start(options.m_bMixed);
+            start.start(options.m_bMixed, options.m_bLightweight);
 
             try
             {

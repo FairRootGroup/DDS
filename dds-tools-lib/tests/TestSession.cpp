@@ -26,7 +26,7 @@ using namespace dds::topology_api;
 using namespace dds::intercom_api;
 using namespace dds::misc;
 namespace fs = boost::filesystem;
-namespace bp = boost::process;
+// Note: namespace bp is already defined in Process.h
 
 BOOST_AUTO_TEST_SUITE(test_dds_tools_session)
 

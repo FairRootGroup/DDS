@@ -12,7 +12,11 @@
 // BOOST
 #include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
+#if __has_include(<boost/process/v1.hpp>)
+#include <boost/process/v1.hpp>
+#else
 #include <boost/process.hpp>
+#endif
 
 using namespace std;
 using namespace dds::misc;
@@ -24,7 +28,11 @@ using namespace topology_api;
 
 namespace fs = boost::filesystem;
 namespace ba = boost::algorithm;
+#if __has_include(<boost/process/v1.hpp>)
+namespace bp = boost::process::v1;
+#else
 namespace bp = boost::process;
+#endif
 
 const uint16_t g_MaxConnectionAttempts = 5;
 // 1MB = 1048576 Bytes
