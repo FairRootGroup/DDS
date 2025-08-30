@@ -1,5 +1,18 @@
 # Installation
 
+This guide walks you through building and installing DDS from source code. DDS supports Linux and macOS platforms.
+
+## Prerequisites
+
+Before building DDS, ensure you have:
+
+* C++17 compatible compiler (GCC 7+, Clang 5+, or equivalent)
+* CMake 3.19 or higher
+* BOOST 1.75 or higher
+* Git (for downloading source)
+
+For detailed third-party dependency information, see [Building 3rd-party Dependencies](./3rd-party.md).
+
 ## Step 1: Get the source
 
 * **From DDS git repository**
@@ -26,12 +39,12 @@ Unpack DDS tarball:
 
 You can adjust some configuration settings in the BuildSetup.cmake bootstrap file. The following is a list of variables:
 
-| Variable | Variable |
-|----------|----------|
-| CMAKE_INSTALL_PREFIX | Install path prefix, prepended onto install directories.(default ```$HOME/DDS/<DDS_Version>```)|
-| CMAKE_BUILD_TYPE | Set cmake build type. Possible options are: **None**, **Debug**, **Release**, **RelWithDebInfo**, **MinSizeRel** (default **Release**)|
-| BUILD_DOCUMENTATION | Build source code documentation. Possible options are: **ON**/**OFF** (default **OFF**)|
-| BUILD_TESTS | Build DDS tests. Possible options are: **ON**/**OFF** (default **OFF**)|
+| Variable             | Variable                                                                                                                               |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| CMAKE_INSTALL_PREFIX | Install path prefix, prepended onto install directories.(default ```$HOME/DDS/<DDS_Version>```)                                        |
+| CMAKE_BUILD_TYPE     | Set cmake build type. Possible options are: **None**, **Debug**, **Release**, **RelWithDebInfo**, **MinSizeRel** (default **Release**) |
+| BUILD_DOCUMENTATION  | Build source code documentation. Possible options are: **ON**/**OFF** (default **OFF**)                                                |
+| BUILD_TESTS          | Build DDS tests. Possible options are: **ON**/**OFF** (default **OFF**)                                                                |
 
 Now, prepare a build directory for an out-of-source build and configure the source:
 

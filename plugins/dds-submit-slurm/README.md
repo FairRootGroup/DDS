@@ -4,7 +4,9 @@
 
 If your home directory is not shared on the SLURM cluster, then you must define a sandbox directory, which DDS will use to store SLURM job script and all jobs' working directories will be also located there. Please note, that at the moment DDS doesn't clean jobs' working directories, therefore you are responsible to remove them if needed.
 
-In order to set sandbox directory a DDS global option `server.sandbox_dir` have to be changed, which is located in the DDS configuration file `DDS.cfg` (default location: `$HOME/.DDS/DDS.cfg`)
+In order to set sandbox directory a DDS global option `server.sandbox_dir` have to be changed, which is located in the DDS configuration file `DDS.cfg` (default location: `$HOME/.DDS/DDS.cfg`).
+
+For more details about this and other configuration options, see the [User Defaults Configuration Reference](../../docs/user-defaults-configuration.md).
 
 ## User configuration
 

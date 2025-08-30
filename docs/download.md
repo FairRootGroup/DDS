@@ -2,7 +2,7 @@
 
 ## Download location
 
-Please, use [DDS's Download page](http://dds.gsi.de/download.html) to get the latest version and all other versions of DDS.
+Please use [DDS's GitHub releases page](https://github.com/FairRootGroup/DDS/releases) to get the latest version and all other versions of DDS.
 
 ## DDS Version Number Scheme
 
