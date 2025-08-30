@@ -5,7 +5,7 @@ Submits and activates DDS agents. **UNIX/Linux/OSX**
 ## Synopsis
 
 ```shell
-dds-submit [[-h, --help] | [-v, --version]] [-l, --list] [-r, --rms arg] [-s, --session arg] [-c, --config arg] [-n, --number arg] [--min-instances arg] [--slots arg] [-g, --group-name arg] [-t, --submission-tag arg] [-e, --env-config arg] [--inline-config arg] [--enable-overbooking] [--lightweight]
+dds-submit [[-h, --help] | [-v, --version]] [-l, --list] [-r, --rms arg] [--path arg] [-s, --session arg] [-c, --config arg] [-n, --number arg] [--min-instances arg] [--slots arg] [-g, --group-name arg] [-t, --submission-tag arg] [-e, --env-config arg] [--inline-config arg] [--enable-overbooking] [--lightweight]
 ```
 
 ## Description
@@ -15,10 +15,10 @@ The command is used to submit DDS agents to allocate resources for user tasks. O
 ## Options
 
 * **-h, --help**  
-Shows usage options.  
+Show usage options.  
 
 * **-v, --version**  
-Shows version information.
+Show version information.
 
 * **-l, --list**  
 List all available RMS plug-ins.

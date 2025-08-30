@@ -13,10 +13,10 @@ source ${location}/DDS_env.sh
 
 # Start DDS commander server
 echo "Starting DDS server..."
-startOutput=$(dds-session start --local)
+startOutput=$(dds-session start)
 echo "${startOutput}"
 
-# Extract session ID from "dds-session start --local" output
+# Extract session ID from "dds-session start" output
 sessionID=$(echo -e "${startOutput}" | head -1 | awk '{split($0,a,":"); print a[2]}' |  tr -d '[:space:]')
 echo "DDS session ID: ${sessionID}"
 
