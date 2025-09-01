@@ -46,3 +46,6 @@ CPackSourceConfig.cmake
 
 # VS Code
 .vscode/
+
+# Version file
+version
