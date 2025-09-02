@@ -55,6 +55,17 @@ DDS is a tool-set that automates and significantly simplifies the deployment of 
 ### Development APIs
 
 * [dds-tools](./dds-tools-lib/README.md) - C++ API for DDS integration
+* [dds-intercom](./dds-intercom-lib/README.md) - High-level communication API for custom commands and key-value store
+
+### Agent and Task Development
+
+* [DDS Agent Architecture](./dds-agent/README.md) - Agent internals, lifecycle management, and shared memory transport
+* [User Task Development Guide](./docs/user-task-guide.md) - Comprehensive guide for developing DDS tasks with environment variables, communication APIs, custom environments, and file assets
+
+### Protocol Documentation
+
+* [Low-Level Protocol](./docs/protocol-low-level.md) - Binary protocol specification and transport layer
+* [High-Level Protocol](./docs/protocol-high-level.md) - Custom commands, key-value store, and Intercom API
 
 ### Resource Management Plugins
 
