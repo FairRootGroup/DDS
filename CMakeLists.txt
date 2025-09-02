@@ -226,6 +226,7 @@ set(TOPOLOGY_SCHEMA_PATH "${RESOURCE_DIR}/topology.xsd")
 SET(DDS_DOC_FILES
     ${CMAKE_SOURCE_DIR}/LICENSE
     ${CMAKE_SOURCE_DIR}/ReleaseNotes.md
+    ${CMAKE_SOURCE_DIR}/CHANGELOG.md
 )
 #
 # "bin" files
