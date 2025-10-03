@@ -27,6 +27,10 @@ include(GetPrerequisites)
         RESOLVED_DEPENDENCIES_VAR _r_deps
         UNRESOLVED_DEPENDENCIES_VAR _u_deps
         DIRECTORIES ${PREREQ_DIRS_LIST_REBUILT}
+		POST_EXCLUDE_REGEXES
+          ".*/libc\\.so\\.[0-9]+"
+          ".*/libm\\.so\\.[0-9]+"
+          ".*/ld-linux-x86-64\\.so\\.[0-9]+"
         )
 	
     foreach(_file ${_r_deps})
