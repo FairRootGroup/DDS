@@ -281,6 +281,73 @@ Requirements specify constraints for task placement on computing nodes. They hel
 
 For `hostname` and `wnname`, the value can be a full name or regular expression.
 
+### Agent Group Targeting Example
+
+You can submit agents with specific group names and then target them in your topology, enabling fine-grained control over task placement across heterogeneous resources:
+
+```bash
+# Submit GPU-capable agents with a group tag
+dds-submit -r slurm -n 10 --slots 8 --group-name="gpu_workers"
+
+# Submit CPU-only agents with a different tag
+dds-submit -r slurm -n 20 --slots 16 --group-name="cpu_workers"
+
+# Submit high-memory agents
+dds-submit -r slurm -n 5 --slots 32 --group-name="highmem_workers"
+```
+
+Then target specific agent groups in your topology:
+
+```xml
+<topology name="heterogeneous_workflow">
+   <!-- Define requirements for different agent groups -->
+   <declrequirement name="gpu_req" type="groupname" value="gpu_workers"/>
+   <declrequirement name="cpu_req" type="groupname" value="cpu_workers"/>
+   <declrequirement name="highmem_req" type="groupname" value="highmem_workers"/>
+   
+   <!-- GPU-intensive task -->
+   <decltask name="gpu_task">
+      <exe>cuda_app --device=gpu</exe>
+      <requirements>
+         <name>gpu_req</name>  <!-- Will run only on gpu_workers agents -->
+      </requirements>
+   </decltask>
+   
+   <!-- Standard CPU task -->
+   <decltask name="cpu_task">
+      <exe>standard_app</exe>
+      <requirements>
+         <name>cpu_req</name>  <!-- Will run only on cpu_workers agents -->
+      </requirements>
+   </decltask>
+   
+   <!-- Memory-intensive task -->
+   <decltask name="memory_task">
+      <exe>bigdata_app --memory=large</exe>
+      <requirements>
+         <name>highmem_req</name>  <!-- Will run only on highmem_workers agents -->
+      </requirements>
+   </decltask>
+   
+   <main name="main">
+      <task>gpu_task</task>
+      <group name="cpu_workers" n="10">
+         <task>cpu_task</task>
+      </group>
+      <group name="memory_workers" n="3">
+         <task>memory_task</task>
+      </group>
+   </main>
+</topology>
+```
+
+This pattern is particularly useful for:
+
+- **Heterogeneous clusters**: Mix GPU and CPU nodes in the same workflow
+- **Resource optimization**: Ensure memory-intensive tasks get high-memory nodes
+- **Cost management**: Separate expensive GPU resources from cheaper CPU resources
+- **Multi-tenant environments**: Isolate different user groups or projects
+
 ### Using Requirements
 
 Requirements can be applied to tasks or collections:

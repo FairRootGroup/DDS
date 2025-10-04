@@ -412,16 +412,28 @@ dds-submit --rms ssh --config ssh_config_with_inline_env.cfg
 
 #### Method 2: SSH Plugin Inline Configuration
 
-```ini
-# ssh_config.cfg
-[ssh_worker_1]
-host=worker1.example.com
-env=export DATA_PATH=/local/data; module load python/3.8
+The SSH plugin supports embedding bash scripts directly in the configuration file using special tags:
 
-[ssh_worker_2] 
-host=worker2.example.com
-env=export DATA_PATH=/shared/data; source /opt/env.sh
+```properties
+@bash_begin@
+# Custom environment for SSH workers
+export DATA_PATH=/local/data
+module load python/3.8
+
+# Task-specific customization based on DDS variables
+if [ "$DDS_TASK_NAME" = "master_task" ]; then
+    export ROLE="master"
+else
+    export ROLE="worker"
+fi
+@bash_end@
+
+# SSH worker definitions
+wn1, user@worker1.example.com, -p22, /home/user/dds_work, 4
+wn2, user@worker2.example.com, -p22, /home/user/dds_work, 4
 ```
+
+For more details, see the [SSH Plugin Documentation](../plugins/dds-submit-ssh/README.md#inline-environment-scripts).
 
 #### Method 3: Global User Environment
 
