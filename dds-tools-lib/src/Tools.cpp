@@ -8,6 +8,7 @@
 #include <chrono>
 #include <sstream>
 // BOOST
+#include <boost/algorithm/string.hpp>
 #include <boost/any.hpp>
 #include <boost/filesystem.hpp>
 #if __has_include(<boost/process/v1.hpp>)
@@ -102,6 +103,13 @@ boost::uuids::uuid CSession::create()
 
     stringstream ssCmd;
     ssCmd << bp::search_path("dds-session").string() << " start";
+
+    // Check environment variable for lightweight mode
+    if (isLightweightModeEnabledByEnv())
+    {
+        ssCmd << " --lightweight";
+    }
+
     execute(ssCmd.str(), chrono::seconds(g_WAIT_PROCESS_SEC), &sOut, &sErr, &nExitCode);
 
     if (nExitCode != 0 || !sErr.empty())

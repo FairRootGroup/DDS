@@ -1,5 +1,65 @@
 # Release Notes
 
+## [Unreleased]
+
+### 🎉 New Features
+
+#### Tools API Environment Variable Support
+
+- **Automatic Lightweight Mode**: Tools API now automatically detects and respects the `DDS_LIGHTWEIGHT_PACKAGE` environment variable
+- **No More `make wn_bin`**: When using lightweight mode, you no longer need to build the worker binary package with `make wn_bin` - a huge time saver!
+- **Simplified API Usage**: Users no longer need to manually set the `enable_lightweight` flag when the environment variable is set
+- **Consistent Behavior**: Tools API now behaves consistently with command-line tools (`dds-session` and `dds-submit`)
+- **Smaller Packages**: Worker packages reduced from ~15MB to ~50KB in lightweight mode
+
+### 🐛 Bug Fixes
+
+#### Critical Worker Package Deployment Fix
+
+- **DDSWorker.sh Logic Error**: Fixed inverted logic bug that caused worker package deployment to fail when pre-compiled binaries were present
+- **Impact**: This bug prevented users from deploying full worker packages (with binaries) even though the binaries were correctly packaged
+- **Resolution**: The script now correctly:
+  - Extracts and uses binaries when they exist (full package mode)
+  - Validates lightweight mode requirements when binaries are absent (lightweight package mode)
+
+### 🚀 For Users
+
+#### If You Use Tools API
+
+Before this fix, you had to explicitly set the lightweight flag:
+
+```cpp
+submitInfo.setFlag(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight, true);
+```
+
+Now, simply set the environment variable before running your application:
+
+```bash
+export DDS_LIGHTWEIGHT_PACKAGE=1
+./my_dds_app
+```
+
+The Tools API will automatically:
+
+- Start sessions with `--lightweight` flag
+- Configure submit requests for lightweight mode
+
+#### If You Experienced Worker Package Failures
+
+If you previously encountered errors like:
+
+```text
+Error: Can't find WN pre-compiled bin.: /path/to/dds-wrk-bin-3.14-Linux-x86_64.tar.gz
+```
+
+This was caused by the DDSWorker.sh bug and is now fixed. Your worker packages will deploy correctly regardless of whether they contain pre-compiled binaries or are in lightweight mode.
+
+### 📝 Complete Changelog
+
+For a complete list of all changes, see [CHANGELOG.md](CHANGELOG.md).
+
+---
+
 ## [3.15.0] - 2025-10-08
 
 ### 🎉 New Features

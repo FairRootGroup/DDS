@@ -166,6 +166,11 @@ constexpr const char* SSubmitRequestData::_protocolTag;
 
 SSubmitRequestData::SSubmitRequestData()
 {
+    // Check environment variable for lightweight mode and set flag automatically
+    if (isLightweightModeEnabledByEnv())
+    {
+        setFlag(ESubmitRequestFlags::enable_lightweight, true);
+    }
 }
 
 SSubmitRequestData::SSubmitRequestData(const boost::property_tree::ptree& _pt)

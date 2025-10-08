@@ -290,4 +290,140 @@ BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_submit_response)
     BOOST_CHECK_EQUAL(data.m_jobIDs[2], "125.job");
 }
 
+BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_lightweight_env_helper)
+{
+    // Test helper function with different environment variable values
+
+    // Test with value "1"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "1", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "true"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "true", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "TRUE" (case insensitive)
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "TRUE", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "yes"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "yes", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "YES" (case insensitive)
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "YES", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "on"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "on", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "ON" (case insensitive)
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "ON", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == true);
+
+    // Test with value "0" (should be false)
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "0", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == false);
+
+    // Test with value "false"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "false", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == false);
+
+    // Test with value "no"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "no", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == false);
+
+    // Test with invalid value
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "invalid", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == false);
+
+    // Test with empty value
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "", 1);
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == false);
+
+    // Test with unset variable
+    unsetenv("DDS_LIGHTWEIGHT_PACKAGE");
+    BOOST_CHECK(isLightweightModeEnabledByEnv() == false);
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_submit_request_env_lightweight)
+{
+    // Test that SSubmitRequestData constructor respects DDS_LIGHTWEIGHT_PACKAGE
+
+    // Test with environment variable set to "1"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "1", 1);
+    {
+        SSubmitRequestData data;
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == true);
+    }
+
+    // Test with environment variable set to "true"
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "true", 1);
+    {
+        SSubmitRequestData data;
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == true);
+    }
+
+    // Test with environment variable unset
+    unsetenv("DDS_LIGHTWEIGHT_PACKAGE");
+    {
+        SSubmitRequestData data;
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == false);
+    }
+
+    // Test that explicit flag setting overrides environment variable
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "1", 1);
+    {
+        SSubmitRequestData data;
+        // First check it's enabled by env
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == true);
+
+        // Now explicitly disable it
+        data.setFlag(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight, false);
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == false);
+
+        // And enable it again
+        data.setFlag(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight, true);
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == true);
+    }
+
+    // Clean up
+    unsetenv("DDS_LIGHTWEIGHT_PACKAGE");
+}
+
+BOOST_AUTO_TEST_CASE(test_dds_tools_protocol_submit_request_serialization_with_lightweight)
+{
+    // Test that lightweight flag is properly serialized/deserialized
+
+    setenv("DDS_LIGHTWEIGHT_PACKAGE", "1", 1);
+    {
+        SSubmitRequestData dataTest;
+        dataTest.m_rms = "slurm";
+        dataTest.m_instances = 10;
+        dataTest.m_slots = 32;
+        dataTest.m_config = "/path/to/config";
+        dataTest.m_pluginPath = "/path/to/plugin";
+        dataTest.m_requestID = 456;
+        // Flag should already be set by constructor due to environment variable
+
+        BOOST_CHECK(dataTest.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == true);
+
+        // Serialize to JSON and back
+        stringstream strBuf(dataTest.toJSON());
+
+        ptree pt;
+        read_json(strBuf, pt);
+        const ptree& childPT = pt.get_child("dds.tools-api.submit");
+
+        SSubmitRequestData data(childPT);
+
+        BOOST_CHECK(data == dataTest);
+        BOOST_CHECK(data.isFlagEnabled(SSubmitRequestData::ESubmitRequestFlags::enable_lightweight) == true);
+    }
+
+    // Clean up
+    unsetenv("DDS_LIGHTWEIGHT_PACKAGE");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

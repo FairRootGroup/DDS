@@ -253,8 +253,14 @@ LIGHTWEIGHT_PKG=""
 # use pre-compiled binaries from the worker package
 # ***** prepare pre-compiled wn binaries *****
 WN_BIN_ARC="$WD/$BASE_NAME-$PKG_VERSION-$OS-$host_arch.tar.gz"
-if [ ! -f "$WN_BIN_ARC" ]; then
-	# Checking for a lightweight package
+if [ -f "$WN_BIN_ARC" ]; then
+	# Binary archive exists - use full package mode
+	logMsg "Found pre-compiled binary archive: $WN_BIN_ARC"
+	logMsg "Extracting binaries..."
+	# un-tar without creating a sub-directory
+	tar --strip-components=1 -xzf $WN_BIN_ARC || clean_up 1
+else
+	# Binary archive doesn't exist - check for lightweight package mode
 	logMsg "Worker package is in lightweight mode. Validating environment..."
 	
 	# Validate DDS_COMMANDER_BIN_LOCATION
@@ -294,14 +300,6 @@ if [ ! -f "$WN_BIN_ARC" ]; then
 	DDS_BINARIES_LOCATION=$DDS_COMMANDER_BIN_LOCATION
 	DDS_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION
 	LIGHTWEIGHT_PKG="YES"
-else
-   logMsg "Error: Can't find WN pre-compiled bin.: $WN_BIN_ARC"
-   clean_up 1
-fi
-
-# un-tar without creating a sub-directory
-if [ -z "$LIGHTWEIGHT_PKG" ]; then
-	tar --strip-components=1 -xzf $WN_BIN_ARC || clean_up 1
 fi
 
 export PATH=$DDS_BINARIES_LOCATION:$PATH

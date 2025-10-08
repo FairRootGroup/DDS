@@ -332,6 +332,41 @@ int main()
 }
 ```
 
+## Lightweight Package Mode
+
+The Tools API respects the `DDS_LIGHTWEIGHT_PACKAGE` environment variable. When set to `1`, `true`, `yes`, or `on` (case-insensitive), DDS creates minimal worker packages (~50KB) without binaries.
+
+**Benefits:**
+- **No need to build `make wn_bin` target** - Eliminates the worker binary compilation step
+- Significantly smaller worker packages (~50KB vs ~15MB)
+- Faster deployment to worker nodes
+
+**Using environment variable:**
+```cpp
+// Set environment variable before creating session
+setenv("DDS_LIGHTWEIGHT_PACKAGE", "1", 1);
+
+dds::tools_api::CSession session;
+session.create();  // Automatically uses lightweight mode
+```
+
+**Using explicit flag:**
+```cpp
+dds::tools_api::CSession session;
+
+dds::tools_api::SSubmitRequestData submitInfo;
+submitInfo.m_rms = "localhost";
+submitInfo.m_config = "dds-submit.cfg";
+submitInfo.m_enable_lightweight = true;  // Explicitly enable lightweight mode
+
+session.syncSendRequest<dds::tools_api::SSubmitRequest>(submitInfo, ...);
+```
+
+**Prerequisites for lightweight mode:**
+- DDS must be pre-installed on worker nodes
+- `DDS_COMMANDER_BIN_LOCATION` environment variable must point to DDS binaries directory (e.g., `/opt/dds/bin`)
+- `DDS_COMMANDER_LIBS_LOCATION` environment variable must point to DDS libraries directory (e.g., `/opt/dds/lib`)
+
 ## Example: Subscribing to Task Done Events
 
 ```cpp

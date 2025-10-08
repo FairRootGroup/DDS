@@ -9,10 +9,12 @@
 // STD
 #include <bitset>
 #include <chrono>
+#include <cstdlib>
 #include <ostream>
 #include <string>
 #include <vector>
 // BOOST
+#include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
 // DDS
 #include "Intercom.h"
@@ -22,6 +24,19 @@ namespace dds
 {
     namespace tools_api
     {
+        /// \brief Helper function to check DDS_LIGHTWEIGHT_PACKAGE environment variable
+        inline bool isLightweightModeEnabledByEnv()
+        {
+            const char* envLightweight = std::getenv("DDS_LIGHTWEIGHT_PACKAGE");
+            if (envLightweight != nullptr)
+            {
+                std::string envValue(envLightweight);
+                boost::algorithm::to_lower(envValue);
+                return (envValue == "1" || envValue == "true" || envValue == "yes" || envValue == "on");
+            }
+            return false;
+        }
+
         /// \brief Structure holds information of a done response.
         DDS_TOOLS_DECLARE_DATA_CLASS(SBaseResponseData, SDoneResponseData, "done")
 

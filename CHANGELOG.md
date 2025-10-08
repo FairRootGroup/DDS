@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **dds-tools-lib**: Tools API now respects `DDS_LIGHTWEIGHT_PACKAGE` environment variable. When set, both `CSession::create()` and `SSubmitRequestData` constructor automatically enable lightweight mode.
+
+### Fixed
+
+- **DDSWorker.sh**: Fixed inverted logic bug that caused worker package deployment to fail when pre-compiled binaries were present. The script now correctly handles both full packages (with binaries) and lightweight packages (without binaries).
+
 ## [3.15.0] - 2025-10-08
 
 ### Added
