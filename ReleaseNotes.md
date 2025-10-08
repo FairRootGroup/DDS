@@ -1,6 +1,6 @@
 # Release Notes
 
-## Unreleased
+## [3.15.0] - 2025-10-08
 
 ### 🎉 New Features
 
@@ -21,7 +21,11 @@
 - **dds-session**: Enhanced README with lightweight session examples and configuration guides
 - **dds-submit**: Improved documentation including new `--path` option details
 
-### 🚀 For Users
+### � Build & Packaging Improvements
+
+- **Optimized Tarball**: System libraries (libc, libm, ld-linux) are now excluded from the tarball to reduce package size and avoid conflicts with system installations
+
+### �🚀 For Users
 
 These documentation improvements make DDS much easier to understand and use:
 
