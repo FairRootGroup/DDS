@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.15.0] - 2025-10-08
 
 ### Added
 
@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **General**: Enhanced README files for better clarity and user guidance.
+- **General**: Excluded system libraries (libc, libm, ld-linux) from the tarball to reduce package size and avoid conflicts with system installations.
 - **dds-session**: README file to include detailed examples for lightweight session usage and environment variable configuration.
 - **dds-submit**: README file to include `--path` option and improved descriptions.
 
