@@ -14,6 +14,17 @@
 
 ### 🐛 Bug Fixes
 
+#### Critical SLURM Plugin Fix for Lightweight Mode
+
+- **Job Submission Failure**: Fixed critical bug in SLURM plugin that caused job submissions to fail with "No partition specified or system default partition" error when using lightweight mode
+- **Root Cause**: The job script template incorrectly placed executable validation code before #SBATCH directives, violating SLURM's parsing requirements. SLURM stops processing #SBATCH options when it encounters the first executable line, causing all subsequent directives (including `--partition`) to be ignored
+- **Template Bug**: The placeholder `#DDS_LIGHTWEIGHT_VALIDATION` appeared in both a comment line and the code section. The `boost::replace_all()` function replaced both occurrences, breaking the comment syntax and injecting executable code before #SBATCH directives
+- **Resolution**: 
+  - Removed lightweight validation code from the job script template entirely
+  - Eliminated blank lines between #SBATCH directive placeholders
+  - Validation logic moved to worker nodes where it's actually needed (DDSWorker.sh)
+- **Impact**: SLURM now correctly parses all #SBATCH directives including partition specifications, resource requirements, and job options
+
 #### Critical Worker Package Deployment Fix
 
 - **DDSWorker.sh Logic Error**: Fixed inverted logic bug that caused worker package deployment to fail when pre-compiled binaries were present
@@ -23,6 +34,26 @@
   - Validates lightweight mode requirements when binaries are absent (lightweight package mode)
 
 ### 🚀 For Users
+
+#### If You Use SLURM with Lightweight Mode
+
+If you experienced SLURM job submission failures with errors like:
+
+```text
+Batch job submission failed: No partition specified or system default partition
+```
+
+This was caused by a critical bug in the SLURM plugin template that placed executable code before #SBATCH directives. SLURM stopped parsing directives when it encountered this code, ignoring your partition specifications and other settings.
+
+**The fix requires rebuilding DDS:**
+
+```bash
+cd /path/to/DDS/build
+make
+make install
+```
+
+After rebuilding, your SLURM submissions with lightweight mode will work correctly, and all #SBATCH directives (including partition, CPU requirements, etc.) will be properly recognized.
 
 #### If You Use Tools API
 

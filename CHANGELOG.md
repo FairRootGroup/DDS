@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **DDSWorker.sh**: Fixed inverted logic bug that caused worker package deployment to fail when pre-compiled binaries were present. The script now correctly handles both full packages (with binaries) and lightweight packages (without binaries).
+- **dds-submit-slurm**: Fixed critical bug in lightweight mode where #SBATCH directives were ignored by SLURM scheduler, causing job submission failures with "No partition specified" error. The issue was caused by executable code appearing before #SBATCH directives in the generated job script, violating SLURM's parsing requirements. Fixed by removing the lightweight validation code from the job script template and eliminating blank lines between #SBATCH directive placeholders.
 
 ## [3.15.0] - 2025-10-08
 

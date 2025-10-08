@@ -203,51 +203,6 @@ int main(int argc, char* argv[])
                     // Replace %DDS_SUBMISSION_TAG%
                     boost::replace_all(sSrcScript, "%DDS_SUBMISSION_TAG%", _submit.m_submissionTag);
 
-                    // #DDS_LIGHTWEIGHT_VALIDATION
-                    if (isLightweightMode)
-                    {
-                        string lightweightValidation = R"DELIMITER(
-# Early validation for lightweight mode
-echo "Lightweight mode detected. Validating prerequisites..."
-
-# Check DDS_COMMANDER_BIN_LOCATION
-if [[ -z "${DDS_COMMANDER_BIN_LOCATION}" ]]; then
-    echo "ERROR: DDS_COMMANDER_BIN_LOCATION environment variable is not set"
-    echo "Please set it to point to DDS binaries directory (e.g., /opt/dds/bin)"
-    exit 1
-fi
-
-if [[ ! -d "${DDS_COMMANDER_BIN_LOCATION}" ]]; then
-    echo "ERROR: DDS_COMMANDER_BIN_LOCATION points to non-existent directory: ${DDS_COMMANDER_BIN_LOCATION}"
-    exit 1
-fi
-
-if [[ ! -x "${DDS_COMMANDER_BIN_LOCATION}/dds-agent" ]]; then
-    echo "ERROR: Cannot find dds-agent executable in ${DDS_COMMANDER_BIN_LOCATION}"
-    exit 1
-fi
-
-# Check DDS_COMMANDER_LIBS_LOCATION
-if [[ -z "${DDS_COMMANDER_LIBS_LOCATION}" ]]; then
-    echo "ERROR: DDS_COMMANDER_LIBS_LOCATION environment variable is not set"
-    echo "Please set it to point to DDS libraries directory (e.g., /opt/dds/lib)"
-    exit 1
-fi
-
-if [[ ! -d "${DDS_COMMANDER_LIBS_LOCATION}" ]]; then
-    echo "ERROR: DDS_COMMANDER_LIBS_LOCATION points to non-existent directory: ${DDS_COMMANDER_LIBS_LOCATION}"
-    exit 1
-fi
-
-echo "Lightweight mode prerequisites validated successfully"
-)DELIMITER";
-                        boost::replace_all(sSrcScript, "#DDS_LIGHTWEIGHT_VALIDATION", lightweightValidation);
-                    }
-                    else
-                    {
-                        boost::replace_all(sSrcScript, "#DDS_LIGHTWEIGHT_VALIDATION", "");
-                    }
-
                     // Replace %DDS_JOB_ROOT_WRK_DIR%
                     string sSandboxDir(smart_path(CUserDefaults::instance().getWrkPkgDir(submissionId)));
                     fs::path pathJobWrkDir(sSandboxDir);
