@@ -1,6 +1,6 @@
 # Release Notes
 
-## [Unreleased]
+## [3.16.0] - 2025-10-09
 
 ### 🎉 New Features
 
