@@ -24,8 +24,6 @@ set(DDS_PROTOCOL_VERSION "2")
 
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-
 # Set policy CMP0167 to NEW to suppress the warning about FindBoost module removal
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
@@ -168,21 +166,9 @@ add_custom_target( format-code
        COMMENT "Updating source code formatting.")
 
 #
-# This is needed to properly install PoD modules
-#
-set(IS_SET_DDS_INSTALL_PREFIX 1 CACHE INTERNAL "")
-#
 # Where to lookup modules
 #
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR};${CMAKE_SOURCE_DIR}/cmake")
-#
-# MiscCommon location
-#
-set(MiscCommon_LOCATION ${CMAKE_SOURCE_DIR}/MiscCommon)
-set(MiscCommon_LOCATION
-    ${MiscCommon_LOCATION}
-    ${MiscCommon_LOCATION}/pipe_log_engine
-)
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR};${CMAKE_SOURCE_DIR}/cmake;${CMAKE_SOURCE_DIR}/cmake/modules")
 #
 # Custom compiler definitions
 #
@@ -264,7 +250,7 @@ SET(DDS_SHARE_FILES
 #
 # Note: Starting with Boost 1.69+, system library is header-only and may not be available as a separate component
 # in modern CMake configurations. We handle this by trying CONFIG mode first, then falling back to MODULE mode.
-set(Boost_Components log log_setup thread program_options filesystem regex process)
+set(Boost_Components log log_setup thread program_options filesystem regex)
 if(BUILD_TESTS)
   set(Boost_Components ${Boost_Components} unit_test_framework)
 endif(BUILD_TESTS)
@@ -277,11 +263,6 @@ if(Boost_FOUND)
   if(NOT TARGET Boost::system)
     message(STATUS "Boost::system not found as separate component (header-only in Boost 1.75+), creating alias")
     add_library(Boost::system ALIAS Boost::headers)
-  endif()
-  # Boost::process is also header-only and may not be available as separate component in CONFIG mode
-  if(NOT TARGET Boost::process)
-    message(STATUS "Boost::process not found as separate component (header-only), creating alias")
-    add_library(Boost::process ALIAS Boost::headers)
   endif()
 else()
   # Fallback to traditional FindBoost module for compatibility
@@ -299,7 +280,7 @@ if(Boost_FOUND)
     message(STATUS "Using modern Boost CMake targets")
   else()
     message(STATUS "Using legacy Boost variables (creating interface targets for Boost 1.75+)")
-    
+
     # Create interface target for header-only boost if it doesn't exist
     if(NOT TARGET Boost::boost)
       add_library(Boost::boost INTERFACE IMPORTED)
@@ -307,7 +288,7 @@ if(Boost_FOUND)
         INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
       )
     endif()
-    
+
     # Create missing component targets for legacy Boost 1.75+ support
     foreach(component IN LISTS Boost_Components)
       string(TOUPPER ${component} COMPONENT_UPPER)
@@ -491,7 +472,7 @@ if( BUILD_TESTS )
     ddsConfigTopoPropertyTest(2 10 property_test_up.xml)
     ddsConfigTopoPropertyTest(1 1000000 property_test_inf.xml)
     ddsConfigTopoPropertyTest(2 1000000 property_test_inf_up.xml)
-    
+
     configure_file(run_test.sh.in ${CMAKE_CURRENT_BINARY_DIR}/run_test.sh @ONLY)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/run_test.sh DESTINATION "${PROJECT_INSTALL_TESTS}")
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/res/tests/run_test_property.sh DESTINATION "${PROJECT_INSTALL_TESTS}")

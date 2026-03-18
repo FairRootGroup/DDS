@@ -31,7 +31,6 @@ target_link_libraries(${PROJECT_NAME}
   dds_user_defaults_lib
   dds_topology_lib
   dds_protocol_lib
-  dds_misc_lib
   dds_intercom_lib
   dds_tools_lib
   Boost::boost
@@ -55,7 +54,7 @@ install(TARGETS ${PROJECT_NAME}
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
-  add_subdirectory(tests) 
+  add_subdirectory(tests)
 else()
   message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 endif()

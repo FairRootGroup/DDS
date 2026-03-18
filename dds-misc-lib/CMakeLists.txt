@@ -66,7 +66,6 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
     Boost::boost
     Boost::filesystem
-    Boost::process
 )
 
 target_include_directories(${PROJECT_NAME}

@@ -1,5 +1,34 @@
 # Release Notes
 
+## [3.18.0] - 2026-03-18
+
+### � Bug Fixes
+
+#### Undefined Variable in dds-user-defaults
+
+- **`add_library(ALIAS)` used `${target_lib}` instead of `${target}`**: The alias target name expanded to `dds-user-defaults::` (empty suffix) because `target_lib` was never defined. Fixed to use the correct variable `${target}` → `dds-user-defaults::dds_user_defaults_lib`.
+
+#### Malformed Generator Expressions in All 5 Submit Plugins
+
+- **`${PROJECT_BINARY_DIR/src}` → `${PROJECT_BINARY_DIR}/src`**: The `/src` was inside the CMake variable braces, causing the expression to evaluate to an empty string. Affected: `dds-submit-ssh`, `dds-submit-localhost`, `dds-submit-slurm`, `dds-submit-pbs`, `dds-submit-lsf`.
+
+#### Duplicate Link Libraries
+
+- **`dds_misc_lib` listed twice** in `dds-commander`, `dds-submit-ssh`, and `dds-submit-localhost` — removed the duplicates.
+
+### 🔧 Build Infrastructure
+
+#### Boost.Process v1 Is Header-Only — No Library Component Needed
+
+- **Removed `process` from Boost component search**: `Boost.Process` v1 is a header-only library, so it must not be listed as a compiled component in `find_package(Boost ... COMPONENTS ...)`. The previous configuration caused CMake to search for a `libboost_process` binary that does not exist, along with a fallback alias workaround.
+- **Cleaned up `dds-misc-lib` link libraries**: `Boost::process` removed from `target_link_libraries` in `dds-misc-lib`. Include paths are already provided through the `Boost::boost` header-only interface target, so Boost.Process v1 headers remain fully accessible without any explicit link target.
+
+#### Dead Code Cleanup
+
+- **Removed `MiscCommon_LOCATION`**: Variable pointed to a non-existent directory and was never referenced by any CMakeLists.txt.
+- **Removed `IS_SET_DDS_INSTALL_PREFIX`**: Cache variable was set but never read anywhere in the project.
+- **Consolidated `CMAKE_MODULE_PATH`**: Merged two separate `set()` calls (where the second silently overwrote the first) into a single assignment including all three search directories.
+
 ## [3.17.0] - 2026-03-16
 
 ### 🐛 Bug Fixes

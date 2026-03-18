@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.18.0] - 2026-03-18
+
+### Fixed
+
+- **CMake**: Removed `process` from the `Boost_Components` list and dropped the `Boost::process` fallback alias target. Boost.Process v1 is header-only, so no compiled library component needs to be searched for or linked.
+- **dds-misc-lib**: Removed `Boost::process` from `target_link_libraries`. The `Boost::boost` header-only target already provides the necessary include paths for Boost.Process v1.
+- **dds-user-defaults**: Fixed undefined variable `${target_lib}` in `add_library(ALIAS)` call; replaced with the correct variable `${target}`.
+- **plugins** (ssh, localhost, slurm, pbs, lsf): Fixed malformed generator expression `${PROJECT_BINARY_DIR/src}` → `${PROJECT_BINARY_DIR}/src` in `target_include_directories`.
+- **dds-commander**: Removed duplicate `dds_misc_lib` entry from `target_link_libraries`.
+- **dds-submit-ssh**: Removed duplicate `dds_misc_lib` entry from `target_link_libraries`.
+- **dds-submit-localhost**: Removed duplicate `dds_misc_lib` entry from `target_link_libraries`.
+
+### Removed
+
+- **CMake**: Removed dead `MiscCommon_LOCATION` variable (directory no longer exists, variable was never referenced).
+- **CMake**: Removed dead `IS_SET_DDS_INSTALL_PREFIX` cache variable (never referenced).
+- **CMake**: Consolidated duplicate `CMAKE_MODULE_PATH` assignments into a single `set()` call.
+
 ## [3.17.0] - 2026-03-16
 
 ### Added

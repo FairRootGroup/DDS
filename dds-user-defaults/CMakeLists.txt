@@ -37,7 +37,7 @@ target_link_libraries(${PROJECT_NAME}
 
 set(target "dds_user_defaults_lib")
 add_library(${target} SHARED ${LIB_SOURCE_FILES} ${HEADER_FILES})
-add_library(${PROJECT_NAME}::${target_lib} ALIAS ${target})
+add_library(${PROJECT_NAME}::${target} ALIAS ${target})
 
 target_compile_features(${target} PUBLIC cxx_std_${PROJECT_CXX_STANDARD})
 #
@@ -77,7 +77,7 @@ install(TARGETS ${PROJECT_NAME} ${target}
 
 if(BUILD_TESTS)
   message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
-  add_subdirectory(tests) 
+  add_subdirectory(tests)
 else()
   message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 endif()

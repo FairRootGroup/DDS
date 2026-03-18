@@ -24,7 +24,7 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR/src}>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
   ${Protobuf_INCLUDE_DIRS}
 )
 
@@ -37,7 +37,7 @@ install(PROGRAMS
 
 #if(BUILD_TESTS)
 #  message(STATUS "Build ${PROJECT_NAME} unit tests - YES")
-#  add_subdirectory(tests) 
+#  add_subdirectory(tests)
 #else()
 #  message(STATUS "Build ${PROJECT_NAME} unit tests - NO")
 #endif()
