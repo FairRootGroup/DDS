@@ -155,11 +155,11 @@ check_arch()
       x86_64)
          host_arch="x86_64"
          ;;
-	  arm64)
+	  arm64|aarch64)
 		 host_arch="arm64"
 		 ;;
       *)
-         logMsg "Error: unsupported architecture: $host_arch"
+         logMsg "Error: unsupported architecture: $wn_host_arch"
          clean_up 1
    ;;
    esac
@@ -219,7 +219,7 @@ untar_payload
 # Define DDS commander location location
 # It's used by plug-ins working on the same machine as commander
 # Define $DDS_COMMANDER_BIN_LOCATION only for parent WN scripts. Shildren re-use the parents DDS_COMMANDER_BIN_LOCATION
-if [ -z $DDS_COMMANDER_BIN_LOCATION ]; then 
+if [ -z $DDS_COMMANDER_BIN_LOCATION ]; then
 	export DDS_COMMANDER_BIN_LOCATION=$DDS_LOCATION/bin
 	export DDS_COMMANDER_LIBS_LOCATION=$DDS_LOCATION/lib
 fi
@@ -247,7 +247,7 @@ fi
 # host's CPU/instruction set
 check_arch
 
-# A WN package without binaries 
+# A WN package without binaries
 LIGHTWEIGHT_PKG=""
 
 # use pre-compiled binaries from the worker package
@@ -262,41 +262,41 @@ if [ -f "$WN_BIN_ARC" ]; then
 else
 	# Binary archive doesn't exist - check for lightweight package mode
 	logMsg "Worker package is in lightweight mode. Validating environment..."
-	
+
 	# Validate DDS_COMMANDER_BIN_LOCATION
 	if [ -z "$DDS_COMMANDER_BIN_LOCATION" ]; then
 		logMsg "Error: Lightweight package mode requires DDS_COMMANDER_BIN_LOCATION environment variable to be set"
 		logMsg "Please set DDS_COMMANDER_BIN_LOCATION to point to DDS binaries directory (e.g., /opt/dds/bin)"
 		clean_up 1
 	fi
-	
+
 	if [ ! -d "$DDS_COMMANDER_BIN_LOCATION" ]; then
 		logMsg "Error: DDS_COMMANDER_BIN_LOCATION points to non-existent directory: $DDS_COMMANDER_BIN_LOCATION"
 		clean_up 1
 	fi
-	
+
 	if [ ! -x "$DDS_COMMANDER_BIN_LOCATION/dds-agent" ]; then
 		logMsg "Error: Cannot find dds-agent executable in DDS_COMMANDER_BIN_LOCATION: $DDS_COMMANDER_BIN_LOCATION"
 		logMsg "Please verify that DDS_COMMANDER_BIN_LOCATION points to a valid DDS installation"
 		clean_up 1
 	fi
-	
+
 	# Validate DDS_COMMANDER_LIBS_LOCATION
 	if [ -z "$DDS_COMMANDER_LIBS_LOCATION" ]; then
 		logMsg "Error: Lightweight package mode requires DDS_COMMANDER_LIBS_LOCATION environment variable to be set"
 		logMsg "Please set DDS_COMMANDER_LIBS_LOCATION to point to DDS libraries directory (e.g., /opt/dds/lib)"
 		clean_up 1
 	fi
-	
+
 	if [ ! -d "$DDS_COMMANDER_LIBS_LOCATION" ]; then
 		logMsg "Error: DDS_COMMANDER_LIBS_LOCATION points to non-existent directory: $DDS_COMMANDER_LIBS_LOCATION"
 		clean_up 1
 	fi
-	
+
 	logMsg "Lightweight package validation passed:"
 	logMsg "  DDS_COMMANDER_BIN_LOCATION=$DDS_COMMANDER_BIN_LOCATION"
 	logMsg "  DDS_COMMANDER_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION"
-	
+
 	DDS_BINARIES_LOCATION=$DDS_COMMANDER_BIN_LOCATION
 	DDS_LIBS_LOCATION=$DDS_COMMANDER_LIBS_LOCATION
 	LIGHTWEIGHT_PKG="YES"

@@ -16,42 +16,13 @@
   "containerEnv": {
     "CCACHE_DIR": "/ccache"
   },
-  // ── SSH-agent forwarding ─────────────────────────────────────────────────────
-  // Mounts the host SSH-agent socket into the container so git/ssh can use your
-  // SSH keys without storing them inside the image.  The socket path is read
-  // from the SSH_AUTH_SOCK variable on whichever machine runs the Docker daemon.
-  //
-  // Linux / macOS — start the agent once per login session, then add your key:
-  //   eval "$(ssh-agent -s)"
-  //   ssh-add ~/.ssh/id_ed25519          # adjust key name as needed
-  //
-  // Windows + WSL2 + Docker
-  //   The Docker daemon runs inside WSL2, so the socket must be reachable there.
-  //   Recommended approach — bridge the Windows built-in OpenSSH agent into WSL2:
-  //   1. On Windows: enable "OpenSSH Authentication Agent" service
-  //      (Services → OpenSSH Authentication Agent → Startup type: Automatic → Start)
-  //      Then add your key once:  ssh-add  (from a Windows PowerShell prompt)
-  //   2. In WSL2, install socat and npiperelay:
-  //        sudo apt install socat
-  //        # download npiperelay.exe somewhere on the Windows PATH, e.g.
-  //        # https://github.com/jstarks/npiperelay/releases
-  //   3. Add the following to ~/.bashrc (or ~/.profile) inside WSL2 so a Unix
-  //      socket is created that forwards to the Windows agent pipe:
-  //
-  //        export SSH_AUTH_SOCK=$HOME/.ssh/agent.sock
-  //        if ! ss -a | grep -q "$SSH_AUTH_SOCK"; then
-  //          rm -f "$SSH_AUTH_SOCK"
-  //          setsid socat UNIX-LISTEN:"$SSH_AUTH_SOCK",fork \
-  //            EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &
-  //        fi
-  //
-  //   After a WSL2 shell restart the SSH_AUTH_SOCK will be set and VS Code will
-  //   pick it up automatically when rebuilding / reopening the dev container.
   "remoteUser": "dds",
+  // Mark the workspace as safe for git (the mount is owned by root, but we run as "dds").
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   // Verify the environment on first open: configure (no build, no tests).
   // cmake -C loads BuildSetup.cmake (sets RelWithDebInfo, BUILD_TESTS=ON, etc.)
   // and wires in ccache as the compiler launcher for fast incremental rebuilds.
-  "postCreateCommand": "rm -f build/CMakeCache.txt && cmake -S . -B build -C BuildSetup.cmake -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+  "postCreateCommand": "cmake -S . -B build -C BuildSetup.cmake -DCMAKE_C_COMPILER=clang-21 -DCMAKE_CXX_COMPILER=clang++-21 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
   "customizations": {
     "vscode": {
       "extensions": [

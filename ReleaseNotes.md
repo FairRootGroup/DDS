@@ -15,13 +15,25 @@
 #### Duplicate Link Libraries
 
 - **`dds_misc_lib` listed twice** in `dds-commander`, `dds-submit-ssh`, and `dds-submit-localhost` — removed the duplicates.
+#### CMake Library Symlink Path Matching
 
+- **Fixed regex pattern from `/lib` to `/lib$`**: The original pattern incorrectly matched paths ending with `/lib64` or similar, preventing the symlink creation. The exact match anchor ensures the symlink is only created when the lib directory is truly outside the standard location.
+
+#### ARM Platform Architecture Detection
+
+- **macOS ARM64 vs Linux aarch64**: Added platform-specific architecture strings for ARM builds. macOS uses `arm64` while Linux uses `aarch64` for the same architecture family. This ensures precompiled worker binaries are correctly identified and deployed on both platforms.
 ### 🔧 Build Infrastructure
 
 #### Boost.Process v1 Is Header-Only — No Library Component Needed
 
 - **Removed `process` from Boost component search**: `Boost.Process` v1 is a header-only library, so it must not be listed as a compiled component in `find_package(Boost ... COMPONENTS ...)`. The previous configuration caused CMake to search for a `libboost_process` binary that does not exist, along with a fallback alias workaround.
 - **Cleaned up `dds-misc-lib` link libraries**: `Boost::process` removed from `target_link_libraries` in `dds-misc-lib`. Include paths are already provided through the `Boost::boost` header-only interface target, so Boost.Process v1 headers remain fully accessible without any explicit link target.
+
+#### Dev Container Enhancements
+
+- **Locale generation**: Added en_US.UTF-8 locale generation to the dev container. This is required by Boost.Process and `std::locale` for proper string and process handling in the containerized environment.
+- **Git configuration**: Added `postStartCommand` to mark the workspace as a safe directory for git operations, resolving ownership mismatches between the mounted workspace (owned by root) and the container user (dds).
+- **Dependency cleanup**: Replaced openssh-client with libxml2-utils in the Dockerfile, and removed extensive SSH-agent forwarding documentation from devcontainer.json as it's no longer needed.
 
 #### Dead Code Cleanup
 

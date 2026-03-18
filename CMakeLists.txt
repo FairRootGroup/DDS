@@ -663,6 +663,6 @@ install(FILES ${CMAKE_SOURCE_DIR}/dds.h DESTINATION "${PROJECT_INSTALL_INCLUDEDI
 # Create a symlink to the lib dir if its location is outside of DDS_LOCATION.
 # For example, when "cmake -DCMAKE_INSTALL_LIBDIR=..." is specified then the location of the lib dir can be different.
 # Some DDS modules expects to find libs in $DDS_LOCATION/lib, therefore a link is created to keep backward compatibility.
-if( NOT "${CMAKE_INSTALL_FULL_LIBDIR}" MATCHES "${CMAKE_INSTALL_PREFIX}/lib")
+if( NOT "${CMAKE_INSTALL_FULL_LIBDIR}" MATCHES "${CMAKE_INSTALL_PREFIX}/lib$")
 	install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_FULL_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib)")
 endif()

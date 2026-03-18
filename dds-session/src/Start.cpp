@@ -125,7 +125,11 @@ bool CStart::checkPrecompiledWNBins(bool _Mixed, bool _Lightweight)
 //       const string sArch("x86_32");
 #endif
 #elif BOOST_ARCH_ARM
+#ifdef __APPLE__
     const string sArch("arm64");
+#else
+    const string sArch("aarch64");
+#endif
 #endif
 
     array<string, 2> sListOS = { { "Linux", sOSXArch } };

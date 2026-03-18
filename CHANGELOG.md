@@ -10,12 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **CMake**: Removed `process` from the `Boost_Components` list and dropped the `Boost::process` fallback alias target. Boost.Process v1 is header-only, so no compiled library component needs to be searched for or linked.
+- **CMake**: Fixed library symlink path matching regex to use exact match anchor (`/lib$` instead of `/lib`) to prevent false positives with paths like `/lib64`.
 - **dds-misc-lib**: Removed `Boost::process` from `target_link_libraries`. The `Boost::boost` header-only target already provides the necessary include paths for Boost.Process v1.
 - **dds-user-defaults**: Fixed undefined variable `${target_lib}` in `add_library(ALIAS)` call; replaced with the correct variable `${target}`.
+- **dds-session**: Added platform-specific ARM architecture detection (arm64 for macOS, aarch64 for Linux) to properly support precompiled worker binaries on both platforms.
 - **plugins** (ssh, localhost, slurm, pbs, lsf): Fixed malformed generator expression `${PROJECT_BINARY_DIR/src}` → `${PROJECT_BINARY_DIR}/src` in `target_include_directories`.
 - **dds-commander**: Removed duplicate `dds_misc_lib` entry from `target_link_libraries`.
 - **dds-submit-ssh**: Removed duplicate `dds_misc_lib` entry from `target_link_libraries`.
 - **dds-submit-localhost**: Removed duplicate `dds_misc_lib` entry from `target_link_libraries`.
+- **.devcontainer**: Generate en_US.UTF-8 locale in dev container, required by Boost.Process and `std::locale`.
+- **.devcontainer**: Add git safe.directory configuration in postStartCommand to handle workspace ownership mismatch.
+- **.devcontainer**: Replace openssh-client with libxml2-utils dependency; removed SSH-agent forwarding documentation as it's no longer needed.
 
 ### Removed
 

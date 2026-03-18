@@ -134,9 +134,16 @@ RUN apt-get update \
         git \
         make \
         openssh-client \
+        libxml2-utils \
     && apt-get purge -y wget gnupg \
     && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # Generate en_US.UTF-8 locale (needed by Boost.Process / std::locale)
+    && apt-get update \
+    && apt-get install -y --no-install-recommends locales \
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen \
+    && locale-gen
 
 # Version-independent symlinks
 RUN ln -sf /usr/bin/clang-21        /usr/local/bin/clang        \
@@ -164,7 +171,8 @@ RUN mkdir -p /ccache && chown dds:dds /ccache
 ENV PATH="/opt/cmake/bin:$PATH" \
     CC=clang-21 \
     CXX=clang++-21 \
-    CCACHE_DIR=/ccache
+    CCACHE_DIR=/ccache \
+    LANG=en_US.UTF-8
 
 WORKDIR /workspace
 USER dds
